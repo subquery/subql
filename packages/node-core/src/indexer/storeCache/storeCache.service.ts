@@ -38,7 +38,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     if (entity === '_metadata') {
       throw new Error('Please use getMetadataModel instead');
     }
-    if (entity === 'poi') {
+    if (entity === '_poi') {
       throw new Error('Please use getPoiModel instead');
     }
     if (!this.cachedModels[entity]) {
@@ -64,7 +64,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   }
 
   get poi(): CachePoiModel | null {
-    const entity = 'poi';
+    const entity = '_poi';
     if (!this.cachedModels[entity]) {
       if (!this.poiRepo) {
         return null;
