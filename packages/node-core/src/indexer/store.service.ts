@@ -375,15 +375,17 @@ export class StoreService {
           return total;
         }, {} as {[key: string]: string | boolean});
 
-        if (store.historicalStateEnabled && multiChain) {
+        const useHistorical =
+          store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);
+
+        if (useHistorical && multiChain) {
           logger.error(
-            'Historical metadata entry found, to multi-chain index clear postgres schema and re-index project using --multichain'
+            'Historical feature is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
           );
           process.exit(1);
         }
 
-        const storedState = store.historicalStateEnabled as boolean;
-        return storedState ?? false;
+        return useHistorical;
       }
       throw new Error('Metadata table does not exist');
     } catch (e) {
