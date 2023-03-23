@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
+import {getHeapStatistics} from 'v8';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {profilerWrap} from '@subql/node-core/profiler';
@@ -12,7 +12,7 @@ import {getLogger} from '../../logger';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiService} from '../poi.service';
-import { SmartBatchService } from '../smartBatch.service';
+import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from '../types';
@@ -77,20 +77,19 @@ export abstract class BlockDispatcher<B, DS>
     this.processQueue.abort();
   }
 
-  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
-    // // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
-    // // to ensure block is bypassed, latestBufferHeight needs to be manually set
-    // If cleanedBlocks = []
-    if (!!latestBufferHeight && !cleanedBlocks.length) {
-      this.latestBufferedHeight = latestBufferHeight;
+  async enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
+    // In the case where factors of batchSize is equal to bypassBlock or when heights is []
+    // to ensure block is bypassed, latestBufferHeight needs to be manually set
+    if (!!latestBufferHeight && !heights.length) {
+      await this.jumpBufferedHeight(latestBufferHeight);
       return;
     }
 
-    logger.info(`Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${cleanedBlocks.length} blocks`);
+    logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
-    this.queue.putMany(cleanedBlocks);
+    this.queue.putMany(heights);
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
     void this.fetchBlocksFromQueue();
   }
 
@@ -100,10 +99,7 @@ export abstract class BlockDispatcher<B, DS>
   }
 
   private memoryleft(): number {
-    return (
-      this.smartBatchService.heapMemoryLimit() -
-      getHeapStatistics().used_heap_size
-    );
+    return this.smartBatchService.heapMemoryLimit() - getHeapStatistics().used_heap_size;
   }
 
   private async fetchBlocksFromQueue(): Promise<void> {
