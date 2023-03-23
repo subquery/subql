@@ -5,6 +5,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {Op, Sequelize} from 'sequelize';
 import {StoreCacheService} from './storeCache.service';
 
+const eventEmitter = new EventEmitter2();
+
 jest.mock('sequelize', () => {
   const mSequelize = {
     authenticate: jest.fn(),
@@ -55,7 +57,6 @@ describe('Store Cache Service historical', () => {
   let storeService: StoreCacheService;
 
   const sequilize = new Sequelize();
-  const eventEmitter = new EventEmitter2()
 
   it('could init store cache service and init cache for models', () => {
     storeService = new StoreCacheService(sequilize, null, eventEmitter);
