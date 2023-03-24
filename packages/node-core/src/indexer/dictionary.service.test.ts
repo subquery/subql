@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {NodeConfig} from '@subql/node-core';
 import {DictionaryQueryEntry, SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {range} from 'lodash';
+import {NodeConfig} from '../configure';
 import {DictionaryService} from './dictionary.service';
 
 const mockDS = [
