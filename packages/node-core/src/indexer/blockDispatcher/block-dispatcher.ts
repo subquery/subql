@@ -4,11 +4,11 @@
 import {getHeapStatistics} from 'v8';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {profilerWrap} from '@subql/node-core/profiler';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiService} from '../poi.service';
@@ -66,7 +66,7 @@ export abstract class BlockDispatcher<B, DS>
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
     if (this.nodeConfig.profiler) {
-      this.fetchBlocksBatches = profilerWrap(fetchBlocksBatches, 'SubstrateUtil', 'fetchBlocksBatches');
+      this.fetchBlocksBatches = profilerWrap(fetchBlocksBatches, 'BlockDispatcher', 'fetchBlocksBatches');
     } else {
       this.fetchBlocksBatches = fetchBlocksBatches;
     }

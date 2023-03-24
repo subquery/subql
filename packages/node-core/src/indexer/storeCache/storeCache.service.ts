@@ -4,9 +4,9 @@
 import assert from 'assert';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
-import {NodeConfig} from '@subql/node-core/configure';
 import {sum} from 'lodash';
 import {Sequelize} from 'sequelize';
+import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {MetadataRepo, PoiRepo} from '../entities';
