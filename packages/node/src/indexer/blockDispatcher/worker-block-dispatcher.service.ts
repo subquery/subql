@@ -5,7 +5,6 @@ import path from 'path';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  getLogger,
   NodeConfig,
   Worker,
   SmartBatchService,
@@ -19,7 +18,6 @@ import {
   WorkerBlockDispatcher,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
-import chalk from 'chalk';
 import {
   SubqlProjectDs,
   SubqueryProject,
@@ -32,8 +30,6 @@ import {
 } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
 import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
-
-const logger = getLogger('WorkerBlockDispatcherService');
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
