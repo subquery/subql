@@ -75,7 +75,7 @@ export class Sandbox extends NodeVM {
 
     const entryFile = last(this.entry.split('/'));
     const regex = new RegExp(`${entryFile.split('.')[0]}.${entryFile.split('.')[1]}:([0-9]+):([0-9]+)`, 'gi');
-    const matches = [...(stackTrace as any).matchAll(regex)];
+    const matches = [...stackTrace.matchAll(regex)];
 
     for (const match of matches) {
       const lineNumber = Number.parseInt(match[1]);
