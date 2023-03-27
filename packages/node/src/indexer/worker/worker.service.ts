@@ -3,7 +3,7 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
+import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
@@ -64,6 +64,14 @@ export class WorkerService {
             height,
             specVersion,
           );
+
+          if (memoryLock.isLocked()) {
+            const start = Date.now();
+            await memoryLock.waitForUnlock();
+            const end = Date.now();
+            logger.debug(`memory lock wait time: ${end - start}ms`);
+          }
+
           const [block] = await this.apiService.fetchBlocks(
             [height],
             specChanged

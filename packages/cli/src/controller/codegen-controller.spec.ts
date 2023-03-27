@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
-import {codegen} from './codegen-controller';
+import {codegen, validateEntityName} from './codegen-controller';
 
 jest.mock('fs', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,5 +27,16 @@ describe('Codegen can generate schema (mocked)', () => {
     (rimraf as unknown as jest.Mock).mockImplementation((path, cb) => cb());
     (fs.promises.mkdir as jest.Mock).mockImplementation(async () => Promise.reject(new Error()));
     await expect(codegen(projectPath)).rejects.toThrow(/Failed to prepare/);
+  });
+
+  it('test codegen reserved key validate', () => {
+    const good_name = 'exampleFilterEntity';
+    const good_result = validateEntityName(good_name);
+    expect(good_result).toEqual(good_name);
+
+    const bad_name = 'exampleEntityFilters';
+    expect(() => validateEntityName(bad_name)).toThrow(
+      'EntityName: exampleEntityFilters cannot end with reservedKey: filters'
+    );
   });
 });
