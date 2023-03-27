@@ -3,9 +3,10 @@
 
 import assert from 'assert';
 import {flatten, includes, isEqual, uniq} from 'lodash';
-import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
+import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
 import {CountOptions} from 'sequelize/types/model';
 import {Fn} from 'sequelize/types/utils';
+import {NodeConfig} from '../../configure';
 import {
   HistoricalModel,
   ICachedModelControl,
@@ -17,7 +18,7 @@ import {
 } from './types';
 
 const getCacheOptions = {
-  max: 500,
+  max: 500, // default value
   ttl: 1000 * 60 * 60, // in ms
   updateAgeOnGet: true, // we want to keep most used record in cache longer
 };
@@ -27,7 +28,7 @@ export class CachedModel<
 > implements ICachedModel<T>, ICachedModelControl
 {
   // Null value indicates its not defined in the db
-  private getCache = new GetData<T>(getCacheOptions);
+  private getCache: GetData<T>;
 
   private setCache: SetData<T> = {};
 
@@ -35,7 +36,17 @@ export class CachedModel<
 
   flushableRecordCounter = 0;
 
-  constructor(readonly model: ModelStatic<Model<T, T>>, private readonly historical = true) {}
+  constructor(
+    readonly model: ModelStatic<Model<T, T>>,
+    private readonly historical = true,
+    private config: NodeConfig
+  ) {
+    // In case, this might be want to be 0
+    if (this.config.storeGetCacheSize !== undefined) {
+      getCacheOptions.max = this.config.storeGetCacheSize;
+    }
+    this.getCache = new GetData<T>(getCacheOptions);
+  }
 
   private get historicalModel(): ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>> {
     return this.model as ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>>;
@@ -200,7 +211,7 @@ export class CachedModel<
     return !!Object.keys(this.setCache).length;
   }
 
-  async flush(tx: Transaction): Promise<void> {
+  async flush(tx: Transaction, sequelize: Sequelize): Promise<void> {
     const records = flatten(
       Object.values(this.setCache).map((v) => {
         if (!this.historical) {
@@ -223,7 +234,7 @@ export class CachedModel<
     if (this.historical) {
       dbOperation = Promise.all([
         // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache),
+        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache, sequelize),
         // bulkCreate all new records for this entity,
         // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
@@ -290,40 +301,26 @@ export class CachedModel<
   private async historicalMarkPreviousHeightRecordsBatch(
     tx: Transaction,
     setRecords: SetData<T>,
-    removeRecords: Record<string, RemoveValue>
-  ): Promise<any[]> {
+    removeRecords: Record<string, RemoveValue>,
+    sequelize: Sequelize
+  ): Promise<void> {
     const closeSetRecords = Object.entries(setRecords).map(([id, value]) => {
       return {id, blockHeight: value.getFirst().startHeight};
     });
     const closeRemoveRecords = Object.entries(removeRecords).map(([id, value]) => {
       return {id, blockHeight: value.removedAtBlock};
     });
-
     const mergedRecords = closeSetRecords.concat(closeRemoveRecords);
 
-    return Promise.all(
-      mergedRecords.map(({blockHeight, id}) => {
-        return this.historicalModel.update(
-          {
-            __block_range: this.model.sequelize.fn(
-              'int8range',
-              this.model.sequelize.fn('lower', this.model.sequelize.col('_block_range')),
-              blockHeight
-            ),
-          },
-          {
-            hooks: false,
-            transaction: tx,
-            // https://github.com/sequelize/sequelize/issues/15179
-            where: {
-              id,
-              __block_range: {
-                [Op.contains]: (blockHeight - 1) as any,
-              },
-            } as any,
-          }
-        );
-      })
+    await sequelize.query(
+      `UPDATE "tutorials-sum-reward"."${
+        this.model.tableName
+      }" table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
+            from (SELECT UNNEST(array[${mergedRecords.map(
+              (r) => `'${r.id}'`
+            )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2
+            WHERE table1.id = table2.id and "_block_range" @> _block_end-1::int8;`,
+      {transaction: tx}
     );
   }
 }

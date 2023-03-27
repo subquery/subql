@@ -44,8 +44,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
-
-      this.cachedModels[entity] = new CachedModel(model);
+      this.cachedModels[entity] = new CachedModel(model, true, this.config);
     }
 
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
@@ -83,7 +82,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
-      await Promise.all(updatableModels.map((model) => model.flush(tx)));
+      await Promise.all(updatableModels.map((model) => model.flush(tx, this.sequelize)));
 
       await tx.commit();
     } catch (e) {

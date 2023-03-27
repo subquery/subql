@@ -3,7 +3,7 @@
 
 import {isEqual} from 'lodash';
 import LRUCache from 'lru-cache';
-import {Transaction} from 'sequelize';
+import {Sequelize, Transaction} from 'sequelize';
 
 export type HistoricalModel = {__block_range: any};
 
@@ -30,7 +30,7 @@ export interface ICachedModel<T> {
 export interface ICachedModelControl {
   isFlushable: boolean;
   flushableRecordCounter: number;
-  flush(tx: Transaction): Promise<void>;
+  flush(tx: Transaction, sequelize?: Sequelize): Promise<void>;
 }
 
 export type EntitySetData = Record<string, SetData<any>>;
