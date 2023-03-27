@@ -77,7 +77,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   }
 
   private async _flushCache(): Promise<void> {
-    logger.info('Flushing cache');
+    logger.debug('Flushing cache');
     const tx = await this.sequelize.transaction();
     try {
       // Get the block height of all data we want to flush up to
