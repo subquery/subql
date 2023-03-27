@@ -211,9 +211,30 @@ export class CachedModel<
     return !!Object.keys(this.setCache).length;
   }
 
-  async flush(tx: Transaction): Promise<void> {
+  async flush(tx: Transaction, blockHeight?: number): Promise<void> {
+    // Get records relevant to the block height
+    const setRecords = blockHeight
+      ? Object.entries(this.setCache).reduce((acc, [key, value]) => {
+          const newValue = value.fromBelowHeight(blockHeight + 1);
+          if (newValue.getValues().length) {
+            acc[key] = newValue;
+          }
+          return acc;
+        }, {} as SetData<T>)
+      : this.setCache;
+
+    const removeRecords = blockHeight
+      ? Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+          if (value.removedAtBlock <= blockHeight) {
+            acc[key] = value;
+          }
+
+          return acc;
+        }, {} as Record<string, RemoveValue>)
+      : this.removeCache;
+
     const records = flatten(
-      Object.values(this.setCache).map((v) => {
+      Object.values(setRecords).map((v) => {
         if (!this.historical) {
           return v.getLatest().data;
         }
@@ -234,7 +255,7 @@ export class CachedModel<
     if (this.historical) {
       dbOperation = Promise.all([
         // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache),
+        this.historicalMarkPreviousHeightRecordsBatch(tx, setRecords, removeRecords),
         // bulkCreate all new records for this entity,
         // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
@@ -247,21 +268,47 @@ export class CachedModel<
           transaction: tx,
           updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
         }),
-        this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx}),
+        this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
 
     // Don't await DB operations to complete before clearing.
     // This allows new data to be cached while flushing
-    this.clear();
+    this.clear(blockHeight);
 
     await dbOperation;
   }
 
-  private clear(): void {
-    this.setCache = {};
-    this.removeCache = {};
-    this.flushableRecordCounter = 0;
+  private clear(blockHeight?: number): void {
+    if (!blockHeight) {
+      this.setCache = {};
+      this.removeCache = {};
+      this.flushableRecordCounter = 0;
+      return;
+    }
+
+    let newCounter = 0;
+
+    // Clear everything below the block height
+    this.setCache = Object.entries(this.setCache).reduce((acc, [key, value]) => {
+      const newValue = value.fromAboveHeight(blockHeight);
+      const numValues = newValue.getValues().length;
+      if (numValues) {
+        newCounter += numValues;
+        acc[key] = value.fromAboveHeight(blockHeight);
+      }
+      return acc;
+    }, {} as SetData<T>);
+
+    this.removeCache = Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+      if (value.removedAtBlock > blockHeight) {
+        newCounter++;
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, RemoveValue>);
+
+    this.flushableRecordCounter = newCounter;
   }
 
   // If field and value are passed, will getByField
@@ -311,10 +358,14 @@ export class CachedModel<
     });
     const mergedRecords = closeSetRecords.concat(closeRemoveRecords);
 
+    if (!mergedRecords.length) {
+      return;
+    }
+
     await this.model.sequelize.query(
       `UPDATE ${this.model.getTableName()} table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
             from (SELECT UNNEST(array[${mergedRecords.map((r) =>
-              this.model.sequelize.escape(`'${r.id}'`)
+              this.model.sequelize.escape(r.id)
             )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2
             WHERE table1.id = table2.id and "_block_range" @> _block_end-1::int8;`,
       {transaction: tx}
