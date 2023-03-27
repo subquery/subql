@@ -313,8 +313,8 @@ export class CachedModel<
 
     await this.model.sequelize.query(
       `UPDATE ${this.model.getTableName()} table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
-            from (SELECT UNNEST(array[${mergedRecords.map(
-              (r) => `'${r.id}'`
+            from (SELECT UNNEST(array[${mergedRecords.map((r) =>
+              this.model.sequelize.escape(`'${r.id}'`)
             )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2
             WHERE table1.id = table2.id and "_block_range" @> _block_end-1::int8;`,
       {transaction: tx}
