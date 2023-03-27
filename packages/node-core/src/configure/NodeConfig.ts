@@ -45,7 +45,8 @@ export interface IConfig {
   readonly pgCa?: string;
   readonly pgKey?: string;
   readonly pgCert?: string;
-  readonly storeCacheThreshold: number;
+  readonly storeCacheThreshold?: number;
+  readonly storeGetCacheSize?: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -119,6 +120,10 @@ export class NodeConfig implements IConfig {
 
   get storeCacheThreshold(): number {
     return this._config.storeCacheThreshold;
+  }
+
+  get storeGetCacheSize(): number {
+    return this._config.storeGetCacheSize;
   }
 
   get networkDictionary(): string | undefined {
