@@ -5,7 +5,7 @@ import { assert } from 'console';
 import { Inject, Injectable } from '@nestjs/common';
 import { ApiService, NodeConfig, StoreService } from '@subql/node-core';
 import { HandlerFunction } from '@subql/testing';
-import { Entity } from '@subql/types';
+import { Entity, SubstrateHandlerKind } from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { CreationAttributes, Model, Options, Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -29,6 +29,7 @@ export class TestingService {
     dependentEntities: Entity[];
     expectedEntities: Entity[];
     handler: HandlerFunction;
+    handlerKind: SubstrateHandlerKind;
   }) {
     // Fetch block
     //TODO: this should be used made general for all networks.
@@ -54,8 +55,18 @@ export class TestingService {
     });
 
     // Run handler
-    //TODO: check what kind of handler is this
-    test.handler(block);
+    switch (test.handlerKind) {
+      case SubstrateHandlerKind.Block:
+        test.handler(block.block);
+        break;
+      case SubstrateHandlerKind.Call:
+        block.extrinsics.map((ext) => test.handler(ext));
+        break;
+      case SubstrateHandlerKind.Event:
+        block.events.map((evt) => test.handler(evt));
+        break;
+      default:
+    }
 
     // Check expected entities
     for (let i = 0; i < test.expectedEntities.length; i++) {
