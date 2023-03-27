@@ -176,7 +176,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
       this.latestProcessedHeight = height;
     }
 
-    await this.storeCacheService.flushCache();
+    void this.storeCacheService.flushCache().catch((e) => {
+      logger.error(e, 'Flushing cache failed');
+      process.exit(1);
+    });
   }
 
   private async updatePOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
