@@ -1,0 +1,7 @@
+{
+  "name": "@subql/testing",
+  "packageManager": "yarn@3.1.1",
+  "dependencies": {
+    "@subql/types": "workspace:^"
+  }
+}
