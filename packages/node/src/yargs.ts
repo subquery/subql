@@ -238,4 +238,9 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'Store cache will flush when number of records excess this threshold',
       type: 'number',
     },
+    'store-get-cache-size': {
+      demandOption: false,
+      describe: 'Store get cache size for each model',
+      type: 'number',
+    },
   });
