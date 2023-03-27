@@ -57,7 +57,7 @@ export class SetValueModel<T> {
   private historicalValues: SetValue<T>[] = [];
   private _latestIndex = -1;
 
-  create(data: T, blockHeight: number): void {
+  private create(data: T, blockHeight: number): void {
     this.historicalValues.push({data, startHeight: blockHeight, endHeight: null});
     this._latestIndex += 1;
   }
