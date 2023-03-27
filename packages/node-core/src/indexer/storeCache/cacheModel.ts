@@ -215,11 +215,14 @@ export class CachedModel<
     // Get records relevant to the block height
     const setRecords = blockHeight
       ? Object.entries(this.setCache).reduce((acc, [key, value]) => {
-          acc[key] = value.fromBelowHeight(blockHeight + 1);
-
+          const newValue = value.fromBelowHeight(blockHeight + 1);
+          if (newValue.getValues().length) {
+            acc[key] = newValue;
+          }
           return acc;
         }, {} as SetData<T>)
       : this.setCache;
+
     const removeRecords = blockHeight
       ? Object.entries(this.removeCache).reduce((acc, [key, value]) => {
           if (value.removedAtBlock <= blockHeight) {
