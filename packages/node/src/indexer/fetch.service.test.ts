@@ -97,7 +97,7 @@ jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoints: [WS_ENDPOINT],
+  networkEndpoint: [WS_ENDPOINT],
   dictionaryTimeout: 10,
   batchSize: 5,
 });

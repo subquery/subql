@@ -51,7 +51,7 @@ const testNetwork: ProjectNetworkV0_0_1 = {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
+  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
 });
 
