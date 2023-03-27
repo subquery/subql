@@ -284,12 +284,17 @@ export class CachedModel<
       this.setCache = {};
       this.removeCache = {};
       this.flushableRecordCounter = 0;
+      return;
     }
+
+    let newCounter = 0;
 
     // Clear everything below the block height
     this.setCache = Object.entries(this.setCache).reduce((acc, [key, value]) => {
       const newValue = value.fromAboveHeight(blockHeight);
-      if (newValue.getLatest() !== undefined) {
+      const numValues = newValue.getValues().length;
+      if (numValues) {
+        newCounter += numValues;
         acc[key] = value.fromAboveHeight(blockHeight);
       }
       return acc;
@@ -297,10 +302,13 @@ export class CachedModel<
 
     this.removeCache = Object.entries(this.removeCache).reduce((acc, [key, value]) => {
       if (value.removedAtBlock > blockHeight) {
+        newCounter++;
         acc[key] = value;
       }
       return acc;
     }, {} as Record<string, RemoveValue>);
+
+    this.flushableRecordCounter = newCounter;
   }
 
   // If field and value are passed, will getByField
