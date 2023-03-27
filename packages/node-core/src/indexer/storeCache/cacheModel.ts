@@ -211,9 +211,27 @@ export class CachedModel<
     return !!Object.keys(this.setCache).length;
   }
 
-  async flush(tx: Transaction): Promise<void> {
+  async flush(tx: Transaction, blockHeight?: number): Promise<void> {
+    // Get records relevant to the block height
+    const setRecords = blockHeight
+      ? Object.entries(this.setCache).reduce((acc, [key, value]) => {
+          acc[key] = value.fromBelowHeight(blockHeight + 1);
+
+          return acc;
+        }, {} as SetData<T>)
+      : this.setCache;
+    const removeRecords = blockHeight
+      ? Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+          if (value.removedAtBlock <= blockHeight) {
+            acc[key] = value;
+          }
+
+          return acc;
+        }, {} as Record<string, RemoveValue>)
+      : this.removeCache;
+
     const records = flatten(
-      Object.values(this.setCache).map((v) => {
+      Object.values(setRecords).map((v) => {
         if (!this.historical) {
           return v.getLatest().data;
         }
@@ -234,7 +252,7 @@ export class CachedModel<
     if (this.historical) {
       dbOperation = Promise.all([
         // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache),
+        this.historicalMarkPreviousHeightRecordsBatch(tx, setRecords, removeRecords),
         // bulkCreate all new records for this entity,
         // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
@@ -247,21 +265,39 @@ export class CachedModel<
           transaction: tx,
           updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
         }),
-        this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx}),
+        this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
 
     // Don't await DB operations to complete before clearing.
     // This allows new data to be cached while flushing
-    this.clear();
+    this.clear(blockHeight);
 
     await dbOperation;
   }
 
-  private clear(): void {
-    this.setCache = {};
-    this.removeCache = {};
-    this.flushableRecordCounter = 0;
+  private clear(blockHeight?: number): void {
+    if (!blockHeight) {
+      this.setCache = {};
+      this.removeCache = {};
+      this.flushableRecordCounter = 0;
+    }
+
+    // Clear everything below the block height
+    this.setCache = Object.entries(this.setCache).reduce((acc, [key, value]) => {
+      const newValue = value.fromAboveHeight(blockHeight);
+      if (newValue.getLatest() !== undefined) {
+        acc[key] = value.fromAboveHeight(blockHeight);
+      }
+      return acc;
+    }, {} as SetData<T>);
+
+    this.removeCache = Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+      if (value.removedAtBlock > blockHeight) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, RemoveValue>);
   }
 
   // If field and value are passed, will getByField

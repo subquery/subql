@@ -30,7 +30,7 @@ export interface ICachedModel<T> {
 export interface ICachedModelControl {
   isFlushable: boolean;
   flushableRecordCounter: number;
-  flush(tx: Transaction): Promise<void>;
+  flush(tx: Transaction, blockHeight?: number): Promise<void>;
 }
 
 export type EntitySetData = Record<string, SetData<any>>;
@@ -106,6 +106,33 @@ export class SetValueModel<T> {
 
   getValues(): SetValue<T>[] {
     return this.historicalValues;
+  }
+
+  fromBelowHeight(height: number): SetValueModel<T> {
+    const newModel = new SetValueModel<T>();
+
+    newModel.historicalValues = this.historicalValues
+      .filter((v) => v.startHeight < height)
+      .map((v) => {
+        if (v.endHeight < height) {
+          return v;
+        }
+
+        return {
+          ...v,
+          endHeight: null,
+        };
+      });
+
+    return newModel;
+  }
+
+  fromAboveHeight(height: number): SetValueModel<T> {
+    const newModel = new SetValueModel<T>();
+
+    newModel.historicalValues = this.historicalValues.filter((v) => v.startHeight > height);
+
+    return newModel;
   }
 
   markAsRemoved(removeAtBlock: number): void {

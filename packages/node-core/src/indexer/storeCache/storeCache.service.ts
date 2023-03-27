@@ -23,6 +23,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private metadataRepo: MetadataRepo;
   private poiRepo: PoiRepo;
   private pendingFlush: Promise<void>;
+  private queuedFlush: Promise<void>;
   private storeCacheThreshold: number;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
@@ -79,28 +80,47 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     logger.info('Flushing cache');
     const tx = await this.sequelize.transaction();
     try {
+      // Get the block height of all data we want to flush up to
+      const blockHeight = await this.metadata.find('lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
-      await Promise.all(updatableModels.map((model) => model.flush(tx)));
+      await Promise.all(updatableModels.map((model) => model.flush(tx, blockHeight)));
 
       await tx.commit();
     } catch (e) {
+      logger.error(e, 'Database transaction failed');
       await tx.rollback();
       throw e;
     }
   }
 
   async flushCache(forceFlush?: boolean): Promise<void> {
-    // When we force flush, this will ensure not interrupt current block flushing,
-    // Force flush will continue after last block flush tx committed.
-    if (this.pendingFlush !== undefined) {
-      await this.pendingFlush;
+    // Awaits any existing flush
+    const flushCacheGuarded = async (forceFlush?: boolean): Promise<void> => {
+      // When we force flush, this will ensure not interrupt current block flushing,
+      // Force flush will continue after last block flush tx committed.
+      if (this.pendingFlush !== undefined) {
+        await this.pendingFlush;
+      }
+      if (this.isFlushable() || forceFlush) {
+        this.pendingFlush = this._flushCache();
+
+        // Remove reference to pending flush once it completes
+        this.pendingFlush.finally(() => (this.pendingFlush = undefined));
+
+        await this.pendingFlush;
+      }
+    };
+
+    // Queued flush ensures that we only prepare one more task to flush, successive calls will return the same promise
+    if (this.queuedFlush === undefined) {
+      this.queuedFlush = flushCacheGuarded(forceFlush);
+
+      this.queuedFlush.finally(() => (this.queuedFlush = undefined));
     }
-    if (this.isFlushable() || forceFlush) {
-      this.pendingFlush = this._flushCache();
-      await this.pendingFlush;
-    }
+
+    return this.queuedFlush;
   }
 
   isFlushable(): boolean {
