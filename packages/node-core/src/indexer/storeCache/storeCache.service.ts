@@ -44,8 +44,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
-
-      this.cachedModels[entity] = new CachedModel(model);
+      this.cachedModels[entity] = new CachedModel(model, true, this.config);
     }
 
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
