@@ -141,7 +141,7 @@ export class ApiService {
       const pkgName = packageName ?? userPackageName;
       for (const msg of messages) {
         logger.info(`Registering chain message type "/${pkgName}.${msg}"`);
-        const msgObj = network.chainTypes.protoRoot.lookupType(
+        const msgObj = network.chainTypes.protoRoot.lookupTypeOrEnum(
           `${pkgName}.${msg}`,
         );
         res[`/${pkgName}.${msg}`] = msgObj;
