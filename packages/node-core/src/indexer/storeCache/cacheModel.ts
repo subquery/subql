@@ -211,7 +211,7 @@ export class CachedModel<
     return !!Object.keys(this.setCache).length;
   }
 
-  async flush(tx: Transaction, sequelize: Sequelize): Promise<void> {
+  async flush(tx: Transaction): Promise<void> {
     const records = flatten(
       Object.values(this.setCache).map((v) => {
         if (!this.historical) {
@@ -234,7 +234,7 @@ export class CachedModel<
     if (this.historical) {
       dbOperation = Promise.all([
         // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache, sequelize),
+        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache),
         // bulkCreate all new records for this entity,
         // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
@@ -301,8 +301,7 @@ export class CachedModel<
   private async historicalMarkPreviousHeightRecordsBatch(
     tx: Transaction,
     setRecords: SetData<T>,
-    removeRecords: Record<string, RemoveValue>,
-    sequelize: Sequelize
+    removeRecords: Record<string, RemoveValue>
   ): Promise<void> {
     const closeSetRecords = Object.entries(setRecords).map(([id, value]) => {
       return {id, blockHeight: value.getFirst().startHeight};
@@ -312,10 +311,8 @@ export class CachedModel<
     });
     const mergedRecords = closeSetRecords.concat(closeRemoveRecords);
 
-    await sequelize.query(
-      `UPDATE "tutorials-sum-reward"."${
-        this.model.tableName
-      }" table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
+    await this.model.sequelize.query(
+      `UPDATE ${this.model.getTableName()} table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
             from (SELECT UNNEST(array[${mergedRecords.map(
               (r) => `'${r.id}'`
             )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2

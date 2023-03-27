@@ -82,7 +82,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
-      await Promise.all(updatableModels.map((model) => model.flush(tx, this.sequelize)));
+      await Promise.all(updatableModels.map((model) => model.flush(tx)));
 
       await tx.commit();
     } catch (e) {
