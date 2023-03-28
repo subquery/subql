@@ -166,6 +166,41 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
     },
+    'pg-ca': {
+      demandOption: false,
+      describe:
+        'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
+      type: 'string',
+    },
+    'pg-key': {
+      demandOption: false,
+      describe:
+        'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
+      type: 'string',
+    },
+    'pg-cert': {
+      demandOption: false,
+      describe:
+        'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
+      type: 'string',
+    },
+    'store-cache-threshold': {
+      demandOption: false,
+      describe:
+        'Store cache will flush when number of records excess this threshold',
+      type: 'number',
+    },
+    'store-get-cache-size': {
+      demandOption: false,
+      describe: 'Store get cache size for each model',
+      type: 'number',
+    },
+    'store-cache-async': {
+      demandOption: false,
+      describe:
+        'If enabled writing data to the store is asynchronous with regards to block processing',
+      type: 'boolean',
+    },
     subquery: {
       alias: 'f',
       demandOption: true,
@@ -212,35 +247,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe:
         'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
-      type: 'number',
-    },
-    'pg-ca': {
-      demandOption: false,
-      describe:
-        'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
-      type: 'string',
-    },
-    'pg-key': {
-      demandOption: false,
-      describe:
-        'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
-      type: 'string',
-    },
-    'pg-cert': {
-      demandOption: false,
-      describe:
-        'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
-      type: 'string',
-    },
-    'store-cache-threshold': {
-      demandOption: false,
-      describe:
-        'Store cache will flush when number of records excess this threshold',
-      type: 'number',
-    },
-    'store-get-cache-size': {
-      demandOption: false,
-      describe: 'Store get cache size for each model',
       type: 'number',
     },
   });

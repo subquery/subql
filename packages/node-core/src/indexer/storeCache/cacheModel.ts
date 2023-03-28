@@ -233,23 +233,7 @@ export class CachedModel<
         }, {} as Record<string, RemoveValue>)
       : this.removeCache;
 
-    const records = flatten(
-      Object.values(setRecords).map((v) => {
-        if (!this.historical) {
-          return v.getLatest().data;
-        }
-        // Historical
-        return v.getValues().map((historicalValue) => {
-          // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
-          historicalValue.data.__block_range = this.model.sequelize.fn(
-            'int8range',
-            historicalValue.startHeight,
-            historicalValue.endHeight
-          );
-          return historicalValue.data;
-        });
-      })
-    ) as unknown as CreationAttributes<Model<T, T>>[];
+    const records = this.applyBlockRange(setRecords);
 
     let dbOperation: Promise<unknown>;
     if (this.historical) {
@@ -277,6 +261,26 @@ export class CachedModel<
     this.clear(blockHeight);
 
     await dbOperation;
+  }
+
+  private applyBlockRange(setRecords: SetData<T>) {
+    return flatten(
+      Object.values(setRecords).map((v) => {
+        if (!this.historical) {
+          return v.getLatest().data;
+        }
+        // Historical
+        return v.getValues().map((historicalValue) => {
+          // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
+          historicalValue.data.__block_range = this.model.sequelize.fn(
+            'int8range',
+            historicalValue.startHeight,
+            historicalValue.endHeight
+          );
+          return historicalValue.data;
+        });
+      })
+    ) as unknown as CreationAttributes<Model<T, T>>[];
   }
 
   private clear(blockHeight?: number): void {
