@@ -4311,10 +4311,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
-    "@polkadot/api": ^9
+    "@polkadot/api": ^10
     "@types/app-module-path": ^2.2.0
   peerDependencies:
-    "@polkadot/api": ^9
+    "@polkadot/api": ^10
   languageName: unknown
   linkType: soft
 
