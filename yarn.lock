@@ -3975,6 +3975,7 @@ __metadata:
     oclif: ^2.4.4
     rimraf: ^3.0.2
     simple-git: ^3.12.0
+    terser-webpack-plugin: ^5.3.7
     ts-loader: ^9.2.6
     tslib: ^2.3.1
     typechain: 8.1.1
@@ -4183,7 +4184,6 @@ __metadata:
     prom-client: ^14.0.1
     sequelize: 6.28.0
     source-map: ^0.7.4
-    terser-webpack-plugin: ^5.3.7
     vm2: ^3.9.9
     yargs: ^16.2.0
   languageName: unknown

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+
+## [1.7.2] - 2023-03-29
+### Changed
+- Update polkadot api to 10.1.4 (#1580)
+
 ## [1.7.1] - 2023-01-23
 ### Added
 - Add `count` to `Store` interface (#1480)
