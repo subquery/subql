@@ -9,6 +9,7 @@ import {Sequelize} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {profiler} from '../../profiler';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
@@ -76,12 +77,12 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     return this.cachedModels[entity] as unknown as CachePoiModel;
   }
 
-  private async _flushCache(): Promise<void> {
+  private async _flushCache(flushAll?: boolean): Promise<void> {
     logger.debug('Flushing cache');
     const tx = await this.sequelize.transaction();
     try {
       // Get the block height of all data we want to flush up to
-      const blockHeight = await this.metadata.find('lastProcessedHeight');
+      const blockHeight = flushAll ? undefined : await this.metadata.find('lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
@@ -95,7 +96,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     }
   }
 
-  async flushCache(forceFlush?: boolean): Promise<void> {
+  async flushCache(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
     // Awaits any existing flush
     const flushCacheGuarded = async (forceFlush?: boolean): Promise<void> => {
       // When we force flush, this will ensure not interrupt current block flushing,
@@ -104,7 +105,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
         await this.pendingFlush;
       }
       if (this.isFlushable() || forceFlush) {
-        this.pendingFlush = this._flushCache();
+        this.pendingFlush = this._flushCache(flushAll);
 
         // Remove reference to pending flush once it completes
         this.pendingFlush.finally(() => (this.pendingFlush = undefined));
