@@ -370,7 +370,7 @@ export class DictionaryService implements OnApplicationShutdown {
         // Rerun the qeury now with distinct disabled
         return this.getMetadata();
       }
-      logger.warn(err, `failed to fetch specVersion result`);
+      logger.error(err, `Failed to get dictionary metadata`);
       return undefined;
     }
   }
