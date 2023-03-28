@@ -9,6 +9,7 @@ import {getDbType, SUPPORT_DB} from '@subql/common';
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
+  GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
   IndexType,
@@ -239,6 +240,7 @@ export class StoreService {
       if (this.historical) {
         this.addIdAndBlockRangeAttributes(attributes);
         this.addBlockRangeColumnToIndexes(indexes);
+        this.addHistoricalIdIndex(model, indexes);
       }
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
@@ -409,6 +411,18 @@ export class StoreService {
       // GIST does not support unique indexes
       index.unique = false;
     });
+  }
+
+  // Only used with historical to add indexes to ID fields for gettign entitities by ID
+  private addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
+    const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
+    if (idFieldName && !indexes.find((idx) => idx.fields.includes(idFieldName))) {
+      indexes.push({
+        fields: [Utils.underscoredIf(idFieldName, true)],
+        unique: false,
+        using: IndexType.GIST,
+      });
+    }
   }
 
   private addRelationToMap(
