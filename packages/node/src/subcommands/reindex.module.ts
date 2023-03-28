@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import {
   DbModule,
   MmrService,
-  NodeConfig,
   StoreCacheService,
   StoreService,
 } from '@subql/node-core';
@@ -42,6 +42,7 @@ export class ReindexFeatureModule {}
     DbModule.forRoot(),
     ConfigureModule.register(),
     ReindexFeatureModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [],
 })
