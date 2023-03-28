@@ -176,10 +176,16 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
       this.latestProcessedHeight = height;
     }
 
-    void this.storeCacheService.flushCache().catch((e) => {
-      logger.error(e, 'Flushing cache failed');
-      process.exit(1);
-    });
+    if (this.nodeConfig.storeCacheAsync) {
+      // Flush all completed block data and don't wait
+      void this.storeCacheService.flushCache(false, false).catch((e) => {
+        logger.error(e, 'Flushing cache failed');
+        process.exit(1);
+      });
+    } else {
+      // Flush all data from cache and wait
+      await this.storeCacheService.flushCache(false, true);
+    }
   }
 
   private async updatePOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
