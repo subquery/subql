@@ -29,7 +29,9 @@
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
       "@subql/validator": ["packages/validator/src"],
-      "@subql/validator/*": ["packages/validator/src/*"]
+      "@subql/validator/*": ["packages/validator/src/*"],
+      "@subql/testing": ["packages/testing/src"],
+      "@subql/testing/*": ["packages/testing/src/*"]
     },
     "skipLibCheck": true
   },

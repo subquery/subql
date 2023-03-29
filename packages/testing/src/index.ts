@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+export * from './interfaces';
+
 import {Entity} from '@subql/types';
 import {HandlerFunction} from './interfaces';
 
@@ -10,7 +12,8 @@ export function subqlTest(
   blockHeight: number,
   dependentEntities: Entity[],
   expectedEntities: Entity[],
-  handler: HandlerFunction
+  handler: HandlerFunction,
+  handlerKind: string
 ): void {
   (global as any).subqlTests = (global as any).subqlTests ?? [];
 
@@ -20,5 +23,6 @@ export function subqlTest(
     dependentEntities,
     expectedEntities,
     handler,
+    handlerKind,
   });
 }

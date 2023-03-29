@@ -2,21 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NestFactory } from '@nestjs/core';
-import { getLogger } from '@subql/node-core';
+import { getLogger, NestLogger } from '@subql/node-core';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
 
 const logger = getLogger('CLI-Testing');
 export async function testingInit(): Promise<void> {
   try {
-    const app = await NestFactory.create(TestingModule);
+    const app = await NestFactory.create(TestingModule, {
+      logger: new NestLogger(),
+    });
 
     await app.init();
     const testingService = app.get(TestingService);
 
-    // await testingService.init();
+    await testingService.init();
 
     // TODO call function to run tests
+    await testingService.run();
   } catch (e) {
     logger.error(e, 'Testing failed');
     process.exit(1);

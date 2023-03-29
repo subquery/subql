@@ -3,7 +3,7 @@
 
 import {Entity} from '@subql/types';
 
-type HandlerFunction = <T = any>(input: T) => Promise<void>;
+export type HandlerFunction = <T = any>(input: T) => Promise<void>;
 
 export type subqlTest = (
   name: string,

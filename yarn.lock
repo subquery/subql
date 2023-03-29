@@ -4247,6 +4247,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/testing@workspace:packages/testing":
+  version: 0.0.0-use.local
+  resolution: "@subql/testing@workspace:packages/testing"
+  dependencies:
+    "@subql/types": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@subql/types-algorand@npm:1.2.1":
   version: 1.2.1
   resolution: "@subql/types-algorand@npm:1.2.1"
@@ -4319,7 +4327,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types@workspace:*, @subql/types@workspace:packages/types":
+"@subql/types@workspace:*, @subql/types@workspace:^, @subql/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
