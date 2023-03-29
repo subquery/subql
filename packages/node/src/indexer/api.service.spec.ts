@@ -88,7 +88,7 @@ describe('ApiService', () => {
     );
     await apiService.init();
     const { version } = require('../../package.json');
-    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint, 2500, {
+    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint[0], 2500, {
       'User-Agent': `SubQuery-Node ${version}`,
     });
     expect(ApiPromise.create).toHaveBeenCalledWith({

@@ -84,7 +84,9 @@ function mockApiService(): ApiService {
     },
   };
   return {
-    getApi: () => mockApi,
+    get api() {
+      return mockApi;
+    },
   } as any;
 }
 
