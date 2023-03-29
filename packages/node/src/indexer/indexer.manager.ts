@@ -70,8 +70,6 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
-
-    this.api = this.apiService.getApi();
   }
 
   @profiler(yargsOptions.argv.profiler)
@@ -83,6 +81,7 @@ export class IndexerManager {
     operationHash: Uint8Array;
     reindexBlockHeight: number;
   }> {
+    this.api = this.apiService.api;
     const { block } = blockContent;
     let dynamicDsCreated = false;
     let reindexBlockHeight = null;

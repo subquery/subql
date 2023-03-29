@@ -17,7 +17,7 @@ import {
   NodeConfig,
   PoiService,
   StoreService,
-  SmartBatchService
+  SmartBatchService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
@@ -41,7 +41,7 @@ const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoint: WS_ENDPOINT,
+      endpoint: [WS_ENDPOINT],
     },
     chainTypes: {
       types: {
@@ -97,7 +97,7 @@ jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: WS_ENDPOINT,
+  networkEndpoint: [WS_ENDPOINT],
   dictionaryTimeout: 10,
   batchSize: 5,
 });
@@ -502,7 +502,7 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to different network
     //set to a kusama network and use polkadot dictionary
-    project.network.endpoint = 'wss://kusama.api.onfinality.io/public-ws';
+    project.network.endpoint = ['wss://kusama.api.onfinality.io/public-ws'];
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
     project.dataSources = [
@@ -728,8 +728,9 @@ describe('FetchService', () => {
     await runtimeService.getSpecVersion(10337859);
     const specVersionMap = (runtimeService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
-    const latestSpecVersion =
-      await fetchService.api.rpc.state.getRuntimeVersion();
+    const latestSpecVersion = await fetchService
+      .api()
+      .rpc.state.getRuntimeVersion();
     // This should be match if dictionary is fully synced
     expect(Number(specVersionMap[specVersionMap.length - 1].id)).toBe(
       latestSpecVersion.specVersion.toNumber(),
@@ -791,7 +792,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
 
     project.dataSources[0].startBlock = 3467085;
-    project.network.endpoint = 'wss://karura-rpc-0.aca-api.network';
+    project.network.endpoint = ['wss://karura-rpc-0.aca-api.network'];
 
     const indexerManager = mockIndexerManager();
 

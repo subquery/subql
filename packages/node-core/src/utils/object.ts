@@ -20,3 +20,14 @@ export function camelCaseObjectKey(object: Record<string, any>): object {
     {}
   );
 }
+
+export function splitArrayByRatio(arr: number[], weights: number[]): number[][] {
+  const result: number[][] = [];
+  let start = 0;
+  for (let i = 0; i < weights.length; i++) {
+    const end = Math.floor(arr.length * weights[i]) + start;
+    result.push(arr.slice(start, end));
+    start = end;
+  }
+  return result;
+}

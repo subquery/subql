@@ -59,7 +59,7 @@ export function validateSemver(current: string, required: string): boolean {
 @ValidatorConstraint({name: 'semver', async: false})
 export class SemverVersionValidator implements ValidatorConstraintInterface {
   validate(value: string | null | undefined): boolean {
-    if (valid(value, {includePrerelease: false}) === null) {
+    if (valid(value) === null) {
       return validRange(value, {includePrerelease: false}) !== null;
     } else {
       return prerelease(value) === null;

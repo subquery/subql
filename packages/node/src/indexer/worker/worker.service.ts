@@ -4,7 +4,6 @@
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
 import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
-import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
@@ -73,8 +72,7 @@ export class WorkerService {
             logger.debug(`memory lock wait time: ${end - start}ms`);
           }
 
-          const [block] = await fetchBlocksBatches(
-            this.apiService.getApi(),
+          const [block] = await this.apiService.fetchBlocks(
             [height],
             specChanged
               ? undefined

@@ -22,7 +22,7 @@ export interface IConfig {
   readonly blockTime: number;
   readonly debug: boolean;
   readonly preferRange: boolean;
-  readonly networkEndpoint?: string;
+  readonly networkEndpoint?: string[];
   readonly networkDictionary?: string;
   readonly dictionaryResolver?: string;
   readonly outputFmt?: 'json';
@@ -109,8 +109,10 @@ export class NodeConfig implements IConfig {
     return this._config.batchSize;
   }
 
-  get networkEndpoint(): string | undefined {
-    return this._config.networkEndpoint;
+  get networkEndpoints(): string[] | undefined {
+    return typeof this._config.networkEndpoint === 'string'
+      ? [this._config.networkEndpoint]
+      : this._config.networkEndpoint;
   }
 
   get networkDictionary(): string | undefined {

@@ -3,48 +3,62 @@
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
+import { ApiPromise } from '@polkadot/api';
+import { RpcMethodResult } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import {
   IndexerEvent,
   NetworkMetadataPayload,
   getLogger,
+  NodeConfig,
+  profilerWrap,
+  ConnectionPoolService,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiAt } from './types';
-import { HttpProvider } from './x-provider/http';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
+import * as SubstrateUtil from '../utils/substrate';
+import { ApiPromiseConnection } from './apiPromise.connection';
+import { ApiAt, BlockContent } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
 };
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
-const RETRY_DELAY = 2_500;
+const MAX_RECONNECT_ATTEMPTS = 5;
 const TIMEOUT = 90 * 1000;
 
 const logger = getLogger('api');
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
-  private api: ApiPromise;
+  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
   private currentBlockHash: string;
   private currentBlockNumber: number;
-  private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
+    private connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
+    private nodeConfig: NodeConfig,
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all([this.api?.disconnect()]);
+    await this.connectionPoolService.onApplicationShutdown();
+  }
+
+  private metadataMismatchError(
+    metadata: string,
+    expected: string,
+    actual: string,
+  ): Error {
+    return Error(
+      `Value of ${metadata} does not match across all endpoints\n
+       Expected: ${expected}
+       Actual: ${actual}`,
+    );
   }
 
   async init(): Promise<ApiService> {
@@ -57,63 +71,89 @@ export class ApiService implements OnApplicationShutdown {
       process.exit(1);
     }
 
-    let provider: WsProvider | HttpProvider;
-    let throwOnConnect = false;
-
-    const headers = {
-      'User-Agent': `SubQuery-Node ${packageVersion}`,
-    };
-    if (network.endpoint.startsWith('ws')) {
-      provider = new WsProvider(
-        network.endpoint,
-        RETRY_DELAY,
-        headers,
-        TIMEOUT,
+    if (this.nodeConfig?.profiler) {
+      this.fetchBlocksBatches = profilerWrap(
+        SubstrateUtil.fetchBlocksBatches,
+        'SubstrateUtil',
+        'fetchBlocksBatches',
       );
-    } else if (network.endpoint.startsWith('http')) {
-      provider = new HttpProvider(network.endpoint, headers);
-      throwOnConnect = true;
     }
 
-    this.apiOption = {
-      provider,
-      throwOnConnect,
-      noInitWarn: true,
-      ...chainTypes,
-    };
-    this.api = await ApiPromise.create(this.apiOption);
+    const connections: ApiPromiseConnection[] = [];
 
-    this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    this.api.on('connected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    });
-    this.api.on('disconnected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
-    });
+    await Promise.all(
+      network.endpoint.map(async (endpoint, i) => {
+        const connection = await ApiPromiseConnection.create(endpoint, {
+          chainTypes,
+        });
+        const api = connection.api;
 
-    this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
-    };
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          value: 1,
+          apiIndex: i,
+          endpoint: endpoint,
+        });
 
-    if (network.chainId && network.chainId !== this.networkMeta.genesisHash) {
-      const err = new Error(
-        `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
-          network.chainId ?? network.genesisHash
-        }", however the endpoint that you are connecting to is different("${
-          this.networkMeta.genesisHash
-        }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-      );
-      logger.error(err, err.message);
-      throw err;
-    }
+        api.on('connected', () => {
+          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+            value: 1,
+            apiIndex: i,
+            endpoint: endpoint,
+          });
+        });
+        api.on('disconnected', () => {
+          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+            value: 0,
+            apiIndex: i,
+            endpoint: endpoint,
+          });
+          this.connectionPoolService.handleApiDisconnects(i, endpoint);
+        });
 
+        if (!this.networkMeta) {
+          this.networkMeta = {
+            chain: api.runtimeChain.toString(),
+            specName: api.runtimeVersion.specName.toString(),
+            genesisHash: api.genesisHash.toString(),
+          };
+
+          if (
+            network.chainId &&
+            network.chainId !== this.networkMeta.genesisHash
+          ) {
+            const err = new Error(
+              `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
+                network.chainId ?? network.genesisHash
+              }", however the endpoint that you are connecting to is different("${
+                this.networkMeta.genesisHash
+              }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
+            );
+            logger.error(err, err.message);
+            throw err;
+          }
+        } else {
+          const genesisHash = api.genesisHash.toString();
+          if (this.networkMeta.genesisHash !== genesisHash) {
+            throw this.metadataMismatchError(
+              'Genesis Hash',
+              this.networkMeta.genesisHash,
+              genesisHash,
+            );
+          }
+        }
+
+        logger.info(`Connected to ${endpoint} successfully`);
+
+        connections.push(connection);
+      }),
+    );
+
+    this.connectionPoolService.addBatchToConnections(connections);
     return this;
   }
 
-  getApi(): ApiPromise {
-    return this.api;
+  get api(): ApiPromise {
+    return this.connectionPoolService.api.api;
   }
 
   async getPatchedApi(
@@ -123,11 +163,12 @@ export class ApiService implements OnApplicationShutdown {
     this.currentBlockHash = block.block.hash.toString();
     this.currentBlockNumber = block.block.header.number.toNumber();
 
-    const apiAt = (await this.api.at(
+    const api = this.api;
+    const apiAt = (await api.at(
       this.currentBlockHash,
       runtimeVersion,
     )) as ApiAt;
-    this.patchApiRpc(this.api, apiAt);
+    this.patchApiRpc(api, apiAt);
     return apiAt;
   }
 
@@ -210,5 +251,56 @@ export class ApiService implements OnApplicationShutdown {
     const ext = original.meta as unknown as DefinitionRpcExt;
 
     return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
+  }
+
+  private async fetchBlocksFromFirstAvailableEndpoint(
+    batch: number[],
+    overallSpecVer?: number,
+  ): Promise<BlockContent[]> {
+    let reconnectAttempts = 0;
+    while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      try {
+        const blocks = await this.fetchBlocksBatches(
+          this.api,
+          batch,
+          overallSpecVer,
+        );
+        return blocks;
+      } catch (e) {
+        logger.error(e, 'Failed to fetch blocks');
+        reconnectAttempts++;
+      }
+    }
+    throw new Error(
+      `Maximum number of retries (${MAX_RECONNECT_ATTEMPTS}) reached.`,
+    );
+  }
+
+  async fetchBlocks(
+    blockNums: number[],
+    overallSpecVer?: number,
+  ): Promise<BlockContent[]> {
+    const api = this.api;
+    try {
+      const blocks = await this.fetchBlocksBatches(
+        api,
+        blockNums,
+        overallSpecVer,
+      );
+      return blocks;
+    } catch (e) {
+      logger.error(
+        e,
+        `Failed to fetch blocks ${blockNums[0]}...${
+          blockNums[blockNums.length - 1]
+        }`,
+      );
+
+      const blocks = await this.fetchBlocksFromFirstAvailableEndpoint(
+        blockNums,
+        overallSpecVer,
+      );
+      return blocks;
+    }
   }
 }

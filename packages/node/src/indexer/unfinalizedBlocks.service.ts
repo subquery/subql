@@ -77,7 +77,7 @@ export class UnfinalizedBlocksService {
   }
 
   private get api(): ApiPromise {
-    return this.apiService.getApi();
+    return this.apiService.api;
   }
 
   private get finalizedBlockNumber(): number {

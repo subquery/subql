@@ -3,9 +3,16 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { StoreService, PoiService, MmrService } from '@subql/node-core';
+import {
+  StoreService,
+  PoiService,
+  MmrService,
+  NodeConfig,
+  ConnectionPoolService,
+} from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
@@ -19,17 +26,30 @@ import { WorkerService } from './worker/worker.service';
   providers: [
     IndexerManager,
     StoreService,
+    ConnectionPoolService,
     {
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
+        connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
         eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
-        const apiService = new ApiService(project, eventEmitter);
+        const apiService = new ApiService(
+          project,
+          connectionPoolService,
+          eventEmitter,
+          nodeConfig,
+        );
         await apiService.init();
         return apiService;
       },
-      inject: ['ISubqueryProject', EventEmitter2],
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
     },
     SandboxService,
     DsProcessorService,
