@@ -1,8 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {Op, Sequelize} from 'sequelize';
+import {NodeConfig} from '../../configure';
 import {StoreCacheService} from './storeCache.service';
 
 const eventEmitter = new EventEmitter2();
@@ -57,16 +58,19 @@ describe('Store Cache Service historical', () => {
   let storeService: StoreCacheService;
 
   const sequilize = new Sequelize();
+  const nodeConfig: NodeConfig = {} as any;
+
+  beforeEach(() => {
+    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
+  });
 
   it('could init store cache service and init cache for models', () => {
-    storeService = new StoreCacheService(sequilize, null, eventEmitter);
     storeService.getModel('entity1');
     expect((storeService as any).cachedModels.entity1).toBeDefined();
     expect((storeService as any).cachedModels.entity2).toBeUndefined();
   });
 
   it('could set cache for multiple entities, also get from it', async () => {
-    storeService = new StoreCacheService(sequilize, null, eventEmitter);
     const entity1Model = storeService.getModel('entity1');
     const entity2Model = storeService.getModel('entity2');
 
@@ -96,7 +100,6 @@ describe('Store Cache Service historical', () => {
   });
 
   it('set at different block height, will create historical records', async () => {
-    storeService = new StoreCacheService(sequilize, null, eventEmitter);
     const appleModel = storeService.getModel('apple');
 
     appleModel.set(
@@ -136,7 +139,6 @@ describe('Store Cache Service historical', () => {
   });
 
   it('getAll, getOneByField and getByField with getFromCache', async () => {
-    storeService = new StoreCacheService(sequilize, null, eventEmitter);
     const appleModel = storeService.getModel<Apple>('apple');
     appleModel.set(
       'apple-05',
@@ -186,7 +188,6 @@ describe('Store Cache Service historical', () => {
   });
 
   it('count', () => {
-    storeService = new StoreCacheService(sequilize, null, eventEmitter);
     const appleModel = storeService.getModel<Apple>('apple');
     appleModel.set(
       'apple-05',
@@ -213,7 +214,6 @@ describe('Store Cache Service historical', () => {
   });
 
   it('remove', async () => {
-    storeService = new StoreCacheService(sequilize, null, eventEmitter);
     const appleModel = storeService.getModel<Apple>('apple');
 
     appleModel.set(
