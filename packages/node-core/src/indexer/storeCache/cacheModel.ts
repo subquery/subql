@@ -339,8 +339,7 @@ export class CachedModel<
           (Array.isArray(value) && includes(value, getValue[field])) ||
           isEqual(getValue[field], value))
       ) {
-        // increase recency with get
-        joinedData.push(this.getCache.get(key));
+        joinedData.push(getValue);
       }
     });
     return joinedData;
