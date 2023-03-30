@@ -13,7 +13,10 @@ import {
   toRfc3339WithNanoseconds,
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
-import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+import {
+  BlockResponse,
+  Validator,
+} from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
@@ -238,6 +241,14 @@ export class CosmosSafeClient extends CosmWasmClient {
       },
       txs: response.block.txs,
     };
+  }
+
+  async validators(): Promise<readonly Validator[]> {
+    return (
+      await this.forceGetTmClient().validators({
+        height: this.height,
+      })
+    ).validators;
   }
 
   async searchTx(): Promise<readonly IndexedTx[]> {

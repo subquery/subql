@@ -1,10 +1,16 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {CosmWasmClient} from '@cosmjs/cosmwasm-stargate';
 import {DecodedTxRaw} from '@cosmjs/proto-signing';
 import {Block, Event} from '@cosmjs/stargate';
 import {Log} from '@cosmjs/stargate/build/logs';
 import {TxData, Header} from '@cosmjs/tendermint-rpc';
+import {Validator} from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+
+export interface CosmWasmSafeClient extends CosmWasmClient {
+  validator(): () => Promise<readonly Validator[]>;
+}
 
 export interface Entity {
   id: string;
