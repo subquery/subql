@@ -8,6 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
+## [1.11.1] - 2023-03-30
+### Added
+- Support multiple endpoints (#1551)
+### Fix
+- Fix previous release 1.11.0 failed
+
 ## [1.11.0] - 2023-02-21
 ### Added
 - Add flag `--query-limit`, moved from `--unsafe` (#1514)
