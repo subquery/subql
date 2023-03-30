@@ -3919,9 +3919,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:0.2.1-9":
-  version: 0.2.1-9
-  resolution: "@subql/apollo-links@npm:0.2.1-9"
+"@subql/apollo-links@npm:^0.3.3-1":
+  version: 0.3.3-1
+  resolution: "@subql/apollo-links@npm:0.3.3-1"
   dependencies:
     "@metamask/eth-sig-util": 4.0.1
     axios: ^0.27.2
@@ -3931,7 +3931,7 @@ __metadata:
   peerDependencies:
     "@apollo/client": "*"
     graphql: "*"
-  checksum: 3b93a1779ca14be659edf0fb23b66e2ada10d2541511d470512888869cee4d5e150cdbc2bfbcf3efb602b925c8bb1da9eba0cd1c87be85ba4fca5dc2e3976ebf
+  checksum: eca4876d8a41d75056046e0b2ebadb7620b9374cb20fa4c01c7f61828ebeda1fca3d7705a476ca540dee5faaae692dcca4921a9713f349e2f4e0814f972733e4
   languageName: node
   linkType: hard
 
@@ -4171,7 +4171,7 @@ __metadata:
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@polkadot/api": 10.1.4
-    "@subql/apollo-links": 0.2.1-9
+    "@subql/apollo-links": ^0.3.3-1
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
