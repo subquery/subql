@@ -184,6 +184,7 @@ describe('Store Cache Service historical', () => {
     (appleModel as any).setCache = {};
     (appleModel as any).getCache.set('apple-get-id1', {id: 'apple-get-id1', field1: 'set apple at block 5'});
     const cacheData1 = (appleModel as any).getFromCache('field1' as any, 'set apple at block 5');
+    // This will work due to getCache keeps duplicate data from setCache in the .set method
     expect(cacheData1).toStrictEqual([
       {id: 'apple-get-id1', field1: 'set apple at block 5'},
       {field1: 'set apple at block 5', id: 'apple-05-smith'},

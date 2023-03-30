@@ -148,6 +148,8 @@ export class CachedModel<
       this.setCache[id] = new SetValueModel();
     }
     this.setCache[id].set(data, blockHeight);
+    // Experimental, this means getCache keeps duplicate data from setCache,
+    // we can remove this once memory is too full.
     this.getCache.set(id, data);
     this.flushableRecordCounter += 1;
   }
