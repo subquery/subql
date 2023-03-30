@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.21.1] - 2023-03-30
+### Added
+- Support multiple endpoints (#1551)
+### Fix
+- Fix previous release 1.21.0 failed
 
 ## [1.21.0] - 2023-03-29
 ### Changed
