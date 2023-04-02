@@ -112,6 +112,8 @@ export class StoreService {
       this.historical = false;
       logger.warn(`Historical feature is not support with ${this.dbType}`);
     }
+    this.storeCache.setHistorical(this.historical);
+
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
