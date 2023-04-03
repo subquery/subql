@@ -9,7 +9,6 @@ import {Sequelize} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
-import {profiler} from '../../profiler';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
@@ -26,9 +25,14 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private pendingFlush: Promise<void>;
   private queuedFlush: Promise<void>;
   private storeCacheThreshold: number;
+  private _historical = true;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     this.storeCacheThreshold = config.storeCacheThreshold;
+  }
+
+  setHistorical(historical: boolean): void {
+    this._historical = historical;
   }
 
   setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
@@ -46,7 +50,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
-      this.cachedModels[entity] = new CachedModel(model, true, this.config);
+      this.cachedModels[entity] = new CachedModel(model, this._historical, this.config);
     }
 
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
