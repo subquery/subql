@@ -5,7 +5,7 @@ import assert from 'assert';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {sum} from 'lodash';
-import {Sequelize} from 'sequelize';
+import {Deferrable, Sequelize} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
@@ -83,7 +83,11 @@ export class StoreCacheService implements BeforeApplicationShutdown {
 
   private async _flushCache(flushAll?: boolean): Promise<void> {
     logger.debug('Flushing cache');
-    const tx = await this.sequelize.transaction();
+
+    // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
+    const tx = await this.sequelize.transaction({
+      deferrable: this._historical ? undefined : Deferrable.SET_DEFERRED(),
+    });
     try {
       // Get the block height of all data we want to flush up to
       const blockHeight = flushAll ? undefined : await this.metadata.find('lastProcessedHeight');
