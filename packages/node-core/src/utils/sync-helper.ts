@@ -54,6 +54,11 @@ export function commentTableQuery(column: string, comment: string): string {
   return `COMMENT ON TABLE ${column} IS E'${comment}'`;
 }
 
+// This is used when historical is disabled so that we can perform bulk updates
+export function constraintDeferrableQuery(table: string, constraint: string): string {
+  return `ALTER TABLE ${table} ALTER CONSTRAINT ${constraint} DEFERRABLE INITIALLY IMMEDIATE`;
+}
+
 export function addTagsToForeignKeyMap(
   map: Map<string, Map<string, SmartTags>>,
   tableName: string,
@@ -72,9 +77,10 @@ export function addTagsToForeignKeyMap(
 export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;
 
 export function createUniqueIndexQuery(schema: string, table: string, field: string): string {
-  return `create unique index if not exists '${getUniqConstraint(table, field)}' on '${schema}.${table}' (${underscored(
+  return `create unique index if not exists "${getUniqConstraint(
+    table,
     field
-  )})`;
+  )}" on "${schema}"."${table}" (${underscored(field)})`;
 }
 
 // Subscriptions

@@ -53,6 +53,7 @@ import {
   SmartTags,
   smartTags,
   getEnumDeprecated,
+  constraintDeferrableQuery,
 } from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
@@ -290,7 +291,9 @@ export class StoreService {
       }
       switch (relation.type) {
         case 'belongsTo': {
-          model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          const fkConstraint = getFkConstraint(rel.source.tableName, rel.foreignKey);
+          extraQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
           break;
         }
         case 'hasOne': {

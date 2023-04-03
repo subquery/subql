@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { INestApplication } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
-import { delay } from '@subql/node-core';
+import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -52,10 +52,16 @@ describe('ApiService', () => {
   ): Promise<ApiService> => {
     const module = await Test.createTestingModule({
       providers: [
+        ConnectionPoolService,
         {
           provide: 'ISubqueryProject',
           useFactory: () => testSubqueryProject([endpoint]),
         },
+        {
+          provide: NodeConfig,
+          useFactory: () => ({}),
+        },
+        EventEmitter2,
         ApiService,
       ],
       imports: [EventEmitterModule.forRoot()],
