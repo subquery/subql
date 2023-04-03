@@ -77,9 +77,10 @@ export function addTagsToForeignKeyMap(
 export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;
 
 export function createUniqueIndexQuery(schema: string, table: string, field: string): string {
-  return `create unique index if not exists '${getUniqConstraint(table, field)}' on '${schema}.${table}' (${underscored(
+  return `create unique index if not exists "${getUniqConstraint(
+    table,
     field
-  )})`;
+  )}" on "${schema}"."${table}" (${underscored(field)})`;
 }
 
 // Subscriptions
