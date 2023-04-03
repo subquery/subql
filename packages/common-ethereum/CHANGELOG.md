@@ -9,8 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-04-03
+- Release
+
 ## [0.2.1] - 2022-11-18
-- Rerelease 0.2.0
+- Re-release 0.2.0
 
 ## [0.2.0] - 2022-11-17
 
