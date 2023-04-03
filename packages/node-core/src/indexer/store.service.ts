@@ -306,8 +306,7 @@ export class StoreService {
           });
           extraQueries.push(
             commentConstraintQuery(`"${schema}"."${rel.target.tableName}"`, fkConstraint, tags),
-            createUniqueIndexQuery(schema, relatedModel.tableName, relation.foreignKey),
-            constraintDeferrableQuery(model.getTableName().toString(), fkConstraint)
+            createUniqueIndexQuery(schema, relatedModel.tableName, relation.foreignKey)
           );
           break;
         }
