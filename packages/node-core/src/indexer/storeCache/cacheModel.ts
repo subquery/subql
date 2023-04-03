@@ -254,7 +254,8 @@ export class CachedModel<
           transaction: tx,
           updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
         }),
-        this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
+        Object.keys(removeRecords).length &&
+          this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
 
