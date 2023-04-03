@@ -9,8 +9,6 @@ import {
   ChainTypes,
   CustomDatasourceV0_2_0,
   isCustomDs,
-  loadChainTypes,
-  loadChainTypesFromJs,
   parseChainTypes,
   RuntimeDataSourceV0_2_0,
   SubqlRuntimeHandler,
@@ -19,6 +17,8 @@ import {
   EthereumHandlerKind,
   EthereumDatasourceKind,
   SubqlEthereumHandlerKind,
+  loadChainTypesFromJs,
+  loadChainTypes,
 } from '@subql/common-ethereum';
 import { retryOnFail, StoreService } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';

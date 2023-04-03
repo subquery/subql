@@ -4,17 +4,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
-  MetadataFactory,
-  MetadataRepo,
   MmrService,
   NodeConfig,
   StoreService,
   getExistingProjectSchema,
-  getMetaDataInfo,
+  CacheMetadataModel,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
+import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { initDbSchema } from '../utils/project';
 import { reindex } from '../utils/reindex';
 
@@ -25,7 +24,7 @@ const logger = getLogger('Reindex');
 @Injectable()
 export class ReindexService {
   private schema: string;
-  private metadataRepo: MetadataRepo;
+  private metadataRepo: CacheMetadataModel;
 
   constructor(
     private readonly sequelize: Sequelize,
@@ -34,6 +33,7 @@ export class ReindexService {
     private readonly mmrService: MmrService,
     @Inject('ISubqueryProject') private readonly project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
+    private readonly unfinalizedBlocksService: UnfinalizedBlocksService,
     private readonly dynamicDsService: DynamicDsService,
   ) {}
 
@@ -45,14 +45,27 @@ export class ReindexService {
       throw new Error('Schema does not exist.');
     }
     await this.initDbSchema();
-    // Should we use an optional arg for multiChain?
-    this.metadataRepo = await MetadataFactory(
-      this.sequelize,
-      this.schema,
-      this.nodeConfig.multiChain,
-      this.project.network.chainId,
-    );
+
+    this.metadataRepo = this.storeService.storeCache.metadata;
+
     this.dynamicDsService.init(this.metadataRepo);
+  }
+
+  async getTargetHeightWithUnfinalizedBlocks(
+    inputHeight: number,
+  ): Promise<number> {
+    // Why does this happen?
+    (this.unfinalizedBlocksService as any).metadataRepo = this.metadataRepo;
+    const unfinalizedBlocks =
+      await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
+    const bestBlocks = unfinalizedBlocks.filter(
+      ([bestBlockHeight]) => Number(bestBlockHeight) <= inputHeight,
+    );
+    if (bestBlocks.length === 0) {
+      return inputHeight;
+    }
+    const [firstBestBlock] = bestBlocks[0];
+    return Math.min(inputHeight, firstBestBlock);
   }
 
   private async getExistingProjectSchema(): Promise<string> {
@@ -60,26 +73,22 @@ export class ReindexService {
   }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
+    return this.metadataRepo.find('lastProcessedHeight');
   }
 
   private async getMetadataBlockOffset(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
+    return this.metadataRepo.find('blockOffset');
   }
 
   private async getMetadataSpecName(): Promise<string | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'specName' },
-    });
-    return res?.value as string | undefined;
+    return this.metadataRepo.find('specName');
   }
 
   private async initDbSchema(): Promise<void> {
     await initDbSchema(this.project, this.schema, this.storeService);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  private async getStartBlockFromDataSources() {
+  private getStartBlockFromDataSources(): number {
     const datasources = this.project.dataSources;
 
     const startBlocksList = datasources.map((item) => item.startBlock ?? 1);
@@ -99,16 +108,18 @@ export class ReindexService {
       this.getLastProcessedHeight(),
     ]);
 
-    return reindex(
+    await reindex(
       startHeight,
       await this.getMetadataBlockOffset(),
       targetBlockHeight,
       lastProcessedHeight,
       this.storeService,
+      this.unfinalizedBlocksService,
       this.dynamicDsService,
       this.mmrService,
       this.sequelize,
       this.forceCleanService,
     );
+    await this.storeService.storeCache.flushCache();
   }
 }

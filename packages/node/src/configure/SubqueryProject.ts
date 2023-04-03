@@ -91,7 +91,7 @@ export class SubqueryProject {
 
 export interface SubqueryProjectNetwork {
   chainId: string;
-  endpoint?: string;
+  endpoint?: string | string[];
   dictionary?: string;
   chaintypes?: FileType;
 }
@@ -115,6 +115,10 @@ async function loadProjectFromManifestBase(
   networkOverrides?: Partial<EthereumProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
+
+  if (typeof projectManifest.network.endpoint === 'string') {
+    projectManifest.network.endpoint = [projectManifest.network.endpoint];
+  }
 
   const network = processChainId({
     ...projectManifest.network,

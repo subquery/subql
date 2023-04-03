@@ -108,7 +108,7 @@ export class ConfigureModule {
         config.subquery,
         omitBy<EthereumProjectNetworkConfig>(
           {
-            endpoint: config.networkEndpoint,
+            endpoint: config.networkEndpoints,
             dictionary: config.networkDictionary,
           },
           isNil,
@@ -170,7 +170,7 @@ export class ConfigureModule {
         argv.subquery,
         omitBy<Partial<EthereumProjectNetworkConfig>>(
           {
-            endpoint: config.networkEndpoint,
+            endpoint: config.networkEndpoints,
             dictionary: config.networkDictionary,
           },
           isNil,

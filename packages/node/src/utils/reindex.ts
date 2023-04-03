@@ -4,6 +4,7 @@
 import { getLogger, MmrService, StoreService } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
+import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { ForceCleanService } from '../subcommands/forceClean.service';
 
 const logger = getLogger('Reindex');
@@ -14,6 +15,7 @@ export async function reindex(
   targetBlockHeight: number,
   lastProcessedHeight: number,
   storeService: StoreService,
+  unfinalizedBlockService: UnfinalizedBlocksService,
   dynamicDsService: DynamicDsService,
   mmrService: MmrService,
   sequelize: Sequelize,
@@ -46,12 +48,18 @@ export async function reindex(
     try {
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
+        unfinalizedBlockService.resetUnfinalizedBlocks(),
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(),
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight),
       ]);
 
       if (blockOffset) {
         await mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
+
+      // Flush metadata changes from above Promise.all
+      await storeService.storeCache.metadata.flush(transaction);
+
       await transaction.commit();
       logger.info('Reindex Success');
     } catch (err) {

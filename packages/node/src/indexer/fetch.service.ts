@@ -4,36 +4,36 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
+
 import {
   isCustomDs,
   EthereumHandlerKind,
-  SubqlHandlerFilter,
+  EthereumLogFilter,
+  SubqlEthereumProcessorOptions,
+  EthereumTransactionFilter,
 } from '@subql/common-ethereum';
 import {
   ApiService,
-  Dictionary,
+  cleanedBatchBlocks,
   checkMemoryUsage,
   delay,
   getLogger,
   IndexerEvent,
   NodeConfig,
   transformBypassBlocks,
-  cleanedBatchBlocks,
+  waitForBatchSize,
 } from '@subql/node-core';
 import {
-  DictionaryQueryEntry,
   ApiWrapper,
-  EthereumLogFilter,
-  EthereumTransactionFilter,
-  SubqlEthereumProcessorOptions,
   DictionaryQueryCondition,
+  DictionaryQueryEntry,
 } from '@subql/types-ethereum';
 import { MetaData } from '@subql/utils';
-import { range, sortBy, uniqBy, without, groupBy, add } from 'lodash';
+import { groupBy, range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval } from '../ethereum/utils.ethereum';
 import { eventToTopic, functionToSighash } from '../utils/string';
-import { IBlockDispatcher } from './blockDispatcher';
+import { IEthereumBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
@@ -127,7 +127,7 @@ export class FetchService implements OnApplicationShutdown {
   private isShutdown = false;
   private batchSizeScale: number;
   private templateDynamicDatasouces: SubqlProjectDs[];
-  private dictionaryGenesisMatches = true;
+  private dictionaryMetaValid = false;
   private evmChainId: string;
   private bypassBlocks: number[] = [];
 
@@ -135,7 +135,8 @@ export class FetchService implements OnApplicationShutdown {
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private project: SubqueryProject,
-    @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
+    @Inject('IBlockDispatcher')
+    private blockDispatcher: IEthereumBlockDispatcher,
     private dictionaryService: DictionaryService,
     private dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
@@ -242,7 +243,7 @@ export class FetchService implements OnApplicationShutdown {
   private get useDictionary(): boolean {
     return (
       !!this.project.network.dictionary &&
-      this.dictionaryGenesisMatches &&
+      this.dictionaryMetaValid &&
       !!this.dictionaryService.getDictionaryQueryEntries(
         this.blockDispatcher.latestBufferedHeight ??
           Math.min(...this.project.dataSources.map((ds) => ds.startBlock)),
@@ -269,26 +270,19 @@ export class FetchService implements OnApplicationShutdown {
     await this.syncDynamicDatascourcesFromMeta();
 
     this.updateDictionary();
-    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-      value: Number(this.useDictionary),
-    });
-
-    if (this.project.network.dictionary) {
-      this.evmChainId = await this.dictionaryService.getEvmChainId();
-    }
-
-    await this.getFinalizedBlockHead();
-    await this.getBestBlockHead();
-
     //  Call metadata here, other network should align with this
     //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
     const metadata = await this.dictionaryService.getMetadata();
+    if (this.project.network.dictionary) {
+      this.evmChainId = await this.dictionaryService.getEvmChainId();
+    }
+    const dictionaryValid = this.dictionaryValidation(metadata);
 
-    const validChecker = this.dictionaryValidation(metadata);
+    await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
-    if (validChecker) {
+    if (dictionaryValid) {
       this.dictionaryService.setDictionaryStartHeight(
-        metadata._metadata.startHeight,
+        metadata?._metadata?.startHeight,
       );
     }
 
@@ -434,10 +428,13 @@ export class FetchService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
 
-      scaledBatchSize = Math.max(
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
-      );
+      scaledBatchSize = this.blockDispatcher.smartBatchSize;
+
+      if (scaledBatchSize === 0) {
+        await waitForBatchSize(this.blockDispatcher.minimumHeapLimit);
+        continue;
+      }
+
       const latestHeight = this.nodeConfig.unfinalizedBlocks
         ? this.latestBestHeight
         : this.latestFinalizedHeight;
@@ -486,7 +483,7 @@ export class FetchService implements OnApplicationShutdown {
               .sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              this.blockDispatcher.enqueueBlocks(
+              await this.blockDispatcher.enqueueBlocks(
                 [],
                 Math.min(
                   queryEndBlock - 1,
@@ -501,8 +498,7 @@ export class FetchService implements OnApplicationShutdown {
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
               const cleanedBatchBlocks =
                 this.filteredBlockBatch(enqueuingBlocks);
-
-              this.blockDispatcher.enqueueBlocks(
+              await this.blockDispatcher.enqueueBlocks(
                 cleanedBatchBlocks,
                 this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
               );
@@ -521,21 +517,16 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (handlers.length && this.getModulos().length === handlers.length) {
-        const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
-        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(
-          cleanedBatchBlocks,
-          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
-        );
-      } else {
-        const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
-        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(
-          cleanedBatchBlocks,
-          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
-        );
-      }
+      const enqueuingBlocks =
+        handlers.length && this.getModulos().length === handlers.length
+          ? this.getEnqueuedModuloBlocks(startBlockHeight)
+          : range(startBlockHeight, endHeight + 1);
+
+      const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+      await this.blockDispatcher.enqueueBlocks(
+        cleanedBatchBlocks,
+        this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
+      );
     }
   }
 
@@ -587,36 +578,43 @@ export class FetchService implements OnApplicationShutdown {
     dictionary: { _metadata: MetaData },
     startBlockHeight?: number,
   ): boolean {
-    if (dictionary !== undefined) {
-      const { _metadata: metaData } = dictionary;
+    const validate = (): boolean => {
+      if (dictionary !== undefined) {
+        const { _metadata: metaData } = dictionary;
 
-      if (
-        metaData.genesisHash !== this.api.getGenesisHash() &&
-        this.evmChainId !== this.api.getChainId().toString()
-      ) {
-        logger.error(
-          'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
-        );
-        this.dictionaryGenesisMatches = false;
-        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-          value: Number(this.useDictionary),
-        });
-        this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-        return false;
-      }
+        if (
+          metaData.genesisHash !== this.api.getGenesisHash() &&
+          this.evmChainId !== this.api.getChainId().toString()
+        ) {
+          logger.error(
+            'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
+          );
+          return false;
+        }
 
-      if (startBlockHeight !== undefined) {
-        if (metaData.lastProcessedHeight < startBlockHeight) {
+        if (
+          startBlockHeight !== undefined &&
+          metaData.lastProcessedHeight < startBlockHeight
+        ) {
           logger.warn(
             `Dictionary indexed block is behind current indexing block height`,
           );
-          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
           return false;
         }
+        return true;
       }
-      return true;
-    }
-    return false;
+      return false;
+    };
+
+    const valid = validate();
+
+    this.dictionaryMetaValid = valid;
+    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+      value: Number(this.useDictionary),
+    });
+    this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+
+    return valid;
   }
 
   async resetForNewDs(blockHeight: number): Promise<void> {
@@ -625,7 +623,6 @@ export class FetchService implements OnApplicationShutdown {
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
-
   async resetForIncorrectBestBlock(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();

@@ -48,6 +48,159 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
   })
   .options({
+    'batch-size': {
+      demandOption: false,
+      describe: 'Batch size of blocks to fetch in one round',
+      type: 'number',
+    },
+    config: {
+      alias: 'c',
+      demandOption: false,
+      describe: 'Specify configuration file',
+      type: 'string',
+    },
+    'db-schema': {
+      demandOption: false,
+      describe: 'Db schema name of the project',
+      type: 'string',
+    },
+    debug: {
+      demandOption: false,
+      describe:
+        'Show debug information to console output. will forcefully set log level to debug',
+      type: 'boolean',
+      default: false,
+    },
+    'dictionary-timeout': {
+      demandOption: false,
+      describe: 'Max timeout for dictionary query',
+      type: 'number',
+    },
+    'disable-historical': {
+      demandOption: false,
+      default: false,
+      describe: 'Disable storing historical state entities',
+      type: 'boolean',
+    },
+    ipfs: {
+      demandOption: false,
+      describe: 'IPFS gateway endpoint',
+      type: 'string',
+    },
+    local: {
+      deprecated: true,
+      type: 'boolean',
+      demandOption: false,
+      describe: 'Use local mode',
+    },
+    'log-level': {
+      demandOption: false,
+      describe: 'Specify log level to print. Ignored when --debug is used',
+      type: 'string',
+      choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
+    },
+    'mmr-path': {
+      alias: 'm',
+      demandOption: false,
+      describe: 'Local path of the merkle mountain range (.mmr) file',
+      type: 'string',
+    },
+    'multi-chain': {
+      demandOption: false,
+      default: false,
+      describe:
+        'Enables indexing multiple subquery projects into the same database schema',
+      type: 'boolean',
+    },
+    'network-dictionary': {
+      alias: 'd',
+      demandOption: false,
+      describe: 'Specify the dictionary api for this network',
+      type: 'string',
+    },
+    'network-endpoint': {
+      demandOption: false,
+      type: 'string',
+      describe: 'Blockchain network endpoint to connect',
+    },
+    'output-fmt': {
+      demandOption: false,
+      describe: 'Print log as json or plain text',
+      type: 'string',
+      choices: ['json', 'colored'],
+    },
+    port: {
+      alias: 'p',
+      demandOption: false,
+      describe: 'The port the service will bind to',
+      type: 'number',
+    },
+    profiler: {
+      demandOption: false,
+      describe: 'Show profiler information to console output',
+      type: 'boolean',
+      default: false,
+    },
+    'proof-of-index': {
+      demandOption: false,
+      describe: 'Enable/disable proof of index',
+      type: 'boolean',
+      default: false,
+    },
+    'query-limit': {
+      demandOption: false,
+      describe:
+        'The limit of items a project can query with store.getByField at once',
+      type: 'number',
+      default: 100,
+    },
+    'scale-batch-size': {
+      type: 'boolean',
+      demandOption: false,
+      describe: 'scale batch size based on memory usage',
+      default: false,
+    },
+    'dictionary-resolver': {
+      demandOption: false,
+      describe: 'Use subquery network dictionary resolver',
+      type: 'boolean',
+      default: false,
+    },
+    'pg-ca': {
+      demandOption: false,
+      describe:
+        'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
+      type: 'string',
+    },
+    'pg-key': {
+      demandOption: false,
+      describe:
+        'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
+      type: 'string',
+    },
+    'pg-cert': {
+      demandOption: false,
+      describe:
+        'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
+      type: 'string',
+    },
+    'store-cache-threshold': {
+      demandOption: false,
+      describe:
+        'Store cache will flush when number of records excess this threshold',
+      type: 'number',
+    },
+    'store-get-cache-size': {
+      demandOption: false,
+      describe: 'Store get cache size for each model',
+      type: 'number',
+    },
+    'store-cache-async': {
+      demandOption: false,
+      describe:
+        'If enabled writing data to the store is asynchronous with regards to block processing',
+      type: 'boolean',
+    },
     subquery: {
       alias: 'f',
       demandOption: true,
@@ -61,43 +214,10 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Name of the subquery project',
       type: 'string',
     },
-    config: {
-      alias: 'c',
-      demandOption: false,
-      describe: 'Specify configuration file',
-      type: 'string',
-    },
-    local: {
-      deprecated: true,
-      type: 'boolean',
-      demandOption: false,
-      describe: 'Use local mode',
-    },
-    'db-schema': {
-      demandOption: false,
-      describe: 'Db schema name of the project',
-      type: 'string',
-    },
-    unsafe: {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'Allows usage of any built-in module within the sandbox',
-    },
     subscription: {
       demandOption: false,
       describe: 'Enable subscription by create notification triggers',
       type: 'boolean',
-      default: false,
-    },
-    'batch-size': {
-      demandOption: false,
-      describe: 'Batch size of blocks to fetch in one round',
-      type: 'number',
-    },
-    'scale-batch-size': {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'scale batch size based on memory usage',
       default: false,
     },
     timeout: {
@@ -105,81 +225,22 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Timeout for indexer sandbox to execute the mapping functions',
       type: 'number',
     },
-    debug: {
-      demandOption: false,
-      describe:
-        'Show debug information to console output. will forcefully set log level to debug',
-      type: 'boolean',
-      default: false,
-    },
-    profiler: {
-      demandOption: false,
-      describe: 'Show profiler information to console output',
-      type: 'boolean',
-      default: false,
-    },
-    'network-endpoint': {
-      demandOption: false,
-      type: 'string',
-      describe: 'Blockchain network endpoint to connect',
-    },
-    'output-fmt': {
-      demandOption: false,
-      describe: 'Print log as json or plain text',
-      type: 'string',
-      choices: ['json', 'colored'],
-    },
-    'log-level': {
-      demandOption: false,
-      describe: 'Specify log level to print. Ignored when --debug is used',
-      type: 'string',
-      choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
-    },
     'timestamp-field': {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',
       type: 'boolean',
       default: false,
     },
-    'network-dictionary': {
-      alias: 'd',
-      demandOption: false,
-      describe: 'Specify the dictionary api for this network',
-      type: 'string',
-    },
-    'dictionary-timeout': {
-      demandOption: false,
-      describe: 'Max timeout for dictionary query',
-      type: 'number',
-    },
-    'mmr-path': {
-      alias: 'm',
-      demandOption: false,
-      describe: 'Local path of the merkle mountain range (.mmr) file',
-      type: 'string',
-    },
-    'proof-of-index': {
-      demandOption: false,
-      describe: 'Enable/disable proof of index',
-      type: 'boolean',
-      default: false,
-    },
-    ipfs: {
-      demandOption: false,
-      describe: 'IPFS gateway endpoint',
-      type: 'string',
-    },
-    port: {
-      alias: 'p',
-      demandOption: false,
-      describe: 'The port the service will bind to',
-      type: 'number',
-    },
-    'disable-historical': {
+    'unfinalized-blocks': {
       demandOption: false,
       default: false,
-      describe: 'Disable storing historical state entities',
+      describe: 'Enable to fetch and index unfinalized blocks',
       type: 'boolean',
+    },
+    unsafe: {
+      type: 'boolean',
+      demandOption: false,
+      describe: 'Allows usage of any built-in module within the sandbox',
     },
     workers: {
       alias: 'w',
@@ -187,18 +248,5 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe:
         'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
-    },
-    'query-limit': {
-      demandOption: false,
-      describe:
-        'The limit of items a project can query with store.getByField at once',
-      type: 'number',
-      default: 100,
-    },
-    'unfinalized-blocks': {
-      demandOption: false,
-      default: false,
-      describe: 'Enable to fetch and index unfinalized blocks',
-      type: 'boolean',
     },
   });

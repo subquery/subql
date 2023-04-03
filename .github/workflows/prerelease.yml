@@ -53,7 +53,7 @@ jobs:
       - run: yarn
 
       - name: build
-        run: yarn workspaces foreach run build
+        run: yarn build
 
       #Add remove-stable-version
       - name: Bump types ethereum & deploy

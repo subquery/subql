@@ -4,8 +4,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProjectNetworkV1_0_0 } from '@subql/common-ethereum';
-import { ApiService, getLogger } from '@subql/node-core';
+import {
+  ApiService,
+  ConnectionPoolService,
+  getLogger,
+  IndexerEvent,
+} from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { EthereumApiConnection } from './api.connection';
 import { EthereumApi } from './api.ethereum';
 
 const logger = getLogger('api');
@@ -14,11 +20,11 @@ const logger = getLogger('api');
 export class EthereumApiService extends ApiService {
   constructor(
     @Inject('ISubqueryProject') project: SubqueryProject,
+    private connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
     private eventEmitter: EventEmitter2,
   ) {
     super(project);
   }
-  private _api: EthereumApi;
 
   async init(): Promise<EthereumApiService> {
     try {
@@ -30,24 +36,61 @@ export class EthereumApiService extends ApiService {
         process.exit(1);
       }
 
-      this.api = new EthereumApi(network.endpoint, this.eventEmitter);
+      const endpoints = Array.isArray(network.endpoint)
+        ? network.endpoint
+        : [network.endpoint];
 
-      await this.api.init();
-      this.networkMeta = {
-        chain: this.api.getRuntimeChain(),
-        specName: this.api.getSpecName(),
-        genesisHash: this.api.getGenesisHash(),
-      };
+      const connections = await Promise.all(
+        endpoints.map(async (endpoint, i) => {
+          const connection = await EthereumApiConnection.create(
+            endpoint,
+            this.eventEmitter,
+          );
 
-      if (network.chainId !== this.api.getChainId().toString()) {
-        const err = new Error(
-          `Network chainId doesn't match expected chainId. expected="${
-            network.chainId
-          }" actual="${this.api.getChainId()}`,
-        );
-        logger.error(err, err.message);
-        throw err;
-      }
+          const { api } = connection;
+
+          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+            value: 1,
+            apiIndex: i,
+            endpoint: endpoint,
+          });
+
+          // api.on('connected', () => {
+          //   this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          //     value: 1,
+          //     apiIndex: i,
+          //     endpoint: endpoint,
+          //   });
+          // });
+          // api.on('disconnected', () => {
+          //   this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          //     value: 0,
+          //     apiIndex: i,
+          //     endpoint: endpoint,
+          //   });
+          //   void this.connectionPoolService.handleApiDisconnects(i, endpoint);
+          // });
+          if (!this.networkMeta) {
+            this.networkMeta = {
+              chain: api.getRuntimeChain(),
+              specName: api.getSpecName(),
+              genesisHash: api.getGenesisHash(),
+            };
+          }
+
+          if (network.chainId !== api.getChainId().toString()) {
+            throw this.metadataMismatchError(
+              'ChainId',
+              this.networkMeta.genesisHash,
+              api.getRuntimeChain(),
+            );
+          }
+
+          return connection;
+        }),
+      );
+
+      this.connectionPoolService.addBatchToConnections(connections);
 
       return this;
     } catch (e) {
@@ -56,11 +99,19 @@ export class EthereumApiService extends ApiService {
     }
   }
 
-  get api(): EthereumApi {
-    return this._api;
+  private metadataMismatchError(
+    metadata: string,
+    expected: string,
+    actual: string,
+  ): Error {
+    return Error(
+      `Value of ${metadata} does not match across all endpoints. Please check that your endpoints are for the same network.\n
+       Expected: ${expected}
+       Actual: ${actual}`,
+    );
   }
 
-  private set api(value: EthereumApi) {
-    this._api = value;
+  get api(): EthereumApi {
+    return this.connectionPoolService.api.api;
   }
 }

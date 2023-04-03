@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Block } from '@ethersproject/abstract-provider';
-import { MetadataRepo, ApiService } from '@subql/node-core';
+import {
+  ApiService,
+  CacheMetadataModel,
+  StoreCacheService,
+} from '@subql/node-core';
 import { EthereumBlock } from '@subql/types-ethereum';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
@@ -45,12 +49,19 @@ function mockApiService(): ApiService {
   } as any;
 }
 
-function getMockMetadata(): MetadataRepo {
+function getMockMetadata(): any {
   const data: Record<string, any> = {};
   return {
     upsert: ({ key, value }) => (data[key] = value),
     findOne: ({ where: { key } }) => ({ value: data[key] }),
+    findByPk: (key: string) => data[key],
   } as any;
+}
+
+function mockStoreCache(): StoreCacheService {
+  return {
+    metadata: new CacheMetadataModel(getMockMetadata()),
+  } as StoreCacheService;
 }
 
 function mockBlock(
@@ -69,15 +80,15 @@ describe('UnfinalizedBlocksService', () => {
   let apiService: ApiService;
   let unfinalizedBlocksService: UnfinalizedBlocksService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     apiService = mockApiService();
     unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       { unfinalizedBlocks: true } as any,
-      null,
+      mockStoreCache(),
     );
 
-    unfinalizedBlocksService.init(getMockMetadata(), () => Promise.resolve());
+    await unfinalizedBlocksService.init(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -111,11 +122,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
@@ -131,11 +140,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
@@ -148,11 +155,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     unfinalizedBlocksService.registerFinalizedBlock(
@@ -161,7 +166,6 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
@@ -176,11 +180,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -190,7 +192,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -198,7 +199,7 @@ describe('UnfinalizedBlocksService', () => {
 
     // After this the call stack is something like:
     // indexerManager -> blockDispatcher -> project -> project -> reindex -> blockDispatcher.resetUnfinalizedBlocks
-    await unfinalizedBlocksService.resetUnfinalizedBlocks(null);
+    unfinalizedBlocksService.resetUnfinalizedBlocks();
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
   });
@@ -210,27 +211,21 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(114, '0xabc114'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(115, '0xabc115'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(116, '0xabc116'),
-      null,
     );
 
     // Forked block
@@ -240,7 +235,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(117, '0xabc117'),
-      null,
     );
 
     // Last valid block
@@ -254,11 +248,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -268,7 +260,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -282,11 +273,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -296,7 +285,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -313,12 +301,10 @@ describe('UnfinalizedBlocksService', () => {
     await (unfinalizedBlocksService as any).registerUnfinalizedBlock(
       111,
       '0xabc111',
-      null,
     );
     await (unfinalizedBlocksService as any).registerUnfinalizedBlock(
       112,
       '0xabc112',
-      null,
     );
 
     // Forked block
@@ -328,7 +314,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -342,11 +327,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -356,7 +339,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -390,7 +372,7 @@ describe('UnfinalizedBlocksService', () => {
 
     const reindex = jest.fn().mockReturnValue(Promise.resolve());
 
-    await unfinalizedBlocksService2.init(metadata, reindex);
+    await unfinalizedBlocksService2.init(reindex);
 
     expect(reindex).toBeCalledWith(90);
     expect((unfinalizedBlocksService2 as any).lastCheckedBlockHeight).toBe(90);

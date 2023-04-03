@@ -72,8 +72,11 @@ export class MetaService {
   }
 
   @Interval(UPDATE_HEIGHT_INTERVAL)
-  async getTargetHeight(): Promise<void> {
-    await this.storeService.setMetadata('targetHeight', this.targetHeight);
+  getTargetHeight(): void {
+    this.storeService.storeCache.metadata.set(
+      'targetHeight',
+      this.targetHeight,
+    );
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)

@@ -89,9 +89,9 @@ export class ProjectNetworkDeploymentV1_0_0 {
 }
 
 export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
-  @IsString()
+  @IsString({each: true})
   @IsOptional()
-  endpoint?: string;
+  endpoint?: string | string[];
   @IsString()
   @IsOptional()
   dictionary?: string;

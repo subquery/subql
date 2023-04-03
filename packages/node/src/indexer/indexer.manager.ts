@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -15,15 +14,13 @@ import {
   EthereumRuntimeHandlerInputMap,
 } from '@subql/common-ethereum';
 import {
-  ApiService,
-  PoiBlock,
-  StoreService,
-  PoiService,
   NodeConfig,
   getLogger,
   profiler,
   profilerWrap,
   IndexerSandbox,
+  ProcessBlockResponse,
+  ApiService,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
@@ -32,8 +29,7 @@ import {
   EthereumBlockWrapper,
   EthereumBlock,
 } from '@subql/types-ethereum';
-import { Sequelize, Transaction } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import { EthereumBlockWrapped } from '../ethereum/block.ethereum';
 import { yargsOptions } from '../yargs';
@@ -46,58 +42,40 @@ import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-const NULL_MERKEL_ROOT = hexToU8a('0x00');
-
 const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager {
-  private api: EthereumApi;
-
   constructor(
-    private storeService: StoreService,
     private apiService: ApiService,
-    private poiService: PoiService,
-    private sequelize: Sequelize,
-    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     private dsProcessorService: DsProcessorService,
-    private projectService: ProjectService,
+    @Inject('IProjectService') private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
-
-    this.api = this.apiService.api;
   }
 
   @profiler(yargsOptions.argv.profiler)
-  async indexBlock(blockContent: EthereumBlockWrapper): Promise<{
-    dynamicDsCreated: boolean;
-    operationHash: Uint8Array;
-    reindexBlockHeight: null;
-  }> {
+  async indexBlock(
+    blockContent: EthereumBlockWrapper,
+  ): Promise<ProcessBlockResponse> {
     const { block, blockHeight } = blockContent;
     let dynamicDsCreated = false;
     let reindexBlockHeight = null;
-    const tx = await this.sequelize.transaction();
-    this.storeService.setTransaction(tx);
-    this.storeService.setBlockHeight(blockHeight);
 
-    let operationHash = NULL_MERKEL_ROOT;
-    let poiBlockHash: Uint8Array;
+    const datasources = await this.projectService.getAllDataSources(
+      blockHeight,
+    );
 
-    try {
-      const datasources = await this.projectService.getAllDataSources(
-        blockHeight,
-      );
+    // Check that we have valid datasources
+    this.assertDataSources(datasources, blockHeight);
+    reindexBlockHeight = await this.processUnfinalizedBlocks(block);
 
-      // Check that we have valid datasources
-      this.assertDataSources(datasources, blockHeight);
-
-      reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
-
+    // Only index block if we're not going to reindex
+    if (!reindexBlockHeight) {
       await this.indexBlockData(
         blockContent,
         datasources,
@@ -105,7 +83,7 @@ export class IndexerManager {
         async (ds: SubqlProjectDs) => {
           const vm = this.sandboxService.getDsProcessorWrapper(
             ds,
-            this.api,
+            this.apiService.api,
             blockContent,
           );
 
@@ -118,7 +96,6 @@ export class IndexerManager {
                   args,
                   startBlock: blockHeight,
                 },
-                tx,
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
@@ -130,50 +107,11 @@ export class IndexerManager {
           return vm;
         },
       );
-
-      await Promise.all([
-        this.storeService.setMetadataBatch(
-          [
-            { key: 'lastProcessedHeight', value: blockHeight },
-            { key: 'lastProcessedTimestamp', value: Date.now() },
-          ],
-          { transaction: tx },
-        ),
-        // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-        this.storeService.incrementJsonbCount('processedBlockCount', tx),
-      ]);
-
-      // Need calculate operationHash to ensure correct offset insert all time
-      operationHash = this.storeService.getOperationMerkleRoot();
-      if (this.nodeConfig.proofOfIndex) {
-        //check if operation is null, then poi will not be inserted
-        if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-          const poiBlock = PoiBlock.create(
-            blockHeight,
-            blockContent.block.hash,
-            operationHash,
-            await this.poiService.getLatestPoiBlockHash(),
-            this.project.id,
-          );
-          poiBlockHash = poiBlock.hash;
-          await this.storeService.setPoi(poiBlock, { transaction: tx });
-          this.poiService.setLatestPoiBlockHash(poiBlockHash);
-          await this.storeService.setMetadataBatch(
-            [{ key: 'lastPoiHeight', value: blockHeight }],
-            { transaction: tx },
-          );
-        }
-      }
-    } catch (e) {
-      await tx.rollback();
-      throw e;
     }
-
-    await tx.commit();
 
     return {
       dynamicDsCreated,
-      operationHash,
+      blockHash: block.hash,
       reindexBlockHeight,
     };
   }
@@ -185,10 +123,9 @@ export class IndexerManager {
 
   private async processUnfinalizedBlocks(
     block: EthereumBlock,
-    tx: Transaction,
   ): Promise<number | null> {
     if (this.nodeConfig.unfinalizedBlocks) {
-      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block, tx);
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }
     return null;
   }
@@ -270,7 +207,10 @@ export class IndexerManager {
       if (!handlers.length) {
         return;
       }
-      const parsedData = await DataAbiParser[kind](this.api)(data, ds);
+      const parsedData = await DataAbiParser[kind](this.apiService.api)(
+        data,
+        ds,
+      );
 
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
@@ -314,7 +254,10 @@ export class IndexerManager {
         return;
       }
 
-      const parsedData = await DataAbiParser[kind](this.api)(data, ds);
+      const parsedData = await DataAbiParser[kind](this.apiService.api)(
+        data,
+        ds,
+      );
 
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
@@ -379,7 +322,7 @@ export class IndexerManager {
       .transformer({
         input: data,
         ds,
-        api: this.api,
+        api: this.apiService.api,
         filter: handler.filter,
         assets,
       })

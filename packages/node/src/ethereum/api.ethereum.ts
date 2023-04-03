@@ -6,10 +6,10 @@ import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
 import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
-import { Provider, WebSocketProvider } from '@ethersproject/providers';
+import { WebSocketProvider } from '@ethersproject/providers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
-import { getLogger, profiler } from '@subql/node-core';
+import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -18,6 +18,7 @@ import {
   EthereumResult,
   EthereumLog,
 } from '@subql/types-ethereum';
+import CacheableLookup from 'cacheable-lookup';
 import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
 import { EthereumBlockWrapped } from './block.ethereum';
@@ -56,6 +57,28 @@ async function loadAssets(
   return res;
 }
 
+function getHttpAgents() {
+  // By default Nodejs doesn't cache DNS lookups
+  // https://httptoolkit.com/blog/configuring-nodejs-dns/
+  const lookup = new CacheableLookup();
+
+  const options: http.AgentOptions = {
+    keepAlive: true,
+    /*, maxSockets: 100*/
+  };
+
+  const httpAgent = new http.Agent(options);
+  const httpsAgent = new https.Agent(options);
+
+  lookup.install(httpAgent);
+  lookup.install(httpsAgent);
+
+  return {
+    http: httpAgent,
+    https: httpsAgent,
+  };
+}
+
 export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private client: JsonRpcProvider;
   private genesisBlock: Record<string, any>;
@@ -66,9 +89,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private supportsFinalization = true;
 
   constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
-    const { hostname, pathname, port, protocol, searchParams } = new URL(
-      endpoint,
-    );
+    const { hostname, protocol, searchParams } = new URL(endpoint);
 
     const protocolStr = protocol.replace(':', '');
 
@@ -82,10 +103,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         allowGzip: true,
         throttleLimit: 5,
         throttleSlotInterval: 1,
-        agents: {
-          http: new http.Agent({ keepAlive: true /*, maxSockets: 100*/ }),
-          https: new https.Agent({ keepAlive: true /*, maxSockets: 100*/ }),
-        },
+        agents: getHttpAgents(),
       };
       searchParams.forEach((value, name, searchParams) => {
         (connection.headers as any)[name] = value;
@@ -102,7 +120,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     this.injectClient();
     this.genesisBlock = await this.client.getBlock(0);
 
-    this.chainId = (await this.client.getNetwork()).chainId;
+    const network = await this.client.getNetwork();
+    this.chainId = network.chainId;
   }
 
   private injectClient(): void {
@@ -211,17 +230,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {
     return Promise.all(
-      bufferBlocks.map(async (num) => {
-        try {
-          // Fetch Block
-          return await this.fetchBlock(num, true);
-        } catch (e) {
-          // Wrap error from an axios error to fix issue with error being undefined
-          const error = new Error(e.message);
-          logger.error(e, `Failed to fetch block at height ${num}`);
-          throw error;
-        }
-      }),
+      bufferBlocks.map(async (num) => this.fetchBlock(num, true)),
     );
   }
 
@@ -304,6 +313,20 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     } catch (e) {
       logger.warn(`Failed to parse transaction data: ${e.message}`);
       return transaction;
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async connect(): Promise<void> {
+    logger.error('Ethereum API connect is not implemented');
+    throw new Error('Not implemented');
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.client instanceof WebSocketProvider) {
+      await this.client.destroy();
+    } else {
+      logger.warn('Disconnect called on HTTP provider');
     }
   }
 }

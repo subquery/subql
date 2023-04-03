@@ -30,7 +30,7 @@ export interface EthereumProjectManifestV0_3_0 extends IEthereumProjectManifest 
 
   network: {
     genesisHash: string;
-    endpoint?: string;
+    endpoint?: string | string[];
     dictionary?: string;
     chaintypes?: {
       file: string;

@@ -42,11 +42,12 @@ export interface ProjectManifest {
   schema: string;
 
   network: {
-    endpoint: string;
+    endpoint: string | string[];
     customTypes?: RegistryTypes;
   };
 
   dataSources: SubqlDatasource[];
+  bypassBlocks?: number[];
 }
 
 export interface SubqlBlockHandler {

@@ -37,7 +37,7 @@ export class ProjectNetworkDeploymentV0_3_0 {
 export class ProjectNetworkV0_3_0 extends ProjectNetworkDeploymentV0_3_0 {
   @IsString()
   @IsOptional()
-  endpoint?: string;
+  endpoint?: string | string[];
   @IsString()
   @IsOptional()
   dictionary?: string;

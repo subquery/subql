@@ -73,8 +73,8 @@ export function formatLog(
       return block.transactions?.find((tx) => tx.hash === log.transactionHash);
     },
 
-    toJson() {
-      return JSON.stringify(omit(this, ['transaction', 'block']));
+    toJSON(): string {
+      return JSON.stringify(omit(this, ['transaction', 'block', 'toJSON']));
     },
   } as EthereumLog<EthereumResult>;
 }
@@ -100,8 +100,8 @@ export function formatTransaction(
       ? handleNumber(tx.maxPriorityFeePerGas).toBigInt()
       : undefined,
     receipt: undefined, // Filled in at AvalancheApi.fetchBlocks
-    toJson() {
-      return JSON.stringify(omit(this, ['logs']));
+    toJSON(): string {
+      return JSON.stringify(omit(this, ['block', 'receipt', 'toJSON']));
     },
   } as EthereumTransaction;
 }
@@ -121,5 +121,8 @@ export function formatReceipt(
     logs: receipt.logs.map(formatLog),
     status: Boolean(handleNumber(receipt.status).toNumber()),
     transactionIndex: handleNumber(receipt.transactionIndex).toNumber(),
-  } as EthereumReceipt;
+    toJSON(): string {
+      return JSON.stringify(omit(this, ['toJSON']));
+    },
+  } as unknown as EthereumReceipt;
 }

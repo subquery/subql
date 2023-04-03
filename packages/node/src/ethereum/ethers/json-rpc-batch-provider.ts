@@ -5,6 +5,9 @@ import { fetchJson } from '@ethersproject/web';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Networkish } from '@ethersproject/networks';
 import { ConnectionInfo } from './web';
+import { getLogger } from '@subql/node-core';
+
+const logger = getLogger('JsonRpcBatchProvider');
 
 interface RpcResult {
   jsonrpc: '2.0';
@@ -59,7 +62,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
       }, 1);
     }
 
-    if (this._pendingBatch.length > 20) {
+    if (this._pendingBatch.length > 10) {
       this.flush();
     }
 
@@ -89,8 +92,8 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
       provider: this,
     });
 
-    return fetchJson(this.connection, JSON.stringify(request)).then(
-      (result: RpcResult[]) => {
+    return fetchJson(this.connection, JSON.stringify(request))
+      .then((result: RpcResult[]) => {
         this.emit('debug', {
           action: 'response',
           request: request,
@@ -121,8 +124,8 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
             inflightRequest.resolve(payload.result);
           }
         });
-      } /*).catch(*/,
-      (error) => {
+      })
+      .catch((error) => {
         this.emit('debug', {
           action: 'response',
           error: error,
@@ -130,10 +133,11 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
           provider: this,
         });
 
+        logger.error(error);
+
         batch.forEach((inflightRequest) => {
           inflightRequest.reject(error);
         });
-      },
-    );
+      });
   }
 }
