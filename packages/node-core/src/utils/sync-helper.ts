@@ -54,6 +54,11 @@ export function commentTableQuery(column: string, comment: string): string {
   return `COMMENT ON TABLE ${column} IS E'${comment}'`;
 }
 
+// This is used when historical is disabled so that we can perform bulk updates
+export function constraintDeferrableQuery(table: string, constraint: string): string {
+  return `ALTER TABLE ${table} ALTER CONSTRAINT ${constraint} DEFERRABLE INITIALLY IMMEDIATE`;
+}
+
 export function addTagsToForeignKeyMap(
   map: Map<string, Map<string, SmartTags>>,
   tableName: string,
