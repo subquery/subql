@@ -119,7 +119,7 @@ export class ProjectService implements IProjectService {
       }
 
       // Flush any pending operations to setup DB
-      await this.storeService.storeCache.flushCache();
+      await this.storeService.storeCache.flushCache(true);
     } else {
       this._schema = await this.getExistingProjectSchema();
 

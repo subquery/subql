@@ -33,7 +33,6 @@ import {
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { SpecVersion } from '../dictionary.service';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
@@ -92,15 +91,7 @@ async function fetchBlock(
 async function processBlock(height: number): Promise<ProcessBlockResponse> {
   assert(workerService, 'Not initialised');
 
-  const res = await workerService.processBlock(height);
-
-  // Clean up the temp ds records for worker thread instance
-  if (res.dynamicDsCreated) {
-    const dynamicDsService = app.get(DynamicDsService);
-    dynamicDsService.deleteTempDsRecords(height);
-  }
-
-  return res;
+  return workerService.processBlock(height);
 }
 
 function syncRuntimeService(
@@ -185,7 +176,7 @@ export type IIndexerWorker = {
   syncRuntimeService: SyncRuntimeService;
   getSpecFromMap: GetSpecFromMap;
   getMemoryLeft: GetMemoryLeft;
-  waitForWorkerBatchSize: WaitForWorkerBatchSize
+  waitForWorkerBatchSize: WaitForWorkerBatchSize;
 };
 
 export type IInitIndexerWorker = IIndexerWorker & {

@@ -105,21 +105,26 @@ abstract class WorkerIO {
     const id = this.getReqId();
 
     return new Promise<T>((resolve, reject) => {
-      this.responseListeners[id] = (data, error) => {
-        if (error) {
-          const e = new Error(error.message);
-          e.stack = error.stack ?? e.stack;
-          reject(e);
-        } else {
-          resolve(data);
-        }
-      };
+      try {
+        this.responseListeners[id] = (data, error) => {
+          if (error) {
+            const e = new Error(error.message);
+            e.stack = error.stack ?? e.stack;
+            reject(e);
+          } else {
+            resolve(data);
+          }
+        };
 
-      this.port.postMessage(<Request>{
-        id,
-        name: fnName,
-        args,
-      });
+        this.port.postMessage(<Request>{
+          id,
+          name: fnName,
+          args,
+        });
+      } catch (e) {
+        this.logger.error(e, `Failed to post message, function="${fnName}", args="${JSON.stringify(args)}"`);
+        reject(e);
+      }
     });
   }
 }
