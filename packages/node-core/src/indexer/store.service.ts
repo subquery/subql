@@ -4,6 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a} from '@polkadot/util';
+import {blake2AsHex} from '@polkadot/util-crypto';
 import {getDbType, SUPPORT_DB} from '@subql/common';
 
 import {Entity, Store} from '@subql/types';
@@ -245,6 +246,7 @@ export class StoreService {
         this.addBlockRangeColumnToIndexes(indexes);
         this.addHistoricalIdIndex(model, indexes);
       }
+      this.updateIndexesName(model.name, indexes);
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
@@ -415,6 +417,12 @@ export class StoreService {
       index.using = IndexType.GIST;
       // GIST does not support unique indexes
       index.unique = false;
+    });
+  }
+
+  private updateIndexesName(modelName: string, indexes: IndexesOptions[]): void {
+    indexes.forEach((index) => {
+      index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
     });
   }
 
