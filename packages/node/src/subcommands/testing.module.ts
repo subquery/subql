@@ -4,13 +4,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import {
-  DbModule,
-  NodeConfig,
-  PoiService,
-  StoreService,
-} from '@subql/node-core';
-import { Sequelize } from 'sequelize';
+import { DbModule, PoiService, StoreService } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
@@ -51,7 +45,7 @@ import { TestingService } from './testing.service';
     IndexerManager,
   ],
 
-  imports: [IndexerModule, FetchModule, MetaModule],
+  imports: [IndexerModule, MetaModule, FetchModule],
   controllers: [],
 })
 export class TestingFeatureModule {}

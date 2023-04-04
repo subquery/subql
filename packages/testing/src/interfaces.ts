@@ -10,5 +10,6 @@ export type subqlTest = (
   blockHeight: number,
   dependentEntities: Entity[],
   expectedEntities: Entity[],
-  handler: HandlerFunction
+  handler: HandlerFunction,
+  handlerKind: string
 ) => void;

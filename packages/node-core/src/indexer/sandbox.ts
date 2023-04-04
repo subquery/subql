@@ -4,7 +4,9 @@
 import path from 'path';
 import {Store} from '@subql/types';
 import {levelFilter} from '@subql/utils';
+import {build} from 'esbuild';
 import {merge} from 'lodash';
+import ts, {transpileModule} from 'typescript';
 import {NodeVM, NodeVMOptions, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
@@ -90,5 +92,50 @@ export class IndexerSandbox extends Sandbox {
       this.freeze(store, 'store');
     }
     this.freeze(logger, 'logger');
+  }
+}
+
+export class TestSandbox extends Sandbox {
+  private constructor(option: SandboxOption, bundledCode: string, config: NodeConfig) {
+    super(
+      {
+        ...option,
+      },
+      new VMScript(
+        `${bundledCode}; logger.info(global.subqlTests.length.toString())`,
+        path.join(option.root, 'sandbox')
+      ),
+      config
+    );
+    this.injectGlobals(option);
+  }
+
+  static async create(option: SandboxOption, config: NodeConfig): Promise<TestSandbox> {
+    const bundledCode = await this.bundleTypeScript(option.entry);
+    return new TestSandbox(option, bundledCode, config);
+  }
+
+  static async bundleTypeScript(entryFile: string): Promise<string> {
+    const result = await build({
+      entryPoints: [entryFile],
+      bundle: true,
+      format: 'cjs',
+      platform: 'node',
+      write: false,
+      plugins: [],
+    });
+
+    return result.outputFiles[0].text;
+  }
+
+  private injectGlobals({store}: SandboxOption) {
+    if (store) {
+      this.freeze(store, 'store');
+    }
+    this.freeze(logger, 'logger');
+  }
+
+  getTests() {
+    return this.getGlobal('subqlTests');
   }
 }

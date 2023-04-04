@@ -5,8 +5,15 @@ import { assert } from 'console';
 import { readdirSync, statSync } from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
-import { NodeConfig, StoreService, getLogger } from '@subql/node-core';
+import {
+  NodeConfig,
+  StoreService,
+  getLogger,
+  SandboxOption,
+  TestSandbox,
+} from '@subql/node-core';
 import { HandlerFunction } from '@subql/testing';
+import { subqlTest } from '@subql/testing/interfaces';
 import {
   DynamicDatasourceCreator,
   Entity,
@@ -22,7 +29,7 @@ import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import * as SubstrateUtil from '../utils/substrate';
 
-const logger = getLogger('CLI-Testing');
+const logger = getLogger('CLI-test-Testing');
 
 declare global {
   //const api: ApiAt;
@@ -33,6 +40,7 @@ declare global {
 
 @Injectable()
 export class TestingService {
+  private tests: subqlTest[];
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -61,16 +69,37 @@ export class TestingService {
 
     register(options);
 
-    const tests = testFiles.map((file) => require(file));
+    const sandboxes: TestSandbox[] = await Promise.all(
+      testFiles.map(async (file) => {
+        const option: SandboxOption = {
+          root: this.project.root,
+          entry: file,
+          script: null,
+        };
 
-    logger.info(`Found ${tests.length} tests`);
+        return TestSandbox.create(option, this.nodeConfig);
+      }),
+    );
+
+    logger.info(`Found ${sandboxes.length} test files`);
+
+    await Promise.all(
+      sandboxes.map(async (sandbox) => {
+        await sandbox.runTimeout(1000);
+      }),
+    );
+
+    this.tests = [];
+    sandboxes.map((sandbox) => {
+      this.tests.push(...sandbox.getTests());
+    });
   }
 
   async run() {
-    if ((global as any).subqlTests) {
+    if (this.tests?.length !== 0) {
       await Promise.all(
-        (global as any).subqlTests.map(async (test) => {
-          await this.runTest(test);
+        this.tests.map(async (test) => {
+          await this.runTest(test as any);
         }),
       );
     }
@@ -102,30 +131,33 @@ export class TestingService {
     handlerKind: SubstrateHandlerKind;
   }) {
     // Fetch block
-    //TODO: this should be used made general for all networks.
-    // create a mapping to get the right fetch function based on the network?
+
     const [block] = await SubstrateUtil.fetchBlocksBatches(
       this.apiService.getApi(),
       [test.blockHeight],
     );
+    logger.info(JSON.stringify(block));
 
     // Check filters match
 
     // Init db
-    const modelRelations = getAllEntitiesRelations(this.project.schema);
-    for (let i = 0; i < modelRelations.models.length; i++) {
-      modelRelations.models[i].name = `${modelRelations.models[i].name}`;
+    const schema = `test-${this.nodeConfig.subqueryName}`;
+
+    const schemas = await this.sequelize.showAllSchemas(undefined);
+    if (!(schemas as unknown as string[]).includes(schema)) {
+      await this.sequelize.createSchema(`"${schema}"`, undefined);
     }
-    await this.storeService.init(modelRelations, this.nodeConfig.subqueryName);
 
+    const modelRelations = getAllEntitiesRelations(this.project.schema);
+    await this.storeService.init(modelRelations, schema);
     const store = this.storeService.getStore();
-    (global as any).store = store;
 
+    logger.info(JSON.stringify(test.dependentEntities));
     // Init entities
     test.dependentEntities.map(async (entity) => {
       const attrs = entity as unknown as CreationAttributes<Model>;
       logger.info(JSON.stringify(attrs));
-      await (global as any).store.set(`${entity.name}`, entity.id, entity);
+      await store.set(`${entity.constructor.name}`, entity.id, entity);
     });
 
     // Run handler
@@ -146,16 +178,21 @@ export class TestingService {
     for (let i = 0; i < test.expectedEntities.length; i++) {
       const expectedEntity = test.expectedEntities[i];
       const actualEntity = await store.get(
-        `${expectedEntity.name}`,
+        `${expectedEntity.constructor.name}`,
         expectedEntity.id,
       );
       const attributes = actualEntity as unknown as CreationAttributes<Model>;
       Object.keys(attributes).map((attr) =>
         assert(
           expectedEntity[attr] === actualEntity[attr],
-          `AssertionFailedError on ${expectedEntity.name}.${attr}: expected: ${expectedEntity[attr]}, actual: ${actualEntity[attr]}`,
+          `AssertionFailedError on ${expectedEntity.constructor.name}.${attr}: expected: ${expectedEntity[attr]}, actual: ${actualEntity[attr]}`,
         ),
       );
     }
+
+    this.sequelize.dropSchema(schema, {
+      logging: false,
+      benchmark: false,
+    });
   }
 }
