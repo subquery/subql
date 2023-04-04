@@ -1,10 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import {flatten, includes, isEqual, uniq} from 'lodash';
-import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
-import {CountOptions} from 'sequelize/types/model';
+import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
 import {
@@ -168,27 +166,6 @@ export class CachedModel<
     for (const entity of data) {
       this.set(entity.id, entity, blockHeight);
     }
-  }
-
-  async count(
-    field?: keyof T | undefined,
-    value?: T[keyof T] | T[keyof T][] | undefined,
-    options?: {distinct?: boolean; col?: keyof T} | undefined
-  ): Promise<number> {
-    const countOption = {} as Omit<CountOptions<any>, 'group'>;
-
-    const cachedData = this.getFromCache(field, value);
-    // count should exclude any id already existed in cache
-    countOption.where =
-      cachedData.length !== 0 ? {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} : {[field]: value};
-
-    //TODO, this seems not working with field and values
-    if (options) {
-      assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
-      countOption.distinct = options.distinct;
-      countOption.col = options.col as string;
-    }
-    return cachedData.length + (await this.model.count(countOption));
   }
 
   remove(id: string, blockHeight: number): void {
