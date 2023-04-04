@@ -149,7 +149,7 @@ export class TestingService {
     test.dependentEntities.map(async (entity) => {
       const attrs = entity as unknown as CreationAttributes<Model>;
       logger.info(entity.constructor.name);
-      await store.set(`${entity.constructor.name}`, entity.id, entity);
+      await store.set(`${(entity as any).name}`, entity.id, entity);
     });
 
     const handlerInfo = this.getHandlerInfo(test.handler);
@@ -191,16 +191,22 @@ export class TestingService {
     for (let i = 0; i < test.expectedEntities.length; i++) {
       const expectedEntity = test.expectedEntities[i];
       const actualEntity = await store.get(
-        `${expectedEntity.constructor.name}`,
+        `${(expectedEntity as any).name}`,
         expectedEntity.id,
       );
       const attributes = actualEntity as unknown as CreationAttributes<Model>;
-      Object.keys(attributes).map((attr) =>
-        assert(
-          expectedEntity[attr] === actualEntity[attr],
-          `AssertionFailedError on ${expectedEntity.constructor.name}.${attr}: expected: ${expectedEntity[attr]}, actual: ${actualEntity[attr]}`,
-        ),
-      );
+      let passed = true;
+      Object.keys(attributes).map((attr) => {
+        if (expectedEntity[attr] !== actualEntity[attr]) {
+          passed = false;
+        }
+      });
+
+      if (passed) {
+        logger.info(`Test: ${test.name} PASSED`);
+      } else {
+        logger.warn(`Test: ${test.name} FAILED`);
+      }
     }
 
     this.sequelize.dropSchema(schema, {
