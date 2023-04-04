@@ -4,6 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a} from '@polkadot/util';
+import {blake2AsHex} from '@polkadot/util-crypto';
 import {getDbType, SUPPORT_DB} from '@subql/common';
 
 import {Entity, Store} from '@subql/types';
@@ -54,7 +55,9 @@ import {
   smartTags,
   getEnumDeprecated,
   constraintDeferrableQuery,
+  getExistedIndexesQuery,
 } from '../utils';
+import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
 import {CachePoiModel} from './storeCache/cachePoi';
@@ -171,6 +174,9 @@ export class StoreService {
       }
     }
 
+    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(schema));
+    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
+
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
@@ -245,6 +251,10 @@ export class StoreService {
         this.addBlockRangeColumnToIndexes(indexes);
         this.addHistoricalIdIndex(model, indexes);
       }
+      // Hash indexes name to ensure within postgres limit
+      // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
+      // only update index name as it is new index or not found (it is might be an over length index name)
+      this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
@@ -254,6 +264,7 @@ export class StoreService {
         schema,
         indexes,
       });
+
       if (this.historical) {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         // TODO, remove id and block_range constrain, check id manually
@@ -415,6 +426,18 @@ export class StoreService {
       index.using = IndexType.GIST;
       // GIST does not support unique indexes
       index.unique = false;
+    });
+  }
+
+  private updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
+    indexes.forEach((index) => {
+      // follow same pattern as _generateIndexName
+      const tableName = modelToTableName(modelName);
+      const deprecated = generateIndexName(tableName, index);
+
+      if (!existedIndexes.includes(deprecated)) {
+        index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
+      }
     });
   }
 
