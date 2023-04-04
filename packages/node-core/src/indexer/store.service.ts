@@ -55,7 +55,9 @@ import {
   smartTags,
   getEnumDeprecated,
   constraintDeferrableQuery,
+  getExistedIndexesQuery,
 } from '../utils';
+import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
 import {CachePoiModel} from './storeCache/cachePoi';
@@ -172,6 +174,9 @@ export class StoreService {
       }
     }
 
+    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(schema));
+    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
+
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
@@ -246,7 +251,10 @@ export class StoreService {
         this.addBlockRangeColumnToIndexes(indexes);
         this.addHistoricalIdIndex(model, indexes);
       }
-      this.updateIndexesName(model.name, indexes);
+      // Hash indexes name to ensure within postgres limit
+      // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
+      // only update index name as it is new index or not found (it is might be an over length index name)
+      this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
@@ -256,6 +264,7 @@ export class StoreService {
         schema,
         indexes,
       });
+
       if (this.historical) {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         // TODO, remove id and block_range constrain, check id manually
@@ -420,9 +429,15 @@ export class StoreService {
     });
   }
 
-  private updateIndexesName(modelName: string, indexes: IndexesOptions[]): void {
+  private updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
     indexes.forEach((index) => {
-      index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
+      // follow same pattern as _generateIndexName
+      const tableName = modelToTableName(modelName);
+      const deprecated = generateIndexName(tableName, index);
+
+      if (!existedIndexes.includes(deprecated)) {
+        index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
+      }
     });
   }
 

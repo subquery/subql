@@ -1,0 +1,51 @@
+// Copyright 2020-2022 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import NodeUtil from 'node:util';
+import {IndexesOptions, TableName, Utils} from 'sequelize';
+import {underscored} from './sync-helper';
+
+export class BaseSqlExpression {}
+
+// This method is simplified from https://github.com/sequelize/sequelize/blob/066421c00aad61694dcdbb624d4b73dbac7c7b42/packages/core/src/model-definition.ts#L245
+export function modelToTableName(modelName: string): string {
+  // Align underscored = true, same as in storeService sequelizeModel
+  return Utils.underscoredIf(Utils.pluralize(modelName), true);
+}
+
+// Rewrite due to method is not exported from sequelize
+// This method is same from https://github.com/sequelize/sequelize/blob/26beda5bf76bd65e30264ebf135e39efaa7d514d/packages/core/src/utils/string.ts#L89
+export function generateIndexName(tableName: TableName, index: IndexesOptions): string {
+  if (typeof tableName !== 'string' && tableName.tableName) {
+    tableName = tableName.tableName;
+  }
+  if (!index.fields) {
+    throw new Error(`Index on table ${tableName} has not fields:
+${NodeUtil.inspect(index)}`);
+  }
+
+  const fields = index.fields.map((field) => {
+    if (typeof field === 'string') {
+      return field;
+    }
+
+    if (field instanceof BaseSqlExpression) {
+      throw new Error(
+        `Index on table ${tableName} uses Sequelize's ${field.constructor.name} as one of its fields. You need to name this index manually.`
+      );
+    }
+
+    if ('attribute' in field) {
+      throw new Error('Property "attribute" in IndexField has been renamed to "name"');
+    }
+
+    return (field as any).name;
+  });
+
+  let out = `${tableName}_${fields.join('_')}`;
+
+  if (index.unique) {
+    out += '_unique';
+  }
+  return underscored(out);
+}

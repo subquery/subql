@@ -32,7 +32,7 @@ export function getVirtualFkTag(field: string, to: string): string {
   return `(${underscored(field)}) REFERENCES ${to} (id)`;
 }
 
-const underscored = (input: string) => Utils.underscoredIf(input, true);
+export const underscored = (input: string) => Utils.underscoredIf(input, true);
 
 export function getFkConstraint(tableName: string, foreignKey: string): string {
   return [tableName, foreignKey, 'fkey'].map(underscored).join('_');
@@ -200,4 +200,8 @@ export function createSchemaTriggerFunction(schema: string): string {
 
 export function enumNameToHash(enumName: string): string {
   return blake2AsHex(enumName).substr(2, 10);
+}
+
+export function getExistedIndexesQuery(schema: string): string {
+  return `SELECT indexname FROM pg_indexes WHERE schemaname = '${schema}'`;
 }
