@@ -4,7 +4,7 @@
 import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
-import { delay } from '@subql/node-core';
+import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -12,7 +12,7 @@ import { EthereumApiService } from './api.service.ethereum';
 
 // Add api key to work
 const WS_ENDPOINT = 'wss://eth.api.onfinality.io/ws?apikey=';
-const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/rpc?apikey=';
+const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
 
 function testSubqueryProject(endpoint: string): SubqueryProject {
   return {
@@ -28,44 +28,59 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
   };
 }
 
+const prepareApiService = async (
+  endpoint: string = HTTP_ENDPOINT,
+): Promise<[EthereumApiService, INestApplication]> => {
+  const module = await Test.createTestingModule({
+    providers: [
+      ConnectionPoolService,
+      {
+        provide: NodeConfig,
+        useFactory: () => ({}),
+      },
+      {
+        provide: 'ISubqueryProject',
+        useFactory: () => testSubqueryProject(endpoint),
+      },
+      EthereumApiService,
+    ],
+    imports: [EventEmitterModule.forRoot()],
+  }).compile();
+
+  const app = module.createNestApplication();
+  await app.init();
+  const apiService = app.get(EthereumApiService);
+  await apiService.init();
+  return [apiService, app];
+};
+
 jest.setTimeout(90000);
 describe('ApiService', () => {
+  let apiService: EthereumApiService;
   let app: INestApplication;
+
+  beforeEach(async () => {
+    [apiService, app] = await prepareApiService();
+  });
 
   afterEach(async () => {
     return app?.close();
   });
 
-  const prepareApiService = async (
-    endpoint: string = HTTP_ENDPOINT,
-  ): Promise<EthereumApiService> => {
-    const module = await Test.createTestingModule({
-      providers: [
-        {
-          provide: 'ISubqueryProject',
-          useFactory: () => testSubqueryProject(endpoint),
-        },
-        EthereumApiService,
-      ],
-      imports: [EventEmitterModule.forRoot()],
-    }).compile();
-
-    app = module.createNestApplication();
-    await app.init();
-    const apiService = app.get(EthereumApiService);
-    await apiService.init();
-    return apiService;
-  };
-
   it('can instantiate api', async () => {
-    const apiService = await prepareApiService();
     console.log(apiService.api.getChainId());
     await delay(0.5);
   });
 
   it('can fetch blocks', async () => {
-    const apiService = await prepareApiService();
     await apiService.api.fetchBlocks(range(12369621, 12369651));
     await delay(0.5);
+  });
+
+  it('can get the finalized height', async () => {
+    const height = await apiService.api.getFinalizedBlockHeight();
+
+    console.log('Finalized height', height);
+    expect(height).toBeGreaterThan(16_000_000);
   });
 });

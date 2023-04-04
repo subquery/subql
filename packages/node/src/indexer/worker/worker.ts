@@ -83,15 +83,7 @@ async function fetchBlock(height: number): Promise<FetchBlockResponse> {
 async function processBlock(height: number): Promise<ProcessBlockResponse> {
   assert(workerService, 'Not initialised');
 
-  const res = await workerService.processBlock(height);
-
-  // Clean up the temp ds records for worker thread instance
-  if (res.dynamicDsCreated) {
-    const dynamicDsService = app.get(DynamicDsService);
-    dynamicDsService.deleteTempDsRecords(height);
-  }
-
-  return res;
+  return workerService.processBlock(height);
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

@@ -59,7 +59,6 @@ async function createIndexerWorker(
       'waitForWorkerBatchSize',
     ],
     {
-      storeCount: store.count.bind(store),
       storeGet: store.get.bind(store),
       storeGetByField: store.getByField.bind(store),
       storeGetOneByField: store.getOneByField.bind(store),

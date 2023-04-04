@@ -66,7 +66,6 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
       useClass: ProjectService,
     },
     WorkerService,
-    UnfinalizedBlocksService,
     {
       provide: UnfinalizedBlocksService,
       useFactory: () => {

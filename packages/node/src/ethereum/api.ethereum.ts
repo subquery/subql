@@ -6,7 +6,7 @@ import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
 import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
-import { WebSocketProvider } from '@ethersproject/providers';
+import { JsonRpcSigner, WebSocketProvider } from '@ethersproject/providers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
@@ -81,6 +81,9 @@ function getHttpAgents() {
 
 export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private client: JsonRpcProvider;
+
+  // This is used within the sandbox when HTTP is used
+  private nonBatchClient?: JsonRpcProvider;
   private genesisBlock: Record<string, any>;
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
@@ -109,6 +112,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         (connection.headers as any)[name] = value;
       });
       this.client = new JsonRpcBatchProvider(connection);
+      this.nonBatchClient = new JsonRpcProvider(connection);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
       this.client = new WebSocketProvider(this.endpoint);
     } else {
@@ -137,7 +141,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   async getFinalizedBlockHeight(): Promise<number> {
     try {
       if (this.supportsFinalization) {
-        return (await this.client.getBlock('finalised')).number;
+        return (await this.client.getBlock('finalized')).number;
       } else {
         // TODO make number of blocks finalised configurable
         return (await this.getBestBlockHeight()) - 15; // Consider 15 blocks finalized
@@ -217,7 +221,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
             ...formatTransaction(tx),
             // TODO memoise
             receipt: () =>
-              this.getTransactionReceipt(tx).then((r) =>
+              this.getTransactionReceipt(tx.hash).then((r) =>
                 formatReceipt(r, block),
               ),
           }))
@@ -235,8 +239,14 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   freezeApi(processor: any, blockContent: BlockWrapper): void {
+    // We cannot use a batch http client because OnF don't support routing historical queries in batches to an archive nodes
+    const client =
+      this.client instanceof WebSocketProvider
+        ? this.client
+        : this.nonBatchClient;
+
     processor.freeze(
-      new SafeEthProvider(this.client, blockContent.blockHeight),
+      new SafeEthProvider(client, blockContent.blockHeight),
       'api',
     );
   }
