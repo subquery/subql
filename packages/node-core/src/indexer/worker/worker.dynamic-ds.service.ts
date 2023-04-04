@@ -19,7 +19,8 @@ export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
   constructor(private host: HostDynamicDS<DS>) {}
 
   async createDynamicDatasource(params: DatasourceParams): Promise<DS> {
-    return this.host.dynamicDsCreateDynamicDatasource(params);
+    // Make sure the params are serializable over the bridge by using JSON conversion
+    return this.host.dynamicDsCreateDynamicDatasource(JSON.parse(JSON.stringify(params)));
   }
 
   async getDynamicDatasources(): Promise<DS[]> {
