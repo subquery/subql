@@ -8,11 +8,6 @@ import {Transaction} from 'sequelize';
 export type HistoricalModel = {__block_range: any};
 
 export interface ICachedModel<T> {
-  count: (
-    field?: keyof T,
-    value?: T[keyof T] | T[keyof T][],
-    options?: {distinct?: boolean; col?: keyof T}
-  ) => Promise<number>;
   get: (id: string) => Promise<T | null>;
   // limit always defined from store
   getByField: (
