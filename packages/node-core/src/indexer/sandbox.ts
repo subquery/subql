@@ -101,10 +101,7 @@ export class TestSandbox extends Sandbox {
       {
         ...option,
       },
-      new VMScript(
-        `const tests = require('${option.entry}'); logger.info(global.subqlTests.length.toString())`,
-        path.join(option.root, 'sandbox')
-      ),
+      new VMScript(`const tests = require('${option.entry}');`, path.join(option.root, 'sandbox')),
       config
     );
     this.injectGlobals(option);

@@ -123,8 +123,10 @@ export class TestingService {
   }
 
   private async runTest(test: SubqlTest) {
-    // Fetch block
+    logger.info(`Starting test: ${test.name}`);
 
+    // Fetch block
+    logger.debug('Fetching block');
     const [block] = await SubstrateUtil.fetchBlocksBatches(
       this.apiService.getApi(),
       [test.blockHeight],
@@ -145,7 +147,9 @@ export class TestingService {
     const store = this.storeService.getStore();
 
     logger.info(JSON.stringify(test.dependentEntities));
+
     // Init entities
+    logger.debug('Initializing entities');
     test.dependentEntities.map(async (entity) => {
       const attrs = entity as unknown as CreationAttributes<Model>;
       logger.info(entity.constructor.name);
@@ -166,6 +170,7 @@ export class TestingService {
     sandbox.freeze(store, 'store');
 
     // Run handler
+    logger.debug('Running handler');
     switch (handlerInfo.kind) {
       case SubstrateHandlerKind.Block:
         await sandbox.securedExec(handlerInfo.handler, [block.block]);
@@ -188,6 +193,9 @@ export class TestingService {
     }
 
     // Check expected entities
+    logger.debug('Checking expected entities');
+    let passedTests = 0;
+    let failedTests = 0;
     for (let i = 0; i < test.expectedEntities.length; i++) {
       const expectedEntity = test.expectedEntities[i];
       const actualEntity = await store.get(
@@ -203,11 +211,17 @@ export class TestingService {
       });
 
       if (passed) {
-        logger.info(`Test: ${test.name} PASSED`);
+        logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
+        passedTests++;
       } else {
-        logger.warn(`Test: ${test.name} FAILED`);
+        logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
+        failedTests++;
       }
     }
+
+    logger.info(
+      `Test: ${test.name} completed with ${passedTests} passed and ${failedTests} failed checks`,
+    );
 
     this.sequelize.dropSchema(schema, {
       logging: false,
