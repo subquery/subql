@@ -96,36 +96,18 @@ export class IndexerSandbox extends Sandbox {
 }
 
 export class TestSandbox extends Sandbox {
-  private constructor(option: SandboxOption, bundledCode: string, config: NodeConfig) {
+  constructor(option: SandboxOption, config: NodeConfig) {
     super(
       {
         ...option,
       },
       new VMScript(
-        `${bundledCode}; logger.info(global.subqlTests.length.toString())`,
+        `const tests = require('${option.entry}'); logger.info(global.subqlTests.length.toString())`,
         path.join(option.root, 'sandbox')
       ),
       config
     );
     this.injectGlobals(option);
-  }
-
-  static async create(option: SandboxOption, config: NodeConfig): Promise<TestSandbox> {
-    const bundledCode = await this.bundleTypeScript(option.entry);
-    return new TestSandbox(option, bundledCode, config);
-  }
-
-  static async bundleTypeScript(entryFile: string): Promise<string> {
-    const result = await build({
-      entryPoints: [entryFile],
-      bundle: true,
-      format: 'cjs',
-      platform: 'node',
-      write: false,
-      plugins: [],
-    });
-
-    return result.outputFiles[0].text;
   }
 
   private injectGlobals({store}: SandboxOption) {

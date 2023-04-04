@@ -12,8 +12,7 @@ export function subqlTest(
   blockHeight: number,
   dependentEntities: Entity[],
   expectedEntities: Entity[],
-  handler: HandlerFunction,
-  handlerKind: string
+  handler: string
 ): void {
   (global as any).subqlTests = (global as any).subqlTests ?? [];
 
@@ -23,6 +22,5 @@ export function subqlTest(
     dependentEntities,
     expectedEntities,
     handler,
-    handlerKind,
   });
 }

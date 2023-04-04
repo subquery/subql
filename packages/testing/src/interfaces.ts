@@ -5,11 +5,10 @@ import {Entity} from '@subql/types';
 
 export type HandlerFunction = <T = any>(input: T) => Promise<void>;
 
-export type subqlTest = (
-  name: string,
-  blockHeight: number,
-  dependentEntities: Entity[],
-  expectedEntities: Entity[],
-  handler: HandlerFunction,
-  handlerKind: string
-) => void;
+export type SubqlTest = {
+  name: string;
+  blockHeight: number;
+  dependentEntities: Entity[];
+  expectedEntities: Entity[];
+  handler: string;
+};

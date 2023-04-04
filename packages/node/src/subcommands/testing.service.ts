@@ -11,9 +11,9 @@ import {
   getLogger,
   SandboxOption,
   TestSandbox,
+  IndexerSandbox,
 } from '@subql/node-core';
-import { HandlerFunction } from '@subql/testing';
-import { subqlTest } from '@subql/testing/interfaces';
+import { SubqlTest } from '@subql/testing/interfaces';
 import {
   DynamicDatasourceCreator,
   Entity,
@@ -40,7 +40,7 @@ declare global {
 
 @Injectable()
 export class TestingService {
-  private tests: subqlTest[];
+  private tests: SubqlTest[];
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -54,7 +54,9 @@ export class TestingService {
   async init() {
     const projectPath = this.project.root;
     // find all paths to test files
-    const testFiles = this.findAllTestFiles(path.join(projectPath, 'src/test'));
+    const testFiles = this.findAllTestFiles(
+      path.join(projectPath, 'dist/test'),
+    );
     // import all test files
 
     const { compilerOptions } = require(path.join(
@@ -69,17 +71,15 @@ export class TestingService {
 
     register(options);
 
-    const sandboxes: TestSandbox[] = await Promise.all(
-      testFiles.map(async (file) => {
-        const option: SandboxOption = {
-          root: this.project.root,
-          entry: file,
-          script: null,
-        };
+    const sandboxes: TestSandbox[] = testFiles.map((file) => {
+      const option: SandboxOption = {
+        root: this.project.root,
+        entry: file,
+        script: null,
+      };
 
-        return TestSandbox.create(option, this.nodeConfig);
-      }),
-    );
+      return new TestSandbox(option, this.nodeConfig);
+    });
 
     logger.info(`Found ${sandboxes.length} test files`);
 
@@ -99,7 +99,7 @@ export class TestingService {
     if (this.tests?.length !== 0) {
       await Promise.all(
         this.tests.map(async (test) => {
-          await this.runTest(test as any);
+          await this.runTest(test);
         }),
       );
     }
@@ -114,7 +114,7 @@ export class TestingService {
 
       if (stat.isDirectory()) {
         files.push(...this.findAllTestFiles(filePath));
-      } else if (filePath.endsWith('.test.ts')) {
+      } else if (filePath.endsWith('.test.js')) {
         files.push(filePath);
       }
     });
@@ -122,21 +122,13 @@ export class TestingService {
     return files;
   }
 
-  private async runTest(test: {
-    name: string;
-    blockHeight: number;
-    dependentEntities: Entity[];
-    expectedEntities: Entity[];
-    handler: HandlerFunction;
-    handlerKind: SubstrateHandlerKind;
-  }) {
+  private async runTest(test: SubqlTest) {
     // Fetch block
 
     const [block] = await SubstrateUtil.fetchBlocksBatches(
       this.apiService.getApi(),
       [test.blockHeight],
     );
-    logger.info(JSON.stringify(block));
 
     // Check filters match
 
@@ -156,20 +148,41 @@ export class TestingService {
     // Init entities
     test.dependentEntities.map(async (entity) => {
       const attrs = entity as unknown as CreationAttributes<Model>;
-      logger.info(JSON.stringify(attrs));
+      logger.info(entity.constructor.name);
       await store.set(`${entity.constructor.name}`, entity.id, entity);
     });
 
+    const handlerInfo = this.getHandlerInfo(test.handler);
+
+    const sandbox = new IndexerSandbox(
+      {
+        root: this.project.root,
+        entry: handlerInfo.entry,
+        script: undefined,
+      },
+      this.nodeConfig,
+    );
+
+    sandbox.freeze(store, 'store');
+
     // Run handler
-    switch (test.handlerKind) {
+    switch (handlerInfo.kind) {
       case SubstrateHandlerKind.Block:
-        await test.handler(block.block);
+        await sandbox.securedExec(handlerInfo.handler, [block.block]);
         break;
       case SubstrateHandlerKind.Call:
-        block.extrinsics.map((ext) => test.handler(ext));
+        await Promise.all(
+          block.extrinsics.map(async (ext) => {
+            await sandbox.securedExec(handlerInfo.handler, [ext]);
+          }),
+        );
         break;
       case SubstrateHandlerKind.Event:
-        block.events.map((evt) => test.handler(evt));
+        await Promise.all(
+          block.events.map(async (evt) => {
+            await sandbox.securedExec(handlerInfo.handler, [evt]);
+          }),
+        );
         break;
       default:
     }
@@ -194,5 +207,27 @@ export class TestingService {
       logging: false,
       benchmark: false,
     });
+  }
+
+  private getHandlerInfo(handler: string): {
+    handler: string;
+    entry: string;
+    kind: string;
+  } {
+    const datasources = this.project.dataSources;
+    for (const ds of datasources) {
+      const mapping = ds.mapping;
+      const handlers = mapping.handlers;
+      for (const hnd of handlers) {
+        if (hnd.handler === handler) {
+          return {
+            handler: handler,
+            entry: mapping.file,
+            kind: hnd.kind,
+          };
+        }
+      }
+    }
+    throw new Error(`handler ${handler} not found in the mappings`);
   }
 }
