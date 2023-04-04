@@ -5,8 +5,6 @@ import NodeUtil from 'node:util';
 import {IndexesOptions, TableName, Utils} from 'sequelize';
 import {underscored} from './sync-helper';
 
-export class BaseSqlExpression {}
-
 // This method is simplified from https://github.com/sequelize/sequelize/blob/066421c00aad61694dcdbb624d4b73dbac7c7b42/packages/core/src/model-definition.ts#L245
 export function modelToTableName(modelName: string): string {
   // Align underscored = true, same as in storeService sequelizeModel
@@ -25,21 +23,11 @@ ${NodeUtil.inspect(index)}`);
   }
 
   const fields = index.fields.map((field) => {
+    // We always pass string in indexes field
     if (typeof field === 'string') {
       return field;
     }
-
-    if (field instanceof BaseSqlExpression) {
-      throw new Error(
-        `Index on table ${tableName} uses Sequelize's ${field.constructor.name} as one of its fields. You need to name this index manually.`
-      );
-    }
-
-    if ('attribute' in field) {
-      throw new Error('Property "attribute" in IndexField has been renamed to "name"');
-    }
-
-    return (field as any).name;
+    throw new Error(`Generate index name failed, index ${index.name} field should be string type`);
   });
 
   let out = `${tableName}_${fields.join('_')}`;
