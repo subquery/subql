@@ -6,12 +6,6 @@ import {classToPlain} from 'class-transformer';
 
 export type HostStore = {
   // This matches the store interface
-  storeCount: (
-    entity: string,
-    field?: string,
-    value?: any,
-    options?: {distinct?: boolean; col?: string}
-  ) => Promise<number>;
   storeGet: (entity: string, id: string) => Promise<any | null>;
   storeGetByField: (
     entity: string,
@@ -27,7 +21,6 @@ export type HostStore = {
 };
 
 export const hostStoreKeys: (keyof HostStore)[] = [
-  'storeCount',
   'storeGet',
   'storeGetByField',
   'storeGetOneByField',
@@ -41,7 +34,6 @@ export const hostStoreKeys: (keyof HostStore)[] = [
 // We don't need the funcitons to be included
 export const hostStoreToStore = (host: HostStore): Store => {
   return {
-    count: host.storeCount,
     get: host.storeGet,
     getByField: host.storeGetByField,
     getOneByField: host.storeGetOneByField,

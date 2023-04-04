@@ -640,21 +640,6 @@ group by
 
   getStore(): Store {
     return {
-      count: async <T extends Entity>(
-        entity: string,
-        field?: keyof T,
-        value?: T[keyof T] | T[keyof T][],
-        options?: {
-          distinct?: boolean;
-          col?: keyof T;
-        }
-      ): Promise<number> => {
-        try {
-          return this.storeCache.getModel<T>(entity).count(field, value, options);
-        } catch (e) {
-          throw new Error(`Failed to count Entity ${entity}, ${e}`);
-        }
-      },
       get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
           return this.storeCache.getModel<T>(entity).get(id);
