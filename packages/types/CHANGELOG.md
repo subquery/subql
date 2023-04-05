@@ -9,6 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-04-05
+
+### Removed
+- Remove `count` method from the store (#51)
+
 ## [1.0.0] - 2023-04-03
 - Release
 

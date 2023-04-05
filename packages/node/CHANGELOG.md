@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-04-05
+### Fixed
+- Various minor fiexes for dynamic datasources (#51)
+### Removed
+- Remove `count` method from the store (#51)
+
 ## [1.0.0] - 2023-04-03
 - Release
 
