@@ -10,6 +10,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.2] - 2023-04-05
+### Fixed
+- Compute block size one property at a time to prevent RangeError
+- Upgrade @subql/apollo-link version
+
 ## [1.11.1] - 2023-03-30
 ### Changed
 - Change to support multiple endpoints (#1551)
