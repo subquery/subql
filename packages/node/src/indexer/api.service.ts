@@ -114,7 +114,7 @@ export class ApiService {
 
       return this;
     } catch (e) {
-      logger.error(e, 'Failed to init api service');
+      logger.error(CosmosClient.handleError(e), 'Failed to init api service');
       process.exit(1);
     }
   }
@@ -213,6 +213,26 @@ export class CosmosClient extends CosmWasmClient {
       logger.error(e, 'Failed to decode message');
       throw e;
     }
+  }
+
+  static handleError(e: Error): Error {
+    const formatted_error: Error = e;
+    try {
+      const message = JSON.parse(e.message);
+      if (
+        message.data &&
+        message.data.includes(`is not available, lowest height is`)
+      ) {
+        formatted_error.message = `${message.data}\nINFO: This most likely means the provided endpoint is a pruned node. An archive/full node is needed to access historical data`;
+      }
+    } catch (err) {
+      if (e.message === 'Request failed with status code 429') {
+        formatted_error.name = 'RateLimitError';
+      } else if (e.message === 'Request failed with status code 403') {
+        formatted_error.name = 'Forbidden';
+      }
+    }
+    return formatted_error;
   }
 }
 

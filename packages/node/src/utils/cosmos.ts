@@ -189,12 +189,14 @@ async function getBlockByHeight(
 ): Promise<[BlockResponse, BlockResultsResponse]> {
   return Promise.all([
     api.blockInfo(height).catch((e) => {
-      logger.error(e, `failed to fetch block info ${height}`);
-      throw e;
+      const error = CosmosClient.handleError(e);
+      logger.error(error, `failed to fetch block info ${height}`);
+      throw error;
     }),
     api.blockResults(height).catch((e) => {
-      logger.error(e, `failed to fetch block results ${height}`);
-      throw e;
+      const error = CosmosClient.handleError(e);
+      logger.error(error, `failed to fetch block results ${height}`);
+      throw error;
     }),
   ]);
 }

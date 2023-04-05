@@ -333,7 +333,10 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
     } catch (e) {
-      logger.warn(e, `Having a problem when getting finalized block`);
+      logger.warn(
+        CosmosClient.handleError(e),
+        `Having a problem when getting finalized block`,
+      );
     }
   }
 
