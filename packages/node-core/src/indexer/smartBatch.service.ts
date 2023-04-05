@@ -32,7 +32,7 @@ export class SmartBatchService {
     blocks.forEach((block) => this.blockSizeBuffer.put(this.blockSize(block)));
   }
 
-  blockSize(block: any) {
+  blockSize(block: any): number {
     let size = 0;
     const stack: {obj: any; prop: any}[] = [
       {obj: block, prop: null},
