@@ -39,6 +39,7 @@ import {
   camelCaseObjectKey,
   commentConstraintQuery,
   commentTableQuery,
+  constraintDeferrableQuery,
   createNotifyTrigger,
   createSchemaTrigger,
   createSchemaTriggerFunction,
@@ -47,15 +48,14 @@ import {
   dropNotifyFunction,
   dropNotifyTrigger,
   enumNameToHash,
+  getEnumDeprecated,
+  getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
   getVirtualFkTag,
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
-  getEnumDeprecated,
-  constraintDeferrableQuery,
-  getExistedIndexesQuery,
 } from '../utils';
 import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
@@ -117,6 +117,7 @@ export class StoreService {
       logger.warn(`Historical feature is not support with ${this.dbType}`);
     }
     this.storeCache.setHistorical(this.historical);
+    this.storeCache.setUseCockroach(this.dbType === SUPPORT_DB.cockRoach);
 
     try {
       await this.syncSchema(this.schema);
@@ -255,6 +256,10 @@ export class StoreService {
       // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
       // only update index name as it is new index or not found (it is might be an over length index name)
       this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
+
+      // Update index query for cockroach db
+      this.handleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
+
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
@@ -304,7 +309,9 @@ export class StoreService {
         case 'belongsTo': {
           const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
           const fkConstraint = getFkConstraint(rel.source.tableName, rel.foreignKey);
-          extraQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
+          if (this.dbType !== SUPPORT_DB.cockRoach) {
+            extraQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
+          }
           break;
         }
         case 'hasOne': {
@@ -427,6 +434,28 @@ export class StoreService {
       // GIST does not support unique indexes
       index.unique = false;
     });
+  }
+
+  private handleCockroachIndex(
+    schema: string,
+    modelName: string,
+    indexes: IndexesOptions[],
+    existedIndexes: string[],
+    extraQueries: string[]
+  ): void {
+    // remove original indexes avoid direct create from sequelize model
+    // this will create index manually from extraQueries
+    if (this.dbType === SUPPORT_DB.cockRoach) {
+      indexes.forEach((index, i) => {
+        if (index.using === IndexType.HASH && !existedIndexes.includes(index.name)) {
+          const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
+            index.fields
+          }) USING HASH;`;
+          extraQueries.push(cockroachDbIndexQuery);
+        }
+        delete indexes[i];
+      });
+    }
   }
 
   private updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {

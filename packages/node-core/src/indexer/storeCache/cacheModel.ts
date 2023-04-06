@@ -37,7 +37,8 @@ export class CachedModel<
   constructor(
     readonly model: ModelStatic<Model<T, T>>,
     private readonly historical = true,
-    private config: NodeConfig
+    private config: NodeConfig,
+    private readonly useCockroachDb = false
   ) {
     // In case, this might be want to be 0
     if (this.config.storeGetCacheSize !== undefined) {
@@ -227,10 +228,15 @@ export class CachedModel<
       ]);
     } else {
       dbOperation = Promise.all([
-        this.model.bulkCreate(records, {
-          transaction: tx,
-          updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
-        }),
+        // cockroach having issue with bulkCreate
+        this.useCockroachDb
+          ? records.map((r) => {
+              this.model.upsert(r, {transaction: tx});
+            })
+          : this.model.bulkCreate(records, {
+              transaction: tx,
+              updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+            }),
         Object.keys(removeRecords).length &&
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
