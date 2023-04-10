@@ -742,7 +742,6 @@ group by
         }
       },
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
-        logger.info(`entity: ${entity}`);
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);

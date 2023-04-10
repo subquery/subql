@@ -290,7 +290,7 @@ export class IndexerManager {
     }
   }
 
-  private async indexData<K extends SubstrateHandlerKind>(
+  async indexData<K extends SubstrateHandlerKind>(
     kind: K,
     data: SubstrateRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,

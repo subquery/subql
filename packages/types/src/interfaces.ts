@@ -6,8 +6,14 @@ import {GenericExtrinsic} from '@polkadot/types/extrinsic';
 import {EventRecord, SignedBlock} from '@polkadot/types/interfaces';
 import {IEvent} from '@polkadot/types/types';
 
+export interface EntityStaticMethods {
+  get(id: string): Promise<Entity | undefined>;
+}
+
 export interface Entity {
   id: string;
+  constructor: EntityStaticMethods;
+  save?: () => Promise<void>;
 }
 
 export type FunctionPropertyNames<T> = {

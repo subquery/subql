@@ -1,10 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { assert } from 'console';
 import { readdirSync, statSync } from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
+import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   NodeConfig,
   StoreService,
@@ -16,17 +16,17 @@ import {
 import { SubqlTest } from '@subql/testing/interfaces';
 import {
   DynamicDatasourceCreator,
-  Entity,
   Store,
+  SubstrateBlock,
   SubstrateHandlerKind,
 } from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
 import Pino from 'pino';
 import { CreationAttributes, Model, Options, Sequelize } from 'sequelize';
-import { register, RegisterOptions } from 'ts-node';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
+import { SandboxService } from '../indexer/sandbox.service';
 import * as SubstrateUtil from '../utils/substrate';
 
 const logger = getLogger('CLI-test-Testing');
@@ -41,6 +41,8 @@ declare global {
 @Injectable()
 export class TestingService {
   private tests: SubqlTest[];
+  private testSandboxes: TestSandbox[];
+
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -48,6 +50,7 @@ export class TestingService {
     @Inject('ISubqueryProject') private project: SubqueryProject,
     private readonly apiService: ApiService,
     private readonly indexerManager: IndexerManager,
+    private readonly sandboxService: SandboxService,
   ) {}
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -59,19 +62,7 @@ export class TestingService {
     );
     // import all test files
 
-    const { compilerOptions } = require(path.join(
-      projectPath,
-      'tsconfig.json',
-    ));
-
-    const options: RegisterOptions = {
-      compilerOptions,
-      files: true,
-    };
-
-    register(options);
-
-    const sandboxes: TestSandbox[] = testFiles.map((file) => {
+    this.testSandboxes = testFiles.map((file) => {
       const option: SandboxOption = {
         root: this.project.root,
         entry: file,
@@ -81,16 +72,16 @@ export class TestingService {
       return new TestSandbox(option, this.nodeConfig);
     });
 
-    logger.info(`Found ${sandboxes.length} test files`);
+    logger.info(`Found ${this.testSandboxes.length} test files`);
 
     await Promise.all(
-      sandboxes.map(async (sandbox) => {
+      this.testSandboxes.map(async (sandbox) => {
         await sandbox.runTimeout(1000);
       }),
     );
 
     this.tests = [];
-    sandboxes.map((sandbox) => {
+    this.testSandboxes.map((sandbox) => {
       this.tests.push(...sandbox.getTests());
     });
   }
@@ -98,8 +89,8 @@ export class TestingService {
   async run() {
     if (this.tests?.length !== 0) {
       await Promise.all(
-        this.tests.map(async (test) => {
-          await this.runTest(test);
+        this.tests.map(async (test, index) => {
+          await this.runTest(test, this.testSandboxes[index]);
         }),
       );
     }
@@ -122,8 +113,10 @@ export class TestingService {
     return files;
   }
 
-  private async runTest(test: SubqlTest) {
+  private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
+
+    const handlerInfo = this.getHandlerInfo(test.handler);
 
     // Fetch block
     logger.debug('Fetching block');
@@ -131,8 +124,6 @@ export class TestingService {
       this.apiService.getApi(),
       [test.blockHeight],
     );
-
-    // Check filters match
 
     // Init db
     const schema = `test-${this.nodeConfig.subqueryName}`;
@@ -145,53 +136,58 @@ export class TestingService {
     const modelRelations = getAllEntitiesRelations(this.project.schema);
     await this.storeService.init(modelRelations, schema);
     const store = this.storeService.getStore();
+    sandbox.freeze(store, 'store');
 
     logger.info(JSON.stringify(test.dependentEntities));
 
     // Init entities
     logger.debug('Initializing entities');
     test.dependentEntities.map(async (entity) => {
-      const attrs = entity as unknown as CreationAttributes<Model>;
-      logger.info(entity.constructor.name);
-      await store.set(`${(entity as any).name}`, entity.id, entity);
+      logger.info(JSON.stringify(entity.save));
+      await entity.save();
     });
 
-    const handlerInfo = this.getHandlerInfo(test.handler);
+    const dataSource: SubqlProjectDs = this.getDsWithHandler(test.handler);
+    const runtimeVersion = await this.apiService
+      .getApi()
+      .rpc.state.getRuntimeVersion(block.block.block.header.hash);
 
-    const sandbox = new IndexerSandbox(
-      {
-        root: this.project.root,
-        entry: handlerInfo.entry,
-        script: undefined,
-      },
-      this.nodeConfig,
-    );
-
-    sandbox.freeze(store, 'store');
-
-    // Run handler
     logger.debug('Running handler');
     switch (handlerInfo.kind) {
       case SubstrateHandlerKind.Block:
-        await sandbox.securedExec(handlerInfo.handler, [block.block]);
+        await this.indexerManager.indexData<SubstrateHandlerKind.Block>(
+          SubstrateHandlerKind.Block,
+          block.block,
+          dataSource,
+          this.getVM(block.block, runtimeVersion),
+        );
         break;
       case SubstrateHandlerKind.Call:
         await Promise.all(
-          block.extrinsics.map(async (ext) => {
-            await sandbox.securedExec(handlerInfo.handler, [ext]);
+          block.extrinsics.map(async (extrinsic) => {
+            await this.indexerManager.indexData<SubstrateHandlerKind.Call>(
+              SubstrateHandlerKind.Call,
+              extrinsic,
+              dataSource,
+              this.getVM(block.block, runtimeVersion),
+            );
           }),
         );
         break;
       case SubstrateHandlerKind.Event:
         await Promise.all(
-          block.events.map(async (evt) => {
-            await sandbox.securedExec(handlerInfo.handler, [evt]);
+          block.events.map(async (event) => {
+            await this.indexerManager.indexData<SubstrateHandlerKind.Event>(
+              SubstrateHandlerKind.Event,
+              event,
+              dataSource,
+              this.getVM(block.block, runtimeVersion),
+            );
           }),
         );
         break;
       default:
     }
-
     // Check expected entities
     logger.debug('Checking expected entities');
     let passedTests = 0;
@@ -199,7 +195,7 @@ export class TestingService {
     for (let i = 0; i < test.expectedEntities.length; i++) {
       const expectedEntity = test.expectedEntities[i];
       const actualEntity = await store.get(
-        `${(expectedEntity as any).name}`,
+        (expectedEntity as any).name,
         expectedEntity.id,
       );
       const attributes = actualEntity as unknown as CreationAttributes<Model>;
@@ -229,6 +225,20 @@ export class TestingService {
     });
   }
 
+  private getDsWithHandler(handler: string) {
+    //return datasource with the given handler
+    const datasources = this.project.dataSources;
+    for (const ds of datasources) {
+      const mapping = ds.mapping;
+      const handlers = mapping.handlers;
+      for (const hnd of handlers) {
+        if (hnd.handler === handler) {
+          return ds;
+        }
+      }
+    }
+  }
+
   private getHandlerInfo(handler: string): {
     handler: string;
     entry: string;
@@ -249,5 +259,19 @@ export class TestingService {
       }
     }
     throw new Error(`handler ${handler} not found in the mappings`);
+  }
+
+  private getVM(
+    block: SubstrateBlock,
+    runtimeVersion: RuntimeVersion,
+  ): (ds: SubqlProjectDs) => Promise<IndexerSandbox> {
+    return async (ds: SubqlProjectDs) => {
+      // Injected runtimeVersion from fetch service might be outdated
+      const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
+
+      const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+
+      return vm;
+    };
   }
 }
