@@ -23,6 +23,7 @@ const METADATA_TYPES = {
   queryNodeVersion: 'string',
   dynamicDatasources: 'string',
   startHeight: 'number',
+  evmChainId: 'string',
 };
 
 type MetaType = number | string | boolean;
@@ -152,6 +153,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         queryNodeVersion: String
         rowCountEstimate: [TableEstimate]
         dynamicDatasources: String
+        evmChainId: String
       }
       extend type Query {
         _metadata(chainId: String): _Metadata
