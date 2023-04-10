@@ -228,7 +228,8 @@ export class CachedModel<
       ]);
     } else {
       dbOperation = Promise.all([
-        // cockroach having issue with bulkCreate
+        // We need to use upsert instead of bulkCreate for cockroach db
+        // see this https://github.com/subquery/subql/issues/1606
         this.useCockroachDb
           ? records.map((r) => {
               this.model.upsert(r, {transaction: tx});

@@ -69,6 +69,8 @@ const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
+type RemovedIndexes = Record<string, IndexesOptions[]>;
+
 interface IndexField {
   entityName: string;
   fieldName: string;
@@ -94,6 +96,7 @@ export class StoreService {
   historical: boolean;
   private dbType: SUPPORT_DB;
   private useSubscription: boolean;
+  private removedIndexes: RemovedIndexes = {};
 
   poiModel: CachePoiModel;
   metadataModel: CacheMetadataModel;
@@ -116,8 +119,7 @@ export class StoreService {
       this.historical = false;
       logger.warn(`Historical feature is not support with ${this.dbType}`);
     }
-    this.storeCache.setHistorical(this.historical);
-    this.storeCache.setUseCockroach(this.dbType === SUPPORT_DB.cockRoach);
+    this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
 
     try {
       await this.syncSchema(this.schema);
@@ -258,7 +260,7 @@ export class StoreService {
       this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
 
       // Update index query for cockroach db
-      this.handleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
+      this.beforeHandleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
 
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
@@ -367,6 +369,9 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+    // TODO,THIS NOT WORKING.
+    // Failed to update model indexes as it is read-only property https://github.com/subquery/subql/issues/1606
+    // this.afterHandleCockroachIndex()
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
@@ -436,15 +441,17 @@ export class StoreService {
     });
   }
 
-  private handleCockroachIndex(
+  // Sequelize model will generate follow query to create hash indexes
+  // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
+  // This will be rejected from cockroach db due to syntax error
+  // To avoid this we need to create index manually and add to extraQueries in order to create index in db
+  private beforeHandleCockroachIndex(
     schema: string,
     modelName: string,
     indexes: IndexesOptions[],
     existedIndexes: string[],
     extraQueries: string[]
   ): void {
-    // remove original indexes avoid direct create from sequelize model
-    // this will create index manually from extraQueries
     if (this.dbType === SUPPORT_DB.cockRoach) {
       indexes.forEach((index, i) => {
         if (index.using === IndexType.HASH && !existedIndexes.includes(index.name)) {
@@ -453,8 +460,24 @@ export class StoreService {
           }) USING HASH;`;
           extraQueries.push(cockroachDbIndexQuery);
         }
+        if (this.removedIndexes[modelName] === undefined) {
+          this.removedIndexes[modelName] = [];
+        }
+        this.removedIndexes[modelName].push(indexes[i]);
         delete indexes[i];
       });
+    }
+  }
+
+  // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
+  // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
+  private afterHandleCockroachIndex(): void {
+    const removedIndexes = Object.entries(this.removedIndexes);
+    if (removedIndexes.length > 0) {
+      for (const [model, indexes] of removedIndexes) {
+        const sqModel = this.sequelize.model(model);
+        (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
+      }
     }
   }
 

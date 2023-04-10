@@ -32,11 +32,8 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     this.storeCacheThreshold = config.storeCacheThreshold;
   }
 
-  setUseCockroach(useCockroachDb: boolean): void {
+  init(historical: boolean, useCockroachDb: boolean): void {
     this._useCockroachDb = useCockroachDb;
-  }
-
-  setHistorical(historical: boolean): void {
     this._historical = historical;
   }
 
