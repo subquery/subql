@@ -2959,9 +2959,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:1.11.2-storeCache-0.0.4":
-  version: 1.11.2-storeCache-0.0.4
-  resolution: "@subql/node-core@npm:1.11.2-storeCache-0.0.4"
+"@subql/node-core@npm:1.11.2-storeCache-0.0.5":
+  version: 1.11.2-storeCache-0.0.5
+  resolution: "@subql/node-core@npm:1.11.2-storeCache-0.0.5"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
@@ -2982,7 +2982,7 @@ __metadata:
     source-map: ^0.7.4
     vm2: ^3.9.9
     yargs: ^16.2.0
-  checksum: c9a80083c64ad20a4225b04a7f1a03423dd7d33ae12a452128d0e33574dfbc962b95c472b1738b9701b38f8e8401e3b12f1519d5bea61a70ce6d4b8108e19da6
+  checksum: a67370d9965987af7017fe5d7929232e5533d241e76eafada79624e602bb20cc8d3b68e01b4a6af544594e484839f472f90f3c841623fd80dfab67bd9c848a65
   languageName: node
   linkType: hard
 
@@ -3000,7 +3000,7 @@ __metadata:
     "@nestjs/testing": ^8.2.6
     "@subql/common": ^1.8.1
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": 1.11.2-storeCache-0.0.4
+    "@subql/node-core": 1.11.2-storeCache-0.0.5
     "@subql/types-ethereum": "workspace:*"
     "@subql/utils": ^1.4.1
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
