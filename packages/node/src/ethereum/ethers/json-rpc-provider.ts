@@ -1,10 +1,9 @@
 /* eslint-disable */
 import { deepCopy } from '@ethersproject/properties';
-import { fetchJson } from '@ethersproject/web';
 
 import { JsonRpcProvider as BaseJsonRpcProvider } from '@ethersproject/providers';
 import { Networkish } from '@ethersproject/networks';
-import { ConnectionInfo } from './web';
+import { ConnectionInfo, fetchJson } from './web';
 
 function getResult(payload: {
   error?: { code?: number; data?: any; message?: string };

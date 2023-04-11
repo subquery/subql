@@ -1,10 +1,9 @@
 /* eslint-disable */
 import { deepCopy } from '@ethersproject/properties';
-import { fetchJson } from '@ethersproject/web';
 
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Networkish } from '@ethersproject/networks';
-import { ConnectionInfo } from './web';
+import { ConnectionInfo, fetchJson } from './web';
 import { getLogger } from '@subql/node-core';
 
 const logger = getLogger('JsonRpcBatchProvider');

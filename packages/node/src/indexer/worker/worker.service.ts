@@ -68,6 +68,7 @@ export class WorkerService {
       });
     } catch (e) {
       logger.error(/*e, */ `Failed to fetch block ${height}`);
+      throw e;
     }
   }
 

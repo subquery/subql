@@ -206,30 +206,34 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     blockNumber: number,
     includeTx?: boolean,
   ): Promise<EthereumBlockWrapped> {
-    const [block, logs] = await Promise.all([
-      this.getBlockPromise(blockNumber, includeTx),
-      this.client.getLogs({
-        fromBlock: hexValue(blockNumber),
-        toBlock: hexValue(blockNumber),
-      }),
-    ]);
+    try {
+      const [block, logs] = await Promise.all([
+        this.getBlockPromise(blockNumber, includeTx),
+        this.client.getLogs({
+          fromBlock: hexValue(blockNumber),
+          toBlock: hexValue(blockNumber),
+        }),
+      ]);
 
-    const ret = new EthereumBlockWrapped(
-      block,
-      includeTx
-        ? block.transactions.map((tx) => ({
-            ...formatTransaction(tx),
-            // TODO memoise
-            receipt: () =>
-              this.getTransactionReceipt(tx.hash).then((r) =>
-                formatReceipt(r, block),
-              ),
-          }))
-        : [],
-      logs.map((l) => formatLog(l, block)),
-    );
-    this.eventEmitter.emit('fetchBlock');
-    return ret;
+      const ret = new EthereumBlockWrapped(
+        block,
+        includeTx
+          ? block.transactions.map((tx) => ({
+              ...formatTransaction(tx),
+              // TODO memoise
+              receipt: () =>
+                this.getTransactionReceipt(tx.hash).then((r) =>
+                  formatReceipt(r, block),
+                ),
+            }))
+          : [],
+        logs.map((l) => formatLog(l, block)),
+      );
+      this.eventEmitter.emit('fetchBlock');
+      return ret;
+    } catch (e) {
+      throw this.handleError(e);
+    }
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {
@@ -338,5 +342,14 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     } else {
       logger.warn('Disconnect called on HTTP provider');
     }
+  }
+
+  handleError(e: Error): Error {
+    if ((e as any)?.status === 429) {
+      const { hostname } = new URL(this.endpoint);
+      return new Error(`Rate Limited at endpoint: ${hostname}`);
+    }
+
+    return e;
   }
 }
