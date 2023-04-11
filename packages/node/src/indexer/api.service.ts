@@ -14,6 +14,7 @@ import {
   NodeConfig,
   profilerWrap,
   ConnectionPoolService,
+  ApiService as BaseApiService,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -32,7 +33,10 @@ const TIMEOUT = 90 * 1000;
 const logger = getLogger('api');
 
 @Injectable()
-export class ApiService implements OnApplicationShutdown {
+export class ApiService
+  extends BaseApiService
+  implements OnApplicationShutdown
+{
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
   private currentBlockHash: string;
   private currentBlockNumber: number;
@@ -43,7 +47,9 @@ export class ApiService implements OnApplicationShutdown {
     private connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,
-  ) {}
+  ) {
+    super(project);
+  }
 
   async onApplicationShutdown(): Promise<void> {
     await this.connectionPoolService.onApplicationShutdown();
@@ -251,54 +257,15 @@ export class ApiService implements OnApplicationShutdown {
     return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
   }
 
-  private async fetchBlocksFromFirstAvailableEndpoint(
+  async fetchBlocks(
     batch: number[],
     overallSpecVer?: number,
   ): Promise<BlockContent[]> {
-    let reconnectAttempts = 0;
-    while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-      try {
-        const blocks = await this.fetchBlocksBatches(
-          this.api,
-          batch,
-          overallSpecVer,
-        );
-        return blocks;
-      } catch (e) {
-        logger.error(e, 'Failed to fetch blocks');
-        reconnectAttempts++;
-      }
-    }
-    throw new Error(
-      `Maximum number of retries (${MAX_RECONNECT_ATTEMPTS}) reached.`,
+    return this.fetchBlocksGeneric<BlockContent>(
+      batch,
+      () => (blockArray: number[], specVer?: number) =>
+        this.fetchBlocksBatches(this.api, blockArray, specVer),
+      overallSpecVer,
     );
-  }
-
-  async fetchBlocks(
-    blockNums: number[],
-    overallSpecVer?: number,
-  ): Promise<BlockContent[]> {
-    const api = this.api;
-    try {
-      const blocks = await this.fetchBlocksBatches(
-        api,
-        blockNums,
-        overallSpecVer,
-      );
-      return blocks;
-    } catch (e) {
-      logger.error(
-        e,
-        `Failed to fetch blocks ${blockNums[0]}...${
-          blockNums[blockNums.length - 1]
-        }`,
-      );
-
-      const blocks = await this.fetchBlocksFromFirstAvailableEndpoint(
-        blockNums,
-        overallSpecVer,
-      );
-      return blocks;
-    }
   }
 }
