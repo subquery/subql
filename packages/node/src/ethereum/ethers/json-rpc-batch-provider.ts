@@ -106,6 +106,15 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
         // }
 
         // https://github.com/ethers-io/ethers.js/pull/2657
+        if (!Array.isArray(result)) {
+          const error = new Error(
+            'Invalid response \n' + JSON.stringify(result),
+          );
+          batch.forEach((inflightRequest) => {
+            inflightRequest.reject(error);
+          });
+          return;
+        }
         const resultMap = result.reduce((resultMap, payload) => {
           resultMap[payload.id] = payload;
           return resultMap;
