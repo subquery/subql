@@ -26,12 +26,14 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private queuedFlush: Promise<void>;
   private storeCacheThreshold: number;
   private _historical = true;
+  private _useCockroachDb: boolean;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     this.storeCacheThreshold = config.storeCacheThreshold;
   }
 
-  setHistorical(historical: boolean): void {
+  init(historical: boolean, useCockroachDb: boolean): void {
+    this._useCockroachDb = useCockroachDb;
     this._historical = historical;
   }
 
@@ -50,7 +52,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
-      this.cachedModels[entity] = new CachedModel(model, this._historical, this.config);
+      this.cachedModels[entity] = new CachedModel(model, this._historical, this.config, this._useCockroachDb);
     }
 
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
@@ -86,7 +88,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
 
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
-      deferrable: this._historical ? undefined : Deferrable.SET_DEFERRED(),
+      deferrable: this._historical || this._useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
     });
     try {
       // Get the block height of all data we want to flush up to
