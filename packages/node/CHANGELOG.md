@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2023-04-12
+### Fixed
+- Improve error handling with 429 errors (#53)
+- Check result from json-rpc-batch request is array (#54)
+### Changed
+- Update node-core, update logic for cockroach db (#55)
 
 ## [1.0.1] - 2023-04-05
 ### Fixed
