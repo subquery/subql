@@ -139,7 +139,6 @@ export class TestingService {
     // Init entities
     logger.debug('Initializing entities');
     test.dependentEntities.map(async (entity) => {
-      logger.info(JSON.stringify(entity.save));
       await entity.save();
     });
 
@@ -175,7 +174,7 @@ export class TestingService {
     for (let i = 0; i < test.expectedEntities.length; i++) {
       const expectedEntity = test.expectedEntities[i];
       const actualEntity = await store.get(
-        (expectedEntity as any).name,
+        (expectedEntity as any)._name,
         expectedEntity.id,
       );
       const attributes = actualEntity as unknown as CreationAttributes<Model>;

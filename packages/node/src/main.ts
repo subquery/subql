@@ -16,6 +16,6 @@ initLogger(
 // Lazy import, to allow logger to be initialised before bootstrap()
 // As bootstrap runs services that requires logger
 const { bootstrap } = require('./init');
-if (argv._.length === 0 || !(argv._[0] === 'test')) {
+if (!(argv._[0] === 'test')) {
   void bootstrap();
 }
