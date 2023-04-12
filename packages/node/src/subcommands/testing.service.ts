@@ -14,12 +14,7 @@ import {
   IndexerSandbox,
 } from '@subql/node-core';
 import { SubqlTest } from '@subql/testing/interfaces';
-import {
-  DynamicDatasourceCreator,
-  Store,
-  SubstrateBlock,
-  SubstrateHandlerKind,
-} from '@subql/types';
+import { DynamicDatasourceCreator, Store, SubstrateBlock } from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
 import Pino from 'pino';
 import { CreationAttributes, Model, Options, Sequelize } from 'sequelize';
@@ -55,6 +50,7 @@ export class TestingService {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async init() {
+    await this.indexerManager.start();
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(
@@ -147,47 +143,31 @@ export class TestingService {
       await entity.save();
     });
 
-    const dataSource: SubqlProjectDs = this.getDsWithHandler(test.handler);
     const runtimeVersion = await this.apiService
       .getApi()
       .rpc.state.getRuntimeVersion(block.block.block.header.hash);
 
     logger.debug('Running handler');
-    switch (handlerInfo.kind) {
-      case SubstrateHandlerKind.Block:
-        await this.indexerManager.indexData<SubstrateHandlerKind.Block>(
-          SubstrateHandlerKind.Block,
-          block.block,
-          dataSource,
-          this.getVM(block.block, runtimeVersion),
-        );
-        break;
-      case SubstrateHandlerKind.Call:
-        await Promise.all(
-          block.extrinsics.map(async (extrinsic) => {
-            await this.indexerManager.indexData<SubstrateHandlerKind.Call>(
-              SubstrateHandlerKind.Call,
-              extrinsic,
-              dataSource,
-              this.getVM(block.block, runtimeVersion),
-            );
-          }),
-        );
-        break;
-      case SubstrateHandlerKind.Event:
-        await Promise.all(
-          block.events.map(async (event) => {
-            await this.indexerManager.indexData<SubstrateHandlerKind.Event>(
-              SubstrateHandlerKind.Event,
-              event,
-              dataSource,
-              this.getVM(block.block, runtimeVersion),
-            );
-          }),
-        );
-        break;
-      default:
-    }
+    await this.indexerManager.indexBlock(
+      block,
+      runtimeVersion,
+      (datasources: SubqlProjectDs[]) => {
+        for (const ds of datasources) {
+          const mapping = ds.mapping;
+          const handlers = mapping.handlers;
+
+          for (let i = 0; i < handlers.length; i++) {
+            if (handlers[i].handler === test.handler) {
+              mapping.handlers = [handlers[i] as any];
+              return [ds];
+            }
+          }
+
+          return [];
+        }
+      },
+    );
+
     // Check expected entities
     logger.debug('Checking expected entities');
     let passedTests = 0;
@@ -223,20 +203,6 @@ export class TestingService {
       logging: false,
       benchmark: false,
     });
-  }
-
-  private getDsWithHandler(handler: string) {
-    //return datasource with the given handler
-    const datasources = this.project.dataSources;
-    for (const ds of datasources) {
-      const mapping = ds.mapping;
-      const handlers = mapping.handlers;
-      for (const hnd of handlers) {
-        if (hnd.handler === handler) {
-          return ds;
-        }
-      }
-    }
   }
 
   private getHandlerInfo(handler: string): {

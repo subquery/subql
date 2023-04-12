@@ -8,7 +8,6 @@ import {OperationType} from './types';
 
 type StarterEntity = {
   id: string;
-  name: string;
   field1: number;
   field2?: string;
   field3?: BigInt;
@@ -26,7 +25,6 @@ const testOperations = [
     entityType: 'StarterEntity',
     data: {
       id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
-      name: 'StarterEntity',
       field1: 41914,
     },
   },
@@ -63,7 +61,6 @@ const testOperations = [
     entityType: 'StarterEntity',
     data: <StarterEntity>{
       id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
-      name: 'StarterEntity',
       field3: null,
       field1: 41914,
       field2: null,

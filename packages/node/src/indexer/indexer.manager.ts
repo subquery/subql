@@ -78,6 +78,7 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
+    filterDs?: (ds: SubqlProjectDs[]) => SubqlProjectDs[],
   ): Promise<{
     dynamicDsCreated: boolean;
     operationHash: Uint8Array;
@@ -98,9 +99,13 @@ export class IndexerManager {
         block.block.header.number.toNumber(),
       );
 
-      const datasources = this.filteredDataSources.concat(
+      let datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
+
+      if (filterDs) {
+        datasources = filterDs(datasources);
+      }
 
       let apiAt: ApiAt;
       reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
@@ -290,7 +295,7 @@ export class IndexerManager {
     }
   }
 
-  async indexData<K extends SubstrateHandlerKind>(
+  private async indexData<K extends SubstrateHandlerKind>(
     kind: K,
     data: SubstrateRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
