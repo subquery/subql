@@ -18,6 +18,8 @@ import {
   isNonNullType,
   isObjectType,
   isUnionType,
+  ValueNode,
+  BooleanValueNode,
 } from 'graphql';
 import {getTypeByScalarName} from '../types';
 import {DirectiveName} from './constant';
@@ -120,16 +122,20 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       }
       // If is jsonField
       else if (jsonObjects.map((json) => json.name).includes(typeString)) {
-        const jsonObject = setJsonObjectType(
-          jsonObjects.find((object) => object.name === typeString),
-          jsonObjects
-        );
+        const jsonObjectX = jsonObjects.find((object) => object.name === typeString);
+        const jsonObject = setJsonObjectType(jsonObjectX, jsonObjects);
         newModel.fields.push(packJSONField(typeString, field, jsonObject));
-        newModel.indexes.push({
-          unique: false,
-          fields: [field.name],
-          using: IndexType.GIN,
-        });
+
+        const directive = jsonObjectX.astNode.directives.find(({name: {value}}) => value === DirectiveName.JsonField);
+        const argValue = directive?.arguments?.find((arg) => arg.name.value === 'indexed')?.value;
+        // For backwards compatibility if the argument is not defined then the index will be added
+        if (!argValue || (isBooleanValueNode(argValue) && argValue.value !== false)) {
+          newModel.indexes.push({
+            unique: false,
+            fields: [field.name],
+            using: IndexType.GIN,
+          });
+        }
       } else {
         throw new Error(`${typeString} is not an valid type`);
       }
@@ -253,4 +259,8 @@ function validateRelations(modelRelations: GraphQLModelsRelationsEnums): void {
       `Please check entity ${r.from} with field ${r.fieldName} has correct relation with entity ${r.to}`
     );
   }
+}
+
+function isBooleanValueNode(valueNode?: ValueNode): valueNode is BooleanValueNode {
+  return valueNode?.kind === 'BooleanValue';
 }

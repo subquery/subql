@@ -263,4 +263,32 @@ describe('utils that handle schema.graphql', () => {
     expect(accountModel.fields[0].jsonInterface.fields[2].type).toBe('Json');
     expect(accountModel.fields[0].jsonInterface.fields[2].jsonInterface.name).toBe('MyJson2');
   });
+
+  it('can read jsonfield without index', () => {
+    const graphqlSchema = gql`
+      type MyJson @jsonField(indexed: false) {
+        data: String!
+        data2: [String]
+      }
+      type MyJson2 @jsonField(indexed: true) {
+        data: String!
+        data2: [String]
+      }
+      type MyJson3 @jsonField {
+        data: String!
+        data2: [String]
+      }
+      type Account @entity {
+        field1: MyJson!
+        field2: MyJson2!
+        field3: MyJson3!
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const entities = getAllEntitiesRelations(schema);
+
+    expect(entities.models?.[0].indexes.length).toEqual(2);
+    expect(entities.models?.[0].indexes[0].fields).toEqual(['field2']);
+    expect(entities.models?.[0].indexes[1].fields).toEqual(['field3']);
+  });
 });
