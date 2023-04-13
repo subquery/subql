@@ -124,7 +124,7 @@ export class TestingService {
     // Fetch block
     logger.debug('Fetching block');
     const [block] = await SubstrateUtil.fetchBlocksBatches(
-      this.apiService.getApi(),
+      this.apiService.api,
       [test.blockHeight],
     );
 
@@ -147,9 +147,10 @@ export class TestingService {
       await entity.save();
     });
 
-    const runtimeVersion = await this.apiService
-      .getApi()
-      .rpc.state.getRuntimeVersion(block.block.block.header.hash);
+    const runtimeVersion =
+      await this.apiService.api.rpc.state.getRuntimeVersion(
+        block.block.block.header.hash,
+      );
 
     logger.debug('Running handler');
     await this.indexerManager.indexBlock(
