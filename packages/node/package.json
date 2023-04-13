@@ -36,7 +36,6 @@
     "app-module-path": "^2.2.0",
     "cron-converter": "^1.0.2",
     "dayjs": "^1.10.7",
-    "esbuild": "^0.17.15",
     "eventemitter2": "^6.4.5",
     "fetch-h2": "3.0.2",
     "lodash": "^4.17.21",

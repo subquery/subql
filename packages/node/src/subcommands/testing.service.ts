@@ -54,7 +54,6 @@ export class TestingService {
     private readonly indexerManager: IndexerManager,
   ) {}
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async init() {
     await this.indexerManager.start();
     const projectPath = this.project.root;
@@ -62,8 +61,8 @@ export class TestingService {
     const testFiles = this.findAllTestFiles(
       path.join(projectPath, 'dist/test'),
     );
-    // import all test files
 
+    // import all test files
     this.testSandboxes = testFiles.map((file) => {
       const option: SandboxOption = {
         root: this.project.root,
@@ -91,6 +90,7 @@ export class TestingService {
     if (Object.keys(this.tests).length !== 0) {
       for (const sandboxIndex in this.tests) {
         const tests = this.tests[sandboxIndex];
+        this.totalTests = tests.length;
         for (const test of tests) {
           await this.runTest(test, this.testSandboxes[sandboxIndex]);
         }
@@ -118,7 +118,6 @@ export class TestingService {
   }
 
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
-    this.totalTests++;
     logger.info(`Starting test: ${test.name}`);
 
     // Fetch block
@@ -164,7 +163,6 @@ export class TestingService {
           const mapping = dsCopy.mapping;
           const handlers = mapping.handlers;
 
-          //logger.info(JSON.stringify(test.handler))
           for (let i = 0; i < handlers.length; i++) {
             if (handlers[i].handler === test.handler) {
               mapping.handlers = [handlers[i] as any];
@@ -202,7 +200,6 @@ export class TestingService {
       if (passed) {
         logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
         passedTests++;
-        this.totalPassedTests++;
       } else {
         logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
         this.failedTestsSummary.push({
@@ -212,9 +209,11 @@ export class TestingService {
         });
 
         failedTests++;
-        this.totalFailedTests++;
       }
     }
+
+    this.totalPassedTests += passedTests;
+    this.totalFailedTests += failedTests;
 
     logger.info(
       `Test: ${test.name} completed with ${chalk.green(
