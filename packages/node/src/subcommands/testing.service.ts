@@ -4,24 +4,21 @@
 import { readdirSync, statSync } from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   NodeConfig,
   StoreService,
   getLogger,
   SandboxOption,
   TestSandbox,
-  IndexerSandbox,
 } from '@subql/node-core';
 import { SubqlTest } from '@subql/testing/interfaces';
-import { DynamicDatasourceCreator, Store, SubstrateBlock } from '@subql/types';
+import { DynamicDatasourceCreator, Store } from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
 import Pino from 'pino';
-import { CreationAttributes, Model, Options, Sequelize } from 'sequelize';
+import { CreationAttributes, Model, Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { SandboxService } from '../indexer/sandbox.service';
 import * as SubstrateUtil from '../utils/substrate';
 
 const logger = getLogger('CLI-test-Testing');
@@ -35,7 +32,7 @@ declare global {
 
 @Injectable()
 export class TestingService {
-  private tests: SubqlTest[];
+  private tests: Record<number, SubqlTest[]> = {};
   private testSandboxes: TestSandbox[];
 
   constructor(
@@ -45,7 +42,6 @@ export class TestingService {
     @Inject('ISubqueryProject') private project: SubqueryProject,
     private readonly apiService: ApiService,
     private readonly indexerManager: IndexerManager,
-    private readonly sandboxService: SandboxService,
   ) {}
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -76,19 +72,19 @@ export class TestingService {
       }),
     );
 
-    this.tests = [];
-    this.testSandboxes.map((sandbox) => {
-      this.tests.push(...sandbox.getTests());
+    this.testSandboxes.map((sandbox, index) => {
+      this.tests[index] = sandbox.getTests();
     });
   }
 
   async run() {
-    if (this.tests?.length !== 0) {
-      await Promise.all(
-        this.tests.map(async (test, index) => {
-          await this.runTest(test, this.testSandboxes[index]);
-        }),
-      );
+    if (Object.keys(this.tests).length !== 0) {
+      for (const sandboxIndex in this.tests) {
+        const tests = this.tests[sandboxIndex];
+        for (const test of tests) {
+          await this.runTest(test, this.testSandboxes[sandboxIndex]);
+        }
+      }
     }
   }
 
@@ -112,8 +108,6 @@ export class TestingService {
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
 
-    const handlerInfo = this.getHandlerInfo(test.handler);
-
     // Fetch block
     logger.debug('Fetching block');
     const [block] = await SubstrateUtil.fetchBlocksBatches(
@@ -134,8 +128,6 @@ export class TestingService {
     const store = this.storeService.getStore();
     sandbox.freeze(store, 'store');
 
-    logger.info(JSON.stringify(test.dependentEntities));
-
     // Init entities
     logger.debug('Initializing entities');
     test.dependentEntities.map(async (entity) => {
@@ -152,13 +144,17 @@ export class TestingService {
       runtimeVersion,
       (datasources: SubqlProjectDs[]) => {
         for (const ds of datasources) {
-          const mapping = ds.mapping;
+          // Create a deep copy of the ds object
+          const dsCopy = JSON.parse(JSON.stringify(ds));
+
+          const mapping = dsCopy.mapping;
           const handlers = mapping.handlers;
 
+          //logger.info(JSON.stringify(test.handler))
           for (let i = 0; i < handlers.length; i++) {
             if (handlers[i].handler === test.handler) {
               mapping.handlers = [handlers[i] as any];
-              return [ds];
+              return [dsCopy];
             }
           }
 
@@ -174,14 +170,17 @@ export class TestingService {
     for (let i = 0; i < test.expectedEntities.length; i++) {
       const expectedEntity = test.expectedEntities[i];
       const actualEntity = await store.get(
-        (expectedEntity as any)._name,
+        expectedEntity._name,
         expectedEntity.id,
       );
       const attributes = actualEntity as unknown as CreationAttributes<Model>;
       let passed = true;
       Object.keys(attributes).map((attr) => {
-        if (expectedEntity[attr] !== actualEntity[attr]) {
+        if (!this.isEqual(expectedEntity[attr], actualEntity[attr])) {
           passed = false;
+          logger.info(
+            `actual: ${actualEntity[attr]}, expected: ${expectedEntity[attr]}`,
+          );
         }
       });
 
@@ -198,45 +197,16 @@ export class TestingService {
       `Test: ${test.name} completed with ${passedTests} passed and ${failedTests} failed checks`,
     );
 
-    this.sequelize.dropSchema(schema, {
+    await this.sequelize.dropSchema(`"${schema}"`, {
       logging: false,
       benchmark: false,
     });
   }
 
-  private getHandlerInfo(handler: string): {
-    handler: string;
-    entry: string;
-    kind: string;
-  } {
-    const datasources = this.project.dataSources;
-    for (const ds of datasources) {
-      const mapping = ds.mapping;
-      const handlers = mapping.handlers;
-      for (const hnd of handlers) {
-        if (hnd.handler === handler) {
-          return {
-            handler: handler,
-            entry: mapping.file,
-            kind: hnd.kind,
-          };
-        }
-      }
+  private isEqual(expected: any, actual: any): boolean {
+    if (expected instanceof Date && actual instanceof Date) {
+      return expected.getTime() === actual.getTime();
     }
-    throw new Error(`handler ${handler} not found in the mappings`);
-  }
-
-  private getVM(
-    block: SubstrateBlock,
-    runtimeVersion: RuntimeVersion,
-  ): (ds: SubqlProjectDs) => Promise<IndexerSandbox> {
-    return async (ds: SubqlProjectDs) => {
-      // Injected runtimeVersion from fetch service might be outdated
-      const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
-
-      const vm = this.sandboxService.getDsProcessor(ds, apiAt);
-
-      return vm;
-    };
+    return expected === actual;
   }
 }

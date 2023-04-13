@@ -16,7 +16,6 @@ export async function testingInit(): Promise<void> {
     await app.init();
     const testingService = app.get(TestingService);
     await testingService.init();
-    // TODO call function to run tests
     await testingService.run();
   } catch (e) {
     logger.error(e, 'Testing failed');
