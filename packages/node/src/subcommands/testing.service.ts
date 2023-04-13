@@ -41,6 +41,10 @@ export class TestingService {
     failedAttributes: string[];
   }[] = [];
 
+  private totalTests = 0;
+  private totalPassedTests = 0;
+  private totalFailedTests = 0;
+
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -114,6 +118,7 @@ export class TestingService {
   }
 
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
+    this.totalTests++;
     logger.info(`Starting test: ${test.name}`);
 
     // Fetch block
@@ -196,6 +201,7 @@ export class TestingService {
       if (passed) {
         logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
         passedTests++;
+        this.totalPassedTests++;
       } else {
         logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
         this.failedTestsSummary.push({
@@ -205,6 +211,7 @@ export class TestingService {
         });
 
         failedTests++;
+        this.totalFailedTests++;
       }
     }
 
@@ -240,5 +247,9 @@ export class TestingService {
         }
       }
     }
+
+    logger.info(chalk.bold.green(`Total tests: ${this.totalTests}`));
+    logger.info(chalk.bold.green(`Passing tests: ${this.totalPassedTests}`));
+    logger.info(chalk.bold.red(`Failing tests: ${this.totalFailedTests}`));
   }
 }
