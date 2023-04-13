@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {flatten, includes, isEqual, uniq} from 'lodash';
+import {flatten, forEach, includes, isEqual, uniq} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
@@ -13,6 +13,9 @@ import {
   ICachedModel,
   SetValueModel,
   GetData,
+  IndexedFlushableRecord,
+  FilteredHeightRecords,
+  IndexedOperationActionType,
 } from './types';
 
 const getCacheOptions = {
@@ -32,6 +35,12 @@ export class CachedModel<
 
   private removeCache: Record<string, RemoveValue> = {};
 
+  private getNextStoreOperationIndex: () => number;
+
+  private storeFlushInOrder: boolean;
+
+  readonly hasAssociations: boolean;
+
   flushableRecordCounter = 0;
 
   constructor(
@@ -45,6 +54,14 @@ export class CachedModel<
       getCacheOptions.max = this.config.storeGetCacheSize;
     }
     this.getCache = new GetData<T>(getCacheOptions);
+    if (Object.keys(this.model.associations).length > 0) {
+      this.hasAssociations = true;
+    }
+  }
+
+  init(storeFlushInOrder = false, getNextStoreOperationIndex: () => number) {
+    this.storeFlushInOrder = storeFlushInOrder;
+    this.getNextStoreOperationIndex = getNextStoreOperationIndex;
   }
 
   private get historicalModel(): ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>> {
@@ -146,7 +163,7 @@ export class CachedModel<
     if (this.setCache[id] === undefined) {
       this.setCache[id] = new SetValueModel();
     }
-    this.setCache[id].set(data, blockHeight);
+    this.setCache[id].set(data, blockHeight, this.storeFlushInOrder ? this.getNextStoreOperationIndex() : undefined);
     // Experimental, this means getCache keeps duplicate data from setCache,
     // we can remove this once memory is too full.
     this.getCache.set(id, data);
@@ -173,6 +190,7 @@ export class CachedModel<
     if (this.removeCache[id] === undefined) {
       this.removeCache[id] = {
         removedAtBlock: blockHeight,
+        operationIndex: this.storeFlushInOrder ? this.getNextStoreOperationIndex() : undefined,
       };
       this.flushableRecordCounter += 1;
       if (this.getCache.get(id)) {
@@ -193,28 +211,10 @@ export class CachedModel<
 
   async flush(tx: Transaction, blockHeight?: number): Promise<void> {
     // Get records relevant to the block height
-    const setRecords = blockHeight
-      ? Object.entries(this.setCache).reduce((acc, [key, value]) => {
-          const newValue = value.fromBelowHeight(blockHeight + 1);
-          if (newValue.getValues().length) {
-            acc[key] = newValue;
-          }
-          return acc;
-        }, {} as SetData<T>)
-      : this.setCache;
-
-    const removeRecords = blockHeight
-      ? Object.entries(this.removeCache).reduce((acc, [key, value]) => {
-          if (value.removedAtBlock <= blockHeight) {
-            acc[key] = value;
-          }
-
-          return acc;
-        }, {} as Record<string, RemoveValue>)
-      : this.removeCache;
-
+    const {removeRecords, setRecords} = blockHeight
+      ? this.filterRecordsWithHeight(blockHeight)
+      : {removeRecords: this.removeCache, setRecords: this.setCache};
     const records = this.applyBlockRange(setRecords);
-
     let dbOperation: Promise<unknown>;
     if (this.historical) {
       dbOperation = Promise.all([
@@ -250,6 +250,63 @@ export class CachedModel<
     await dbOperation;
   }
 
+  // extract flushable records with its operation index, only use with non-historical flush
+  flushableRecordsWithIndex(blockHeight?: number): IndexedFlushableRecord<T>[] {
+    // Get records relevant to the block height
+    const {removeRecords, setRecords} = blockHeight
+      ? this.filterRecordsWithHeight(blockHeight)
+      : {removeRecords: this.removeCache, setRecords: this.setCache};
+    const indexedSetRecords = flatten(
+      Object.values(setRecords).map((r) => {
+        const values = r.getValues();
+        return values.map((v) => {
+          const indexedFlushableRecord = {
+            action: IndexedOperationActionType.Set,
+            entity: this.model.name,
+            data: v.data,
+            operationIndex: v.operationIndex,
+          } as IndexedFlushableRecord<T>;
+          return indexedFlushableRecord;
+        });
+      })
+    );
+
+    const indexedRemoveRecord = Object.entries(removeRecords).map(([key, value]) => {
+      return {
+        action: IndexedOperationActionType.Remove,
+        entity: this.model.name,
+        data: {id: key} as T,
+        operationIndex: value.operationIndex,
+      } as IndexedFlushableRecord<T>;
+    });
+
+    // Don't await DB operations to complete before clearing.
+    // This allows new data to be cached while flushing
+    this.clear(blockHeight);
+
+    return indexedSetRecords.concat(indexedRemoveRecord);
+  }
+
+  private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {
+    return {
+      removeRecords: Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+        if (value.removedAtBlock <= blockHeight) {
+          acc[key] = value;
+        }
+
+        return acc;
+      }, {} as Record<string, RemoveValue>),
+      setRecords: Object.entries(this.setCache).reduce((acc, [key, value]) => {
+        const newValue = value.fromBelowHeight(blockHeight + 1);
+        if (newValue.getValues().length) {
+          acc[key] = newValue;
+        }
+        return acc;
+      }, {} as SetData<T>),
+    };
+  }
+
+  // Add blockRange to historical record
   private applyBlockRange(setRecords: SetData<T>) {
     return flatten(
       Object.values(setRecords).map((v) => {

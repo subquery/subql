@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
-import {sum} from 'lodash';
+import {flatten, sum} from 'lodash';
 import {Deferrable, Sequelize} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
@@ -13,7 +13,7 @@ import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
-import {ICachedModel, ICachedModelControl} from './types';
+import {ICachedModel, ICachedModelControl, IndexedOperationActionType} from './types';
 
 const logger = getLogger('StoreCache');
 
@@ -27,6 +27,8 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private storeCacheThreshold: number;
   private _historical = true;
   private _useCockroachDb: boolean;
+  private _storeOperationIndex: number;
+  private _storeFlushInOrder = false;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     this.storeCacheThreshold = config.storeCacheThreshold;
@@ -35,6 +37,24 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   init(historical: boolean, useCockroachDb: boolean): void {
     this._useCockroachDb = useCockroachDb;
     this._historical = historical;
+    if (this.config.storeFlushInOrder) {
+      if (this._historical) {
+        logger.warn(`Flush store cache in order is not support with Historical feature,it will be disabled`);
+      } else {
+        this._storeFlushInOrder = this.config.storeFlushInOrder;
+        this.resetStoreOperationIndex();
+        logger.info(`Store cache will flush in order`);
+      }
+    }
+  }
+
+  resetStoreOperationIndex(): void {
+    this._storeOperationIndex = 0;
+  }
+
+  getNextStoreOperationIndex(): number {
+    this._storeOperationIndex += 1;
+    return this._storeOperationIndex;
   }
 
   setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
@@ -53,8 +73,8 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
       this.cachedModels[entity] = new CachedModel(model, this._historical, this.config, this._useCockroachDb);
+      this.cachedModels[entity].init(this._storeFlushInOrder, this.getNextStoreOperationIndex.bind(this));
     }
-
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
   }
 
@@ -66,7 +86,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       }
       this.cachedModels[entity] = new CacheMetadataModel(this.metadataRepo);
     }
-
     return this.cachedModels[entity] as unknown as CacheMetadataModel;
   }
 
@@ -95,15 +114,36 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       const blockHeight = flushAll ? undefined : await this.metadata.find('lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
-
-      await Promise.all(updatableModels.map((model) => model.flush(tx, blockHeight)));
-
+      if (this._storeFlushInOrder) {
+        // 1. Independent(no associations) models can flush simultaneously
+        await Promise.all(
+          updatableModels.filter((m) => !m.hasAssociations).map((model) => model.flush(tx, blockHeight))
+        );
+        // 2. Models with associations will flush in orders,
+        const relationalModels = updatableModels.filter((m) => m.hasAssociations);
+        // Extract all flushable records from each model and sort it
+        const sortedFlushableRecords = flatten(relationalModels.map((m) => m.flushableRecordsWithIndex())).sort(
+          (a, b) => a.operationIndex - b.operationIndex
+        );
+        // Handle record in operation order
+        for (const record of sortedFlushableRecords) {
+          const model = this.sequelize.model(record.entity);
+          if (record.action === IndexedOperationActionType.Set) {
+            await model.upsert(record.data, {transaction: tx});
+          } else if (record.action === IndexedOperationActionType.Remove) {
+            await model.destroy({where: {id: record.data.id} as any, transaction: tx});
+          }
+        }
+      } else {
+        await Promise.all(updatableModels.map((model) => model.flush(tx, blockHeight)));
+      }
       await tx.commit();
     } catch (e) {
       logger.error(e, 'Database transaction failed');
       await tx.rollback();
       throw e;
     }
+    this.resetStoreOperationIndex();
   }
 
   async flushCache(forceFlush?: boolean, flushAll?: boolean): Promise<void> {

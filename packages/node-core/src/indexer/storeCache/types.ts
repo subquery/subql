@@ -21,12 +21,31 @@ export interface ICachedModel<T> {
   bulkUpdate: (data: T[], blockHeight: number, fields?: string[]) => void;
   remove: (id: string, blockHeight: number) => void;
 }
-
 export interface ICachedModelControl {
   isFlushable: boolean;
+  hasAssociations?: boolean;
   flushableRecordCounter: number;
   flush(tx: Transaction, blockHeight?: number): Promise<void>;
+  init?(storeFlushInOrder: boolean, getNextStoreOperationIndex: () => number): void;
+  flushableRecordsWithIndex?(blockHeight?: number): IndexedFlushableRecord<any>[];
 }
+
+export enum IndexedOperationActionType {
+  Set = 'set',
+  Remove = 'remove',
+}
+
+export type IndexedFlushableRecord<T> = {
+  action: IndexedOperationActionType;
+  entity: string;
+  data: T;
+  operationIndex: number;
+};
+
+export type FilteredHeightRecords<T> = {
+  removeRecords: Record<string, RemoveValue>;
+  setRecords: SetData<T>;
+};
 
 export type EntitySetData = Record<string, SetData<any>>;
 
@@ -38,12 +57,14 @@ export type GetValue<T> = {
 
 export type RemoveValue = {
   removedAtBlock: number;
+  operationIndex?: number;
 };
 
 export type SetValue<T> = {
   data: T;
   startHeight: number;
   endHeight: number | null;
+  operationIndex?: number;
 };
 
 export type SetData<T> = Record<string, SetValueModel<T>>;
@@ -52,12 +73,12 @@ export class SetValueModel<T> {
   private historicalValues: SetValue<T>[] = [];
   private _latestIndex = -1;
 
-  private create(data: T, blockHeight: number): void {
-    this.historicalValues.push({data, startHeight: blockHeight, endHeight: null});
+  private create(data: T, blockHeight: number, operationIndex?: number): void {
+    this.historicalValues.push({data, startHeight: blockHeight, endHeight: null, operationIndex: operationIndex});
     this._latestIndex += 1;
   }
 
-  set(data: T, blockHeight: number): void {
+  set(data: T, blockHeight: number, operationIndex?: number): void {
     const latestIndex = this.latestIndex();
 
     if (latestIndex >= 0) {
@@ -68,10 +89,10 @@ export class SetValueModel<T> {
         throw new Error(`Can not set record with block height ${blockHeight}`);
       } else {
         this.historicalValues[latestIndex].endHeight = blockHeight;
-        this.create(data, blockHeight);
+        this.create(data, blockHeight, operationIndex);
       }
     } else {
-      this.create(data, blockHeight);
+      this.create(data, blockHeight, operationIndex);
     }
   }
 
