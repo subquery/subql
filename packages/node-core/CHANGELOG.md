@@ -10,6 +10,30 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.2] - 2023-04-05
+### Fixed
+- Compute block size one property at a time to prevent RangeError
+- Upgrade @subql/apollo-link version
+
+## [1.11.1] - 2023-03-30
+### Changed
+- Change to support multiple endpoints (#1551)
+### Fix
+- Fix previous release 1.11.0 failed
+
+## [1.11.0] - 2023-03-29
+### Added
+- Add SmartBatchService and BlockSizeBuffer (#1506)
+- Handle bigint in json.stringify (#1562)
+- Generate sourcemap for projects (#1569)
+- Update polkadot api to 10.1.4 (#1580)
+### Fixed
+- Fix enum under schema not being escaped (#1555)
+- Remove blocking in process queueing (#1572)
+### Changed
+- Use `performance.now` instead of date for profiler. (#1549)
+- Rename `--sponsored-dictionary` to `--dictionary-resolver` (#1559)
+
 ## [1.10.0] - 2023-03-06
 ### Fixed
 - fix issue store getByField limit could potentially excess config limit (#1529)

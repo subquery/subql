@@ -59,9 +59,11 @@ export class BenchmarkService {
           logger.info(
             this.targetHeight === this.lastRegisteredHeight && this.blockPerSecond === 0
               ? 'Fully synced, waiting for new blocks'
-              : `${this.blockPerSecond.toFixed(2)} bps, target: #${this.targetHeight}, current: #${
-                  this.currentProcessingHeight
-                }, estimate time: ${this.blockPerSecond === 0 ? 'unknown' : durationStr}`
+              : `${this.blockPerSecond.toFixed(
+                  2
+                )} blocks/s. Target height: ${this.targetHeight.toLocaleString()}. Current height: ${this.currentProcessingHeight.toLocaleString()}. Estimated time remaining: ${
+                  this.blockPerSecond === 0 ? 'unknown' : durationStr
+                }`
           );
         }
         this.lastRegisteredHeight = this.currentProcessingHeight;

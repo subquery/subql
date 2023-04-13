@@ -11,11 +11,13 @@ import {
   PoiService,
   MmrService,
   NodeConfig,
+  ConnectionPoolService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
@@ -54,13 +56,13 @@ jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
 });
 
 function testSubqueryProject_1(): SubqueryProject {
   return {
     network: {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     dataSources: [
       {
@@ -98,7 +100,7 @@ function testSubqueryProject_1(): SubqueryProject {
 function testSubqueryProject_2(): SubqueryProject {
   return {
     network: {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
       genesisHash:
         '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -126,11 +128,17 @@ function testSubqueryProject_2(): SubqueryProject {
 
 function createIndexerManager(
   project: SubqueryProject,
+  connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
   nodeConfig: NodeConfig,
 ): IndexerManager {
   const sequilize = new Sequelize();
   const eventEmitter = new EventEmitter2();
-  const apiService = new ApiService(project, eventEmitter);
+  const apiService = new ApiService(
+    project,
+    connectionPoolService,
+    eventEmitter,
+    nodeConfig,
+  );
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
@@ -188,14 +196,22 @@ describe('IndexerManager', () => {
   });
 
   xit('should be able to start the manager (v0.0.1)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject_1(), nodeConfig);
+    indexerManager = createIndexerManager(
+      testSubqueryProject_1(),
+      new ConnectionPoolService<ApiPromiseConnection>(),
+      nodeConfig,
+    );
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
   xit('should be able to start the manager (v0.2.0)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject_2(), nodeConfig);
+    indexerManager = createIndexerManager(
+      testSubqueryProject_2(),
+      new ConnectionPoolService<ApiPromiseConnection>(),
+      nodeConfig,
+    );
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);

@@ -10,7 +10,7 @@ import {
   ChainTypes,
   loadSubstrateProjectManifest,
 } from '@subql/common-substrate';
-import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
+import {loadTerraProjectManifest, TerraProjectManifestVersioned, TerraProjectNetworkV0_3_0} from '@subql/common-terra';
 import {classToPlain} from 'class-transformer';
 import {cli} from 'cli-ux';
 import inquirer from 'inquirer';
@@ -63,7 +63,9 @@ export async function prepare(
   if (project.runner.node.name === SUBSTRATE_NODE_NAME) {
     cli.action.start('Getting network genesis hash from endpoint for Chain ID');
     try {
-      genesisHash = await getGenesisHash(projectNetwork.endpoint);
+      genesisHash = await getGenesisHash(
+        typeof projectNetwork.endpoint === 'string' ? projectNetwork.endpoint : projectNetwork.endpoint[0]
+      );
     } catch (e) {
       genesisHash = null;
     }

@@ -9,7 +9,8 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
-  SmartBatchService
+  ConnectionPoolService,
+  SmartBatchService,
 } from '@subql/node-core';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -33,6 +34,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     StoreService,
     ApiService,
     IndexerManager,
+    ConnectionPoolService,
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {

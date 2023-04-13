@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.21.1] - 2023-03-30
+### Added
+- Support multiple endpoints (#1551)
+### Fix
+- Fix previous release 1.21.0 failed
+
+## [1.21.0] - 2023-03-29
+### Changed
+- Increase wsProvider timeout (#1550)
+- Rename `--sponsored-dictionary` to `--dictionary-resolver` (#1559)
+### Added
+- Add SmartBatchService and BlockSizeBuffer (#1506)
+- Improve api error handling (#1576)
+- Update polkadot api to 10.1.4 (#1580)
+### Fixed
+- Fix POI block offset been reset to 1 (#1571)
+- Remove blocking in process queueing (#1572)
+
+
 ## [1.20.0] - 2023-03-06
 ### Changed
 - Move enum under schema (#1527)

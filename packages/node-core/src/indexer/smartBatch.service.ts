@@ -33,9 +33,48 @@ export class SmartBatchService {
   }
 
   blockSize(block: any): number {
-    return Buffer.byteLength(
-      JSON.stringify(block, (key, value) => (typeof value === 'bigint' ? value.toString() : value))
-    );
+    let size = 0;
+    const stack: {obj: any; prop: any}[] = [
+      {obj: block, prop: null},
+      {obj: null, prop: null},
+    ]; // Add sentinel value
+
+    while (stack.length > 1) {
+      // Check for sentinel value
+      const {obj, prop} = stack.pop();
+      const type = typeof obj;
+
+      if (type === 'string') {
+        size += Buffer.byteLength(obj);
+      } else if (type === 'number' || type === 'boolean' || obj === null || obj === undefined) {
+        size += String(obj).length;
+      } else if (type === 'bigint') {
+        size += obj.toString().length;
+      } else if (Array.isArray(obj)) {
+        size += 1; // opening bracket
+        stack.push({obj: null, prop: null}); // sentinel
+        for (let i = obj.length - 1; i >= 0; i--) {
+          stack.push({obj: obj[i], prop: i});
+        }
+      } else if (type === 'object') {
+        size += 1; // opening brace
+        stack.push({obj: null, prop: null}); // sentinel
+        const keys = Object.keys(obj).sort();
+        for (let i = keys.length - 1; i >= 0; i--) {
+          const key = keys[i];
+          stack.push({obj: obj[key], prop: key});
+        }
+      } else {
+        throw new Error(`Cannot serialize ${type}`);
+      }
+
+      if (stack[stack.length - 1].prop !== prop && obj !== null && obj !== undefined) {
+        // Check for undefined/null values
+        size += 1; // comma or closing bracket/brace
+      }
+    }
+
+    return size;
   }
 
   heapMemoryLimit(): number {

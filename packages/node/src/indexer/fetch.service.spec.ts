@@ -15,7 +15,7 @@ import {
   NodeConfig,
   Dictionary,
   MetadataRepo,
-  SmartBatchService
+  SmartBatchService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
@@ -40,7 +40,7 @@ jest.mock('../utils/substrate', () =>
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
 });
 
@@ -275,7 +275,7 @@ function mockDictionaryService3(): DictionaryService {
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     chainTypes: {
       types: {
@@ -417,10 +417,8 @@ describe('FetchService', () => {
       project,
     );
     const pendingInit = fetchService.init(1);
-    expect(
-      apiService.getApi().rpc.chain.getFinalizedHead,
-    ).toHaveBeenCalledTimes(1);
-    expect(apiService.getApi().rpc.chain.getHeader).toHaveBeenCalledTimes(1);
+    expect(apiService.api.rpc.chain.getFinalizedHead).toHaveBeenCalledTimes(1);
+    expect(apiService.api.rpc.chain.getHeader).toHaveBeenCalledTimes(1);
     await pendingInit;
     fetchService.onApplicationShutdown();
   });

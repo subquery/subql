@@ -9,7 +9,6 @@ import {
   NodeConfig,
   IndexerEvent,
   delay,
-  profilerWrap,
   AutoQueue,
   Queue,
   waitForBatchSize,
@@ -17,11 +16,11 @@ import {
   SmartBatchService,
 } from '@subql/node-core';
 import { last } from 'lodash';
-import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
+import { BlockContent } from '../types';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
@@ -39,7 +38,6 @@ export class BlockDispatcherService
   private fetching = false;
   private isShutdown = false;
   // private getRuntimeVersion: GetRuntimeVersion;
-  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
 
   constructor(
     private apiService: ApiService,
@@ -57,13 +55,6 @@ export class BlockDispatcherService
       smartBatchService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-    if (this.nodeConfig.profiler) {
-      this.fetchBlocksBatches = profilerWrap(
-        SubstrateUtil.fetchBlocksBatches,
-        'SubstrateUtil',
-        'fetchBlocksBatches',
-      );
-    }
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -168,8 +159,7 @@ export class BlockDispatcherService
           await memoryLock.waitForUnlock();
         }
 
-        const blocks = await this.fetchBlocksBatches(
-          this.apiService.getApi(),
+        const blocks = await this.apiService.fetchBlocks(
           blockNums,
           specChanged ? undefined : this.runtimeService.parentSpecVersion,
         );
@@ -182,6 +172,7 @@ export class BlockDispatcherService
           bufferedHeight > this._latestBufferedHeight ||
           this.queue.peek() < Math.min(...blockNums)
         ) {
+          logger.info(`${this.queue.peek()} - ${Math.min(...blockNums)}`);
           logger.info(`Queue was reset for new DS, discarding fetched blocks`);
           continue;
         }

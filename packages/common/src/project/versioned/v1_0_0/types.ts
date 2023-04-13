@@ -26,7 +26,7 @@ export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extend
   templates?: T[];
   network: {
     chainId: string;
-    endpoint?: string;
+    endpoint?: string | string[];
     dictionary?: string;
     bypassBlocks?: (number | string)[];
     chaintypes?: {

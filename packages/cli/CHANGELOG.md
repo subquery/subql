@@ -8,6 +8,19 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.13.1] - 2023-03-30
+### Added
+- Change in migrate controller, add support for Multiple endpoints (#1551)
+### Fix
+- Fix previous release 1.13.0 failed
+
+## [1.13.0] - 2023-03-29
+### Added
+- `Build` generate sourcemap for projects (#1569)
+### Fix
+- Fix codegen exit when ABI is not valid (#1570)
+- Add validation for `codegen`, graphql conflicts (#1564)
+
 ## [1.12.3] - 2023-03-09
 ### Fix
 - Fix ABI codegen skipped due to runtime validation (#1552)

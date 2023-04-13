@@ -8,6 +8,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.8.1] - 2023-03-30
+### Added
+- Add types to support Multiple endpoints (#1551)
+### Fix
+- Fix previous release 1.8.0 failed
+
+## [1.8.0] - 2023-03-29
+### Changed
+- update polkadot api to 10.1.4 (#1580
+
 ## [1.7.0] - 2023-02-21
 ### Added
 - Support for database SSL connection (#1513)
