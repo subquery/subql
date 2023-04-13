@@ -23,6 +23,7 @@ jest.mock('sequelize', () => {
     showAllSchemas: () => ['subquery_1'],
     model: (entity: string) => ({
       upsert: jest.fn(),
+      associations: [{}, {}],
       count: 5,
       findAll: [
         {
@@ -245,5 +246,46 @@ describe('Store Cache Service historical', () => {
     // last value in setCache should end with block 6
     const historicalValue = (storeService as any).cachedModels.apple.setCache['apple-01'].historicalValues;
     expect(historicalValue[1].endHeight).toBe(6);
+  });
+});
+
+describe('Store Cache flush with order', () => {
+  let storeService: StoreCacheService;
+
+  const sequilize = new Sequelize();
+  const nodeConfig: NodeConfig = {storeFlushInOrder: true} as any;
+
+  beforeEach(() => {
+    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
+    storeService.init(false, true);
+  });
+
+  it('when set/remove multiple model entities, operation index should added to record in sequential order', () => {
+    const entity1Model = storeService.getModel('entity1');
+    const entity2Model = storeService.getModel('entity2');
+
+    entity1Model.set(
+      'entity1_id_0x01',
+      {
+        id: 'entity1_id_0x01',
+        field1: 'set at block 1',
+      },
+      1
+    );
+    entity2Model.set(
+      'entity2_id_0x02',
+      {
+        id: 'entity2_id_0x02',
+        field1: 'set at block 2',
+      },
+      2
+    );
+    entity1Model.remove('entity1_id_0x01', 3);
+    const records = (storeService as any).cachedModels.entity1.flushableRecordsWithIndex(3);
+    expect(records.length).toBe(2);
+    expect(records[0].action).toBe('set');
+    expect(records[0].operationIndex).toBe(1);
+    expect(records[1].action).toBe('remove');
+    expect(records[1].operationIndex).toBe(3);
   });
 });

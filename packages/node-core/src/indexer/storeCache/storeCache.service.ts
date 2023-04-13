@@ -5,7 +5,7 @@ import assert from 'assert';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {flatten, sum} from 'lodash';
-import {Deferrable, Sequelize} from 'sequelize';
+import {Deferrable, Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
@@ -102,9 +102,25 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     return this.cachedModels[entity] as unknown as CachePoiModel;
   }
 
+  private async flushRelationalModelsInOrder(updatableModels: ICachedModelControl[], tx: Transaction): Promise<void> {
+    const relationalModels = updatableModels.filter((m) => m.hasAssociations);
+    // Extract all flushable records from each relational model and sort it
+    const sortedFlushableRecords = flatten(relationalModels.map((m) => m.flushableRecordsWithIndex())).sort(
+      (a, b) => a.operationIndex - b.operationIndex
+    );
+    // Handle record in operation order
+    for (const record of sortedFlushableRecords) {
+      const model = this.sequelize.model(record.entity);
+      if (record.action === IndexedOperationActionType.Set) {
+        await model.upsert(record.data, {transaction: tx});
+      } else if (record.action === IndexedOperationActionType.Remove) {
+        await model.destroy({where: {id: record.data.id} as any, transaction: tx});
+      }
+    }
+  }
+
   private async _flushCache(flushAll?: boolean): Promise<void> {
     logger.debug('Flushing cache');
-
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
       deferrable: this._historical || this._useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
@@ -120,20 +136,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
           updatableModels.filter((m) => !m.hasAssociations).map((model) => model.flush(tx, blockHeight))
         );
         // 2. Models with associations will flush in orders,
-        const relationalModels = updatableModels.filter((m) => m.hasAssociations);
-        // Extract all flushable records from each model and sort it
-        const sortedFlushableRecords = flatten(relationalModels.map((m) => m.flushableRecordsWithIndex())).sort(
-          (a, b) => a.operationIndex - b.operationIndex
-        );
-        // Handle record in operation order
-        for (const record of sortedFlushableRecords) {
-          const model = this.sequelize.model(record.entity);
-          if (record.action === IndexedOperationActionType.Set) {
-            await model.upsert(record.data, {transaction: tx});
-          } else if (record.action === IndexedOperationActionType.Remove) {
-            await model.destroy({where: {id: record.data.id} as any, transaction: tx});
-          }
-        }
+        await this.flushRelationalModelsInOrder(updatableModels, tx);
       } else {
         await Promise.all(updatableModels.map((model) => model.flush(tx, blockHeight)));
       }
