@@ -14,6 +14,7 @@ import {
 import { SubqlTest } from '@subql/testing/interfaces';
 import { DynamicDatasourceCreator, Store } from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
+import chalk from 'chalk';
 import Pino from 'pino';
 import { CreationAttributes, Model, Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -34,6 +35,11 @@ declare global {
 export class TestingService {
   private tests: Record<number, SubqlTest[]> = {};
   private testSandboxes: TestSandbox[];
+  private failedTestsSummary: {
+    testName: string;
+    entityId: string;
+    failedAttributes: string[];
+  }[] = [];
 
   constructor(
     private readonly sequelize: Sequelize,
@@ -86,6 +92,8 @@ export class TestingService {
         }
       }
     }
+
+    this.logFailedTestsSummary();
   }
 
   private findAllTestFiles(dirPath: string): string[] {
@@ -174,12 +182,13 @@ export class TestingService {
         expectedEntity.id,
       );
       const attributes = actualEntity as unknown as CreationAttributes<Model>;
+      const failedAttributes: string[] = [];
       let passed = true;
       Object.keys(attributes).map((attr) => {
         if (!this.isEqual(expectedEntity[attr], actualEntity[attr])) {
           passed = false;
-          logger.info(
-            `actual: ${actualEntity[attr]}, expected: ${expectedEntity[attr]}`,
+          failedAttributes.push(
+            `Attribute "${attr}": expected "${expectedEntity[attr]}", got "${actualEntity[attr]}"`,
           );
         }
       });
@@ -189,14 +198,21 @@ export class TestingService {
         passedTests++;
       } else {
         logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
+        this.failedTestsSummary.push({
+          testName: test.name,
+          entityId: expectedEntity.id,
+          failedAttributes: failedAttributes,
+        });
+
         failedTests++;
       }
     }
 
     logger.info(
-      `Test: ${test.name} completed with ${passedTests} passed and ${failedTests} failed checks`,
+      `Test: ${test.name} completed with ${chalk.green(
+        `${passedTests} passed`,
+      )} and ${chalk.red(`${failedTests} failed`)} checks`,
     );
-
     await this.sequelize.dropSchema(`"${schema}"`, {
       logging: false,
       benchmark: false,
@@ -208,5 +224,21 @@ export class TestingService {
       return expected.getTime() === actual.getTime();
     }
     return expected === actual;
+  }
+
+  private logFailedTestsSummary() {
+    if (this.failedTestsSummary.length > 0) {
+      logger.warn(chalk.bold.underline.yellow('Failed tests summary:'));
+      for (const failedTest of this.failedTestsSummary) {
+        logger.warn(
+          chalk.bold.red(
+            `Test: ${failedTest.testName} - Entity ID: ${failedTest.entityId}`,
+          ),
+        );
+        for (const attr of failedTest.failedAttributes) {
+          logger.warn(chalk.red(`  ${attr}`));
+        }
+      }
+    }
   }
 }
