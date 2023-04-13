@@ -206,7 +206,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe:
         'If enabled relational model will flush in original operational order, this only work in non-historical mode',
       type: 'boolean',
-      default: false,
     },
     subquery: {
       alias: 'f',
