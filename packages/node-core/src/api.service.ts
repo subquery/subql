@@ -10,7 +10,7 @@ const logger = getLogger('api');
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-type FetchFunction<T> = (batch: number[], overallSpecVer?: number) => Promise<T[]>;
+type FetchFunction<T> = (batch: number[], args?: any) => Promise<T[]>;
 type FetchFunctionProvider<T> = () => FetchFunction<T>;
 
 @Injectable()
