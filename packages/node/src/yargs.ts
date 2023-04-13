@@ -204,7 +204,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     'store-flush-in-order': {
       demandOption: false,
       describe:
-        'If enabled relational model will flush in original operational order, this only work in non-historical mode',
+        'If enabled relational model will flush in original operational order, this only works in non-historical mode',
       type: 'boolean',
     },
     subquery: {
