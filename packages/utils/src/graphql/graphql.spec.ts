@@ -264,7 +264,7 @@ describe('utils that handle schema.graphql', () => {
     expect(accountModel.fields[0].jsonInterface.fields[2].jsonInterface.name).toBe('MyJson2');
   });
 
-  it('can read jsonfield without index', () => {
+  it('can read jsonfield with indexed option', () => {
     const graphqlSchema = gql`
       type MyJson @jsonField(indexed: false) {
         data: String!

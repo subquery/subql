@@ -122,11 +122,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       }
       // If is jsonField
       else if (jsonObjects.map((json) => json.name).includes(typeString)) {
-        const jsonObjectX = jsonObjects.find((object) => object.name === typeString);
-        const jsonObject = setJsonObjectType(jsonObjectX, jsonObjects);
-        newModel.fields.push(packJSONField(typeString, field, jsonObject));
+        const jsonObject = jsonObjects.find((object) => object.name === typeString);
+        const jsonObjectType = setJsonObjectType(jsonObject, jsonObjects);
+        newModel.fields.push(packJSONField(typeString, field, jsonObjectType));
 
-        const directive = jsonObjectX.astNode.directives.find(({name: {value}}) => value === DirectiveName.JsonField);
+        const directive = jsonObject.astNode.directives.find(({name: {value}}) => value === DirectiveName.JsonField);
         const argValue = directive?.arguments?.find((arg) => arg.name.value === 'indexed')?.value;
         // For backwards compatibility if the argument is not defined then the index will be added
         if (!argValue || (isBooleanValueNode(argValue) && argValue.value !== false)) {
