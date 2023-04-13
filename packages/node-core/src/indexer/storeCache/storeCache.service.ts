@@ -39,7 +39,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     this._historical = historical;
     if (this.config.storeFlushInOrder) {
       if (this._historical) {
-        logger.warn(`Flush store cache in order is not support with Historical feature,it will be disabled`);
+        logger.warn(`Flush store cache in order is not support with Historical feature,it will have no effect`);
       } else {
         this._storeFlushInOrder = this.config.storeFlushInOrder;
         this.resetStoreOperationIndex();
