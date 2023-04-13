@@ -20,19 +20,15 @@ export abstract class ApiService {
   constructor(protected project: any) {}
 
   abstract init(): Promise<ApiService>;
+  abstract get api(): any; /*ApiWrapper*/
 
-  async fetchBlocksGeneric<T>(
-    batch: number[],
-    fetchFuncProvider: FetchFunctionProvider<T>,
-    overallSpecVer?: number
-  ): Promise<T[]> {
+  async fetchBlocksGeneric<T>(batch: number[], fetchFuncProvider: FetchFunctionProvider<T>, args?: any): Promise<T[]> {
     let reconnectAttempts = 0;
     while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
       try {
         // Get the latest fetch function from the provider
         const fetchFunc = fetchFuncProvider();
-        const blocks = await fetchFunc(batch, overallSpecVer);
-        return blocks;
+        return await fetchFunc(batch, ...args);
       } catch (e) {
         logger.error(e, `Failed to fetch blocks ${batch[0]}...${batch[batch.length - 1]}`);
 
@@ -41,5 +37,4 @@ export abstract class ApiService {
     }
     throw new Error(`Maximum number of retries (${MAX_RECONNECT_ATTEMPTS}) reached.`);
   }
-  abstract get api(): any; /*ApiWrapper*/
 }

@@ -265,7 +265,7 @@ export class ApiService
       batch,
       () => (blockArray: number[], specVer?: number) =>
         this.fetchBlocksBatches(this.api, blockArray, specVer),
-      overallSpecVer,
+      [overallSpecVer],
     );
   }
 }
