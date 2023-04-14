@@ -22,7 +22,7 @@ import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import * as SubstrateUtil from '../utils/substrate';
 
-const logger = getLogger('CLI-test-Testing');
+const logger = getLogger('subql-testing');
 
 declare global {
   //const api: ApiAt;
@@ -38,6 +38,7 @@ export class TestingService {
   private failedTestsSummary: {
     testName: string;
     entityId: string;
+    entityName: string;
     failedAttributes: string[];
   }[] = [];
 
@@ -137,14 +138,19 @@ export class TestingService {
 
     const modelRelations = getAllEntitiesRelations(this.project.schema);
     await this.storeService.init(modelRelations, schema);
+    const tx = await this.sequelize.transaction();
+    this.storeService.setTransaction(tx);
     const store = this.storeService.getStore();
     sandbox.freeze(store, 'store');
 
     // Init entities
     logger.debug('Initializing entities');
-    test.dependentEntities.map(async (entity) => {
-      await entity.save();
-    });
+    await Promise.all(
+      test.dependentEntities.map((entity) => {
+        return entity.save();
+      }),
+    );
+    await tx.commit();
 
     const runtimeVersion =
       await this.apiService.api.rpc.state.getRuntimeVersion(
@@ -152,28 +158,45 @@ export class TestingService {
       );
 
     logger.debug('Running handler');
-    await this.indexerManager.indexBlock(
-      block,
-      runtimeVersion,
-      (datasources: SubqlProjectDs[]) => {
-        for (const ds of datasources) {
-          // Create a deep copy of the ds object
-          const dsCopy = JSON.parse(JSON.stringify(ds));
 
-          const mapping = dsCopy.mapping;
-          const handlers = mapping.handlers;
+    try {
+      await this.indexerManager.indexBlock(
+        block,
+        runtimeVersion,
+        (datasources: SubqlProjectDs[]) => {
+          for (const ds of datasources) {
+            // Create a deep copy of the ds object
+            const dsCopy = JSON.parse(JSON.stringify(ds));
 
-          for (let i = 0; i < handlers.length; i++) {
-            if (handlers[i].handler === test.handler) {
-              mapping.handlers = [handlers[i] as any];
-              return [dsCopy];
+            const mapping = dsCopy.mapping;
+            const handlers = mapping.handlers;
+
+            for (let i = 0; i < handlers.length; i++) {
+              if (handlers[i].handler === test.handler) {
+                mapping.handlers = [handlers[i] as any];
+                return [dsCopy];
+              }
             }
-          }
 
-          return [];
-        }
-      },
-    );
+            return [];
+          }
+        },
+      );
+    } catch (e) {
+      this.totalFailedTests += test.expectedEntities.length;
+      logger.warn(`Test: ${test.name} field due to runtime error`, e);
+      this.failedTestsSummary.push({
+        testName: test.name,
+        entityId: undefined,
+        entityName: undefined,
+        failedAttributes: [`Runtime Error:\n${e.stack}`],
+      });
+      await this.sequelize.dropSchema(`"${schema}"`, {
+        logging: false,
+        benchmark: false,
+      });
+      return;
+    }
 
     // Check expected entities
     logger.debug('Checking expected entities');
@@ -192,7 +215,7 @@ export class TestingService {
         if (!this.isEqual(expectedEntity[attr], actualEntity[attr])) {
           passed = false;
           failedAttributes.push(
-            `Attribute "${attr}": expected "${expectedEntity[attr]}", got "${actualEntity[attr]}"`,
+            `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedEntity[attr]}"\n\t\t\tactual:   "${actualEntity[attr]}"`,
           );
         }
       });
@@ -205,6 +228,7 @@ export class TestingService {
         this.failedTestsSummary.push({
           testName: test.name,
           entityId: expectedEntity.id,
+          entityName: expectedEntity._name,
           failedAttributes: failedAttributes,
         });
 
@@ -237,18 +261,20 @@ export class TestingService {
     if (this.failedTestsSummary.length > 0) {
       logger.warn(chalk.bold.underline.yellow('Failed tests summary:'));
       for (const failedTest of this.failedTestsSummary) {
-        logger.warn(
-          chalk.bold.red(
-            `Test: ${failedTest.testName} - Entity ID: ${failedTest.entityId}`,
-          ),
-        );
+        let testDetails =
+          failedTest.entityName || failedTest.entityId
+            ? chalk.bold.red(
+                `\n* ${failedTest.testName}\n\tEntity ${failedTest.entityName}: ${failedTest.entityId}\n`,
+              )
+            : chalk.bold.red(`\n* ${failedTest.testName}\n`);
         for (const attr of failedTest.failedAttributes) {
-          logger.warn(chalk.red(`  ${attr}`));
+          testDetails += chalk.red(attr);
         }
+        logger.warn(testDetails);
       }
     }
 
-    logger.info(chalk.bold.green(`Total tests: ${this.totalTests}`));
+    logger.info(chalk.bold.white(`Total tests: ${this.totalTests}`));
     logger.info(chalk.bold.green(`Passing tests: ${this.totalPassedTests}`));
     logger.info(chalk.bold.red(`Failing tests: ${this.totalFailedTests}`));
   }
