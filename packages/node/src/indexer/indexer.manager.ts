@@ -26,6 +26,7 @@ import {
   profiler,
   profilerWrap,
   IndexerSandbox,
+  IndexerManager as BaseIndexerManager,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
@@ -52,7 +53,7 @@ const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager {
+export class IndexerManager extends BaseIndexerManager {
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
 
@@ -70,6 +71,7 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
+    super();
   }
 
   @profiler(yargsOptions.argv.profiler)

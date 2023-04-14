@@ -10,6 +10,8 @@ export interface Entity {
   id: string;
   _name?: string;
   save?: () => Promise<void>;
+
+  [key: string]: any;
 }
 
 export type FunctionPropertyNames<T> = {

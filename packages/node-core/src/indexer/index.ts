@@ -14,3 +14,5 @@ export * from './worker';
 export * from './dictionary.service';
 export * from './sandbox';
 export * from './smartBatch.service';
+export * from './testing.service';
+export * from './indexer.manager';

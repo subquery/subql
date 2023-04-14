@@ -6,6 +6,6 @@
     "outDir": "dist",
     "noImplicitAny": true
   },
-  "references": [{"path": "../common"}, {"path": "../utils"}],
+  "references": [{"path": "../common"}, {"path": "../utils"}, {"path": "../testing"}],
   "include": ["src/**/*"]
 }

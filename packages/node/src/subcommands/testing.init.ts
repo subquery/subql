@@ -3,6 +3,8 @@
 
 import { NestFactory } from '@nestjs/core';
 import { getLogger, NestLogger } from '@subql/node-core';
+import { ApiService } from '../indexer/api.service';
+import { ProjectService } from '../indexer/project.service';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
 
@@ -14,6 +16,13 @@ export async function testingInit(): Promise<void> {
     });
 
     await app.init();
+    const projectService = app.get(ProjectService);
+    const apiService = app.get(ApiService);
+
+    // Initialise async services, we do this here rather than in factories, so we can capture one off events
+    await apiService.init();
+    await projectService.init();
+
     const testingService = app.get(TestingService);
     await testingService.init();
     await testingService.run();
