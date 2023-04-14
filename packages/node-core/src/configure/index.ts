@@ -2,4 +2,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './NodeConfig';
-export * from './SubqueryProject';

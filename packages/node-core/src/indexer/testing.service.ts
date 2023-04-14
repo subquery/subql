@@ -4,7 +4,15 @@
 import {readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Inject, Injectable} from '@nestjs/common';
-import {NodeConfig, StoreService, getLogger, SandboxOption, TestSandbox, IndexerManager} from '@subql/node-core';
+import {
+  NodeConfig,
+  StoreService,
+  getLogger,
+  SandboxOption,
+  TestSandbox,
+  IndexerManager,
+  ISubqueryProject,
+} from '@subql/node-core';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
 import {getAllEntitiesRelations} from '@subql/utils';
@@ -12,7 +20,6 @@ import chalk from 'chalk';
 import Pino from 'pino';
 import {CreationAttributes, Model, Sequelize} from 'sequelize';
 import {ApiService} from '../api.service';
-import {SubqueryProject} from '../configure/SubqueryProject';
 
 const logger = getLogger('subql-testing');
 
@@ -42,7 +49,7 @@ export class TestingService {
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,
     protected readonly storeService: StoreService,
-    @Inject('ISubqueryProject') protected project: SubqueryProject,
+    @Inject('ISubqueryProject') protected project: ISubqueryProject<any>,
     protected readonly apiService: ApiService,
     protected readonly indexerManager: IndexerManager
   ) {}
