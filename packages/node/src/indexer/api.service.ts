@@ -142,8 +142,6 @@ export class ApiService implements OnApplicationShutdown {
           }
         }
 
-        logger.info(`Connected to ${endpoint} successfully`);
-
         connections.push(connection);
       }),
     );
