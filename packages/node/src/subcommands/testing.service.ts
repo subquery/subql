@@ -163,24 +163,7 @@ export class TestingService {
       await this.indexerManager.indexBlock(
         block,
         runtimeVersion,
-        (datasources: SubqlProjectDs[]) => {
-          for (const ds of datasources) {
-            // Create a deep copy of the ds object
-            const dsCopy = JSON.parse(JSON.stringify(ds));
-
-            const mapping = dsCopy.mapping;
-            const handlers = mapping.handlers;
-
-            for (let i = 0; i < handlers.length; i++) {
-              if (handlers[i].handler === test.handler) {
-                mapping.handlers = [handlers[i] as any];
-                return [dsCopy];
-              }
-            }
-
-            return [];
-          }
-        },
+        this.getDsWithHandler(test.handler),
       );
     } catch (e) {
       this.totalFailedTests += test.expectedEntities.length;
@@ -248,6 +231,25 @@ export class TestingService {
       logging: false,
       benchmark: false,
     });
+  }
+
+  private getDsWithHandler(handler: string): SubqlProjectDs[] {
+    for (const ds of this.project.dataSources) {
+      // Create a deep copy of the ds object
+      const dsCopy = JSON.parse(JSON.stringify(ds));
+
+      const mapping = dsCopy.mapping;
+      const handlers = mapping.handlers;
+
+      for (let i = 0; i < handlers.length; i++) {
+        if (handlers[i].handler === handler) {
+          mapping.handlers = [handlers[i] as any];
+          return [dsCopy];
+        }
+      }
+
+      return [];
+    }
   }
 
   private isEqual(expected: any, actual: any): boolean {

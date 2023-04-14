@@ -189,6 +189,7 @@ export class BlockDispatcherService
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
               runtimeVersion,
+              this.projectService.dataSources,
             );
 
             await this.postProcessBlock(height, processBlockResponse);

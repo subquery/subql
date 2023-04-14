@@ -7,6 +7,7 @@ import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
+import { ProjectService } from '../project.service';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent } from '../types';
 
@@ -40,6 +41,7 @@ export class WorkerService {
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     private workerRuntimeService: WorkerRuntimeService,
+    private projectService: ProjectService,
     nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
@@ -121,6 +123,7 @@ export class WorkerService {
       const response = await this.indexerManager.indexBlock(
         block,
         runtimeVersion,
+        this.projectService.dataSources,
       );
 
       this._isIndexing = false;
