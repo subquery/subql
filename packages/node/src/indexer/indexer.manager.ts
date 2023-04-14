@@ -53,7 +53,10 @@ const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager extends BaseIndexerManager {
+export class IndexerManager extends BaseIndexerManager<
+  BlockContent,
+  SubqlProjectDs
+> {
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
 
@@ -77,8 +80,8 @@ export class IndexerManager extends BaseIndexerManager {
   @profiler(yargsOptions.argv.profiler)
   async indexBlock(
     blockContent: BlockContent,
-    runtimeVersion: RuntimeVersion,
     dataSources: SubqlProjectDs[],
+    runtimeVersion: RuntimeVersion,
   ): Promise<{
     dynamicDsCreated: boolean;
     operationHash: Uint8Array;

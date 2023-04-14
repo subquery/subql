@@ -31,7 +31,7 @@ declare global {
 }
 
 @Injectable()
-export class TestingService {
+export abstract class TestingService<B, DS> {
   private tests: Record<number, SubqlTest[]> = {};
   private testSandboxes: TestSandbox[];
   private failedTestsSummary: {
@@ -49,15 +49,12 @@ export class TestingService {
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,
     protected readonly storeService: StoreService,
-    @Inject('ISubqueryProject') protected project: ISubqueryProject<any>,
+    @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
     protected readonly apiService: ApiService,
-    protected readonly indexerManager: IndexerManager
+    protected readonly indexerManager: IndexerManager<B, DS>
   ) {}
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async indexBlock(block: any, handler: string): Promise<void> {
-    throw new Error(`not implemented`);
-  }
+  abstract indexBlock(block: B, handler: string): Promise<void>;
 
   async init() {
     await this.indexerManager.start();
@@ -220,7 +217,7 @@ export class TestingService {
     });
   }
 
-  protected getDsWithHandler(handler: string): any[] {
+  protected getDsWithHandler(handler: string): DS[] {
     for (const ds of this.project.dataSources) {
       // Create a deep copy of the ds object
       const dsCopy = JSON.parse(JSON.stringify(ds));

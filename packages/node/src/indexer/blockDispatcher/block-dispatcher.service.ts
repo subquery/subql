@@ -188,8 +188,8 @@ export class BlockDispatcherService
             // Inject runtimeVersion here to enhance api.at preparation
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
-              runtimeVersion,
               this.projectService.dataSources,
+              runtimeVersion,
             );
 
             await this.postProcessBlock(height, processBlockResponse);

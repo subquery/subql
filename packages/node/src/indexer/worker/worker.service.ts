@@ -122,8 +122,8 @@ export class WorkerService {
 
       const response = await this.indexerManager.indexBlock(
         block,
-        runtimeVersion,
         this.projectService.dataSources,
+        runtimeVersion,
       );
 
       this._isIndexing = false;
