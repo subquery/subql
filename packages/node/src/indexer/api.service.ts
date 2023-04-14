@@ -262,10 +262,9 @@ export class ApiService
     overallSpecVer?: number,
   ): Promise<BlockContent[]> {
     return this.fetchBlocksGeneric<BlockContent>(
+      () => (blockArray: number[]) =>
+        this.fetchBlocksBatches(this.api, blockArray, overallSpecVer),
       batch,
-      () => (blockArray: number[], specVer?: number) =>
-        this.fetchBlocksBatches(this.api, blockArray, specVer),
-      [overallSpecVer],
     );
   }
 }
