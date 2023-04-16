@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.21.2] - 2023-04-17
+### Fix
+- Fix workers fetching blocks out of order (#1616)
+
 ## [1.21.1] - 2023-03-30
 ### Added
 - Support multiple endpoints (#1551)

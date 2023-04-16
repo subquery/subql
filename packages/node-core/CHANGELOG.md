@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.3] - 2023-04-17
+### Fixed
+- Improve log, update progress string (#1612)
+
 ## [1.11.2] - 2023-04-05
 ### Fixed
 - Compute block size one property at a time to prevent RangeError
