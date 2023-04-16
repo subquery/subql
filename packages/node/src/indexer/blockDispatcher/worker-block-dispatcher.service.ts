@@ -153,44 +153,44 @@ export class WorkerBlockDispatcherService
   }
 
   async enqueueBlocks(
-    cleanedBlocks: number[],
+    heights: number[],
     latestBufferHeight?: number,
   ): Promise<void> {
-    if (!!latestBufferHeight && !cleanedBlocks.length) {
+    if (!!latestBufferHeight && !heights.length) {
       this.latestBufferedHeight = latestBufferHeight;
       return;
     }
 
     logger.info(
-      `Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
-        cleanedBlocks.length
+      `Enqueueing blocks ${heights[0]}...${last(heights)}, total ${
+        heights.length
       } blocks`,
     );
 
     // eslint-disable-next-line no-constant-condition
     if (true) {
       let startIndex = 0;
-      while (startIndex < cleanedBlocks.length) {
+      while (startIndex < heights.length) {
         const workerIdx = await this.getNextWorkerIndex();
         const batchSize = Math.min(
-          cleanedBlocks.length - startIndex,
+          heights.length - startIndex,
           await this.maxBatchSize(workerIdx),
         );
         await Promise.all(
-          cleanedBlocks
+          heights
             .slice(startIndex, startIndex + batchSize)
             .map((height) => this.enqueueBlock(height, workerIdx)),
         );
         startIndex += batchSize;
       }
     } else {
-      cleanedBlocks.map(async (height) => {
+      heights.map(async (height) => {
         const workerIndex = await this.getNextWorkerIndex();
         return this.enqueueBlock(height, workerIndex);
       });
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
   }
 
   private async enqueueBlock(height: number, workerIdx: number) {
@@ -202,21 +202,25 @@ export class WorkerBlockDispatcherService
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
-    // get SpecVersion from main runtime service
-    const { blockSpecVersion, syncedDictionary } =
-      await this.runtimeService.getSpecVersion(height);
-
     await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
 
-    const pendingBlock = worker.fetchBlock(height, blockSpecVersion);
+    const fetchWithRuntime = async () => {
+      // get SpecVersion from main runtime service
+      const { blockSpecVersion, syncedDictionary } =
+        await this.runtimeService.getSpecVersion(height);
+
+      // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
+      if (syncedDictionary) {
+        this.syncWorkerRuntimes();
+      }
+
+      return worker.fetchBlock(height, blockSpecVersion);
+    };
+
+    const pendingBlock = fetchWithRuntime();
 
     const processBlock = async () => {
       try {
-        // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
-        if (syncedDictionary) {
-          this.syncWorkerRuntimes();
-        }
-
         const start = new Date();
         await pendingBlock;
         const end = new Date();
