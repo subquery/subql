@@ -122,7 +122,12 @@ abstract class WorkerIO {
           args,
         });
       } catch (e) {
-        this.logger.error(e, `Failed to post message, function="${fnName}", args="${JSON.stringify(args)}"`);
+        this.logger.error(
+          e,
+          `Failed to post message, function="${fnName}", args="${JSON.stringify(args, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+          )}"`
+        );
         reject(e);
       }
     });
