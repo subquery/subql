@@ -13,6 +13,8 @@ import {MmrPayload, MmrProof} from '../events';
 import {getLogger} from '../logger';
 import {delay} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
+import {PgBasedDB} from './postgresBasedDb';
+import {StoreService} from './store.service';
 import {ISubqueryProject, IProjectNetworkConfig} from './types';
 
 const logger = getLogger('mmr');
@@ -49,7 +51,8 @@ export class MmrService implements OnApplicationShutdown {
       this.subqueryProject.network.chainId
     );
     this.poiRepo = PoiFactory(this.sequelize, schema);
-    this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    //this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this.fileBasedMmr = await this.ensurePostgresBasedMmr();
     this.blockOffset = blockOffset;
 
     // The file based database current leaf length
@@ -178,6 +181,12 @@ export class MmrService implements OnApplicationShutdown {
       fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
     }
     return new MMR(keccak256Hash, fileBasedDb);
+  }
+
+  private async ensurePostgresBasedMmr(): Promise<MMR> {
+    const postgresBasedDb = new PgBasedDB(this.sequelize);
+    await postgresBasedDb.connect();
+    return new MMR(keccak256Hash, postgresBasedDb);
   }
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {
