@@ -107,7 +107,8 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     const relationalModels = updatableModels.filter((m) => m.hasAssociations);
     // Extract all flushable records from each relational model and sort it
 
-    // _storeOperationIndex could increase while we flush
+    // _storeOperationIndex could increase while we are still flushing
+    // Enhance performance with reduce loop size of _storeOperationIndex
     const currentIndex = this._storeOperationIndex;
     this._storeOperationIndex = 0;
 
@@ -131,8 +132,10 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     // for (const record of sortedFlushableRecords) {
     //   const model = this.sequelize.model(record.entity);
     //   if (record.action === IndexedOperationActionType.Set) {
+    //     console.log(`_storeOperationIndex: ${record.operationIndex}, ${record.entity} set`)
     //     await model.upsert(record.data, {transaction: tx});
     //   } else if (record.action === IndexedOperationActionType.Remove) {
+    //     console.log(`_storeOperationIndex: ${record.operationIndex}, ${record.entity} remove`)
     //     await model.destroy({where: {id: record.data.id} as any, transaction: tx});
     //   }
     // }

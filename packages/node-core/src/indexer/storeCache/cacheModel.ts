@@ -248,7 +248,8 @@ export class CachedModel<
     await dbOperation;
   }
 
-  async flushOperation(operationIndex: number, tx: Transaction, blockHeight?: number): Promise<void> {
+  // Flush relation model in operationIndex order with non-historical db
+  async flushOperation(operationIndex: number, tx: Transaction): Promise<void> {
     const removeRecordKey = Object.keys(this.removeCache).find(
       (key) => this.removeCache[key].operationIndex === operationIndex
     );
