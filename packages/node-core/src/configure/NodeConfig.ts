@@ -31,6 +31,7 @@ export interface IConfig {
   readonly indexCountLimit: number;
   readonly timestampField: boolean;
   readonly proofOfIndex: boolean;
+  readonly mmrDbStore: boolean;
   readonly mmrPath?: string;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
@@ -60,6 +61,7 @@ const DEFAULT_CONFIG = {
   indexCountLimit: 10,
   timestampField: true,
   proofOfIndex: false,
+  mmrDbStore: false,
   dictionaryTimeout: 30,
   profiler: false,
   subscription: false,
@@ -161,6 +163,10 @@ export class NodeConfig implements IConfig {
 
   get proofOfIndex(): boolean {
     return this._config.proofOfIndex;
+  }
+
+  get mmrDbStore(): boolean {
+    return this._config.mmrDbStore;
   }
 
   get dictionaryTimeout(): number {

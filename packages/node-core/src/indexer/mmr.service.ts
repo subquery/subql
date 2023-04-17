@@ -51,8 +51,10 @@ export class MmrService implements OnApplicationShutdown {
       this.subqueryProject.network.chainId
     );
     this.poiRepo = PoiFactory(this.sequelize, schema);
-    //this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
-    this.fileBasedMmr = await this.ensurePostgresBasedMmr();
+
+    this.fileBasedMmr = this.nodeConfig.mmrDbStore
+      ? await this.ensurePostgresBasedMmr()
+      : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this.blockOffset = blockOffset;
 
     // The file based database current leaf length

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { initLogger } from '@subql/node-core/logger';
+import { boolean } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -144,6 +145,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
     'proof-of-index': {
       demandOption: false,
       describe: 'Enable/disable proof of index',
+      type: 'boolean',
+      default: false,
+    },
+    'mmr-db-store': {
+      demandOption: false,
+      describe: 'Store MMR in postgres DB',
       type: 'boolean',
       default: false,
     },
