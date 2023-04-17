@@ -15,6 +15,7 @@ export class SetValueModel<T> {
 
   deleteFromHistorical(index: number) {
     this.historicalValues.splice(index, 1);
+    // remove a record, also means _latestIndex position need to -1
     this._latestIndex -= 1;
   }
 

@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {flatten, forEach, includes, isEqual, uniq} from 'lodash';
+import {flatten, includes, isEqual, uniq} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
@@ -13,9 +13,7 @@ import {
   SetData,
   ICachedModel,
   GetData,
-  IndexedFlushableRecord,
   FilteredHeightRecords,
-  IndexedOperationActionType,
   SetValue,
 } from './types';
 
@@ -254,69 +252,26 @@ export class CachedModel<
       (key) => this.removeCache[key].operationIndex === operationIndex
     );
     if (removeRecordKey !== undefined) {
-      console.log(`~~~~~~~~ flushOperation operationIndex ${operationIndex}, ${this.model.name} remove`);
       await this.model.destroy({where: {id: this.removeCache[removeRecordKey].operationIndex} as any, transaction: tx});
       delete this.removeCache[removeRecordKey];
     } else {
       let setRecord: SetValue<T>;
-      let setRecordIndex: number;
       for (const r of Object.values(this.setCache)) {
         const values = r.getValues();
-        setRecordIndex = values.findIndex((v) => {
-          if (v === undefined) {
-            return false;
-          }
+        const opIndexInSetRecord = values.findIndex((v) => {
           return v.operationIndex === operationIndex;
         });
-        if (setRecordIndex >= 0) {
-          setRecord = values[setRecordIndex];
-          r.deleteFromHistorical(setRecordIndex);
+        if (opIndexInSetRecord >= 0) {
+          setRecord = values[opIndexInSetRecord];
+          r.deleteFromHistorical(opIndexInSetRecord);
           break;
         }
       }
-      if (setRecordIndex >= 0) {
-        console.log(`~~~~~~~~ flushOperation operationIndex ${operationIndex},${this.model.name} set `);
+      if (setRecord) {
         await this.model.upsert(setRecord.data as unknown as CreationAttributes<Model<T, T>>, {transaction: tx});
       }
       return;
     }
-  }
-
-  // extract flushable records with its operation index, only use with non-historical flush
-  flushableRecordsWithIndex(blockHeight?: number): IndexedFlushableRecord<T>[] {
-    // Get records relevant to the block height
-    const {removeRecords, setRecords} = blockHeight
-      ? this.filterRecordsWithHeight(blockHeight)
-      : {removeRecords: this.removeCache, setRecords: this.setCache};
-    const indexedSetRecords = flatten(
-      Object.values(setRecords).map((r) => {
-        const values = r.getValues();
-        return values.map((v) => {
-          const indexedFlushableRecord = {
-            action: IndexedOperationActionType.Set,
-            entity: this.model.name,
-            data: v.data,
-            operationIndex: v.operationIndex,
-          } as IndexedFlushableRecord<T>;
-          return indexedFlushableRecord;
-        });
-      })
-    );
-
-    const indexedRemoveRecord = Object.entries(removeRecords).map(([key, value]) => {
-      return {
-        action: IndexedOperationActionType.Remove,
-        entity: this.model.name,
-        data: {id: key} as T,
-        operationIndex: value.operationIndex,
-      } as IndexedFlushableRecord<T>;
-    });
-
-    // Don't await DB operations to complete before clearing.
-    // This allows new data to be cached while flushing
-    this.clear(blockHeight);
-
-    return indexedSetRecords.concat(indexedRemoveRecord);
   }
 
   private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {

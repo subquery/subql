@@ -27,21 +27,8 @@ export interface ICachedModelControl {
   flushableRecordCounter: number;
   flush(tx: Transaction, blockHeight?: number): Promise<void>;
   init?(getNextStoreOperationIndex: () => number): void;
-  flushableRecordsWithIndex?(blockHeight?: number): IndexedFlushableRecord<any>[];
   flushOperation?(i: number, tx: Transaction): Promise<void>;
 }
-
-export enum IndexedOperationActionType {
-  Set = 'set',
-  Remove = 'remove',
-}
-
-export type IndexedFlushableRecord<T> = {
-  action: IndexedOperationActionType;
-  entity: string;
-  data: T;
-  operationIndex: number;
-};
 
 export type FilteredHeightRecords<T> = {
   removeRecords: Record<string, RemoveValue>;
