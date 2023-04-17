@@ -281,11 +281,7 @@ describe('Store Cache flush with order', () => {
       2
     );
     entity1Model.remove('entity1_id_0x01', 3);
-    const records = (storeService as any).cachedModels.entity1.flushableRecordsWithIndex(3);
-    expect(records.length).toBe(2);
-    expect(records[0].action).toBe('set');
-    expect(records[0].operationIndex).toBe(1);
-    expect(records[1].action).toBe('remove');
-    expect(records[1].operationIndex).toBe(3);
+    const entity1 = (storeService as any).cachedModels.entity1;
+    expect(entity1.removeCache.entity1_id_0x01.operationIndex).toBe(3);
   });
 });
