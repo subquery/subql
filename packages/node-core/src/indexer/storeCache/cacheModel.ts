@@ -5,17 +5,18 @@ import {flatten, forEach, includes, isEqual, uniq} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
+import {SetValueModel} from './setValueModel';
 import {
   HistoricalModel,
   ICachedModelControl,
   RemoveValue,
   SetData,
   ICachedModel,
-  SetValueModel,
   GetData,
   IndexedFlushableRecord,
   FilteredHeightRecords,
   IndexedOperationActionType,
+  SetValue,
 } from './types';
 
 const getCacheOptions = {
@@ -37,8 +38,6 @@ export class CachedModel<
 
   private getNextStoreOperationIndex: () => number;
 
-  private storeFlushInOrder: boolean;
-
   readonly hasAssociations: boolean;
 
   flushableRecordCounter = 0;
@@ -59,8 +58,7 @@ export class CachedModel<
     }
   }
 
-  init(storeFlushInOrder = false, getNextStoreOperationIndex: () => number) {
-    this.storeFlushInOrder = storeFlushInOrder;
+  init(getNextStoreOperationIndex: () => number) {
     this.getNextStoreOperationIndex = getNextStoreOperationIndex;
   }
 
@@ -163,7 +161,7 @@ export class CachedModel<
     if (this.setCache[id] === undefined) {
       this.setCache[id] = new SetValueModel();
     }
-    this.setCache[id].set(data, blockHeight, this.storeFlushInOrder ? this.getNextStoreOperationIndex() : undefined);
+    this.setCache[id].set(data, blockHeight, this.getNextStoreOperationIndex());
     // Experimental, this means getCache keeps duplicate data from setCache,
     // we can remove this once memory is too full.
     this.getCache.set(id, data);
@@ -190,7 +188,7 @@ export class CachedModel<
     if (this.removeCache[id] === undefined) {
       this.removeCache[id] = {
         removedAtBlock: blockHeight,
-        operationIndex: this.storeFlushInOrder ? this.getNextStoreOperationIndex() : undefined,
+        operationIndex: this.getNextStoreOperationIndex(),
       };
       this.flushableRecordCounter += 1;
       if (this.getCache.get(id)) {
@@ -248,6 +246,39 @@ export class CachedModel<
     this.clear(blockHeight);
 
     await dbOperation;
+  }
+
+  async flushOperation(operationIndex: number, tx: Transaction, blockHeight?: number): Promise<void> {
+    const removeRecordKey = Object.keys(this.removeCache).find(
+      (key) => this.removeCache[key].operationIndex === operationIndex
+    );
+    if (removeRecordKey !== undefined) {
+      console.log(`~~~~~~~~ flushOperation operationIndex ${operationIndex}, ${this.model.name} remove`);
+      await this.model.destroy({where: {id: this.removeCache[removeRecordKey].operationIndex} as any, transaction: tx});
+      delete this.removeCache[removeRecordKey];
+    } else {
+      let setRecord: SetValue<T>;
+      let setRecordIndex: number;
+      for (const r of Object.values(this.setCache)) {
+        const values = r.getValues();
+        setRecordIndex = values.findIndex((v) => {
+          if (v === undefined) {
+            return false;
+          }
+          return v.operationIndex === operationIndex;
+        });
+        if (setRecordIndex >= 0) {
+          setRecord = values[setRecordIndex];
+          r.deleteFromHistorical(setRecordIndex);
+          break;
+        }
+      }
+      if (setRecordIndex >= 0) {
+        console.log(`~~~~~~~~ flushOperation operationIndex ${operationIndex},${this.model.name} set `);
+        await this.model.upsert(setRecord.data as unknown as CreationAttributes<Model<T, T>>, {transaction: tx});
+      }
+      return;
+    }
   }
 
   // extract flushable records with its operation index, only use with non-historical flush

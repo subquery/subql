@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import * as fs from 'fs';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {flatten, sum} from 'lodash';
@@ -27,8 +28,9 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private storeCacheThreshold: number;
   private _historical = true;
   private _useCockroachDb: boolean;
-  private _storeOperationIndex: number;
+  private _storeOperationIndex = 0;
   private _storeFlushInOrder = false;
+  private _sumTime = 0; //TODO, remove after benchmark
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     this.storeCacheThreshold = config.storeCacheThreshold;
@@ -42,14 +44,9 @@ export class StoreCacheService implements BeforeApplicationShutdown {
         logger.warn(`Flush store cache in order is not supported with Historical feature, it will have no effect`);
       } else {
         this._storeFlushInOrder = this.config.storeFlushInOrder;
-        this.resetStoreOperationIndex();
         logger.info(`Store cache will flush in order`);
       }
     }
-  }
-
-  resetStoreOperationIndex(): void {
-    this._storeOperationIndex = 0;
   }
 
   getNextStoreOperationIndex(): number {
@@ -73,7 +70,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
       this.cachedModels[entity] = new CachedModel(model, this._historical, this.config, this._useCockroachDb);
-      this.cachedModels[entity].init(this._storeFlushInOrder, this.getNextStoreOperationIndex.bind(this));
+      this.cachedModels[entity].init(this.getNextStoreOperationIndex.bind(this));
     }
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
   }
@@ -102,21 +99,46 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     return this.cachedModels[entity] as unknown as CachePoiModel;
   }
 
-  private async flushRelationalModelsInOrder(updatableModels: ICachedModelControl[], tx: Transaction): Promise<void> {
+  private async flushRelationalModelsInOrder(
+    updatableModels: ICachedModelControl[],
+    blockHeight: number,
+    tx: Transaction
+  ): Promise<void> {
     const relationalModels = updatableModels.filter((m) => m.hasAssociations);
     // Extract all flushable records from each relational model and sort it
-    const sortedFlushableRecords = flatten(relationalModels.map((m) => m.flushableRecordsWithIndex())).sort(
-      (a, b) => a.operationIndex - b.operationIndex
-    );
-    // Handle record in operation order
-    for (const record of sortedFlushableRecords) {
-      const model = this.sequelize.model(record.entity);
-      if (record.action === IndexedOperationActionType.Set) {
-        await model.upsert(record.data, {transaction: tx});
-      } else if (record.action === IndexedOperationActionType.Remove) {
-        await model.destroy({where: {id: record.data.id} as any, transaction: tx});
-      }
+
+    // _storeOperationIndex could increase while we flush
+    const currentIndex = this._storeOperationIndex;
+    this._storeOperationIndex = 0;
+
+    const start = Date.now();
+    for (let i = 0; i < currentIndex; i++) {
+      // Flush operation can be a no-op if it doesn't have that index
+      await Promise.all(relationalModels.map((m) => m.flushOperation(i, tx)));
     }
+    const end = Date.now();
+    this._sumTime += end - start;
+    fs.appendFileSync(
+      './flushOperation.log',
+      `_storeOperationIndex: ${currentIndex}, total time: ${this._sumTime} , takes: ${end - start}ms \n,`
+    );
+
+    // const start = Date.now()
+    // const sortedFlushableRecords = flatten(relationalModels.map((m) => m.flushableRecordsWithIndex())).sort(
+    //   (a, b) => a.operationIndex - b.operationIndex
+    // );
+    // // Handle record in operation order
+    // for (const record of sortedFlushableRecords) {
+    //   const model = this.sequelize.model(record.entity);
+    //   if (record.action === IndexedOperationActionType.Set) {
+    //     await model.upsert(record.data, {transaction: tx});
+    //   } else if (record.action === IndexedOperationActionType.Remove) {
+    //     await model.destroy({where: {id: record.data.id} as any, transaction: tx});
+    //   }
+    // }
+    // const end = Date.now()
+    // this._sumTime+= (end-start)
+    // fs.appendFileSync('./sortedFlushableRecords.log',`_storeOperationIndex: ${this._storeOperationIndex}, sortedFlushableRecords: ${sortedFlushableRecords.length}, takes: ${end-start}ms, total time: ${this._sumTime} \n`)
   }
 
   private async _flushCache(flushAll?: boolean): Promise<void> {
@@ -136,7 +158,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
           updatableModels.filter((m) => !m.hasAssociations).map((model) => model.flush(tx, blockHeight))
         );
         // 2. Models with associations will flush in orders,
-        await this.flushRelationalModelsInOrder(updatableModels, tx);
+        await this.flushRelationalModelsInOrder(updatableModels, blockHeight, tx);
       } else {
         await Promise.all(updatableModels.map((model) => model.flush(tx, blockHeight)));
       }
@@ -146,7 +168,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       await tx.rollback();
       throw e;
     }
-    this.resetStoreOperationIndex();
   }
 
   async flushCache(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
