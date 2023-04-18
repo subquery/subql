@@ -203,10 +203,6 @@ export abstract class TestingService<B, DS> {
         entityName: undefined,
         failedAttributes: [`Runtime Error:\n${e.stack}`],
       });
-      await this.sequelize.dropSchema(`"${schema}"`, {
-        logging: false,
-        benchmark: false,
-      });
     } finally {
       await this.sequelize.dropSchema(`"${schema}"`, {
         logging: false,
