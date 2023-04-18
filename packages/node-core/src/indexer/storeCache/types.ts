@@ -26,7 +26,6 @@ export interface ICachedModelControl {
   hasAssociations?: boolean;
   flushableRecordCounter: number;
   flush(tx: Transaction, blockHeight?: number): Promise<void>;
-  init?(getNextStoreOperationIndex: () => number): void;
   flushOperation?(i: number, tx: Transaction): Promise<void>;
 }
 
@@ -45,14 +44,14 @@ export type GetValue<T> = {
 
 export type RemoveValue = {
   removedAtBlock: number;
-  operationIndex?: number;
+  operationIndex: number;
 };
 
 export type SetValue<T> = {
   data: T;
   startHeight: number;
   endHeight: number | null;
-  operationIndex?: number;
+  operationIndex: number;
 };
 
 export type SetData<T> = Record<string, SetValueModel<T>>;

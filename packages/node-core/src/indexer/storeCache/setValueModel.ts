@@ -20,7 +20,7 @@ export class SetValueModel<T> {
     return setRecord;
   }
 
-  set(data: T, blockHeight: number, operationIndex?: number): void {
+  set(data: T, blockHeight: number, operationIndex: number): void {
     const latestIndex = this.latestIndex();
 
     if (latestIndex >= 0) {
@@ -112,7 +112,7 @@ export class SetValueModel<T> {
     }
   }
 
-  private create(data: T, blockHeight: number, operationIndex?: number): void {
+  private create(data: T, blockHeight: number, operationIndex: number): void {
     this.historicalValues.push({data, startHeight: blockHeight, endHeight: null, operationIndex: operationIndex});
     this._latestIndex += 1;
   }
