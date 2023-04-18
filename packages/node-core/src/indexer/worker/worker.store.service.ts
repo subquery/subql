@@ -15,8 +15,8 @@ export type HostStore = {
   ) => Promise<any[]>;
   storeGetOneByField: (entity: string, field: string, value: any) => Promise<any | null>;
   storeSet: (entity: string, id: string, data: any) => Promise<void>;
-  storeBulkCreate: (entity: string, data: any[]) => Promise<void>;
-  storeBulkUpdate: (entity: string, data: any[], fields?: string[]) => Promise<void>;
+  storeBulkCreate: (entity: string, data: any[] | Record<string, any>) => Promise<void>;
+  storeBulkUpdate: (entity: string, data: any[] | Record<string, any>, fields?: string[]) => Promise<void>;
   storeRemove: (entity: string, id: string) => Promise<void>;
 };
 
