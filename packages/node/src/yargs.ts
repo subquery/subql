@@ -53,6 +53,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Batch size of blocks to fetch in one round',
       type: 'number',
     },
+    'block-confirmations': {
+      demandOption: false,
+      default: 20,
+      describe:
+        'The number of blocks behind the head to be considered finalized, this has no effect with Ethereum',
+      type: 'number',
+    },
     config: {
       alias: 'c',
       demandOption: false,

@@ -21,6 +21,7 @@ import {
 import CacheableLookup from 'cacheable-lookup';
 import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
+import { yargsOptions } from '../yargs';
 import { EthereumBlockWrapped } from './block.ethereum';
 import { JsonRpcBatchProvider } from './ethers/json-rpc-batch-provider';
 import { JsonRpcProvider } from './ethers/json-rpc-provider';
@@ -90,6 +91,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   // Ethereum POS
   private supportsFinalization = true;
+  private blockConfirmations = yargsOptions.argv['block-confirmations'];
 
   constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
     const { hostname, protocol, searchParams } = new URL(endpoint);
@@ -143,8 +145,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       if (this.supportsFinalization) {
         return (await this.client.getBlock('finalized')).number;
       } else {
-        // TODO make number of blocks finalised configurable
-        return (await this.getBestBlockHeight()) - 15; // Consider 15 blocks finalized
+        return (await this.getBestBlockHeight()) - this.blockConfirmations;
       }
     } catch (e) {
       // TODO handle specific error for this
