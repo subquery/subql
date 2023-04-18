@@ -3,14 +3,9 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import {
-  NodeConfig,
-  getLogger,
-  AutoQueue,
-  memoryLock,
-  ApiService,
-} from '@subql/node-core';
+import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
 import { BlockWrapper, EthereumBlockWrapper } from '@subql/types-ethereum';
+import { EthereumApiService } from '../../ethereum';
 import { IndexerManager } from '../indexer.manager';
 
 export type FetchBlockResponse = { parentHash: string } | undefined;
@@ -38,7 +33,7 @@ export class WorkerService {
   private queue: AutoQueue<FetchBlockResponse>;
 
   constructor(
-    private apiService: ApiService,
+    private apiService: EthereumApiService,
     private indexerManager: IndexerManager,
     nodeConfig: NodeConfig,
   ) {
@@ -57,7 +52,7 @@ export class WorkerService {
             logger.debug(`memory lock wait time: ${end - start}ms`);
           }
 
-          const [block] = await this.apiService.api.fetchBlocks([height]);
+          const [block] = await this.apiService.fetchBlocks([height]);
           this.fetchedBlocks[height] = block;
         }
 

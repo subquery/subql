@@ -10,11 +10,14 @@ import {
   getLogger,
   IndexerEvent,
 } from '@subql/node-core';
+import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from './api.connection';
 import { EthereumApi } from './api.ethereum';
 
 const logger = getLogger('api');
+
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 @Injectable()
 export class EthereumApiService extends ApiService {
@@ -97,6 +100,13 @@ export class EthereumApiService extends ApiService {
       logger.error(e, 'Failed to init api service');
       process.exit(1);
     }
+  }
+
+  async fetchBlocks(batch: number[]): Promise<EthereumBlockWrapper[]> {
+    return this.fetchBlocksGeneric<EthereumBlockWrapper>(
+      () => (b: number[]) => this.api.fetchBlocks(b),
+      batch,
+    );
   }
 
   private metadataMismatchError(

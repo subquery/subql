@@ -19,6 +19,7 @@ import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
+import { EthereumApiService } from '../../ethereum';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 
@@ -31,7 +32,7 @@ export class BlockDispatcherService
   implements OnApplicationShutdown
 {
   constructor(
-    apiService: ApiService,
+    apiService: EthereumApiService,
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
@@ -53,7 +54,7 @@ export class BlockDispatcherService
       poiService,
       project,
       dynamicDsService,
-      apiService.api.fetchBlocks.bind(apiService.api),
+      apiService.fetchBlocks.bind(apiService),
     );
   }
 

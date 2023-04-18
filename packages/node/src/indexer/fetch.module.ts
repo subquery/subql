@@ -73,7 +73,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
-        apiService: ApiService,
+        apiService: EthereumApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
         storeService: StoreService,
