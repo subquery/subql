@@ -38,17 +38,8 @@ export const hostStoreToStore = (host: HostStore): Store => {
     getByField: host.storeGetByField,
     getOneByField: host.storeGetOneByField,
     set: (entity, id, data) => host.storeSet(entity, id, classToPlain(data)),
-    bulkCreate: (entity, data) =>
-      host.storeBulkCreate(
-        entity,
-        data.map((d) => classToPlain(d))
-      ),
-    bulkUpdate: (entity, data, fields) =>
-      host.storeBulkUpdate(
-        entity,
-        data.map((d) => classToPlain(d)),
-        fields
-      ),
+    bulkCreate: (entity, data) => host.storeBulkCreate(entity, classToPlain(data)),
+    bulkUpdate: (entity, data, fields) => host.storeBulkUpdate(entity, classToPlain(data), fields),
     remove: host.storeRemove,
   };
 };
