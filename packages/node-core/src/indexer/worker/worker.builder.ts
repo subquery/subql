@@ -4,6 +4,7 @@
 import * as workers from 'worker_threads';
 import {Logger} from 'pino';
 import {getLogger} from '../../logger';
+import '../../utils/bigint';
 
 export type SerializableError = {
   message: string;
@@ -122,12 +123,7 @@ abstract class WorkerIO {
           args,
         });
       } catch (e) {
-        this.logger.error(
-          e,
-          `Failed to post message, function="${fnName}", args="${JSON.stringify(args, (key, value) =>
-            typeof value === 'bigint' ? value.toString() : value
-          )}"`
-        );
+        this.logger.error(e, `Failed to post message, function="${fnName}", args="${JSON.stringify(args)}"`);
         reject(e);
       }
     });
