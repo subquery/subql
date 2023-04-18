@@ -4,6 +4,7 @@
 import * as workers from 'worker_threads';
 import {Logger} from 'pino';
 import {getLogger} from '../../logger';
+import '../../utils/bigint';
 
 export type SerializableError = {
   message: string;
