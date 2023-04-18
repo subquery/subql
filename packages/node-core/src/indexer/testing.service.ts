@@ -10,13 +10,14 @@ import {
   getLogger,
   SandboxOption,
   TestSandbox,
-  IndexerManager,
+  IIndexerManager,
   ISubqueryProject,
 } from '@subql/node-core';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
 import {getAllEntitiesRelations} from '@subql/utils';
 import chalk from 'chalk';
+import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {CreationAttributes, Model, Sequelize} from 'sequelize';
 import {ApiService} from '../api.service';
@@ -51,7 +52,7 @@ export abstract class TestingService<B, DS> {
     protected readonly storeService: StoreService,
     @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
     protected readonly apiService: ApiService,
-    protected readonly indexerManager: IndexerManager<B, DS>
+    protected readonly indexerManager: IIndexerManager<B, DS>
   ) {}
 
   abstract indexBlock(block: B, handler: string): Promise<void>;
@@ -76,14 +77,10 @@ export abstract class TestingService<B, DS> {
     logger.info(`Found ${this.testSandboxes.length} test files`);
 
     await Promise.all(
-      this.testSandboxes.map(async (sandbox) => {
-        await sandbox.runTimeout(1000);
+      this.testSandboxes.map(async (sandbox, index) => {
+        this.tests[index] = await sandbox.getTests();
       })
     );
-
-    this.testSandboxes.map((sandbox, index) => {
-      this.tests[index] = sandbox.getTests();
-    });
   }
 
   async run() {
@@ -119,39 +116,84 @@ export abstract class TestingService<B, DS> {
 
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
-
-    // Fetch block
-    logger.debug('Fetching block');
-    const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
-
-    // Init db
     const schema = `test-${this.nodeConfig.subqueryName}`;
 
-    const schemas = await this.sequelize.showAllSchemas(undefined);
-    if (!(schemas as unknown as string[]).includes(schema)) {
-      await this.sequelize.createSchema(`"${schema}"`, undefined);
-    }
-
-    const modelRelations = getAllEntitiesRelations(this.project.schema);
-    await this.storeService.init(modelRelations, schema);
-    const tx = await this.sequelize.transaction();
-    this.storeService.setTransaction(tx);
-    const store = this.storeService.getStore();
-    sandbox.freeze(store, 'store');
-
-    // Init entities
-    logger.debug('Initializing entities');
-    await Promise.all(
-      test.dependentEntities.map((entity) => {
-        return entity.save();
-      })
-    );
-    await tx.commit();
-
-    logger.debug('Running handler');
-
     try {
+      // Fetch block
+      logger.debug('Fetching block');
+      const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
+
+      // Init db
+      const schemas = await this.sequelize.showAllSchemas(undefined);
+      if (!(schemas as unknown as string[]).includes(schema)) {
+        await this.sequelize.createSchema(`"${schema}"`, undefined);
+      }
+
+      const modelRelations = getAllEntitiesRelations(this.project.schema);
+      await this.storeService.init(modelRelations, schema);
+      const tx = await this.sequelize.transaction();
+      this.storeService.setTransaction(tx);
+      const store = this.storeService.getStore();
+      sandbox.freeze(store, 'store');
+
+      // Init entities
+      logger.debug('Initializing entities');
+      await Promise.all(
+        test.dependentEntities.map((entity) => {
+          return entity.save();
+        })
+      );
+      await tx.commit();
+
+      logger.debug('Running handler');
+
       await this.indexBlock(block, test.handler);
+
+      // Check expected entities
+      logger.debug('Checking expected entities');
+      let passedTests = 0;
+      let failedTests = 0;
+      for (let i = 0; i < test.expectedEntities.length; i++) {
+        const expectedEntity = test.expectedEntities[i];
+        const actualEntity = await store.get(expectedEntity._name, expectedEntity.id);
+        const attributes = actualEntity as unknown as CreationAttributes<Model>;
+        const failedAttributes: string[] = [];
+        let passed = true;
+        Object.keys(attributes).map((attr) => {
+          const expectedAttr = (expectedEntity as Record<string, any>)[attr];
+          const actualAttr = (actualEntity as Record<string, any>)[attr];
+          if (!isEqual(expectedAttr, actualAttr)) {
+            passed = false;
+            failedAttributes.push(
+              `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"`
+            );
+          }
+        });
+
+        if (passed) {
+          logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
+          passedTests++;
+        } else {
+          logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
+          this.failedTestsSummary.push({
+            testName: test.name,
+            entityId: expectedEntity.id,
+            entityName: expectedEntity._name,
+            failedAttributes: failedAttributes,
+          });
+
+          failedTests++;
+        }
+      }
+
+      this.totalPassedTests += passedTests;
+      this.totalFailedTests += failedTests;
+
+      logger.info(
+        `Test: ${test.name} completed with ${chalk.green(`${passedTests} passed`)} and ${chalk.red(
+          `${failedTests} failed`
+        )} checks`
+      );
     } catch (e) {
       this.totalFailedTests += test.expectedEntities.length;
       logger.warn(`Test: ${test.name} field due to runtime error`, e);
@@ -165,56 +207,12 @@ export abstract class TestingService<B, DS> {
         logging: false,
         benchmark: false,
       });
-      return;
-    }
-
-    // Check expected entities
-    logger.debug('Checking expected entities');
-    let passedTests = 0;
-    let failedTests = 0;
-    for (let i = 0; i < test.expectedEntities.length; i++) {
-      const expectedEntity = test.expectedEntities[i];
-      const actualEntity = await store.get(expectedEntity._name, expectedEntity.id);
-      const attributes = actualEntity as unknown as CreationAttributes<Model>;
-      const failedAttributes: string[] = [];
-      let passed = true;
-      Object.keys(attributes).map((attr) => {
-        if (!this.isEqual(expectedEntity[attr], actualEntity[attr])) {
-          passed = false;
-          failedAttributes.push(
-            `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedEntity[attr]}"\n\t\t\tactual:   "${actualEntity[attr]}"`
-          );
-        }
+    } finally {
+      await this.sequelize.dropSchema(`"${schema}"`, {
+        logging: false,
+        benchmark: false,
       });
-
-      if (passed) {
-        logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
-        passedTests++;
-      } else {
-        logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
-        this.failedTestsSummary.push({
-          testName: test.name,
-          entityId: expectedEntity.id,
-          entityName: expectedEntity._name,
-          failedAttributes: failedAttributes,
-        });
-
-        failedTests++;
-      }
     }
-
-    this.totalPassedTests += passedTests;
-    this.totalFailedTests += failedTests;
-
-    logger.info(
-      `Test: ${test.name} completed with ${chalk.green(`${passedTests} passed`)} and ${chalk.red(
-        `${failedTests} failed`
-      )} checks`
-    );
-    await this.sequelize.dropSchema(`"${schema}"`, {
-      logging: false,
-      benchmark: false,
-    });
   }
 
   protected getDsWithHandler(handler: string): DS[] {
@@ -234,13 +232,6 @@ export abstract class TestingService<B, DS> {
 
       return [];
     }
-  }
-
-  private isEqual(expected: any, actual: any): boolean {
-    if (expected instanceof Date && actual instanceof Date) {
-      return expected.getTime() === actual.getTime();
-    }
-    return expected === actual;
   }
 
   private logFailedTestsSummary() {

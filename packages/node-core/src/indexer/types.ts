@@ -30,3 +30,12 @@ export interface ISubqueryProject<N extends IProjectNetworkConfig, DS = unknown,
   chainTypes?: C;
   runner?: RunnerSpecs;
 }
+
+export interface IIndexerManager<B, DS> {
+  start(): Promise<void>;
+  indexBlock(
+    block: B,
+    datasources: DS[],
+    ...args: any[]
+  ): Promise<{dynamicDsCreated: boolean; operationHash: Uint8Array; reindexBlockHeight: number}>;
+}

@@ -175,7 +175,8 @@ export class TestSandbox extends Sandbox {
     this.freeze(logger, 'logger');
   }
 
-  getTests() {
+  async getTests() {
+    await this.runTimeout(1000);
     return this.getGlobal('subqlTests');
   }
 }
