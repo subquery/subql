@@ -28,8 +28,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private _historical = true;
   private _useCockroachDb: boolean;
   private _storeOperationIndex = 0;
-  private _storeFlushInOrder = false;
-  private _sumTime = 0; //TODO, remove after benchmark
+  private _lastFlushedOperationIndex = 0;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     this.storeCacheThreshold = config.storeCacheThreshold;
@@ -38,14 +37,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   init(historical: boolean, useCockroachDb: boolean): void {
     this._useCockroachDb = useCockroachDb;
     this._historical = historical;
-    if (this.config.storeFlushInOrder) {
-      if (this._historical) {
-        logger.warn(`Flush store cache in order is not supported with Historical feature, it will have no effect`);
-      } else {
-        this._storeFlushInOrder = this.config.storeFlushInOrder;
-        logger.info(`Store cache will flush in order`);
-      }
-    }
   }
 
   getNextStoreOperationIndex(): number {
@@ -101,13 +92,14 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private async flushRelationalModelsInOrder(updatableModels: ICachedModelControl[], tx: Transaction): Promise<void> {
     const relationalModels = updatableModels.filter((m) => m.hasAssociations);
     // _storeOperationIndex could increase while we are still flushing
-    // Enhance performance with reduce loop size of _storeOperationIndex
-    const currentIndex = this._storeOperationIndex;
-    this._storeOperationIndex = 0;
-    for (let i = 0; i < currentIndex; i++) {
+    // therefore we need to store this index in memory first.
+
+    const flushToIndex = this._storeOperationIndex;
+    for (let i = this._lastFlushedOperationIndex; i < flushToIndex; i++) {
       // Flush operation can be a no-op if it doesn't have that index
       await Promise.all(relationalModels.map((m) => m.flushOperation(i, tx)));
     }
+    this._lastFlushedOperationIndex = flushToIndex;
   }
 
   private async _flushCache(flushAll?: boolean): Promise<void> {
@@ -121,7 +113,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       const blockHeight = flushAll ? undefined : await this.metadata.find('lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
-      if (this._storeFlushInOrder) {
+      if (this._useCockroachDb) {
         // 1. Independent(no associations) models can flush simultaneously
         await Promise.all(
           updatableModels.filter((m) => !m.hasAssociations).map((model) => model.flush(tx, blockHeight))

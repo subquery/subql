@@ -201,12 +201,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'If enabled writing data to the store is asynchronous with regards to block processing',
       type: 'boolean',
     },
-    'store-flush-in-order': {
-      demandOption: false,
-      describe:
-        'If enabled relational model will flush in original operational order, this only works in non-historical mode',
-      type: 'boolean',
-    },
     subquery: {
       alias: 'f',
       demandOption: true,

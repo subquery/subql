@@ -48,7 +48,6 @@ export interface IConfig {
   readonly storeCacheThreshold?: number;
   readonly storeGetCacheSize?: number;
   readonly storeCacheAsync?: boolean;
-  readonly storeFlushInOrder?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -71,7 +70,6 @@ const DEFAULT_CONFIG = {
   multiChain: false,
   unfinalizedBlocks: false,
   storeCacheThreshold: 300,
-  storeFlushInOrder: false,
 };
 
 export class NodeConfig implements IConfig {
@@ -127,10 +125,6 @@ export class NodeConfig implements IConfig {
 
   get storeCacheThreshold(): number {
     return this._config.storeCacheThreshold;
-  }
-
-  get storeFlushInOrder(): boolean {
-    return this._config.storeFlushInOrder;
   }
 
   get storeGetCacheSize(): number {

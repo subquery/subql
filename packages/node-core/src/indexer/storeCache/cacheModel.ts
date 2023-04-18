@@ -252,20 +252,13 @@ export class CachedModel<
       (key) => this.removeCache[key].operationIndex === operationIndex
     );
     if (removeRecordKey !== undefined) {
-      await this.model.destroy({where: {id: this.removeCache[removeRecordKey].operationIndex} as any, transaction: tx});
+      await this.model.destroy({where: {id: removeRecordKey} as any, transaction: tx});
       delete this.removeCache[removeRecordKey];
     } else {
       let setRecord: SetValue<T>;
       for (const r of Object.values(this.setCache)) {
-        const values = r.getValues();
-        const opIndexInSetRecord = values.findIndex((v) => {
-          return v.operationIndex === operationIndex;
-        });
-        if (opIndexInSetRecord >= 0) {
-          setRecord = values[opIndexInSetRecord];
-          r.deleteFromHistorical(opIndexInSetRecord);
-          break;
-        }
+        setRecord = r.popRecordWithOpIndex(operationIndex);
+        if (setRecord) break;
       }
       if (setRecord) {
         await this.model.upsert(setRecord.data as unknown as CreationAttributes<Model<T, T>>, {transaction: tx});

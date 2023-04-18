@@ -253,7 +253,7 @@ describe('Store Cache flush with order', () => {
   let storeService: StoreCacheService;
 
   const sequilize = new Sequelize();
-  const nodeConfig: NodeConfig = {storeFlushInOrder: true} as any;
+  const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter);

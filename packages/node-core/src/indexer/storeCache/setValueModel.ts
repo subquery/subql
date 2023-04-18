@@ -8,15 +8,16 @@ export class SetValueModel<T> {
   private historicalValues: SetValue<T>[] = [];
   private _latestIndex = -1;
 
-  private create(data: T, blockHeight: number, operationIndex?: number): void {
-    this.historicalValues.push({data, startHeight: blockHeight, endHeight: null, operationIndex: operationIndex});
-    this._latestIndex += 1;
-  }
-
-  deleteFromHistorical(index: number) {
-    this.historicalValues.splice(index, 1);
-    // remove a record, also means _latestIndex position need to -1
-    this._latestIndex -= 1;
+  popRecordWithOpIndex(operationIndex: number): SetValue<T> | undefined {
+    let setRecord: SetValue<T>;
+    const opIndexInSetRecord = this.historicalValues.findIndex((v) => {
+      return v.operationIndex === operationIndex;
+    });
+    if (opIndexInSetRecord >= 0) {
+      setRecord = this.historicalValues[opIndexInSetRecord];
+      this.deleteFromHistorical(opIndexInSetRecord);
+    }
+    return setRecord;
   }
 
   set(data: T, blockHeight: number, operationIndex?: number): void {
@@ -109,5 +110,16 @@ export class SetValueModel<T> {
     } else {
       return isEqual(this.getLatest().data[field], value);
     }
+  }
+
+  private create(data: T, blockHeight: number, operationIndex?: number): void {
+    this.historicalValues.push({data, startHeight: blockHeight, endHeight: null, operationIndex: operationIndex});
+    this._latestIndex += 1;
+  }
+
+  private deleteFromHistorical(index: number) {
+    this.historicalValues.splice(index, 1);
+    // remove a record, also means _latestIndex position need to -1
+    this._latestIndex -= 1;
   }
 }
