@@ -69,7 +69,9 @@ const DEFAULT_CONFIG = {
   disableHistorical: false,
   multiChain: false,
   unfinalizedBlocks: false,
-  storeCacheThreshold: 300,
+  storeCacheThreshold: 1000,
+  storeGetCacheSize: 500,
+  storeCacheAsync: true,
 };
 
 export class NodeConfig implements IConfig {
