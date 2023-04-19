@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {Db} from '@subql/x-merkle-mountain-range';
 import {Sequelize, DataTypes, Model, ModelStatic} from 'sequelize';
 import {getLogger} from '../logger';
 
@@ -10,12 +11,12 @@ interface NodeMap {
   [key: string]: Buffer;
 }
 
-interface KVStoreAttributes {
+interface MMRIndexValueStoreAttributes {
   key: number;
   value: Buffer;
 }
 
-class KVStoreInstance extends Model<KVStoreAttributes> implements KVStoreAttributes {
+class MMRIndexValueStoreInstance extends Model<MMRIndexValueStoreAttributes> implements MMRIndexValueStoreAttributes {
   key!: number;
   value!: Buffer;
 }
@@ -30,20 +31,20 @@ class LeafLengthInstance extends Model<LeafLengthAttributes> implements LeafLeng
   value!: number;
 }
 
-export class PgBasedDB {
+export class PgBasedMMRDB implements Db {
   private sequelize;
-  private KVStore: ModelStatic<KVStoreInstance>;
+  private KVStore: ModelStatic<MMRIndexValueStoreInstance>;
   private LeafLength: ModelStatic<LeafLengthInstance>;
 
-  constructor(sequelize: Sequelize, wordSize = 64) {
+  constructor(sequelize: Sequelize, schema: string) {
     this.sequelize = sequelize;
-    this.KVStore = this.initKVStoreModel(this.sequelize);
+    this.KVStore = this.initKVStoreModel(this.sequelize, schema);
 
-    this.LeafLength = this.initLeafLengthModel(this.sequelize);
+    this.LeafLength = this.initLeafLengthModel(this.sequelize, schema);
   }
 
-  private initKVStoreModel(sequelize: Sequelize): ModelStatic<KVStoreInstance> {
-    KVStoreInstance.init(
+  private initKVStoreModel(sequelize: Sequelize, schema: string): ModelStatic<MMRIndexValueStoreInstance> {
+    MMRIndexValueStoreInstance.init(
       {
         key: {
           type: DataTypes.INTEGER,
@@ -57,12 +58,13 @@ export class PgBasedDB {
       {
         sequelize,
         modelName: 'KVStore',
+        schema: schema,
       }
     );
-    return KVStoreInstance;
+    return MMRIndexValueStoreInstance;
   }
 
-  private initLeafLengthModel(sequelize: Sequelize): ModelStatic<LeafLengthInstance> {
+  private initLeafLengthModel(sequelize: Sequelize, schema: string): ModelStatic<LeafLengthInstance> {
     LeafLengthInstance.init(
       {
         id: {
@@ -78,13 +80,13 @@ export class PgBasedDB {
       {
         sequelize,
         modelName: 'LeafLength',
+        schema: schema,
       }
     );
     return LeafLengthInstance;
   }
 
   async connect() {
-    await this.sequelize.authenticate();
     await this.KVStore.sync();
     await this.LeafLength.sync();
   }
@@ -109,7 +111,7 @@ export class PgBasedDB {
   }
 
   async getNodes(): Promise<NodeMap> {
-    const nodes = await this.KVStore.findAll<KVStoreInstance>();
+    const nodes = await this.KVStore.findAll<MMRIndexValueStoreInstance>();
     const nodeMap: NodeMap = {};
     nodes.forEach((node) => {
       nodeMap[node.key] = node.value;
@@ -134,9 +136,5 @@ export class PgBasedDB {
     }
 
     return leafLength;
-  }
-
-  async disconnect() {
-    await this.sequelize.close();
   }
 }

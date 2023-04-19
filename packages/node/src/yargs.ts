@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { initLogger } from '@subql/node-core/logger';
-import { boolean } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -46,6 +45,23 @@ export const yargsOptions = yargs(hideBin(process.argv))
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { reindexInit } = require('./subcommands/reindex.init');
       return reindexInit(argv.targetHeight);
+    },
+  })
+  .command({
+    command: 'mmr-migrate',
+    describe: 'Migrate MMR data from storage file to postgres DB',
+    builder: {},
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFmt as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
+      return mmrMigrateInit();
     },
   })
   .options({
@@ -148,11 +164,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
     },
-    'mmr-db-store': {
+    'mmr-store-type': {
       demandOption: false,
-      describe: 'Store MMR in postgres DB',
-      type: 'boolean',
-      default: false,
+      describe: 'Store MMR in either a file or a postgres DB',
+      type: 'string',
+      choices: ['file', 'postgres'],
+      default: 'file',
     },
     'query-limit': {
       demandOption: false,

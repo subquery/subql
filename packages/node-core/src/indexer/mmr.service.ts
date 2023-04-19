@@ -8,13 +8,12 @@ import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME} from '@subql/common';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {keccak256} from 'js-sha3';
 import {Sequelize, Op} from 'sequelize';
-import {NodeConfig} from '../configure';
+import {MmrStoreType, NodeConfig} from '../configure';
 import {MmrPayload, MmrProof} from '../events';
 import {getLogger} from '../logger';
-import {delay} from '../utils';
+import {delay, getExistingProjectSchema} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
-import {PgBasedDB} from './postgresBasedDb';
-import {StoreService} from './store.service';
+import {PgBasedMMRDB} from './postgresBasedDb';
 import {ISubqueryProject, IProjectNetworkConfig} from './types';
 
 const logger = getLogger('mmr');
@@ -52,9 +51,10 @@ export class MmrService implements OnApplicationShutdown {
     );
     this.poiRepo = PoiFactory(this.sequelize, schema);
 
-    this.fileBasedMmr = this.nodeConfig.mmrDbStore
-      ? await this.ensurePostgresBasedMmr()
-      : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this.fileBasedMmr =
+      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
+        ? await this.ensurePostgresBasedMmr()
+        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this.blockOffset = blockOffset;
 
     // The file based database current leaf length
@@ -186,7 +186,10 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private async ensurePostgresBasedMmr(): Promise<MMR> {
-    const postgresBasedDb = new PgBasedDB(this.sequelize);
+    const postgresBasedDb = new PgBasedMMRDB(
+      this.sequelize,
+      await getExistingProjectSchema(this.nodeConfig, this.sequelize)
+    );
     await postgresBasedDb.connect();
     return new MMR(keccak256Hash, postgresBasedDb);
   }
