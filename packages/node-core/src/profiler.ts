@@ -12,12 +12,12 @@ function isPromise(e: any): boolean {
 
 const logger = getLogger('profiler');
 
-function printCost(start: number, end: number, target: string, method: string): void {
-  logger.info(`${target}, ${method}, ${end - start} ms`);
+function printCost(start: number, end: number, target: string, method: string | symbol): void {
+  logger.info(`${target}, ${method.toString()}, ${end - start} ms`);
 }
 
 export function profiler(enabled = true): MethodDecorator {
-  return (target, name: string, descriptor: PropertyDescriptor): void => {
+  return (target, name: string | symbol, descriptor: PropertyDescriptor): void => {
     if (enabled && !!descriptor && typeof descriptor.value === 'function') {
       const orig = descriptor.value;
       // tslint:disable no-function-expression no-invalid-this

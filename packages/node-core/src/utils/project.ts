@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {isNumber, range, uniq, without} from 'lodash';
+import {isNumber, range, uniq, without, flatten} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
@@ -35,9 +35,9 @@ export function transformBypassBlocks(bypassBlocks: (number | string)[]): number
   if (!bypassBlocks?.length) return [];
 
   return uniq(
-    [].concat(
-      ...bypassBlocks.map((bypassEntry) => {
-        if (isNumber(bypassEntry)) return bypassEntry;
+    flatten(
+      bypassBlocks.map((bypassEntry) => {
+        if (isNumber(bypassEntry)) return [bypassEntry];
         const splitRange = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
         return range(splitRange[0], splitRange[1] + 1);
       })

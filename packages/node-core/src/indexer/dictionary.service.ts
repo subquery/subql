@@ -173,7 +173,7 @@ export class DictionaryService implements OnApplicationShutdown {
           chainId: this.chainId,
           httpOptions: {fetch},
         });
-      } catch (e) {
+      } catch (e: any) {
         logger.error(e.message);
         process.exit(1);
       }
@@ -224,7 +224,7 @@ export class DictionaryService implements OnApplicationShutdown {
     queryEndBlock: number,
     batchSize: number,
     conditions: DictionaryQueryEntry[]
-  ): Promise<Dictionary> {
+  ): Promise<Dictionary | undefined> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
     try {
       const resp = await timeout(
@@ -253,7 +253,7 @@ export class DictionaryService implements OnApplicationShutdown {
         _metadata,
         batchBlocks,
       };
-    } catch (err) {
+    } catch (err: any) {
       // Check if the error is about distinct argument and disable distinct if so
       if (JSON.stringify(err).includes(distinctErrorEscaped)) {
         this.useDistinct = false;
@@ -330,7 +330,7 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number
-  ): Promise<Dictionary> {
+  ): Promise<Dictionary | undefined> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
@@ -349,7 +349,7 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery([], nodes);
   }
 
-  async getMetadata(): Promise<MetadataDictionary> {
+  async getMetadata(): Promise<MetadataDictionary | undefined> {
     const {query} = this.metadataQuery();
     try {
       const resp = await timeout(
@@ -360,7 +360,7 @@ export class DictionaryService implements OnApplicationShutdown {
       );
       const _metadata = resp.data._metadata;
       return {_metadata};
-    } catch (err) {
+    } catch (err: any) {
       if (JSON.stringify(err).includes(startHeightEscaped)) {
         this.useStartHeight = false;
         logger.warn(`Dictionary doesn't support validate start height.`);

@@ -98,7 +98,7 @@ export class StoreService {
   private useSubscription: boolean;
   private removedIndexes: RemovedIndexes = {};
 
-  poiModel: CachePoiModel;
+  poiModel?: CachePoiModel;
   metadataModel: CacheMetadataModel;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, readonly storeCache: StoreCacheService) {}
@@ -123,20 +123,20 @@ export class StoreService {
 
     try {
       await this.syncSchema(this.schema);
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }
     try {
       this.modelIndexedFields = await this.getAllIndexFields(this.schema);
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
 
     this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
     this.metadataModel = this.storeCache.metadata;
-    this.poiModel = this.storeCache.poi;
+    this.poiModel = this.storeCache.poi ?? undefined;
 
     this.metadataModel.set('historicalStateEnabled', this.historical);
     this.metadataModel.setIncrement('schemaMigrationCount');
@@ -434,6 +434,9 @@ export class StoreService {
       if (index.using === IndexType.GIN) {
         return;
       }
+      if (!index.fields) {
+        index.fields = [];
+      }
       index.fields.push('_block_range');
       index.using = IndexType.GIST;
       // GIST does not support unique indexes
@@ -488,7 +491,8 @@ export class StoreService {
       const deprecated = generateIndexName(tableName, index);
 
       if (!existedIndexes.includes(deprecated)) {
-        index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
+        const fields = (index.fields ?? []).join('_');
+        index.name = blake2AsHex(`${modelName}_${fields}`, 64).substring(0, 63);
       }
     });
   }
@@ -678,6 +682,9 @@ group by
     }
     this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
     if (this.config.proofOfIndex) {
+      if (!this.poiRepo) {
+        throw new Error('Expected POI repo to exist');
+      }
       await this.poiRepo.destroy({
         transaction,
         where: {
@@ -707,7 +714,7 @@ group by
           offset?: number;
           limit?: number;
         } = {}
-      ): Promise<T[] | undefined> => {
+      ): Promise<T[]> => {
         try {
           const indexed =
             this.modelIndexedFields.findIndex(

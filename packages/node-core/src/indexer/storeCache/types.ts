@@ -8,13 +8,13 @@ import {SetValueModel} from './setValueModel';
 export type HistoricalModel = {__block_range: any};
 
 export interface ICachedModel<T> {
-  get: (id: string) => Promise<T | null>;
+  get: (id: string) => Promise<T | undefined>;
   // limit always defined from store
   getByField: (
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
-    options?: {limit: number; offset?: number}
-  ) => Promise<T[] | undefined>;
+    options: {limit: number; offset: number}
+  ) => Promise<T[]>;
   getOneByField: (field: keyof T, value: T[keyof T]) => Promise<T | undefined>;
   set: (id: string, data: T, blockHeight: number) => void;
   bulkCreate: (data: T[], blockHeight: number) => void;
