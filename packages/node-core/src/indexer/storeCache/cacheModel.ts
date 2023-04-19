@@ -5,14 +5,16 @@ import {flatten, includes, isEqual, uniq} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
+import {SetValueModel} from './setValueModel';
 import {
   HistoricalModel,
   ICachedModelControl,
   RemoveValue,
   SetData,
   ICachedModel,
-  SetValueModel,
   GetData,
+  FilteredHeightRecords,
+  SetValue,
 } from './types';
 
 const getCacheOptions = {
@@ -32,6 +34,10 @@ export class CachedModel<
 
   private removeCache: Record<string, RemoveValue> = {};
 
+  private getNextStoreOperationIndex: () => number;
+
+  readonly hasAssociations: boolean;
+
   flushableRecordCounter = 0;
 
   constructor(
@@ -45,6 +51,13 @@ export class CachedModel<
       getCacheOptions.max = this.config.storeGetCacheSize;
     }
     this.getCache = new GetData<T>(getCacheOptions);
+    if (Object.keys(this.model.associations).length > 0) {
+      this.hasAssociations = true;
+    }
+  }
+
+  init(getNextStoreOperationIndex: () => number) {
+    this.getNextStoreOperationIndex = getNextStoreOperationIndex;
   }
 
   private get historicalModel(): ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>> {
@@ -146,7 +159,7 @@ export class CachedModel<
     if (this.setCache[id] === undefined) {
       this.setCache[id] = new SetValueModel();
     }
-    this.setCache[id].set(data, blockHeight);
+    this.setCache[id].set(data, blockHeight, this.getNextStoreOperationIndex());
     // Experimental, this means getCache keeps duplicate data from setCache,
     // we can remove this once memory is too full.
     this.getCache.set(id, data);
@@ -173,6 +186,7 @@ export class CachedModel<
     if (this.removeCache[id] === undefined) {
       this.removeCache[id] = {
         removedAtBlock: blockHeight,
+        operationIndex: this.getNextStoreOperationIndex(),
       };
       this.flushableRecordCounter += 1;
       if (this.getCache.get(id)) {
@@ -193,28 +207,10 @@ export class CachedModel<
 
   async flush(tx: Transaction, blockHeight?: number): Promise<void> {
     // Get records relevant to the block height
-    const setRecords = blockHeight
-      ? Object.entries(this.setCache).reduce((acc, [key, value]) => {
-          const newValue = value.fromBelowHeight(blockHeight + 1);
-          if (newValue.getValues().length) {
-            acc[key] = newValue;
-          }
-          return acc;
-        }, {} as SetData<T>)
-      : this.setCache;
-
-    const removeRecords = blockHeight
-      ? Object.entries(this.removeCache).reduce((acc, [key, value]) => {
-          if (value.removedAtBlock <= blockHeight) {
-            acc[key] = value;
-          }
-
-          return acc;
-        }, {} as Record<string, RemoveValue>)
-      : this.removeCache;
-
+    const {removeRecords, setRecords} = blockHeight
+      ? this.filterRecordsWithHeight(blockHeight)
+      : {removeRecords: this.removeCache, setRecords: this.setCache};
     const records = this.applyBlockRange(setRecords);
-
     let dbOperation: Promise<unknown>;
     if (this.historical) {
       dbOperation = Promise.all([
@@ -250,6 +246,47 @@ export class CachedModel<
     await dbOperation;
   }
 
+  // Flush relation model in operationIndex order with non-historical db
+  async flushOperation(operationIndex: number, tx: Transaction): Promise<void> {
+    const removeRecordKey = Object.keys(this.removeCache).find(
+      (key) => this.removeCache[key].operationIndex === operationIndex
+    );
+    if (removeRecordKey !== undefined) {
+      await this.model.destroy({where: {id: removeRecordKey} as any, transaction: tx});
+      delete this.removeCache[removeRecordKey];
+    } else {
+      let setRecord: SetValue<T>;
+      for (const r of Object.values(this.setCache)) {
+        setRecord = r.popRecordWithOpIndex(operationIndex);
+        if (setRecord) break;
+      }
+      if (setRecord) {
+        await this.model.upsert(setRecord.data as unknown as CreationAttributes<Model<T, T>>, {transaction: tx});
+      }
+      return;
+    }
+  }
+
+  private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {
+    return {
+      removeRecords: Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+        if (value.removedAtBlock <= blockHeight) {
+          acc[key] = value;
+        }
+
+        return acc;
+      }, {} as Record<string, RemoveValue>),
+      setRecords: Object.entries(this.setCache).reduce((acc, [key, value]) => {
+        const newValue = value.fromBelowHeight(blockHeight + 1);
+        if (newValue.getValues().length) {
+          acc[key] = newValue;
+        }
+        return acc;
+      }, {} as SetData<T>),
+    };
+  }
+
+  // Add blockRange to historical record
   private applyBlockRange(setRecords: SetData<T>) {
     return flatten(
       Object.values(setRecords).map((v) => {
