@@ -8,7 +8,7 @@ import { ProjectService } from '../indexer/project.service';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
 
-const logger = getLogger('CLI-Testing');
+const logger = getLogger('Testing');
 export async function testingInit(): Promise<void> {
   try {
     const app = await NestFactory.create(TestingModule, {

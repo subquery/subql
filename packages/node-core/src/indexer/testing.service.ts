@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {readdirSync, statSync} from 'fs';
+import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Inject, Injectable} from '@nestjs/common';
 import {
@@ -92,13 +92,21 @@ export abstract class TestingService<B, DS> {
           await this.runTest(test, this.testSandboxes[sandboxIndex]);
         }
       }
+      this.logFailedTestsSummary();
+    } else {
+      const docsUrl = 'https://academy.subquery.network/build/testingframework.html';
+      logger.warn(
+        `No tests found. Please refer to the documentation for guidance on creating and running tests: ${docsUrl}`
+      );
     }
-
-    this.logFailedTestsSummary();
   }
 
   private findAllTestFiles(dirPath: string): string[] {
     const files: string[] = [];
+
+    if (!existsSync(dirPath)) {
+      return [];
+    }
 
     readdirSync(dirPath).forEach((file) => {
       const filePath = path.join(dirPath, file);
