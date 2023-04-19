@@ -381,9 +381,9 @@ export class CachedModel<
   ): Promise<void> {
     const closeSetRecords: {id: string; blockHeight: number}[] = [];
     for (const [id, value] of Object.entries(setRecords)) {
-      const fistValue = value.getFirst();
-      if (fistValue !== undefined) {
-        closeSetRecords.push({id, blockHeight: fistValue.startHeight});
+      const firstValue = value.getFirst();
+      if (firstValue !== undefined) {
+        closeSetRecords.push({id, blockHeight: firstValue.startHeight});
       }
     }
     const closeRemoveRecords = Object.entries(removeRecords).map(([id, value]) => {
