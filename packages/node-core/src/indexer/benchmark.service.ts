@@ -32,7 +32,7 @@ export class BenchmarkService {
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
     try {
-      if (!this.currentProcessingHeight || !this.currentProcessingTimestamp || !this.currentProcessedBlockAmount) {
+      if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
         await delay(10);
       } else {
         if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {

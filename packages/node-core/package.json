@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "1.11.3-0",
+  "version": "1.11.3",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -31,6 +31,7 @@
     "async-lock": "^1.4.0",
     "async-mutex": "^0.4.0",
     "lodash": "^4.17.21",
+    "lru-cache": "8.0.4",
     "prom-client": "^14.0.1",
     "sequelize": "6.28.0",
     "source-map": "^0.7.4",
@@ -39,6 +40,5 @@
   },
   "devDependencies": {
     "@types/async-lock": "^1"
-  },
-  "stableVersion": "1.11.2"
+  }
 }

@@ -2,22 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {u8aToHex, u8aEq} from '@polkadot/util';
 import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME} from '@subql/common';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {keccak256} from 'js-sha3';
-import {Sequelize, Op} from 'sequelize';
 import {NodeConfig} from '../configure';
 import {MmrPayload, MmrProof} from '../events';
 import {getLogger} from '../logger';
 import {delay} from '../utils';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
-import {ISubqueryProject, IProjectNetworkConfig} from './types';
+import {ProofOfIndex} from './entities';
+import {StoreCacheService} from './storeCache';
 
 const logger = getLogger('mmr');
-
-const DEFAULT_FETCH_RANGE = 100;
 
 const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
@@ -25,30 +22,20 @@ const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buf
 export class MmrService implements OnApplicationShutdown {
   private isShutdown = false;
   private isSyncing = false;
-  private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
-  private poiRepo: PoiRepo;
-  @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
   // This is the next block height that suppose to calculate its mmr value
   private nextMmrBlockHeight: number;
   private blockOffset: number;
 
-  constructor(protected nodeConfig: NodeConfig, protected sequelize: Sequelize) {}
+  constructor(private nodeConfig: NodeConfig, private storeCacheService: StoreCacheService) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
 
-  async syncFileBaseFromPoi(schema: string, blockOffset: number): Promise<void> {
+  async syncFileBaseFromPoi(blockOffset: number): Promise<void> {
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this.metadataRepo = await MetadataFactory(
-      this.sequelize,
-      schema,
-      this.nodeConfig.multiChain,
-      this.subqueryProject.network.chainId
-    );
-    this.poiRepo = PoiFactory(this.sequelize, schema);
     this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this.blockOffset = blockOffset;
 
@@ -58,15 +45,22 @@ export class MmrService implements OnApplicationShutdown {
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
     this.nextMmrBlockHeight = fileBasedMmrLeafLength + blockOffset + 1;
     // The latest poi record in database with mmr value
-    const latestPoiWithMmr = await this.getLatestPoiWithMmr();
+    const latestPoiWithMmr = await this.storeCacheService.poi.getLatestPoiWithMmr();
     if (latestPoiWithMmr) {
       // The latestPoiWithMmr its mmr value in filebase db
       const latestPoiFilebaseMmrValue = await this.fileBasedMmr.getRoot(latestPoiWithMmr.id - blockOffset - 1);
       this.validatePoiMmr(latestPoiWithMmr, latestPoiFilebaseMmrValue);
+      // Ensure aligned poi table and file based mmr
+      // If cache poi generated mmr haven't success write back to poi table,
+      // but latestPoiWithMmr still valid, mmr should delete advanced mmr
+      if (this.nextMmrBlockHeight > latestPoiWithMmr.id + 1) {
+        await this.deleteMmrNode(latestPoiWithMmr.id + 1, blockOffset);
+        this.nextMmrBlockHeight = latestPoiWithMmr.id + 1;
+      }
     }
     logger.info(`file based database MMR start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
-      const poiBlocks = await this.getPoiBlocksByRange(this.nextMmrBlockHeight);
+      const poiBlocks = await this.storeCacheService.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
@@ -78,22 +72,14 @@ export class MmrService implements OnApplicationShutdown {
           await this.appendMmrNode(block);
         }
       } else {
-        const keys = ['lastProcessedHeight', 'lastPoiHeight'] as const;
-        const entries = await this.metadataRepo.findAll({
-          where: {
-            key: keys,
-          },
-        });
-        const keyValue = entries.reduce((arr, curr) => {
-          arr[curr.key as typeof keys[number]] = curr.value as string | boolean | number;
-          return arr;
-        }, {} as {[key in typeof keys[number]]: string | boolean | number});
+        const {lastPoiHeight, lastProcessedHeight} = await this.storeCacheService.metadata.findMany([
+          'lastPoiHeight',
+          'lastProcessedHeight',
+        ]);
+
         // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
-        if (
-          this.nextMmrBlockHeight > Number(keyValue.lastPoiHeight) &&
-          this.nextMmrBlockHeight <= Number(keyValue.lastProcessedHeight)
-        ) {
-          for (let i = this.nextMmrBlockHeight; i <= Number(keyValue.lastProcessedHeight); i++) {
+        if (this.nextMmrBlockHeight > Number(lastPoiHeight) && this.nextMmrBlockHeight <= Number(lastProcessedHeight)) {
+          for (let i = this.nextMmrBlockHeight; i <= Number(lastProcessedHeight); i++) {
             await this.fileBasedMmr.append(DEFAULT_LEAF);
             this.nextMmrBlockHeight = i + 1;
           }
@@ -113,7 +99,7 @@ export class MmrService implements OnApplicationShutdown {
     // The next leaf index in mmr, current latest leaf index always .getLeafLength -1.
     await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
     const mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
-    await this.updatePoiMmrRoot(poiBlock.id, mmrRoot);
+    this.updatePoiMmrRoot(poiBlock, mmrRoot);
     this.nextMmrBlockHeight = poiBlock.id + 1;
   }
 
@@ -131,44 +117,14 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  private async updatePoiMmrRoot(id: number, mmrValue: Uint8Array): Promise<void> {
-    const poiBlock = await this.poiRepo.findByPk(id);
-    if (poiBlock.mmrRoot === null) {
+  private updatePoiMmrRoot(poiBlock: ProofOfIndex, mmrValue: Uint8Array): void {
+    if (!poiBlock.mmrRoot) {
       poiBlock.mmrRoot = mmrValue;
-      await poiBlock.save();
+      this.storeCacheService.poi.set(poiBlock);
     } else {
       this.validatePoiMmr(poiBlock, mmrValue);
     }
   }
-
-  private async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
-    const poiBlocks = await this.poiRepo.findAll({
-      limit: DEFAULT_FETCH_RANGE,
-      where: {id: {[Op.gte]: startHeight}},
-      order: [['id', 'ASC']],
-    });
-    if (poiBlocks.length !== 0) {
-      return poiBlocks;
-    } else {
-      return [];
-    }
-  }
-
-  private async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
-    const poiBlock = await this.poiRepo.findOne({
-      order: [['id', 'DESC']],
-      where: {mmrRoot: {[Op.ne]: null}},
-    });
-    return poiBlock;
-  }
-
-  // async getFirstPoiWithoutMmr(): Promise<ProofOfIndex> {
-  //   const poiBlock = await this.poiRepo.findOne({
-  //     order: [['id', 'ASC']],
-  //     where: { mmrRoot: { [Op.eq]: null } },
-  //   });
-  //   return poiBlock;
-  // }
 
   private async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
     let fileBasedDb: FileBasedDb;

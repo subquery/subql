@@ -4,7 +4,6 @@
 import {Injectable} from '@nestjs/common';
 // import {ApiWrapper} from '@subql/types-avalanche';
 import {NetworkMetadataPayload} from './events';
-
 import {getLogger} from './logger';
 
 const logger = getLogger('api');
@@ -21,7 +20,6 @@ export abstract class ApiService {
   constructor(protected project: any) {}
 
   abstract init(): Promise<ApiService>;
-
   abstract get api(): any; /*ApiWrapper*/
   abstract fetchBlocks(batch: number[]): Promise<any>;
 

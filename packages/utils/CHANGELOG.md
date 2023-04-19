@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.0] - 2023-04-14
+### Updated
+- Added option to @jsonField to disable GIN index (#1613)
 
 ## [1.4.2] - 2023-03-29
 ### Changed

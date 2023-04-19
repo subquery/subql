@@ -34,7 +34,7 @@ export class StoreOperations {
         if (fieldValue !== undefined && fieldValue !== null) {
           if (field.isEnum) {
             //if it is a enum, process it as string
-            getTypeByScalarName('String').hashCode(fieldValue);
+            dataBufferArray.push(getTypeByScalarName('String').hashCode(fieldValue));
           } else {
             dataBufferArray.push(getTypeByScalarName(field.type).hashCode(fieldValue));
           }

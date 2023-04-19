@@ -4,7 +4,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -18,23 +17,20 @@ import {
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
 import {
-  PoiBlock,
-  StoreService,
-  PoiService,
   NodeConfig,
   getLogger,
   profiler,
   profilerWrap,
   IndexerSandbox,
   IIndexerManager,
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { Sequelize, Transaction } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -48,8 +44,6 @@ import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-const NULL_MERKEL_ROOT = hexToU8a('0x00');
-
 const logger = getLogger('indexer');
 
 @Injectable()
@@ -60,17 +54,13 @@ export class IndexerManager
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
-    private storeService: StoreService,
     private apiService: ApiService,
-    private poiService: PoiService,
-    private sequelize: Sequelize,
-    @Inject('ISubqueryProject') private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
-    private projectService: ProjectService,
+    @Inject('IProjectService') private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
   }
@@ -80,35 +70,26 @@ export class IndexerManager
     blockContent: BlockContent,
     dataSources: SubqlProjectDs[],
     runtimeVersion: RuntimeVersion,
-  ): Promise<{
-    dynamicDsCreated: boolean;
-    operationHash: Uint8Array;
-    reindexBlockHeight: number;
-  }> {
-    this.api = this.apiService.api;
+  ): Promise<ProcessBlockResponse> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
-    let reindexBlockHeight = null;
+    let reindexBlockHeight: number | null = null;
     const blockHeight = block.block.header.number.toNumber();
-    const tx = await this.sequelize.transaction();
-    this.storeService.setTransaction(tx);
-    this.storeService.setBlockHeight(blockHeight);
 
-    let operationHash = NULL_MERKEL_ROOT;
-    let poiBlockHash: Uint8Array;
-    try {
-      this.filteredDataSources = this.filterDataSources(
-        block.block.header.number.toNumber(),
-        dataSources,
-      );
+    this.filteredDataSources = this.filterDataSources(
+      block.block.header.number.toNumber(),
+      dataSources,
+    );
 
-      const datasources = this.filteredDataSources.concat(
-        ...(await this.dynamicDsService.getDynamicDatasources()),
-      );
+    const datasources = this.filteredDataSources.concat(
+      ...(await this.dynamicDsService.getDynamicDatasources()),
+    );
 
-      let apiAt: ApiAt;
-      reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
+    let apiAt: ApiAt;
+    reindexBlockHeight = await this.processUnfinalizedBlocks(block);
 
+    // Only index block if we're not going to reindex
+    if (!reindexBlockHeight) {
       await this.indexBlockData(
         blockContent,
         datasources,
@@ -129,7 +110,6 @@ export class IndexerManager
                   args,
                   startBlock: blockHeight,
                 },
-                tx,
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
@@ -141,48 +121,11 @@ export class IndexerManager
           return vm;
         },
       );
-
-      await this.storeService.setMetadataBatch(
-        [
-          { key: 'lastProcessedHeight', value: blockHeight },
-          { key: 'lastProcessedTimestamp', value: Date.now() },
-        ],
-        { transaction: tx },
-      );
-      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-      await this.storeService.incrementJsonbCount('processedBlockCount', tx);
-
-      // Need calculate operationHash to ensure correct offset insert all time
-      operationHash = this.storeService.getOperationMerkleRoot();
-      if (this.nodeConfig.proofOfIndex) {
-        //check if operation is null, then poi will not be inserted
-        if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-          const poiBlock = PoiBlock.create(
-            blockHeight,
-            block.block.header.hash.toHex(),
-            operationHash,
-            await this.poiService.getLatestPoiBlockHash(),
-            this.project.id,
-          );
-          poiBlockHash = poiBlock.hash;
-          await this.storeService.setPoi(poiBlock, { transaction: tx });
-          this.poiService.setLatestPoiBlockHash(poiBlockHash);
-          await this.storeService.setMetadataBatch(
-            [{ key: 'lastPoiHeight', value: blockHeight }],
-            { transaction: tx },
-          );
-        }
-      }
-    } catch (e) {
-      await tx.rollback();
-      throw e;
     }
-
-    await tx.commit();
 
     return {
       dynamicDsCreated,
-      operationHash,
+      blockHash: block.block.header.hash.toHex(),
       reindexBlockHeight,
     };
   }
@@ -194,10 +137,9 @@ export class IndexerManager
 
   private async processUnfinalizedBlocks(
     block: SubstrateBlock,
-    tx: Transaction,
   ): Promise<number | null> {
     if (this.nodeConfig.unfinalizedBlocks) {
-      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block, tx);
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }
     return null;
   }

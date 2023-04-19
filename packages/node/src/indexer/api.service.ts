@@ -148,8 +148,6 @@ export class ApiService
           }
         }
 
-        logger.info(`Connected to ${endpoint} successfully`);
-
         connections.push(connection);
       }),
     );

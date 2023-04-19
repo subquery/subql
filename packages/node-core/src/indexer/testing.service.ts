@@ -139,8 +139,6 @@ export abstract class TestingService<B, DS> {
 
       const modelRelations = getAllEntitiesRelations(this.project.schema);
       await this.storeService.init(modelRelations, schema);
-      const tx = await this.sequelize.transaction();
-      this.storeService.setTransaction(tx);
       const store = this.storeService.getStore();
       sandbox.freeze(store, 'store');
 
@@ -151,7 +149,6 @@ export abstract class TestingService<B, DS> {
           return entity.save();
         })
       );
-      await tx.commit();
 
       logger.debug('Running handler');
 

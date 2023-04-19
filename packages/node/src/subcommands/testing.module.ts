@@ -39,6 +39,10 @@ import { TestingService } from './testing.service';
     ProjectService,
     ConnectionPoolService,
     {
+      provide: 'IProjectService',
+      useClass: ProjectService,
+    },
+    {
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,

@@ -2,12 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { threadId } from 'node:worker_threads';
-import { Injectable } from '@nestjs/common';
-import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  NodeConfig,
+  getLogger,
+  AutoQueue,
+  memoryLock,
+  IProjectService,
+} from '@subql/node-core';
+import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
-import { ProjectService } from '../project.service';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent } from '../types';
 
@@ -17,7 +23,7 @@ export type FetchBlockResponse =
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
-  operationHash: string; // Base64 encoded u8a array
+  blockHash: string;
   reindexBlockHeight: number;
 };
 
@@ -41,7 +47,8 @@ export class WorkerService {
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     private workerRuntimeService: WorkerRuntimeService,
-    private projectService: ProjectService,
+    @Inject('IProjectService')
+    private projectService: IProjectService<SubqlProjectDs>,
     nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
@@ -120,20 +127,16 @@ export class WorkerService {
         block.block,
       );
 
-      const response = await this.indexerManager.indexBlock(
+      return await this.indexerManager.indexBlock(
         block,
         this.projectService.dataSources,
         runtimeVersion,
       );
-
-      this._isIndexing = false;
-      return {
-        ...response,
-        operationHash: Buffer.from(response.operationHash).toString('base64'),
-      };
     } catch (e) {
       logger.error(e, `Failed to index block ${height}: ${e.stack}`);
       throw e;
+    } finally {
+      this._isIndexing = false;
     }
   }
 

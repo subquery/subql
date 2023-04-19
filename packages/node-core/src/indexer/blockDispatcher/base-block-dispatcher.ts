@@ -2,33 +2,35 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { hexToU8a, u8aEq } from '@polkadot/util';
+
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {hexToU8a, u8aEq} from '@polkadot/util';
 import {
-  getLogger,
-  IndexerEvent,
-  IQueue,
-  NodeConfig,
+  DynamicDsService,
+  IProjectNetworkConfig,
+  IProjectService,
+  ISubqueryProject,
+  PoiBlock,
+  PoiService,
+  StoreCacheService,
   SmartBatchService,
-} from '@subql/node-core';
-import { ProjectService } from '../project.service';
-import { RuntimeService } from '../runtime/runtimeService';
+  StoreService,
+} from '..';
+import {NodeConfig} from '../../configure';
+import {IndexerEvent} from '../../events';
+import {getLogger} from '../../logger';
+import {IQueue} from '../../utils';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
-  operationHash: Uint8Array;
+  blockHash: string;
   reindexBlockHeight: number;
 };
 
 export interface IBlockDispatcher {
-  init(
-    onDynamicDsCreated: (height: number) => Promise<void>,
-    runtimeService?: RuntimeService,
-  ): Promise<void>;
-
-  enqueueBlocks(heights: number[], latestBufferHeight?: number): void;
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
 
   queueSize: number;
   freeSize: number;
@@ -47,9 +49,7 @@ function isNullMerkelRoot(operationHash: Uint8Array): boolean {
   return u8aEq(operationHash, NULL_MERKEL_ROOT);
 }
 
-export abstract class BaseBlockDispatcher<Q extends IQueue>
-  implements IBlockDispatcher
-{
+export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBlockDispatcher {
   protected _latestBufferedHeight: number;
   protected _processedBlockCount: number;
   protected latestProcessedHeight: number;
@@ -59,16 +59,22 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
   constructor(
     protected nodeConfig: NodeConfig,
     protected eventEmitter: EventEmitter2,
-    protected projectService: ProjectService,
+    private project: ISubqueryProject<IProjectNetworkConfig>,
+    protected projectService: IProjectService<DS>,
     protected queue: Q,
     protected smartBatchService: SmartBatchService,
-    protected runtimeService?: RuntimeService,
+    protected storeService: StoreService,
+    private storeCacheService: StoreCacheService,
+    private poiService: PoiService,
+    protected dynamicDsService: DynamicDsService<any>
   ) {}
 
-  abstract enqueueBlocks(heights: number[]): void;
-  abstract init(
-    onDynamicDsCreated: (height: number) => Promise<void>,
-  ): Promise<void>;
+  abstract enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
+
+  async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
+    this.onDynamicDsCreated = onDynamicDsCreated;
+    this.setProcessedBlockCount(await this.storeCacheService.metadata.find('processedBlockCount', 0));
+  }
 
   get queueSize(): number {
     return this.queue.size;
@@ -110,9 +116,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
   //  if rollback is greater than current index flush queue only
   async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
-      logger.info(
-        `Found last verified block at height ${lastCorrectHeight}, rewinding...`,
-      );
+      logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
       await this.projectService.reindex(lastCorrectHeight);
       this.latestProcessedHeight = lastCorrectHeight;
       logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
@@ -128,6 +132,9 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
 
   // Is called directly before a block is processed
   protected preProcessBlock(height: number): void {
+    this.storeService.setOperationStack();
+    this.storeService.setBlockHeight(height);
+
     this.currentProcessingHeight = height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height,
@@ -136,23 +143,25 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
   }
 
   // Is called directly after a block is processed
-  protected async postProcessBlock(
-    height: number,
-    processBlockResponse: ProcessBlockResponse,
-  ): Promise<void> {
-    const { dynamicDsCreated, operationHash, reindexBlockHeight } =
-      processBlockResponse;
+  protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
+    const operationHash = this.storeService.getOperationMerkleRoot();
+    const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
+
+    await this.updatePOI(height, blockHash, operationHash);
+
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
       this.latestProcessedHeight = reindexBlockHeight;
     } else {
+      this.updateStoreMetadata(height);
       if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
         // We only check if it is undefined, need to be caution here when blockOffset is 0
         if (this.projectService.blockOffset === undefined) {
           // Which means during project init, it has not found offset and set value
-          await this.projectService.upsertMetadataBlockOffset(height - 1);
+          this.storeCacheService.metadata.set('blockOffset', height - 1);
         }
         // this will return if project service blockOffset already exist
+        // dont await this, this starts a loop
         void this.projectService.setBlockOffset(height - 1);
       }
       if (dynamicDsCreated) {
@@ -160,11 +169,68 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
       }
       assert(
         !this.latestProcessedHeight || height > this.latestProcessedHeight,
-        `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`,
+        `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`
       );
       // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
       this.setProcessedBlockCount(this._processedBlockCount + 1);
       this.latestProcessedHeight = height;
+    }
+
+    if (this.nodeConfig.storeCacheAsync) {
+      // Flush all completed block data and don't wait
+      void this.storeCacheService.flushCache(false, false).catch((e) => {
+        logger.error(e, 'Flushing cache failed');
+        process.exit(1);
+      });
+    } else {
+      // Flush all data from cache and wait
+      await this.storeCacheService.flushCache(false, true);
+    }
+  }
+
+  private async updatePOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
+    if (!this.nodeConfig.proofOfIndex) {
+      return;
+    }
+    //check if operation is null, then poi will not be inserted
+    if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
+      const poiBlock = PoiBlock.create(
+        height,
+        blockHash,
+        operationHash,
+        await this.poiService.getLatestPoiBlockHash(),
+        this.project.id
+      );
+      this.storeCacheService.poi.set(poiBlock);
+      this.poiService.setLatestPoiBlockHash(poiBlock.hash);
+      this.storeCacheService.metadata.set('lastPoiHeight', height);
+    }
+  }
+
+  // Used when dictionary results skip a large number of blocks
+  protected async jumpBufferedHeight(height: number): Promise<void> {
+    this.updateStoreMetadata(height, false);
+    this.latestBufferedHeight = height;
+
+    // We're not actually processing this block, we just want to update health/benchmark
+    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+      height,
+      timestamp: Date.now(),
+    });
+
+    await this.storeCacheService.flushCache(true);
+  }
+
+  private updateStoreMetadata(height: number, updateProcessed = true): void {
+    const meta = this.storeCacheService.metadata;
+    // Update store metadata
+    meta.setBulk([
+      {key: 'lastProcessedHeight', value: height},
+      {key: 'lastProcessedTimestamp', value: Date.now()},
+    ]);
+    // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
+    if (updateProcessed) {
+      meta.setIncrement('processedBlockCount');
     }
   }
 }

@@ -4,9 +4,8 @@
 import {isMainThread} from 'node:worker_threads';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {hexToU8a} from '@polkadot/util';
-import {Sequelize} from 'sequelize';
-import {NodeConfig} from '../configure';
-import {PoiFactory, PoiRepo} from './entities';
+import {StoreCacheService} from './storeCache';
+import {CachePoiModel} from './storeCache/cachePoi';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');
 
@@ -14,25 +13,21 @@ const DEFAULT_PARENT_HASH = hexToU8a('0x00');
 export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
   private latestPoiBlockHash: Uint8Array;
-  private poiRepo: PoiRepo;
-  private schema: string;
+  private poiRepo: CachePoiModel;
 
-  constructor(protected nodeConfig: NodeConfig, protected sequelize: Sequelize) {}
+  constructor(private storeCache: StoreCacheService) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
 
-  async init(schema: string): Promise<void> {
-    this.schema = schema;
-    this.poiRepo = PoiFactory(this.sequelize, this.schema);
+  async init(): Promise<void> {
+    this.poiRepo = this.storeCache.poi;
     this.latestPoiBlockHash = await this.getLatestPoiBlockHash();
   }
 
-  async fetchPoiBlockHashFromDb(): Promise<Uint8Array | null> {
-    const lastPoi = await this.poiRepo.findOne({
-      order: [['id', 'DESC']],
-    });
+  private async fetchPoiBlockHashFromDb(): Promise<Uint8Array | null> {
+    const lastPoi = await this.poiRepo.getLatestPoi();
     if (lastPoi === null || lastPoi === undefined) {
       return null;
     } else if (lastPoi !== null && lastPoi.hash) {
