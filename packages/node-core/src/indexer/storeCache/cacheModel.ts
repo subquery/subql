@@ -78,7 +78,7 @@ export class CachedModel<
     if (!this.getCache.has(id)) {
       // LFU getCache could remove record from due to it is least frequently used
       // Then we try look from setCache
-      let record = this.setCache[id]?.getLatest().data;
+      let record = this.setCache[id]?.getLatest()?.data;
       if (!record) {
         record = (
           await this.model.findOne({
