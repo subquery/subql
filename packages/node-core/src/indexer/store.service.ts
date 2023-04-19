@@ -459,12 +459,12 @@ export class StoreService {
             index.fields
           }) USING HASH;`;
           extraQueries.push(cockroachDbIndexQuery);
+          if (this.removedIndexes[modelName] === undefined) {
+            this.removedIndexes[modelName] = [];
+          }
+          this.removedIndexes[modelName].push(indexes[i]);
+          delete indexes[i];
         }
-        if (this.removedIndexes[modelName] === undefined) {
-          this.removedIndexes[modelName] = [];
-        }
-        this.removedIndexes[modelName].push(indexes[i]);
-        delete indexes[i];
       });
     }
   }
