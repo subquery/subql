@@ -18,6 +18,8 @@ import {
   PoiService,
   StoreService,
   SmartBatchService,
+  StoreCacheService,
+  ConnectionPoolService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
@@ -108,6 +110,7 @@ async function createApp(
 ): Promise<INestApplication> {
   const nestModule = await Test.createTestingModule({
     providers: [
+      ConnectionPoolService,
       {
         provide: 'ISubqueryProject',
         useFactory: () => project,
@@ -130,7 +133,22 @@ async function createApp(
       },
       {
         provide: StoreService,
-        useFactory: jest.fn(),
+        useFactory: jest.fn(() => ({
+          setOperationStack: jest.fn(),
+          getOperationMerkleRoot: jest.fn(),
+          setBlockHeight: jest.fn(),
+        })),
+      },
+      {
+        provide: StoreCacheService,
+        useFactory: jest.fn(() => ({
+          metadata: {
+            find: jest.fn(() => Promise.resolve(undefined)),
+            setBulk: jest.fn(),
+            setIncrement: jest.fn(),
+          },
+          flushCache: jest.fn(),
+        })),
       },
       {
         provide: Sequelize,
@@ -138,7 +156,16 @@ async function createApp(
       },
       {
         provide: 'IBlockDispatcher',
-        useFactory: (apiService, nodeConfig, eventEmitter, indexerManager) =>
+        useFactory: (
+          apiService,
+          nodeConfig,
+          eventEmitter,
+          indexerManager,
+          storeService,
+          storeCahceService,
+          poiService,
+          dynamicDsService,
+        ) =>
           new BlockDispatcherService(
             apiService,
             nodeConfig,
@@ -146,8 +173,22 @@ async function createApp(
             eventEmitter,
             mockProjectService(),
             new SmartBatchService(nodeConfig.batchSize),
+            storeService,
+            storeCahceService,
+            poiService,
+            project,
+            dynamicDsService,
           ),
-        inject: [ApiService, NodeConfig, EventEmitter2, IndexerManager],
+        inject: [
+          ApiService,
+          NodeConfig,
+          EventEmitter2,
+          IndexerManager,
+          StoreService,
+          StoreCacheService,
+          PoiService,
+          DynamicDsService,
+        ],
       },
       ApiService,
       DsProcessorService,
@@ -223,7 +264,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -259,7 +300,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -318,7 +359,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -359,7 +400,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -418,7 +459,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -483,7 +524,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -545,7 +586,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });
@@ -808,7 +849,7 @@ describe('FetchService', () => {
         }
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: content.block.block.header.hash.toHex(),
           reindexBlockHeight: null,
         };
       });

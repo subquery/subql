@@ -13,6 +13,7 @@ export interface DbOption {
   username: string;
   password: string;
   database: string;
+  timezone: string;
 }
 
 const logger = getLogger('db');
@@ -23,6 +24,7 @@ const DEFAULT_DB_OPTION: DbOption = {
   username: process.env.DB_USER ?? 'postgres',
   password: process.env.DB_PASS ?? 'postgres',
   database: process.env.DB_DATABASE ?? 'postgres',
+  timezone: 'utc',
 };
 
 const CONNECTION_SSL_ERROR_REGEX = 'not support SSL';
@@ -56,28 +58,32 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
   return sequelize;
 };
 
+const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): SequelizeOption => {
+  const logger = getLogger('db');
+  return {
+    ...option,
+    dialect: 'postgres',
+    ssl: nodeConfig.isPostgresSecureConnection,
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: false,
+        ca: nodeConfig.postgresCACert,
+        key: nodeConfig.postgresClientKey,
+        cert: nodeConfig.postgresClientCert,
+      },
+    },
+    logging: nodeConfig.debug
+      ? (sql: string, timing?: number) => {
+          logger.debug(sql);
+        }
+      : false,
+  };
+};
+
 @Global()
 export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
-    const logger = getLogger('db');
-    const factory = sequelizeFactory({
-      ...option,
-      dialect: 'postgres',
-      ssl: nodeConfig.isPostgresSecureConnection,
-      dialectOptions: {
-        ssl: {
-          rejectUnauthorized: false,
-          ca: nodeConfig.postgresCACert,
-          key: nodeConfig.postgresClientKey ?? '',
-          cert: nodeConfig.postgresClientCert ?? '',
-        },
-      },
-      logging: nodeConfig.debug
-        ? (sql: string, timing?: number) => {
-            logger.debug(sql);
-          }
-        : false,
-    })();
+    const factory = sequelizeFactory(buildSequelizeOptions(nodeConfig, option))();
 
     return {
       module: DbModule,
@@ -98,25 +104,7 @@ export class DbModule {
       providers: [
         {
           provide: Sequelize,
-          useFactory: (nodeConfig: NodeConfig) =>
-            sequelizeFactory({
-              ...option,
-              dialect: 'postgres',
-              ssl: nodeConfig.isPostgresSecureConnection,
-              dialectOptions: {
-                ssl: {
-                  rejectUnauthorized: false,
-                  ca: nodeConfig.postgresCACert,
-                  key: nodeConfig.postgresClientKey,
-                  cert: nodeConfig.postgresClientCert,
-                },
-              },
-              logging: nodeConfig.debug
-                ? (sql: string, timing?: number) => {
-                    logger.debug(sql);
-                  }
-                : false,
-            })(),
+          useFactory: (nodeConfig: NodeConfig) => sequelizeFactory(buildSequelizeOptions(nodeConfig, option))(),
           inject: [NodeConfig],
         },
       ],

@@ -4,10 +4,13 @@
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {authHttpLink} from '@subql/apollo-links';
-import {NodeConfig, timeout, getLogger, profiler} from '@subql/node-core';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
 import fetch from 'node-fetch';
+import {NodeConfig} from '../configure';
+import {getLogger} from '../logger';
+import {profiler} from '../profiler';
+import {timeout} from '../utils';
 
 export type SpecVersion = {
   id: string;
@@ -367,7 +370,7 @@ export class DictionaryService implements OnApplicationShutdown {
         // Rerun the qeury now with distinct disabled
         return this.getMetadata();
       }
-      logger.warn(err, `failed to fetch specVersion result`);
+      logger.error(err, `Failed to get dictionary metadata`);
       return undefined;
     }
   }

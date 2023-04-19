@@ -32,7 +32,7 @@ export function getVirtualFkTag(field: string, to: string): string {
   return `(${underscored(field)}) REFERENCES ${to} (id)`;
 }
 
-const underscored = (input: string) => Utils.underscoredIf(input, true);
+export const underscored = (input: string) => Utils.underscoredIf(input, true);
 
 export function getFkConstraint(tableName: string, foreignKey: string): string {
   return [tableName, foreignKey, 'fkey'].map(underscored).join('_');
@@ -54,6 +54,11 @@ export function commentTableQuery(column: string, comment: string): string {
   return `COMMENT ON TABLE ${column} IS E'${comment}'`;
 }
 
+// This is used when historical is disabled so that we can perform bulk updates
+export function constraintDeferrableQuery(table: string, constraint: string): string {
+  return `ALTER TABLE ${table} ALTER CONSTRAINT ${constraint} DEFERRABLE INITIALLY IMMEDIATE`;
+}
+
 export function addTagsToForeignKeyMap(
   map: Map<string, Map<string, SmartTags>>,
   tableName: string,
@@ -72,9 +77,10 @@ export function addTagsToForeignKeyMap(
 export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;
 
 export function createUniqueIndexQuery(schema: string, table: string, field: string): string {
-  return `create unique index if not exists '${getUniqConstraint(table, field)}' on '${schema}.${table}' (${underscored(
+  return `create unique index if not exists "${getUniqConstraint(
+    table,
     field
-  )})`;
+  )}" on "${schema}"."${table}" (${underscored(field)})`;
 }
 
 // Subscriptions
@@ -194,4 +200,8 @@ export function createSchemaTriggerFunction(schema: string): string {
 
 export function enumNameToHash(enumName: string): string {
   return blake2AsHex(enumName).substr(2, 10);
+}
+
+export function getExistedIndexesQuery(schema: string): string {
+  return `SELECT indexname FROM pg_indexes WHERE schemaname = '${schema}'`;
 }

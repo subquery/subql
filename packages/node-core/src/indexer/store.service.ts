@@ -3,11 +3,14 @@
 
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
-import {hexToU8a, u8aToBuffer} from '@polkadot/util';
+import {hexToU8a} from '@polkadot/util';
+import {blake2AsHex} from '@polkadot/util-crypto';
 import {getDbType, SUPPORT_DB} from '@subql/common';
+
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
+  GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
   IndexType,
@@ -16,7 +19,6 @@ import {
 } from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
-  CreationAttributes,
   DataTypes,
   IndexesOptions,
   Model,
@@ -27,10 +29,8 @@ import {
   QueryTypes,
   Sequelize,
   Transaction,
-  UpsertOptions,
   Utils,
 } from 'sequelize';
-import {CountOptions} from 'sequelize/types/model';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
@@ -39,6 +39,7 @@ import {
   camelCaseObjectKey,
   commentConstraintQuery,
   commentTableQuery,
+  constraintDeferrableQuery,
   createNotifyTrigger,
   createSchemaTrigger,
   createSchemaTriggerFunction,
@@ -47,22 +48,28 @@ import {
   dropNotifyFunction,
   dropNotifyTrigger,
   enumNameToHash,
+  getEnumDeprecated,
+  getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
   getVirtualFkTag,
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
-  getEnumDeprecated,
 } from '../utils';
-import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
+import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
+import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
+import {CacheMetadataModel} from './storeCache';
+import {CachePoiModel} from './storeCache/cachePoi';
+import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
-const KEY_FIELDS = ['id', '__id', '__block_range'];
+
+type RemovedIndexes = Record<string, IndexesOptions[]>;
 
 interface IndexField {
   entityName: string;
@@ -76,14 +83,12 @@ interface NotifyTriggerPayload {
   eventManipulation: string;
 }
 
-type SchemaTriggerPayload = string;
 @Injectable()
 export class StoreService {
-  private tx?: Transaction;
   private modelIndexedFields: IndexField[];
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
-  private poiRepo: PoiRepo;
+  private poiRepo: PoiRepo | undefined;
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
   @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
@@ -91,8 +96,12 @@ export class StoreService {
   historical: boolean;
   private dbType: SUPPORT_DB;
   private useSubscription: boolean;
+  private removedIndexes: RemovedIndexes = {};
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
+  poiModel: CachePoiModel;
+  metadataModel: CacheMetadataModel;
+
+  constructor(private sequelize: Sequelize, private config: NodeConfig, readonly storeCache: StoreCacheService) {}
 
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this.schema = schema;
@@ -110,6 +119,8 @@ export class StoreService {
       this.historical = false;
       logger.warn(`Historical feature is not support with ${this.dbType}`);
     }
+    this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
+
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
@@ -122,13 +133,13 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
-  }
 
-  async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
-    await this.sequelize.query(
-      `UPDATE "${this.schema}".${this.metaDataRepo.tableName} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
-      tx && {transaction: tx}
-    );
+    this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
+    this.metadataModel = this.storeCache.metadata;
+    this.poiModel = this.storeCache.poi;
+
+    this.metadataModel.set('historicalStateEnabled', this.historical);
+    this.metadataModel.setIncrement('schemaMigrationCount');
   }
 
   async initHotSchemaReloadQueries(schema: string): Promise<void> {
@@ -165,6 +176,9 @@ export class StoreService {
         throw new Error('Btree_gist extension is required to enable historical data, contact DB admin for support');
       }
     }
+
+    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(schema));
+    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
 
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
@@ -238,7 +252,16 @@ export class StoreService {
       if (this.historical) {
         this.addIdAndBlockRangeAttributes(attributes);
         this.addBlockRangeColumnToIndexes(indexes);
+        this.addHistoricalIdIndex(model, indexes);
       }
+      // Hash indexes name to ensure within postgres limit
+      // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
+      // only update index name as it is new index or not found (it is might be an over length index name)
+      this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
+
+      // Update index query for cockroach db
+      this.beforeHandleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
+
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
@@ -248,6 +271,7 @@ export class StoreService {
         schema,
         indexes,
       });
+
       if (this.historical) {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         // TODO, remove id and block_range constrain, check id manually
@@ -285,7 +309,11 @@ export class StoreService {
       }
       switch (relation.type) {
         case 'belongsTo': {
-          model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          const fkConstraint = getFkConstraint(rel.source.tableName, rel.foreignKey);
+          if (this.dbType !== SUPPORT_DB.cockRoach) {
+            extraQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
+          }
           break;
         }
         case 'hasOne': {
@@ -338,12 +366,12 @@ export class StoreService {
 
     await this.sequelize.sync();
 
-    await this.setMetadata('historicalStateEnabled', this.historical);
-    await this.incrementJsonbCount('schemaMigrationCount');
-
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+    // TODO,THIS NOT WORKING.
+    // Failed to update model indexes as it is read-only property https://github.com/subquery/subql/issues/1606
+    // this.afterHandleCockroachIndex()
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
@@ -377,15 +405,17 @@ export class StoreService {
           return total;
         }, {} as {[key: string]: string | boolean});
 
-        if (store.historicalStateEnabled && multiChain) {
+        const useHistorical =
+          store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);
+
+        if (useHistorical && multiChain) {
           logger.error(
-            'Historical metadata entry found, to multi-chain index clear postgres schema and re-index project using --multichain'
+            'Historical feature is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
           );
           process.exit(1);
         }
 
-        const storedState = store.historicalStateEnabled as boolean;
-        return storedState ?? false;
+        return useHistorical;
       }
       throw new Error('Metadata table does not exist');
     } catch (e) {
@@ -399,7 +429,7 @@ export class StoreService {
     }
   }
 
-  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
+  private addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
     indexes.forEach((index) => {
       if (index.using === IndexType.GIN) {
         return;
@@ -409,6 +439,70 @@ export class StoreService {
       // GIST does not support unique indexes
       index.unique = false;
     });
+  }
+
+  // Sequelize model will generate follow query to create hash indexes
+  // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
+  // This will be rejected from cockroach db due to syntax error
+  // To avoid this we need to create index manually and add to extraQueries in order to create index in db
+  private beforeHandleCockroachIndex(
+    schema: string,
+    modelName: string,
+    indexes: IndexesOptions[],
+    existedIndexes: string[],
+    extraQueries: string[]
+  ): void {
+    if (this.dbType === SUPPORT_DB.cockRoach) {
+      indexes.forEach((index, i) => {
+        if (index.using === IndexType.HASH && !existedIndexes.includes(index.name)) {
+          const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
+            index.fields
+          }) USING HASH;`;
+          extraQueries.push(cockroachDbIndexQuery);
+          if (this.removedIndexes[modelName] === undefined) {
+            this.removedIndexes[modelName] = [];
+          }
+          this.removedIndexes[modelName].push(indexes[i]);
+          delete indexes[i];
+        }
+      });
+    }
+  }
+
+  // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
+  // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
+  private afterHandleCockroachIndex(): void {
+    const removedIndexes = Object.entries(this.removedIndexes);
+    if (removedIndexes.length > 0) {
+      for (const [model, indexes] of removedIndexes) {
+        const sqModel = this.sequelize.model(model);
+        (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
+      }
+    }
+  }
+
+  private updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
+    indexes.forEach((index) => {
+      // follow same pattern as _generateIndexName
+      const tableName = modelToTableName(modelName);
+      const deprecated = generateIndexName(tableName, index);
+
+      if (!existedIndexes.includes(deprecated)) {
+        index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
+      }
+    });
+  }
+
+  // Only used with historical to add indexes to ID fields for gettign entitities by ID
+  private addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
+    const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
+    if (idFieldName && !indexes.find((idx) => idx.fields.includes(idFieldName))) {
+      indexes.push({
+        fields: [Utils.underscoredIf(idFieldName, true)],
+        unique: false,
+        using: IndexType.GIST,
+      });
+    }
   }
 
   private addRelationToMap(
@@ -456,6 +550,7 @@ export class StoreService {
   }
 
   private addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>): void {
+    // TODO, check impact of remove this
     sequelizeModel.addScope('defaultScope', {
       attributes: {
         exclude: ['__id', '__block_range'],
@@ -469,14 +564,9 @@ export class StoreService {
     sequelizeModel.addHook('beforeValidate', (attributes, options) => {
       attributes.__block_range = [this.blockHeight, null];
     });
-    sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
-      instances.forEach((item) => {
-        item.__block_range = [this.blockHeight, null];
-      });
-    });
   }
 
-  validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
+  private validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
     if (triggers.length !== NotifyTriggerManipulationType.length) {
       throw new Error(
         `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
@@ -489,9 +579,7 @@ export class StoreService {
     });
   }
 
-  setTransaction(tx: Transaction): void {
-    this.tx = tx;
-    tx.afterCommit(() => (this.tx = undefined));
+  setOperationStack(): void {
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
@@ -499,23 +587,6 @@ export class StoreService {
 
   setBlockHeight(blockHeight: number): void {
     this.blockHeight = blockHeight;
-  }
-
-  async setMetadataBatch(metadata: Metadata[], options?: UpsertOptions<Metadata>): Promise<void> {
-    await Promise.all(metadata.map(({key, value}) => this.setMetadata(key, value, options)));
-  }
-
-  async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.upsert({key, value}, options);
-  }
-
-  async setPoi(blockPoi: ProofOfIndex, options?: UpsertOptions<ProofOfIndex>): Promise<void> {
-    assert(this.poiRepo, `Model _poi does not exist`);
-    blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
-    blockPoi.hash = u8aToBuffer(blockPoi.hash);
-    blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await this.poiRepo.upsert(blockPoi, options);
   }
 
   getOperationMerkleRoot(): Uint8Array {
@@ -573,28 +644,6 @@ group by
     return rows.map((result) => camelCaseObjectKey(result)) as IndexField[];
   }
 
-  private async markAsDeleted(model: ModelStatic<any>, id: string) {
-    return model.update(
-      {
-        __block_range: this.sequelize.fn(
-          'int8range',
-          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-          this.blockHeight
-        ),
-      },
-      {
-        hooks: false,
-        transaction: this.tx,
-        where: {
-          id: id,
-          __block_range: {
-            [Op.contains]: this.blockHeight as any,
-          },
-        },
-      }
-    );
-  }
-
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
@@ -627,9 +676,7 @@ group by
         );
       }
     }
-    await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
-      transaction,
-    });
+    this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
     if (this.config.proofOfIndex) {
       await this.poiRepo.destroy({
         transaction,
@@ -639,45 +686,15 @@ group by
           },
         },
       });
-      await this.setMetadata('lastPoiHeight', targetBlockHeight, {
-        transaction,
-      });
+      this.metadataModel.set('lastPoiHeight', targetBlockHeight);
     }
   }
 
   getStore(): Store {
     return {
-      count: async <T extends Entity>(
-        entity: string,
-        field?: keyof T,
-        value?: T[keyof T] | T[keyof T][],
-        options?: {
-          distinct?: boolean;
-          col?: keyof T;
-        }
-      ): Promise<number> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        const countOption = {} as Omit<CountOptions<any>, 'group'>;
-        if (field && value) {
-          countOption.where = {[field]: value};
-        }
-        if (options) {
-          assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
-          countOption.distinct = options?.distinct;
-          countOption.col = options?.col as string;
-        }
-        return model.count(countOption);
-      },
       get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          const record = await model.findOne({
-            where: {id},
-            transaction: this.tx,
-          });
-          return record?.toJSON() as T;
+          return this.storeCache.getModel<T>(entity).get(id);
         } catch (e) {
           throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
         }
@@ -686,14 +703,12 @@ group by
         entity: string,
         field: keyof T,
         value: T[keyof T] | T[keyof T][],
-        options?: {
+        options: {
           offset?: number;
           limit?: number;
-        }
+        } = {}
       ): Promise<T[] | undefined> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
           const indexed =
             this.modelIndexedFields.findIndex(
               (indexField) =>
@@ -705,13 +720,13 @@ group by
               `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${this.config.queryLimit} as the limit.`
             );
           }
-          const records = await model.findAll({
-            where: {[field]: value},
-            transaction: this.tx,
-            limit: options?.limit ? Math.min(options?.limit, this.config.queryLimit) : this.config.queryLimit,
-            offset: options?.offset,
-          });
-          return records.map((record) => record.toJSON() as T);
+          const finalLimit = options.limit ? Math.min(options.limit, this.config.queryLimit) : this.config.queryLimit;
+          if (options.offset === undefined) {
+            options.offset = 0;
+          }
+          return this.storeCache
+            .getModel<T>(entity)
+            .getByField(field, value, {limit: finalLimit, offset: options.offset});
         } catch (e) {
           throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
@@ -720,10 +735,9 @@ group by
         entity: string,
         field: keyof T,
         value: T[keyof T]
+        // eslint-disable-next-line @typescript-eslint/require-await
       ): Promise<T | undefined> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
           const indexed =
             this.modelIndexedFields.findIndex(
               (indexField) =>
@@ -732,40 +746,16 @@ group by
                 indexField.isUnique
             ) > -1;
           assert(indexed, `to query by field ${String(field)}, an unique index must be created on model ${entity}`);
-          const record = await model.findOne({
-            where: {[field]: value},
-            transaction: this.tx,
-          });
-          return record?.toJSON() as T;
+          return this.storeCache.getModel<T>(entity).getOneByField(field, value);
         } catch (e) {
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
       },
+      // eslint-disable-next-line @typescript-eslint/require-await
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          const attributes = data as unknown as CreationAttributes<Model>;
-          if (this.historical) {
-            const [updatedRows] = await model.update(attributes, {
-              hooks: false,
-              transaction: this.tx,
-              where: this.sequelize.and(
-                {id: data.id},
-                this.sequelize.where(this.sequelize.fn('lower', this.sequelize.col('_block_range')), this.blockHeight)
-              ),
-            });
-            if (updatedRows < 1) {
-              await this.markAsDeleted(model, data.id);
-              await model.create(attributes, {
-                transaction: this.tx,
-              });
-            }
-          } else {
-            await model.upsert(attributes, {
-              transaction: this.tx,
-            });
-          }
+          this.storeCache.getModel(entity).set(_id, data, this.blockHeight);
+
           if (this.config.proofOfIndex) {
             this.operationStack.put(OperationType.Set, entity, data);
           }
@@ -773,13 +763,11 @@ group by
           throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
         }
       },
+      // eslint-disable-next-line @typescript-eslint/require-await
       bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
-            transaction: this.tx,
-          });
+          this.storeCache.getModel(entity).bulkCreate(data, this.blockHeight);
+
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -789,49 +777,10 @@ group by
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
         }
       },
-
+      // eslint-disable-next-line @typescript-eslint/require-await
       bulkUpdate: async (entity: string, data: Entity[], fields?: string[]): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          if (this.historical) {
-            if (fields !== undefined && fields.length !== 0) {
-              logger.warn(`Update specified fields with historical feature is not supported`);
-            }
-            const newRecordAttributes: CreationAttributes<Model>[] = [];
-            await Promise.all(
-              data.map(async (record) => {
-                const attributes = record as unknown as CreationAttributes<Model>;
-                const [updatedRows] = await model.update(attributes, {
-                  hooks: false,
-                  transaction: this.tx,
-                  where: this.sequelize.and(
-                    {id: record.id},
-                    this.sequelize.where(
-                      this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-                      this.blockHeight
-                    )
-                  ),
-                });
-                if (updatedRows < 1) {
-                  await this.markAsDeleted(model, record.id);
-                  newRecordAttributes.push(attributes);
-                }
-              })
-            );
-            if (newRecordAttributes.length !== 0) {
-              await model.bulkCreate(newRecordAttributes, {
-                transaction: this.tx,
-              });
-            }
-          } else {
-            const modelFields =
-              fields ?? Object.keys(model.getAttributes()).filter((item) => !KEY_FIELDS.includes(item));
-            await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
-              transaction: this.tx,
-              updateOnDuplicate: modelFields,
-            });
-          }
+          this.storeCache.getModel(entity).bulkUpdate(data, this.blockHeight, fields);
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -841,16 +790,11 @@ group by
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
         }
       },
-
+      // eslint-disable-next-line @typescript-eslint/require-await
       remove: async (entity: string, id: string): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          if (this.historical) {
-            await this.markAsDeleted(model, id);
-          } else {
-            await model.destroy({where: {id}, transaction: this.tx});
-          }
+          this.storeCache.getModel(entity).remove(id, this.blockHeight);
+
           if (this.config.proofOfIndex) {
             this.operationStack.put(OperationType.Remove, entity, id);
           }
