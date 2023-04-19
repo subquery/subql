@@ -87,7 +87,7 @@ export abstract class TestingService<B, DS> {
     if (Object.keys(this.tests).length !== 0) {
       for (const sandboxIndex in this.tests) {
         const tests = this.tests[sandboxIndex];
-        this.totalTests = tests.length;
+        this.totalTests += tests.length;
         for (const test of tests) {
           await this.runTest(test, this.testSandboxes[sandboxIndex]);
         }
@@ -147,7 +147,19 @@ export abstract class TestingService<B, DS> {
 
       logger.debug('Running handler');
 
-      await this.indexBlock(block, test.handler);
+      try {
+        await this.indexBlock(block, test.handler);
+      } catch (e) {
+        this.totalFailedTests += test.expectedEntities.length;
+        logger.warn(`Test: ${test.name} field due to runtime error`, e);
+        this.failedTestsSummary.push({
+          testName: test.name,
+          entityId: undefined,
+          entityName: undefined,
+          failedAttributes: [`Runtime Error:\n${e.stack}`],
+        });
+        throw e;
+      }
 
       // Check expected entities
       logger.debug('Checking expected entities');
@@ -160,12 +172,12 @@ export abstract class TestingService<B, DS> {
         const failedAttributes: string[] = [];
         let passed = true;
         Object.keys(attributes).map((attr) => {
-          const expectedAttr = (expectedEntity as Record<string, any>)[attr];
+          const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
           const actualAttr = (actualEntity as Record<string, any>)[attr];
           if (!isEqual(expectedAttr, actualAttr)) {
             passed = false;
             failedAttributes.push(
-              `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"`
+              `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`
             );
           }
         });
@@ -196,13 +208,7 @@ export abstract class TestingService<B, DS> {
       );
     } catch (e) {
       this.totalFailedTests += test.expectedEntities.length;
-      logger.warn(`Test: ${test.name} field due to runtime error`, e);
-      this.failedTestsSummary.push({
-        testName: test.name,
-        entityId: undefined,
-        entityName: undefined,
-        failedAttributes: [`Runtime Error:\n${e.stack}`],
-      });
+      logger.warn(`Test ${test.name} failed to run`, e);
     } finally {
       await this.sequelize.dropSchema(`"${schema}"`, {
         logging: false,
