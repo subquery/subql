@@ -124,6 +124,14 @@ jobs:
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish Testing
+        if: steps.changed-testing.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/testing
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish Node Core
         if: steps.changed-node-core.outputs.changed == 'true'
         uses: ./.github/actions/create-release
@@ -161,13 +169,5 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/cli
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Testing
-        if: steps.changed-testing.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/testing
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}

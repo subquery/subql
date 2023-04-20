@@ -119,6 +119,13 @@ jobs:
           package-path: packages/common-substrate
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Bump testing & deploy
+        if: steps.changed-testing.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/testing
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Bump node-core & deploy
         if: steps.changed-node-core.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
@@ -152,13 +159,6 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/cli
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump testing & deploy
-        if: steps.changed-testing.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/testing
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes
