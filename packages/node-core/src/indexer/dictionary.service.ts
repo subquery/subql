@@ -62,12 +62,7 @@ function getGqlType(value: any): string {
 }
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
-  let gqlType: string;
-  if (cond.matcher === 'contains') {
-    gqlType = 'JSON';
-  } else {
-    gqlType = getGqlType(cond.value);
-  }
+  const gqlType = cond.matcher === 'contains' ? 'JSON' : getGqlType(cond.value);
 
   return {
     name,
