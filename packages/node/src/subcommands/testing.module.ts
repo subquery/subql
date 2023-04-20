@@ -19,7 +19,6 @@ import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { FetchModule } from '../indexer/fetch.module';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { IndexerModule } from '../indexer/indexer.module';
 import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
