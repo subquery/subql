@@ -58,7 +58,15 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     },
     SandboxService,
     DsProcessorService,
-    DynamicDsService,
+    {
+      provide: DynamicDsService,
+      useFactory: () => {
+        if (isMainThread) {
+          throw new Error('Expected to be worker thread');
+        }
+        return new WorkerDynamicDsService((global as any).host);
+      },
+    },
     PoiService,
     MmrService,
     {
@@ -66,7 +74,15 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
       useClass: ProjectService,
     },
     WorkerService,
-    UnfinalizedBlocksService,
+    {
+      provide: UnfinalizedBlocksService,
+      useFactory: () => {
+        if (isMainThread) {
+          throw new Error('Expected to be worker thread');
+        }
+        return new WorkerUnfinalizedBlocksService((global as any).host);
+      },
+    },
     WorkerRuntimeService,
   ],
   exports: [StoreService, MmrService],
