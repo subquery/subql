@@ -26,6 +26,7 @@
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
+    "@subql/testing": "workspace:*",
     "@subql/x-merkle-mountain-range": "^2.0.0-0.1.2",
     "@willsoto/nestjs-prometheus": "^5.1.1",
     "async-lock": "^1.4.0",
