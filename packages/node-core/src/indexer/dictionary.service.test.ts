@@ -119,7 +119,7 @@ describe('DictionaryService', () => {
     const endBlock = 10001;
     const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
 
-    expect(dic.batchBlocks.length).toBeGreaterThan(1);
+    expect(dic?.batchBlocks.length).toBeGreaterThan(1);
   }, 500000);
 
   it('return undefined when dictionary api failed', async () => {
@@ -145,7 +145,7 @@ describe('DictionaryService', () => {
     const startBlock = 400000000;
     const endBlock = 400010000;
     const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
-    expect(dic._metadata).toBeDefined();
+    expect(dic?._metadata).toBeDefined();
   }, 500000);
 
   it('test query the correct range', async () => {
@@ -164,7 +164,7 @@ describe('DictionaryService', () => {
         ],
       },
     ]);
-    expect(dic.batchBlocks).toEqual(range(startBlock, startBlock + batchSize));
+    expect(dic?.batchBlocks).toEqual(range(startBlock, startBlock + batchSize));
   }, 500000);
 
   it('use minimum value of event/extrinsic returned block as batch end block', async () => {
@@ -213,7 +213,7 @@ describe('DictionaryService', () => {
         ],
       },
     ]);
-    expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
+    expect(dic?.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
 
   it('able to build queryEntryMap', async () => {

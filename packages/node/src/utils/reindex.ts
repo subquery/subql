@@ -21,10 +21,6 @@ export async function reindex(
   sequelize: Sequelize,
   forceCleanService?: ForceCleanService,
 ): Promise<void> {
-  if (!storeService.historical) {
-    logger.warn('Unable to reindex, historical state not enabled');
-    return;
-  }
   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
     logger.warn(
       `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,

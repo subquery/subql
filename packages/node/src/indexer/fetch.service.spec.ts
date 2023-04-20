@@ -353,7 +353,7 @@ function mockStoreService(): StoreService {
     getOperationMerkleRoot: () => {
       return null;
     },
-  } as StoreService;
+  } as unknown as StoreService;
 }
 
 function mockStoreCache(): StoreCacheService {

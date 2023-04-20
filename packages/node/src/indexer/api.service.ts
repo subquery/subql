@@ -34,7 +34,7 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService
-  extends BaseApiService
+  extends BaseApiService<SubqueryProject, ApiPromise>
   implements OnApplicationShutdown
 {
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
@@ -43,7 +43,7 @@ export class ApiService
   networkMeta: NetworkMetadataPayload;
 
   constructor(
-    @Inject('ISubqueryProject') protected project: SubqueryProject,
+    @Inject('ISubqueryProject') project: SubqueryProject,
     private connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,

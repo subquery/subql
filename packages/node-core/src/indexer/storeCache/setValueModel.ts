@@ -101,7 +101,7 @@ export class SetValueModel<T> {
   }
 
   isMatchData(field?: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
-    if (field === undefined && value === undefined) {
+    if (field === undefined || value === undefined) {
       return true;
     }
     if (Array.isArray(value)) {

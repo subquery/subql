@@ -56,4 +56,4 @@ export type SetValue<T> = {
 
 export type SetData<T> = Record<string, SetValueModel<T>>;
 
-export class GetData<T> extends LRUCache<string, T, unknown> {}
+export class GetData<T extends {}> extends LRUCache<string, T, unknown> {}

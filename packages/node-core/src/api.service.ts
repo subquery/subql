@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
-// import {ApiWrapper} from '@subql/types-avalanche';
-import {NetworkMetadataPayload} from './events';
+import {ISubqueryProject} from './indexer';
 import {getLogger} from './logger';
 
 const logger = getLogger('api');
@@ -14,14 +13,11 @@ type FetchFunction<T> = (batch: number[]) => Promise<T[]>;
 type FetchFunctionProvider<T> = () => FetchFunction<T>;
 
 @Injectable()
-export abstract class ApiService {
-  networkMeta: NetworkMetadataPayload;
+export abstract class ApiService<P extends ISubqueryProject, A> {
+  constructor(protected project: P) {}
 
-  constructor(protected project: any) {}
-
-  abstract init(): Promise<ApiService>;
-  abstract get api(): any; /*ApiWrapper*/
-  abstract fetchBlocks(batch: number[]): Promise<any>;
+  abstract init(): Promise<ApiService<P, A>>;
+  abstract get api(): A; /*ApiWrapper*/
 
   async fetchBlocksGeneric<T>(
     fetchFuncProvider: FetchFunctionProvider<T>,
@@ -35,7 +31,7 @@ export abstract class ApiService {
           // Get the latest fetch function from the provider
           const fetchFunc = fetchFuncProvider();
           return await fetchFunc(batch);
-        } catch (e) {
+        } catch (e: any) {
           logger.error(e, `Failed to fetch blocks ${batch[0]}...${batch[batch.length - 1]}`);
 
           reconnectAttempts++;

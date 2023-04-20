@@ -136,7 +136,7 @@ export class CachedModel<
 
   async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
     if (field === 'id') {
-      return this.get(value.toString());
+      return this.get(`${value}`);
     } else {
       const oneFromCached = this.getFromCache(field, value, true)[0];
       if (oneFromCached) {
@@ -361,7 +361,8 @@ export class CachedModel<
       if (
         getValue &&
         !unifiedIds.includes(key) &&
-        ((field === undefined && value === undefined) ||
+        (field === undefined ||
+          value === undefined ||
           (Array.isArray(value) && includes(value, getValue[field])) ||
           isEqual(getValue[field], value))
       ) {

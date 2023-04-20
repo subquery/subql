@@ -57,7 +57,7 @@ const NOT_SUPPORT = (name: string) => {
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<SubstrateProjectNetworkConfig>;
+  network: SubstrateProjectNetworkConfig;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];

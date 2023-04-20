@@ -37,7 +37,7 @@ export class PoiService implements OnApplicationShutdown {
     }
   }
 
-  async getLatestPoiBlockHash(): Promise<Uint8Array | null> {
+  async getLatestPoiBlockHash(): Promise<Uint8Array> {
     if (!this.latestPoiBlockHash || !isMainThread) {
       const poiBlockHash = await this.fetchPoiBlockHashFromDb();
       if (poiBlockHash === null || poiBlockHash === undefined) {

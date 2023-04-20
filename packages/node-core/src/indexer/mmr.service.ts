@@ -134,7 +134,9 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array): void {
-    if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
+    if (!poiWithMmr.mmrRoot) {
+      throw new Error(`Poi block height ${poiWithMmr.id}, Poi mmr has not been set`);
+    } else if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
       throw new Error(
         `Poi block height ${poiWithMmr.id}, Poi mmr ${u8aToHex(
           poiWithMmr.mmrRoot

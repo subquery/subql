@@ -20,6 +20,7 @@ import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue} from '../../utils';
+import {CachePoiModel} from '../storeCache/cachePoi';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
@@ -50,11 +51,11 @@ function isNullMerkelRoot(operationHash: Uint8Array): boolean {
 }
 
 export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBlockDispatcher {
-  protected _latestBufferedHeight: number;
-  protected _processedBlockCount: number;
-  protected latestProcessedHeight: number;
-  protected currentProcessingHeight: number;
-  protected onDynamicDsCreated: (height: number) => Promise<void>;
+  protected _latestBufferedHeight = 0;
+  protected _processedBlockCount = 0;
+  protected latestProcessedHeight = 0;
+  protected currentProcessingHeight = 0;
+  private _onDynamicDsCreated?: (height: number) => Promise<void>;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -72,8 +73,9 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   abstract enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
-    this.onDynamicDsCreated = onDynamicDsCreated;
-    this.setProcessedBlockCount(await this.storeCacheService.metadata.find('processedBlockCount', 0));
+    this._onDynamicDsCreated = onDynamicDsCreated;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.setProcessedBlockCount((await this.storeCacheService.metadata.find('processedBlockCount', 0))!);
   }
 
   get queueSize(): number {
@@ -81,7 +83,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   get freeSize(): number {
-    return this.queue.freeSpace;
+    return this.queue.freeSpace!;
   }
 
   get smartBatchSize(): number {
@@ -90,6 +92,13 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
   get minimumHeapLimit(): number {
     return this.smartBatchService.minimumHeapRequired;
+  }
+
+  protected get onDynamicDsCreated(): (height: number) => Promise<void> {
+    if (!this._onDynamicDsCreated) {
+      throw new Error('BaseBlockDispatcher has not been initialized');
+    }
+    return this._onDynamicDsCreated;
   }
 
   get latestBufferedHeight(): number {
@@ -132,7 +141,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
   // Is called directly before a block is processed
   protected preProcessBlock(height: number): void {
-    this.storeService.setOperationStack();
     this.storeService.setBlockHeight(height);
 
     this.currentProcessingHeight = height;
@@ -201,7 +209,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
         await this.poiService.getLatestPoiBlockHash(),
         this.project.id
       );
-      this.storeCacheService.poi.set(poiBlock);
+      this.poi.set(poiBlock);
       this.poiService.setLatestPoiBlockHash(poiBlock.hash);
       this.storeCacheService.metadata.set('lastPoiHeight', height);
     }
@@ -232,5 +240,13 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     if (updateProcessed) {
       meta.setIncrement('processedBlockCount');
     }
+  }
+
+  private get poi(): CachePoiModel {
+    const poi = this.storeCacheService.poi;
+    if (!poi) {
+      throw new Error('MMR service expected POI but it was not found');
+    }
+    return poi;
   }
 }

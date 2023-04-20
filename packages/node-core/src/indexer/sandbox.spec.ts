@@ -25,7 +25,7 @@ describe('sandbox for subql-node', () => {
       },
       new NodeConfig({subquery: ' ', subqueryName: ' '})
     );
-    let sandboxFuncionEndAt: Date;
+    let sandboxFuncionEndAt: Date | undefined;
     vm.on('console.log', (line) => {
       if (line === 'OK') {
         sandboxFuncionEndAt = new Date();
@@ -33,7 +33,7 @@ describe('sandbox for subql-node', () => {
     });
     await vm.securedExec('testSandbox', []);
     const secureExecEndAt = new Date();
-    expect(sandboxFuncionEndAt).toBeTruthy();
-    expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt.getTime());
+    expect(sandboxFuncionEndAt).toBeDefined();
+    expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt?.getTime() ?? 0);
   });
 });

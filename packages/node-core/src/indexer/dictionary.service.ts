@@ -141,7 +141,8 @@ function buildDictQueryFragment(
   };
 
   if (useDistinct) {
-    node.args.distinct = ['BLOCK_HEIGHT'];
+    // Non null assertion here because we define the object explicitly
+    node.args!.distinct = ['BLOCK_HEIGHT'];
   }
 
   return [gqlVars, node];
@@ -149,12 +150,12 @@ function buildDictQueryFragment(
 
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
-  protected client: ApolloClient<NormalizedCacheObject>;
+  private _client?: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
-  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
+  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]> = new Map();
   private useDistinct = true;
   private useStartHeight = true;
-  protected _startHeight: number;
+  protected _startHeight?: number;
 
   constructor(
     readonly dictionaryEndpoint: string,
@@ -181,7 +182,7 @@ export class DictionaryService implements OnApplicationShutdown {
       link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
 
-    this.client = new ApolloClient({
+    this._client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
       link,
       defaultOptions: {
@@ -204,8 +205,19 @@ export class DictionaryService implements OnApplicationShutdown {
   }
 
   get startHeight(): number {
+    if (!this._startHeight) {
+      throw new Error('Dictionary start height is not set');
+    }
     return this._startHeight;
   }
+
+  protected get client(): ApolloClient<NormalizedCacheObject> {
+    if (!this._client) {
+      throw new Error('Dictionary service has not been initialized');
+    }
+    return this._client;
+  }
+
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
@@ -300,30 +312,22 @@ export class DictionaryService implements OnApplicationShutdown {
     }
     return buildQuery(vars, nodes);
   }
-  buildDictionaryEntryMap<DS extends {startBlock?: number}>(
+  buildDictionaryEntryMap<DS extends {startBlock: number}>(
     dataSources: Array<DS>,
     buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
   ): void {
-    const mappedDictionaryQueryEntries = new Map();
-
     for (const ds of dataSources.sort((a, b) => a.startBlock - b.startBlock)) {
-      mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
+      this.mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
-    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
 
   getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
-    let dictionaryQueryEntries: DictionaryQueryEntry[];
-    this.mappedDictionaryQueryEntries.forEach((value, key) => {
+    for (const [key, value] of this.mappedDictionaryQueryEntries) {
       if (queryEndBlock >= key) {
-        dictionaryQueryEntries = value;
+        return value;
       }
-    });
-
-    if (dictionaryQueryEntries === undefined) {
-      return [];
     }
-    return dictionaryQueryEntries;
+    return [];
   }
 
   async scopedDictionaryEntries(

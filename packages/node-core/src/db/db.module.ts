@@ -35,7 +35,7 @@ async function establishConnectionSequelize(option: SequelizeOption, numRetries:
   const sequelize = new Sequelize(uri, option);
   try {
     await sequelize.authenticate();
-  } catch (error) {
+  } catch (error: any) {
     if (JSON.stringify(error.message).includes(CONNECTION_SSL_ERROR_REGEX)) {
       logger.warn('Database does not support SSL connection, will try to connect without it');
       option.dialectOptions = undefined;

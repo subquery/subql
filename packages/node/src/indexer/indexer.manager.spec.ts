@@ -144,7 +144,12 @@ function createIndexerManager(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const storeCache = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
-  const storeService = new StoreService(sequilize, nodeConfig, storeCache);
+  const storeService = new StoreService(
+    sequilize,
+    nodeConfig,
+    storeCache,
+    project,
+  );
   const poiService = new PoiService(storeCache);
   const mmrService = new MmrService(nodeConfig, storeCache);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
