@@ -18,7 +18,6 @@ import {
   ProjectManifestV0_2_1Impl,
   ProjectManifestV0_3_0Impl,
   SubstrateDataSource,
-  FileType,
   ProjectManifestV1_0_0Impl,
   SubstrateBlockFilter,
   isRuntimeDs,
@@ -53,11 +52,14 @@ const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name}() is not supported`);
 };
 
+// This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
+type NetworkConfig = SubstrateProjectNetworkConfig & { chainId: string };
+
 @Injectable()
 export class SubqueryProject {
   id: string;
   root: string;
-  network: SubstrateProjectNetworkConfig;
+  network: NetworkConfig;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
@@ -106,14 +108,7 @@ export class SubqueryProject {
   }
 }
 
-export interface SubqueryProjectNetwork {
-  chainId: string;
-  endpoint?: string[];
-  dictionary?: string;
-  chaintypes?: FileType;
-}
-
-function processChainId(network: any): SubqueryProjectNetwork {
+function processChainId(network: any): NetworkConfig {
   if (network.chainId && network.genesisHash) {
     throw new Error('Please only provide one of chainId and genesisHash');
   } else if (network.genesisHash && !network.chainId) {
@@ -260,7 +255,7 @@ export async function generateTimestampReferenceForBlockFilters(
       if (isRuntimeDs(ds)) {
         const startBlock = ds.startBlock ?? 1;
         let block;
-        let timestampReference;
+        let timestampReference: Date;
 
         ds.mapping.handlers = await Promise.all(
           ds.mapping.handlers.map(async (handler) => {

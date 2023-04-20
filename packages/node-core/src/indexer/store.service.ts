@@ -130,7 +130,7 @@ export class StoreService {
     return this._blockHeight;
   }
 
-  private get historical(): boolean {
+  get historical(): boolean {
     assert(!!this._historical, new NoInitError());
     return this._historical;
   }

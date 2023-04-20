@@ -14,7 +14,7 @@ function getTestProject(
 ): SubqueryProject {
   return {
     network: {
-      genesisHash: '0x',
+      chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     dataSources: [

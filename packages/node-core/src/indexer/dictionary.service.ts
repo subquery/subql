@@ -196,7 +196,7 @@ export class DictionaryService implements OnApplicationShutdown {
     });
   }
 
-  setDictionaryStartHeight(start: number | undefined): void {
+  private setDictionaryStartHeight(start: number | undefined): void {
     // Since not all dictionary has adopt start height, if it is not set, we just consider it is 1.
     if (this._startHeight !== undefined) {
       return;
@@ -312,11 +312,14 @@ export class DictionaryService implements OnApplicationShutdown {
     }
     return buildQuery(vars, nodes);
   }
-  buildDictionaryEntryMap<DS extends {startBlock: number}>(
+  buildDictionaryEntryMap<DS extends {startBlock?: number}>(
     dataSources: Array<DS>,
     buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
   ): void {
-    for (const ds of dataSources.sort((a, b) => a.startBlock - b.startBlock)) {
+    const dsWithStartBlock = (dataSources.filter((ds) => !!ds.startBlock) as (DS & {startBlock: number})[]).sort(
+      (a, b) => a.startBlock - b.startBlock
+    );
+    for (const ds of dsWithStartBlock) {
       this.mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
   }
@@ -363,6 +366,9 @@ export class DictionaryService implements OnApplicationShutdown {
         this.nodeConfig.dictionaryTimeout
       );
       const _metadata = resp.data._metadata;
+
+      this.setDictionaryStartHeight(_metadata.startHeight);
+
       return {_metadata};
     } catch (err: any) {
       if (JSON.stringify(err).includes(startHeightEscaped)) {

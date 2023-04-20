@@ -100,7 +100,7 @@ export interface SubstrateNetworkFilter {
   specName?: string;
 }
 
-export type SubstrateDatasource = SubstrateRuntimeDatasource | SubstrateCustomDatasource; // | SubstrateBuiltinDataSource;
+export type SubstrateDatasource = SubstrateRuntimeDatasource | SubstrateCustomDatasource;
 
 export interface FileReference {
   file: string;

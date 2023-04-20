@@ -278,9 +278,6 @@ export class FetchService implements OnApplicationShutdown {
     );
 
     if (dictionaryValid) {
-      this.dictionaryService.setDictionaryStartHeight(
-        metadata?._metadata?.startHeight,
-      );
       const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
       this.runtimeService.setSpecVersionMap(rawSpecVersions);
     } else {
@@ -420,7 +417,10 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
-    if (this.dictionaryService.startHeight > getStartBlockHeight()) {
+    if (
+      this.useDictionary &&
+      this.dictionaryService.startHeight > getStartBlockHeight()
+    ) {
       logger.warn(
         `Dictionary start height ${
           this.dictionaryService.startHeight

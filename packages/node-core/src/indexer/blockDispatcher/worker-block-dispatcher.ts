@@ -29,7 +29,7 @@ type Worker = {
 };
 
 function initAutoQueue<T>(workers: number | undefined, batchSize: number): AutoQueue<T> {
-  assert(workers && workers < 0, 'Number of workers must be greater than 0');
+  assert(workers && workers > 0, 'Number of workers must be greater than 0');
   return new AutoQueue(workers * batchSize * 2);
 }
 

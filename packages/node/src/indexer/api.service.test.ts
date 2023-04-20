@@ -25,6 +25,7 @@ function testSubqueryProject(endpoint: string[]): SubqueryProject {
     network: {
       endpoint,
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
+      chainId: '',
     },
     dataSources: [],
     id: 'test',

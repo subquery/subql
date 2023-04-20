@@ -43,6 +43,7 @@ const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
+      chainId: '0x',
       endpoint: [WS_ENDPOINT],
     },
     chainTypes: {
