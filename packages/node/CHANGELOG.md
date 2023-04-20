@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [2.0.0] - 2023-04-20
-- Major release for 2.0.0
+- Major release for 2.0.0, align with other package versions
 ### Added
 - Added Database cache feature, this significantly improve indexing performance
   - Data flush to database when number of records reaches `--store-cache-threshold` value (default is 1000), this reduces number of transactions to database in order to save time.

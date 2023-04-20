@@ -12,12 +12,20 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 
 ## [2.0.0] - 2023-04-20
-- Major release 2.0.0
+- Major release 2.0.0, align with other package versions
 ### Added
 - Added StoreCache service and various other improvements (#1561)
 - Added TestingService (#1584)
+### Changed
+- Update metadata when dictionary skips large number of blocks (#1577)
 ### Fixed
 - Enable Typescript strict setting and improve code quality (#1625)
+- Fixed enum not being included in POI (#1561)
+- Fixed when Poi block offset 0, it could get updated when app restart (#1459)
+- Fixed index name too long issue (#1599)
+- Fixed dictionary validation issues and improve error messages (#1561)
+
+
 
 ## [1.11.3] - 2023-04-17
 ### Fixed

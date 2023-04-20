@@ -10,9 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [Unreleased]
 
 ## [2.0.0] - 2023-04-20
-- Major release 2.0.0
+- Major release 2.0.0, align with other package versions
 ### Changed
 - Update interfaces to support testing framework (#1584)
+- Removed `count` method from `Store`
 
 
 ## [1.7.2] - 2023-03-29

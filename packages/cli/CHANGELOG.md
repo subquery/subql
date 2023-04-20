@@ -10,7 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 
 ## [2.0.0] - 2023-04-20
-- Major release 2.0.0
+- Major release 2.0.0, align with other package versions
 ### Added
 - Build `*.test.ts` file to support testing Framework (#1584)
 
