@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [1.8.1] - 2023-03-30
 ### Added
 - Add types to support Multiple endpoints (#1551)
