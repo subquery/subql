@@ -9,7 +9,9 @@ import { DictionaryService } from './dictionary.service';
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
+      endpoint: '',
       dictionary: `https://api.subquery.network/sq/subquery/polkadot-dictionary`,
+      chainId: '',
     },
     dataSources: [],
     id: 'test',

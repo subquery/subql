@@ -4,15 +4,6 @@
 import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Inject, Injectable} from '@nestjs/common';
-import {
-  NodeConfig,
-  StoreService,
-  getLogger,
-  SandboxOption,
-  TestSandbox,
-  IIndexerManager,
-  ISubqueryProject,
-} from '@subql/node-core';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
 import {getAllEntitiesRelations} from '@subql/utils';
@@ -21,6 +12,11 @@ import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {CreationAttributes, Model, Sequelize} from 'sequelize';
 import {ApiService} from '../api.service';
+import {NodeConfig} from '../configure';
+import {getLogger} from '../logger';
+import {SandboxOption, TestSandbox} from './sandbox';
+import {StoreService} from './store.service';
+import {IIndexerManager, ISubqueryProject} from './types';
 
 const logger = getLogger('subql-testing');
 
@@ -37,8 +33,8 @@ export abstract class TestingService<B, DS> {
   private testSandboxes: TestSandbox[];
   private failedTestsSummary: {
     testName: string;
-    entityId: string;
-    entityName: string;
+    entityId?: string;
+    entityName?: string;
     failedAttributes: string[];
   }[] = [];
 
@@ -53,12 +49,7 @@ export abstract class TestingService<B, DS> {
     @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
     protected readonly apiService: ApiService,
     protected readonly indexerManager: IIndexerManager<B, DS>
-  ) {}
-
-  abstract indexBlock(block: B, handler: string): Promise<void>;
-
-  async init() {
-    await this.indexerManager.start();
+  ) {
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist/test'));
@@ -68,11 +59,16 @@ export abstract class TestingService<B, DS> {
       const option: SandboxOption = {
         root: this.project.root,
         entry: file,
-        script: null,
       };
 
       return new TestSandbox(option, this.nodeConfig);
     });
+  }
+
+  abstract indexBlock(block: B, handler: string): Promise<void>;
+
+  async init() {
+    await this.indexerManager.start();
 
     logger.info(`Found ${this.testSandboxes.length} test files`);
 
@@ -132,9 +128,9 @@ export abstract class TestingService<B, DS> {
       const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
 
       // Init db
-      const schemas = await this.sequelize.showAllSchemas(undefined);
+      const schemas = await this.sequelize.showAllSchemas({});
       if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, undefined);
+        await this.sequelize.createSchema(`"${schema}"`, {});
       }
 
       const modelRelations = getAllEntitiesRelations(this.project.schema);
@@ -144,17 +140,13 @@ export abstract class TestingService<B, DS> {
 
       // Init entities
       logger.debug('Initializing entities');
-      await Promise.all(
-        test.dependentEntities.map((entity) => {
-          return entity.save();
-        })
-      );
+      await Promise.all(test.dependentEntities.map((entity) => entity.save?.()));
 
       logger.debug('Running handler');
 
       try {
         await this.indexBlock(block, test.handler);
-      } catch (e) {
+      } catch (e: any) {
         this.totalFailedTests += test.expectedEntities.length;
         logger.warn(`Test: ${test.name} field due to runtime error`, e);
         this.failedTestsSummary.push({
@@ -172,7 +164,7 @@ export abstract class TestingService<B, DS> {
       let failedTests = 0;
       for (let i = 0; i < test.expectedEntities.length; i++) {
         const expectedEntity = test.expectedEntities[i];
-        const actualEntity = await store.get(expectedEntity._name, expectedEntity.id);
+        const actualEntity = await store.get(expectedEntity._name!, expectedEntity.id);
         const attributes = actualEntity as unknown as CreationAttributes<Model>;
         const failedAttributes: string[] = [];
         let passed = true;
@@ -211,9 +203,9 @@ export abstract class TestingService<B, DS> {
           `${failedTests} failed`
         )} checks`
       );
-    } catch (e) {
+    } catch (e: any) {
       this.totalFailedTests += test.expectedEntities.length;
-      logger.warn(`Test ${test.name} failed to run`, e);
+      logger.warn(e, `Test ${test.name} failed to run`);
     } finally {
       await this.sequelize.dropSchema(`"${schema}"`, {
         logging: false,
@@ -236,9 +228,8 @@ export abstract class TestingService<B, DS> {
           return [dsCopy];
         }
       }
-
-      return [];
     }
+    return [];
   }
 
   private logFailedTestsSummary() {
@@ -246,7 +237,7 @@ export abstract class TestingService<B, DS> {
       logger.warn(chalk.bold.underline.yellow('Failed tests summary:'));
       for (const failedTest of this.failedTestsSummary) {
         let testDetails =
-          failedTest.entityName || failedTest.entityId
+          failedTest.entityName && failedTest.entityId
             ? chalk.bold.red(`\n* ${failedTest.testName}\n\tEntity ${failedTest.entityName}: ${failedTest.entityId}\n`)
             : chalk.bold.red(`\n* ${failedTest.testName}\n`);
         for (const attr of failedTest.failedAttributes) {

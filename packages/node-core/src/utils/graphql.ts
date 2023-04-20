@@ -9,12 +9,19 @@ export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums:
   const fields = modelType.fields;
   return Object.values(fields).reduce((acc, field) => {
     const allowNull = field.nullable;
+
+    const type = field.isEnum
+      ? `${enums.get(field.type)}${field.isArray ? '[]' : ''}`
+      : field.isArray
+      ? getTypeByScalarName('Json')?.sequelizeType
+      : getTypeByScalarName(field.type)?.sequelizeType;
+
+    if (type === undefined) {
+      throw new Error('Unable to get model type');
+    }
+
     const columnOption: ModelAttributeColumnOptions<any> = {
-      type: field.isEnum
-        ? `${enums.get(field.type)}${field.isArray ? '[]' : ''}`
-        : field.isArray
-        ? getTypeByScalarName('Json').sequelizeType
-        : getTypeByScalarName(field.type).sequelizeType,
+      type,
       comment: field.description,
       allowNull,
       primaryKey: field.type === 'ID',
@@ -27,11 +34,11 @@ export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums:
         }
         return dataValue ? BigInt(dataValue) : null;
       };
-      columnOption.set = function (val: unknown) {
+      columnOption.set = function (val: any) {
         if (field.isArray) {
           this.setDataValue(
             field.name,
-            (val as unknown[])?.map((v) => v.toString())
+            (val as any[])?.map((v) => v.toString())
           );
         } else {
           this.setDataValue(field.name, val?.toString());

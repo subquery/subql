@@ -287,6 +287,7 @@ function mockDictionaryService3(): DictionaryService {
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
+      chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     chainTypes: {
@@ -305,7 +306,8 @@ function testSubqueryProject(): SubqueryProject {
 function testSubqueryProjectV0_2_0(): SubqueryProject {
   return {
     network: {
-      genesisHash: '0x',
+      chainId: '0x',
+      endpoint: [],
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
     },
     dataSources: [
@@ -353,7 +355,7 @@ function mockStoreService(): StoreService {
     getOperationMerkleRoot: () => {
       return null;
     },
-  } as StoreService;
+  } as unknown as StoreService;
 }
 
 function mockStoreCache(): StoreCacheService {

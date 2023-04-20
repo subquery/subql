@@ -22,13 +22,20 @@ export interface IDynamicDsService<DS> {
 }
 
 export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
-  private metadata: CacheMetadataModel;
-  private tempDsRecords: Record<string, string>;
+  private _metadata?: CacheMetadataModel;
+  private tempDsRecords: Record<string, string> = {};
 
-  private _datasources: DS[];
+  private _datasources?: DS[];
 
   init(metadata: CacheMetadataModel): void {
-    this.metadata = metadata;
+    this._metadata = metadata;
+  }
+
+  private get metadata(): CacheMetadataModel {
+    if (!this._metadata) {
+      throw new Error('DynamicDsService has not been initialized');
+    }
+    return this._metadata;
   }
 
   async resetDynamicDatasource(targetHeight: number): Promise<void> {
@@ -52,7 +59,7 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
       this._datasources.push(ds);
 
       return ds;
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, 'Failed to create dynamic ds');
       process.exit(1);
     }
@@ -81,7 +88,7 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
       logger.info(`Loaded ${dataSources.length} dynamic datasources`);
 
       return dataSources;
-    } catch (e) {
+    } catch (e: any) {
       logger.error(`Unable to get dynamic datasources:\n${e.message}`);
       process.exit(1);
     }

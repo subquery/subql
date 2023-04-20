@@ -14,7 +14,6 @@ import {timeout} from '../utils';
 
 export interface SandboxOption {
   store?: Store;
-  script: string;
   root: string;
   entry: string;
 }
@@ -66,15 +65,17 @@ export class Sandbox extends NodeVM {
     return timeout(this.run(this.script), duration);
   }
 
-  protected async convertStack(stackTrace: string): Promise<string> {
+  protected async convertStack(stackTrace: string | undefined): Promise<string | undefined> {
+    if (!stackTrace) return undefined;
     if (!this.sourceMap) {
       logger.warn('Unable to find a source map. Rebuild your project with latest @subql/cli to generate a source map.');
       logger.warn('Logging unresolved stack trace.');
       return stackTrace;
     }
 
-    const entryFile = last(this.entry.split('/'));
-    const regex = new RegExp(`${entryFile.split('.')[0]}.${entryFile.split('.')[1]}:([0-9]+):([0-9]+)`, 'gi');
+    const entryFile = last(this.entry.split('/')) ?? '';
+    const entryParts = entryFile.split('.');
+    const regex = new RegExp(`${entryParts[0]}.${entryParts[1]}:([0-9]+):([0-9]+)`, 'gi');
     const matches = [...stackTrace.matchAll(regex)];
 
     for (const match of matches) {
@@ -88,7 +89,7 @@ export class Sandbox extends NodeVM {
     return stackTrace;
   }
 
-  decodeSourceMap(sourceMapPath: string) {
+  decodeSourceMap(sourceMapPath: string): any {
     const source = readFileSync(sourceMapPath).toString();
     const sourceMapBase64 = source.split(`//# sourceMappingURL=data:application/json;charset=utf-8;base64,`)[1];
     if (!sourceMapBase64) {
@@ -134,7 +135,7 @@ export class IndexerSandbox extends Sandbox {
     this.setGlobal('funcName', funcName);
     try {
       await this.runTimeout(this.config.timeout);
-    } catch (e) {
+    } catch (e: any) {
       const newStack = await this.convertStack((e as Error).stack);
       e.stack = newStack;
       e.handler = funcName;

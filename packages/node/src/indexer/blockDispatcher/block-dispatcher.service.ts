@@ -46,21 +46,6 @@ export class BlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
   ) {
-    const fetchBlockBatchesWrapped = async (
-      blockNums: number[],
-    ): Promise<BlockContent[]> => {
-      const specChanged = await this.runtimeService.specChanged(
-        blockNums[blockNums.length - 1],
-      );
-
-      // If specVersion not changed, a known overallSpecVer will be pass in
-      // Otherwise use api to fetch runtimes
-      return this.apiService.fetchBlocks(
-        blockNums,
-        specChanged ? undefined : this.runtimeService.parentSpecVersion,
-      );
-    };
-
     super(
       nodeConfig,
       eventEmitter,
@@ -71,7 +56,18 @@ export class BlockDispatcherService
       poiService,
       project,
       dynamicDsService,
-      fetchBlockBatchesWrapped,
+      async (blockNums: number[]): Promise<BlockContent[]> => {
+        const specChanged = await this.runtimeService.specChanged(
+          blockNums[blockNums.length - 1],
+        );
+
+        // If specVersion not changed, a known overallSpecVer will be pass in
+        // Otherwise use api to fetch runtimes
+        return this.apiService.fetchBlocks(
+          blockNums,
+          specChanged ? undefined : this.runtimeService.parentSpecVersion,
+        );
+      },
     );
   }
 

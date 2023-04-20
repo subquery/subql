@@ -21,10 +21,15 @@ export interface IProjectNetworkConfig extends ProjectNetworkConfig {
   chainId: string;
 }
 
-export interface ISubqueryProject<N extends IProjectNetworkConfig, DS = unknown, T = unknown, C = unknown> {
+export interface ISubqueryProject<
+  N extends IProjectNetworkConfig = IProjectNetworkConfig,
+  DS = unknown,
+  T = unknown,
+  C = unknown
+> {
   id: string;
   root: string;
-  network: Partial<N>;
+  network: N;
   dataSources: DS[];
   schema: GraphQLSchema;
   templates: T[];

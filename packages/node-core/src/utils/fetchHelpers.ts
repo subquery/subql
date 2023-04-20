@@ -22,7 +22,7 @@ export async function retryOnFail<T>(
       await delay(RETRY_DELAY);
       return retryOnFail(request, shouldRetry, --retries);
     } else {
-      logger.error(e, `Retries failed after ${RETRY_COUNT}`);
+      logger.error(e as Error, `Retries failed after ${RETRY_COUNT}`);
       throw e;
     }
   }

@@ -20,13 +20,13 @@ const logger = getLogger('StoreCache');
 @Injectable()
 export class StoreCacheService implements BeforeApplicationShutdown {
   private cachedModels: Record<string, ICachedModelControl> = {};
-  private metadataRepo: MetadataRepo;
-  private poiRepo: PoiRepo;
-  private pendingFlush: Promise<void>;
-  private queuedFlush: Promise<void>;
+  private metadataRepo?: MetadataRepo;
+  private poiRepo?: PoiRepo;
+  private pendingFlush?: Promise<void>;
+  private queuedFlush?: Promise<void>;
   private storeCacheThreshold: number;
   private _historical = true;
-  private _useCockroachDb: boolean;
+  private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
 
@@ -98,7 +98,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     const flushToIndex = this._storeOperationIndex;
     for (let i = this._lastFlushedOperationIndex; i < flushToIndex; i++) {
       // Flush operation can be a no-op if it doesn't have that index
-      await Promise.all(relationalModels.map((m) => m.flushOperation(i, tx)));
+      await Promise.all(relationalModels.map((m) => m.flushOperation?.(i, tx)));
     }
     this._lastFlushedOperationIndex = flushToIndex;
   }
@@ -125,7 +125,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
         await Promise.all(updatableModels.map((model) => model.flush(tx, blockHeight)));
       }
       await tx.commit();
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, 'Database transaction failed');
       await tx.rollback();
       throw e;

@@ -60,7 +60,6 @@ import {
 import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
-import {CachePoiModel} from './storeCache/cachePoi';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
@@ -83,60 +82,101 @@ interface NotifyTriggerPayload {
   eventManipulation: string;
 }
 
+class NoInitError extends Error {
+  constructor() {
+    super('StoreService has not been initialized');
+  }
+}
+
 @Injectable()
 export class StoreService {
-  private modelIndexedFields: IndexField[];
-  private schema: string;
-  private modelsRelations: GraphQLModelsRelationsEnums;
-  private poiRepo: PoiRepo | undefined;
-  private metaDataRepo: MetadataRepo;
-  private operationStack: StoreOperations;
-  @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
-  private blockHeight: number;
-  historical: boolean;
-  private dbType: SUPPORT_DB;
-  private useSubscription: boolean;
+  private poiRepo?: PoiRepo;
   private removedIndexes: RemovedIndexes = {};
+  private _modelIndexedFields?: IndexField[];
+  private _modelsRelations?: GraphQLModelsRelationsEnums;
+  private _metaDataRepo?: MetadataRepo;
+  private _historical?: boolean;
+  private _dbType?: SUPPORT_DB;
+  private _metadataModel?: CacheMetadataModel;
 
-  poiModel: CachePoiModel;
-  metadataModel: CacheMetadataModel;
+  // Should be updated each block
+  private _blockHeight?: number;
+  private operationStack?: StoreOperations;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig, readonly storeCache: StoreCacheService) {}
+  constructor(
+    private sequelize: Sequelize,
+    private config: NodeConfig,
+    readonly storeCache: StoreCacheService,
+    @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
+  ) {}
+
+  private get modelIndexedFields(): IndexField[] {
+    assert(!!this._modelIndexedFields, new NoInitError());
+    return this._modelIndexedFields;
+  }
+
+  private get modelsRelations(): GraphQLModelsRelationsEnums {
+    assert(!!this._modelsRelations, new NoInitError());
+    return this._modelsRelations;
+  }
+
+  private get metaDataRepo(): MetadataRepo {
+    assert(!!this._metaDataRepo, new NoInitError());
+    return this._metaDataRepo;
+  }
+
+  private get blockHeight(): number {
+    assert(!!this._blockHeight, new Error('StoreService.setBlockHeight has not been called'));
+    return this._blockHeight;
+  }
+
+  get historical(): boolean {
+    assert(!!this._historical, new NoInitError());
+    return this._historical;
+  }
+
+  private get dbType(): SUPPORT_DB {
+    assert(!!this._dbType, new NoInitError());
+    return this._dbType;
+  }
+
+  private get metadataModel(): CacheMetadataModel {
+    assert(!!this._metadataModel, new NoInitError());
+    return this._metadataModel;
+  }
 
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
-    this.schema = schema;
-    this.modelsRelations = modelsRelations;
-    this.historical = await this.getHistoricalStateEnabled();
+    this._modelsRelations = modelsRelations;
+    this._historical = await this.getHistoricalStateEnabled(schema);
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
-    this.dbType = await getDbType(this.sequelize);
+    this._dbType = await getDbType(this.sequelize);
 
-    this.useSubscription = this.config.subscription;
-    if (this.useSubscription && this.dbType === SUPPORT_DB.cockRoach) {
-      this.useSubscription = false;
+    let useSubscription = this.config.subscription;
+    if (useSubscription && this.dbType === SUPPORT_DB.cockRoach) {
+      useSubscription = false;
       logger.warn(`Subscription is not support with ${this.dbType}`);
     }
     if (this.historical && this.dbType === SUPPORT_DB.cockRoach) {
-      this.historical = false;
+      this._historical = false;
       logger.warn(`Historical feature is not support with ${this.dbType}`);
     }
     this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
 
     try {
-      await this.syncSchema(this.schema);
-    } catch (e) {
+      await this.syncSchema(schema, useSubscription);
+    } catch (e: any) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }
     try {
-      this.modelIndexedFields = await this.getAllIndexFields(this.schema);
-    } catch (e) {
+      this._modelIndexedFields = await this.getAllIndexFields(schema);
+    } catch (e: any) {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
 
     this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
-    this.metadataModel = this.storeCache.metadata;
-    this.poiModel = this.storeCache.poi;
+    this._metadataModel = this.storeCache.metadata;
 
     this.metadataModel.set('historicalStateEnabled', this.historical);
     this.metadataModel.setIncrement('schemaMigrationCount');
@@ -168,7 +208,7 @@ export class StoreService {
   }
 
   // eslint-disable-next-line complexity
-  async syncSchema(schema: string): Promise<void> {
+  async syncSchema(schema: string, useSubscription: boolean): Promise<void> {
     const enumTypeMap = new Map<string, string>();
     if (this.historical) {
       const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
@@ -236,7 +276,7 @@ export class StoreService {
     }
     const extraQueries = [];
     // Function need to create ahead of triggers
-    if (this.useSubscription) {
+    if (useSubscription) {
       extraQueries.push(createSendNotificationTriggerFunction(schema));
     }
     for (const model of this.modelsRelations.models) {
@@ -278,7 +318,7 @@ export class StoreService {
         // see https://github.com/subquery/subql/issues/1542
       }
 
-      if (this.useSubscription) {
+      if (useSubscription) {
         const triggerName = hashName(schema, 'notify_trigger', sequelizeModel.tableName);
         const notifyTriggers = await getTriggers(this.sequelize, triggerName);
         // Triggers not been found
@@ -295,7 +335,7 @@ export class StoreService {
       }
     }
     // We have to drop the function after all triggers depend on it are removed
-    if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
+    if (!useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
       extraQueries.push(dropNotifyFunction(schema));
     }
 
@@ -357,7 +397,7 @@ export class StoreService {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
 
-    this.metaDataRepo = await MetadataFactory(
+    this._metaDataRepo = await MetadataFactory(
       this.sequelize,
       schema,
       this.config.multiChain,
@@ -374,12 +414,12 @@ export class StoreService {
     // this.afterHandleCockroachIndex()
   }
 
-  async getHistoricalStateEnabled(): Promise<boolean> {
+  async getHistoricalStateEnabled(schema: string): Promise<boolean> {
     const {disableHistorical, multiChain} = this.config;
 
     try {
       const tableRes = await this.sequelize.query<Array<string>>(
-        `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}'`,
+        `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`,
         {type: QueryTypes.SELECT}
       );
 
@@ -396,7 +436,7 @@ export class StoreService {
 
       if (metadataTableNames.length === 1) {
         const res = await this.sequelize.query<{key: string; value: boolean | string}>(
-          `SELECT key, value FROM "${this.schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled' OR key = 'genesisHash')`,
+          `SELECT key, value FROM "${schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled' OR key = 'genesisHash')`,
           {type: QueryTypes.SELECT}
         );
 
@@ -434,6 +474,9 @@ export class StoreService {
       if (index.using === IndexType.GIN) {
         return;
       }
+      if (!index.fields) {
+        index.fields = [];
+      }
       index.fields.push('_block_range');
       index.using = IndexType.GIST;
       // GIST does not support unique indexes
@@ -454,7 +497,7 @@ export class StoreService {
   ): void {
     if (this.dbType === SUPPORT_DB.cockRoach) {
       indexes.forEach((index, i) => {
-        if (index.using === IndexType.HASH && !existedIndexes.includes(index.name)) {
+        if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
           const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
             index.fields
           }) USING HASH;`;
@@ -488,7 +531,8 @@ export class StoreService {
       const deprecated = generateIndexName(tableName, index);
 
       if (!existedIndexes.includes(deprecated)) {
-        index.name = blake2AsHex(`${modelName}_${index.fields.join('_')}`, 64).substring(0, 63);
+        const fields = (index.fields ?? []).join('_');
+        index.name = blake2AsHex(`${modelName}_${fields}`, 64).substring(0, 63);
       }
     });
   }
@@ -496,7 +540,7 @@ export class StoreService {
   // Only used with historical to add indexes to ID fields for gettign entitities by ID
   private addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
     const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
-    if (idFieldName && !indexes.find((idx) => idx.fields.includes(idFieldName))) {
+    if (idFieldName && !indexes.find((idx) => idx.fields?.includes(idFieldName))) {
       indexes.push({
         fields: [Utils.underscoredIf(idFieldName, true)],
         unique: false,
@@ -579,18 +623,16 @@ export class StoreService {
     });
   }
 
-  setOperationStack(): void {
+  setBlockHeight(blockHeight: number): void {
+    this._blockHeight = blockHeight;
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
   }
 
-  setBlockHeight(blockHeight: number): void {
-    this.blockHeight = blockHeight;
-  }
-
   getOperationMerkleRoot(): Uint8Array {
     if (this.config.proofOfIndex) {
+      assert(this.operationStack, new Error('OperationStack is not set, make sure `setBlockHeight` has been called'));
       this.operationStack.makeOperationMerkleTree();
       const merkelRoot = this.operationStack.getOperationMerkleRoot();
       if (merkelRoot === null) {
@@ -645,6 +687,9 @@ group by
   }
 
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
+    if (!this.historical) {
+      throw new Error('Unable to reindex, historical state not enabled');
+    }
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
         await model.destroy({
@@ -678,6 +723,7 @@ group by
     }
     this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
     if (this.config.proofOfIndex) {
+      assert(this.poiRepo, new Error('Expected POI repo to exist'));
       await this.poiRepo.destroy({
         transaction,
         where: {
@@ -707,7 +753,7 @@ group by
           offset?: number;
           limit?: number;
         } = {}
-      ): Promise<T[] | undefined> => {
+      ): Promise<T[]> => {
         try {
           const indexed =
             this.modelIndexedFields.findIndex(
@@ -756,9 +802,7 @@ group by
         try {
           this.storeCache.getModel(entity).set(_id, data, this.blockHeight);
 
-          if (this.config.proofOfIndex) {
-            this.operationStack.put(OperationType.Set, entity, data);
-          }
+          this.operationStack?.put(OperationType.Set, entity, data);
         } catch (e) {
           throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
         }
@@ -768,10 +812,8 @@ group by
         try {
           this.storeCache.getModel(entity).bulkCreate(data, this.blockHeight);
 
-          if (this.config.proofOfIndex) {
-            for (const item of data) {
-              this.operationStack.put(OperationType.Set, entity, item);
-            }
+          for (const item of data) {
+            this.operationStack?.put(OperationType.Set, entity, item);
           }
         } catch (e) {
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
@@ -781,10 +823,8 @@ group by
       bulkUpdate: async (entity: string, data: Entity[], fields?: string[]): Promise<void> => {
         try {
           this.storeCache.getModel(entity).bulkUpdate(data, this.blockHeight, fields);
-          if (this.config.proofOfIndex) {
-            for (const item of data) {
-              this.operationStack.put(OperationType.Set, entity, item);
-            }
+          for (const item of data) {
+            this.operationStack?.put(OperationType.Set, entity, item);
           }
         } catch (e) {
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
@@ -795,9 +835,7 @@ group by
         try {
           this.storeCache.getModel(entity).remove(id, this.blockHeight);
 
-          if (this.config.proofOfIndex) {
-            this.operationStack.put(OperationType.Remove, entity, id);
-          }
+          this.operationStack?.put(OperationType.Remove, entity, id);
         } catch (e) {
           throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
         }

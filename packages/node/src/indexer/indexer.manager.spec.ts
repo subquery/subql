@@ -63,6 +63,7 @@ const nodeConfig = new NodeConfig({
 function testSubqueryProject_1(): SubqueryProject {
   return {
     network: {
+      chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     dataSources: [
@@ -103,7 +104,7 @@ function testSubqueryProject_2(): SubqueryProject {
     network: {
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
-      genesisHash:
+      chainId:
         '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     },
     dataSources: [
@@ -144,7 +145,12 @@ function createIndexerManager(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const storeCache = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
-  const storeService = new StoreService(sequilize, nodeConfig, storeCache);
+  const storeService = new StoreService(
+    sequilize,
+    nodeConfig,
+    storeCache,
+    project,
+  );
   const poiService = new PoiService(storeCache);
   const mmrService = new MmrService(nodeConfig, storeCache);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(

@@ -38,16 +38,21 @@ type AsyncMethods = Record<string, AsyncFunc>;
 
 abstract class WorkerIO {
   private responseListeners: ResponseListener = {};
+  protected port: workers.MessagePort | workers.Worker;
 
   protected abstract getReqId(): number;
 
   constructor(
-    protected port: workers.MessagePort | workers.Worker,
+    port: workers.MessagePort | workers.Worker | undefined | null,
     workerFns: string[],
     private hostFns: AsyncMethods,
     protected logger: Logger
   ) {
-    port.on('message', (message) => this.handleMessage(message));
+    if (!port) {
+      throw new Error('Port not provided to worker. WorkerHost most likely not run from worker thread.');
+    }
+    this.port = port;
+    this.port.on('message', (message) => this.handleMessage(message));
 
     // Add expected methods to class
     workerFns.map((fn) => {
@@ -123,7 +128,10 @@ abstract class WorkerIO {
           args,
         });
       } catch (e) {
-        this.logger.error(e, `Failed to post message, function="${fnName}", args="${JSON.stringify(args)}"`);
+        this.logger.error(
+          e as any,
+          `Failed to post message, function="${String(fnName)}", args="${JSON.stringify(args)}"`
+        );
         reject(e);
       }
     });

@@ -13,6 +13,7 @@ import {getLogger} from '../logger';
 import {delay} from '../utils';
 import {ProofOfIndex} from './entities';
 import {StoreCacheService} from './storeCache';
+import {CachePoiModel} from './storeCache/cachePoi';
 
 const logger = getLogger('mmr');
 
@@ -22,10 +23,10 @@ const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buf
 export class MmrService implements OnApplicationShutdown {
   private isShutdown = false;
   private isSyncing = false;
-  private fileBasedMmr: MMR;
+  private _fileBasedMmr?: MMR;
   // This is the next block height that suppose to calculate its mmr value
-  private nextMmrBlockHeight: number;
-  private blockOffset: number;
+  private _nextMmrBlockHeight?: number;
+  private _blockOffset?: number;
 
   constructor(private nodeConfig: NodeConfig, private storeCacheService: StoreCacheService) {}
 
@@ -33,19 +34,48 @@ export class MmrService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
+  private get poi(): CachePoiModel {
+    const poi = this.storeCacheService.poi;
+    if (!poi) {
+      throw new Error('MMR service expected POI but it was not found');
+    }
+    return poi;
+  }
+
+  private get fileBasedMmr(): MMR {
+    if (!this._fileBasedMmr) {
+      throw new Error('MMR Service sync has not been called');
+    }
+    return this._fileBasedMmr;
+  }
+
+  private get nextMmrBlockHeight(): number {
+    if (!this._nextMmrBlockHeight) {
+      throw new Error('MMR Service sync has not been called');
+    }
+    return this._nextMmrBlockHeight;
+  }
+
+  private get blockOffset(): number {
+    if (!this._blockOffset) {
+      throw new Error('MMR Service sync has not been called');
+    }
+    return this._blockOffset;
+  }
+
   async syncFileBaseFromPoi(blockOffset: number): Promise<void> {
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
-    this.blockOffset = blockOffset;
+    this._fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this._blockOffset = blockOffset;
 
     // The file based database current leaf length
     const fileBasedMmrLeafLength = await this.fileBasedMmr.getLeafLength();
     // However, when initialization we pick the previous block for file db and poi mmr validation
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
-    this.nextMmrBlockHeight = fileBasedMmrLeafLength + blockOffset + 1;
+    this._nextMmrBlockHeight = fileBasedMmrLeafLength + blockOffset + 1;
     // The latest poi record in database with mmr value
-    const latestPoiWithMmr = await this.storeCacheService.poi.getLatestPoiWithMmr();
+    const latestPoiWithMmr = await this.poi.getLatestPoiWithMmr();
     if (latestPoiWithMmr) {
       // The latestPoiWithMmr its mmr value in filebase db
       const latestPoiFilebaseMmrValue = await this.fileBasedMmr.getRoot(latestPoiWithMmr.id - blockOffset - 1);
@@ -55,18 +85,18 @@ export class MmrService implements OnApplicationShutdown {
       // but latestPoiWithMmr still valid, mmr should delete advanced mmr
       if (this.nextMmrBlockHeight > latestPoiWithMmr.id + 1) {
         await this.deleteMmrNode(latestPoiWithMmr.id + 1, blockOffset);
-        this.nextMmrBlockHeight = latestPoiWithMmr.id + 1;
+        this._nextMmrBlockHeight = latestPoiWithMmr.id + 1;
       }
     }
     logger.info(`file based database MMR start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
-      const poiBlocks = await this.storeCacheService.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
+      const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
             for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
               await this.fileBasedMmr.append(DEFAULT_LEAF);
-              this.nextMmrBlockHeight = i + 1;
+              this._nextMmrBlockHeight = i + 1;
             }
           }
           await this.appendMmrNode(block);
@@ -81,7 +111,7 @@ export class MmrService implements OnApplicationShutdown {
         if (this.nextMmrBlockHeight > Number(lastPoiHeight) && this.nextMmrBlockHeight <= Number(lastProcessedHeight)) {
           for (let i = this.nextMmrBlockHeight; i <= Number(lastProcessedHeight); i++) {
             await this.fileBasedMmr.append(DEFAULT_LEAF);
-            this.nextMmrBlockHeight = i + 1;
+            this._nextMmrBlockHeight = i + 1;
           }
         }
         await delay(MMR_AWAIT_TIME);
@@ -100,11 +130,13 @@ export class MmrService implements OnApplicationShutdown {
     await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
     const mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
     this.updatePoiMmrRoot(poiBlock, mmrRoot);
-    this.nextMmrBlockHeight = poiBlock.id + 1;
+    this._nextMmrBlockHeight = poiBlock.id + 1;
   }
 
   private validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array): void {
-    if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
+    if (!poiWithMmr.mmrRoot) {
+      throw new Error(`Poi block height ${poiWithMmr.id}, Poi mmr has not been set`);
+    } else if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
       throw new Error(
         `Poi block height ${poiWithMmr.id}, Poi mmr ${u8aToHex(
           poiWithMmr.mmrRoot
@@ -120,7 +152,7 @@ export class MmrService implements OnApplicationShutdown {
   private updatePoiMmrRoot(poiBlock: ProofOfIndex, mmrValue: Uint8Array): void {
     if (!poiBlock.mmrRoot) {
       poiBlock.mmrRoot = mmrValue;
-      this.storeCacheService.poi.set(poiBlock);
+      this.poi.set(poiBlock);
     } else {
       this.validatePoiMmr(poiBlock, mmrValue);
     }
@@ -185,7 +217,7 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   async deleteMmrNode(blockHeight: number, blockOffset: number): Promise<void> {
-    this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this._fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     const leafIndex = blockHeight - blockOffset - 1;
     if (leafIndex < 0) {
       throw new Error(`Target block height must greater equal to ${blockOffset + 1} `);

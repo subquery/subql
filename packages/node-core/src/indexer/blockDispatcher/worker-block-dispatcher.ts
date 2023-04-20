@@ -28,14 +28,17 @@ type Worker = {
   terminate: () => Promise<number>;
 };
 
+function initAutoQueue<T>(workers: number | undefined, batchSize: number): AutoQueue<T> {
+  assert(workers && workers > 0, 'Number of workers must be greater than 0');
+  return new AutoQueue(workers * batchSize * 2);
+}
+
 export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   extends BaseBlockDispatcher<AutoQueue<void>, DS>
   implements OnApplicationShutdown
 {
-  protected workers: W[];
+  protected workers: W[] = [];
   private numWorkers: number;
-
-  private taskCounter = 0;
   private isShutdown = false;
 
   protected abstract fetchBlock(worker: W, height: number): Promise<void>;
@@ -57,14 +60,15 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       eventEmitter,
       project,
       projectService,
-      new AutoQueue(nodeConfig.workers * nodeConfig.batchSize * 2),
+      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize),
       smartBatchService,
       storeService,
       storeCacheService,
       poiService,
       dynamicDsService
     );
-    this.numWorkers = nodeConfig.workers;
+    // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
+    this.numWorkers = nodeConfig.workers!;
   }
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
@@ -118,7 +122,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       heights.map(async (height) => this.enqueueBlock(height, await this.getNextWorkerIndex()));
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights) ?? this.latestBufferedHeight;
   }
 
   private async enqueueBlock(height: number, workerIdx: number): Promise<void> {
@@ -151,7 +155,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
           blockHash,
           reindexBlockHeight,
         });
-      } catch (e) {
+      } catch (e: any) {
         // TODO discard any cache changes from this block height
         logger.error(
           e,

@@ -13,9 +13,7 @@ import {
   SmartBatchService,
   StoreCacheService,
 } from '@subql/node-core';
-import { Sequelize } from 'sequelize';
-
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import {
   BlockDispatcherService,

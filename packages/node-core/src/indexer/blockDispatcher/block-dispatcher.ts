@@ -89,7 +89,7 @@ export abstract class BlockDispatcher<B, DS>
 
     this.queue.putMany(heights);
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights) ?? this.latestBufferedHeight;
     void this.fetchBlocksFromQueue();
   }
 
@@ -111,7 +111,7 @@ export abstract class BlockDispatcher<B, DS>
 
     try {
       while (!this.isShutdown) {
-        const blockNums = this.queue.takeMany(Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace));
+        const blockNums = this.queue.takeMany(Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace!));
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
 
@@ -138,7 +138,7 @@ export abstract class BlockDispatcher<B, DS>
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
 
-        if (memoryLock.isLocked) {
+        if (memoryLock.isLocked()) {
           await memoryLock.waitForUnlock();
         }
 
@@ -148,7 +148,8 @@ export abstract class BlockDispatcher<B, DS>
 
         // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
         // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
-        if (bufferedHeight > this._latestBufferedHeight || this.queue.peek() < Math.min(...blockNums)) {
+        const peeked = this.queue.peek();
+        if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < Math.min(...blockNums))) {
           logger.info(`Queue was reset for new DS, discarding fetched blocks`);
           continue;
         }
@@ -163,8 +164,8 @@ export abstract class BlockDispatcher<B, DS>
             await this.postProcessBlock(height, processBlockResponse);
 
             //set block to null for garbage collection
-            block = null;
-          } catch (e) {
+            (block as any) = null;
+          } catch (e: any) {
             // TODO discard any cache changes from this block height
             if (this.isShutdown) {
               return;
@@ -186,7 +187,7 @@ export abstract class BlockDispatcher<B, DS>
           value: this.processQueue.size,
         });
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {
         process.exit(1);

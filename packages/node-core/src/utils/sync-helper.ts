@@ -22,7 +22,7 @@ const byTagOrder = (a: [keyof SmartTags, any], b: [keyof SmartTags, any]) => {
 };
 
 export function smartTags(tags: SmartTags, separator = '\n'): string {
-  return Object.entries(tags)
+  return (Object.entries(tags) as [keyof SmartTags, any][])
     .sort(byTagOrder)
     .map(([k, v]) => `@${k} ${v}`)
     .join(separator);
@@ -40,10 +40,6 @@ export function getFkConstraint(tableName: string, foreignKey: string): string {
 
 export function getUniqConstraint(tableName: string, field: string): string {
   return [tableName, field, 'uindex'].map(underscored).join('_');
-}
-
-function getExcludeConstraint(tableName: string): string {
-  return [tableName, '_id', '_block_range', 'exclude'].map(underscored).join('_');
 }
 
 export function commentConstraintQuery(table: string, constraint: string, comment: string): string {
@@ -69,9 +65,9 @@ export function addTagsToForeignKeyMap(
     map.set(tableName, new Map<string, SmartTags>());
   }
   const tableKeys = map.get(tableName);
-  let foreignKeyTags = tableKeys.get(foreignKey) || ({} as SmartTags);
+  let foreignKeyTags = tableKeys?.get(foreignKey) || ({} as SmartTags);
   foreignKeyTags = Object.assign(foreignKeyTags, newTags);
-  tableKeys.set(foreignKey, foreignKeyTags);
+  tableKeys?.set(foreignKey, foreignKeyTags);
 }
 
 export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;

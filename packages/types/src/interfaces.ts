@@ -17,9 +17,9 @@ export type FunctionPropertyNames<T> = {
 }[keyof T];
 
 export interface Store {
-  get(entity: string, id: string): Promise<Entity | null>;
+  get(entity: string, id: string): Promise<Entity | undefined>;
   getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;
-  getOneByField(entity: string, field: string, value: any): Promise<Entity | null>;
+  getOneByField(entity: string, field: string, value: any): Promise<Entity | undefined>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;
   //if fields in provided, only specify fields will be updated
