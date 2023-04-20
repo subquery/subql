@@ -8,6 +8,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-04-20
+- Major release 2.0.0
 
 ## [1.5.0] - 2023-03-30
 ### Changed

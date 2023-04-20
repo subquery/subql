@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "1.21.3-4",
+  "version": "2.0.0",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -48,6 +48,7 @@
     "rxjs": "^7.5.2",
     "sequelize": "6.28.0",
     "tar": "^6.1.11",
+    "typescript": "^4.4.4",
     "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },
@@ -69,6 +70,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "1.21.3-3"
+  ]
 }

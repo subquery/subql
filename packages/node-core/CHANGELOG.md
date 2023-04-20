@@ -11,6 +11,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [Unreleased]
 
 
+## [2.0.0] - 2023-04-20
+- Major release 2.0.0
+### Added
+- Added StoreCache service and various other improvements (#1561)
+- Added TestingService (#1584)
+### Fixed
+- Enable Typescript strict setting and improve code quality (#1625)
 
 ## [1.11.3] - 2023-04-17
 ### Fixed
