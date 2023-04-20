@@ -69,7 +69,7 @@ import { TestingService } from './testing.service';
     IndexerManager,
   ],
 
-  imports: [IndexerModule, MetaModule, FetchModule],
+  imports: [MetaModule, FetchModule],
   controllers: [],
 })
 export class TestingFeatureModule {}
