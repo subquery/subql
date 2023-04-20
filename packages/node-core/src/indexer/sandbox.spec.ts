@@ -21,7 +21,7 @@ describe('sandbox for subql-node', () => {
         store: undefined,
         root,
         entry,
-        script: fs.readFileSync(path.join(root, entry)).toString(),
+        // script: fs.readFileSync(path.join(root, entry)).toString(),
       },
       new NodeConfig({subquery: ' ', subqueryName: ' '})
     );

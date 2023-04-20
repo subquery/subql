@@ -14,7 +14,6 @@ import {timeout} from '../utils';
 
 export interface SandboxOption {
   store?: Store;
-  script: string;
   root: string;
   entry: string;
 }

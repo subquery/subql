@@ -13,17 +13,18 @@ type FetchFunction<T> = (batch: number[]) => Promise<T[]>;
 type FetchFunctionProvider<T> = () => FetchFunction<T>;
 
 @Injectable()
-export abstract class ApiService<P extends ISubqueryProject, A> {
+export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, A = any, B = any> {
   constructor(protected project: P) {}
 
   abstract init(): Promise<ApiService<P, A>>;
   abstract get api(): A; /*ApiWrapper*/
+  abstract fetchBlocks(heights: number[]): Promise<B[]>;
 
-  async fetchBlocksGeneric<T>(
-    fetchFuncProvider: FetchFunctionProvider<T>,
+  async fetchBlocksGeneric<B>(
+    fetchFuncProvider: FetchFunctionProvider<B>,
     batch: number[],
     numAttempts = MAX_RECONNECT_ATTEMPTS
-  ): Promise<T[]> {
+  ): Promise<B[]> {
     {
       let reconnectAttempts = 0;
       while (reconnectAttempts < numAttempts) {
