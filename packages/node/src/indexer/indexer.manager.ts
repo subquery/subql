@@ -22,6 +22,7 @@ import {
   profiler,
   profilerWrap,
   IndexerSandbox,
+  IIndexerManager,
   ProcessBlockResponse,
 } from '@subql/node-core';
 import {
@@ -46,7 +47,9 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager {
+export class IndexerManager
+  implements IIndexerManager<BlockContent, SubqlProjectDs>
+{
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
 
@@ -65,6 +68,7 @@ export class IndexerManager {
   @profiler(yargsOptions.argv.profiler)
   async indexBlock(
     blockContent: BlockContent,
+    dataSources: SubqlProjectDs[],
     runtimeVersion: RuntimeVersion,
   ): Promise<ProcessBlockResponse> {
     const { block } = blockContent;
@@ -74,6 +78,7 @@ export class IndexerManager {
 
     this.filteredDataSources = this.filterDataSources(
       block.block.header.number.toNumber(),
+      dataSources,
     );
 
     const datasources = this.filteredDataSources.concat(
@@ -139,10 +144,13 @@ export class IndexerManager {
     return null;
   }
 
-  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
+  private filterDataSources(
+    nextProcessingHeight: number,
+    dataSources: SubqlProjectDs[],
+  ): SubqlProjectDs[] {
     let filteredDs: SubqlProjectDs[];
 
-    filteredDs = this.projectService.dataSources.filter(
+    filteredDs = dataSources.filter(
       (ds) => ds.startBlock <= nextProcessingHeight,
     );
 

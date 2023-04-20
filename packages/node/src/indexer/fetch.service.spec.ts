@@ -59,7 +59,9 @@ function mockRejectedApiService(): ApiService {
     on: jest.fn(),
   };
   return {
-    get api(){ return mockApi},
+    get api() {
+      return mockApi;
+    },
   } as any;
 }
 
@@ -141,7 +143,9 @@ function mockApiService(): ApiService {
     },
   };
   return {
-    get api(){ return mockApi},
+    get api() {
+      return mockApi;
+    },
   } as any;
 }
 
@@ -462,9 +466,7 @@ describe('FetchService', () => {
       project,
     );
     const pendingInit = fetchService.init(1);
-    expect(
-      apiService.api.rpc.chain.getFinalizedHead,
-    ).toHaveBeenCalledTimes(1);
+    expect(apiService.api.rpc.chain.getFinalizedHead).toHaveBeenCalledTimes(1);
     expect(apiService.api.rpc.chain.getHeader).toHaveBeenCalledTimes(1);
     await pendingInit;
     fetchService.onApplicationShutdown();

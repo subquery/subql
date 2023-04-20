@@ -8,6 +8,22 @@ import yargs from 'yargs/yargs';
 export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
   .command({
+    command: 'test',
+    describe: 'Run tests',
+    builder: {},
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFmt as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { testingInit } = require('./subcommands/testing.init');
+      return testingInit();
+    },
+  })
+  .command({
     command: 'force-clean',
     describe:
       'Clean the database dropping project schemas and tables. Once the command is executed, the application would exit upon completion.',

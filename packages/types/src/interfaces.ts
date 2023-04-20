@@ -8,6 +8,8 @@ import {IEvent} from '@polkadot/types/types';
 
 export interface Entity {
   id: string;
+  _name?: string;
+  save?: () => Promise<void>;
 }
 
 export type FunctionPropertyNames<T> = {

@@ -4,6 +4,7 @@
 import {lstatSync, readFileSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import glob from 'glob';
 import {runWebpack} from '../controller/build-controller';
 
 export default class Build extends Command {
@@ -33,8 +34,16 @@ export default class Build extends Command {
       const defaultEntry = path.join(directory, 'src/index.ts');
       const outputDir = path.resolve(directory, flags.output ?? 'dist');
 
-      let buildEntries: {[key: string]: string} = {};
-      buildEntries.index = defaultEntry;
+      let buildEntries: {[key: string]: string} = {
+        index: defaultEntry,
+      };
+
+      const testFiles = glob.sync(path.join(directory, 'src/test/**/*.test.ts'));
+      testFiles.forEach((testFile) => {
+        const relativePath = path.relative(path.join(directory, 'src/test'), testFile);
+        const testName = relativePath.replace('.ts', '');
+        buildEntries[`test/${testName}`] = testFile;
+      });
 
       if (pjson.exports && typeof pjson.exports !== 'string') {
         buildEntries = Object.entries(pjson.exports as Record<string, string>).reduce(

@@ -49,7 +49,7 @@ function isNullMerkelRoot(operationHash: Uint8Array): boolean {
   return u8aEq(operationHash, NULL_MERKEL_ROOT);
 }
 
-export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDispatcher {
+export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBlockDispatcher {
   protected _latestBufferedHeight: number;
   protected _processedBlockCount: number;
   protected latestProcessedHeight: number;
@@ -60,7 +60,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     protected nodeConfig: NodeConfig,
     protected eventEmitter: EventEmitter2,
     private project: ISubqueryProject<IProjectNetworkConfig>,
-    protected projectService: IProjectService,
+    protected projectService: IProjectService<DS>,
     protected queue: Q,
     protected smartBatchService: SmartBatchService,
     protected storeService: StoreService,

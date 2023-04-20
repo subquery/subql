@@ -2,8 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { threadId } from 'node:worker_threads';
-import { Injectable } from '@nestjs/common';
-import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  NodeConfig,
+  getLogger,
+  AutoQueue,
+  memoryLock,
+  IProjectService,
+} from '@subql/node-core';
+import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
@@ -40,6 +47,8 @@ export class WorkerService {
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     private workerRuntimeService: WorkerRuntimeService,
+    @Inject('IProjectService')
+    private projectService: IProjectService<SubqlProjectDs>,
     nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
@@ -118,7 +127,11 @@ export class WorkerService {
         block.block,
       );
 
-      return await this.indexerManager.indexBlock(block, runtimeVersion);
+      return await this.indexerManager.indexBlock(
+        block,
+        this.projectService.dataSources,
+        runtimeVersion,
+      );
     } catch (e) {
       logger.error(e, `Failed to index block ${height}: ${e.stack}`);
       throw e;

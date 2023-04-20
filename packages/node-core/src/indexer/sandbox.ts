@@ -155,3 +155,28 @@ export class IndexerSandbox extends Sandbox {
     this.freeze(logger, 'logger');
   }
 }
+
+export class TestSandbox extends Sandbox {
+  constructor(option: SandboxOption, config: NodeConfig) {
+    super(
+      {
+        ...option,
+      },
+      new VMScript(`const tests = require('${option.entry}');`, path.join(option.root, 'sandbox')),
+      config
+    );
+    this.injectGlobals(option);
+  }
+
+  private injectGlobals({store}: SandboxOption) {
+    if (store) {
+      this.freeze(store, 'store');
+    }
+    this.freeze(logger, 'logger');
+  }
+
+  async getTests() {
+    await this.runTimeout(1000);
+    return this.getGlobal('subqlTests');
+  }
+}

@@ -26,7 +26,7 @@ type BatchBlockFetcher<B> = (heights: number[]) => Promise<B[]>;
  * @description Intended to behave the same as WorkerBlockDispatcherService but doesn't use worker threads or any parallel processing
  */
 export abstract class BlockDispatcher<B, DS>
-  extends BaseBlockDispatcher<Queue<number>>
+  extends BaseBlockDispatcher<Queue<number>, DS>
   implements OnApplicationShutdown
 {
   private processQueue: AutoQueue<void>;
@@ -42,7 +42,7 @@ export abstract class BlockDispatcher<B, DS>
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    projectService: IProjectService,
+    projectService: IProjectService<DS>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,

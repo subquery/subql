@@ -38,7 +38,7 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService,
+    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -93,6 +93,10 @@ export class BlockDispatcherService
     const runtimeVersion = await this.runtimeService.getRuntimeVersion(
       block.block,
     );
-    return this.indexerManager.indexBlock(block, runtimeVersion);
+    return this.indexerManager.indexBlock(
+      block,
+      this.projectService.dataSources,
+      runtimeVersion,
+    );
   }
 }

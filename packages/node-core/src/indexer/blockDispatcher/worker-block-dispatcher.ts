@@ -29,7 +29,7 @@ type Worker = {
 };
 
 export abstract class WorkerBlockDispatcher<DS, W extends Worker>
-  extends BaseBlockDispatcher<AutoQueue<void>>
+  extends BaseBlockDispatcher<AutoQueue<void>, DS>
   implements OnApplicationShutdown
 {
   protected workers: W[];
@@ -43,7 +43,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    projectService: IProjectService,
+    projectService: IProjectService<DS>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,

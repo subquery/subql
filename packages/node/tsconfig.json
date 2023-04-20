@@ -12,7 +12,8 @@
     { "path": "../common-substrate" },
     { "path": "../node-core" },
     { "path": "../types" },
-    { "path": "../utils" }
+    { "path": "../utils" },
+    { "path": "../testing" }
   ],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "test", "dist"]
