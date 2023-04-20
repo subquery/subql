@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [1.11.2] - 2023-04-11
 ### Added
 - `evmChainId` to metadata (#1607)

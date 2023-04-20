@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [1.5.0] - 2023-03-30
 ### Changed
 - Changed in models to support Multiple endpoints (#1551)
