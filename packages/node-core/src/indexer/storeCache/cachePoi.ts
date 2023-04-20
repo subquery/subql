@@ -106,7 +106,7 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    logger.info(`Flushing ${this.flushableRecordCounter} items from cache`);
+    logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
     const pendingFlush = Promise.all([
       this.model.bulkCreate(Object.values(this.setCache), {transaction: tx, updateOnDuplicate: ['mmrRoot']}),
       this.model.destroy({where: {id: this.removeCache}, transaction: tx}),
