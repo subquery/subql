@@ -79,7 +79,6 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
       useFactory: () => {
         if (isMainThread) {
           throw new Error('Expected to be worker thread');
-          //return new UnfinalizedBlocksService()
         }
         return new WorkerUnfinalizedBlocksService((global as any).host);
       },
