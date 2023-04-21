@@ -52,7 +52,7 @@ export abstract class TestingService<B, DS> {
   ) {
     const projectPath = this.project.root;
     // find all paths to test files
-    const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist/test'));
+    const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist'));
 
     // import all test files
     this.testSandboxes = testFiles.map((file) => {
@@ -135,6 +135,7 @@ export abstract class TestingService<B, DS> {
 
       const modelRelations = getAllEntitiesRelations(this.project.schema);
       await this.storeService.init(modelRelations, schema);
+      this.storeService.setBlockHeight(test.blockHeight);
       const store = this.storeService.getStore();
       sandbox.freeze(store, 'store');
 

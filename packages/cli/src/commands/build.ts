@@ -34,16 +34,21 @@ export default class Build extends Command {
       const defaultEntry = path.join(directory, 'src/index.ts');
       const outputDir = path.resolve(directory, flags.output ?? 'dist');
 
-      let buildEntries: {[key: string]: string} = {
+      let buildEntries: Record<string, string> = {
         index: defaultEntry,
       };
 
-      const testFiles = glob.sync(path.join(directory, 'src/test/**/*.test.ts'));
-      testFiles.forEach((testFile) => {
-        const relativePath = path.relative(path.join(directory, 'src/test'), testFile);
-        const testName = relativePath.replace('.ts', '');
+      glob.sync(path.join(directory, 'src/test/**/*.test.ts')).forEach((testFile) => {
+        const testName = path.basename(testFile).replace('.ts', '');
         buildEntries[`test/${testName}`] = testFile;
       });
+
+      glob.sync(path.join(directory, 'src/tests/**/*.test.ts')).forEach((testFile) => {
+        const testName = path.basename(testFile).replace('.ts', '');
+        buildEntries[`tests/${testName}`] = testFile;
+      });
+
+      console.log('Build entries', buildEntries);
 
       if (pjson.exports && typeof pjson.exports !== 'string') {
         buildEntries = Object.entries(pjson.exports as Record<string, string>).reduce(
