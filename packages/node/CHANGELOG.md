@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Direct get data from the cache rather than wait to retrieve it from database, with flag `--store-get-cache-size` user could decide how many records for **each** entity they want to keep in the cache (default is 500)
   - If enabled `--store-cache-async` writing data to the store is asynchronous with regard to block processing (default is enabled)
 - Testing Framework, allow users to test their projects filters and handler functions without having to index the project (#1584)
-  - Create test files with the naming convention *.test.ts and place them in the src/tests folder. Each test file should contain test cases for specific mapping handlers. 
+  - Create test files with the naming convention `*.test.ts` and place them in the `src/tests` or `src/test` folder. Each test file should contain test cases for specific mapping handlers. 
   - Run the testing service using the command: `subql-node test`.
 
 
