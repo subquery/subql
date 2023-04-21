@@ -9,7 +9,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
   .command({
     command: 'test',
-    describe: 'Run tests',
+    describe: 'Run tests for a SubQuery application',
     builder: {},
     handler: (argv) => {
       initLogger(
@@ -84,6 +84,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe:
         'Show debug information to console output. will forcefully set log level to debug',
+      type: 'boolean',
+      default: false,
+    },
+    'dictionary-resolver': {
+      demandOption: false,
+      describe: 'Use SubQuery Network dictionary resolver',
       type: 'boolean',
       default: false,
     },
@@ -176,16 +182,10 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'scale batch size based on memory usage',
       default: false,
     },
-    'dictionary-resolver': {
-      demandOption: false,
-      describe: 'Use subquery network dictionary resolver',
-      type: 'boolean',
-      default: false,
-    },
     'pg-ca': {
       demandOption: false,
       describe:
-        'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
+        'Postgres ca certificate - to enable TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
       type: 'string',
     },
     'pg-key': {
@@ -203,7 +203,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     'store-cache-threshold': {
       demandOption: false,
       describe:
-        'Store cache will flush when number of records excess this threshold',
+        'Store cache will flush data to the database when number of records excess this threshold',
       type: 'number',
     },
     'store-get-cache-size': {
@@ -214,7 +214,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     'store-cache-async': {
       demandOption: false,
       describe:
-        'If enabled writing data to the store is asynchronous with regards to block processing',
+        'If enabled the store cache will flush data asyncronously relative to indexing data',
       type: 'boolean',
     },
     subquery: {
