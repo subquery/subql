@@ -82,7 +82,7 @@ jobs:
           paths: packages/validator
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-types
+        id: changed-testing
         with:
           paths: packages/testing
 
