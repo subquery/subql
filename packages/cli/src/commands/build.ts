@@ -48,8 +48,6 @@ export default class Build extends Command {
         buildEntries[`tests/${testName}`] = testFile;
       });
 
-      console.log('Build entries', buildEntries);
-
       if (pjson.exports && typeof pjson.exports !== 'string') {
         buildEntries = Object.entries(pjson.exports as Record<string, string>).reduce(
           (acc, [key, value]) => {
