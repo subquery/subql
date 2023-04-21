@@ -9,6 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [Unreleased]
 
 
+## [2.0.0] - 2023-04-20
+- Major release 2.0.0, align with other package versions
+### Added
+- Build `*.test.ts` file to support testing Framework (#1584)
+
 ## [1.13.1] - 2023-03-30
 ### Added
 - Change in migrate controller, add support for Multiple endpoints (#1551)
