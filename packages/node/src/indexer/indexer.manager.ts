@@ -81,9 +81,7 @@ export class IndexerManager
       dataSources,
     );
 
-    const datasources = this.filteredDataSources.concat(
-      ...(await this.dynamicDsService.getDynamicDatasources()),
-    );
+    this.assertDataSources(dataSources, blockHeight);
 
     let apiAt: ApiAt;
     reindexBlockHeight = await this.processUnfinalizedBlocks(block);
@@ -92,7 +90,7 @@ export class IndexerManager
     if (!reindexBlockHeight) {
       await this.indexBlockData(
         blockContent,
-        datasources,
+        dataSources,
         async (ds: SubqlProjectDs) => {
           // Injected runtimeVersion from fetch service might be outdated
           apiAt =
@@ -112,7 +110,7 @@ export class IndexerManager
                 },
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              datasources.push(newDs);
+              dataSources.push(newDs);
               dynamicDsCreated = true;
             },
             'createDynamicDatasource',
@@ -174,6 +172,16 @@ export class IndexerManager
       process.exit(1);
     }
     return filteredDs;
+  }
+
+  private assertDataSources(ds: SubqlProjectDs[], blockHeight: number) {
+    if (!ds.length) {
+      logger.error(
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
+         or delete your database and start again from the currently specified startBlock`,
+      );
+      process.exit(1);
+    }
   }
 
   private async indexBlockData(

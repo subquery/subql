@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
+import {NetworkMetadataPayload} from './events';
 import {ISubqueryProject} from './indexer';
 import {getLogger} from './logger';
 
@@ -19,6 +20,7 @@ export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, 
   abstract init(): Promise<ApiService<P, A>>;
   abstract get api(): A; /*ApiWrapper*/
   abstract fetchBlocks(heights: number[]): Promise<B[]>;
+  abstract networkMeta: NetworkMetadataPayload;
 
   async fetchBlocksGeneric<B>(
     fetchFuncProvider: FetchFunctionProvider<B>,

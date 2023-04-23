@@ -27,6 +27,7 @@ import {
   getLogger,
   IndexerEvent,
   NodeConfig,
+  ApiService,
   transformBypassBlocks,
   waitForBatchSize,
 } from '@subql/node-core';
@@ -36,7 +37,6 @@ import { range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
-import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';

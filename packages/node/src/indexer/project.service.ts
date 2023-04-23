@@ -14,6 +14,7 @@ import {
   MmrService,
   getLogger,
   getExistingProjectSchema,
+  ApiService,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import {
@@ -23,7 +24,7 @@ import {
 } from '../configure/SubqueryProject';
 import { initDbSchema, initHotSchemaReload } from '../utils/project';
 import { reindex } from '../utils/reindex';
-import { ApiService } from './api.service';
+// import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
@@ -57,10 +58,6 @@ export class ProjectService implements IProjectService<SubqlProjectDs> {
 
   get schema(): string {
     return this._schema;
-  }
-
-  get dataSources(): SubqlProjectDs[] {
-    return this.project.dataSources;
   }
 
   get blockOffset(): number {
@@ -312,6 +309,14 @@ export class ProjectService implements IProjectService<SubqlProjectDs> {
       this.mmrService,
       this.sequelize,
       /* Not providing force clean service, it should never be needed */
+    );
+  }
+
+  async getAllDataSources(blockHeight: number): Promise<SubqlProjectDs[]> {
+    const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+
+    return [...this.project.dataSources, ...dynamicDs].filter(
+      (ds) => ds.startBlock <= blockHeight,
     );
   }
 }
