@@ -111,37 +111,37 @@ export class StoreService {
   ) {}
 
   private get modelIndexedFields(): IndexField[] {
-    assert(!!this._modelIndexedFields, new NoInitError());
+    assert(this._modelIndexedFields, new NoInitError());
     return this._modelIndexedFields;
   }
 
   private get modelsRelations(): GraphQLModelsRelationsEnums {
-    assert(!!this._modelsRelations, new NoInitError());
+    assert(this._modelsRelations, new NoInitError());
     return this._modelsRelations;
   }
 
   private get metaDataRepo(): MetadataRepo {
-    assert(!!this._metaDataRepo, new NoInitError());
+    assert(this._metaDataRepo, new NoInitError());
     return this._metaDataRepo;
   }
 
   private get blockHeight(): number {
-    assert(!!this._blockHeight, new Error('StoreService.setBlockHeight has not been called'));
+    assert(this._blockHeight, new Error('StoreService.setBlockHeight has not been called'));
     return this._blockHeight;
   }
 
   get historical(): boolean {
-    assert(!!this._historical, new NoInitError());
+    assert(this._historical !== undefined, new NoInitError());
     return this._historical;
   }
 
   private get dbType(): SUPPORT_DB {
-    assert(!!this._dbType, new NoInitError());
+    assert(this._dbType, new NoInitError());
     return this._dbType;
   }
 
   private get metadataModel(): CacheMetadataModel {
-    assert(!!this._metadataModel, new NoInitError());
+    assert(this._metadataModel, new NoInitError());
     return this._metadataModel;
   }
 
@@ -544,7 +544,6 @@ export class StoreService {
       indexes.push({
         fields: [Utils.underscoredIf(idFieldName, true)],
         unique: false,
-        using: IndexType.GIST,
       });
     }
   }
