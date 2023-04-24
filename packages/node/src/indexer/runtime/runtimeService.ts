@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { profiler, ApiService } from '@subql/node-core';
+import { profiler } from '@subql/node-core';
 import { yargsOptions } from '../../yargs';
+import { ApiService } from '../api.service';
 import {
   DictionaryService,
   SpecVersionDictionary,

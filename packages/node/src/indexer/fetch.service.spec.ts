@@ -146,6 +146,8 @@ function mockApiService(): ApiService {
     get api() {
       return mockApi;
     },
+    fetchBlocks: (batch: number[], specVer?: number) =>
+      fetchBlocksBatches(mockApi as any, batch, specVer),
   } as any;
 }
 
@@ -335,12 +337,13 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
   };
 }
 
-function mockProjectService(): ProjectService {
+function mockProjectService(project: SubqueryProject): ProjectService {
   return {
     blockOffset: 1,
     getProcessedBlockCount: jest.fn(() => Promise.resolve(0)),
     upsertMetadataBlockOffset: jest.fn(),
     setBlockOffset: jest.fn(),
+    getAllDataSources: () => project.dataSources,
   } as any;
 }
 
@@ -394,7 +397,7 @@ async function createFetchService(
   config?: NodeConfig,
 ): Promise<FetchService> {
   const dsProcessorService = new DsProcessorService(project, config);
-  const projectService = mockProjectService();
+  const projectService = mockProjectService(project);
   const storeCache = mockStoreCache();
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
@@ -583,7 +586,7 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
-    const projectService = mockProjectService();
+    const projectService = mockProjectService(project);
     const storeCache = mockStoreCache();
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
@@ -684,7 +687,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService3();
-    const projectService = mockProjectService();
+    const projectService = mockProjectService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
@@ -780,7 +783,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService1();
-    const projectService = mockProjectService();
+    const projectService = mockProjectService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project, config);
@@ -929,7 +932,7 @@ describe('FetchService', () => {
     });
 
     const dictionaryService = new DictionaryService(project, nodeConfig);
-    const projectService = mockProjectService();
+    const projectService = mockProjectService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
