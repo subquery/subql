@@ -91,7 +91,7 @@ export class BlockDispatcherService
     );
     return this.indexerManager.indexBlock(
       block,
-      this.projectService.dataSources,
+      await this.projectService.getAllDataSources(this.getBlockHeight(block)),
       runtimeVersion,
     );
   }

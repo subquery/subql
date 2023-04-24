@@ -186,7 +186,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
     if (this.nodeConfig.storeCacheAsync) {
       // Flush all completed block data and don't wait
-      void this.storeCacheService.flushCache(false, false).catch((e) => {
+      void this.storeCacheService.flushCache(false, false)?.catch((e) => {
         logger.error(e, 'Flushing cache failed');
         process.exit(1);
       });

@@ -59,10 +59,6 @@ export class ProjectService implements IProjectService<SubqlProjectDs> {
     return this._schema;
   }
 
-  get dataSources(): SubqlProjectDs[] {
-    return this.project.dataSources;
-  }
-
   get blockOffset(): number {
     return this._blockOffset;
   }
@@ -312,6 +308,14 @@ export class ProjectService implements IProjectService<SubqlProjectDs> {
       this.mmrService,
       this.sequelize,
       /* Not providing force clean service, it should never be needed */
+    );
+  }
+
+  async getAllDataSources(blockHeight: number): Promise<SubqlProjectDs[]> {
+    const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+
+    return [...this.project.dataSources, ...dynamicDs].filter(
+      (ds) => ds.startBlock <= blockHeight,
     );
   }
 }
