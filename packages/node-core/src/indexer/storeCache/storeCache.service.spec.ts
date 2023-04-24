@@ -240,7 +240,7 @@ describe('Store Cache Service historical', () => {
       5
     );
     appleModel.remove('apple-01', 6);
-    expect((appleModel as any).removeCache).toStrictEqual({'apple-01': {removedAtBlock: 6}});
+    expect((appleModel as any).removeCache).toStrictEqual({'apple-01': {operationIndex: 3, removedAtBlock: 6}});
     expect(await appleModel.get('apple-01')).toBeUndefined();
 
     // last value in setCache should end with block 6

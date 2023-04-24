@@ -26,6 +26,7 @@ import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import { BlockDispatcherService } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -105,6 +106,7 @@ const nodeConfig = new NodeConfig({
   networkEndpoint: [WS_ENDPOINT],
   dictionaryTimeout: 10,
   batchSize: 5,
+  storeCacheAsync: false,
 });
 
 async function createApp(
@@ -254,7 +256,11 @@ describe('FetchService', () => {
     fetchService = app.get(FetchService);
     runtimeService = (fetchService as any).runtimeService;
     const apiService = app.get(ApiService);
-    const apiOptions = (apiService as any).apiOption as ApiOptions;
+    const connectionPoolService = (apiService as any)
+      .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
+    const firstApiConnection = (connectionPoolService as any).allApi[0];
+
+    const apiOptions = (firstApiConnection as any)._api._options as ApiOptions;
     const provider = apiOptions.provider;
     const getSendSpy = jest.spyOn(provider, 'send');
 
@@ -290,7 +296,11 @@ describe('FetchService', () => {
 
     fetchService = app.get(FetchService);
     const apiService = app.get(ApiService);
-    const apiOptions = (apiService as any).apiOption as ApiOptions;
+    const connectionPoolService = (apiService as any)
+      .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
+    const firstApiConnection = (connectionPoolService as any).allApi[0];
+
+    const apiOptions = (firstApiConnection as any)._api._options as ApiOptions;
     const provider = apiOptions.provider;
     const getSendSpy = jest.spyOn(provider, 'send');
 
@@ -546,6 +556,8 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to different network
     //set to a kusama network and use polkadot dictionary
+    project.network.chainId =
+      '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
     project.network.endpoint = ['wss://kusama.api.onfinality.io/public-ws'];
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
@@ -758,6 +770,7 @@ describe('FetchService', () => {
     fetchService = app.get(FetchService);
     (fetchService as any).templateDynamicDatasouces = [];
     runtimeService = app.get(RuntimeService);
+    (runtimeService as any).useDictionary = true;
 
     // runtimeService = (fetchService as any).runtimeService;
     fetchService.updateDictionary();
