@@ -1,7 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {retryOnFailAxios} from '@subql/node-core/utils/fetchHelpers';
+import {retryOnFailAxios} from './fetchHelpers';
+
 jest.setTimeout(30000);
 
 describe('fetchHelpers', () => {

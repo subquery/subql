@@ -32,7 +32,7 @@ export class BenchmarkService {
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
     try {
-      if (!this.currentProcessingHeight || !this.currentProcessingTimestamp || !this.currentProcessedBlockAmount) {
+      if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
         await delay(10);
       } else {
         if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
@@ -59,9 +59,11 @@ export class BenchmarkService {
           logger.info(
             this.targetHeight === this.lastRegisteredHeight && this.blockPerSecond === 0
               ? 'Fully synced, waiting for new blocks'
-              : `${this.blockPerSecond.toFixed(2)} bps, target: #${this.targetHeight}, current: #${
-                  this.currentProcessingHeight
-                }, estimate time: ${this.blockPerSecond === 0 ? 'unknown' : durationStr}`
+              : `${this.blockPerSecond.toFixed(
+                  2
+                )} blocks/s. Target height: ${this.targetHeight.toLocaleString()}. Current height: ${this.currentProcessingHeight.toLocaleString()}. Estimated time remaining: ${
+                  this.blockPerSecond === 0 ? 'unknown' : durationStr
+                }`
           );
         }
         this.lastRegisteredHeight = this.currentProcessingHeight;

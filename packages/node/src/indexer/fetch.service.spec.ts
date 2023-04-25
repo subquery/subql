@@ -14,8 +14,9 @@ import {
   IndexerEvent,
   NodeConfig,
   Dictionary,
-  MetadataRepo,
   SmartBatchService,
+  StoreService,
+  StoreCacheService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
@@ -31,7 +32,10 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent } from './types';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {
+  METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 
 jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
@@ -55,7 +59,9 @@ function mockRejectedApiService(): ApiService {
     on: jest.fn(),
   };
   return {
-    getApi: () => mockApi,
+    get api() {
+      return mockApi;
+    },
   } as any;
 }
 
@@ -137,7 +143,9 @@ function mockApiService(): ApiService {
     },
   };
   return {
-    getApi: () => mockApi,
+    get api() {
+      return mockApi;
+    },
   } as any;
 }
 
@@ -249,6 +257,8 @@ function mockDictionaryService1(): DictionaryService {
     buildDictionaryEntryMap: jest.fn(),
     getDictionaryQueryEntries: jest.fn(() => [{}, {}]),
     scopedDictionaryEntries: jest.fn(() => mockDictionaryBatches),
+    getMetadata: jest.fn(() => ({ _metadata: { startHeight: 0 } })),
+    parseSpecVersions: jest.fn(() => []),
   } as any;
 }
 
@@ -269,6 +279,8 @@ function mockDictionaryService3(): DictionaryService {
     buildDictionaryEntryMap: jest.fn(),
     scopedDictionaryEntries: jest.fn(() => mockDictionaryNoBatches),
     getDictionaryQueryEntries: jest.fn(() => [{}, {}]),
+    getMetadata: jest.fn(() => ({ _metadata: { startHeight: 0 } })),
+    parseSpecVersions: jest.fn(() => []),
   } as any;
 }
 
@@ -330,6 +342,47 @@ function mockProjectService(): ProjectService {
   } as any;
 }
 
+function mockStoreService(): StoreService {
+  return {
+    setOperationStack: () => {
+      /* nothing */
+    },
+    setBlockHeight: (height: number) => {
+      /* nothing */
+    },
+    getOperationMerkleRoot: () => {
+      return null;
+    },
+  } as StoreService;
+}
+
+function mockStoreCache(): StoreCacheService {
+  return {
+    metadata: {
+      set: (key: string, value: any) => {
+        /* nothing */
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      find: async (key: string) => {
+        switch (key) {
+          case METADATA_UNFINALIZED_BLOCKS_KEY:
+            return '[]';
+
+          default:
+            return undefined;
+        }
+      },
+      setBulk: (data: any[]) => {
+        /* nothing */
+      },
+      setIncrement: (key: string) => {
+        /* nothing */
+      },
+    },
+    flushCache: () => Promise.resolve(),
+  } as StoreCacheService;
+}
+
 async function createFetchService(
   apiService = mockApiService(),
   indexerManager: IndexerManager,
@@ -340,6 +393,7 @@ async function createFetchService(
 ): Promise<FetchService> {
   const dsProcessorService = new DsProcessorService(project, config);
   const projectService = mockProjectService();
+  const storeCache = mockStoreCache();
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
@@ -350,11 +404,9 @@ async function createFetchService(
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
-    null,
+    storeCache,
   );
-  await unfinalizedBlocksService.init(getMockMetadata(), () =>
-    Promise.resolve(),
-  );
+  await unfinalizedBlocksService.init(() => Promise.resolve());
   const eventEmitter = new EventEmitter2();
 
   return new FetchService(
@@ -368,6 +420,11 @@ async function createFetchService(
       eventEmitter,
       projectService,
       new SmartBatchService(nodeConfig.batchSize),
+      mockStoreService(),
+      storeCache,
+      null, // POI
+      project,
+      dynamicDsService,
     ),
     dictionaryService,
     dsProcessorService,
@@ -377,14 +434,6 @@ async function createFetchService(
     new SchedulerRegistry(),
     new RuntimeService(apiService, dictionaryService),
   );
-}
-
-function getMockMetadata(): MetadataRepo {
-  const data: Record<string, any> = {};
-  return {
-    upsert: ({ key, value }) => (data[key] = value),
-    findOne: ({ where: { key } }) => ({ value: data[key] }),
-  } as any;
 }
 
 describe('FetchService', () => {
@@ -491,7 +540,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: '0x',
           reindexBlockHeight: null,
         };
       });
@@ -533,6 +582,7 @@ describe('FetchService', () => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
     const projectService = mockProjectService();
+    const storeCache = mockStoreCache();
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project, config);
@@ -546,12 +596,10 @@ describe('FetchService', () => {
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
-      null,
+      storeCache,
     );
 
-    await unfinalizedBlocksService.init(getMockMetadata(), () =>
-      Promise.resolve(),
-    );
+    await unfinalizedBlocksService.init(() => Promise.resolve());
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -559,6 +607,11 @@ describe('FetchService', () => {
       eventEmitter,
       projectService,
       new SmartBatchService(nodeConfig.batchSize),
+      mockStoreService(),
+      storeCache,
+      null, // POI
+      project,
+      dynamicDsService,
     );
     fetchService = new FetchService(
       apiService,
@@ -630,6 +683,7 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService3();
     const projectService = mockProjectService();
+    const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
     const dsProcessorService = new DsProcessorService(project, config);
@@ -643,11 +697,9 @@ describe('FetchService', () => {
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
-      null,
+      storeCache,
     );
-    await unfinalizedBlocksService.init(getMockMetadata(), () =>
-      Promise.resolve(),
-    );
+    await unfinalizedBlocksService.init(() => Promise.resolve());
 
     const blockDispatcher = new BlockDispatcherService(
       apiService,
@@ -656,6 +708,11 @@ describe('FetchService', () => {
       eventEmitter,
       projectService,
       new SmartBatchService(nodeConfig.batchSize),
+      mockStoreService(),
+      storeCache,
+      null, // POI
+      project,
+      dynamicDsService,
     );
     fetchService = new FetchService(
       apiService,
@@ -722,6 +779,7 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService1();
     const projectService = mockProjectService();
+    const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project, config);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -735,11 +793,9 @@ describe('FetchService', () => {
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
-      null,
+      storeCache,
     );
-    await unfinalizedBlocksService.init(getMockMetadata(), () =>
-      Promise.resolve(),
-    );
+    await unfinalizedBlocksService.init(() => Promise.resolve());
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -747,6 +803,11 @@ describe('FetchService', () => {
       eventEmitter,
       projectService,
       new SmartBatchService(nodeConfig.batchSize),
+      mockStoreService(),
+      storeCache,
+      null, // POI
+      project,
+      dynamicDsService,
     );
     fetchService = new FetchService(
       apiService,
@@ -817,7 +878,7 @@ describe('FetchService', () => {
 
         return {
           dynamicDsCreated: false,
-          operationHash: null,
+          blockHash: '0x',
           reindexBlockHeight: null,
         };
       });
@@ -867,6 +928,7 @@ describe('FetchService', () => {
 
     const dictionaryService = new DictionaryService(project, nodeConfig);
     const projectService = mockProjectService();
+    const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
     const dsProcessorService = new DsProcessorService(project, nodeConfig);
@@ -876,11 +938,9 @@ describe('FetchService', () => {
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
-      null,
+      storeCache,
     );
-    await unfinalizedBlocksService.init(getMockMetadata(), () =>
-      Promise.resolve(),
-    );
+    await unfinalizedBlocksService.init(() => Promise.resolve());
 
     const blockDispatcher = new BlockDispatcherService(
       apiService,
@@ -889,6 +949,11 @@ describe('FetchService', () => {
       eventEmitter,
       projectService,
       new SmartBatchService(nodeConfig.batchSize),
+      mockStoreService(),
+      storeCache,
+      null, // POI
+      project,
+      dynamicDsService,
     );
     fetchService = new FetchService(
       apiService,

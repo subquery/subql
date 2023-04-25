@@ -34,7 +34,11 @@ export class MetricEventListener {
     @InjectMetric('subql_indexer_skip_dictionary_count')
     private skipDictionaryCountMetric: Gauge<string>,
     @InjectMetric('subql_indexer_processed_block_count')
-    private processedBlockCountMetric: Gauge<string>
+    private processedBlockCountMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_store_cache_threshold')
+    private storeCacheThreshold: Gauge<string>,
+    @InjectMetric('subql_indexer_store_cache_records_size')
+    private storeCacheRecordsSize: Gauge<string>
   ) {}
 
   @OnEvent(IndexerEvent.ApiConnected)
@@ -81,5 +85,15 @@ export class MetricEventListener {
   handleSkipDictionary(): void {
     this.skipDictionaryCount += 1;
     this.skipDictionaryCountMetric.set(this.skipDictionaryCount);
+  }
+
+  @OnEvent(IndexerEvent.StoreCacheThreshold)
+  handleStoreCacheThreshold({value}: EventPayload<number>): void {
+    this.storeCacheThreshold.set(value);
+  }
+
+  @OnEvent(IndexerEvent.StoreCacheRecordsSize)
+  handleStoreCacheRecordsSize({value}: EventPayload<number>): void {
+    this.storeCacheRecordsSize.set(value);
   }
 }

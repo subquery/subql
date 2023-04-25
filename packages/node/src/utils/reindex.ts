@@ -48,14 +48,18 @@ export async function reindex(
     try {
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(transaction),
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(transaction),
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
+        unfinalizedBlockService.resetUnfinalizedBlocks(),
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(),
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight),
       ]);
 
       if (blockOffset) {
         await mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
+
+      // Flush metadata changes from above Promise.all
+      await storeService.storeCache.metadata.flush(transaction);
+
       await transaction.commit();
       logger.info('Reindex Success');
     } catch (err) {

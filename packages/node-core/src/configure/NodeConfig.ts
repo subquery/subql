@@ -51,6 +51,9 @@ export interface IConfig {
   readonly pgCa?: string;
   readonly pgKey?: string;
   readonly pgCert?: string;
+  readonly storeCacheThreshold?: number;
+  readonly storeGetCacheSize?: number;
+  readonly storeCacheAsync?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -73,6 +76,9 @@ const DEFAULT_CONFIG = {
   disableHistorical: false,
   multiChain: false,
   unfinalizedBlocks: false,
+  storeCacheThreshold: 1000,
+  storeGetCacheSize: 500,
+  storeCacheAsync: true,
 };
 
 export class NodeConfig implements IConfig {
@@ -124,6 +130,18 @@ export class NodeConfig implements IConfig {
 
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
+  }
+
+  get storeCacheThreshold(): number {
+    return this._config.storeCacheThreshold;
+  }
+
+  get storeGetCacheSize(): number {
+    return this._config.storeGetCacheSize;
+  }
+
+  get storeCacheAsync(): boolean {
+    return this._config.storeCacheAsync;
   }
 
   get dictionaryResolver(): string {

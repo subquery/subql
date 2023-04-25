@@ -23,7 +23,7 @@ describe('sandbox for subql-node', () => {
         entry,
         script: fs.readFileSync(path.join(root, entry)).toString(),
       },
-      new NodeConfig({subquery: '', subqueryName: ''})
+      new NodeConfig({subquery: ' ', subqueryName: ' '})
     );
     let sandboxFuncionEndAt: Date;
     vm.on('console.log', (line) => {

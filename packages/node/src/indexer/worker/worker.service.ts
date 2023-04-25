@@ -16,7 +16,7 @@ export type FetchBlockResponse =
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
-  operationHash: string; // Base64 encoded u8a array
+  blockHash: string;
   reindexBlockHeight: number;
 };
 
@@ -118,19 +118,12 @@ export class WorkerService {
         block.block,
       );
 
-      const response = await this.indexerManager.indexBlock(
-        block,
-        runtimeVersion,
-      );
-
-      this._isIndexing = false;
-      return {
-        ...response,
-        operationHash: Buffer.from(response.operationHash).toString('base64'),
-      };
+      return await this.indexerManager.indexBlock(block, runtimeVersion);
     } catch (e) {
       logger.error(e, `Failed to index block ${height}: ${e.stack}`);
       throw e;
+    } finally {
+      this._isIndexing = false;
     }
   }
 

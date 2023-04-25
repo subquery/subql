@@ -30,3 +30,10 @@ export interface ISubqueryProject<N extends IProjectNetworkConfig, DS = unknown,
   chainTypes?: C;
   runner?: RunnerSpecs;
 }
+
+export interface IProjectService {
+  blockOffset: number;
+
+  reindex(lastCorrectHeight: number): Promise<void>;
+  setBlockOffset(offset: number): Promise<void>;
+}

@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { isMainThread } from 'worker_threads';
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -9,6 +10,8 @@ import {
   MmrService,
   NodeConfig,
   ConnectionPoolService,
+  StoreCacheService,
+  WorkerDynamicDsService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -21,10 +24,12 @@ import { WorkerRuntimeService } from './runtime/workerRuntimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
+import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlocks.service';
 
 @Module({
   providers: [
     IndexerManager,
+    StoreCacheService,
     StoreService,
     ConnectionPoolService,
     {
@@ -53,12 +58,31 @@ import { WorkerService } from './worker/worker.service';
     },
     SandboxService,
     DsProcessorService,
-    DynamicDsService,
+    {
+      provide: DynamicDsService,
+      useFactory: () => {
+        if (isMainThread) {
+          throw new Error('Expected to be worker thread');
+        }
+        return new WorkerDynamicDsService((global as any).host);
+      },
+    },
     PoiService,
     MmrService,
-    ProjectService,
+    {
+      provide: 'IProjectService',
+      useClass: ProjectService,
+    },
     WorkerService,
-    UnfinalizedBlocksService,
+    {
+      provide: UnfinalizedBlocksService,
+      useFactory: () => {
+        if (isMainThread) {
+          throw new Error('Expected to be worker thread');
+        }
+        return new WorkerUnfinalizedBlocksService((global as any).host);
+      },
+    },
     WorkerRuntimeService,
   ],
   exports: [StoreService, MmrService],
