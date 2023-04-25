@@ -9,15 +9,14 @@ export class SetValueModel<T> {
   private _latestIndex = -1;
 
   popRecordWithOpIndex(operationIndex: number): SetValue<T> | undefined {
-    let setRecord: SetValue<T>;
     const opIndexInSetRecord = this.historicalValues.findIndex((v) => {
       return v.operationIndex === operationIndex;
     });
     if (opIndexInSetRecord >= 0) {
-      setRecord = this.historicalValues[opIndexInSetRecord];
+      const setRecord = this.historicalValues[opIndexInSetRecord];
       this.deleteFromHistorical(opIndexInSetRecord);
+      return setRecord;
     }
-    return setRecord;
   }
 
   set(data: T, blockHeight: number, operationIndex: number): void {
@@ -72,7 +71,7 @@ export class SetValueModel<T> {
     newModel.historicalValues = this.historicalValues
       .filter((v) => v.startHeight < height)
       .map((v) => {
-        if (v.endHeight < height) {
+        if (v.endHeight && v.endHeight < height) {
           return v;
         }
 
@@ -102,13 +101,13 @@ export class SetValueModel<T> {
   }
 
   isMatchData(field?: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
-    if (field === undefined && value === undefined) {
+    if (field === undefined || value === undefined) {
       return true;
     }
     if (Array.isArray(value)) {
       return value.findIndex((v) => this.isMatchData(field, value)) > -1;
     } else {
-      return isEqual(this.getLatest().data[field], value);
+      return isEqual(this.getLatest()?.data?.[field], value);
     }
   }
 

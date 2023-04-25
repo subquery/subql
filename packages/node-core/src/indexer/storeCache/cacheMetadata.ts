@@ -25,8 +25,8 @@ export class CacheMetadataModel implements ICachedModelControl {
     if (!this.getCache[key]) {
       const record = await this.model.findByPk(key);
 
-      if (hasValue(record?.value)) {
-        this.getCache[key] = record.value as any;
+      if (hasValue(record)) {
+        this.getCache[key] = record.toJSON().value as any;
       } else if (hasValue(fallback)) {
         this.getCache[key] = fallback;
       }
@@ -80,6 +80,10 @@ export class CacheMetadataModel implements ICachedModelControl {
 
   private async incrementJsonbCount(key: string, amount = 1, tx?: Transaction): Promise<void> {
     const table = this.model.getTableName();
+
+    if (!this.model.sequelize) {
+      throw new Error(`Sequelize is not available on ${this.model.name}`);
+    }
 
     await this.model.sequelize.query(
       `UPDATE ${table} SET value = (COALESCE(value->0):: int + ${amount})::text::jsonb WHERE key ='${key}'`,

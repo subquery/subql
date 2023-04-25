@@ -4173,11 +4173,12 @@ __metadata:
     "@polkadot/api": 10.1.4
     "@subql/apollo-links": ^0.3.3-1
     "@subql/common": "workspace:*"
+    "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
     "@types/async-lock": ^1
-    "@willsoto/nestjs-prometheus": ^4.4.0
+    "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
     lodash: ^4.17.21
@@ -4206,6 +4207,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/node-core": "workspace:*"
+    "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
@@ -4236,7 +4238,6 @@ __metadata:
     sequelize: 6.28.0
     supertest: ^6.2.2
     tar: ^6.1.11
-    typescript: ^4.4.4
     vm2: ^3.9.9
     yargs: ^16.2.0
   bin:
@@ -4283,10 +4284,17 @@ __metadata:
     rimraf: ^3.0.2
     rxjs: ^7.5.2
     subscriptions-transport-ws: ^0.11.0
-    typescript: ^4.4.4
     yargs: ^16.2.0
   bin:
     subql-query: ./bin/run
+  languageName: unknown
+  linkType: soft
+
+"@subql/testing@workspace:*, @subql/testing@workspace:packages/testing":
+  version: 0.0.0-use.local
+  resolution: "@subql/testing@workspace:packages/testing"
+  dependencies:
+    "@subql/types": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -4362,7 +4370,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types@workspace:*, @subql/types@workspace:packages/types":
+"@subql/types@workspace:*, @subql/types@workspace:^, @subql/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
@@ -5636,6 +5644,16 @@ __metadata:
     "@nestjs/common": ^7.0.0 || ^8.0.0
     prom-client: ^13.0.0 || ^14.0.0
   checksum: 256fbd7d2db4e2a77b32e7739a6f6b2af7a7514273ad7d47d1ba42bb1bad63e95d2d591d126454395026431120ae3187d1b6a054d8342570d06da5da33758a4d
+  languageName: node
+  linkType: hard
+
+"@willsoto/nestjs-prometheus@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "@willsoto/nestjs-prometheus@npm:5.1.1"
+  peerDependencies:
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0
+    prom-client: ^13.0.0 || ^14.0.0
+  checksum: fa60f20442605c4243bc21b829be80a53ac2a0d1b7c5ab5c816048970ae57486cbba38c9d9707c989608501b27aa9a50acb5046dca76d19900a5719e068f57ae
   languageName: node
   linkType: hard
 
@@ -16772,7 +16790,7 @@ __metadata:
     ts-loader: ^9.2.6
     ts-node: ^10.4.0
     tsconfig-paths: ^3.12.0
-    typescript: ^4.4.4
+    typescript: ^4.9.5
   languageName: unknown
   linkType: soft
 
@@ -17632,13 +17650,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.4":
-  version: 4.6.4
-  resolution: "typescript@npm:4.6.4"
+"typescript@npm:^4.9.5":
+  version: 4.9.5
+  resolution: "typescript@npm:4.9.5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: e7bfcc39cd4571a63a54e5ea21f16b8445268b9900bf55aee0e02ad981be576acc140eba24f1af5e3c1457767c96cea6d12861768fb386cf3ffb34013718631a
+  checksum: ee000bc26848147ad423b581bd250075662a354d84f0e06eb76d3b892328d8d4440b7487b5a83e851b12b255f55d71835b008a66cbf8f255a11e4400159237db
   languageName: node
   linkType: hard
 
@@ -17652,13 +17670,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.4#~builtin<compat/typescript>":
-  version: 4.6.4
-  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=493e53"
+"typescript@patch:typescript@^4.9.5#~builtin<compat/typescript>":
+  version: 4.9.5
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=493e53"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 8cff08bf66d9ecfbf9fcc5edde04a5a7923e6cac3b21d99b4e9a06973bf5bd7f9a83ec7eed24129c1b9e13fd861de8c1070110d4b9ce9f18ab57c6999e9c9a6f
+  checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
   languageName: node
   linkType: hard
 

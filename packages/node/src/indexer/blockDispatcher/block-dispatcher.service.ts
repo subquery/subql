@@ -38,7 +38,7 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService,
+    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -46,21 +46,6 @@ export class BlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
   ) {
-    const fetchBlockBatchesWrapped = async (
-      blockNums: number[],
-    ): Promise<BlockContent[]> => {
-      const specChanged = await this.runtimeService.specChanged(
-        blockNums[blockNums.length - 1],
-      );
-
-      // If specVersion not changed, a known overallSpecVer will be pass in
-      // Otherwise use api to fetch runtimes
-      return this.apiService.fetchBlocks(
-        blockNums,
-        specChanged ? undefined : this.runtimeService.parentSpecVersion,
-      );
-    };
-
     super(
       nodeConfig,
       eventEmitter,
@@ -71,7 +56,18 @@ export class BlockDispatcherService
       poiService,
       project,
       dynamicDsService,
-      fetchBlockBatchesWrapped,
+      async (blockNums: number[]): Promise<BlockContent[]> => {
+        const specChanged = await this.runtimeService.specChanged(
+          blockNums[blockNums.length - 1],
+        );
+
+        // If specVersion not changed, a known overallSpecVer will be pass in
+        // Otherwise use api to fetch runtimes
+        return this.apiService.fetchBlocks(
+          blockNums,
+          specChanged ? undefined : this.runtimeService.parentSpecVersion,
+        );
+      },
     );
   }
 
@@ -93,6 +89,10 @@ export class BlockDispatcherService
     const runtimeVersion = await this.runtimeService.getRuntimeVersion(
       block.block,
     );
-    return this.indexerManager.indexBlock(block, runtimeVersion);
+    return this.indexerManager.indexBlock(
+      block,
+      await this.projectService.getAllDataSources(this.getBlockHeight(block)),
+      runtimeVersion,
+    );
   }
 }

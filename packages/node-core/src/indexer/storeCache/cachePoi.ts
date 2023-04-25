@@ -75,19 +75,25 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'DESC']],
     });
 
-    return Object.values(this.mergeResultsWithCache([result?.toJSON<ProofOfIndex>()])).reduce((acc, val) => {
+    if (!result) return null;
+
+    return Object.values(this.mergeResultsWithCache([result.toJSON()])).reduce((acc, val) => {
       if (acc && acc.id < val.id) return acc;
       return val;
     }, null as ProofOfIndex | null);
   }
 
-  async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
-    const poiBlock = await this.model.findOne({
+  async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
+    const result = await this.model.findOne({
       order: [['id', 'DESC']],
-      where: {mmrRoot: {[Op.ne]: null}},
+      where: {mmrRoot: {[Op.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
     });
 
-    return Object.values(this.mergeResultsWithCache([poiBlock?.toJSON<ProofOfIndex>()]))
+    if (!result) {
+      return null;
+    }
+
+    return Object.values(this.mergeResultsWithCache([result.toJSON()]))
       .filter((v) => !!v.mmrRoot)
       .reduce((acc, val) => {
         if (acc && acc.id < val.id) return acc;
@@ -100,7 +106,7 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    logger.info(`Flushing ${this.flushableRecordCounter} items from cache`);
+    logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
     const pendingFlush = Promise.all([
       this.model.bulkCreate(Object.values(this.setCache), {transaction: tx, updateOnDuplicate: ['mmrRoot']}),
       this.model.destroy({where: {id: this.removeCache}, transaction: tx}),

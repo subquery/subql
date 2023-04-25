@@ -31,7 +31,7 @@ export interface IConfig {
   readonly networkDictionary?: string;
   readonly dictionaryResolver?: string;
   readonly outputFmt?: 'json';
-  readonly logLevel?: LevelWithSilent;
+  readonly logLevel: LevelWithSilent;
   readonly queryLimit: number;
   readonly indexCountLimit: number;
   readonly timestampField: boolean;
@@ -51,15 +51,16 @@ export interface IConfig {
   readonly pgCa?: string;
   readonly pgKey?: string;
   readonly pgCert?: string;
-  readonly storeCacheThreshold?: number;
-  readonly storeGetCacheSize?: number;
-  readonly storeCacheAsync?: boolean;
+  readonly storeCacheThreshold: number;
+  readonly storeGetCacheSize: number;
+  readonly storeCacheAsync: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
 
 const DEFAULT_CONFIG = {
   localMode: false,
+  logLevel: 'info',
   batchSize: 100,
   timeout: 900,
   blockTime: 6000,
@@ -111,7 +112,11 @@ export class NodeConfig implements IConfig {
 
   get subqueryName(): string {
     assert(this._config.subquery);
-    return this._config.subqueryName ?? last(this.subquery.split(path.sep));
+    const name = this._config.subqueryName ?? last(this.subquery.split(path.sep));
+    if (!name) {
+      throw new Error('Unable to get subquery name');
+    }
+    return name;
   }
 
   get localMode(): boolean {
@@ -141,10 +146,10 @@ export class NodeConfig implements IConfig {
   }
 
   get storeCacheAsync(): boolean {
-    return this._config.storeCacheAsync;
+    return !!this._config.storeCacheAsync;
   }
 
-  get dictionaryResolver(): string {
+  get dictionaryResolver(): string | undefined {
     return this._config.dictionaryResolver;
   }
 
@@ -199,7 +204,7 @@ export class NodeConfig implements IConfig {
   get mmrPath(): string {
     return this._config.mmrPath ?? `.mmr/${this.subqueryName}.mmr`;
   }
-  get ipfs(): string {
+  get ipfs(): string | undefined {
     return this._config.ipfs;
   }
 
@@ -207,16 +212,16 @@ export class NodeConfig implements IConfig {
     return this._config.dbSchema ?? this.subqueryName;
   }
 
-  get workers(): number {
+  get workers(): number | undefined {
     return this._config.workers;
   }
 
   get profiler(): boolean {
-    return this._config.profiler;
+    return !!this._config.profiler;
   }
 
   get unsafe(): boolean {
-    return this._config.unsafe;
+    return !!this._config.unsafe;
   }
 
   get subscription(): boolean {
@@ -232,7 +237,7 @@ export class NodeConfig implements IConfig {
   }
 
   get unfinalizedBlocks(): boolean {
-    return this._config.unfinalizedBlocks;
+    return !!this._config.unfinalizedBlocks;
   }
 
   get isPostgresSecureConnection(): boolean {
@@ -245,8 +250,8 @@ export class NodeConfig implements IConfig {
     }
     try {
       return getFileContent(this._config.pgCa, 'postgres ca cert');
-    } catch (e) {
-      logger.error(e);
+    } catch (e: any) {
+      logger.error(e, 'Unable to get postges CA Cert');
       throw e;
     }
   }
@@ -258,8 +263,8 @@ export class NodeConfig implements IConfig {
 
     try {
       return getFileContent(this._config.pgKey, 'postgres client key');
-    } catch (e) {
-      logger.error(e);
+    } catch (e: any) {
+      logger.error(e, 'Unable to get postgres client key');
       throw e;
     }
   }
@@ -270,8 +275,8 @@ export class NodeConfig implements IConfig {
     }
     try {
       return getFileContent(this._config.pgCert, 'postgres client cert');
-    } catch (e) {
-      logger.error(e);
+    } catch (e: any) {
+      logger.error(e, 'Unable to get postgres client cert');
       throw e;
     }
   }

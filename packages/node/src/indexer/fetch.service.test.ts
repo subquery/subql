@@ -43,6 +43,8 @@ const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
+      chainId:
+        '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       endpoint: [WS_ENDPOINT],
     },
     chainTypes: {
@@ -92,6 +94,7 @@ function mockProjectService(): ProjectService {
     getProcessedBlockCount: jest.fn(() => Promise.resolve(0)),
     upsertMetadataBlockOffset: jest.fn(),
     setBlockOffset: jest.fn(),
+    getAllDataSources: jest.fn(),
   } as any;
 }
 

@@ -27,17 +27,20 @@ export class StoreOperations {
       }
     } else {
       const operationModel = this.models.find(({name}) => name === operation.entityType);
+      if (!operationModel) {
+        throw new Error(`Unable to find model with name ${operation.entityType}`);
+      }
       for (const field of operationModel.fields) {
         const fieldValue = (operation.data as Entity & Record<string, any>)[field.name];
         dataBufferArray.push(Buffer.from(field.name));
 
         if (fieldValue !== undefined && fieldValue !== null) {
-          if (field.isEnum) {
-            //if it is a enum, process it as string
-            dataBufferArray.push(getTypeByScalarName('String').hashCode(fieldValue));
-          } else {
-            dataBufferArray.push(getTypeByScalarName(field.type).hashCode(fieldValue));
+          const type = field.isEnum ? getTypeByScalarName('String') : getTypeByScalarName(field.type);
+          if (!type) {
+            throw new Error('Unable to get type by scalar name');
           }
+
+          dataBufferArray.push(type.hashCode(fieldValue));
         }
       }
     }
@@ -62,7 +65,7 @@ export class StoreOperations {
     this.merkleTools.makeTree();
   }
 
-  getOperationMerkleRoot(): Uint8Array {
+  getOperationMerkleRoot(): Uint8Array | null {
     if (this.merkleTools.getTreeReadyState()) {
       return this.merkleTools.getMerkleRoot();
     } else {

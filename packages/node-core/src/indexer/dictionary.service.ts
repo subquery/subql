@@ -62,10 +62,7 @@ function getGqlType(value: any): string {
 }
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
-  let gqlType = getGqlType(cond.value);
-  if (cond.matcher === 'contains') {
-    gqlType = 'JSON';
-  }
+  const gqlType = cond.matcher === 'contains' ? 'JSON' : getGqlType(cond.value);
 
   return {
     name,
@@ -144,7 +141,8 @@ function buildDictQueryFragment(
   };
 
   if (useDistinct) {
-    node.args.distinct = ['BLOCK_HEIGHT'];
+    // Non null assertion here because we define the object explicitly
+    node.args!.distinct = ['BLOCK_HEIGHT'];
   }
 
   return [gqlVars, node];
@@ -152,12 +150,12 @@ function buildDictQueryFragment(
 
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
-  protected client: ApolloClient<NormalizedCacheObject>;
+  private _client?: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
-  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
+  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]> = new Map();
   private useDistinct = true;
   private useStartHeight = true;
-  protected _startHeight: number;
+  protected _startHeight?: number;
 
   constructor(
     readonly dictionaryEndpoint: string,
@@ -176,7 +174,7 @@ export class DictionaryService implements OnApplicationShutdown {
           chainId: this.chainId,
           httpOptions: {fetch},
         });
-      } catch (e) {
+      } catch (e: any) {
         logger.error(e.message);
         process.exit(1);
       }
@@ -184,7 +182,7 @@ export class DictionaryService implements OnApplicationShutdown {
       link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
 
-    this.client = new ApolloClient({
+    this._client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
       link,
       defaultOptions: {
@@ -198,7 +196,7 @@ export class DictionaryService implements OnApplicationShutdown {
     });
   }
 
-  setDictionaryStartHeight(start: number | undefined): void {
+  private setDictionaryStartHeight(start: number | undefined): void {
     // Since not all dictionary has adopt start height, if it is not set, we just consider it is 1.
     if (this._startHeight !== undefined) {
       return;
@@ -207,8 +205,19 @@ export class DictionaryService implements OnApplicationShutdown {
   }
 
   get startHeight(): number {
+    if (!this._startHeight) {
+      throw new Error('Dictionary start height is not set');
+    }
     return this._startHeight;
   }
+
+  protected get client(): ApolloClient<NormalizedCacheObject> {
+    if (!this._client) {
+      throw new Error('Dictionary service has not been initialized');
+    }
+    return this._client;
+  }
+
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
@@ -227,7 +236,7 @@ export class DictionaryService implements OnApplicationShutdown {
     queryEndBlock: number,
     batchSize: number,
     conditions: DictionaryQueryEntry[]
-  ): Promise<Dictionary> {
+  ): Promise<Dictionary | undefined> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
     try {
       const resp = await timeout(
@@ -256,7 +265,7 @@ export class DictionaryService implements OnApplicationShutdown {
         _metadata,
         batchBlocks,
       };
-    } catch (err) {
+    } catch (err: any) {
       // Check if the error is about distinct argument and disable distinct if so
       if (JSON.stringify(err).includes(distinctErrorEscaped)) {
         this.useDistinct = false;
@@ -307,33 +316,28 @@ export class DictionaryService implements OnApplicationShutdown {
     dataSources: Array<DS>,
     buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
   ): void {
-    const mappedDictionaryQueryEntries = new Map();
-
-    for (const ds of dataSources.sort((a, b) => a.startBlock - b.startBlock)) {
-      mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
+    const dsWithStartBlock = (dataSources.filter((ds) => !!ds.startBlock) as (DS & {startBlock: number})[]).sort(
+      (a, b) => a.startBlock - b.startBlock
+    );
+    for (const ds of dsWithStartBlock) {
+      this.mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
-    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
 
   getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
-    let dictionaryQueryEntries: DictionaryQueryEntry[];
-    this.mappedDictionaryQueryEntries.forEach((value, key) => {
+    for (const [key, value] of this.mappedDictionaryQueryEntries) {
       if (queryEndBlock >= key) {
-        dictionaryQueryEntries = value;
+        return value;
       }
-    });
-
-    if (dictionaryQueryEntries === undefined) {
-      return [];
     }
-    return dictionaryQueryEntries;
+    return [];
   }
 
   async scopedDictionaryEntries(
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number
-  ): Promise<Dictionary> {
+  ): Promise<Dictionary | undefined> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
@@ -352,7 +356,7 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery([], nodes);
   }
 
-  async getMetadata(): Promise<MetadataDictionary> {
+  async getMetadata(): Promise<MetadataDictionary | undefined> {
     const {query} = this.metadataQuery();
     try {
       const resp = await timeout(
@@ -362,8 +366,11 @@ export class DictionaryService implements OnApplicationShutdown {
         this.nodeConfig.dictionaryTimeout
       );
       const _metadata = resp.data._metadata;
+
+      this.setDictionaryStartHeight(_metadata.startHeight);
+
       return {_metadata};
-    } catch (err) {
+    } catch (err: any) {
       if (JSON.stringify(err).includes(startHeightEscaped)) {
         this.useStartHeight = false;
         logger.warn(`Dictionary doesn't support validate start height.`);

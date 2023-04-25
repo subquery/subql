@@ -17,15 +17,15 @@ dayjs.extend(duration);
 
 @Injectable()
 export class BenchmarkService {
-  private currentProcessingHeight: number;
-  private currentProcessingTimestamp: number;
-  private targetHeight: number;
-  private lastRegisteredHeight: number;
-  private lastRegisteredTimestamp: number;
-  private blockPerSecond: number;
+  private currentProcessingHeight?: number;
+  private currentProcessingTimestamp?: number;
+  private targetHeight?: number;
+  private lastRegisteredHeight?: number;
+  private lastRegisteredTimestamp?: number;
+  private blockPerSecond?: number;
 
-  private currentProcessedBlockAmount: number;
-  private lastProcessedBlockAmount: number;
+  private currentProcessedBlockAmount?: number;
+  private lastProcessedBlockAmount?: number;
 
   constructor(private nodeConfig: NodeConfig) {}
 
@@ -40,37 +40,41 @@ export class BenchmarkService {
           const timeDiff = this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
           this.blockPerSecond = heightDiff === 0 || timeDiff === 0 ? 0 : heightDiff / (timeDiff / 1000);
 
-          const blockDuration = dayjs.duration(
-            (this.targetHeight - this.currentProcessingHeight) / this.blockPerSecond,
-            'seconds'
-          );
-          const hoursMinsStr = blockDuration.format('HH [hours] mm [mins]');
-          const days = Math.floor(blockDuration.asDays());
-          const durationStr = `${days} days ${hoursMinsStr}`;
+          if (!this.targetHeight) {
+            logger.debug('Target height is not defined, not logging benchmark');
+          } else {
+            const blockDuration = dayjs.duration(
+              (this.targetHeight - this.currentProcessingHeight) / this.blockPerSecond,
+              'seconds'
+            );
+            const hoursMinsStr = blockDuration.format('HH [hours] mm [mins]');
+            const days = Math.floor(blockDuration.asDays());
+            const durationStr = `${days} days ${hoursMinsStr}`;
 
-          if (this.nodeConfig.profiler) {
+            if (this.nodeConfig.profiler && this.currentProcessedBlockAmount && this.lastProcessedBlockAmount) {
+              logger.info(
+                `Processed ${
+                  this.currentProcessedBlockAmount - this.lastProcessedBlockAmount
+                } blocks in the last ${SAMPLING_TIME_VARIANCE}secs `
+              );
+            }
+
             logger.info(
-              `Processed ${
-                this.currentProcessedBlockAmount - this.lastProcessedBlockAmount
-              } blocks in the last ${SAMPLING_TIME_VARIANCE}secs `
+              this.targetHeight === this.lastRegisteredHeight && this.blockPerSecond === 0
+                ? 'Fully synced, waiting for new blocks'
+                : `${this.blockPerSecond.toFixed(
+                    2
+                  )} blocks/s. Target height: ${this.targetHeight.toLocaleString()}. Current height: ${this.currentProcessingHeight.toLocaleString()}. Estimated time remaining: ${
+                    this.blockPerSecond === 0 ? 'unknown' : durationStr
+                  }`
             );
           }
-
-          logger.info(
-            this.targetHeight === this.lastRegisteredHeight && this.blockPerSecond === 0
-              ? 'Fully synced, waiting for new blocks'
-              : `${this.blockPerSecond.toFixed(
-                  2
-                )} blocks/s. Target height: ${this.targetHeight.toLocaleString()}. Current height: ${this.currentProcessingHeight.toLocaleString()}. Estimated time remaining: ${
-                  this.blockPerSecond === 0 ? 'unknown' : durationStr
-                }`
-          );
         }
         this.lastRegisteredHeight = this.currentProcessingHeight;
         this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
         this.lastProcessedBlockAmount = this.currentProcessedBlockAmount;
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.warn(e, 'Failed to measure benchmark');
     }
   }

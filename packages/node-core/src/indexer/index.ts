@@ -18,3 +18,4 @@ export * from './smartBatch.service';
 export * from './blockDispatcher';
 export * from './postgresBasedMMRDb';
 export * from './dynamic-ds.service';
+export * from './testing.service';

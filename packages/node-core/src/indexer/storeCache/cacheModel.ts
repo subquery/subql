@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {flatten, includes, isEqual, uniq} from 'lodash';
-import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize';
+import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
 import {SetValueModel} from './setValueModel';
 import {
-  HistoricalModel,
   ICachedModelControl,
   RemoveValue,
   SetData,
@@ -29,14 +28,10 @@ export class CachedModel<
 {
   // Null value indicates its not defined in the db
   private getCache: GetData<T>;
-
   private setCache: SetData<T> = {};
-
   private removeCache: Record<string, RemoveValue> = {};
-
-  private getNextStoreOperationIndex: () => number;
-
-  readonly hasAssociations: boolean;
+  private _getNextStoreOperationIndex?: () => number;
+  readonly hasAssociations: boolean = false;
 
   flushableRecordCounter = 0;
 
@@ -56,12 +51,15 @@ export class CachedModel<
     }
   }
 
-  init(getNextStoreOperationIndex: () => number) {
-    this.getNextStoreOperationIndex = getNextStoreOperationIndex;
+  init(getNextStoreOperationIndex: () => number): void {
+    this._getNextStoreOperationIndex = getNextStoreOperationIndex;
   }
 
-  private get historicalModel(): ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>> {
-    return this.model as ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>>;
+  private getNextStoreOperationIndex(): number {
+    if (!this._getNextStoreOperationIndex) {
+      throw new Error(`Cache model ${this.model.name} has not been initialized`);
+    }
+    return this._getNextStoreOperationIndex();
   }
 
   allCachedIds(): string[] {
@@ -70,7 +68,7 @@ export class CachedModel<
     return uniq(flatten([[...this.getCache.keys()], Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
-  async get(id: string): Promise<T | null> {
+  async get(id: string): Promise<T | undefined> {
     // If this already been removed
     if (this.removeCache[id]) {
       return;
@@ -85,9 +83,11 @@ export class CachedModel<
             // https://github.com/sequelize/sequelize/issues/15179
             where: {id} as any,
           })
-        )?.toJSON<T>();
-        // getCache only keep records from db
-        this.getCache.set(id, record);
+        )?.toJSON();
+        if (record) {
+          // getCache only keep records from db
+          this.getCache.set(id, record);
+        }
       }
       return record;
     }
@@ -102,7 +102,7 @@ export class CachedModel<
       offset: number;
       limit: number;
     }
-  ): Promise<T[] | undefined> {
+  ): Promise<T[]> {
     let cachedData = this.getFromCache(field, value);
     if (cachedData.length <= options.offset) {
       // example cache length 16, offset is 30
@@ -131,13 +131,12 @@ export class CachedModel<
       this.getCache.set(data.id, data);
     });
 
-    const joinedData = cachedData.concat(records.map((record) => record.toJSON() as T));
-    return joinedData;
+    return cachedData.concat(records.map((record) => record.toJSON() as T));
   }
 
   async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
     if (field === 'id') {
-      return this.get(value.toString());
+      return this.get(`${value}`);
     } else {
       const oneFromCached = this.getFromCache(field, value, true)[0];
       if (oneFromCached) {
@@ -149,7 +148,9 @@ export class CachedModel<
           })
         )?.toJSON<T>();
 
-        this.getCache.set(record.id, record);
+        if (record) {
+          this.getCache.set(record.id, record);
+        }
         return record;
       }
     }
@@ -227,9 +228,7 @@ export class CachedModel<
         // We need to use upsert instead of bulkCreate for cockroach db
         // see this https://github.com/subquery/subql/issues/1606
         this.useCockroachDb
-          ? records.map((r) => {
-              this.model.upsert(r, {transaction: tx});
-            })
+          ? records.map((r) => this.model.upsert(r, {transaction: tx}))
           : this.model.bulkCreate(records, {
               transaction: tx,
               updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
@@ -255,7 +254,7 @@ export class CachedModel<
       await this.model.destroy({where: {id: removeRecordKey} as any, transaction: tx});
       delete this.removeCache[removeRecordKey];
     } else {
-      let setRecord: SetValue<T>;
+      let setRecord: SetValue<T> | undefined;
       for (const r of Object.values(this.setCache)) {
         setRecord = r.popRecordWithOpIndex(operationIndex);
         if (setRecord) break;
@@ -291,12 +290,12 @@ export class CachedModel<
     return flatten(
       Object.values(setRecords).map((v) => {
         if (!this.historical) {
-          return v.getLatest().data;
+          return v.getLatest()?.data;
         }
         // Historical
         return v.getValues().map((historicalValue) => {
           // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
-          historicalValue.data.__block_range = this.model.sequelize.fn(
+          historicalValue.data.__block_range = this.sequelize.fn(
             'int8range',
             historicalValue.startHeight,
             historicalValue.endHeight
@@ -346,9 +345,11 @@ export class CachedModel<
     const unifiedIds: string[] = [];
     Object.entries(this.setCache).map(([, model]) => {
       if (model.isMatchData(field, value)) {
-        const latestData = model.getLatest().data;
-        unifiedIds.push(latestData.id);
-        joinedData.push(latestData);
+        const latestData = model.getLatest()?.data;
+        if (latestData) {
+          unifiedIds.push(latestData.id);
+          joinedData.push(latestData);
+        }
       }
     });
     // No need search further
@@ -358,8 +359,10 @@ export class CachedModel<
 
     this.getCache.forEach((getValue, key) => {
       if (
+        getValue &&
         !unifiedIds.includes(key) &&
-        ((field === undefined && value === undefined) ||
+        (field === undefined ||
+          value === undefined ||
           (Array.isArray(value) && includes(value, getValue[field])) ||
           isEqual(getValue[field], value))
       ) {
@@ -377,9 +380,13 @@ export class CachedModel<
     setRecords: SetData<T>,
     removeRecords: Record<string, RemoveValue>
   ): Promise<void> {
-    const closeSetRecords = Object.entries(setRecords).map(([id, value]) => {
-      return {id, blockHeight: value.getFirst().startHeight};
-    });
+    const closeSetRecords: {id: string; blockHeight: number}[] = [];
+    for (const [id, value] of Object.entries(setRecords)) {
+      const firstValue = value.getFirst();
+      if (firstValue !== undefined) {
+        closeSetRecords.push({id, blockHeight: firstValue.startHeight});
+      }
+    }
     const closeRemoveRecords = Object.entries(removeRecords).map(([id, value]) => {
       return {id, blockHeight: value.removedAtBlock};
     });
@@ -389,13 +396,23 @@ export class CachedModel<
       return;
     }
 
-    await this.model.sequelize.query(
+    await this.sequelize.query(
       `UPDATE ${this.model.getTableName()} table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
             from (SELECT UNNEST(array[${mergedRecords.map((r) =>
-              this.model.sequelize.escape(r.id)
+              this.sequelize.escape(r.id)
             )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2
             WHERE table1.id = table2.id and "_block_range" @> _block_end-1::int8;`,
       {transaction: tx}
     );
+  }
+
+  private get sequelize(): Sequelize {
+    const sequelize = this.model.sequelize;
+
+    if (!sequelize) {
+      throw new Error(`Sequelize is not available on ${this.model.name}`);
+    }
+
+    return sequelize;
   }
 }

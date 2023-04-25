@@ -8,7 +8,7 @@ export class BlockSizeBuffer extends Queue<number> {
     super(capacity);
   }
 
-  average() {
+  average(): number {
     if (this.size === 0) {
       throw new Error('No block sizes to average');
     }
@@ -16,6 +16,10 @@ export class BlockSizeBuffer extends Queue<number> {
     let sum = 0;
     for (let i = 0; i < this.size; i++) {
       sum += this.items[i];
+    }
+
+    if (!this.capacity) {
+      throw new Error('Capacity is expected to be defined for block size buffer');
     }
     return Math.floor(sum / this.capacity);
   }

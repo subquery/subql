@@ -36,7 +36,7 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('Project');
 
 @Injectable()
-export class ProjectService implements IProjectService {
+export class ProjectService implements IProjectService<SubqlProjectDs> {
   private _schema: string;
   private _startHeight: number;
   private _blockOffset: number;
@@ -57,10 +57,6 @@ export class ProjectService implements IProjectService {
 
   get schema(): string {
     return this._schema;
-  }
-
-  get dataSources(): SubqlProjectDs[] {
-    return this.project.dataSources;
   }
 
   get blockOffset(): number {
@@ -312,6 +308,14 @@ export class ProjectService implements IProjectService {
       this.mmrService,
       this.sequelize,
       /* Not providing force clean service, it should never be needed */
+    );
+  }
+
+  async getAllDataSources(blockHeight: number): Promise<SubqlProjectDs[]> {
+    const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+
+    return [...this.project.dataSources, ...dynamicDs].filter(
+      (ds) => ds.startBlock <= blockHeight,
     );
   }
 }

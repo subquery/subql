@@ -20,7 +20,7 @@ export class HealthService {
   private currentProcessingTimestamp?: number;
   private blockTime: number;
   private healthTimeout: number;
-  private indexerHealthy: boolean;
+  private indexerHealthy?: boolean;
 
   constructor(protected nodeConfig: NodeConfig, private storeService: StoreService) {
     this.healthTimeout = Math.max(DEFAULT_TIMEOUT, this.nodeConfig.timeout * 1000);

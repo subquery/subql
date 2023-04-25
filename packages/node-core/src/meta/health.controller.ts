@@ -15,8 +15,8 @@ export class HealthController {
   getHealth(): void {
     try {
       this.healthService.getHealth();
-    } catch (e) {
-      logger.error(e.message);
+    } catch (e: any) {
+      logger.error(e);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,

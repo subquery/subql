@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
-// import {ApiWrapper} from '@subql/types-avalanche';
 import {NetworkMetadataPayload} from './events';
+import {ISubqueryProject} from './indexer';
 import {getLogger} from './logger';
 
 const logger = getLogger('api');
@@ -14,33 +14,33 @@ type FetchFunction<T> = (batch: number[]) => Promise<T[]>;
 type FetchFunctionProvider<T> = () => FetchFunction<T>;
 
 @Injectable()
-export abstract class ApiService {
-  networkMeta: NetworkMetadataPayload;
+export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, A = any, B = any> {
+  constructor(protected project: P) {}
 
-  constructor(protected project: any) {}
+  abstract init(): Promise<ApiService<P, A>>;
+  abstract get api(): A; /*ApiWrapper*/
+  abstract fetchBlocks(heights: number[]): Promise<B[]>;
+  abstract networkMeta: NetworkMetadataPayload;
 
-  abstract init(): Promise<ApiService>;
-  abstract get api(): any; /*ApiWrapper*/
-
-  async fetchBlocksGeneric<T>(
-    fetchFuncProvider: FetchFunctionProvider<T>,
+  async fetchBlocksGeneric<B>(
+    fetchFuncProvider: FetchFunctionProvider<B>,
     batch: number[],
     numAttempts = MAX_RECONNECT_ATTEMPTS
-  ): Promise<T[]> {
+  ): Promise<B[]> {
     {
       let reconnectAttempts = 0;
-      while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      while (reconnectAttempts < numAttempts) {
         try {
           // Get the latest fetch function from the provider
           const fetchFunc = fetchFuncProvider();
           return await fetchFunc(batch);
-        } catch (e) {
+        } catch (e: any) {
           logger.error(e, `Failed to fetch blocks ${batch[0]}...${batch[batch.length - 1]}`);
 
           reconnectAttempts++;
         }
       }
-      throw new Error(`Maximum number of retries (${MAX_RECONNECT_ATTEMPTS}) reached.`);
+      throw new Error(`Maximum number of retries (${numAttempts}) reached.`);
     }
   }
 }

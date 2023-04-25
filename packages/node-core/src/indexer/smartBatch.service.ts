@@ -9,14 +9,9 @@ import {BlockSizeBuffer} from '../utils/blockSizeBuffer';
 @Injectable()
 export class SmartBatchService {
   private blockSizeBuffer: BlockSizeBuffer;
-  private memoryLimit: number;
 
-  constructor(private maxBatchSize: number, private minHeapRequired?: number) {
+  constructor(private maxBatchSize: number, private minHeapRequired: number = formatMBtoBytes(128)) {
     this.blockSizeBuffer = new BlockSizeBuffer(maxBatchSize);
-    this.memoryLimit = process.memoryUsage().heapTotal;
-    if (!minHeapRequired) {
-      this.minHeapRequired = formatMBtoBytes(128);
-    }
   }
 
   get minimumHeapRequired(): number {
@@ -24,8 +19,10 @@ export class SmartBatchService {
   }
 
   addToSizeBuffer(blocks: any[]): void {
-    if (this.blockSizeBuffer.capacity && blocks.length > this.blockSizeBuffer.freeSpace) {
-      this.blockSizeBuffer.takeMany(blocks.length - this.blockSizeBuffer.freeSpace);
+    // Non-null assertion because we define a capacity
+    const freeSpace = this.blockSizeBuffer.freeSpace!;
+    if (this.blockSizeBuffer.capacity && blocks.length > freeSpace) {
+      this.blockSizeBuffer.takeMany(blocks.length - freeSpace);
     }
     blocks.forEach((block) => this.blockSizeBuffer.put(this.blockSize(block)));
   }
@@ -39,7 +36,9 @@ export class SmartBatchService {
 
     while (stack.length > 1) {
       // Check for sentinel value
-      const {obj, prop} = stack.pop();
+      const item = stack.pop();
+      if (!item) continue;
+      const {obj, prop} = item;
       const type = typeof obj;
 
       if (type === 'string') {

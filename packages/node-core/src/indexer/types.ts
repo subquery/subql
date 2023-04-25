@@ -4,6 +4,7 @@
 import {ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
 import {Entity} from '@subql/types';
 import {GraphQLSchema} from 'graphql';
+import {ProcessBlockResponse} from './blockDispatcher';
 
 export enum OperationType {
   Set = 'Set',
@@ -20,10 +21,15 @@ export interface IProjectNetworkConfig extends ProjectNetworkConfig {
   chainId: string;
 }
 
-export interface ISubqueryProject<N extends IProjectNetworkConfig, DS = unknown, T = unknown, C = unknown> {
+export interface ISubqueryProject<
+  N extends IProjectNetworkConfig = IProjectNetworkConfig,
+  DS = unknown,
+  T = unknown,
+  C = unknown
+> {
   id: string;
   root: string;
-  network: Partial<N>;
+  network: N;
   dataSources: DS[];
   schema: GraphQLSchema;
   templates: T[];
@@ -31,9 +37,14 @@ export interface ISubqueryProject<N extends IProjectNetworkConfig, DS = unknown,
   runner?: RunnerSpecs;
 }
 
-export interface IProjectService {
-  blockOffset: number;
+export interface IIndexerManager<B, DS> {
+  start(): Promise<void>;
+  indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
+}
 
+export interface IProjectService<DS> {
+  blockOffset: number;
   reindex(lastCorrectHeight: number): Promise<void>;
   setBlockOffset(offset: number): Promise<void>;
+  getAllDataSources(blockHeight: number): Promise<DS[]>;
 }

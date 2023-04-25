@@ -81,6 +81,11 @@ jobs:
         with:
           paths: packages/validator
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-testing
+        with:
+          paths: packages/testing
+
       - run: yarn
 
       - name: build
@@ -116,6 +121,14 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/common-substrate
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Testing
+        if: steps.changed-testing.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/testing
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

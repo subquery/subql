@@ -80,6 +80,11 @@ jobs:
         with:
           paths: packages/validator
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-testing
+        with:
+          paths: packages/testing
+
       - run: yarn
 
       - name: build
@@ -112,6 +117,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/common-substrate
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump testing & deploy
+        if: steps.changed-testing.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/testing
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node-core & deploy

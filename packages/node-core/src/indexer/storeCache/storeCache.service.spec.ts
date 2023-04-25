@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {Op, Sequelize} from 'sequelize';
+import {Sequelize} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from './storeCache.service';
 
@@ -151,7 +151,7 @@ describe('Store Cache Service historical', () => {
     );
     // getOneByField
     const appleEntity_b5 = await appleModel.getOneByField('field1' as any, 'set apple at block 5');
-    expect(appleEntity_b5.field1).toBe('set apple at block 5');
+    expect(appleEntity_b5?.field1).toBe('set apple at block 5');
     appleModel.set(
       'apple-05-smith',
       {
@@ -172,7 +172,7 @@ describe('Store Cache Service historical', () => {
       limit: 2,
       offset: 0,
     });
-    expect(appleEntity_b5_records.length).toBe(2);
+    expect(appleEntity_b5_records?.length).toBe(2);
 
     // TODO, getByField with offset and limit
     // const appleEntity_b5_records_2 = await appleModel.getByField('field1' as any, 'set apple at block 5', null, {

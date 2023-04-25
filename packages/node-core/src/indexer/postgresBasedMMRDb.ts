@@ -127,7 +127,7 @@ export class PgBasedMMRDB implements Db {
   async setLeafLength(leafLength: number): Promise<number> {
     const [record, created] = await this.LeafLength.findOrCreate({
       where: {id: 1},
-      defaults: {value: leafLength},
+      defaults: {id: 1, value: leafLength},
     });
 
     if (!created) {

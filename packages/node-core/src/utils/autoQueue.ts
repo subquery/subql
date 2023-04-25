@@ -5,7 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 
 export interface IQueue {
   size: number;
-  capacity: number;
+  capacity: number | undefined;
   freeSpace: number | undefined;
 
   flush(): void;
@@ -23,7 +23,7 @@ export class Queue<T> implements IQueue {
     return this.items.length;
   }
 
-  get capacity(): number {
+  get capacity(): number | undefined {
     return this._capacity;
   }
 
@@ -38,7 +38,7 @@ export class Queue<T> implements IQueue {
   }
 
   putMany(items: T[]): void {
-    if (this.capacity && items.length > this.freeSpace) {
+    if (this.freeSpace && items.length > this.freeSpace) {
       throw new Error('Queue exceeds max size');
     }
     this.items.push(...items);
@@ -97,7 +97,7 @@ export class AutoQueue<T> implements IQueue {
     return this.queue.size + this.processingTasks;
   }
 
-  get capacity(): number {
+  get capacity(): number | undefined {
     return this.queue.capacity;
   }
 
@@ -114,7 +114,7 @@ export class AutoQueue<T> implements IQueue {
   }
 
   putMany(tasks: Array<Task<T>>): Promise<T>[] {
-    if (this.capacity && tasks.length > this.freeSpace) {
+    if (this.freeSpace && tasks.length > this.freeSpace) {
       throw new Error('Queue exceeds max size');
     }
 
