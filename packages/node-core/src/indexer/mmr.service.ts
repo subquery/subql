@@ -57,7 +57,7 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private get blockOffset(): number {
-    if (!this._blockOffset) {
+    if (this._blockOffset === undefined) {
       throw new Error('MMR Service sync has not been called');
     }
     return this._blockOffset;
