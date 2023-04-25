@@ -90,7 +90,7 @@ export class WorkerBlockDispatcherService
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService,
+    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,

@@ -7,6 +7,7 @@ import { ProjectNetworkV1_0_0 } from '@subql/common-ethereum';
 import {
   ApiService,
   ConnectionPoolService,
+  NetworkMetadataPayload,
   getLogger,
   IndexerEvent,
 } from '@subql/node-core';
@@ -28,6 +29,8 @@ export class EthereumApiService extends ApiService {
   ) {
     super(project);
   }
+
+  networkMeta: NetworkMetadataPayload;
 
   async init(): Promise<EthereumApiService> {
     try {

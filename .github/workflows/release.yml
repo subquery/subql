@@ -131,7 +131,7 @@ jobs:
         with:
           path: packages/node/package.json
           rename: '@subql/node-flare'
-        
+
       #update imports
 
       - name: Update imports to flare

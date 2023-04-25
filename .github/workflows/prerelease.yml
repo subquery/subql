@@ -5,7 +5,7 @@ on:
       - main
     paths-ignore:
       - '.github/workflows/**'
-    
+
 jobs:
   pre-ci:
     runs-on: ubuntu-latest

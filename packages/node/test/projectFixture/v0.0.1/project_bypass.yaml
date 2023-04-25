@@ -1,0 +1,36 @@
+specVersion: 1.0.0
+name: polkadot-starter
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: >-
+  This project can be used as a starting point for developing your SubQuery
+  project
+repository: 'https://github.com/subquery/subql-starter'
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+  dictionary: 'https://api.subquery.network/sq/subquery/polkadot-dictionary'
+  bypassBlocks: [1, 2, 4, 5]
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 1
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: balances
+            method: Deposit
+        - handler: handleCall
+          kind: substrate/CallHandler

@@ -19,9 +19,12 @@
   "author": "Ian He & Jay Ji",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@polkadot/api": "^5.7.1",
-    "@subql/types-ethereum": "latest",
+    "@polkadot/api": "^10",
+    "@subql/types": "latest",
     "typescript": "^4.9.5",
     "@subql/cli": "latest"
+  },
+  "resolutions": {
+    "ipfs-unixfs": "6.0.6"
   }
 }

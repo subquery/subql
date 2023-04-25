@@ -45,7 +45,7 @@ export class SandboxService {
           // api: await this.apiService.getPatchedApi(),
           store,
           root: this.project.root,
-          script: ds.mapping.entryScript,
+          // script: ds.mapping.entryScript,
           entry,
         },
         this.nodeConfig,

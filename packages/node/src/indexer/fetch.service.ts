@@ -280,12 +280,6 @@ export class FetchService implements OnApplicationShutdown {
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
-    if (dictionaryValid) {
-      this.dictionaryService.setDictionaryStartHeight(
-        metadata?._metadata?.startHeight,
-      );
-    }
-
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
     void this.startLoop(startHeight);
   }
@@ -417,7 +411,10 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
-    if (this.dictionaryService.startHeight > getStartBlockHeight()) {
+    if (
+      this.useDictionary &&
+      this.dictionaryService.startHeight > getStartBlockHeight()
+    ) {
       logger.warn(
         `Dictionary start height ${
           this.dictionaryService.startHeight

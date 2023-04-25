@@ -21,6 +21,7 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   ApiService,
+  IIndexerManager,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
@@ -45,14 +46,16 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager {
+export class IndexerManager
+  implements IIndexerManager<EthereumBlockWrapper, SubqlProjectDs>
+{
   constructor(
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
+    private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
-    private dsProcessorService: DsProcessorService,
     @Inject('IProjectService') private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
@@ -61,24 +64,21 @@ export class IndexerManager {
   @profiler(yargsOptions.argv.profiler)
   async indexBlock(
     blockContent: EthereumBlockWrapper,
+    dataSources: SubqlProjectDs[],
   ): Promise<ProcessBlockResponse> {
     const { block, blockHeight } = blockContent;
     let dynamicDsCreated = false;
     let reindexBlockHeight = null;
 
-    const datasources = await this.projectService.getAllDataSources(
-      blockHeight,
-    );
-
     // Check that we have valid datasources
-    this.assertDataSources(datasources, blockHeight);
+    this.assertDataSources(dataSources, blockHeight);
     reindexBlockHeight = await this.processUnfinalizedBlocks(block);
 
     // Only index block if we're not going to reindex
     if (!reindexBlockHeight) {
       await this.indexBlockData(
         blockContent,
-        datasources,
+        dataSources,
         // eslint-disable-next-line @typescript-eslint/require-await
         async (ds: SubqlProjectDs) => {
           const vm = this.sandboxService.getDsProcessorWrapper(
@@ -98,7 +98,7 @@ export class IndexerManager {
                 },
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              datasources.push(newDs);
+              dataSources.push(newDs);
               dynamicDsCreated = true;
             },
             'createDynamicDatasource',

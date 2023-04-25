@@ -2,9 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { threadId } from 'node:worker_threads';
-import { Injectable } from '@nestjs/common';
-import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  NodeConfig,
+  getLogger,
+  AutoQueue,
+  memoryLock,
+  IProjectService,
+} from '@subql/node-core';
 import { BlockWrapper, EthereumBlockWrapper } from '@subql/types-ethereum';
+import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { EthereumApiService } from '../../ethereum';
 import { IndexerManager } from '../indexer.manager';
 
@@ -35,6 +42,8 @@ export class WorkerService {
   constructor(
     private apiService: EthereumApiService,
     private indexerManager: IndexerManager,
+    @Inject('IProjectService')
+    private projectService: IProjectService<SubqlProjectDs>,
     nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
@@ -57,7 +66,6 @@ export class WorkerService {
         }
 
         // const block = this.fetchedBlocks[height];
-
         // Return info to get the runtime version, this lets the worker thread know
         return undefined;
       });
@@ -78,7 +86,10 @@ export class WorkerService {
 
       delete this.fetchedBlocks[height];
 
-      return await this.indexerManager.indexBlock(block);
+      return await this.indexerManager.indexBlock(
+        block,
+        await this.projectService.getAllDataSources(height),
+      );
     } catch (e) {
       logger.error(e, `Failed to index block ${height}: ${e.stack}`);
       throw e;

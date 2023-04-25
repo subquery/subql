@@ -36,7 +36,7 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('Project');
 
 @Injectable()
-export class ProjectService implements IProjectService {
+export class ProjectService implements IProjectService<SubqlProjectDs> {
   private _schema: string;
   private _startHeight: number;
   private _blockOffset: number;

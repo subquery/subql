@@ -32,7 +32,6 @@ import {
   HostDynamicDS,
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {

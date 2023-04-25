@@ -2924,7 +2924,7 @@ __metadata:
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
     "@polkadot/util": ^8
-    "@subql/common": 1.8.1
+    "@subql/common": ^2.0.0
     "@subql/types-ethereum": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
@@ -2943,9 +2943,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:1.8.1, @subql/common@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "@subql/common@npm:1.8.1"
+"@subql/common@npm:2.0.0, @subql/common@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@subql/common@npm:2.0.0"
   dependencies:
     axios: ^0.27.2
     class-transformer: 0.5.1
@@ -2955,24 +2955,25 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: a1d53d4e82ded4314b8a08bb42576cec9d5d234edb8a9e7aae1760f5b493d8e96f0bb5be5e687b41f6436b2e2bfeb03283f05fc41726d302825c9b759121088b
+  checksum: fbc3873dbb49b5e6936ab247e244ae0814e05651e33feded20104afe18aeba430a532060202ebb02c6210eafb3d20fb946e779c2b6d2265ba46ba28686aa659b
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:1.11.3-storeCache-0.0.1":
-  version: 1.11.3-storeCache-0.0.1
-  resolution: "@subql/node-core@npm:1.11.3-storeCache-0.0.1"
+"@subql/node-core@npm:dev":
+  version: 2.0.1-0
+  resolution: "@subql/node-core@npm:2.0.1-0"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@polkadot/api": 10.1.4
     "@subql/apollo-links": ^0.3.3-1
-    "@subql/common": 1.8.1
-    "@subql/types": 1.7.2-storeCache-0.0.1
-    "@subql/utils": 1.5.0
+    "@subql/common": 2.0.0
+    "@subql/testing": 2.0.0
+    "@subql/types": 2.0.0
+    "@subql/utils": 2.0.0
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
-    "@willsoto/nestjs-prometheus": ^4.4.0
+    "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
     lodash: ^4.17.21
@@ -2982,7 +2983,7 @@ __metadata:
     source-map: ^0.7.4
     vm2: ^3.9.9
     yargs: ^16.2.0
-  checksum: 6a95c04e465279f94f4668c72641b20bf4d13635f534cfa0600adb96e25d25fd86fff11c5910739da10610548afee0e24db22020b5fc79193bc334bccfb885a8
+  checksum: 5dc5591edc0140a2b5d16c6d892d376f106cab5307dc51c23ea9e24c0def8890b24982d184a9f5ddd565788399578a6f96691b2584b75134bd669316db2b187f
   languageName: node
   linkType: hard
 
@@ -2998,11 +2999,12 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": ^1.8.1
+    "@subql/common": ^2.0.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": 1.11.3-storeCache-0.0.1
+    "@subql/node-core": dev
+    "@subql/testing": ^2.0.0
     "@subql/types-ethereum": "workspace:*"
-    "@subql/utils": ^1.4.1
+    "@subql/utils": ^2.0.0
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -3033,7 +3035,6 @@ __metadata:
     sequelize: 6.28.0
     supertest: ^6.2.2
     tar: ^6.1.11
-    typescript: ^4.4.4
     web3-providers-http: ^1.8.0
     web3-providers-ws: ^1.8.0
     yargs: ^16.2.0
@@ -3041,6 +3042,15 @@ __metadata:
     subql-node-ethereum: ./bin/run
   languageName: unknown
   linkType: soft
+
+"@subql/testing@npm:2.0.0, @subql/testing@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@subql/testing@npm:2.0.0"
+  dependencies:
+    "@subql/types": ^2.0.0
+  checksum: 59f44c010aad9fb9f2caeefbce5242456a475a3cef61522c0e2ae77eea08aaa34aec90b465fbf12b2c83770480301c32ff2b37710cd02cefc39b79dcd5e81b91
+  languageName: node
+  linkType: hard
 
 "@subql/types-ethereum@workspace:*, @subql/types-ethereum@workspace:packages/types":
   version: 0.0.0-use.local
@@ -3054,18 +3064,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types@npm:1.7.2-storeCache-0.0.1":
-  version: 1.7.2-storeCache-0.0.1
-  resolution: "@subql/types@npm:1.7.2-storeCache-0.0.1"
+"@subql/types@npm:2.0.0, @subql/types@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@subql/types@npm:2.0.0"
   peerDependencies:
     "@polkadot/api": ^10
-  checksum: f7db7d07db0ce9f5d3c3111eb94b16d6d3ecd387fa5fb0d0ccbcb40ba7fc69da7a8ad177c0e48dcc348075fd5bb84b5065b03d76260f144c3d2b88fd77edd706
+  checksum: 0af15205e488a175fe7e6f2dcfda8f1e162042f6c4b3ccb970a03be94cca0824d61c3cfee2a36d48d3d3b70b49caf3c1ee3c63314142ba2cf01b9a2b6e8778af
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@subql/utils@npm:1.5.0"
+"@subql/utils@npm:2.0.0, @subql/utils@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@subql/utils@npm:2.0.0"
   dependencies:
     "@polkadot/util": ^11.1.1
     "@polkadot/util-crypto": ^11.1.1
@@ -3081,29 +3091,7 @@ __metadata:
     semver: ^7.3.7
     sequelize: 6.28.0
     tar: ^6.1.11
-  checksum: a94e47b971540af3d7f41a017aabc9ae199175ffe854e8377d54921daaeeb428be5372a2bf56b62aebcd1a64ad3a3adc5ae9822c73862159b67b1a265384dc28
-  languageName: node
-  linkType: hard
-
-"@subql/utils@npm:^1.4.1":
-  version: 1.4.2
-  resolution: "@subql/utils@npm:1.4.2"
-  dependencies:
-    "@polkadot/util": ^11.1.1
-    "@polkadot/util-crypto": ^11.1.1
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    chalk: ^4.1.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    pino: ^6.13.3
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.7
-    sequelize: 6.28.0
-    tar: ^6.1.11
-  checksum: a38afab4555ee676a1e8decdbecffba3ab87ecb8e7b260788ed7fcd07a30ede179b192dcc4903a330a0abdb7586ea6224c64bfea022512013d0c0a75fe1a6778
+  checksum: 061c42cdc3e5a39ccdef38d5af47b948c5257d5f032f6ade29ac3197472ae6ba4c367400447ed40a9c1e46e30951daab13bcbb3cb657e71a1a9b78ff9e0584b5
   languageName: node
   linkType: hard
 
@@ -3745,6 +3733,16 @@ __metadata:
     "@nestjs/common": ^7.0.0 || ^8.0.0
     prom-client: ^13.0.0 || ^14.0.0
   checksum: 256fbd7d2db4e2a77b32e7739a6f6b2af7a7514273ad7d47d1ba42bb1bad63e95d2d591d126454395026431120ae3187d1b6a054d8342570d06da5da33758a4d
+  languageName: node
+  linkType: hard
+
+"@willsoto/nestjs-prometheus@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "@willsoto/nestjs-prometheus@npm:5.1.1"
+  peerDependencies:
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0
+    prom-client: ^13.0.0 || ^14.0.0
+  checksum: fa60f20442605c4243bc21b829be80a53ac2a0d1b7c5ab5c816048970ae57486cbba38c9d9707c989608501b27aa9a50acb5046dca76d19900a5719e068f57ae
   languageName: node
   linkType: hard
 
@@ -11634,7 +11632,7 @@ __metadata:
     ts-loader: ^9.2.6
     ts-node: ^10.4.0
     tsconfig-paths: ^3.12.0
-    typescript: ^4.4.4
+    typescript: ^4.9.5
     web3-providers-http: ^1.7.5
     web3-providers-ws: ^1.7.5
   languageName: unknown
@@ -12144,23 +12142,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.4":
-  version: 4.6.4
-  resolution: "typescript@npm:4.6.4"
+"typescript@npm:^4.9.5":
+  version: 4.9.5
+  resolution: "typescript@npm:4.9.5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: e7bfcc39cd4571a63a54e5ea21f16b8445268b9900bf55aee0e02ad981be576acc140eba24f1af5e3c1457767c96cea6d12861768fb386cf3ffb34013718631a
+  checksum: ee000bc26848147ad423b581bd250075662a354d84f0e06eb76d3b892328d8d4440b7487b5a83e851b12b255f55d71835b008a66cbf8f255a11e4400159237db
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.4#~builtin<compat/typescript>":
-  version: 4.6.4
-  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=493e53"
+"typescript@patch:typescript@^4.9.5#~builtin<compat/typescript>":
+  version: 4.9.5
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=493e53"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 8cff08bf66d9ecfbf9fcc5edde04a5a7923e6cac3b21d99b4e9a06973bf5bd7f9a83ec7eed24129c1b9e13fd861de8c1070110d4b9ce9f18ab57c6999e9c9a6f
+  checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
   languageName: node
   linkType: hard
 

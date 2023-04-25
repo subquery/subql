@@ -12,7 +12,6 @@ import {
   PoiService,
   BlockDispatcher,
   ProcessBlockResponse,
-  ApiService,
 } from '@subql/node-core';
 import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import {
@@ -36,7 +35,7 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService,
+    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -65,6 +64,9 @@ export class BlockDispatcherService
   protected async indexBlock(
     block: EthereumBlockWrapper,
   ): Promise<ProcessBlockResponse> {
-    return this.indexerManager.indexBlock(block);
+    return this.indexerManager.indexBlock(
+      block,
+      await this.projectService.getAllDataSources(this.getBlockHeight(block)),
+    );
   }
 }
