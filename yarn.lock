@@ -4175,7 +4175,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
-    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
+    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
     "@types/async-lock": ^1
     "@willsoto/nestjs-prometheus": ^4.4.0
     async-lock: ^1.4.0
@@ -4450,7 +4450,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2, @subql/x-merkle-mountain-range@npm:^2.0.0-0.1.2":
+"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2":
   version: 2.0.0-0.1.2
   resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2"
   dependencies:
@@ -4462,6 +4462,21 @@ __metadata:
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
   checksum: 732eaa8441be71806dd197be6c5811f43bb14a3bc615c7d1be44a638b43ea53a5229d10edff12cf0ceec4ee9ca05938ce3a973dcdf31ce57e12cc30258342429
+  languageName: node
+  linkType: hard
+
+"@subql/x-merkle-mountain-range@npm:^2.0.0-0.1.3":
+  version: 2.0.0-0.1.3
+  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.3"
+  dependencies:
+    bignumber.js: ^8.1.1
+    buffer: ^5.4.3
+    js-sha3: ^0.8.0
+    level: ^6.0.0
+    rlp: ^2.2.3
+    semaphore-async-await: ^1.5.1
+    sha.js: ^2.4.11
+  checksum: fcd17a07b77c79730fe2847f4b2fefa376beae59b942b6eb71ffefa683f4e1988e00a2ed974e422560ccb914f72e98067c6b8c6923128371b6e2611dde866265
   languageName: node
   linkType: hard
 

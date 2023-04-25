@@ -146,7 +146,7 @@ function createIndexerManager(
   const storeCache = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
   const storeService = new StoreService(sequilize, nodeConfig, storeCache);
   const poiService = new PoiService(storeCache);
-  const mmrService = new MmrService(nodeConfig, storeCache);
+  const mmrService = new MmrService(nodeConfig, storeCache, sequilize);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
