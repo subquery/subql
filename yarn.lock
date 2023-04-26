@@ -2923,7 +2923,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@polkadot/util": ^8
     "@subql/common": ^2.0.0
     "@subql/types-ethereum": "workspace:*"
     "@types/bn.js": 4.11.6
