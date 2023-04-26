@@ -287,11 +287,7 @@ export abstract class BaseFetchService<
             } else {
               const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
-              const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-              await this.blockDispatcher.enqueueBlocks(
-                cleanedBatchBlocks,
-                this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks)
-              );
+              await this.enqueuBlocks(enqueuingBlocks);
             }
             continue; // skip nextBlockRange() way
           }
@@ -309,13 +305,18 @@ export abstract class BaseFetchService<
           ? this.getEnqueuedModuloBlocks(startBlockHeight)
           : range(startBlockHeight, endHeight + 1);
 
-      const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-      await this.blockDispatcher.enqueueBlocks(
-        cleanedBatchBlocks,
-        this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks)
-      );
+      await this.enqueuBlocks(enqueuingBlocks);
     }
   }
+
+  private async enqueuBlocks(enqueuingBlocks: number[]): Promise<void> {
+    const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+    await this.blockDispatcher.enqueueBlocks(
+      cleanedBatchBlocks,
+      this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks)
+    );
+  }
+
   private getLatestBufferHeight(cleanedBatchBlocks: number[], rawBatchBlocks: number[]): number {
     return Math.max(...cleanedBatchBlocks, ...rawBatchBlocks);
   }
@@ -368,7 +369,8 @@ export abstract class BaseFetchService<
         const {_metadata: metaData} = dictionary;
 
         const chainId = await this.getChainId();
-        if (metaData.chain !== chainId) {
+        // Some dictionaries rely on chain others rely on genesisHash
+        if (metaData.chain !== chainId && metaData.genesisHash !== chainId) {
           logger.error(
             'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
           );

@@ -612,7 +612,7 @@ describe('FetchService', () => {
 
     expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
-    expect(dictionaryValidationSpy).toReturnWith(false);
+    expect(dictionaryValidationSpy).toReturnWith(Promise.resolve(false));
     expect((fetchService as any).runtimeService.specVersionMap.length).toBe(0);
   }, 500000);
 
@@ -777,11 +777,11 @@ describe('FetchService', () => {
     await fetchService.init(1);
     fetchService.onApplicationShutdown();
 
-    (fetchService as any).latestFinalizedHeight = 10437859;
+    (fetchService as any)._latestFinalizedHeight = 10437859;
     //mock specVersion map
-    (runtimeService as any).specVersionMap = [
-      { id: '9180', start: 9738718, end: 10156856 },
-    ];
+    // (runtimeService as any).specVersionMap = [
+    //   { id: '9180', start: 9738718, end: 10156856 },
+    // ];
     await runtimeService.getSpecVersion(10337859);
     const specVersionMap = (runtimeService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map

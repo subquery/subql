@@ -513,12 +513,12 @@ describe('FetchService', () => {
       project,
       batchSize,
     );
-    (fetchService as any).latestFinalizedHeight = 1000;
+    (fetchService as any)._latestFinalizedHeight = 1000;
     (fetchService as any).unfinalizedBlocksService.registerFinalizedBlock({
       number: { toNumber: () => 1000 },
       hash: { toHex: () => '0xabcd' },
     });
-    (fetchService as any).latestBestHeight = 1020;
+    (fetchService as any)._latestBestHeight = 1020;
     (fetchService as any).unfinalizedBlocksService.registerUnfinalizedBlock(
       1020,
       '0x1234',
@@ -656,7 +656,7 @@ describe('FetchService', () => {
     );
     await fetchService.init(1000);
 
-    (fetchService as any).latestFinalizedHeight = 1005;
+    (fetchService as any)._latestFinalizedHeight = 1005;
     blockDispatcher.latestBufferedHeight = undefined;
     // (fetchService as any).latestProcessedHeight = undefined;
     // const loopPromise = fetchService.startLoop(1000);
@@ -752,7 +752,7 @@ describe('FetchService', () => {
       `nextEndBlockHeight`,
     );
 
-    (fetchService as any).latestFinalizedHeight = 16000;
+    (fetchService as any)._latestFinalizedHeight = 16000;
     const runtimeService = (fetchService as any).runtimeService;
     runtimeService.prefetchMeta = jest.fn();
     blockDispatcher.latestBufferedHeight = undefined;
@@ -846,7 +846,7 @@ describe('FetchService', () => {
       `nextEndBlockHeight`,
     );
     await fetchService.init(1000);
-    (fetchService as any).latestFinalizedHeight = 16000;
+    (fetchService as any)._latestFinalizedHeight = 16000;
     blockDispatcher.latestBufferedHeight = undefined;
     // (fetchService as any).latestProcessedHeight = undefined;
     // const loopPromise = fetchService.startLoop(1000);
@@ -987,10 +987,9 @@ describe('FetchService', () => {
       schedulerRegistry,
       new RuntimeService(apiService, dictionaryService),
     );
-    await fetchService.init(1);
     const filteredBatch = jest.spyOn(fetchService as any, `filteredBlockBatch`);
-    (fetchService as any).latestFinalizedHeight = 80;
-    blockDispatcher.latestBufferedHeight = undefined;
+    await fetchService.init(1);
+    (fetchService as any)._latestFinalizedHeight = 80;
     await new Promise((resolve) => {
       eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
         if (nextBufferSize.value >= 8) {
