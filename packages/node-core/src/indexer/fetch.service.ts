@@ -196,7 +196,7 @@ export abstract class BaseFetchService<
         }
       }
     } catch (e: any) {
-      logger.error(e, `Having a problem when get best block`);
+      logger.error(e, `Having a problem when getting best block`);
     }
   }
 
