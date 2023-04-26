@@ -325,12 +325,14 @@ export class DictionaryService implements OnApplicationShutdown {
   }
 
   getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
+    let dictionaryQueryEntries: DictionaryQueryEntry[] = [];
     for (const [key, value] of this.mappedDictionaryQueryEntries) {
       if (queryEndBlock >= key) {
-        return value;
+        dictionaryQueryEntries = value;
+        // Do not return from here, we want loop util we find the LAST mappedDictionaryQueryEntry with startBlock that close to queryEndBlock
       }
     }
-    return [];
+    return dictionaryQueryEntries;
   }
 
   async scopedDictionaryEntries(

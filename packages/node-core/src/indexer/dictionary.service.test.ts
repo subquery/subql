@@ -176,7 +176,6 @@ describe('DictionaryService', () => {
     const endBlock = 340000;
     const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, [
       {
-        //last event at block 333524
         entity: 'events',
         conditions: [
           {field: 'module', value: 'session'},
@@ -213,7 +212,8 @@ describe('DictionaryService', () => {
         ],
       },
     ]);
-    expect(dic?.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
+    // with dictionary distinct, this should give last block at 339186
+    expect(dic?.batchBlocks[dic.batchBlocks.length - 1]).toBe(339186);
   }, 500000);
 
   it('able to build queryEntryMap', async () => {
@@ -273,8 +273,6 @@ describe('DictionaryService', () => {
 
     const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
     dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
-    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual(
-      unorderedDs.map((ds) => ds.startBlock)
-    );
+    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual([100, 500, 1000]);
   });
 });
