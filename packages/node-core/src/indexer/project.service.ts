@@ -42,14 +42,14 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
   constructor(
     private readonly dsProcessorService: IDSProcessorService,
     protected readonly apiService: ApiService,
-    protected readonly poiService: PoiService,
+    private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
     protected readonly sequelize: Sequelize,
     protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected readonly storeService: StoreService,
     protected readonly nodeConfig: NodeConfig,
     protected readonly dynamicDsService: DynamicDsService<DS>,
-    protected eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2
   ) {}
 
   protected get schema(): string {
