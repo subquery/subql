@@ -772,8 +772,8 @@ describe('FetchService', () => {
     runtimeService = app.get(RuntimeService);
     (runtimeService as any).useDictionary = true;
 
-    // runtimeService = (fetchService as any).runtimeService;
-    fetchService.updateDictionary();
+    // Update dictionary is now private
+    (fetchService as any).updateDictionary();
     await fetchService.init(1);
     fetchService.onApplicationShutdown();
 
@@ -785,9 +785,8 @@ describe('FetchService', () => {
     await runtimeService.getSpecVersion(10337859);
     const specVersionMap = (runtimeService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
-    const latestSpecVersion = await fetchService
-      .api()
-      .rpc.state.getRuntimeVersion();
+    const latestSpecVersion =
+      await fetchService.api.rpc.state.getRuntimeVersion();
     // This should be match if dictionary is fully synced
     expect(Number(specVersionMap[specVersionMap.length - 1].id)).toBe(
       latestSpecVersion.specVersion.toNumber(),
