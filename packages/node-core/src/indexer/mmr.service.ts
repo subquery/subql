@@ -13,7 +13,7 @@ import {MmrPayload, MmrProof} from '../events';
 import {getLogger} from '../logger';
 import {delay, getExistingProjectSchema} from '../utils';
 import {ProofOfIndex} from './entities';
-import {PgBasedMMRDB} from './postgresBasedMMRDb';
+import {PgBasedMMRDB} from './postgresMmrDb';
 import {StoreCacheService} from './storeCache';
 import {CachePoiModel} from './storeCache/cachePoi';
 
@@ -78,10 +78,10 @@ export class MmrService implements OnApplicationShutdown {
         : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this._blockOffset = blockOffset;
     // The mmr database current leaf length
-    const MmrLeafLength = await this.mmrDb.getLeafLength();
+    const mmrLeafLength = await this.mmrDb.getLeafLength();
     // However, when initialization we pick the previous block for file db and poi mmr validation
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
-    this._nextMmrBlockHeight = MmrLeafLength + blockOffset + 1;
+    this._nextMmrBlockHeight = mmrLeafLength + blockOffset + 1;
     // The latest poi record in database with mmr value
     const latestPoiWithMmr = await this.poi.getLatestPoiWithMmr();
     if (latestPoiWithMmr) {

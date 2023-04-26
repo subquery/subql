@@ -66,7 +66,14 @@ export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'mmr-migrate',
     describe: 'Migrate MMR data from storage file to postgres DB',
-    builder: {},
+    builder: (yargs) =>
+      yargs.options('direction', {
+        type: 'string',
+        description: 'set direction of migration (file -> DB or DB -> file)',
+        demandOption: false,
+        choices: ['dbToFile', 'fileToDb'],
+        default: 'dbToFile',
+      }),
     handler: (argv) => {
       initLogger(
         argv.debug as boolean,
@@ -77,7 +84,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       // lazy import to make sure logger is instantiated before all other services
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
-      return mmrMigrateInit();
+      return mmrMigrateInit(argv.direction);
     },
   })
   .options({

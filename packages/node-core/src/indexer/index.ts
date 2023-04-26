@@ -16,6 +16,7 @@ export * from './dictionary.service';
 export * from './sandbox';
 export * from './smartBatch.service';
 export * from './blockDispatcher';
-export * from './postgresBasedMMRDb';
+export * from './postgresMmrDb';
 export * from './dynamic-ds.service';
 export * from './testing.service';
+export * from './mmrMigrate.service';

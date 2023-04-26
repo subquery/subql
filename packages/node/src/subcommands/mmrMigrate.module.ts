@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { DbModule, NodeConfig, StoreService } from '@subql/node-core';
+import { DbModule, NodeConfig, MMRMigrateService } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { ConfigureModule } from '../configure/configure.module';
-import { MMRMigrateService } from './mmrMigrate.service';
 
 @Module({
   providers: [

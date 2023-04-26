@@ -2,19 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NestFactory } from '@nestjs/core';
-import { getLogger } from '@subql/node-core';
+import {
+  getLogger,
+  MigrationDirection,
+  MMRMigrateService,
+} from '@subql/node-core';
 import { MMRMigrateModule } from './mmrMigrate.module';
-import { MMRMigrateService } from './mmrMigrate.service';
 
 const logger = getLogger('mmr-migrate');
 
-export async function mmrMigrateInit(): Promise<void> {
+export async function mmrMigrateInit(
+  direction: MigrationDirection,
+): Promise<void> {
   try {
     const app = await NestFactory.create(MMRMigrateModule);
     await app.init();
 
     const mmrMigrateService = app.get(MMRMigrateService);
-    await mmrMigrateService.migrate();
+    await mmrMigrateService.migrate(direction);
   } catch (e) {
     logger.error(e, 'mmr-migrate failed to execute');
     process.exit(1);
