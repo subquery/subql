@@ -12,10 +12,10 @@ import {
   StoreService,
   IndexerSandbox,
   hostStoreToStore,
+  getProjectEntry,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getProjectEntry } from '../utils/project';
 import { ApiService } from './api.service';
 import { ApiAt } from './types';
 

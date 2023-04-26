@@ -43,8 +43,12 @@ export interface IIndexerManager<B, DS> {
 }
 
 export interface IProjectService<DS> {
-  blockOffset: number;
+  blockOffset: number | undefined;
   reindex(lastCorrectHeight: number): Promise<void>;
   setBlockOffset(offset: number): Promise<void>;
   getAllDataSources(blockHeight: number): Promise<DS[]>;
+}
+
+export interface IDSProcessorService {
+  validateProjectCustomDatasources(): Promise<void>;
 }

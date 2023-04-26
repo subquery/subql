@@ -12,7 +12,12 @@ import {
   SubstrateDatasourceProcessor,
   SubstrateNetworkFilter,
 } from '@subql/common-substrate';
-import { getLogger, NodeConfig, Sandbox } from '@subql/node-core';
+import {
+  getLogger,
+  IDSProcessorService,
+  NodeConfig,
+  Sandbox,
+} from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
@@ -113,7 +118,7 @@ export class DsPluginSandbox extends Sandbox {
 }
 
 @Injectable()
-export class DsProcessorService {
+export class DsProcessorService implements IDSProcessorService {
   private processorCache: {
     [entry: string]: SubstrateDatasourceProcessor<
       string,

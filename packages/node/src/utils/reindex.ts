@@ -1,9 +1,14 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getLogger, MmrService, StoreService } from '@subql/node-core';
+import {
+  DynamicDsService,
+  getLogger,
+  MmrService,
+  StoreService,
+} from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { ForceCleanService } from '../subcommands/forceClean.service';
 
@@ -16,7 +21,7 @@ export async function reindex(
   lastProcessedHeight: number,
   storeService: StoreService,
   unfinalizedBlockService: UnfinalizedBlocksService,
-  dynamicDsService: DynamicDsService,
+  dynamicDsService: DynamicDsService<SubqlProjectDs>,
   mmrService: MmrService,
   sequelize: Sequelize,
   forceCleanService?: ForceCleanService,

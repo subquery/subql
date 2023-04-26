@@ -18,3 +18,4 @@ export * from './smartBatch.service';
 export * from './dynamic-ds.service';
 export * from './blockDispatcher';
 export * from './testing.service';
+export * from './project.service';

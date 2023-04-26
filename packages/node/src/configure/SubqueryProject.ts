@@ -23,14 +23,11 @@ import {
   isRuntimeDs,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
+import { getProjectRoot } from '@subql/node-core';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
-import {
-  getChainTypes,
-  getProjectRoot,
-  updateDataSourcesV0_2_0,
-} from '../utils/project';
+import { getChainTypes, updateDataSourcesV0_2_0 } from '../utils/project';
 import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 
 export type SubqlProjectDs = SubstrateDataSource & {
