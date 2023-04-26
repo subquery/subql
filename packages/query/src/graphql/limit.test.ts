@@ -7,8 +7,6 @@ import {Pool} from 'pg';
 import {Config} from '../configure';
 import {plugins} from './plugins';
 
-jest.mock('../yargs', () => jest.createMockFromModule('../yargs'));
-
 jest.mock('../yargs', () => {
   return {
     argv: jest.fn((x) => {
