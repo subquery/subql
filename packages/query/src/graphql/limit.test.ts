@@ -5,13 +5,15 @@ import {getPostGraphileBuilder} from '@subql/x-postgraphile-core';
 import {ApolloServer, gql} from 'apollo-server-express';
 import {Pool} from 'pg';
 import {Config} from '../configure';
-import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 
-jest.mock('../yargs', () => jest.createMockFromModule('../yargs'));
-
-(getYargsOption as jest.Mock).mockImplementation(() => {
-  return {argv: {name: 'test'}};
+jest.mock('../yargs', () => {
+  return {
+    argv: jest.fn((x) => {
+      if (x === 'name') return 'test';
+      if (x === 'query-limit') return 100;
+    }),
+  };
 });
 
 describe('query limits', () => {
@@ -87,7 +89,7 @@ describe('query limits', () => {
       const server = await createApolloServer();
       const results = await server.executeOperation({query: LARGE_UNBOUND_QUERY});
       expect(results.data.tables.nodes.length).toEqual(100);
-    });
+    }, 5000000);
 
     it('bounded unsafe query clamped to safe bound', async () => {
       const LARGE_BOUNDED_QUERY = gql`

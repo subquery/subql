@@ -96,6 +96,7 @@ function getMockMetadata(): any {
     upsert: ({ key, value }) => (data[key] = value),
     findOne: ({ where: { key } }) => ({ value: data[key] }),
     findByPk: (key: string) => data[key],
+    find: (key: string) => data[key],
   } as any;
 }
 
@@ -415,26 +416,27 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
-    const metadata = getMockMetadata();
+    const storeCache = new StoreCacheService(
+      null,
+      { storeCacheThreshold: 300 } as any,
+      null,
+    );
 
-    metadata.upsert({
-      key: METADATA_UNFINALIZED_BLOCKS_KEY,
-      value: JSON.stringify([
+    storeCache.setRepos({} as any, undefined);
+
+    storeCache.metadata.set(
+      METADATA_UNFINALIZED_BLOCKS_KEY,
+      JSON.stringify([
         [90, '0xabcd'],
         [91, '0xabc91'],
         [92, '0xabc92'],
       ]),
-    });
-
-    metadata.upsert({
-      key: METADATA_LAST_FINALIZED_PROCESSED_KEY,
-      value: 90,
-    });
-
+    );
+    storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 90);
     const unfinalizedBlocksService2 = new UnfinalizedBlocksService(
       apiService,
       { unfinalizedBlocks: false } as any,
-      mockStoreCache(),
+      storeCache,
     );
 
     const reindex = jest.fn().mockReturnValue(Promise.resolve());

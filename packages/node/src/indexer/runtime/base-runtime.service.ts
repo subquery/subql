@@ -78,7 +78,7 @@ export abstract class BaseRuntimeService {
   async prefetchMeta(height: number): Promise<void> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (
-      this.parentSpecVersion &&
+      this.parentSpecVersion !== undefined &&
       this.specVersionMap &&
       this.specVersionMap.length !== 0
     ) {

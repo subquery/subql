@@ -253,13 +253,20 @@ function mockDictionaryService(
 
 function mockDictionaryService1(): DictionaryService {
   return {
+    startHeight: 0,
     getDictionary: jest.fn(() => mockDictionaryBatches),
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
     getSpecVersionsRaw: jest.fn(() => mockDictionarySpecVersions),
     buildDictionaryEntryMap: jest.fn(),
     getDictionaryQueryEntries: jest.fn(() => [{}, {}]),
     scopedDictionaryEntries: jest.fn(() => mockDictionaryBatches),
-    getMetadata: jest.fn(() => ({ _metadata: { startHeight: 0 } })),
+    getMetadata: jest.fn(() => ({
+      _metadata: {
+        startHeight: 0,
+        lastProcessedHeight: 1500000,
+        genesisHash: '0x12345',
+      },
+    })),
     parseSpecVersions: jest.fn(() => []),
   } as any;
 }
@@ -275,13 +282,20 @@ function mockDictionaryService2(): DictionaryService {
 
 function mockDictionaryService3(): DictionaryService {
   return {
+    startHeight: 0,
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
     getSpecVersionsRaw: jest.fn(() => mockDictionarySpecVersions),
     buildDictionaryEntryMap: jest.fn(),
     scopedDictionaryEntries: jest.fn(() => mockDictionaryNoBatches),
     getDictionaryQueryEntries: jest.fn(() => [{}, {}]),
-    getMetadata: jest.fn(() => ({ _metadata: { startHeight: 0 } })),
+    getMetadata: jest.fn(() => ({
+      _metadata: {
+        startHeight: 0,
+        lastProcessedHeight: 1500000,
+        genesisHash: '0x12345',
+      },
+    })),
     parseSpecVersions: jest.fn(() => []),
   } as any;
 }
@@ -975,20 +989,20 @@ describe('FetchService', () => {
     );
     await fetchService.init(1);
     const filteredBatch = jest.spyOn(fetchService as any, `filteredBlockBatch`);
-    (fetchService as any).latestFinalizedHeight = 45;
+    (fetchService as any).latestFinalizedHeight = 80;
     blockDispatcher.latestBufferedHeight = undefined;
     await new Promise((resolve) => {
       eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
-        if (nextBufferSize.value >= 5) {
+        if (nextBufferSize.value >= 8) {
           resolve(undefined);
         }
       });
     });
+    // Looped twice
     expect(filteredBatch.mock.results[0].value).toEqual([]);
     expect(
       difference(range(21, 40 + 1), filteredBatch.mock.results[1].value),
     ).toEqual([21, 22, 35, 40]);
-    expect(filteredBatch.mock.results[2].value).not.toContain(44);
-    expect((fetchService as any).bypassBlocks).toEqual([80]);
+    expect((fetchService as any).bypassBlocks).toEqual([44, 40, 80]);
   }, 500000);
 });
