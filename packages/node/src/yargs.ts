@@ -8,6 +8,22 @@ import yargs from 'yargs/yargs';
 export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
   .command({
+    command: 'test',
+    describe: 'Run tests for a SubQuery application',
+    builder: {},
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFmt as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { testingInit } = require('./subcommands/testing.init');
+      return testingInit();
+    },
+  })
+  .command({
     command: 'force-clean',
     describe:
       'Clean the database dropping project schemas and tables. Once the command is executed, the application would exit upon completion.',
@@ -68,6 +84,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe:
         'Show debug information to console output. will forcefully set log level to debug',
+      type: 'boolean',
+      default: false,
+    },
+    'dictionary-resolver': {
+      demandOption: false,
+      describe: 'Use SubQuery Network dictionary resolver',
       type: 'boolean',
       default: false,
     },
@@ -160,11 +182,40 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'scale batch size based on memory usage',
       default: false,
     },
-    'sponsored-dictionary': {
+    'pg-ca': {
       demandOption: false,
-      describe: 'Use subquery network sponsored dictionary',
+      describe:
+        'Postgres ca certificate - to enable TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
+      type: 'string',
+    },
+    'pg-key': {
+      demandOption: false,
+      describe:
+        'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
+      type: 'string',
+    },
+    'pg-cert': {
+      demandOption: false,
+      describe:
+        'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
+      type: 'string',
+    },
+    'store-cache-threshold': {
+      demandOption: false,
+      describe:
+        'Store cache will flush data to the database when number of records excess this threshold',
+      type: 'number',
+    },
+    'store-get-cache-size': {
+      demandOption: false,
+      describe: 'Store get cache size for each model',
+      type: 'number',
+    },
+    'store-cache-async': {
+      demandOption: false,
+      describe:
+        'If enabled the store cache will flush data asyncronously relative to indexing data',
       type: 'boolean',
-      default: false,
     },
     subquery: {
       alias: 'f',
@@ -213,23 +264,5 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe:
         'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
-    },
-    'pg-ca': {
-      demandOption: false,
-      describe:
-        'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
-      type: 'string',
-    },
-    'pg-key': {
-      demandOption: false,
-      describe:
-        'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
-      type: 'string',
-    },
-    'pg-cert': {
-      demandOption: false,
-      describe:
-        'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
-      type: 'string',
     },
   });

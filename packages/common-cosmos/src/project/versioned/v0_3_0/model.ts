@@ -61,8 +61,9 @@ export class CosmosProjectNetworkDeploymentV0_3_0 {
 }
 
 export class CosmosProjectNetworkV0_3_0 extends CosmosProjectNetworkDeploymentV0_3_0 {
-  @IsString()
-  endpoint: string;
+  @IsString({each: true})
+  @IsOptional()
+  endpoint?: string | string[];
   @IsString()
   @IsOptional()
   dictionary?: string;

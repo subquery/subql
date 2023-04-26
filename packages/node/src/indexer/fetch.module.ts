@@ -9,9 +9,10 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
+  ConnectionPoolService,
   SmartBatchService,
+  StoreCacheService,
 } from '@subql/node-core';
-
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import {
@@ -29,8 +30,10 @@ import { SandboxService } from './sandbox.service';
 @Module({
   providers: [
     StoreService,
+    StoreCacheService,
     ApiService,
     IndexerManager,
+    ConnectionPoolService,
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {
@@ -47,6 +50,11 @@ import { SandboxService } from './sandbox.service';
         apiService: ApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
+        storeService: StoreService,
+        storeCacheService: StoreCacheService,
+        poiService: PoiService,
+        project: SubqueryProject,
+        dynamicDsService: DynamicDsService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -54,6 +62,11 @@ import { SandboxService } from './sandbox.service';
               eventEmitter,
               projectService,
               smartBatchService,
+              storeService,
+              storeCacheService,
+              poiService,
+              project,
+              dynamicDsService,
             )
           : new BlockDispatcherService(
               apiService,
@@ -62,14 +75,24 @@ import { SandboxService } from './sandbox.service';
               eventEmitter,
               projectService,
               smartBatchService,
+              storeService,
+              storeCacheService,
+              poiService,
+              project,
+              dynamicDsService,
             ),
       inject: [
         NodeConfig,
         EventEmitter2,
-        ProjectService,
+        'IProjectService',
         ApiService,
         IndexerManager,
         SmartBatchService,
+        StoreService,
+        StoreCacheService,
+        PoiService,
+        'ISubqueryProject',
+        DynamicDsService,
       ],
     },
     FetchService,
@@ -88,8 +111,11 @@ import { SandboxService } from './sandbox.service';
     DynamicDsService,
     PoiService,
     MmrService,
-    ProjectService,
+    {
+      useClass: ProjectService,
+      provide: 'IProjectService',
+    },
   ],
-  exports: [StoreService, MmrService],
+  exports: [StoreService, MmrService, StoreCacheService],
 })
 export class FetchModule {}

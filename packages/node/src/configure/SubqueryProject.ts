@@ -3,7 +3,6 @@
 
 import { Block } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
-import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ReaderFactory,
   ReaderOptions,
@@ -43,6 +42,7 @@ export type SubqlProjectDs = SubqlCosmosDataSource & {
 };
 
 export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
+  chainId: string;
   chainTypes: Map<string, CosmosChainType> & { protoRoot: protobuf.Root };
 };
 
@@ -61,15 +61,17 @@ const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name}() is not supported`);
 };
 
+// This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
+type NetworkConfig = CosmosProjectNetworkConfig & { chainId: string };
+
 @Injectable()
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<CosmosProjectNetConfig>;
+  network: NetworkConfig;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
-  chainTypes?: RegisteredTypes;
   runner?: RunnerSpecs;
 
   static async create(
@@ -106,7 +108,7 @@ export class SubqueryProject {
 
 export interface SubqueryProjectNetwork {
   chainId: string;
-  endpoint?: string;
+  endpoint?: string[];
   dictionary?: string;
   chainTypes?: Map<string, CosmosChainType>;
 }
@@ -120,6 +122,10 @@ async function loadProjectFromManifestBase(
   networkOverrides?: Partial<CosmosProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
+
+  if (typeof projectManifest.network.endpoint === 'string') {
+    projectManifest.network.endpoint = [projectManifest.network.endpoint];
+  }
 
   const network = await processNetworkConfig(
     {

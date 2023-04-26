@@ -64,6 +64,14 @@ import { MetaService } from './meta.service';
       name: 'subql_indexer_processed_block_count',
       help: 'The number of processed block',
     }),
+    makeGaugeProvider({
+      name: 'subql_indexer_store_cache_threshold',
+      help: 'Store cache will flush once cache record size excess this threshold',
+    }),
+    makeGaugeProvider({
+      name: 'subql_indexer_store_cache_records_size',
+      help: 'Number of records waiting to flush in store cache',
+    }),
     MetaService,
     HealthService,
     ReadyService,

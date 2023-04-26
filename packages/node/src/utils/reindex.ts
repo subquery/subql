@@ -19,10 +19,6 @@ export async function reindex(
   sequelize: Sequelize,
   forceCleanService?: ForceCleanService,
 ): Promise<void> {
-  if (!storeService.historical) {
-    logger.warn('Unable to reindex, historical state not enabled');
-    return;
-  }
   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
     logger.warn(
       `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
@@ -46,12 +42,16 @@ export async function reindex(
     try {
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight),
       ]);
 
       if (blockOffset) {
         await mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
+
+      // Flush metadata changes from above Promise.all
+      await storeService.storeCache.metadata.flush(transaction);
+
       await transaction.commit();
       logger.info('Reindex Success');
     } catch (err) {

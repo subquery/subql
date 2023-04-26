@@ -41,7 +41,7 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { ApiService, CosmosClient } from './api.service';
-import { IBlockDispatcher } from './blockDispatcher';
+import { ICosmosBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -121,14 +121,15 @@ export class FetchService implements OnApplicationShutdown {
   private isShutdown = false;
   private batchSizeScale: number;
   private templateDynamicDatasouces: SubqlProjectDs[];
-  private dictionaryGenesisMatches = true;
+  private dictionaryMetaValid = false;
   private bypassBlocks: number[] = [];
 
   constructor(
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private project: SubqueryProject,
-    @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
+    @Inject('IBlockDispatcher')
+    private blockDispatcher: ICosmosBlockDispatcher,
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
@@ -149,7 +150,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   get api(): CosmosClient {
-    return this.apiService.getApi();
+    return this.apiService.api;
   }
 
   async syncDynamicDatascourcesFromMeta(): Promise<void> {
@@ -250,7 +251,7 @@ export class FetchService implements OnApplicationShutdown {
   private get useDictionary(): boolean {
     return (
       !!this.project.network.dictionary &&
-      this.dictionaryGenesisMatches &&
+      this.dictionaryMetaValid &&
       !!this.dictionaryService.getDictionaryQueryEntries(
         this.blockDispatcher.latestBufferedHeight ??
           Math.min(...this.project.dataSources.map((ds) => ds.startBlock)),
@@ -277,25 +278,12 @@ export class FetchService implements OnApplicationShutdown {
     }
 
     await this.syncDynamicDatascourcesFromMeta();
+
     this.updateDictionary();
-    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-      value: Number(this.useDictionary),
-    });
-    await this.getLatestBlockHead();
-
-    await this.blockDispatcher.init(this.resetForNewDs.bind(this));
-
     //  Call metadata here, other network should align with this
     //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
     const metadata = await this.dictionaryService.getMetadata();
-
-    const validChecker = await this.dictionaryValidation(metadata);
-
-    if (validChecker) {
-      this.dictionaryService.setDictionaryStartHeight(
-        metadata._metadata.startHeight,
-      );
-    }
+    const dictionaryValid = this.dictionaryValidation(metadata);
 
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
     void this.startLoop(startHeight);
@@ -395,7 +383,10 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
-    if (this.dictionaryService.startHeight > getStartBlockHeight()) {
+    if (
+      this.useDictionary &&
+      this.dictionaryService.startHeight > getStartBlockHeight()
+    ) {
       logger.warn(
         `Dictionary start height ${
           this.dictionaryService.startHeight
@@ -457,7 +448,6 @@ export class FetchService implements OnApplicationShutdown {
               .sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              // eslint-disable-next-line @typescript-eslint/await-thenable
               await this.blockDispatcher.enqueueBlocks(
                 [],
                 Math.min(
@@ -473,7 +463,6 @@ export class FetchService implements OnApplicationShutdown {
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
               const cleanedBatchBlocks =
                 this.filteredBlockBatch(enqueuingBlocks);
-              // eslint-disable-next-line @typescript-eslint/await-thenable
               await this.blockDispatcher.enqueueBlocks(
                 cleanedBatchBlocks,
                 this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
@@ -493,23 +482,16 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (handlers.length && this.getModulos().length === handlers.length) {
-        const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
-        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        await this.blockDispatcher.enqueueBlocks(
-          cleanedBatchBlocks,
-          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
-        );
-      } else {
-        const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
-        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        await this.blockDispatcher.enqueueBlocks(
-          cleanedBatchBlocks,
-          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
-        );
-      }
+      const enqueuingBlocks =
+        handlers.length && this.getModulos().length === handlers.length
+          ? this.getEnqueuedModuloBlocks(startBlockHeight)
+          : range(startBlockHeight, endHeight + 1);
+
+      const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+      await this.blockDispatcher.enqueueBlocks(
+        cleanedBatchBlocks,
+        this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
+      );
     }
   }
   private getLatestBufferHeight(
@@ -574,7 +556,7 @@ export class FetchService implements OnApplicationShutdown {
         logger.error(
           'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
         );
-        this.dictionaryGenesisMatches = false;
+        this.dictionaryMetaValid = false;
         this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
           value: Number(this.useDictionary),
         });
@@ -582,14 +564,14 @@ export class FetchService implements OnApplicationShutdown {
         return false;
       }
 
-      if (startBlockHeight !== undefined) {
-        if (metaData.lastProcessedHeight < startBlockHeight) {
-          logger.warn(
-            `Dictionary indexed block is behind current indexing block height`,
-          );
-          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-          return false;
-        }
+      if (
+        startBlockHeight !== undefined &&
+        metaData.lastProcessedHeight < startBlockHeight
+      ) {
+        logger.warn(
+          `Dictionary indexed block is behind current indexing block height`,
+        );
+        return false;
       }
       return true;
     }

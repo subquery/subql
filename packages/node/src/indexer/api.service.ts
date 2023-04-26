@@ -6,9 +6,8 @@ import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
-import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
+import { Block, IndexedTx } from '@cosmjs/stargate';
 import {
-  HttpEndpoint,
   Tendermint34Client,
   toRfc3339WithNanoseconds,
   BlockResultsResponse,
@@ -17,100 +16,109 @@ import {
   BlockResponse,
   Validator,
 } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
   getLogger,
   NetworkMetadataPayload,
   retryOnFailAxios,
+  ConnectionPoolService,
+  ApiService as BaseApiService,
 } from '@subql/node-core';
-import {
-  MsgClearAdmin,
-  MsgExecuteContract,
-  MsgInstantiateContract,
-  MsgMigrateContract,
-  MsgStoreCode,
-  MsgUpdateAdmin,
-} from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import {
   CosmosProjectNetConfig,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { HttpClient, WebsocketClient } from './rpc-clients';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
+import * as CosmosUtil from '../utils/cosmos';
+import { CosmosClientConnection } from './cosmosClient.connection';
+import { BlockContent } from './types';
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
-const RETRY_DELAY = 2_500;
-const TIMEOUT = 90 * 1000;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 const logger = getLogger('api');
 const RETRY_STATUS_CODES = [429, 502];
 
 @Injectable()
-export class ApiService {
-  private api: CosmosClient;
-  private tendermint: Tendermint34Client;
-  private currentBlockHash: string;
-  private currentBlockNumber: number;
+export class ApiService
+  extends BaseApiService<SubqueryProject, CosmosClient>
+  implements OnApplicationShutdown
+{
+  private fetchBlocksBatches = CosmosUtil.fetchBlocksBatches;
   networkMeta: NetworkMetadataPayload;
   registry: Registry;
 
-  constructor(@Inject('ISubqueryProject') protected project: SubqueryProject) {}
+  constructor(
+    @Inject('ISubqueryProject') public project: SubqueryProject,
+    private connectionPoolService: ConnectionPoolService<CosmosClientConnection>,
+  ) {
+    super(project);
+  }
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.connectionPoolService.onApplicationShutdown();
+  }
+
+  private metadataMismatchError(
+    metadata: string,
+    expected: string,
+    actual: string,
+  ): Error {
+    return Error(
+      `Value of ${metadata} does not match across all endpoints\n
+       Expected: ${expected}
+       Actual: ${actual}`,
+    );
+  }
 
   async init(): Promise<ApiService> {
     try {
       const { network } = this.project;
-      // https://github.com/cosmos/cosmjs/blob/ae06012a1510ddf48068bbf21374c0bbff3d5bab/packages/cosmwasm-stargate/src/modules/wasm/messages.ts#L11
-      const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
-        ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
-        ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
-        ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
-        ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
-        ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
-        ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
-      ];
 
-      const endpoint: HttpEndpoint = {
-        url: network.endpoint,
-        headers: {
-          'User-Agent': `SubQuery-Node ${packageVersion}`,
-        },
-      };
+      const chainTypes = await this.getChainType(network);
 
-      const rpcClient =
-        network.endpoint.includes('ws://') ||
-        network.endpoint.includes('wss://')
-          ? new WebsocketClient(network.endpoint, (err) => {
-              logger.error(err, `Websocket connection failed`);
-              process.exit(1);
-            })
-          : new HttpClient(endpoint);
+      const connections: CosmosClientConnection[] = [];
 
-      this.tendermint = await Tendermint34Client.create(rpcClient);
-      this.registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
+      const endpoints = Array.isArray(network.endpoint)
+        ? network.endpoint
+        : [network.endpoint];
 
-      const chaintypes = await this.getChainType(network);
-      for (const typeurl in chaintypes) {
-        this.registry.register(typeurl, chaintypes[typeurl]);
-      }
+      await Promise.all(
+        endpoints.map(async (endpoint) => {
+          const connection = await CosmosClientConnection.create(endpoint, {
+            chainTypes,
+          });
+          const api = connection.api;
+          if (!this.networkMeta) {
+            this.networkMeta = {
+              chain: network.chainId,
+              specName: undefined,
+              genesisHash: undefined,
+            };
 
-      this.api = new CosmosClient(this.tendermint, this.registry);
+            const chainId = await api.getChainId();
+            if (network.chainId !== chainId) {
+              const err = new Error(
+                `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${network.chainId}", however the endpoint that you are connecting to is different("${this.networkMeta.genesisHash}). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
+              );
+              logger.error(err, err.message);
+              throw err;
+            }
+          } else {
+            const chainId = await api.getChainId();
+            if (chainId !== this.networkMeta.chain) {
+              throw this.metadataMismatchError(
+                'chainID',
+                this.networkMeta.chain,
+                chainId,
+              );
+            }
+          }
 
-      this.networkMeta = {
-        chain: network.chainId,
-        specName: undefined,
-        genesisHash: undefined,
-      };
+          connections.push(connection);
+        }),
+      );
 
-      const chainId = await this.api.getChainId();
-      if (network.chainId !== chainId) {
-        const err = new Error(
-          `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${network.chainId}", however the endpoint that you are connecting to is different("${this.networkMeta.genesisHash}). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-        );
-        logger.error(err, err.message);
-        throw err;
-      }
+      this.connectionPoolService.addBatchToConnections(connections);
 
       return this;
     } catch (e) {
@@ -119,13 +127,13 @@ export class ApiService {
     }
   }
 
-  getApi(): CosmosClient {
-    return this.api;
+  get api(): CosmosClient {
+    return this.connectionPoolService.api.api;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getSafeApi(height: number): Promise<CosmosSafeClient> {
-    return new CosmosSafeClient(this.tendermint, height);
+    return this.connectionPoolService.api.getSafeApi(height);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -151,6 +159,17 @@ export class ApiService {
       }
     }
     return res;
+  }
+
+  async fetchBlocks(
+    batch: number[],
+    overallSpecVer?: number,
+  ): Promise<BlockContent[]> {
+    return this.fetchBlocksGeneric<BlockContent>(
+      () => (blockArray: number[]) =>
+        this.fetchBlocksBatches(this.api, blockArray),
+      batch,
+    );
   }
 }
 

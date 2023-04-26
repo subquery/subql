@@ -4,13 +4,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
-  MetadataFactory,
-  MetadataRepo,
   MmrService,
   NodeConfig,
   StoreService,
   getExistingProjectSchema,
-  getMetaDataInfo,
+  CacheMetadataModel,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -25,7 +23,7 @@ const logger = getLogger('Reindex');
 @Injectable()
 export class ReindexService {
   private schema: string;
-  private metadataRepo: MetadataRepo;
+  private metadataRepo: CacheMetadataModel;
 
   constructor(
     private readonly sequelize: Sequelize,
@@ -46,12 +44,8 @@ export class ReindexService {
     }
     await this.initDbSchema();
 
-    this.metadataRepo = await MetadataFactory(
-      this.sequelize,
-      this.schema,
-      this.nodeConfig.multiChain,
-      this.project.network.chainId,
-    );
+    this.metadataRepo = this.storeService.storeCache.metadata;
+
     this.dynamicDsService.init(this.metadataRepo);
   }
 
@@ -60,18 +54,15 @@ export class ReindexService {
   }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
+    return this.metadataRepo.find('lastProcessedHeight');
   }
 
   private async getMetadataBlockOffset(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
+    return this.metadataRepo.find('blockOffset');
   }
 
   private async getMetadataSpecName(): Promise<string | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'specName' },
-    });
-    return res?.value as string | undefined;
+    return this.metadataRepo.find('specName');
   }
 
   private async initDbSchema(): Promise<void> {
@@ -99,7 +90,7 @@ export class ReindexService {
       this.getLastProcessedHeight(),
     ]);
 
-    return reindex(
+    await reindex(
       startHeight,
       await this.getMetadataBlockOffset(),
       targetBlockHeight,
@@ -110,5 +101,7 @@ export class ReindexService {
       this.sequelize,
       this.forceCleanService,
     );
+
+    await this.storeService.storeCache.flushCache();
   }
 }

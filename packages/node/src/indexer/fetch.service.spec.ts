@@ -14,7 +14,7 @@ type DictionaryServicePrivate = DictionaryService & {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: 'https://rpc.juno-1.api.onfinality.io',
+  networkEndpoint: ['https://rpc.juno-1.api.onfinality.io'],
   dictionaryTimeout: 10,
 });
 
