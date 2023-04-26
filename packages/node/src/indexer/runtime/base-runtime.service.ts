@@ -4,10 +4,11 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import { profiler, ApiService } from '@subql/node-core';
+import { profiler } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import * as SubstrateUtil from '../../utils/substrate';
 import { yargsOptions } from '../../yargs';
+import { ApiService } from '../api.service';
 import { SpecVersion } from './../dictionary.service';
 export const SPEC_VERSION_BLOCK_GAP = 100;
 type GetUseDictionary = () => boolean;
