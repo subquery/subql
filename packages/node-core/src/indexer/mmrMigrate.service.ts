@@ -4,15 +4,12 @@
 import {existsSync} from 'fs';
 import {DEFAULT_WORD_SIZE} from '@subql/common';
 import {NodeConfig, getExistingProjectSchema, getLogger, PgBasedMMRDB} from '@subql/node-core';
-import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
-import {keccak256} from 'js-sha3';
+import {FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {Logging, Sequelize} from 'sequelize';
 
 const logger = getLogger('mmr-migrate');
 
 const DEFAULT_DB_SCHEMA = 'public';
-
-const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
 export enum MigrationDirection {
   FileToDb = 'fileToDb',
@@ -41,16 +38,26 @@ export class MMRMigrateService {
     const pgBasedMMRDb = new PgBasedMMRDB(this.sequelize, schema);
     await pgBasedMMRDb.connect();
 
-    logger.info(direction);
     const [source, target] =
       direction === MigrationDirection.FileToDb ? [fileBasedMMRDb, pgBasedMMRDb] : [pgBasedMMRDb, fileBasedMMRDb];
 
     const nodes = await source.getNodes();
     const sortedEntries = Object.entries(nodes).sort(([a], [b]) => a.localeCompare(b));
 
+    const totalNodes = sortedEntries.length;
+    let completedNodes = 0;
+
     for (const [index, value] of sortedEntries) {
       await target.set(value, parseInt(index, 10));
+
+      completedNodes++;
+      const progressPercentage = Math.round((completedNodes / totalNodes) * 100);
+      process.stdout.clearLine(0);
+      process.stdout.cursorTo(0);
+      process.stdout.write(`Migration progress: ${progressPercentage}% | ${completedNodes}/${totalNodes} nodes`);
     }
+
+    process.stdout.write('\n');
 
     const leafLength = await source.getLeafLength();
     await target.setLeafLength(leafLength);

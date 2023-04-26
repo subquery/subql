@@ -15,13 +15,20 @@ export async function mmrMigrateInit(
   direction: MigrationDirection,
 ): Promise<void> {
   try {
+    logger.info('Starting MMR migration process...');
+
     const app = await NestFactory.create(MMRMigrateModule);
     await app.init();
 
+    logger.info('MMRMigrateModule initialized.');
+
     const mmrMigrateService = app.get(MMRMigrateService);
+    logger.info(`Migrating MMR data in ${direction} direction...`);
     await mmrMigrateService.migrate(direction);
+
+    logger.info('MMR migration completed successfully.');
   } catch (e) {
-    logger.error(e, 'mmr-migrate failed to execute');
+    logger.error(e, 'MMR migration failed to execute');
     process.exit(1);
   }
 
