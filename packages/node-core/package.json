@@ -42,5 +42,8 @@
   "devDependencies": {
     "@types/async-lock": "^1"
   },
+  "resolutions": {
+    "node-fetch": "2.6.7"
+  },
   "stableVersion": "2.0.1-2"
 }

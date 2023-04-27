@@ -5,6 +5,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "noImplicitAny": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
     "strict": true
   },
   "references": [{"path": "../common"}, {"path": "../utils"}, {"path": "../testing"}],
