@@ -16,7 +16,6 @@ export interface IConfig {
   readonly subquery: string;
   readonly subqueryName?: string;
   readonly dbSchema?: string;
-  readonly localMode: boolean;
   readonly batchSize: number;
   readonly timeout: number;
   readonly blockTime: number;
@@ -53,7 +52,6 @@ export interface IConfig {
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
 
 const DEFAULT_CONFIG = {
-  localMode: false,
   logLevel: 'info',
   batchSize: 100,
   timeout: 900,
@@ -110,10 +108,6 @@ export class NodeConfig implements IConfig {
       throw new Error('Unable to get subquery name');
     }
     return name;
-  }
-
-  get localMode(): boolean {
-    return this._config.localMode;
   }
 
   get batchSize(): number {

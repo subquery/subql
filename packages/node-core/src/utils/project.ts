@@ -12,8 +12,7 @@ export async function getExistingProjectSchema(
   nodeConfig: NodeConfig,
   sequelize: Sequelize
 ): Promise<string | undefined> {
-  const DEFAULT_DB_SCHEMA = 'public';
-  const schema = nodeConfig.localMode ? DEFAULT_DB_SCHEMA : nodeConfig.dbSchema;
+  const schema = nodeConfig.dbSchema;
 
   let schemas: string[];
   try {
