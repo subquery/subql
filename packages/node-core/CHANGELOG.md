@@ -10,7 +10,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-
+## [2.0.1] - 2023-04-27
+### Fixed
+- Fix ApiService abstract class, improve getting all DS (#1638)
+- Fix assertion error and pk index type (#1641)
+- Fix tests (#1640)
 
 ## [2.0.0] - 2023-04-20
 - Major release 2.0.0, align with other package versions
