@@ -50,9 +50,6 @@ const logger = getLogger('indexer');
 export class IndexerManager
   implements IIndexerManager<BlockContent, SubqlProjectDs>
 {
-  private api: ApiPromise;
-  private filteredDataSources: SubqlProjectDs[];
-
   constructor(
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
@@ -76,12 +73,12 @@ export class IndexerManager
     let reindexBlockHeight: number | null = null;
     const blockHeight = block.block.header.number.toNumber();
 
-    this.filteredDataSources = this.filterDataSources(
+    const filteredDataSources = this.filterDataSources(
       block.block.header.number.toNumber(),
       dataSources,
     );
 
-    this.assertDataSources(dataSources, blockHeight);
+    this.assertDataSources(filteredDataSources, blockHeight);
 
     let apiAt: ApiAt;
     reindexBlockHeight = await this.processUnfinalizedBlocks(block);
@@ -90,7 +87,7 @@ export class IndexerManager
     if (!reindexBlockHeight) {
       await this.indexBlockData(
         blockContent,
-        dataSources,
+        filteredDataSources,
         async (ds: SubqlProjectDs) => {
           // Injected runtimeVersion from fetch service might be outdated
           apiAt =
@@ -110,7 +107,7 @@ export class IndexerManager
                 },
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              dataSources.push(newDs);
+              filteredDataSources.push(newDs);
               dynamicDsCreated = true;
             },
             'createDynamicDatasource',
@@ -161,7 +158,7 @@ export class IndexerManager
       if (isCustomDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
+          .dsFilterProcessor(ds, this.apiService.api);
       } else {
         return true;
       }
@@ -360,7 +357,7 @@ export class IndexerManager
         input: data,
         ds,
         filter: handler.filter,
-        api: this.api,
+        api: this.apiService.api,
         assets,
       })
       .catch((e) => {
