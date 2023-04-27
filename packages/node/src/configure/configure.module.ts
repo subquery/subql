@@ -19,9 +19,7 @@ import { SubqueryProject } from './SubqueryProject';
 
 const logger = getLogger('configure');
 
-const YargsNameMapping: Record<string, string> = {
-  local: 'localMode',
-};
+const YargsNameMapping: Record<string, string> = {};
 
 type Args = typeof yargsOptions.argv['argv'];
 
