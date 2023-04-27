@@ -4,6 +4,8 @@
 import {Db} from '@subql/x-merkle-mountain-range';
 import {Sequelize, DataTypes, Model, ModelStatic} from 'sequelize';
 
+const LEAF_LENGTH_INDEX = -1;
+
 interface NodeMap {
   [key: string]: Buffer;
 }
@@ -79,14 +81,14 @@ export class PgBasedMMRDB implements Db {
   }
 
   async getLeafLength() {
-    const record = await this.mmrIndexValueStore.findByPk(-1);
+    const record = await this.mmrIndexValueStore.findByPk(LEAF_LENGTH_INDEX);
     return record ? record.value.readUInt32BE(0) : 0;
   }
 
   async setLeafLength(leafLength: number): Promise<number> {
     const leafLengthBuffer = Buffer.alloc(4);
     leafLengthBuffer.writeUInt32BE(leafLength, 0);
-    await this.mmrIndexValueStore.upsert({key: -1, value: leafLengthBuffer});
+    await this.mmrIndexValueStore.upsert({key: LEAF_LENGTH_INDEX, value: leafLengthBuffer});
     return leafLength;
   }
 }

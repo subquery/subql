@@ -11,7 +11,7 @@ import { ConfigureModule } from '../configure/configure.module';
     {
       provide: MMRMigrateService,
       useFactory: (config: NodeConfig, sequelize: Sequelize) => {
-        return new MMRMigrateService(sequelize, config);
+        return new MMRMigrateService(config, sequelize);
       },
       inject: [NodeConfig, Sequelize],
     },

@@ -9,19 +9,17 @@ import {Logging, Sequelize} from 'sequelize';
 
 const logger = getLogger('mmr-migrate');
 
-const DEFAULT_DB_SCHEMA = 'public';
-
 export enum MigrationDirection {
   FileToDb = 'fileToDb',
   DbToFile = 'dbToFile',
 }
 
 export class MMRMigrateService {
-  constructor(private sequelize: Sequelize, private nodeConfig: NodeConfig) {}
+  constructor(private nodeConfig: NodeConfig, private sequelize: Sequelize) {}
 
   async migrate(direction: MigrationDirection): Promise<void> {
-    if (!existsSync(this.nodeConfig.mmrPath)) {
-      logger.info(`MMR file does not found: ${this.nodeConfig.mmrPath}`);
+    if (direction === MigrationDirection.FileToDb && !existsSync(this.nodeConfig.mmrPath)) {
+      logger.info(`MMR file not found: ${this.nodeConfig.mmrPath}`);
       return;
     }
 
@@ -64,7 +62,7 @@ export class MMRMigrateService {
   }
 
   private async createProjectSchema(): Promise<string> {
-    const schema = this.nodeConfig.localMode ? DEFAULT_DB_SCHEMA : this.nodeConfig.dbSchema;
+    const schema = this.nodeConfig.dbSchema;
     if (!this.nodeConfig.localMode) {
       const schemas = await this.sequelize.showAllSchemas(undefined as unknown as Logging);
       if (!(schemas as unknown as string[]).includes(schema)) {

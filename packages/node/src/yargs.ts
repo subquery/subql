@@ -67,12 +67,20 @@ export const yargsOptions = yargs(hideBin(process.argv))
     command: 'mmr-migrate',
     describe: 'Migrate MMR data from storage file to postgres DB',
     builder: (yargs) =>
-      yargs.options('direction', {
-        type: 'string',
-        description: 'set direction of migration (file -> DB or DB -> file)',
-        demandOption: false,
-        choices: ['dbToFile', 'fileToDb'],
-        default: 'dbToFile',
+      yargs.options({
+        direction: {
+          type: 'string',
+          description: 'set direction of migration (file -> DB or DB -> file)',
+          demandOption: false,
+          choices: ['dbToFile', 'fileToDb'],
+          default: 'dbToFile',
+        },
+        'mmr-path': {
+          alias: 'm',
+          demandOption: false,
+          describe: 'Local path of the merkle mountain range (.mmr) file',
+          type: 'string',
+        },
       }),
     handler: (argv) => {
       initLogger(
