@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.0.1] - 2023-04-27
+### Fixed
+- Fix tests (#1640)
 
 ## [2.0.0] - 2023-04-20
 - Major release for 2.0.0, align with other package versions

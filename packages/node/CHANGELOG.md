@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2023-04-27
+### Fixed
+- Fix ApiService abstract class, improve getting all DS (#1638)
+- Fix tests (#1640)
+- Force flush cache with reindex command (#1645)
+- Sync with `node-core@2.0.1`
+  - Fixed `StoreService` not been init due to assertion issue (#1641)
 
 ## [2.0.0] - 2023-04-20
 - Major release for 2.0.0, align with other package versions
