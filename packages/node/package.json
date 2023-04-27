@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "1.0.3-4",
+  "version": "1.0.3-5",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -76,5 +76,5 @@
     "/dist",
     "/bin"
   ],
-  "stableVersion": "1.0.3-3"
+  "stableVersion": "1.0.3-4"
 }
