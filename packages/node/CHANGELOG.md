@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2023-04-27
+### Fixed
+- Fix api not being defined, fix not using filter on dataSources (#1647)
+### Changed
+- Deprecate `localMode` (#1648)
+
 ## [2.0.1] - 2023-04-27
 ### Fixed
 - Fix ApiService abstract class, improve getting all DS (#1638)

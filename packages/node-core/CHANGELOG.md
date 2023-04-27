@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.0.2] - 2023-04-27
+### Changed
+- Deprecate `localMode` (#1648)
+
 ## [2.0.1] - 2023-04-27
 ### Fixed
 - Fix ApiService abstract class, improve getting all DS (#1638)
