@@ -26,7 +26,7 @@ export abstract class BaseFetchService<
   DS extends {startBlock?: number; mapping: {handlers: any}},
   B extends IBlockDispatcher,
   D extends DictionaryService,
-  P extends IDSProcessorService
+  P extends IDSProcessorService<DS>
 > implements OnApplicationShutdown
 {
   private _latestBestHeight?: number;

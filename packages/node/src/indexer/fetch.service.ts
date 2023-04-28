@@ -21,9 +21,13 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import { NodeConfig, BaseFetchService } from '@subql/node-core';
-import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
+import {
+  DictionaryQueryEntry,
+  SubstrateCustomHandler,
+  SubstrateDatasource,
+} from '@subql/types';
 import { sortBy, uniqBy } from 'lodash';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -69,7 +73,7 @@ function callFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  SubqlProjectDs,
+  SubstrateDatasource,
   ISubstrateBlockDispatcher,
   DictionaryService,
   DsProcessorService

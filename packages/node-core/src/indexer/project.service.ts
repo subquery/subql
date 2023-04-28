@@ -40,7 +40,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
   abstract reindex(targetBlockHeight: number): Promise<void>;
 
   constructor(
-    private readonly dsProcessorService: IDSProcessorService,
+    private readonly dsProcessorService: IDSProcessorService<DS>,
     protected readonly apiService: ApiService,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,

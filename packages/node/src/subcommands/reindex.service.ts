@@ -11,8 +11,9 @@ import {
   CacheMetadataModel,
   initDbSchema,
 } from '@subql/node-core';
+import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { reindex } from '../utils/reindex';
@@ -88,7 +89,7 @@ export class ReindexService {
     await initDbSchema(this.project, this.schema, this.storeService);
   }
 
-  private async getDataSourcesForSpecName(): Promise<SubqlProjectDs[]> {
+  private async getDataSourcesForSpecName(): Promise<SubstrateDatasource[]> {
     const specName = await this.getMetadataSpecName();
     return this.project.dataSources.filter(
       (ds) => !ds.filter?.specName || ds.filter.specName === specName,

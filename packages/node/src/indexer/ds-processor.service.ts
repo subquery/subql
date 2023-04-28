@@ -118,7 +118,9 @@ export class DsPluginSandbox extends Sandbox {
 }
 
 @Injectable()
-export class DsProcessorService implements IDSProcessorService {
+export class DsProcessorService
+  implements IDSProcessorService<SubstrateCustomDatasource>
+{
   private processorCache: {
     [entry: string]: SubstrateDatasourceProcessor<
       string,

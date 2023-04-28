@@ -36,7 +36,7 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
 }
 
 export interface BaseDataSource<
-  F = Record<string, unknown>,
+  F = any,
   H extends BaseHandler<F> = BaseHandler<F>,
   T extends BaseMapping<F, H> = BaseMapping<F, H>
 > {

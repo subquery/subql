@@ -17,7 +17,7 @@ import {
   HostDynamicDS,
   WorkerBlockDispatcher,
 } from '@subql/node-core';
-import { Store } from '@subql/types';
+import { Store, SubstrateDatasource } from '@subql/types';
 import {
   SubqlProjectDs,
   SubqueryProject,
@@ -37,12 +37,12 @@ type IndexerWorker = IIndexerWorker & {
 
 async function createIndexerWorker(
   store: Store,
-  dynamicDsService: IDynamicDsService<SubqlProjectDs>,
+  dynamicDsService: IDynamicDsService<SubstrateDatasource>,
   unfinalizedBlocksService: IUnfinalizedBlocksService,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubqlProjectDs> & HostStore & HostUnfinalizedBlocks
+    HostDynamicDS<SubstrateDatasource> & HostStore & HostUnfinalizedBlocks
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -83,7 +83,7 @@ async function createIndexerWorker(
 
 @Injectable()
 export class WorkerBlockDispatcherService
-  extends WorkerBlockDispatcher<SubqlProjectDs, IndexerWorker>
+  extends WorkerBlockDispatcher<SubstrateDatasource, IndexerWorker>
   implements OnApplicationShutdown
 {
   private runtimeService: RuntimeService;
@@ -91,7 +91,8 @@ export class WorkerBlockDispatcherService
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
+    @Inject('IProjectService')
+    projectService: IProjectService<SubstrateDatasource>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,

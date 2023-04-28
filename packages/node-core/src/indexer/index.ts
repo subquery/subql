@@ -20,3 +20,4 @@ export * from './blockDispatcher';
 export * from './testing.service';
 export * from './project.service';
 export * from './fetch.service';
+export * from './indexer.manager';

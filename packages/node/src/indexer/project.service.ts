@@ -11,6 +11,7 @@ import {
   getLogger,
   BaseProjectService,
 } from '@subql/node-core';
+import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from 'sequelize';
 import {
   generateTimestampReferenceForBlockFilters,
@@ -29,7 +30,7 @@ const { version: packageVersion } = require('../../package.json');
 const logger = getLogger('Project');
 
 @Injectable()
-export class ProjectService extends BaseProjectService<SubqlProjectDs> {
+export class ProjectService extends BaseProjectService<SubstrateDatasource> {
   protected packageVersion = packageVersion;
 
   constructor(
@@ -76,7 +77,7 @@ export class ProjectService extends BaseProjectService<SubqlProjectDs> {
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
-  protected getStartBlockDatasources(): SubqlProjectDs[] {
+  protected getStartBlockDatasources(): SubstrateDatasource[] {
     return this.project.dataSources.filter(
       (ds) =>
         !ds.filter?.specName ||

@@ -7,8 +7,8 @@ import {
   MmrService,
   StoreService,
 } from '@subql/node-core';
+import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from 'sequelize';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { ForceCleanService } from '../subcommands/forceClean.service';
 
@@ -21,7 +21,7 @@ export async function reindex(
   lastProcessedHeight: number,
   storeService: StoreService,
   unfinalizedBlockService: UnfinalizedBlocksService,
-  dynamicDsService: DynamicDsService<SubqlProjectDs>,
+  dynamicDsService: DynamicDsService<SubstrateDatasource>,
   mmrService: MmrService,
   sequelize: Sequelize,
   forceCleanService?: ForceCleanService,
