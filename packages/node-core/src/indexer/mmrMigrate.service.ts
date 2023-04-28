@@ -63,11 +63,9 @@ export class MMRMigrateService {
 
   private async createProjectSchema(): Promise<string> {
     const schema = this.nodeConfig.dbSchema;
-    if (!this.nodeConfig.localMode) {
-      const schemas = await this.sequelize.showAllSchemas(undefined as unknown as Logging);
-      if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, undefined as unknown as Logging);
-      }
+    const schemas = await this.sequelize.showAllSchemas(undefined as unknown as Logging);
+    if (!(schemas as unknown as string[]).includes(schema)) {
+      await this.sequelize.createSchema(`"${schema}"`, undefined as unknown as Logging);
     }
     return schema;
   }
