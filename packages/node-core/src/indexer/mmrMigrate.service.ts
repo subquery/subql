@@ -9,6 +9,34 @@ import {Logging, Sequelize} from 'sequelize';
 
 const logger = getLogger('mmr-migrate');
 
+export enum MMRMigrateErrorCode {
+  MMRFileNotFoundError = 'MMR_FILE_NOT_FOUND_ERROR',
+}
+
+export interface MMRMigrateErrorContext {
+  [key: string]: any;
+}
+
+export class MMRMigrateError extends Error {
+  readonly code: MMRMigrateErrorCode;
+  readonly context?: MMRMigrateErrorContext;
+
+  constructor(message: string, code: MMRMigrateErrorCode, context?: MMRMigrateErrorContext) {
+    super(message);
+    this.name = 'MMRMigrateError';
+    this.code = code;
+    this.context = context;
+  }
+
+  toString(): string {
+    let errorString = `${this.name}: ${this.message}\nCode: ${this.code}`;
+    if (this.context) {
+      errorString += `\nContext:\n${JSON.stringify(this.context, null, 2)}`;
+    }
+    return errorString;
+  }
+}
+
 export enum MigrationDirection {
   FileToDb = 'fileToDb',
   DbToFile = 'dbToFile',
@@ -18,47 +46,59 @@ export class MMRMigrateService {
   constructor(private nodeConfig: NodeConfig, private sequelize: Sequelize) {}
 
   async migrate(direction: MigrationDirection): Promise<void> {
-    if (direction === MigrationDirection.FileToDb && !existsSync(this.nodeConfig.mmrPath)) {
-      logger.info(`MMR file not found: ${this.nodeConfig.mmrPath}`);
-      return;
+    try {
+      if (direction === MigrationDirection.FileToDb && !existsSync(this.nodeConfig.mmrPath)) {
+        throw new MMRMigrateError(
+          `MMR file not found: ${this.nodeConfig.mmrPath}`,
+          MMRMigrateErrorCode.MMRFileNotFoundError
+        );
+      }
+
+      let fileBasedMMRDb: FileBasedDb;
+
+      if (existsSync(this.nodeConfig.mmrPath)) {
+        fileBasedMMRDb = await FileBasedDb.open(this.nodeConfig.mmrPath);
+      } else {
+        fileBasedMMRDb = await FileBasedDb.create(this.nodeConfig.mmrPath, DEFAULT_WORD_SIZE);
+      }
+
+      const schema =
+        (await getExistingProjectSchema(this.nodeConfig, this.sequelize)) || (await this.createProjectSchema());
+      const pgBasedMMRDb = new PgBasedMMRDB(this.sequelize, schema);
+
+      await pgBasedMMRDb.connect();
+
+      const [source, target] =
+        direction === MigrationDirection.FileToDb ? [fileBasedMMRDb, pgBasedMMRDb] : [pgBasedMMRDb, fileBasedMMRDb];
+
+      const nodes = await source.getNodes();
+      const sortedEntries = Object.entries(nodes).sort(([a], [b]) => a.localeCompare(b));
+
+      const totalNodes = sortedEntries.length;
+      let completedNodes = 0;
+
+      for (const [index, value] of sortedEntries) {
+        await target.set(value, parseInt(index, 10));
+
+        completedNodes++;
+        const progressPercentage = Math.round((completedNodes / totalNodes) * 100);
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+        process.stdout.write(`Migration progress: ${progressPercentage}% | ${completedNodes}/${totalNodes} nodes`);
+      }
+
+      process.stdout.write('\n');
+
+      const leafLength = await source.getLeafLength();
+      await target.setLeafLength(leafLength);
+    } catch (error) {
+      if (error instanceof MMRMigrateError) {
+        logger.error(`MMR migration error:\n${error.toString()}`);
+      } else {
+        logger.error('Unexpected error occurred during MMR migration:', error);
+      }
+      throw error;
     }
-
-    let fileBasedMMRDb: FileBasedDb;
-
-    if (existsSync(this.nodeConfig.mmrPath)) {
-      fileBasedMMRDb = await FileBasedDb.open(this.nodeConfig.mmrPath);
-    } else {
-      fileBasedMMRDb = await FileBasedDb.create(this.nodeConfig.mmrPath, DEFAULT_WORD_SIZE);
-    }
-
-    const schema =
-      (await getExistingProjectSchema(this.nodeConfig, this.sequelize)) || (await this.createProjectSchema());
-    const pgBasedMMRDb = new PgBasedMMRDB(this.sequelize, schema);
-    await pgBasedMMRDb.connect();
-
-    const [source, target] =
-      direction === MigrationDirection.FileToDb ? [fileBasedMMRDb, pgBasedMMRDb] : [pgBasedMMRDb, fileBasedMMRDb];
-
-    const nodes = await source.getNodes();
-    const sortedEntries = Object.entries(nodes).sort(([a], [b]) => a.localeCompare(b));
-
-    const totalNodes = sortedEntries.length;
-    let completedNodes = 0;
-
-    for (const [index, value] of sortedEntries) {
-      await target.set(value, parseInt(index, 10));
-
-      completedNodes++;
-      const progressPercentage = Math.round((completedNodes / totalNodes) * 100);
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
-      process.stdout.write(`Migration progress: ${progressPercentage}% | ${completedNodes}/${totalNodes} nodes`);
-    }
-
-    process.stdout.write('\n');
-
-    const leafLength = await source.getLeafLength();
-    await target.setLeafLength(leafLength);
   }
 
   private async createProjectSchema(): Promise<string> {
