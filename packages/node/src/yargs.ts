@@ -81,6 +81,18 @@ export const yargsOptions = yargs(hideBin(process.argv))
           describe: 'Local path of the merkle mountain range (.mmr) file',
           type: 'string',
         },
+        'db-schema': {
+          demandOption: false,
+          describe: 'Db schema name of the project',
+          type: 'string',
+        },
+        subquery: {
+          alias: 'f',
+          demandOption: true,
+          default: process.cwd(),
+          describe: 'Local path or IPFS cid of the subquery project',
+          type: 'string',
+        },
       }),
     handler: (argv) => {
       initLogger(

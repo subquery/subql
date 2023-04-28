@@ -56,7 +56,10 @@ export class MMRMigrateService {
       } else if (direction === MigrationDirection.DbToFile) {
         const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
         if (!schema) {
-          throw new MMRMigrateError(`Schema for MMR DB does not exist`, MMRMigrateErrorCode.SchemaCreationError);
+          throw new MMRMigrateError(
+            `Project with db schema ${schema} does not exist`,
+            MMRMigrateErrorCode.SchemaCreationError
+          );
         }
         const tables = await this.sequelize.query('SELECT tablename FROM pg_tables WHERE schemaname = ?', {
           replacements: [schema],
@@ -64,22 +67,18 @@ export class MMRMigrateService {
         });
         const tableNames = tables.map((table: any) => table.tablename);
 
-        if (!tableNames.includes('_mmrs')) {
+        if (!tableNames.includes('_mmr')) {
           throw new MMRMigrateError(
-            'The _mmr table does not exist in the database',
+            'MMR data is not found in the database, unable to migrate.',
             MMRMigrateErrorCode.SchemaCreationError,
             {schema: schema}
           );
         }
       }
 
-      let fileBasedMMRDb: FileBasedDb;
-
-      if (existsSync(this.nodeConfig.mmrPath)) {
-        fileBasedMMRDb = await FileBasedDb.open(this.nodeConfig.mmrPath);
-      } else {
-        fileBasedMMRDb = await FileBasedDb.create(this.nodeConfig.mmrPath, DEFAULT_WORD_SIZE);
-      }
+      const fileBasedMMRDb: FileBasedDb = existsSync(this.nodeConfig.mmrPath)
+        ? await FileBasedDb.open(this.nodeConfig.mmrPath)
+        : await FileBasedDb.create(this.nodeConfig.mmrPath, DEFAULT_WORD_SIZE);
 
       const schema =
         (await getExistingProjectSchema(this.nodeConfig, this.sequelize)) || (await this.createProjectSchema());
