@@ -5,11 +5,12 @@ import {existsSync} from 'fs';
 import {DEFAULT_WORD_SIZE} from '@subql/common';
 import {NodeConfig, getExistingProjectSchema, getLogger, PgBasedMMRDB} from '@subql/node-core';
 import {FileBasedDb} from '@subql/x-merkle-mountain-range';
-import {Logging, Sequelize} from 'sequelize';
+import {Logging, QueryTypes, Sequelize} from 'sequelize';
 
 const logger = getLogger('mmr-migrate');
 
 export enum MMRMigrateErrorCode {
+  SchemaCreationError = 'SCHEMA_CREATION_ERROR',
   MMRFileNotFoundError = 'MMR_FILE_NOT_FOUND_ERROR',
 }
 
@@ -52,6 +53,24 @@ export class MMRMigrateService {
           `MMR file not found: ${this.nodeConfig.mmrPath}`,
           MMRMigrateErrorCode.MMRFileNotFoundError
         );
+      } else if (direction === MigrationDirection.DbToFile) {
+        const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
+        if (!schema) {
+          throw new MMRMigrateError(`Schema for MMR DB does not exist`, MMRMigrateErrorCode.SchemaCreationError);
+        }
+        const tables = await this.sequelize.query('SELECT tablename FROM pg_tables WHERE schemaname = ?', {
+          replacements: [schema],
+          type: QueryTypes.SELECT,
+        });
+        const tableNames = tables.map((table: any) => table.tablename);
+
+        if (!tableNames.includes('_mmrs')) {
+          throw new MMRMigrateError(
+            'The _mmr table does not exist in the database',
+            MMRMigrateErrorCode.SchemaCreationError,
+            {schema: schema}
+          );
+        }
       }
 
       let fileBasedMMRDb: FileBasedDb;
