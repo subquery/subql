@@ -24,6 +24,7 @@ import {
   ConnectionPoolService,
   ApiService as BaseApiService,
 } from '@subql/node-core';
+import { CosmWasmSafeClient } from '@subql/types-cosmos/interfaces';
 import {
   CosmosProjectNetConfig,
   SubqueryProject,
@@ -161,6 +162,7 @@ export class ApiService
     return res;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async fetchBlocks(
     batch: number[],
     overallSpecVer?: number,
@@ -256,7 +258,10 @@ export class CosmosClient extends CosmWasmClient {
 }
 
 // TODO make this class not exported and expose interface instead
-export class CosmosSafeClient extends CosmWasmClient {
+export class CosmosSafeClient
+  extends CosmWasmClient
+  implements CosmWasmSafeClient
+{
   height: number;
 
   constructor(tmClient: Tendermint34Client, height: number) {

@@ -9,7 +9,7 @@ import {TxData, Header} from '@cosmjs/tendermint-rpc';
 import {Validator} from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
 
 export interface CosmWasmSafeClient extends CosmWasmClient {
-  validator(): () => Promise<readonly Validator[]>;
+  validators: () => Promise<readonly Validator[]>;
 }
 
 export interface Entity {
