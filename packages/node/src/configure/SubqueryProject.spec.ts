@@ -60,6 +60,7 @@ describe('SubqueryProject', () => {
       //manually pass the endpoint
       const project = await SubqueryProject.create(
         deployment,
+        null,
         { endpoint: ['wss://rpc.polkadot.io/public-ws'] },
         { ipfs: 'http://127.0.0.1:8080' },
       );

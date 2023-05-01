@@ -12,6 +12,8 @@ import {
   NodeConfig,
   getLogger,
   setLevel,
+  readRawManifest,
+  rebaseArgsWithManifest,
 } from '@subql/node-core';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { yargsOptions } from '../yargs';
@@ -38,7 +40,6 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
     return acc;
   }, {} as any);
 }
-
 function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   const ipfsMatch = config.subquery.match(IPFS_REGEX);
   return {
@@ -92,7 +93,7 @@ function warnDeprecations() {
 @Global()
 @Module({})
 export class ConfigureModule {
-  static registerWithConfig(config: NodeConfig): DynamicModule {
+  static async registerWithConfig(config: NodeConfig): Promise<DynamicModule> {
     if (!validDbSchemaName(config.dbSchema)) {
       process.exit(1);
     }
@@ -101,9 +102,14 @@ export class ConfigureModule {
       setLevel('debug');
     }
 
+    const rawManifest = await readRawManifest(config.subquery, {
+      ipfs: config.ipfs,
+    });
+
     const project = async () => {
       const p = await SubqueryProject.create(
         config.subquery,
+        rawManifest,
         omitBy<SubstrateProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
@@ -136,11 +142,15 @@ export class ConfigureModule {
       exports: [NodeConfig, SubqueryProject],
     };
   }
-  static register(): DynamicModule {
+  static async register(): Promise<DynamicModule> {
     const { argv } = yargsOptions;
     let config: NodeConfig;
+    let rawManifest: unknown;
     if (argv.config) {
       config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
+      rawManifest = readRawManifest(config.subquery, {
+        ipfs: config.ipfs,
+      });
     } else {
       if (!argv.subquery) {
         logger.error(
@@ -149,9 +159,15 @@ export class ConfigureModule {
         yargsOptions.showHelp();
         process.exit(1);
       }
+      rawManifest = await readRawManifest(argv.subquery, {
+        ipfs: argv.ipfs,
+      });
 
       warnDeprecations();
       assert(argv.subquery, 'subquery path is missing');
+
+      rebaseArgsWithManifest(argv, rawManifest);
+
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }
 
@@ -166,6 +182,7 @@ export class ConfigureModule {
     const project = async () => {
       const p = await SubqueryProject.create(
         argv.subquery,
+        rawManifest,
         omitBy<SubstrateProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
@@ -182,6 +199,8 @@ export class ConfigureModule {
       });
       return p;
     };
+
+    project.name;
 
     return {
       module: ConfigureModule,

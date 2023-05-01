@@ -68,13 +68,13 @@ export class SubqueryProject {
 
   static async create(
     path: string,
+    projectSchema: unknown,
     networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
     readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
     // We have to use reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
     const reader = await ReaderFactory.create(path, readerOptions);
-    const projectSchema = await reader.getProjectSchema();
     if (projectSchema === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }

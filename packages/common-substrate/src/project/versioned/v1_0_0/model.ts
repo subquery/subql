@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+  NodeOptions,
   NodeSpec,
   ProjectManifestBaseImpl,
   QuerySpec,
+  RunnerNodeOptionsModel,
   RunnerQueryBaseModel,
   RunnerSpecs,
   SemverVersionValidator,
@@ -46,6 +48,11 @@ export class SubstrateRunnerNodeImpl implements NodeSpec {
   @Validate(SemverVersionValidator)
   // @Matches(RUNNER_REGEX,{message: 'runner version is not correct'})
   version: string;
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RunnerNodeOptionsModel)
+  options?: NodeOptions;
 }
 
 export class SubstrateRunnerSpecsImpl implements RunnerSpecs {

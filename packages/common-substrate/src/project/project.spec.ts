@@ -51,6 +51,12 @@ describe('project.yaml', () => {
     expect(deployment.network.chainId).toBe('moonbeamChainId');
   });
 
+  it('can get runner options for deployment', () => {
+    const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_node_options.yaml')).asV1_0_0
+      .deployment;
+    expect(deployment.runner.node.options.unsafe).toBeTruthy();
+  });
+
   it('can validate deployment runner versions', () => {
     const deployment = new DeploymentV1_0_0();
     const nodeImp = new SubstrateRunnerNodeImpl();
