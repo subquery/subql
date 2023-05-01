@@ -1,0 +1,112 @@
+// Copyright 2020-2022 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import {Db} from '@subql/x-merkle-mountain-range';
+import {Sequelize, DataTypes, Model, ModelStatic} from 'sequelize';
+
+const LEAF_LENGTH_INDEX = -1;
+
+interface NodeMap {
+  [key: string]: Buffer;
+}
+
+interface MMRIndexValueStoreAttributes {
+  key: number;
+  value: Buffer;
+}
+
+export interface MmrModel extends Model<MMRIndexValueStoreAttributes>, MMRIndexValueStoreAttributes {}
+
+export class PgBasedMMRDB implements Db {
+  private mmrIndexValueStore: ModelStatic<MmrModel>;
+
+  private constructor(sequelize: Sequelize, schema: string) {
+    this.mmrIndexValueStore = sequelize.define(
+      '_mmr',
+      {
+        key: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+        },
+        value: {
+          type: DataTypes.BLOB,
+          allowNull: false,
+        },
+      },
+      {
+        schema,
+        freezeTableName: true,
+      }
+    );
+  }
+
+  static async create(sequelize: Sequelize, schema: string): Promise<PgBasedMMRDB> {
+    const postgresBasedDb = new PgBasedMMRDB(sequelize, schema);
+
+    await postgresBasedDb.mmrIndexValueStore.sync();
+
+    return postgresBasedDb;
+  }
+
+  async get(key: number): Promise<any | null> {
+    try {
+      const record = await this.mmrIndexValueStore.findByPk(key);
+      return record ? record.toJSON() : null;
+    } catch (error) {
+      throw new Error(`Failed to get MMR node ${key}: ${error}`);
+    }
+  }
+
+  async set(value: any, key: number): Promise<void> {
+    if (value === null || value === undefined) {
+      throw new Error('Cannot set a null or undefined value');
+    }
+
+    try {
+      await this.mmrIndexValueStore.upsert({key, value});
+    } catch (error) {
+      throw new Error(`Failed to store MMR Node: ${error}`);
+    }
+  }
+
+  async delete(key: string): Promise<void> {
+    try {
+      await this.mmrIndexValueStore.destroy({where: {key}});
+    } catch (error) {
+      throw new Error(`Failed to delete MMR node: ${error}`);
+    }
+  }
+
+  async getNodes(): Promise<NodeMap> {
+    try {
+      const nodes = await this.mmrIndexValueStore.findAll();
+      const nodeMap: NodeMap = {};
+      nodes.forEach((node) => {
+        nodeMap[node.key] = node.value;
+      });
+      return nodeMap;
+    } catch (error) {
+      throw new Error(`Failed to get MMR nodes: ${error}`);
+    }
+  }
+
+  async getLeafLength(): Promise<number> {
+    try {
+      const record = await this.mmrIndexValueStore.findByPk(LEAF_LENGTH_INDEX);
+      return record ? record.value.readUInt32BE(0) : 0;
+    } catch (error) {
+      throw new Error(`Failed to get leaf length for MMR: ${error}`);
+    }
+  }
+
+  async setLeafLength(leafLength: number): Promise<number> {
+    try {
+      const leafLengthBuffer = Buffer.alloc(4);
+      leafLengthBuffer.writeUInt32BE(leafLength, 0);
+      await this.mmrIndexValueStore.upsert({key: LEAF_LENGTH_INDEX, value: leafLengthBuffer});
+      return leafLength;
+    } catch (error) {
+      throw new Error(`Failed to set leaf length for MMR: ${error}`);
+    }
+  }
+}

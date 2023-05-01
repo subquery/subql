@@ -63,6 +63,50 @@ export const yargsOptions = yargs(hideBin(process.argv))
       return reindexInit(argv.targetHeight);
     },
   })
+  .command({
+    command: 'mmr-migrate',
+    describe: 'Migrate MMR data from storage file to postgres DB',
+    builder: (yargs) =>
+      yargs.options({
+        direction: {
+          type: 'string',
+          description: 'set direction of migration (file -> DB or DB -> file)',
+          demandOption: false,
+          choices: ['dbToFile', 'fileToDb'],
+          default: 'dbToFile',
+        },
+        'mmr-path': {
+          alias: 'm',
+          demandOption: false,
+          describe: 'Local path of the merkle mountain range (.mmr) file',
+          type: 'string',
+        },
+        'db-schema': {
+          demandOption: false,
+          describe: 'Db schema name of the project',
+          type: 'string',
+        },
+        subquery: {
+          alias: 'f',
+          demandOption: true,
+          default: process.cwd(),
+          describe: 'Local path or IPFS cid of the subquery project',
+          type: 'string',
+        },
+      }),
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFmt as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
+      return mmrMigrateInit(argv.direction);
+    },
+  })
   .options({
     'batch-size': {
       demandOption: false,
@@ -168,6 +212,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Enable/disable proof of index',
       type: 'boolean',
       default: false,
+    },
+    'mmr-store-type': {
+      demandOption: false,
+      describe: 'Store MMR in either a file or a postgres DB',
+      type: 'string',
+      choices: ['file', 'postgres'],
+      default: 'file',
     },
     'query-limit': {
       demandOption: false,
