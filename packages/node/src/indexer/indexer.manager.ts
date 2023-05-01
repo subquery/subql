@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   isBlockHandlerProcessor,
@@ -11,22 +10,21 @@ import {
   isCustomDs,
   isRuntimeDs,
   SubstrateCustomDataSource,
-  SubstrateCustomHandler,
   SubstrateHandlerKind,
-  SubstrateNetworkFilter,
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
 import {
   NodeConfig,
   getLogger,
   profiler,
-  profilerWrap,
   IndexerSandbox,
-  IIndexerManager,
   ProcessBlockResponse,
+  BaseIndexerManager,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
+  SubstrateBlockFilter,
+  SubstrateDatasource,
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
@@ -47,82 +45,38 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager
-  implements IIndexerManager<BlockContent, SubqlProjectDs>
-{
+export class IndexerManager extends BaseIndexerManager<
+  ApiAt,
+  BlockContent,
+  SubstrateDatasource,
+  SubstrateCustomDataSource,
+  typeof FilterTypeMap,
+  typeof ProcessorTypeMap,
+  SubstrateRuntimeHandlerInputMap
+> {
+  protected isRuntimeDs = isRuntimeDs;
+  protected isCustomDs = isCustomDs;
+  protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
+
   constructor(
-    private apiService: ApiService,
-    private nodeConfig: NodeConfig,
-    private sandboxService: SandboxService,
-    private dsProcessorService: DsProcessorService,
-    private dynamicDsService: DynamicDsService,
+    apiService: ApiService,
+    nodeConfig: NodeConfig,
+    sandboxService: SandboxService,
+    dsProcessorService: DsProcessorService,
+    dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     @Inject('IProjectService') private projectService: ProjectService,
   ) {
-    logger.info('indexer manager start');
-  }
-
-  @profiler(yargsOptions.argv.profiler)
-  async indexBlock(
-    blockContent: BlockContent,
-    dataSources: SubqlProjectDs[],
-    runtimeVersion: RuntimeVersion,
-  ): Promise<ProcessBlockResponse> {
-    const { block } = blockContent;
-    let dynamicDsCreated = false;
-    let reindexBlockHeight: number | null = null;
-    const blockHeight = block.block.header.number.toNumber();
-
-    const filteredDataSources = this.filterDataSources(
-      block.block.header.number.toNumber(),
-      dataSources,
+    super(
+      apiService,
+      nodeConfig,
+      sandboxService,
+      dsProcessorService,
+      dynamicDsService,
+      FilterTypeMap,
+      ProcessorTypeMap,
     );
-
-    this.assertDataSources(filteredDataSources, blockHeight);
-
-    let apiAt: ApiAt;
-    reindexBlockHeight = await this.processUnfinalizedBlocks(block);
-
-    // Only index block if we're not going to reindex
-    if (!reindexBlockHeight) {
-      await this.indexBlockData(
-        blockContent,
-        filteredDataSources,
-        async (ds: SubqlProjectDs) => {
-          // Injected runtimeVersion from fetch service might be outdated
-          apiAt =
-            apiAt ??
-            (await this.apiService.getPatchedApi(block, runtimeVersion));
-
-          const vm = this.sandboxService.getDsProcessor(ds, apiAt);
-
-          // Inject function to create ds into vm
-          vm.freeze(
-            async (templateName: string, args?: Record<string, unknown>) => {
-              const newDs = await this.dynamicDsService.createDynamicDatasource(
-                {
-                  templateName,
-                  args,
-                  startBlock: blockHeight,
-                },
-              );
-              // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              filteredDataSources.push(newDs);
-              dynamicDsCreated = true;
-            },
-            'createDynamicDatasource',
-          );
-
-          return vm;
-        },
-      );
-    }
-
-    return {
-      dynamicDsCreated,
-      blockHash: block.block.header.hash.toHex(),
-      reindexBlockHeight,
-    };
+    logger.info('indexer manager start');
   }
 
   async start(): Promise<void> {
@@ -130,58 +84,45 @@ export class IndexerManager
     logger.info('indexer manager started');
   }
 
-  private async processUnfinalizedBlocks(
-    block: SubstrateBlock,
-  ): Promise<number | null> {
+  @profiler(yargsOptions.argv.profiler)
+  async indexBlock(
+    block: BlockContent,
+    dataSources: SubstrateDatasource[],
+    runtimeVersion: RuntimeVersion,
+  ): Promise<ProcessBlockResponse> {
+    return super.internalIndexBlock(block, dataSources, () =>
+      this.getApi(block, runtimeVersion),
+    );
+  }
+
+  getBlockHeight(block: BlockContent): number {
+    return block.block.block.header.number.toNumber();
+  }
+
+  getBlockHash(block: BlockContent): string {
+    return block.block.block.header.hash.toHex();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  private async getApi(
+    block: BlockContent,
+    runtimeVersion: RuntimeVersion,
+  ): Promise<ApiAt> {
+    return this.apiService.api.getPatchedApi(block, runtimeVersion);
+  }
+
+  protected async processUnfinalizedBlocks(
+    block: BlockContent,
+  ): Promise<number> {
     if (this.nodeConfig.unfinalizedBlocks) {
-      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(
+        block.block,
+      );
     }
     return null;
   }
 
-  private filterDataSources(
-    nextProcessingHeight: number,
-    dataSources: SubqlProjectDs[],
-  ): SubqlProjectDs[] {
-    let filteredDs: SubqlProjectDs[];
-
-    filteredDs = dataSources.filter(
-      (ds) => ds.startBlock <= nextProcessingHeight,
-    );
-
-    if (filteredDs.length === 0) {
-      logger.error(`Did not find any matching datasouces`);
-      process.exit(1);
-    }
-    // perform filter for custom ds
-    filteredDs = filteredDs.filter((ds) => {
-      if (isCustomDs(ds)) {
-        return this.dsProcessorService
-          .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.apiService.api);
-      } else {
-        return true;
-      }
-    });
-
-    if (!filteredDs.length) {
-      logger.error(`Did not find any datasources with associated processor`);
-      process.exit(1);
-    }
-    return filteredDs;
-  }
-
-  private assertDataSources(ds: SubqlProjectDs[], blockHeight: number) {
-    if (!ds.length) {
-      logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
-         or delete your database and start again from the currently specified startBlock`,
-      );
-      process.exit(1);
-    }
-  }
-
-  private async indexBlockData(
+  protected async indexBlockData(
     { block, events, extrinsics }: BlockContent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
@@ -244,131 +185,26 @@ export class IndexerManager
     }
   }
 
-  private async indexData<K extends SubstrateHandlerKind>(
-    kind: K,
-    data: SubstrateRuntimeHandlerInputMap[K],
-    ds: SubqlProjectDs,
-    getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    let vm: IndexerSandbox;
-    if (isRuntimeDs(ds)) {
-      const handlers = ds.mapping.handlers.filter(
-        (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
-      );
-
-      for (const handler of handlers) {
-        vm = vm ?? (await getVM(ds));
-        this.nodeConfig.profiler
-          ? await profilerWrap(
-              vm.securedExec.bind(vm),
-              'handlerPerformance',
-              handler.handler,
-            )(handler.handler, [data])
-          : await vm.securedExec(handler.handler, [data]);
-      }
-    } else if (isCustomDs(ds)) {
-      const handlers = this.filterCustomDsHandlers<K>(
-        ds,
-        data,
-        ProcessorTypeMap[kind],
-        (data, baseFilter) => {
-          switch (kind) {
-            case SubstrateHandlerKind.Block:
-              return !!SubstrateUtil.filterBlock(
-                data as SubstrateBlock,
-                baseFilter,
-              );
-            case SubstrateHandlerKind.Call:
-              return !!SubstrateUtil.filterExtrinsics(
-                [data as SubstrateExtrinsic],
-                baseFilter,
-              ).length;
-            case SubstrateHandlerKind.Event:
-              return !!SubstrateUtil.filterEvents(
-                [data as SubstrateEvent],
-                baseFilter,
-              ).length;
-            default:
-              throw new Error('Unsupported handler kind');
-          }
-        },
-      );
-
-      for (const handler of handlers) {
-        vm = vm ?? (await getVM(ds));
-        await this.transformAndExecuteCustomDs(ds, vm, handler, data);
-      }
-    }
-  }
-
-  private filterCustomDsHandlers<K extends SubstrateHandlerKind>(
-    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
-    data: SubstrateRuntimeHandlerInputMap[K],
-    baseHandlerCheck: ProcessorTypeMap[K],
-    baseFilter: (
-      data: SubstrateRuntimeHandlerInputMap[K],
-      baseFilter: any,
-    ) => boolean,
-  ): SubstrateCustomHandler[] {
-    const plugin = this.dsProcessorService.getDsProcessor(ds);
-
-    return ds.mapping.handlers
-      .filter((handler) => {
-        const processor = plugin.handlerProcessors[handler.kind];
-        if (baseHandlerCheck(processor)) {
-          processor.baseFilter;
-          return baseFilter(data, processor.baseFilter);
-        }
-        return false;
-      })
-      .filter((handler) => {
-        const processor = asSecondLayerHandlerProcessor_1_0_0(
-          plugin.handlerProcessors[handler.kind],
-        );
-
-        try {
-          return processor.filterProcessor({
-            filter: handler.filter,
-            input: data,
-            ds,
-          });
-        } catch (e) {
-          logger.error(e, 'Failed to run ds processer filter.');
-          throw e;
-        }
-      });
-  }
-
-  private async transformAndExecuteCustomDs<K extends SubstrateHandlerKind>(
-    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
-    vm: IndexerSandbox,
-    handler: SubstrateCustomHandler,
-    data: SubstrateRuntimeHandlerInputMap[K],
-  ): Promise<void> {
-    const plugin = this.dsProcessorService.getDsProcessor(ds);
-    const assets = await this.dsProcessorService.getAssets(ds);
-
-    const processor = asSecondLayerHandlerProcessor_1_0_0(
-      plugin.handlerProcessors[handler.kind],
-    );
-
-    const transformedData = await processor
-      .transformer({
-        input: data,
-        ds,
-        filter: handler.filter,
-        api: this.apiService.api,
-        assets,
-      })
-      .catch((e) => {
-        logger.error(e, 'Failed to transform data with ds processor.');
-        throw e;
-      });
-
-    // We can not run this in parallel. the transformed data items may be dependent on one another.
-    // An example of this is with Acala EVM packing multiple EVM logs into a single Substrate event
-    for (const _data of transformedData) {
-      await vm.securedExec(handler.handler, [_data]);
+  protected baseCustomHandlerFilter(
+    kind: SubstrateHandlerKind,
+    data: any,
+    baseFilter: any,
+  ): boolean {
+    switch (kind) {
+      case SubstrateHandlerKind.Block:
+        return !!SubstrateUtil.filterBlock(data as SubstrateBlock, baseFilter);
+      case SubstrateHandlerKind.Call:
+        return !!SubstrateUtil.filterExtrinsics(
+          [data as SubstrateExtrinsic],
+          baseFilter,
+        ).length;
+      case SubstrateHandlerKind.Event:
+        return !!SubstrateUtil.filterEvents(
+          [data as SubstrateEvent],
+          baseFilter,
+        ).length;
+      default:
+        throw new Error('Unsupported handler kind');
     }
   }
 }
@@ -386,7 +222,10 @@ const ProcessorTypeMap = {
 };
 
 const FilterTypeMap = {
-  [SubstrateHandlerKind.Block]: SubstrateUtil.filterBlock,
+  [SubstrateHandlerKind.Block]: (
+    block: SubstrateBlock,
+    filter?: SubstrateBlockFilter,
+  ) => !!SubstrateUtil.filterBlock(block, filter),
   [SubstrateHandlerKind.Event]: SubstrateUtil.filterEvent,
   [SubstrateHandlerKind.Call]: SubstrateUtil.filterExtrinsic,
 };

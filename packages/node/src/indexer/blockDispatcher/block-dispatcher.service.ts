@@ -13,10 +13,8 @@ import {
   BlockDispatcher,
   ProcessBlockResponse,
 } from '@subql/node-core';
-import {
-  SubqlProjectDs,
-  SubqueryProject,
-} from '../../configure/SubqueryProject';
+import { SubstrateDatasource } from '@subql/types';
+import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
@@ -28,7 +26,7 @@ import { BlockContent } from '../types';
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<BlockContent, SubqlProjectDs>
+  extends BlockDispatcher<BlockContent, SubstrateDatasource>
   implements OnApplicationShutdown
 {
   private runtimeService: RuntimeService;
@@ -38,7 +36,8 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
+    @Inject('IProjectService')
+    projectService: IProjectService<SubstrateDatasource>,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,

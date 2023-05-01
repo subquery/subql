@@ -161,7 +161,8 @@ export class DictionaryService implements OnApplicationShutdown {
     readonly dictionaryEndpoint: string,
     readonly chainId: string,
     protected readonly nodeConfig: NodeConfig,
-    protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'] // Cosmos uses chain instead of genesisHash
+    protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
+    protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
   ) {}
 
   async init(): Promise<void> {
@@ -299,7 +300,7 @@ export class DictionaryService implements OnApplicationShutdown {
       },
     ];
     for (const entity of Object.keys(mapped)) {
-      const [pVars, node] = buildDictQueryFragment(
+      const [pVars, node] = this.buildQueryFragment(
         entity,
         startBlock,
         queryEndBlock,

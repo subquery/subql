@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Transaction} from 'sequelize';
+import {hasValue} from '../../utils';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
 import {ICachedModelControl} from './types';
-
-function hasValue<T>(obj: T | undefined | null): obj is T {
-  return obj !== undefined && obj !== null;
-}
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];

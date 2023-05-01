@@ -53,6 +53,7 @@ export interface IConfig {
   readonly storeCacheThreshold: number;
   readonly storeGetCacheSize: number;
   readonly storeCacheAsync: boolean;
+  readonly scaleBatchSize?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -236,6 +237,10 @@ export class NodeConfig implements IConfig {
 
   get isPostgresSecureConnection(): boolean {
     return !!this._config.pgCa;
+  }
+
+  get scaleBatchSize(): boolean {
+    return !!this.scaleBatchSize;
   }
 
   get postgresCACert(): string | undefined {

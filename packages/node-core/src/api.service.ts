@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Injectable} from '@nestjs/common';
 import {NetworkMetadataPayload} from './events';
 import {ISubqueryProject} from './indexer';
 import {getLogger} from './logger';
@@ -13,7 +12,6 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 type FetchFunction<T> = (batch: number[]) => Promise<T[]>;
 type FetchFunctionProvider<T> = () => FetchFunction<T>;
 
-@Injectable()
 export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, A = any, B = any> {
   constructor(protected project: P) {}
 

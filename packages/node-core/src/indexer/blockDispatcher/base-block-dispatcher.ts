@@ -27,7 +27,7 @@ const logger = getLogger('BaseBlockDispatcherService');
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
   blockHash: string;
-  reindexBlockHeight: number;
+  reindexBlockHeight: number | null;
 };
 
 export interface IBlockDispatcher {

@@ -19,4 +19,7 @@ export * from './blockDispatcher';
 export * from './postgresMmrDb';
 export * from './dynamic-ds.service';
 export * from './testing.service';
+export * from './project.service';
+export * from './fetch.service';
+export * from './indexer.manager';
 export * from './mmrMigrate.service';

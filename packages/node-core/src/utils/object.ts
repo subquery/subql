@@ -31,3 +31,7 @@ export function splitArrayByRatio(arr: number[], weights: number[]): number[][] 
   }
   return result;
 }
+
+export function hasValue<T>(obj: T | undefined | null): obj is T {
+  return obj !== undefined && obj !== null;
+}
