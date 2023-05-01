@@ -152,7 +152,7 @@ function createIndexerManager(
     project,
   );
   const poiService = new PoiService(storeCache);
-  const mmrService = new MmrService(nodeConfig, storeCache);
+  const mmrService = new MmrService(nodeConfig, storeCache, sequilize);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,

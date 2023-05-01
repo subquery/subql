@@ -9,6 +9,7 @@ declare module '@subql/x-merkle-mountain-range' {
     get(leafIndex: number): Promise<Uint8Array>;
     getRoot(leafIndex: number): Promise<Uint8Array>;
     append(value: Uint8Array, leafIndex?: number): Promise<void>;
+    appendMany(value: Uint8Array[], startLeafIndex?: number): Promise<void>;
     getProof(leafIndexes: number[], referenceTreeLength?: any): Promise<MMR<MemoryBasedDb>>;
     delete(leafIndex: number): Promise<void>;
   }
@@ -28,6 +29,7 @@ declare module '@subql/x-merkle-mountain-range' {
     getLeafLength(): Promise<number>;
     setLeafLength(length: number): Promise<number>;
     getNodes(): Promise<Record<number, Uint8Array>>;
+    set(value: Uint8Array, index: number): Promise<void>;
   }
 
   class MemoryBasedDb implements Db {
