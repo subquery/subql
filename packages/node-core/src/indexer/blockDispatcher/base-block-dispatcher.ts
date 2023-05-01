@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {hexToU8a, u8aEq} from '@polkadot/util';
+import {hexToU8a, u8aEq} from '@subql/utils';
 import {
   DynamicDsService,
   IProjectNetworkConfig,
