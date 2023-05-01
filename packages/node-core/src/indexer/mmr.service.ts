@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import fs from 'fs';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {u8aToHex, u8aEq} from '@polkadot/util';
@@ -177,11 +178,9 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private async ensurePostgresBasedMmr(): Promise<MMR> {
-    const postgresBasedDb = new PgBasedMMRDB(
-      this.sequelize,
-      (await getExistingProjectSchema(this.nodeConfig, this.sequelize))!
-    );
-    await postgresBasedDb.connect();
+    const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
+    assert(schema, 'Unable to check for MMR table, schema is undefined');
+    const postgresBasedDb = await PgBasedMMRDB.create(this.sequelize, schema);
     return new MMR(keccak256Hash, postgresBasedDb);
   }
 

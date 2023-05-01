@@ -15,22 +15,14 @@ interface MMRIndexValueStoreAttributes {
   value: Buffer;
 }
 
-class MMRIndexValueStoreInstance extends Model<MMRIndexValueStoreAttributes> implements MMRIndexValueStoreAttributes {
-  key!: number;
-  value!: Buffer;
-}
+export interface MmrModel extends Model<MMRIndexValueStoreAttributes>, MMRIndexValueStoreAttributes {}
 
 export class PgBasedMMRDB implements Db {
-  private sequelize;
-  private mmrIndexValueStore: ModelStatic<MMRIndexValueStoreInstance>;
+  private mmrIndexValueStore: ModelStatic<MmrModel>;
 
-  constructor(sequelize: Sequelize, schema: string) {
-    this.sequelize = sequelize;
-    this.mmrIndexValueStore = this.initMMRIndexValueStoreModel(this.sequelize, schema);
-  }
-
-  private initMMRIndexValueStoreModel(sequelize: Sequelize, schema: string): ModelStatic<MMRIndexValueStoreInstance> {
-    MMRIndexValueStoreInstance.init(
+  private constructor(sequelize: Sequelize, schema: string) {
+    this.mmrIndexValueStore = sequelize.define(
+      '_mmr',
       {
         key: {
           type: DataTypes.INTEGER,
@@ -42,33 +34,30 @@ export class PgBasedMMRDB implements Db {
         },
       },
       {
-        sequelize,
-        modelName: '_mmr',
-        schema: schema,
+        schema,
         freezeTableName: true,
       }
     );
-    return MMRIndexValueStoreInstance;
   }
 
-  async connect() {
-    try {
-      await this.mmrIndexValueStore.sync();
-    } catch (error) {
-      throw new Error(`Failed to create MMR database: ${error}`);
-    }
+  static async create(sequelize: Sequelize, schema: string): Promise<PgBasedMMRDB> {
+    const postgresBasedDb = new PgBasedMMRDB(sequelize, schema);
+
+    await postgresBasedDb.mmrIndexValueStore.sync();
+
+    return postgresBasedDb;
   }
 
-  async get(key: number) {
+  async get(key: number): Promise<any | null> {
     try {
       const record = await this.mmrIndexValueStore.findByPk(key);
-      return record ? record.value : null;
+      return record ? record.toJSON() : null;
     } catch (error) {
       throw new Error(`Failed to get MMR node ${key}: ${error}`);
     }
   }
 
-  async set(value: any, key: number) {
+  async set(value: any, key: number): Promise<void> {
     if (value === null || value === undefined) {
       throw new Error('Cannot set a null or undefined value');
     }
@@ -80,7 +69,7 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async delete(key: string) {
+  async delete(key: string): Promise<void> {
     try {
       await this.mmrIndexValueStore.destroy({where: {key}});
     } catch (error) {
@@ -90,7 +79,7 @@ export class PgBasedMMRDB implements Db {
 
   async getNodes(): Promise<NodeMap> {
     try {
-      const nodes = await this.mmrIndexValueStore.findAll<MMRIndexValueStoreInstance>();
+      const nodes = await this.mmrIndexValueStore.findAll();
       const nodeMap: NodeMap = {};
       nodes.forEach((node) => {
         nodeMap[node.key] = node.value;
@@ -101,7 +90,7 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async getLeafLength() {
+  async getLeafLength(): Promise<number> {
     try {
       const record = await this.mmrIndexValueStore.findByPk(LEAF_LENGTH_INDEX);
       return record ? record.value.readUInt32BE(0) : 0;

@@ -82,9 +82,7 @@ export class MMRMigrateService {
 
       const schema =
         (await getExistingProjectSchema(this.nodeConfig, this.sequelize)) || (await this.createProjectSchema());
-      const pgBasedMMRDb = new PgBasedMMRDB(this.sequelize, schema);
-
-      await pgBasedMMRDb.connect();
+      const pgBasedMMRDb = await PgBasedMMRDB.create(this.sequelize, schema);
 
       const [source, target] =
         direction === MigrationDirection.FileToDb ? [fileBasedMMRDb, pgBasedMMRDb] : [pgBasedMMRDb, fileBasedMMRDb];
