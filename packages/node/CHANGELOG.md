@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-05-01
+- Major release for 2.0.0, align with other SDK versions
+### Added
+- Added Database cache feature, this significantly improve indexing performance
+  - Data flush to database when number of records reaches `--store-cache-threshold` value (default is 1000), this reduces number of transactions to database in order to save time.
+  - Direct get data from the cache rather than wait to retrieve it from database, with flag `--store-get-cache-size` user could decide how many records for **each** entity they want to keep in the cache (default is 500)
+  - If enabled `--store-cache-async` writing data to the store is asynchronous with regard to block processing (default is enabled)
+- Testing Framework, allow users to test their projects filters and handler functions without having to index the project
+  - Create test files with the naming convention `*.test.ts` and place them in the `src/tests` or `src/test` folder. Each test file should contain test cases for specific mapping handlers.
+  - Run the testing service using the command: `subql-node-ethereum test`.
+
 ## [1.0.2] - 2023-04-12
 ### Fixed
 - Improve error handling with 429 errors (#53)
