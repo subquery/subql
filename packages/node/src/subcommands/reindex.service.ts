@@ -120,6 +120,6 @@ export class ReindexService {
       this.sequelize,
       this.forceCleanService,
     );
-    await this.storeService.storeCache.flushCache();
+    await this.storeService.storeCache.flushCache(true, true);
   }
 }

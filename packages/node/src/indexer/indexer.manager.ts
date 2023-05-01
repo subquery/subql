@@ -68,17 +68,21 @@ export class IndexerManager
   ): Promise<ProcessBlockResponse> {
     const { block, blockHeight } = blockContent;
     let dynamicDsCreated = false;
-    let reindexBlockHeight = null;
+    let reindexBlockHeight: number | null = null;
 
-    // Check that we have valid datasources
-    this.assertDataSources(dataSources, blockHeight);
+    const filteredDataSources = this.filterDataSources(
+      blockHeight,
+      dataSources,
+    );
+
+    this.assertDataSources(filteredDataSources, blockHeight);
     reindexBlockHeight = await this.processUnfinalizedBlocks(block);
 
     // Only index block if we're not going to reindex
     if (!reindexBlockHeight) {
       await this.indexBlockData(
         blockContent,
-        dataSources,
+        filteredDataSources,
         // eslint-disable-next-line @typescript-eslint/require-await
         async (ds: SubqlProjectDs) => {
           const vm = this.sandboxService.getDsProcessorWrapper(
@@ -98,7 +102,7 @@ export class IndexerManager
                 },
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              dataSources.push(newDs);
+              filteredDataSources.push(newDs);
               dynamicDsCreated = true;
             },
             'createDynamicDatasource',
@@ -128,6 +132,38 @@ export class IndexerManager
       return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }
     return null;
+  }
+
+  private filterDataSources(
+    nextProcessingHeight: number,
+    dataSources: SubqlProjectDs[],
+  ): SubqlProjectDs[] {
+    let filteredDs: SubqlProjectDs[];
+
+    filteredDs = dataSources.filter(
+      (ds) => ds.startBlock <= nextProcessingHeight,
+    );
+
+    if (filteredDs.length === 0) {
+      logger.error(`Did not find any matching datasouces`);
+      process.exit(1);
+    }
+    // perform filter for custom ds
+    filteredDs = filteredDs.filter((ds) => {
+      if (isCustomDs(ds)) {
+        return this.dsProcessorService
+          .getDsProcessor(ds)
+          .dsFilterProcessor(ds, this.apiService.api);
+      } else {
+        return true;
+      }
+    });
+
+    if (!filteredDs.length) {
+      logger.error(`Did not find any datasources with associated processor`);
+      process.exit(1);
+    }
+    return filteredDs;
   }
 
   private assertDataSources(ds: SubqlProjectDs[], blockHeight: number) {

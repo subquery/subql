@@ -26,7 +26,7 @@
     "@nestjs/schedule": "^1.0.2",
     "@subql/common": "^2.0.0",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "2.0.1-4",
+    "@subql/node-core": "^2.0.2",
     "@subql/testing": "^2.0.0",
     "@subql/types-ethereum": "workspace:*",
     "@subql/utils": "^2.0.0",
