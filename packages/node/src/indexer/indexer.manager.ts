@@ -77,7 +77,6 @@ export class IndexerManager extends BaseIndexerManager<
       FilterTypeMap,
       ProcessorTypeMap,
     );
-    logger.info('indexer manager start');
   }
 
   async start(): Promise<void> {
