@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {ReaderFactory} from '@subql/common';
-import {rebaseArgsWithManifest} from '@subql/node-core';
+import {rebaseArgsWithManifest} from '../utils/configure';
 
 jest.setTimeout(30000);
 

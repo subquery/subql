@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/common-substrate/project/versioned';
 import {
   SecondLayerHandlerProcessor,
   SubstrateCustomDatasource,
@@ -12,6 +11,7 @@ import {
   SubstrateRuntimeDatasource,
 } from '@subql/types';
 import {gte} from 'semver';
+import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '../project/versioned';
 
 export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>

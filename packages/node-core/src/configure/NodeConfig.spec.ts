@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as path from 'path';
-import {IConfig} from '@subql/node-core';
-import {NodeConfig} from './NodeConfig';
+import {NodeConfig, IConfig} from './NodeConfig';
 
 describe('NodeConfig', () => {
   it('supports read from yaml', () => {
