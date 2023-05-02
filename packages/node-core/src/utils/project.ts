@@ -1,18 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ReaderFactory, ReaderOptions} from '@subql/common';
 import {isNumber, range, uniq, without, flatten} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 
 const logger = getLogger('Project-Utils');
-
-export async function readRawManifest(path: string, readerOptions?: ReaderOptions): Promise<unknown | undefined> {
-  const reader = await ReaderFactory.create(path, readerOptions);
-  return reader.getProjectSchema();
-}
 
 export async function getExistingProjectSchema(
   nodeConfig: NodeConfig,

@@ -9,8 +9,8 @@ runner:
     version: '>=1.0.0'
     options:
       historical: true
-      unsafe: false
-      unfinalizeBlocks: false
+      unsafe: true
+      unfinalizedBlocks: false
   query:
     name: '@subql/query'
     version: '*'

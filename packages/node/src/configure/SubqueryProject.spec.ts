@@ -3,6 +3,7 @@
 
 import path from 'path';
 
+import { ReaderFactory } from '@subql/common';
 import { SubqueryProject } from './SubqueryProject';
 
 describe('SubqueryProject', () => {
@@ -35,9 +36,16 @@ describe('SubqueryProject', () => {
 
     it('convert local 0.2.0 manifest to project object', async () => {
       //manually pass the endpoint
-      const project = await SubqueryProject.create(projectDirV0_2_0, {
-        endpoint: ['wss://rpc.polkadot.io/public-ws'],
-      });
+      const reader = await ReaderFactory.create(projectDirV0_2_0);
+      const rawManifest = await reader.getProjectSchema();
+      const project = await SubqueryProject.create(
+        projectDirV0_2_0,
+        rawManifest,
+        reader,
+        {
+          endpoint: ['wss://rpc.polkadot.io/public-ws'],
+        },
+      );
 
       expect((project.dataSources[1] as any).processor.file).toMatch(
         /moonbeam.js/,
@@ -46,9 +54,16 @@ describe('SubqueryProject', () => {
 
     it('convert local 0.3.0 manifest to project object', async () => {
       //manually pass the endpoint
-      const project = await SubqueryProject.create(projectDirV0_3_0, {
-        endpoint: ['wss://rpc.polkadot.io/public-ws'],
-      });
+      const reader = await ReaderFactory.create(projectDirV0_3_0);
+      const rawManifest = await reader.getProjectSchema();
+      const project = await SubqueryProject.create(
+        projectDirV0_3_0,
+        rawManifest,
+        reader,
+        {
+          endpoint: ['wss://rpc.polkadot.io/public-ws'],
+        },
+      );
 
       expect((project.dataSources[1] as any).processor.file).toMatch(
         /moonbeam.js/,
@@ -58,15 +73,20 @@ describe('SubqueryProject', () => {
     it.skip('convert 0.2.0 ipfs deployment to project object', async () => {
       const deployment = `ipfs://QmUdQKsfHox5qcEYKCVZQwWtye8bdGQM2vCZrw6o4NBKwm`;
       //manually pass the endpoint
+      const reader = await ReaderFactory.create(deployment, {
+        ipfs: 'http://127.0.0.1:8080',
+      });
+      const rawManifest = await reader.getProjectSchema();
       const project = await SubqueryProject.create(
         deployment,
-        null,
+        rawManifest,
+        reader,
         { endpoint: ['wss://rpc.polkadot.io/public-ws'] },
-        { ipfs: 'http://127.0.0.1:8080' },
       );
     }, 5000000);
 
     it('convert 1.0.0 ipfs deployment to project object', async () => {
+      const reader = await ReaderFactory.create(projectDirV1_0_0);
       const expectedRunner = {
         node: {
           name: '@subql/node',
@@ -77,29 +97,56 @@ describe('SubqueryProject', () => {
           version: '*',
         },
       };
-      const project = await SubqueryProject.create(projectDirV1_0_0, {
-        endpoint: ['wss://rpc.polkadot.io/public-ws'],
-      });
+      const rawManifest = await reader.getProjectSchema();
+      const project = await SubqueryProject.create(
+        projectDirV1_0_0,
+        rawManifest,
+        reader,
+        {
+          endpoint: ['wss://rpc.polkadot.io/public-ws'],
+        },
+      );
 
       expect(project.runner).toMatchObject(expectedRunner);
     }, 500000);
 
     it('check processChainId', async () => {
-      const project = await SubqueryProject.create(projectDirV1_0_0, {
-        endpoint: ['wss://rpc.polkadot.io/public-ws'],
-      });
+      const reader = await ReaderFactory.create(projectDirV1_0_0);
+      const rawManifest = await reader.getProjectSchema();
+      const project = await SubqueryProject.create(
+        projectDirV1_0_0,
+        rawManifest,
+        reader,
+        {
+          endpoint: ['wss://rpc.polkadot.io/public-ws'],
+        },
+      );
       expect(project.network.chainId).toMatch(
         '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b',
       );
     }, 5000000);
 
     it('check loadProjectTemplates', async () => {
-      const project = await SubqueryProject.create(templateProject, {
-        endpoint: ['wss://moonbeam-alpha.api.onfinality.io/public-ws'],
-      });
-      const project_v1 = await SubqueryProject.create(projectDirV1_0_0, {
-        endpoint: ['wss://rpc.polkadot.io/public-ws'],
-      });
+      const reader0 = await ReaderFactory.create(templateProject);
+      const templateRawManifest = await reader0.getProjectSchema();
+      const project = await SubqueryProject.create(
+        templateProject,
+        templateRawManifest,
+        reader0,
+        {
+          endpoint: ['wss://moonbeam-alpha.api.onfinality.io/public-ws'],
+        },
+      );
+      const reader1 = await ReaderFactory.create(projectDirV1_0_0);
+      const rawManifest = await await reader1.getProjectSchema();
+      const project_v1 = await SubqueryProject.create(
+        projectDirV1_0_0,
+        rawManifest,
+        reader1,
+        {
+          endpoint: ['wss://rpc.polkadot.io/public-ws'],
+        },
+      );
       expect(project_v1).not.toContain('template');
       expect(project.templates.length).toBe(1);
     });
