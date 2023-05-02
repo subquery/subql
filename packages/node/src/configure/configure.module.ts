@@ -143,8 +143,6 @@ export class ConfigureModule {
       return p;
     };
 
-    project.name;
-
     return {
       module: ConfigureModule,
       providers: [
