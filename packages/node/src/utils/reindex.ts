@@ -3,6 +3,7 @@
 
 import {
   DynamicDsService,
+  ForceCleanService,
   getLogger,
   MmrService,
   StoreService,
@@ -10,7 +11,6 @@ import {
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from 'sequelize';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { ForceCleanService } from '../subcommands/forceClean.service';
 
 const logger = getLogger('Reindex');
 

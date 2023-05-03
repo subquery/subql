@@ -10,6 +10,7 @@ import {
   getExistingProjectSchema,
   CacheMetadataModel,
   initDbSchema,
+  ForceCleanService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from 'sequelize';
@@ -17,8 +18,6 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { reindex } from '../utils/reindex';
-
-import { ForceCleanService } from './forceClean.service';
 
 const logger = getLogger('Reindex');
 

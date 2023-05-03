@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { DbModule } from '@subql/node-core';
+import { DbModule, ForceCleanService } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-import { ForceCleanService } from './forceClean.service';
 
 @Module({
   providers: [ForceCleanService],

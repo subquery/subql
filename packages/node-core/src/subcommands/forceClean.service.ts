@@ -2,17 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import { Inject, Injectable } from '@nestjs/common';
-import {
-  getLogger,
-  NodeConfig,
-  getExistingProjectSchema,
-  enumNameToHash,
-  getEnumDeprecated,
-} from '@subql/node-core';
-import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import {Inject, Injectable} from '@nestjs/common';
+import {getAllEntitiesRelations} from '@subql/utils';
+import {QueryTypes, Sequelize} from 'sequelize';
+import {NodeConfig} from '../configure';
+import {ISubqueryProject} from '../indexer';
+import {getLogger} from '../logger';
+import {enumNameToHash, getEnumDeprecated, getExistingProjectSchema} from '../utils';
 
 const logger = getLogger('Force-clean');
 
@@ -21,14 +17,11 @@ export class ForceCleanService {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
-    @Inject('ISubqueryProject') protected project: SubqueryProject,
+    @Inject('ISubqueryProject') protected project: ISubqueryProject
   ) {}
 
   async forceClean(): Promise<void> {
-    const schema = await getExistingProjectSchema(
-      this.nodeConfig,
-      this.sequelize,
-    );
+    const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
     if (!schema) {
       logger.error('Unable to locate schema');
       throw new Error('Schema does not exist.');
@@ -46,25 +39,20 @@ export class ForceCleanService {
       // Deprecate, now enums are moved under schema, drop schema will remove project enums
       await Promise.all(
         modelsRelation.enums.map(async (e) => {
-          const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(
-            e.name,
-          )}`;
-          const resultsDeprecated = await getEnumDeprecated(
-            this.sequelize,
-            enumTypeNameDeprecated,
-          );
+          const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
+          const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
           if (resultsDeprecated.length !== 0) {
             await this.sequelize.query(`
             DROP TYPE "${enumTypeNameDeprecated}";
           `);
           }
-        }),
+        })
       );
 
       // remove schema from subquery table (might not exist)
       const checker = await this.sequelize.query(
         `
-              SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'public' AND  TABLE_NAME = 'subqueries'`,
+              SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'public' AND  TABLE_NAME = 'subqueries'`
       );
 
       if ((checker[1] as any).rowCount > 0) {
@@ -73,9 +61,9 @@ export class ForceCleanService {
                   FROM public.subqueries
                   WHERE name = :name`,
           {
-            replacements: { name: this.nodeConfig.subqueryName },
+            replacements: {name: this.nodeConfig.subqueryName},
             type: QueryTypes.DELETE,
-          },
+          }
         );
       }
 
@@ -85,7 +73,7 @@ export class ForceCleanService {
         await fs.promises.unlink(this.nodeConfig.mmrPath);
         logger.info('force cleaned file based mmr');
       }
-    } catch (err) {
+    } catch (err: any) {
       logger.error(err, 'failed to force clean');
       throw err;
     }
