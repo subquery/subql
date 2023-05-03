@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {getProjectRootAndManifest, IPFS_REGEX, NodeOptions, RunnerNodeOptionsModel} from '@subql/common';
+import {getProjectRootAndManifest, IPFS_REGEX, RunnerNodeOptionsModel} from '@subql/common';
 import {plainToClass} from 'class-transformer';
-import {camelCase, last} from 'lodash';
+import {last} from 'lodash';
 import {IConfig, MinConfig} from '../configure/NodeConfig';
 
 // These are overridable types from node argv

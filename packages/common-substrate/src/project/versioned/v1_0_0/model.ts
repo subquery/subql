@@ -6,6 +6,7 @@ import {
   NodeSpec,
   ProjectManifestBaseImpl,
   QuerySpec,
+  RunnerNodeImpl,
   RunnerNodeOptionsModel,
   RunnerQueryBaseModel,
   RunnerSpecs,
@@ -41,18 +42,9 @@ import {SubstrateProjectManifestV1_0_0} from './types';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
 
-export class SubstrateRunnerNodeImpl implements NodeSpec {
+export class SubstrateRunnerNodeImpl extends RunnerNodeImpl {
   @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})
   name: string;
-  @IsString()
-  @Validate(SemverVersionValidator)
-  // @Matches(RUNNER_REGEX,{message: 'runner version is not correct'})
-  version: string;
-  @IsOptional()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => RunnerNodeOptionsModel)
-  options?: NodeOptions;
 }
 
 export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
