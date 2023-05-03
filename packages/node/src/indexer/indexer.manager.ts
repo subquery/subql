@@ -46,6 +46,7 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
+  ApiService,
   ApiAt,
   BlockContent,
   SubstrateDatasource,
@@ -76,7 +77,6 @@ export class IndexerManager extends BaseIndexerManager<
       FilterTypeMap,
       ProcessorTypeMap,
     );
-    logger.info('indexer manager start');
   }
 
   async start(): Promise<void> {
@@ -108,7 +108,7 @@ export class IndexerManager extends BaseIndexerManager<
     block: BlockContent,
     runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
-    return this.apiService.api.getPatchedApi(block, runtimeVersion);
+    return this.apiService.getPatchedApi(block.block, runtimeVersion);
   }
 
   protected async processUnfinalizedBlocks(

@@ -4,7 +4,7 @@
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { Header } from '@polkadot/types/interfaces';
-import { HexString } from '@polkadot/util/types';
+import type { HexString } from '@polkadot/util/types';
 import { getLogger, NodeConfig, StoreCacheService } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { last } from 'lodash';

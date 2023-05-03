@@ -3,10 +3,7 @@
 
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
-import {hexToU8a} from '@polkadot/util';
-import {blake2AsHex} from '@polkadot/util-crypto';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -16,6 +13,8 @@ import {
   IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
+  hexToU8a,
+  blake2AsHex,
 } from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {

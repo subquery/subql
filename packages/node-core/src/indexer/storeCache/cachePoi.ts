@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {u8aToBuffer} from '@polkadot/util';
+import {u8aToBuffer} from '@subql/utils';
 import {Op, Transaction} from 'sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';

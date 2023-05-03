@@ -3,7 +3,7 @@
 
 import {isMainThread} from 'node:worker_threads';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {hexToU8a} from '@polkadot/util';
+import {hexToU8a} from '@subql/utils';
 import {StoreCacheService} from './storeCache';
 import {CachePoiModel} from './storeCache/cachePoi';
 
