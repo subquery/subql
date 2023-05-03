@@ -10,11 +10,12 @@ import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, initHotSchemaReload} from '../utils';
+import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {IDSProcessorService, IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
+import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 
 const logger = getLogger('Project');
 
@@ -40,7 +41,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
   abstract reindex(targetBlockHeight: number): Promise<void>;
 
   constructor(
-    private readonly dsProcessorService: IDSProcessorService<DS>,
+    private readonly dsProcessorService: BaseDsProcessorService,
     protected readonly apiService: ApiService,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,

@@ -4,6 +4,7 @@
 import {classToPlain} from 'class-transformer';
 import {Allow, IsString, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
+import {FileReference} from '../types';
 
 export abstract class ProjectManifestBaseImpl<D extends object> {
   @Allow()
@@ -45,6 +46,15 @@ export interface BaseDataSource<
   kind: string;
   startBlock?: number;
   mapping: T;
+}
+
+export interface BaseCustomDataSource<
+  F = any,
+  H extends BaseHandler<F> = BaseHandler<F>,
+  T extends BaseMapping<F, H> = BaseMapping<F, H>
+> extends BaseDataSource<F, H, T> {
+  processor: FileReference;
+  assets: Map<string, FileReference>;
 }
 
 export interface BaseMapping<F, T extends BaseHandler<F>> {

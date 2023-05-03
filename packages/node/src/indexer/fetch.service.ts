@@ -75,8 +75,7 @@ function callFilterToQueryEntry(
 export class FetchService extends BaseFetchService<
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
-  DictionaryService,
-  DsProcessorService
+  DictionaryService
 > {
   constructor(
     apiService: ApiService,

@@ -50,17 +50,9 @@ export interface IProjectService<DS> {
 }
 
 // Equivalent to SubstrateDatasourceProcessor
-type DsProcessor<DS> = {
+export type DsProcessor<DS> = {
   kind: string;
   validate: (ds: DS, assets: Record<string, string>) => void;
   dsFilterProcessor: (ds: DS, api: any) => boolean;
   handlerProcessors: Record<string, any>;
 };
-
-// Represents the DsProcessorService in the node
-// TODO move DsProcessorService to node-core so we can remove this
-export interface IDSProcessorService<DS> {
-  validateProjectCustomDatasources(): Promise<void>;
-  getDsProcessor(ds: DS): DsProcessor<DS>;
-  getAssets(ds: DS): Promise<Record<string, string>>;
-}

@@ -15,8 +15,9 @@ import {getLogger} from '../logger';
 import {checkMemoryUsage, cleanedBatchBlocks, delay, hasValue, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {DictionaryService} from './dictionary.service';
+import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {IDSProcessorService, IProjectNetworkConfig, ISubqueryProject} from './types';
+import {IProjectNetworkConfig, ISubqueryProject} from './types';
 
 const logger = getLogger('FetchService');
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
@@ -25,8 +26,8 @@ const CHECK_MEMORY_INTERVAL = 60000;
 export abstract class BaseFetchService<
   DS extends {startBlock?: number; mapping: {handlers: any}},
   B extends IBlockDispatcher,
-  D extends DictionaryService,
-  P extends IDSProcessorService<DS>
+  D extends DictionaryService
+  // P extends IDSProcessorService<DS>
 > implements OnApplicationShutdown
 {
   private _latestBestHeight?: number;
@@ -60,7 +61,7 @@ export abstract class BaseFetchService<
     protected project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected blockDispatcher: B,
     protected dictionaryService: D,
-    protected dsProcessorService: P,
+    protected dsProcessorService: BaseDsProcessorService,
     private dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry

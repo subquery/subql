@@ -23,3 +23,4 @@ export * from './fetch.service';
 export * from './indexer.manager';
 export * from './mmrMigrate.service';
 export * from './mmrRegenerate.service';
+export * from './ds-processor.service';

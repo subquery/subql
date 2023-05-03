@@ -1,15 +1,16 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BaseDataSource} from '@subql/common';
+import {BaseCustomDataSource, BaseDataSource} from '@subql/common';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
 import {ProcessBlockResponse} from './blockDispatcher';
+import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
-import {IDSProcessorService, IIndexerManager} from './types';
+import {IIndexerManager} from './types';
 
 const logger = getLogger('indexer');
 
@@ -29,7 +30,7 @@ export abstract class BaseIndexerManager<
   A, // Api Type
   B, // Block Type
   DS extends BaseDataSource,
-  CDS extends DS, // Custom datasource
+  CDS extends DS & BaseCustomDataSource, // Custom datasource
   FilterMap extends FilterTypeMap,
   ProcessorMap extends ProcessorTypeMap<FilterMap>,
   HandlerInputMap extends HandlerInputTypeMap<FilterMap>
@@ -59,7 +60,7 @@ export abstract class BaseIndexerManager<
     protected readonly apiService: AS,
     protected readonly nodeConfig: NodeConfig,
     private sandboxService: {getDsProcessor: (ds: DS, api: A) => IndexerSandbox},
-    private dsProcessorService: IDSProcessorService<CDS>,
+    private dsProcessorService: BaseDsProcessorService<DS, CDS>,
     private dynamicDsService: DynamicDsService<DS>,
     private filterMap: FilterMap,
     private processorMap: ProcessorMap
