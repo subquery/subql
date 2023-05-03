@@ -20,6 +20,7 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
+  SandboxService,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
@@ -38,7 +39,6 @@ import {
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
-import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -62,7 +62,7 @@ export class IndexerManager extends BaseIndexerManager<
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService,
+    sandboxService: SandboxService<ApiAt>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,

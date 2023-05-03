@@ -2,17 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  NodeOptions,
+  BaseMapping,
   NodeSpec,
   ProjectManifestBaseImpl,
   QuerySpec,
   RunnerNodeImpl,
-  RunnerNodeOptionsModel,
   RunnerQueryBaseModel,
   RunnerSpecs,
-  SemverVersionValidator,
 } from '@subql/common';
-import {SubstrateRuntimeDatasource} from '@subql/types';
+import {SubstrateCustomDatasource, SubstrateNetworkFilter, SubstrateRuntimeDatasource} from '@subql/types';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
@@ -25,25 +23,55 @@ import {
   ValidateNested,
   validateSync,
 } from 'class-validator';
-import {
-  CustomDatasourceV0_2_0,
-  FileType,
-  RuntimeDataSourceV0_2_0,
-  SubstrateCustomDataSourceV0_2_0Impl,
-  SubstrateRuntimeDataSourceV0_2_0Impl,
-} from '../v0_2_0';
-import {
-  CustomDatasourceTemplate,
-  CustomDatasourceTemplateImpl,
-  RuntimeDatasourceTemplate,
-  RuntimeDatasourceTemplateImpl,
-} from '../v0_2_1';
-import {SubstrateProjectManifestV1_0_0} from './types';
+import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
+import {CustomDatasourceTemplate, RuntimeDatasourceTemplate, SubstrateProjectManifestV1_0_0} from './types';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
 
+export class FileType {
+  @IsString()
+  file: string;
+}
+
 export class SubstrateRunnerNodeImpl extends RunnerNodeImpl {
   @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})
+  name: string;
+}
+
+function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
+  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
+  if (errors?.length) {
+    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    throw new Error(`${errorMessage}\n${errorMsgs}`);
+  }
+}
+
+export class SubstrateRuntimeDataSourceImpl extends RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
+  validate(): void {
+    return validateObject(this, 'failed to validate runtime datasource.');
+  }
+}
+
+export class SubstrateCustomDataSourceImpl<
+    K extends string = string,
+    T extends SubstrateNetworkFilter = SubstrateNetworkFilter,
+    M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
+  >
+  extends CustomDataSourceBase<K, T, M>
+  implements SubstrateCustomDatasource<K, T, M>
+{
+  validate(): void {
+    return validateObject(this, 'failed to validate custom datasource.');
+  }
+}
+
+export class RuntimeDatasourceTemplateImpl extends SubstrateRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
+  @IsString()
+  name: string;
+}
+
+export class CustomDatasourceTemplateImpl extends SubstrateCustomDataSourceImpl implements CustomDatasourceTemplate {
+  @IsString()
   name: string;
 }
 
@@ -103,14 +131,14 @@ export class DeploymentV1_0_0 {
   schema: FileType;
   @IsArray()
   @ValidateNested()
-  @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
+  @Type(() => SubstrateCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: SubstrateRuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
+      subTypes: [{value: SubstrateRuntimeDataSourceImpl, name: 'substrate/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
+  dataSources: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -130,14 +158,14 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
 {
   @Equals('1.0.0')
   specVersion: string;
-  @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
+  @Type(() => SubstrateCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: SubstrateRuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
+      subTypes: [{value: SubstrateRuntimeDataSourceImpl, name: 'substrate/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubstrateRuntimeDatasource | CustomDatasourceV0_2_0)[];
+  dataSources: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[];
   @Type(() => ProjectNetworkV1_0_0)
   network: ProjectNetworkV1_0_0;
   @IsString()

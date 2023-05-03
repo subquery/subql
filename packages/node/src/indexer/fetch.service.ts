@@ -8,10 +8,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import {
   isCustomDs,
-  isRuntimeDataSourceV0_2_0,
-  isRuntimeDataSourceV0_3_0,
   isRuntimeDs,
-  RuntimeDataSourceV0_0_1,
   SubstrateBlockFilter,
   SubstrateCallFilter,
   SubstrateDataSource,
@@ -116,11 +113,8 @@ export class FetchService extends BaseFetchService<
 
     const dataSources = this.project.dataSources.filter(
       (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+        !ds.filter?.specName ||
+        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
     );
 
     // Only run the ds that is equal or less than startBlock

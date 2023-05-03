@@ -4,19 +4,10 @@
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
-import {
-  ReaderFactory,
-  ReaderOptions,
-  Reader,
-  RunnerSpecs,
-  validateSemver,
-} from '@subql/common';
+import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
-  ProjectManifestV0_2_0Impl,
-  ProjectManifestV0_2_1Impl,
-  ProjectManifestV0_3_0Impl,
   SubstrateDataSource,
   ProjectManifestV1_0_0Impl,
   SubstrateBlockFilter,
@@ -27,7 +18,7 @@ import { getProjectRoot } from '@subql/node-core';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
-import { getChainTypes, updateDataSourcesV0_2_0 } from '../utils/project';
+import { getChainTypes, updateDataSourcesV1_0_0 } from '../utils/project';
 import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 
 export type SubqlProjectDs = SubstrateDataSource & {
@@ -46,7 +37,7 @@ export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
 };
 
 const NOT_SUPPORT = (name: string) => {
-  throw new Error(`Manifest specVersion ${name}() is not supported`);
+  throw new Error(`Manifest specVersion ${name} is not supported`);
 };
 
 // This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
@@ -81,30 +72,16 @@ export class SubqueryProject {
 
     const manifest = parseSubstrateProjectManifest(rawManifest);
 
-    if (manifest.isV0_0_1) {
-      NOT_SUPPORT('0.0.1');
-    } else if (manifest.isV0_2_0 || manifest.isV0_3_0) {
-      return loadProjectFromManifestBase(
-        manifest.asV0_2_0,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV0_2_1) {
-      return loadProjectFromManifest0_2_1(
-        manifest.asV0_2_1,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV1_0_0) {
-      return loadProjectFromManifest1_0_0(
-        manifest.asV1_0_0,
-        reader,
-        path,
-        networkOverrides,
-      );
+    if (!manifest.isV1_0_0) {
+      NOT_SUPPORT('<1.0.0');
     }
+
+    return loadProjectFromManifest1_0_0(
+      manifest.asV1_0_0,
+      reader,
+      path,
+      networkOverrides,
+    );
   }
 }
 
@@ -118,11 +95,7 @@ function processChainId(network: any): NetworkConfig {
   return network;
 }
 
-type SUPPORT_MANIFEST =
-  | ProjectManifestV0_2_0Impl
-  | ProjectManifestV0_2_1Impl
-  | ProjectManifestV0_3_0Impl
-  | ProjectManifestV1_0_0Impl;
+type SUPPORT_MANIFEST = ProjectManifestV1_0_0Impl;
 
 async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
@@ -161,7 +134,7 @@ async function loadProjectFromManifestBase(
     ? await getChainTypes(reader, root, projectManifest.network.chaintypes.file)
     : undefined;
 
-  const dataSources = await updateDataSourcesV0_2_0(
+  const dataSources = await updateDataSourcesV1_0_0(
     projectManifest.dataSources,
     reader,
     root,
@@ -175,26 +148,6 @@ async function loadProjectFromManifestBase(
     chainTypes,
     templates: [],
   };
-}
-
-async function loadProjectFromManifest0_2_1(
-  projectManifest: ProjectManifestV0_2_1Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-): Promise<SubqueryProject> {
-  const project = await loadProjectFromManifestBase(
-    projectManifest,
-    reader,
-    path,
-    networkOverrides,
-  );
-  project.templates = await loadProjectTemplates(
-    projectManifest,
-    project.root,
-    reader,
-  );
-  return project;
 }
 
 const { version: packageVersion } = require('../../package.json');
@@ -226,21 +179,22 @@ async function loadProjectFromManifest1_0_0(
 }
 
 async function loadProjectTemplates(
-  projectManifest: ProjectManifestV0_2_1Impl | ProjectManifestV1_0_0Impl,
+  projectManifest: ProjectManifestV1_0_0Impl,
   root: string,
   reader: Reader,
 ): Promise<SubqlProjectDsTemplate[]> {
-  if (projectManifest.templates && projectManifest.templates.length !== 0) {
-    const dsTemplates = await updateDataSourcesV0_2_0(
-      projectManifest.templates,
-      reader,
-      root,
-    );
-    return dsTemplates.map((ds, index) => ({
-      ...ds,
-      name: projectManifest.templates[index].name,
-    }));
+  if (!projectManifest.templates || !projectManifest.templates.length) {
+    return [];
   }
+  const dsTemplates = await updateDataSourcesV1_0_0(
+    projectManifest.templates,
+    reader,
+    root,
+  );
+  return dsTemplates.map((ds, index) => ({
+    ...ds,
+    name: projectManifest.templates[index].name,
+  }));
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
