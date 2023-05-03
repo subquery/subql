@@ -19,8 +19,6 @@
     "@polkadot/api": "^10"
   },
   "devDependencies": {
-    "@polkadot/api": "^10",
-    "@types/app-module-path": "^2.2.0"
-  },
-  "stableVersion": "2.0.0"
+    "@polkadot/api": "^10"
+  }
 }
