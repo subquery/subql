@@ -15,10 +15,12 @@
   "dependencies": {
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
-    "class-transformer": "0.4.0",
-    "class-validator": "^0.13.2",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.13"
+  },
+  "peerDependencies": {
+    "class-transformer": "*",
+    "class-validator": "*"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",

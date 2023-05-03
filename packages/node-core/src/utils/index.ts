@@ -10,3 +10,4 @@ export * from './autoQueue';
 export * from './project';
 export * from './fetchHelpers';
 export * from './blockSizeBuffer';
+export * from './configure';

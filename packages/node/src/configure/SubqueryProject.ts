@@ -65,18 +65,21 @@ export class SubqueryProject {
 
   static async create(
     path: string,
+    rawManifest: unknown,
+    reader: Reader,
     networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-    readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
-    // We have to use reader here, because path can be remote or local
+    // rawManifest and reader can be reused here.
+    // It has been pre-fetched and used for rebase manifest runner options with args
+    // in order to generate correct configs.
+
+    // But we still need reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
-    const reader = await ReaderFactory.create(path, readerOptions);
-    const projectSchema = await reader.getProjectSchema();
-    if (projectSchema === undefined) {
+    if (rawManifest === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
 
-    const manifest = parseSubstrateProjectManifest(projectSchema);
+    const manifest = parseSubstrateProjectManifest(rawManifest);
 
     if (manifest.isV0_0_1) {
       NOT_SUPPORT('0.0.1');

@@ -100,6 +100,11 @@ export class NodeConfig implements IConfig {
     return new NodeConfig(config);
   }
 
+  static rebaseWithArgs(config: NodeConfig, configFromArgs?: Partial<IConfig>): NodeConfig {
+    const _config = assign({}, (config as any)._config, configFromArgs) as IConfig;
+    return new NodeConfig(_config);
+  }
+
   constructor(config: MinConfig) {
     this._config = assign({}, DEFAULT_CONFIG, config);
   }
