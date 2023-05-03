@@ -3,7 +3,11 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { ApiConnection } from '@subql/node-core';
+import {
+  ApiConnection,
+  ApiConnectionError,
+  ApiErrorType,
+} from '@subql/node-core';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -49,33 +53,42 @@ export class ApiPromiseConnection implements ApiConnection {
   async apiConnect(): Promise<void> {
     await this._api.connect();
   }
+
   async apiDisconnect(): Promise<void> {
     await this._api.disconnect();
   }
 
-  static handleError(e: Error): Error {
-    let formatted_error: Error;
+  static handleError(e: Error): ApiConnectionError {
+    let formatted_error: ApiConnectionError;
     if (e.message.startsWith(`No response received from RPC endpoint in`)) {
       formatted_error = this.handleTimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
       formatted_error = this.handleDisconnectionError(e);
     } else {
-      formatted_error = e;
+      formatted_error = new ApiConnectionError(
+        e.name,
+        e.message,
+        ApiErrorType.Default,
+      );
     }
     return formatted_error;
   }
 
-  static handleTimeoutError(e: Error): Error {
-    const formatted_error = new Error();
-    formatted_error.name = 'TimeoutError';
-    formatted_error.message = e.message;
+  static handleTimeoutError(e: Error): ApiConnectionError {
+    const formatted_error = new ApiConnectionError(
+      'TimeoutError',
+      e.message,
+      ApiErrorType.Timeout,
+    );
     return formatted_error;
   }
 
-  static handleDisconnectionError(e: Error): Error {
-    const formatted_error = new Error();
-    formatted_error.name = 'ConnectionError';
-    formatted_error.message = e.message;
+  static handleDisconnectionError(e: Error): ApiConnectionError {
+    const formatted_error = new ApiConnectionError(
+      'ConnectionError',
+      e.message,
+      ApiErrorType.Connection,
+    );
     return formatted_error;
   }
 }
