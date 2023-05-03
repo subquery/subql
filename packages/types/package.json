@@ -22,4 +22,5 @@
     "@polkadot/api": "^10"
   },
   "stableVersion": "2.0.1-0"
+  }
 }
