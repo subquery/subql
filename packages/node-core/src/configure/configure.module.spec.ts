@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { validDbSchemaName } from './configure.module';
+import {validDbSchemaName} from './configure.module';
 
 describe('Configure', () => {
   it('validDbSchemaName - works', () => {
