@@ -44,11 +44,11 @@ export class ApiService
 
   constructor(
     @Inject('ISubqueryProject') project: SubqueryProject,
-    private connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
+    connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,
   ) {
-    super(project);
+    super(project, connectionPoolService);
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -261,10 +261,13 @@ export class ApiService
     batch: number[],
     overallSpecVer?: number,
   ): Promise<BlockContent[]> {
+    const api = this.api;
     return this.fetchBlocksGeneric<BlockContent>(
-      () => (blockArray: number[]) =>
-        this.fetchBlocksBatches(this.api, blockArray, overallSpecVer),
+      () => (blockArray: number[], api: ApiPromise) =>
+        this.fetchBlocksBatches(api, blockArray, overallSpecVer),
       batch,
+      api,
+      ApiPromiseConnection.handleError,
     );
   }
 }

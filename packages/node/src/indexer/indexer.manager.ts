@@ -108,7 +108,10 @@ export class IndexerManager extends BaseIndexerManager<
     block: BlockContent,
     runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
-    return this.apiService.api.getPatchedApi(block, runtimeVersion);
+    return (this.apiService as ApiService).getPatchedApi(
+      block.block,
+      runtimeVersion,
+    );
   }
 
   protected async processUnfinalizedBlocks(

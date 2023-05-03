@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {NetworkMetadataPayload} from './events';
-import {ISubqueryProject} from './indexer';
+import {ApiConnection, ApiConnectionError, ConnectionPoolService, ISubqueryProject} from './indexer';
 import {getLogger} from './logger';
 
 const logger = getLogger('api');
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-type FetchFunction<T> = (batch: number[]) => Promise<T[]>;
-type FetchFunctionProvider<T> = () => FetchFunction<T>;
+type FetchFunction<T, A> = (batch: number[], api: A) => Promise<T[]>;
+type FetchFunctionProvider<T, A> = () => FetchFunction<T, A>;
 
 export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, A = any, B = any> {
-  constructor(protected project: P) {}
+  constructor(protected project: P, protected connectionPoolService: ConnectionPoolService<ApiConnection>) {}
 
   abstract init(): Promise<ApiService<P, A>>;
   abstract get api(): A; /*ApiWrapper*/
@@ -21,8 +21,10 @@ export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, 
   abstract networkMeta: NetworkMetadataPayload;
 
   async fetchBlocksGeneric<B>(
-    fetchFuncProvider: FetchFunctionProvider<B>,
+    fetchFuncProvider: FetchFunctionProvider<B, A>,
     batch: number[],
+    api: A,
+    handleError: (error: Error) => ApiConnectionError,
     numAttempts = MAX_RECONNECT_ATTEMPTS
   ): Promise<B[]> {
     {
@@ -31,7 +33,8 @@ export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, 
         try {
           // Get the latest fetch function from the provider
           const fetchFunc = fetchFuncProvider();
-          return await fetchFunc(batch);
+          const wrappedFetchFunc = this.connectionPoolService.wrapApiCall(fetchFunc, api, handleError);
+          return await wrappedFetchFunc(batch, api);
         } catch (e: any) {
           logger.error(e, `Failed to fetch blocks ${batch[0]}...${batch[batch.length - 1]}`);
 

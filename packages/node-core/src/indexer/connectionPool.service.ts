@@ -1,32 +1,73 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {toNumber} from 'lodash';
 import {getLogger} from '../logger';
 
-const logger = getLogger('api');
+const logger = getLogger('connection-pool');
+
+const MAX_FAILURES = 5;
+const LOG_INTERVAL_MS = 60 * 1000; // Log every 60 seconds
+const RESPONSE_TIME_WEIGHT = 0.7;
+const FAILURE_WEIGHT = 0.3;
 
 export interface ApiConnection {
   apiConnect(): Promise<void>;
   apiDisconnect(): Promise<void>;
+  api: any;
 }
+
+export enum ApiErrorType {
+  Timeout = 'timeout',
+  Connection = 'connection',
+  Default = 'default',
+}
+
+export class ApiConnectionError extends Error {
+  errorType: ApiErrorType;
+
+  constructor(name: string, message: string, errorType: ApiErrorType) {
+    super(message);
+    this.name = name;
+    this.errorType = errorType;
+  }
+}
+
+const RETRY_DELAY = 1000;
 
 @Injectable()
 export class ConnectionPoolService<T extends ApiConnection> implements OnApplicationShutdown {
   private allApi: T[] = [];
+  private apiToIndexMap: Map<any, number> = new Map();
   private connectionPool: Record<number, T> = {};
-  private taskCounter = 0;
+  private performanceScores: Record<number, number> = {};
+  private backoffDelays: Record<number, number> = {};
+  private failureCounts: Record<number, number> = {};
+
+  private errorTypeToScoreAdjustment = {
+    [ApiErrorType.Timeout]: -10,
+    [ApiErrorType.Connection]: -20,
+    [ApiErrorType.Default]: -5,
+  };
+
+  constructor() {
+    this.startLoggingEndpointStatus(60000);
+  }
 
   async onApplicationShutdown(): Promise<void> {
     await Promise.all(
-      Object.keys(this.connectionPool)?.map((key) => this.connectionPool[toNumber(key)].apiDisconnect())
+      Object.keys(this.connectionPool).map((key) => this.connectionPool[toNumber(key)].apiDisconnect())
     );
   }
 
   addToConnections(api: T): void {
+    const index = this.allApi.length;
     this.allApi.push(api);
-    this.connectionPool[this.allApi.length - 1] = api;
+    this.connectionPool[index] = api;
+    this.performanceScores[index] = 100; //set to non-zero value
+    this.failureCounts[index] = 0;
+    this.apiToIndexMap.set(api.api, index);
   }
 
   addBatchToConnections(apis: T[]): void {
@@ -46,12 +87,35 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
   }
 
   getNextConnectedApiIndex(): number {
-    if (Object.keys(this.connectionPool).length === 0) {
+    const indices = Object.keys(this.connectionPool)
+      .map(toNumber)
+      .filter((index) => !this.backoffDelays[index]);
+
+    if (indices.length === 0) {
       return -1;
     }
-    const nextIndex = this.taskCounter % Object.keys(this.connectionPool).length;
-    this.taskCounter++;
-    return toNumber(Object.keys(this.connectionPool)[nextIndex]);
+
+    // Sort indices based on their performance scores in descending order
+    indices.sort((a, b) => this.performanceScores[b] - this.performanceScores[a]);
+
+    // Calculate the sum of performance scores
+    const sumScores = indices.reduce((acc, idx) => acc + this.performanceScores[idx], 0);
+
+    // Calculate the cumulative probability distribution
+    const cumulativeProbs: number[] = [];
+    indices.forEach((idx, i) => {
+      const prevProb = i > 0 ? cumulativeProbs[i - 1] : 0;
+      cumulativeProbs[i] = prevProb + this.performanceScores[idx] / sumScores;
+    });
+
+    // Choose a random number between 0 and 1
+    const rand = Math.random();
+
+    // Find the first index in the cumulative probability distribution that is greater than the random number
+    const selectedIndex = cumulativeProbs.findIndex((prob) => prob >= rand);
+
+    // Return the corresponding index from the sorted indices
+    return indices[selectedIndex];
   }
 
   get numConnections(): number {
@@ -72,5 +136,76 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
 
     logger.info(`reconnected to ${endpoint}!`);
     this.connectionPool[apiIndex] = this.allApi[apiIndex];
+  }
+
+  private calculatePerformanceScore(responseTime: number, failureCount: number): number {
+    const responseTimeScore = 1 / responseTime;
+    const failureScore = 1 - failureCount / MAX_FAILURES;
+    return RESPONSE_TIME_WEIGHT * responseTimeScore + FAILURE_WEIGHT * failureScore;
+  }
+
+  logEndpointStatus(): void {
+    const sortedIndices = Object.keys(this.connectionPool)
+      .map(toNumber)
+      .sort((a, b) => this.performanceScores[b] - this.performanceScores[a]);
+
+    logger.info('Endpoint performance:');
+    sortedIndices.forEach((index) => {
+      logger.info(
+        `  ${this.allApi[index]}: score=${this.performanceScores[index]}, failures=${this.failureCounts[index]}`
+      );
+    });
+  }
+
+  handleApiError(apiIndex: number, error: ApiConnectionError): void {
+    const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
+    this.performanceScores[apiIndex] += adjustment;
+    this.failureCounts[apiIndex]++;
+
+    if (error.errorType === ApiErrorType.Timeout || error.errorType === ApiErrorType.Connection) {
+      const currentDelay = this.backoffDelays[apiIndex] || 0;
+      const nextDelay = currentDelay > 0 ? currentDelay * 2 : RETRY_DELAY; // Start with RETRY_DELAY and double on each failure
+      this.backoffDelays[apiIndex] = nextDelay;
+
+      setTimeout(() => {
+        delete this.backoffDelays[apiIndex]; // Reset backoff delay after the given period
+      }, nextDelay);
+
+      logger.warn(
+        `Endpoint with index ${apiIndex} experienced an error (${error.errorType}). Suspending for ${nextDelay}ms.`
+      );
+    }
+  }
+
+  handleApiSuccess(apiIndex: number, responseTime: number): void {
+    this.performanceScores[apiIndex] = this.calculatePerformanceScore(responseTime, this.failureCounts[apiIndex]);
+  }
+
+  wrapApiCall<T extends (...args: any[]) => any>(
+    fn: T,
+    api: any,
+    handleError: (error: Error) => ApiConnectionError
+  ): T {
+    const wrappedFunction = async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+      const index = this.apiToIndexMap.get(api);
+      logger.info(`index: ${index}`);
+      try {
+        const start = Date.now();
+        const result = await fn(...args);
+        const end = Date.now();
+        this.handleApiSuccess(index!, end - start);
+        return result;
+      } catch (error) {
+        this.handleApiError(index!, handleError(error as Error));
+        throw error;
+      }
+    };
+    return wrappedFunction as T;
+  }
+
+  startLoggingEndpointStatus(intervalMs: number): void {
+    setInterval(() => {
+      this.logEndpointStatus();
+    }, intervalMs);
   }
 }
