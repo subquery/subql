@@ -20,7 +20,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
   getLogger,
   NetworkMetadataPayload,
-  retryOnFailAxios,
   ConnectionPoolService,
   ApiService as BaseApiService,
 } from '@subql/node-core';
@@ -37,7 +36,6 @@ import { BlockContent } from './types';
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 const logger = getLogger('api');
-const RETRY_STATUS_CODES = [429, 502];
 
 @Injectable()
 export class ApiService
@@ -163,10 +161,7 @@ export class ApiService
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async fetchBlocks(
-    batch: number[],
-    overallSpecVer?: number,
-  ): Promise<BlockContent[]> {
+  async fetchBlocks(batch: number[]): Promise<BlockContent[]> {
     return this.fetchBlocksGeneric<BlockContent>(
       () => (blockArray: number[]) =>
         this.fetchBlocksBatches(this.api, blockArray),
@@ -195,26 +190,17 @@ export class CosmosClient extends CosmWasmClient {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async blockInfo(height?: number): Promise<BlockResponse> {
-    return retryOnFailAxios<BlockResponse>(
-      this.tendermintClient.block.bind(this.tendermintClient, height),
-      RETRY_STATUS_CODES,
-    );
+    return this.tendermintClient.block(height);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async txInfoByHeight(height: number): Promise<readonly IndexedTx[]> {
-    return retryOnFailAxios<IndexedTx[]>(
-      this.searchTx.bind(this, height),
-      RETRY_STATUS_CODES,
-    );
+    return this.searchTx({ height: height });
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async blockResults(height: number): Promise<BlockResultsResponse> {
-    return retryOnFailAxios<BlockResultsResponse>(
-      this.tendermintClient.blockResults.bind(this.tendermintClient, height),
-      RETRY_STATUS_CODES,
-    );
+    return this.tendermintClient.blockResults(height);
   }
 
   decodeMsg<T = unknown>(msg: DecodeObject): T {
