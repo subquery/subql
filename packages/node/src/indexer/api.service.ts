@@ -6,7 +6,7 @@ import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
-import { Block, IndexedTx } from '@cosmjs/stargate';
+import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
 import {
   Tendermint34Client,
   toRfc3339WithNanoseconds,
@@ -24,6 +24,14 @@ import {
   ApiService as BaseApiService,
 } from '@subql/node-core';
 import { CosmWasmSafeClient } from '@subql/types-cosmos/interfaces';
+import {
+  MsgClearAdmin,
+  MsgExecuteContract,
+  MsgInstantiateContract,
+  MsgMigrateContract,
+  MsgStoreCode,
+  MsgUpdateAdmin,
+} from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import {
   CosmosProjectNetConfig,
   SubqueryProject,
@@ -53,6 +61,27 @@ export class ApiService
     super(project);
   }
 
+  private async buildRegistry(): Promise<Registry> {
+    const chainTypes = await this.getChainType(this.project.network);
+
+    const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
+      ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
+      ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
+      ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
+      ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
+      ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
+      ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
+    ];
+
+    const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
+
+    for (const typeurl in chainTypes) {
+      registry.register(typeurl, chainTypes[typeurl]);
+    }
+
+    return registry;
+  }
+
   async onApplicationShutdown(): Promise<void> {
     await this.connectionPoolService.onApplicationShutdown();
   }
@@ -73,7 +102,7 @@ export class ApiService
     try {
       const { network } = this.project;
 
-      const chainTypes = await this.getChainType(network);
+      this.registry = await this.buildRegistry();
 
       const connections: CosmosClientConnection[] = [];
 
@@ -83,9 +112,10 @@ export class ApiService
 
       await Promise.all(
         endpoints.map(async (endpoint) => {
-          const connection = await CosmosClientConnection.create(endpoint, {
-            chainTypes,
-          });
+          const connection = await CosmosClientConnection.create(
+            endpoint,
+            this.registry,
+          );
           const api = connection.api;
           if (!this.networkMeta) {
             this.networkMeta = {

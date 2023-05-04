@@ -1,19 +1,11 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GeneratedType, Registry } from '@cosmjs/proto-signing';
-import { HttpEndpoint, defaultRegistryTypes } from '@cosmjs/stargate';
+import { Registry } from '@cosmjs/proto-signing';
+import { HttpEndpoint } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import { ApiConnection } from '@subql/node-core';
 import { getLogger } from '@subql/node-core/dist';
-import {
-  MsgClearAdmin,
-  MsgExecuteContract,
-  MsgInstantiateContract,
-  MsgMigrateContract,
-  MsgStoreCode,
-  MsgUpdateAdmin,
-} from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { CosmosClient, CosmosSafeClient } from './api.service';
 import { HttpClient, WebsocketClient } from './rpc-clients';
 
@@ -32,17 +24,8 @@ export class CosmosClientConnection implements ApiConnection {
 
   static async create(
     endpoint: string,
-    args: { chainTypes: Record<string, GeneratedType> },
+    registry: Registry,
   ): Promise<CosmosClientConnection> {
-    const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
-      ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
-      ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
-      ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
-      ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
-      ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
-      ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
-    ];
-
     const httpEndpoint: HttpEndpoint = {
       url: endpoint,
       headers: {
@@ -59,13 +42,6 @@ export class CosmosClientConnection implements ApiConnection {
         : new HttpClient(httpEndpoint);
 
     const tendermint = await Tendermint34Client.create(rpcClient);
-    const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
-
-    const chaintypes = args.chainTypes;
-
-    for (const typeurl in chaintypes) {
-      registry.register(typeurl, chaintypes[typeurl]);
-    }
 
     const api = new CosmosClient(tendermint, registry);
 
@@ -86,11 +62,11 @@ export class CosmosClientConnection implements ApiConnection {
     return new CosmosSafeClient(this.tmClient, height);
   }
 
-  setTmClient(tmClient: Tendermint34Client) {
+  private setTmClient(tmClient: Tendermint34Client): void {
     this.tmClient = tmClient;
   }
 
-  setRegistry(registry: Registry) {
+  private setRegistry(registry: Registry): void {
     this.registry = registry;
   }
 
