@@ -26,7 +26,11 @@ export class CachePoiModel implements ICachedModelControl {
     if (this.setCache[proof.id] === undefined) {
       this.flushableRecordCounter += 1;
     }
-
+    if (proof.mmrRoot !== undefined) {
+      console.log(`------[cachePoi] update ${proof.id}`);
+    } else {
+      console.log(`------[cachePoi] set ${proof.id}`);
+    }
     this.setCache[proof.id] = proof;
   }
 
@@ -52,6 +56,8 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
+    const copyCache = {...this.setCache};
+
     const result = await this.model.findAll({
       limit: DEFAULT_FETCH_RANGE,
       where: {id: {[Op.gte]: startHeight}},
@@ -60,7 +66,7 @@ export class CachePoiModel implements ICachedModelControl {
 
     const resultData = result.map((r) => r?.toJSON<ProofOfIndex>());
 
-    const poiBlocks = Object.values(this.mergeResultsWithCache(resultData)).filter(
+    const poiBlocks = Object.values(this.mergeResultsWithCache(resultData, copyCache)).filter(
       (poiBlock) => poiBlock.id >= startHeight
     );
     if (poiBlocks.length !== 0) {
@@ -77,13 +83,16 @@ export class CachePoiModel implements ICachedModelControl {
 
     if (!result) return null;
 
-    return Object.values(this.mergeResultsWithCache([result.toJSON()])).reduce((acc, val) => {
+    const copyCache = {...this.setCache};
+
+    return Object.values(this.mergeResultsWithCache([result.toJSON()], copyCache)).reduce((acc, val) => {
       if (acc && acc.id < val.id) return acc;
       return val;
     }, null as ProofOfIndex | null);
   }
 
   async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
+    const copyCache = {...this.setCache};
     const result = await this.model.findOne({
       order: [['id', 'DESC']],
       where: {mmrRoot: {[Op.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
@@ -93,7 +102,7 @@ export class CachePoiModel implements ICachedModelControl {
       return null;
     }
 
-    return Object.values(this.mergeResultsWithCache([result.toJSON()]))
+    return Object.values(this.mergeResultsWithCache([result.toJSON()], copyCache))
       .filter((v) => !!v.mmrRoot)
       .reduce((acc, val) => {
         if (acc && acc.id < val.id) return acc;
@@ -119,16 +128,16 @@ export class CachePoiModel implements ICachedModelControl {
     await pendingFlush;
   }
 
-  private mergeResultsWithCache(results: ProofOfIndex[]): Record<number, ProofOfIndex> {
-    const copy = {...this.setCache};
-
+  private mergeResultsWithCache(
+    results: ProofOfIndex[],
+    copyCache: {[p: number]: ProofOfIndex}
+  ): Record<number, ProofOfIndex> {
     results.map((result) => {
       if (result) {
-        copy[result.id] = result;
+        copyCache[result.id] = result;
       }
     });
-
-    return copy;
+    return results;
   }
 
   private clear(): void {
