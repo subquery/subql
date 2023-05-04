@@ -51,7 +51,7 @@ export class PgBasedMMRDB implements Db {
   async get(key: number): Promise<any | null> {
     try {
       const record = await this.mmrIndexValueStore.findByPk(key);
-      return record ? record.toJSON() : null;
+      return record ? record.value : null;
     } catch (error) {
       throw new Error(`Failed to get MMR node ${key}: ${error}`);
     }

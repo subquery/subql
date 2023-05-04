@@ -202,6 +202,10 @@ export class CachedModel<
     //else, this already been removed, do nothing
   }
 
+  bulkRemove(ids: string[], blockHeight: number): void {
+    ids.map((id) => this.remove(id, blockHeight));
+  }
+
   get isFlushable(): boolean {
     return !!Object.keys(this.setCache).length;
   }
