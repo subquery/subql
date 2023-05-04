@@ -99,9 +99,6 @@ export class MmrService implements OnApplicationShutdown {
     }
     logger.info(`MMR database start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
-      console.log(
-        `const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight ${this.nextMmrBlockHeight})`
-      );
       const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
@@ -111,7 +108,6 @@ export class MmrService implements OnApplicationShutdown {
               this._nextMmrBlockHeight = i + 1;
             }
           }
-          console.log(`this.appendMmrNode(${block.id})`);
           await this.appendMmrNode(block);
         }
       } else {
@@ -162,7 +158,6 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private updatePoiMmrRoot(poiBlock: ProofOfIndex, mmrValue: Uint8Array): void {
-    console.log(`updatePoiMmrRoot ${poiBlock.id}, mmrValue: ${u8aToHex(mmrValue)}`);
     if (!poiBlock.mmrRoot) {
       poiBlock.mmrRoot = mmrValue;
       this.poi.set(poiBlock);

@@ -26,11 +26,6 @@ export class CachePoiModel implements ICachedModelControl {
     if (this.setCache[proof.id] === undefined) {
       this.flushableRecordCounter += 1;
     }
-    if (proof.mmrRoot !== undefined) {
-      console.log(`------[cachePoi] update ${proof.id}`);
-    } else {
-      console.log(`------[cachePoi] set ${proof.id}`);
-    }
     this.setCache[proof.id] = proof;
   }
 
