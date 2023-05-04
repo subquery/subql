@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.0.1] - 2023-05-05
+### Fixed
+- Registry not being provided to the sandbox (#114)
+
 ## [2.0.0] - 2023-05-03
 - Major release for 2.0.0, align with other SDK versions
 ### Added
