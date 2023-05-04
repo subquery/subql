@@ -60,9 +60,7 @@ export class CachePoiModel implements ICachedModelControl {
 
     const resultData = result.map((r) => r?.toJSON<ProofOfIndex>());
 
-    const poiBlocks = Object.values(this.mergeResultsWithCache(resultData)).filter(
-      (poiBlock) => poiBlock.id >= startHeight
-    );
+    const poiBlocks = this.mergeResultsWithCache(resultData).filter((poiBlock) => poiBlock.id >= startHeight);
     if (poiBlocks.length !== 0) {
       return poiBlocks.sort((v) => v.id);
     } else {
@@ -75,12 +73,7 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'DESC']],
     });
 
-    if (!result) return null;
-
-    return Object.values(this.mergeResultsWithCache([result.toJSON()])).reduce((acc, val) => {
-      if (acc && acc.id < val.id) return acc;
-      return val;
-    }, null as ProofOfIndex | null);
+    return this.mergeResultsWithCache([result?.toJSON()], 'desc')[0];
   }
 
   async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
@@ -89,16 +82,7 @@ export class CachePoiModel implements ICachedModelControl {
       where: {mmrRoot: {[Op.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
     });
 
-    if (!result) {
-      return null;
-    }
-
-    return Object.values(this.mergeResultsWithCache([result.toJSON()]))
-      .filter((v) => !!v.mmrRoot)
-      .reduce((acc, val) => {
-        if (acc && acc.id < val.id) return acc;
-        return val;
-      }, null as ProofOfIndex | null);
+    return this.mergeResultsWithCache([result?.toJSON()], 'desc').find((v) => !!v.mmrRoot) ?? null;
   }
 
   get isFlushable(): boolean {
@@ -119,16 +103,22 @@ export class CachePoiModel implements ICachedModelControl {
     await pendingFlush;
   }
 
-  private mergeResultsWithCache(results: ProofOfIndex[]): Record<number, ProofOfIndex> {
+  private mergeResultsWithCache(results: (ProofOfIndex | undefined)[], order: 'asc' | 'desc' = 'asc'): ProofOfIndex[] {
     const copy = {...this.setCache};
 
-    results.map((result) => {
+    results.forEach((result) => {
       if (result) {
         copy[result.id] = result;
       }
     });
 
-    return copy;
+    const ascending = Object.values(copy).sort((a, b) => a.id - b.id);
+
+    if (order === 'asc') {
+      return ascending;
+    }
+
+    return ascending.reverse();
   }
 
   private clear(): void {
