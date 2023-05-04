@@ -4,23 +4,25 @@
 import assert from 'assert';
 import fs from 'fs';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME} from '@subql/common';
+import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME, RESET_MMR_BLOCK_BATCH} from '@subql/common';
 import {u8aToHex, u8aEq} from '@subql/utils';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {keccak256} from 'js-sha3';
-import {Sequelize} from 'sequelize';
+import {Op, Sequelize} from 'sequelize';
 import {MmrStoreType, NodeConfig} from '../configure';
 import {MmrPayload, MmrProof} from '../events';
+import {PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
 import {delay, getExistingProjectSchema} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PgBasedMMRDB} from './postgresMmrDb';
 import {StoreCacheService} from './storeCache';
-import {CachePoiModel} from './storeCache/cachePoi';
-
 const logger = getLogger('mmr');
 
 const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
+
+const syncingMsg = (start: number, end: number, size: number) =>
+  logger.info(`Syncing block [${start} - ${end}] mmr, total ${size} blocks `);
 
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
@@ -30,6 +32,7 @@ export class MmrService implements OnApplicationShutdown {
   // This is the next block height that suppose to calculate its mmr value
   private _nextMmrBlockHeight?: number;
   private _blockOffset?: number;
+  private _poi?: PlainPoiModel;
 
   constructor(
     private readonly nodeConfig: NodeConfig,
@@ -41,7 +44,10 @@ export class MmrService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  private get poi(): CachePoiModel {
+  get poi(): PoiInterface {
+    if (this._poi) {
+      return this._poi;
+    }
     const poi = this.storeCacheService.poi;
     if (!poi) {
       throw new Error('MMR service expected POI but it was not found');
@@ -70,13 +76,17 @@ export class MmrService implements OnApplicationShutdown {
     return this._blockOffset;
   }
 
-  async syncFileBaseFromPoi(blockOffset: number): Promise<void> {
+  async init(blockOffset: number, poi: PlainPoiModel): Promise<void> {
+    this._blockOffset = blockOffset;
+    await this.ensureMmr();
+    this._poi = poi;
+  }
+
+  // Exit option allow exit when POI is fully sync
+  async syncFileBaseFromPoi(blockOffset: number, exitHeight?: number, logging?: boolean): Promise<void> {
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this._mmrDb =
-      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
-        ? await this.ensurePostgresBasedMmr()
-        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    await this.ensureMmr();
     this._blockOffset = blockOffset;
     // The mmr database current leaf length
     const mmrLeafLength = await this.mmrDb.getLeafLength();
@@ -101,6 +111,10 @@ export class MmrService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
       if (poiBlocks.length !== 0) {
+        if (logging) {
+          syncingMsg(poiBlocks[0].id, poiBlocks[poiBlocks.length - 1].id, poiBlocks.length);
+        }
+        const appendedBlocks = [];
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
             for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
@@ -108,16 +122,26 @@ export class MmrService implements OnApplicationShutdown {
               this._nextMmrBlockHeight = i + 1;
             }
           }
-          await this.appendMmrNode(block);
+          appendedBlocks.push(await this.appendMmrNode(block));
+          this._nextMmrBlockHeight = block.id + 1;
+        }
+        if (appendedBlocks.length) {
+          await this.poi.bulkUpsert(appendedBlocks);
         }
       } else {
         const {lastPoiHeight, lastProcessedHeight} = await this.storeCacheService.metadata.findMany([
           'lastPoiHeight',
           'lastProcessedHeight',
         ]);
-
         // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
         if (this.nextMmrBlockHeight > Number(lastPoiHeight) && this.nextMmrBlockHeight <= Number(lastProcessedHeight)) {
+          if (logging) {
+            syncingMsg(
+              this.nextMmrBlockHeight,
+              Number(lastProcessedHeight),
+              Math.max(1, Number(lastProcessedHeight) - this.nextMmrBlockHeight)
+            );
+          }
           for (let i = this.nextMmrBlockHeight; i <= Number(lastProcessedHeight); i++) {
             await this.mmrDb.append(DEFAULT_LEAF);
             this._nextMmrBlockHeight = i + 1;
@@ -125,11 +149,14 @@ export class MmrService implements OnApplicationShutdown {
         }
         await delay(MMR_AWAIT_TIME);
       }
+      if (exitHeight !== undefined && this.nextMmrBlockHeight > exitHeight) {
+        break;
+      }
     }
     this.isSyncing = false;
   }
 
-  private async appendMmrNode(poiBlock: ProofOfIndex): Promise<void> {
+  private async appendMmrNode(poiBlock: ProofOfIndex): Promise<ProofOfIndex> {
     const newLeaf = poiBlock.hash;
     if (newLeaf.length !== DEFAULT_WORD_SIZE) {
       throw new Error(`Append Mmr failed, input data length should be ${DEFAULT_WORD_SIZE}`);
@@ -138,8 +165,47 @@ export class MmrService implements OnApplicationShutdown {
     // The next leaf index in mmr, current latest leaf index always .getLeafLength -1.
     await this.mmrDb.append(newLeaf, estLeafIndexByBlockHeight);
     const mmrRoot = await this.mmrDb.getRoot(estLeafIndexByBlockHeight);
-    this.updatePoiMmrRoot(poiBlock, mmrRoot);
-    this._nextMmrBlockHeight = poiBlock.id + 1;
+    return this.updatePoiMmrRoot(poiBlock, mmrRoot);
+  }
+
+  async poiMmrToDb(latestDbMmrHeight: number, targetHeight: number): Promise<void> {
+    if (latestDbMmrHeight === targetHeight) {
+      return;
+    }
+    let latest = latestDbMmrHeight;
+    try {
+      while (latest <= targetHeight) {
+        const results = (
+          await this.poi.model.findAll({
+            limit: RESET_MMR_BLOCK_BATCH,
+            where: {id: {[Op.lte]: targetHeight, [Op.gt]: latest}, mmrRoot: {[Op.ne]: null}} as any,
+            order: [['id', 'ASC']],
+          })
+        ).map((r) => r?.toJSON<ProofOfIndex>());
+        if (results.length) {
+          logger.info(
+            `Upsert block [${results[0].id} - ${results[results.length - 1].id}] mmr to ${
+              this.nodeConfig.mmrStoreType
+            } DB, total ${results.length} blocks `
+          );
+          const start = Date.now();
+          for (const poiBlock of results) {
+            const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
+            if (!poiBlock?.hash) {
+              throw new Error(`Copy POI block ${poiBlock?.id} hash to DB got undefined`);
+            }
+            await this.mmrDb.append(poiBlock?.hash, estLeafIndexByBlockHeight);
+          }
+          const end = Date.now();
+          console.log(`takes ${end - start} ms`);
+          latest = results[results.length - 1].id;
+        } else {
+          break;
+        }
+      }
+    } catch (e) {
+      throw new Error(`When try to copy POI mmr to ${this.nodeConfig.mmrStoreType} DB got problem: ${e}`);
+    }
   }
 
   private validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array): void {
@@ -158,13 +224,20 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  private updatePoiMmrRoot(poiBlock: ProofOfIndex, mmrValue: Uint8Array): void {
+  private updatePoiMmrRoot(poiBlock: ProofOfIndex, mmrValue: Uint8Array): ProofOfIndex {
     if (!poiBlock.mmrRoot) {
       poiBlock.mmrRoot = mmrValue;
-      this.poi.set(poiBlock);
     } else {
       this.validatePoiMmr(poiBlock, mmrValue);
     }
+    return poiBlock;
+  }
+
+  private async ensureMmr(): Promise<void> {
+    this._mmrDb =
+      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
+        ? await this.ensurePostgresBasedMmr()
+        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
   }
 
   private async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
@@ -200,14 +273,16 @@ export class MmrService implements OnApplicationShutdown {
 
   async getLatestMmr(): Promise<MmrPayload> {
     // latest leaf index need fetch from .db, as original method will use cache
-    const blockHeight = (await this.mmrDb.db.getLeafLength()) + this.blockOffset;
-    return this.getMmr(blockHeight);
+    return this.getMmr(await this.getLatestMmrHeight());
   }
 
   async getLatestMmrProof(): Promise<MmrProof> {
+    return this.getMmrProof(await this.getLatestMmrHeight());
+  }
+
+  async getLatestMmrHeight(): Promise<number> {
     // latest leaf index need fetch from .db, as original method will use cache
-    const blockHeight = (await this.mmrDb.db.getLeafLength()) + this.blockOffset;
-    return this.getMmrProof(blockHeight);
+    return (await this.mmrDb.db.getLeafLength()) + this.blockOffset;
   }
 
   async getMmrProof(blockHeight: number): Promise<MmrProof> {
@@ -229,11 +304,11 @@ export class MmrService implements OnApplicationShutdown {
     };
   }
 
-  async deleteMmrNode(blockHeight: number, blockOffset: number): Promise<void> {
-    this._mmrDb =
-      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
-        ? await this.ensurePostgresBasedMmr()
-        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+  async deleteMmrNode(blockHeight: number, blockOffset?: number): Promise<void> {
+    await this.ensureMmr();
+    if (blockOffset === undefined) {
+      throw new Error(`Block offset got undefined when delete mmr node`);
+    }
     const leafIndex = blockHeight - blockOffset - 1;
     if (leafIndex < 0) {
       throw new Error(`Target block height must greater equal to ${blockOffset + 1} `);

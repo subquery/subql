@@ -12,7 +12,7 @@ import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, initHotSchemaReload} from '../utils';
 import {DynamicDsService} from './dynamic-ds.service';
 import {MmrService} from './mmr.service';
-import {PoiService} from './poi.service';
+import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
 import {IDSProcessorService, IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 
@@ -238,7 +238,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
     }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
-    return this.mmrService.syncFileBaseFromPoi(offset).catch((err) => {
+    return this.mmrService.syncFileBaseFromPoi(offset, undefined, this.nodeConfig.debug).catch((err) => {
       logger.error(err, 'failed to sync poi to mmr');
       process.exit(1);
     });

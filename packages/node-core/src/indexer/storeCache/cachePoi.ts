@@ -1,18 +1,17 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {DEFAULT_FETCH_RANGE} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
 import {Mutex} from 'async-mutex';
 import {Op, Transaction} from 'sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
+import {PoiInterface} from '../poi/poiModel';
 import {ICachedModelControl} from './types';
-
 const logger = getLogger('PoiCache');
 
-const DEFAULT_FETCH_RANGE = 100;
-
-export class CachePoiModel implements ICachedModelControl {
+export class CachePoiModel implements ICachedModelControl, PoiInterface {
   private setCache: Record<number, ProofOfIndex> = {};
   private removeCache: number[] = [];
   flushableRecordCounter = 0;
@@ -20,16 +19,17 @@ export class CachePoiModel implements ICachedModelControl {
 
   constructor(readonly model: PoiRepo) {}
 
-  set(proof: ProofOfIndex): void {
-    proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);
-    proof.hash = u8aToBuffer(proof.hash);
-    proof.parentHash = u8aToBuffer(proof.parentHash);
+  bulkUpsert(proofs: ProofOfIndex[]): void {
+    for (const proof of proofs) {
+      proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);
+      proof.hash = u8aToBuffer(proof.hash);
+      proof.parentHash = u8aToBuffer(proof.parentHash);
 
-    if (this.setCache[proof.id] === undefined) {
-      this.flushableRecordCounter += 1;
+      if (this.setCache[proof.id] === undefined) {
+        this.flushableRecordCounter += 1;
+      }
+      this.setCache[proof.id] = proof;
     }
-
-    this.setCache[proof.id] = proof;
   }
 
   async getById(id: number): Promise<ProofOfIndex | undefined> {

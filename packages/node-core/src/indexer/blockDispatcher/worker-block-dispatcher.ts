@@ -11,7 +11,7 @@ import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {AutoQueue} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiService} from '../poi.service';
+import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';

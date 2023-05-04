@@ -89,7 +89,7 @@ class NoInitError extends Error {
 
 @Injectable()
 export class StoreService {
-  private poiRepo?: PoiRepo;
+  poiRepo?: PoiRepo;
   private removedIndexes: RemovedIndexes = {};
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;

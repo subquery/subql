@@ -209,7 +209,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
         await this.poiService.getLatestPoiBlockHash(),
         this.project.id
       );
-      this.poi.set(poiBlock);
+      // This is the first creation of POI
+      this.poi.bulkUpsert([poiBlock]);
       this.poiService.setLatestPoiBlockHash(poiBlock.hash);
       this.storeCacheService.metadata.set('lastPoiHeight', height);
     }

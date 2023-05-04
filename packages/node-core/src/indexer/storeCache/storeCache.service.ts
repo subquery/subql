@@ -161,7 +161,9 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   }
 
   isFlushable(): boolean {
-    const numOfRecords = sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter));
+    const numberOfPoiRecords = this.poi?.flushableRecordCounter ?? 0;
+    const numOfRecords =
+      sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter)) + numberOfPoiRecords;
     this.eventEmitter.emit(IndexerEvent.StoreCacheRecordsSize, {
       value: numOfRecords,
     });

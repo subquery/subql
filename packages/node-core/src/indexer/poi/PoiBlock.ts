@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {u8aConcat, numberToU8a, hexToU8a, isHex, isU8a, blake2AsU8a} from '@subql/utils';
-import {ProofOfIndex} from './entities/Poi.entity';
+import {ProofOfIndex} from '../entities/Poi.entity';
 
 const poiBlockHash = (
   id: number,
