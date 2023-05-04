@@ -10,7 +10,7 @@ const logger = getLogger('api');
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 type FetchFunction<T, A> = (batch: number[], api: A) => Promise<T[]>;
-type FetchFunctionProvider<T, A> = () => FetchFunction<T, A>;
+type FetchFunctionProvider<T, A> = () => [FetchFunction<T, A>, A];
 
 export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, A = any, B = any> {
   constructor(protected project: P, protected connectionPoolService: ConnectionPoolService<ApiConnection>) {}
@@ -23,7 +23,6 @@ export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, 
   async fetchBlocksGeneric<B>(
     fetchFuncProvider: FetchFunctionProvider<B, A>,
     batch: number[],
-    api: A,
     handleError: (error: Error) => ApiConnectionError,
     numAttempts = MAX_RECONNECT_ATTEMPTS
   ): Promise<B[]> {
@@ -32,7 +31,7 @@ export abstract class ApiService<P extends ISubqueryProject = ISubqueryProject, 
       while (reconnectAttempts < numAttempts) {
         try {
           // Get the latest fetch function from the provider
-          const fetchFunc = fetchFuncProvider();
+          const [fetchFunc, api] = fetchFuncProvider();
           const wrappedFetchFunc = this.connectionPoolService.wrapApiCall(fetchFunc, api, handleError);
           return await wrappedFetchFunc(batch, api);
         } catch (e: any) {

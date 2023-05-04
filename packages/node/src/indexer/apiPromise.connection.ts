@@ -61,9 +61,9 @@ export class ApiPromiseConnection implements ApiConnection {
   static handleError(e: Error): ApiConnectionError {
     let formatted_error: ApiConnectionError;
     if (e.message.startsWith(`No response received from RPC endpoint in`)) {
-      formatted_error = this.handleTimeoutError(e);
+      formatted_error = ApiPromiseConnection.handleTimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
-      formatted_error = this.handleDisconnectionError(e);
+      formatted_error = ApiPromiseConnection.handleDisconnectionError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,

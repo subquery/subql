@@ -86,6 +86,7 @@ export class ApiService
     }
 
     const connections: ApiPromiseConnection[] = [];
+    const endpoints: string[] = [];
 
     await Promise.all(
       network.endpoint.map(async (endpoint, i) => {
@@ -149,10 +150,11 @@ export class ApiService
         }
 
         connections.push(connection);
+        endpoints.push(endpoint);
       }),
     );
 
-    this.connectionPoolService.addBatchToConnections(connections);
+    this.connectionPoolService.addBatchToConnections(connections, endpoints);
     return this;
   }
 
@@ -261,12 +263,16 @@ export class ApiService
     batch: number[],
     overallSpecVer?: number,
   ): Promise<BlockContent[]> {
-    const api = this.api;
     return this.fetchBlocksGeneric<BlockContent>(
-      () => (blockArray: number[], api: ApiPromise) =>
-        this.fetchBlocksBatches(api, blockArray, overallSpecVer),
+      () => {
+        const api = this.api;
+        return [
+          (blockArray: number[]) =>
+            this.fetchBlocksBatches(api, blockArray, overallSpecVer),
+          api,
+        ];
+      },
       batch,
-      api,
       ApiPromiseConnection.handleError,
     );
   }
