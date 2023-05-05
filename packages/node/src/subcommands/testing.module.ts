@@ -9,7 +9,6 @@ import {
   DbModule,
   NodeConfig,
   PoiService,
-  SandboxService,
   StoreService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
@@ -21,6 +20,7 @@ import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { FetchModule } from '../indexer/fetch.module';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
+import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { MetaModule } from '../meta/meta.module';
 import { TestingService } from './testing.service';
@@ -31,16 +31,7 @@ import { TestingService } from './testing.service';
     TestingService,
     EventEmitter2,
     PoiService,
-    {
-      provide: SandboxService,
-      useFactory: (
-        apiService: ApiService,
-        storeService: StoreService,
-        nodeConfig: NodeConfig,
-        project: SubqueryProject,
-      ) => new SandboxService(apiService, storeService, nodeConfig, project),
-      inject: [ApiService, StoreService, NodeConfig, 'ISubqueryProject'],
-    },
+    SandboxService,
     DsProcessorService,
     DynamicDsService,
     UnfinalizedBlocksService,

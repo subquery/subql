@@ -1,17 +1,20 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {isMainThread} from 'worker_threads';
-import {Inject, Injectable} from '@nestjs/common';
-import {BaseDataSource} from '@subql/common';
-import {Store} from '@subql/types';
-import {ApiService} from '../api.service';
-import {NodeConfig} from '../configure';
-import {IndexerSandbox} from './sandbox';
-import {StoreService} from './store.service';
-import {ISubqueryProject} from './types';
-import {hostStoreToStore} from './worker';
+import { isMainThread } from 'worker_threads';
+import { Inject, Injectable } from '@nestjs/common';
+import { BaseDataSource } from '@subql/common';
+import {
+  hostStoreToStore,
+  IndexerSandbox,
+  ISubqueryProject,
+  NodeConfig,
+  StoreService,
+} from '@subql/node-core';
+import { Store } from '@subql/types';
+import { ApiService } from './api.service';
 
+/* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */
 @Injectable()
 export class SandboxService<Api> {
   private processorCache: Record<string, IndexerSandbox> = {};
@@ -20,11 +23,13 @@ export class SandboxService<Api> {
     private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
-    @Inject('ISubqueryProject') private readonly project: ISubqueryProject
+    @Inject('ISubqueryProject') private readonly project: ISubqueryProject,
   ) {}
 
   getDsProcessor(ds: BaseDataSource, api: Api): IndexerSandbox {
-    const store: Store = isMainThread ? this.storeService.getStore() : hostStoreToStore((global as any).host); // Provided in worker.ts
+    const store: Store = isMainThread
+      ? this.storeService.getStore()
+      : hostStoreToStore((global as any).host); // Provided in worker.ts
 
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
@@ -35,7 +40,7 @@ export class SandboxService<Api> {
           root: this.project.root,
           entry,
         },
-        this.nodeConfig
+        this.nodeConfig,
       );
       this.processorCache[entry] = processor;
     }

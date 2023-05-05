@@ -12,7 +12,6 @@ import {
   ConnectionPoolService,
   SmartBatchService,
   StoreCacheService,
-  SandboxService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -27,6 +26,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
+import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
@@ -111,16 +111,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       },
       inject: ['ISubqueryProject', NodeConfig],
     },
-    {
-      provide: SandboxService,
-      useFactory: (
-        apiService: ApiService,
-        storeService: StoreService,
-        nodeConfig: NodeConfig,
-        project: SubqueryProject,
-      ) => new SandboxService(apiService, storeService, nodeConfig, project),
-      inject: [ApiService, StoreService, NodeConfig, 'ISubqueryProject'],
-    },
+    SandboxService,
     DsProcessorService,
     DynamicDsService,
     PoiService,
