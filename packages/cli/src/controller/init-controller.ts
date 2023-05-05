@@ -5,8 +5,7 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {makeTempDir, ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/common';
-import {ProjectManifestV0_0_1} from '@subql/common-substrate';
+import {makeTempDir, ProjectManifestV1_0_0} from '@subql/common';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
@@ -80,10 +79,7 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
 
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const currentProject = parseDocument(manifest).toJS() as
-    | ProjectManifestV0_0_1
-    | ProjectManifestV0_2_0
-    | ProjectManifestV1_0_0;
+  const currentProject = parseDocument(manifest).toJS() as ProjectManifestV1_0_0;
   return [
     currentProject.specVersion,
     currentProject.repository,
