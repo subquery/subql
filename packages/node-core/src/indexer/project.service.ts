@@ -3,19 +3,21 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
+import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Sequelize} from 'sequelize';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {getExistingProjectSchema, initDbSchema, initHotSchemaReload} from '../utils';
+import {getExistingProjectSchema, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
+import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('Project');
 
@@ -36,21 +38,18 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
   // Used in the substrate SDK to do extra filtering for spec version
   protected abstract getStartBlockDatasources(): DS[];
 
-  // Not all chains implement unfinalized blocks, in this case they should reutrn undefined
-  protected abstract initUnfinalized(): Promise<number | undefined>;
-  abstract reindex(targetBlockHeight: number): Promise<void>;
-
   constructor(
     private readonly dsProcessorService: BaseDsProcessorService,
     protected readonly apiService: ApiService,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
     protected readonly sequelize: Sequelize,
-    protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    @Inject('ISubqueryProject') protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected readonly storeService: StoreService,
     protected readonly nodeConfig: NodeConfig,
     protected readonly dynamicDsService: DynamicDsService<DS>,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
+    private unfinalizedBlockService: IUnfinalizedBlocksService<any>
   ) {}
 
   protected get schema(): string {
@@ -260,6 +259,38 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
 
     return [...this.project.dataSources, ...dynamicDs].filter(
       (ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight
+    );
+  }
+
+  private async initUnfinalized(): Promise<number | undefined> {
+    if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
+      logger.error(
+        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical'
+      );
+      process.exit(1);
+    }
+
+    return this.unfinalizedBlockService.init(this.reindex.bind(this));
+  }
+
+  async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    if (lastProcessedHeight === undefined) {
+      throw new Error('Cannot reindex with missing lastProcessedHeight');
+    }
+
+    return reindex(
+      this.getStartBlockFromDataSources(),
+      await this.getMetadataBlockOffset(),
+      targetBlockHeight,
+      lastProcessedHeight,
+      this.storeService,
+      this.unfinalizedBlockService,
+      this.dynamicDsService,
+      this.mmrService,
+      this.sequelize
+      /* Not providing force clean service, it should never be needed */
     );
   }
 }

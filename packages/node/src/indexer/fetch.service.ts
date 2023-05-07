@@ -36,7 +36,10 @@ import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { RuntimeService } from './runtime/runtimeService';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {
+  substrateHeaderToHeader,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 
 const BLOCK_TIME_VARIANCE = 5000; //ms
 const INTERVAL_PERCENT = 0.9;
@@ -202,8 +205,11 @@ export class FetchService extends BaseFetchService<
   protected async getFinalizedHeight(): Promise<number> {
     const finalizedHash = await this.api.rpc.chain.getFinalizedHead();
     const finalizedHeader = await this.api.rpc.chain.getHeader(finalizedHash);
-    this.unfinalizedBlocksService.registerFinalizedBlock(finalizedHeader);
-    return finalizedHeader.number.toNumber();
+
+    const header = substrateHeaderToHeader(finalizedHeader);
+
+    this.unfinalizedBlocksService.registerFinalizedBlock(header);
+    return header.blockHeight;
   }
 
   protected async getBestHeight(): Promise<number> {

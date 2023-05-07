@@ -65,7 +65,7 @@ export class IndexerManager extends BaseIndexerManager<
     sandboxService: SandboxService,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
-    private unfinalizedBlocksService: UnfinalizedBlocksService,
+    unfinalizedBlocksService: UnfinalizedBlocksService,
     @Inject('IProjectService') private projectService: ProjectService,
   ) {
     super(
@@ -74,6 +74,7 @@ export class IndexerManager extends BaseIndexerManager<
       sandboxService,
       dsProcessorService,
       dynamicDsService,
+      unfinalizedBlocksService,
       FilterTypeMap,
       ProcessorTypeMap,
     );
@@ -109,17 +110,6 @@ export class IndexerManager extends BaseIndexerManager<
     runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
     return this.apiService.getPatchedApi(block.block, runtimeVersion);
-  }
-
-  protected async processUnfinalizedBlocks(
-    block: BlockContent,
-  ): Promise<number> {
-    if (this.nodeConfig.unfinalizedBlocks) {
-      return this.unfinalizedBlocksService.processUnfinalizedBlocks(
-        block.block,
-      );
-    }
-    return null;
   }
 
   protected async indexBlockData(

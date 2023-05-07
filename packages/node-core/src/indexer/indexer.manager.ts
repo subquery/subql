@@ -11,6 +11,7 @@ import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
 import {IIndexerManager} from './types';
+import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
 
@@ -47,7 +48,6 @@ export abstract class BaseIndexerManager<
   // Uses asSecondLayerHandlerProcessor_1_0_0 in substrate to transfrom from v0.0.0 -> v1.0.0
   protected abstract updateCustomProcessor: (processor: any) => any;
 
-  protected abstract processUnfinalizedBlocks(block: B): Promise<number | null>;
   protected abstract indexBlockData(
     block: B,
     dataSources: DS[],
@@ -62,6 +62,7 @@ export abstract class BaseIndexerManager<
     private sandboxService: {getDsProcessor: (ds: DS, api: A) => IndexerSandbox},
     private dsProcessorService: BaseDsProcessorService<DS, CDS>,
     private dynamicDsService: DynamicDsService<DS>,
+    private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
     private filterMap: FilterMap,
     private processorMap: ProcessorMap
   ) {
@@ -81,7 +82,7 @@ export abstract class BaseIndexerManager<
     this.assertDataSources(filteredDataSources, blockHeight);
 
     let apiAt: A;
-    const reindexBlockHeight = await this.processUnfinalizedBlocks(block);
+    const reindexBlockHeight = (await this.processUnfinalizedBlocks(block)) ?? null;
 
     // Only index block if we're not going to reindex
     if (!reindexBlockHeight) {
@@ -112,6 +113,12 @@ export abstract class BaseIndexerManager<
       blockHash: this.getBlockHash(block),
       reindexBlockHeight,
     };
+  }
+
+  protected async processUnfinalizedBlocks(block: B): Promise<number | undefined> {
+    if (this.nodeConfig.unfinalizedBlocks) {
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
+    }
   }
 
   private filterDataSources(nextProcessingHeight: number, dataSources: DS[]): DS[] {
