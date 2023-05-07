@@ -65,6 +65,7 @@ async function createIndexerWorker(
       storeBulkCreate: store.bulkCreate.bind(store),
       storeBulkUpdate: store.bulkUpdate.bind(store),
       storeRemove: store.remove.bind(store),
+      storeBulkRemove: store.bulkRemove.bind(store),
       dynamicDsCreateDynamicDatasource:
         dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
       dynamicDsGetDynamicDatasources:

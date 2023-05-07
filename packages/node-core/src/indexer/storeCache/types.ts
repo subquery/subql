@@ -20,6 +20,7 @@ export interface ICachedModel<T> {
   bulkCreate: (data: T[], blockHeight: number) => void;
   bulkUpdate: (data: T[], blockHeight: number, fields?: string[]) => void;
   remove: (id: string, blockHeight: number) => void;
+  bulkRemove: (ids: string[], blockHeight: number) => void;
 }
 export interface ICachedModelControl {
   isFlushable: boolean;
