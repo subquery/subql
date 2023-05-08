@@ -11,7 +11,7 @@ import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiService} from '../poi.service';
+import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';

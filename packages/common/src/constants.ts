@@ -48,3 +48,9 @@ export enum SUPPORT_DB {
 
 // DATABASE ERROR REGEX
 export const CONNECTION_SSL_ERROR_REGEX = 'not support SSL';
+
+// BLOCK BATCH SYNC between POI MMR <-> Filebased/Postgres MMR
+export const RESET_MMR_BLOCK_BATCH = 1000;
+
+// Default Model fetch range
+export const DEFAULT_FETCH_RANGE = 100;

@@ -4,8 +4,8 @@
 import {isMainThread} from 'node:worker_threads';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {hexToU8a} from '@subql/utils';
-import {StoreCacheService} from './storeCache';
-import {CachePoiModel} from './storeCache/cachePoi';
+import {StoreCacheService} from '../storeCache';
+import {CachePoiModel} from '../storeCache/cachePoi';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');
 
