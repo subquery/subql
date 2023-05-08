@@ -72,9 +72,9 @@ describe('CachePoi', () => {
     it('with mix of cache and db data', async () => {
       await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
 
-      cachePoi.set(getEmptyPoi(4));
-      cachePoi.set(getEmptyPoi(5));
-      cachePoi.set(getEmptyPoi(6));
+      cachePoi.bulkUpsert([getEmptyPoi(4)]);
+      cachePoi.bulkUpsert([getEmptyPoi(5)]);
+      cachePoi.bulkUpsert([getEmptyPoi(6)]);
 
       const res = await cachePoi.getPoiBlocksByRange(2);
       expect(res.map((d) => d.id)).toEqual([2, 3, 4, 5, 6]);
@@ -88,9 +88,9 @@ describe('CachePoi', () => {
     });
 
     it('only cache data', async () => {
-      cachePoi.set(getEmptyPoi(4));
-      cachePoi.set(getEmptyPoi(5));
-      cachePoi.set(getEmptyPoi(6));
+      cachePoi.bulkUpsert([getEmptyPoi(4)]);
+      cachePoi.bulkUpsert([getEmptyPoi(5)]);
+      cachePoi.bulkUpsert([getEmptyPoi(6)]);
 
       const res = await cachePoi.getPoiBlocksByRange(2);
       expect(res.map((d) => d.id)).toEqual([4, 5, 6]);
@@ -101,9 +101,9 @@ describe('CachePoi', () => {
     it('with mix of cache and db data', async () => {
       await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
 
-      cachePoi.set(getEmptyPoi(4));
-      cachePoi.set(getEmptyPoi(5));
-      cachePoi.set(getEmptyPoi(6));
+      cachePoi.bulkUpsert([getEmptyPoi(4)]);
+      cachePoi.bulkUpsert([getEmptyPoi(5)]);
+      cachePoi.bulkUpsert([getEmptyPoi(6)]);
 
       const res = await cachePoi.getLatestPoi();
       expect(res?.id).toBe(6);
@@ -117,9 +117,9 @@ describe('CachePoi', () => {
     });
 
     it('only cache data', async () => {
-      cachePoi.set(getEmptyPoi(1));
-      cachePoi.set(getEmptyPoi(2));
-      cachePoi.set(getEmptyPoi(3));
+      cachePoi.bulkUpsert([getEmptyPoi(1)]);
+      cachePoi.bulkUpsert([getEmptyPoi(2)]);
+      cachePoi.bulkUpsert([getEmptyPoi(3)]);
 
       const res = await cachePoi.getLatestPoi();
       expect(res?.id).toBe(3);
@@ -134,9 +134,9 @@ describe('CachePoi', () => {
         {id: 3, mmrRoot: 'mmr3'},
       ] as any);
 
-      cachePoi.set(getEmptyPoi(4, 'mmr4'));
-      cachePoi.set(getEmptyPoi(5));
-      cachePoi.set(getEmptyPoi(6));
+      cachePoi.bulkUpsert([getEmptyPoi(4, 'mmr4')]);
+      cachePoi.bulkUpsert([getEmptyPoi(5)]);
+      cachePoi.bulkUpsert([getEmptyPoi(6)]);
 
       const res = await cachePoi.getLatestPoiWithMmr();
       expect(res?.id).toBe(4);
@@ -150,9 +150,9 @@ describe('CachePoi', () => {
     });
 
     it('only cache data', async () => {
-      cachePoi.set(getEmptyPoi(1, 'mmr1'));
-      cachePoi.set(getEmptyPoi(2, 'mmr2'));
-      cachePoi.set(getEmptyPoi(3));
+      cachePoi.bulkUpsert([getEmptyPoi(1, 'mmr1')]);
+      cachePoi.bulkUpsert([getEmptyPoi(2, 'mmr2')]);
+      cachePoi.bulkUpsert([getEmptyPoi(3)]);
 
       const res = await cachePoi.getLatestPoiWithMmr();
       expect(res?.id).toBe(2);

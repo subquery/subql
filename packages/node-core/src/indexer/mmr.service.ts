@@ -125,6 +125,7 @@ export class MmrService implements OnApplicationShutdown {
           appendedBlocks.push(await this.appendMmrNode(block));
           this._nextMmrBlockHeight = block.id + 1;
         }
+        // This should be safe, even poi bulkUpsert faild, filebased/postgres db node should already been written and accurate.
         if (appendedBlocks.length) {
           await this.poi.bulkUpsert(appendedBlocks);
         }
@@ -188,7 +189,6 @@ export class MmrService implements OnApplicationShutdown {
               this.nodeConfig.mmrStoreType
             } DB, total ${results.length} blocks `
           );
-          const start = Date.now();
           for (const poiBlock of results) {
             const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
             if (!poiBlock?.hash) {
@@ -196,8 +196,6 @@ export class MmrService implements OnApplicationShutdown {
             }
             await this.mmrDb.append(poiBlock?.hash, estLeafIndexByBlockHeight);
           }
-          const end = Date.now();
-          console.log(`takes ${end - start} ms`);
           latest = results[results.length - 1].id;
         } else {
           break;
