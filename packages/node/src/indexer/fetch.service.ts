@@ -36,6 +36,7 @@ import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { RuntimeService } from './runtime/runtimeService';
+import { ApiAt, BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const BLOCK_TIME_VARIANCE = 5000; //ms
@@ -73,6 +74,9 @@ function callFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
+  ApiPromise,
+  ApiAt,
+  BlockContent,
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
   DictionaryService,

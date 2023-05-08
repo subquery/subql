@@ -24,7 +24,7 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<DS extends {startBlock?: number}> implements IProjectService<DS> {
+export abstract class BaseProjectService<A, SA, B, DS extends {startBlock?: number}> implements IProjectService<DS> {
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -41,7 +41,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
 
   constructor(
     private readonly dsProcessorService: IDSProcessorService<DS>,
-    protected readonly apiService: ApiService,
+    protected readonly apiService: ApiService<A, SA, B>,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
     protected readonly sequelize: Sequelize,

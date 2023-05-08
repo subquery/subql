@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
+import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
   StoreService,
@@ -18,6 +19,8 @@ const logger = getLogger('subql-testing');
 
 @Injectable()
 export class TestingService extends BaseTestingService<
+  ApiPromise,
+  ApiPromise,
   BlockContent,
   SubqlProjectDs
 > {

@@ -28,7 +28,7 @@ declare global {
 }
 
 @Injectable()
-export abstract class TestingService<B, DS> {
+export abstract class TestingService<A, SA, B, DS> {
   private tests: Record<number, SubqlTest[]> = {};
   private testSandboxes: TestSandbox[];
   private failedTestsSummary: {
@@ -47,7 +47,7 @@ export abstract class TestingService<B, DS> {
     protected readonly nodeConfig: NodeConfig,
     protected readonly storeService: StoreService,
     @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
-    protected readonly apiService: ApiService,
+    protected readonly apiService: ApiService<A, SA, B>,
     protected readonly indexerManager: IIndexerManager<B, DS>
   ) {
     const projectPath = this.project.root;
