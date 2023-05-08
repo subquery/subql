@@ -3,11 +3,8 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
-import {
-  ApiConnection,
-  ApiConnectionError,
-  ApiErrorType,
-} from '@subql/node-core';
+import { Api, ApiConnectionError, ApiErrorType } from '@subql/node-core';
+import { BlockContent } from './types';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -15,11 +12,18 @@ const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
 
-export class ApiPromiseConnection implements ApiConnection {
-  constructor(private _api: ApiPromise) {}
+export class ApiPromiseConnection extends Api<
+  ApiPromise,
+  ApiPromise,
+  BlockContent
+> {
+  constructor(unsafeApiInstance: ApiPromise, private fetchBlocksBatches) {
+    super(unsafeApiInstance);
+  }
 
   static async create(
     endpoint: string,
+    fetchBlocksBatches: Function,
     args: { chainTypes: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
     let provider: WsProvider | HttpProvider;
@@ -43,20 +47,30 @@ export class ApiPromiseConnection implements ApiConnection {
       ...args.chainTypes,
     };
     const api = await ApiPromise.create(apiOption);
-    return new ApiPromiseConnection(api);
+    return new ApiPromiseConnection(api, fetchBlocksBatches);
   }
 
-  get api(): ApiPromise {
-    return this._api;
+  async fetchBlocks(
+    heights: number[],
+    overallSpecVer?: number,
+  ): Promise<BlockContent[]> {
+    const blocks = await this.fetchBlocksBatches(
+      this.unsafeApi,
+      heights,
+      overallSpecVer,
+    );
+    return blocks;
   }
 
   async apiConnect(): Promise<void> {
-    await this._api.connect();
+    await this.unsafeApi.connect();
   }
 
   async apiDisconnect(): Promise<void> {
-    await this._api.disconnect();
+    await this.unsafeApi.disconnect();
   }
+
+  handleError = ApiPromiseConnection.handleError;
 
   static handleError(e: Error): ApiConnectionError {
     let formatted_error: ApiConnectionError;

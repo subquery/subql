@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
+import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   isBlockHandlerProcessor,
@@ -48,6 +49,7 @@ const logger = getLogger('indexer');
 export class IndexerManager extends BaseIndexerManager<
   ApiService,
   ApiAt,
+  ApiPromise,
   BlockContent,
   SubstrateDatasource,
   SubstrateCustomDataSource,

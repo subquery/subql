@@ -3,9 +3,10 @@
 
 import {existsSync} from 'fs';
 import {DEFAULT_WORD_SIZE} from '@subql/common';
-import {NodeConfig, getExistingProjectSchema, getLogger, PgBasedMMRDB} from '@subql/node-core';
+import {NodeConfig, getExistingProjectSchema, PgBasedMMRDB} from '@subql/node-core';
 import {FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {Logging, QueryTypes, Sequelize} from 'sequelize';
+import {getLogger} from '../logger';
 
 const logger = getLogger('mmr-migrate');
 

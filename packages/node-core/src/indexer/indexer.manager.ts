@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {BaseCustomDataSource, BaseDataSource} from '@subql/common';
-import {ApiService} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
@@ -31,8 +31,8 @@ export interface CustomHandler<K extends string = string, F = Record<string, unk
 }
 
 export abstract class BaseIndexerManager<
-  AS extends ApiService,
   A, // Api Type
+  SA, // SafeApi Type
   B, // Block Type
   DS extends BaseDataSource,
   CDS extends DS & BaseCustomDataSource, // Custom datasource
@@ -62,7 +62,7 @@ export abstract class BaseIndexerManager<
   protected abstract prepareFilteredData<T>(kind: keyof FilterMap, data: T, ds: DS): Promise<T>;
 
   constructor(
-    protected readonly apiService: AS,
+    protected readonly apiService: IApi<A, SA, B>,
     protected readonly nodeConfig: NodeConfig,
     private sandboxService: {getDsProcessor: (ds: DS, api: A) => IndexerSandbox},
     private dsProcessorService: BaseDsProcessorService<DS, CDS>,
@@ -138,7 +138,7 @@ export abstract class BaseIndexerManager<
     // perform filter for custom ds
     filteredDs = filteredDs.filter((ds) => {
       if (this.isCustomDs(ds)) {
-        return this.dsProcessorService.getDsProcessor(ds).dsFilterProcessor(ds, this.apiService.api);
+        return this.dsProcessorService.getDsProcessor(ds).dsFilterProcessor(ds, this.apiService.unsafeApi);
       } else {
         return true;
       }
@@ -249,7 +249,7 @@ export abstract class BaseIndexerManager<
         input: data,
         ds,
         filter: handler.filter,
-        api: this.apiService.api,
+        api: this.apiService.unsafeApi,
         assets,
       })
       .catch((e: any) => {

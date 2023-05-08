@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {OnApplicationShutdown, Injectable} from '@nestjs/common';
+import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
+import {IApi} from '..';
 import {getLogger} from '../logger';
 
 const logger = getLogger('connection-pool');
@@ -15,8 +17,8 @@ const FAILURE_WEIGHT = 0.3;
 const RETRY_DELAY = 60 * 1000;
 
 export interface ApiConnection {
-  apiConnect(): Promise<void>;
-  apiDisconnect(): Promise<void>;
+  //apiConnect(): Promise<void>;
+  //apiDisconnect(): Promise<void>;
   api: any;
 }
 
@@ -37,7 +39,7 @@ export class ApiConnectionError extends Error {
 }
 
 @Injectable()
-export class ConnectionPoolService<T extends ApiConnection> implements OnApplicationShutdown {
+export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnApplicationShutdown {
   private allApi: T[] = [];
   private apiToIndexMap: Map<any, number> = new Map();
   private indexToEndpointMap: Record<number, string> = {};
@@ -58,7 +60,7 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
 
   async onApplicationShutdown(): Promise<void> {
     await Promise.all(
-      Object.keys(this.connectionPool).map((key) => this.connectionPool[toNumber(key)].apiDisconnect())
+      Object.keys(this.connectionPool).map((key) => this.connectionPool[toNumber(key)].apiDisconnect!())
     );
   }
 
@@ -68,16 +70,19 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     this.connectionPool[index] = api;
     this.performanceScores[index] = 100; //set to non-zero value
     this.failureCounts[index] = 0;
-    this.apiToIndexMap.set(api.api, index);
+    this.apiToIndexMap.set(api, index);
     this.indexToEndpointMap[index] = endpoint;
   }
 
-  addBatchToConnections(apis: T[], endpoints: string[]): void {
-    apis.forEach((api, i) => this.addToConnections(api, endpoints[i]));
+  addBatchToConnections(endpointToApiIndex: Record<string, T>): void {
+    for (const endpoint in endpointToApiIndex) {
+      this.addToConnections(endpointToApiIndex[endpoint], endpoint);
+    }
   }
 
   async connectToApi(apiIndex: number): Promise<void> {
-    await this.allApi[apiIndex].apiConnect();
+    await this.allApi[apiIndex].apiConnect!();
+    this.connectionPool[apiIndex] = this.allApi[apiIndex];
   }
 
   get api(): T {
@@ -85,7 +90,32 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     if (index === -1) {
       throw new Error('No connected api');
     }
-    return this.connectionPool[index];
+    const api = this.connectionPool[index];
+
+    // Create a proxy object that delegates calls to the original api object
+    const wrappedApi = new Proxy(api, {
+      get: (target, prop, receiver) => {
+        if (prop === 'fetchBlocks') {
+          return async (heights: number[], ...args: any): Promise<any> => {
+            try {
+              const start = Date.now();
+              const result = await target.fetchBlocks(heights, ...args);
+              const end = Date.now();
+              this.handleApiSuccess(index, end - start);
+              return result;
+            } catch (error) {
+              this.handleApiError(index, target.handleError!(error as Error));
+              throw error;
+            }
+          };
+        }
+
+        // Delegate other property access and method calls to the original api object
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+
+    return wrappedApi as T;
   }
 
   getNextConnectedApiIndex(): number {
@@ -137,7 +167,6 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     }
 
     logger.info(`reconnected to ${endpoint}!`);
-    this.connectionPool[apiIndex] = this.allApi[apiIndex];
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
@@ -146,6 +175,7 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     return RESPONSE_TIME_WEIGHT * responseTimeScore + FAILURE_WEIGHT * failureScore;
   }
 
+  @Interval(LOG_INTERVAL_MS)
   logEndpointStatus(): void {
     const suspendedIndices = Object.keys(this.connectionPool)
       .map(toNumber)
@@ -159,7 +189,7 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     let suspendedEndpointsInfo = chalk.yellow('Suspended endpoints:\n');
 
     suspendedIndices.forEach((index) => {
-      const endpoint = chalk.cyan(this.indexToEndpointMap[index]);
+      const endpoint = chalk.cyan(new URL(this.indexToEndpointMap[index]).hostname);
       const failures = chalk.red(`Failures: ${this.failureCounts[index]}`);
       const backoff = chalk.yellow(`Backoff (ms): ${this.backoffDelays[index]}`);
 
