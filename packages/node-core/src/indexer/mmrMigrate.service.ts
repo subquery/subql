@@ -88,7 +88,7 @@ export class MMRMigrateService {
         direction === MigrationDirection.FileToDb ? [fileBasedMMRDb, pgBasedMMRDb] : [pgBasedMMRDb, fileBasedMMRDb];
 
       const nodes = await source.getNodes();
-      const sortedEntries = Object.entries(nodes).sort(([a], [b]) => a.localeCompare(b));
+      const sortedEntries = Object.entries(nodes).sort(([a], [b]) => parseInt(a) - parseInt(b));
 
       const totalNodes = sortedEntries.length;
       let completedNodes = 0;
