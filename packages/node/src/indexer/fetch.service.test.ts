@@ -231,6 +231,7 @@ async function createApp(
 
   await app.init();
   await app.get(ApiService).init();
+  await app.get(UnfinalizedBlocksService).init(() => Promise.resolve());
 
   return app;
 }

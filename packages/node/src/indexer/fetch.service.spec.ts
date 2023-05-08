@@ -122,6 +122,7 @@ function mockApiService(): ApiService {
           return {
             number: { toNumber: () => 112344 },
             hash: { toHex: () => `0x112344` },
+            parentHash: { toHex: () => `0x112343` },
           };
         }),
         getBlockHash: jest.fn(() => `0x123456`),
