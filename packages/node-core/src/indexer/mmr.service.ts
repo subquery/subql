@@ -174,6 +174,7 @@ export class MmrService implements OnApplicationShutdown {
       return;
     }
     let latest = latestDbMmrHeight;
+    this._nextMmrBlockHeight = latest + 1;
     try {
       while (latest <= targetHeight) {
         const results = (
@@ -190,11 +191,18 @@ export class MmrService implements OnApplicationShutdown {
             } DB, total ${results.length} blocks `
           );
           for (const poiBlock of results) {
+            if (this.nextMmrBlockHeight < poiBlock.id) {
+              for (let i = this.nextMmrBlockHeight; i < poiBlock.id; i++) {
+                await this.mmrDb.append(DEFAULT_LEAF);
+                this._nextMmrBlockHeight = i + 1;
+              }
+            }
             const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
             if (!poiBlock?.hash) {
               throw new Error(`Copy POI block ${poiBlock?.id} hash to DB got undefined`);
             }
             await this.mmrDb.append(poiBlock?.hash, estLeafIndexByBlockHeight);
+            this._nextMmrBlockHeight = poiBlock.id + 1;
           }
           latest = results[results.length - 1].id;
         } else {

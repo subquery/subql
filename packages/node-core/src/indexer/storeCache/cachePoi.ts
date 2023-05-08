@@ -1,13 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {DEFAULT_FETCH_RANGE} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
 import {Mutex} from 'async-mutex';
-import {Op, Transaction} from 'sequelize';
+import {Transaction} from 'sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
-import {PoiInterface} from '../poi/poiModel';
+import {PlainPoiModel, PoiInterface} from '../poi/poiModel';
 import {ICachedModelControl} from './types';
 const logger = getLogger('PoiCache');
 
@@ -15,9 +14,12 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
   private setCache: Record<number, ProofOfIndex> = {};
   private removeCache: number[] = [];
   flushableRecordCounter = 0;
+  private plainPoiModel: PlainPoiModel;
   private mutex = new Mutex();
 
-  constructor(readonly model: PoiRepo) {}
+  constructor(readonly model: PoiRepo) {
+    this.plainPoiModel = new PlainPoiModel(model);
+  }
 
   bulkUpsert(proofs: ProofOfIndex[]): void {
     for (const proof of proofs) {
@@ -56,14 +58,7 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
     await this.mutex.waitForUnlock();
-    const result = await this.model.findAll({
-      limit: DEFAULT_FETCH_RANGE,
-      where: {id: {[Op.gte]: startHeight}},
-      order: [['id', 'ASC']],
-    });
-
-    const resultData = result.map((r) => r?.toJSON<ProofOfIndex>());
-
+    const resultData = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
     const poiBlocks = this.mergeResultsWithCache(resultData).filter((poiBlock) => poiBlock.id >= startHeight);
     if (poiBlocks.length !== 0) {
       return poiBlocks.sort((v) => v.id);
@@ -83,12 +78,8 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
   async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
     await this.mutex.waitForUnlock();
-    const result = await this.model.findOne({
-      order: [['id', 'DESC']],
-      where: {mmrRoot: {[Op.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
-    });
-
-    return this.mergeResultsWithCache([result?.toJSON()], 'desc').find((v) => !!v.mmrRoot) ?? null;
+    const result = (await this.plainPoiModel.getLatestPoiWithMmr()) ?? undefined;
+    return this.mergeResultsWithCache([result], 'desc').find((v) => !!v.mmrRoot) ?? null;
   }
 
   get isFlushable(): boolean {

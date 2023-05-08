@@ -87,6 +87,6 @@ export class PlainPoiModel implements PoiInterface {
     if (!result) {
       return null;
     }
-    return result;
+    return result.toJSON();
   }
 }
