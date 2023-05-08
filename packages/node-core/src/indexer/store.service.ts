@@ -598,6 +598,7 @@ export class StoreService {
         exclude: ['__id', '__block_range'],
       },
     });
+
     sequelizeModel.addHook('beforeFind', (options) => {
       (options.where as any).__block_range = {
         [Op.contains]: this.blockHeight as any,
@@ -787,9 +788,10 @@ group by
               (indexField) =>
                 upperFirst(camelCase(indexField.entityName)) === entity &&
                 camelCase(indexField.fieldName) === field &&
-                indexField.isUnique
+                // With historical indexes are not unique
+                (this.historical || indexField.isUnique)
             ) > -1;
-          assert(indexed, `to query by field ${String(field)}, an unique index must be created on model ${entity}`);
+          assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
           return this.storeCache.getModel<T>(entity).getOneByField(field, value);
         } catch (e) {
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
