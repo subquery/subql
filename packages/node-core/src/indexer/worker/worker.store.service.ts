@@ -18,6 +18,7 @@ export type HostStore = {
   storeBulkCreate: (entity: string, data: any[]) => Promise<void>;
   storeBulkUpdate: (entity: string, data: any[], fields?: string[]) => Promise<void>;
   storeRemove: (entity: string, id: string) => Promise<void>;
+  storeBulkRemove: (entity: string, ids: string[]) => Promise<void>;
 };
 
 export const hostStoreKeys: (keyof HostStore)[] = [
@@ -28,6 +29,7 @@ export const hostStoreKeys: (keyof HostStore)[] = [
   'storeBulkCreate',
   'storeBulkUpdate',
   'storeRemove',
+  'storeBulkRemove',
 ];
 
 // Entities have to be converted to plain objects so they can be serialized.
@@ -41,5 +43,6 @@ export const hostStoreToStore = (host: HostStore): Store => {
     bulkCreate: (entity, data) => host.storeBulkCreate(entity, classToPlain(data) as any[]),
     bulkUpdate: (entity, data, fields) => host.storeBulkUpdate(entity, classToPlain(data) as any[], fields),
     remove: host.storeRemove,
+    bulkRemove: host.storeBulkRemove,
   };
 };

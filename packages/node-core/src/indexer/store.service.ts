@@ -838,6 +838,18 @@ group by
           throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
         }
       },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      bulkRemove: async (entity: string, ids: string[]): Promise<void> => {
+        try {
+          this.storeCache.getModel(entity).bulkRemove(ids, this.blockHeight);
+
+          for (const id of ids) {
+            this.operationStack?.put(OperationType.Remove, entity, id);
+          }
+        } catch (e) {
+          throw new Error(`Failed to bulkRemove Entity ${entity}: ${e}`);
+        }
+      },
     };
   }
 }
