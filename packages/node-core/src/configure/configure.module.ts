@@ -1,6 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {getLogger} from '../logger';
+
+const logger = getLogger('DbSchema');
+
 // Check if a subquery name is a valid schema name
 export function validDbSchemaName(name: string): boolean {
   if (name.length === 0) {
