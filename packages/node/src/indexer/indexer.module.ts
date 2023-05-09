@@ -56,16 +56,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         NodeConfig,
       ],
     },
-    {
-      provide: SandboxService,
-      useFactory: (
-        apiService: ApiService,
-        storeService: StoreService,
-        nodeConfig: NodeConfig,
-        project: SubqueryProject,
-      ) => new SandboxService(apiService, storeService, nodeConfig, project),
-      inject: [ApiService, StoreService, NodeConfig, 'ISubqueryProject'],
-    },
+    SandboxService,
     DsProcessorService,
     {
       provide: DynamicDsService,
