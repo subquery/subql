@@ -25,8 +25,8 @@ export interface CustomHandler<K extends string = string, F = Record<string, unk
 }
 
 export abstract class BaseIndexerManager<
-  A, // Api Type
-  SA, // SafeApi Type
+  SA, // Api Type
+  A, // SafeApi Type
   B, // Block Type
   DS extends BaseDataSource,
   CDS extends DS, // Custom datasource
@@ -58,7 +58,7 @@ export abstract class BaseIndexerManager<
   constructor(
     protected readonly apiService: ApiService<A, SA, B>,
     protected readonly nodeConfig: NodeConfig,
-    private sandboxService: {getDsProcessor: (ds: DS, api: A) => IndexerSandbox},
+    private sandboxService: {getDsProcessor: (ds: DS, api: SA) => IndexerSandbox},
     private dsProcessorService: IDSProcessorService<CDS>,
     private dynamicDsService: DynamicDsService<DS>,
     private filterMap: FilterMap,
@@ -70,7 +70,7 @@ export abstract class BaseIndexerManager<
   protected async internalIndexBlock(
     block: B,
     dataSources: DS[],
-    getApi: () => Promise<A>
+    getApi: () => Promise<SA>
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
     const blockHeight = this.getBlockHeight(block);
@@ -79,7 +79,7 @@ export abstract class BaseIndexerManager<
 
     this.assertDataSources(filteredDataSources, blockHeight);
 
-    let apiAt: A;
+    let apiAt: SA;
     const reindexBlockHeight = await this.processUnfinalizedBlocks(block);
 
     // Only index block if we're not going to reindex

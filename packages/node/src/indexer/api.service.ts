@@ -34,7 +34,7 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService
-  extends BaseApiService<ApiPromise, ApiPromise, BlockContent>
+  extends BaseApiService<ApiPromise, ApiAt, BlockContent>
   implements OnApplicationShutdown
 {
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;

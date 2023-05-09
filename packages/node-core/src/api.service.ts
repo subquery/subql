@@ -14,7 +14,7 @@ type FetchFunctionProvider<T, A> = () => [FetchFunction<T, A>, A];
 
 export interface IApi<A, SA, B> {
   fetchBlocks(heights: number[], ...args: any): Promise<B[]>;
-  safeApi: SA;
+  safeApi(height: number): SA;
   unsafeApi: A;
   handleError?(error: Error): ApiConnectionError;
   apiConnect?(): Promise<void>;
@@ -29,7 +29,7 @@ export abstract class Api<A, SA, B> implements IApi<A, SA, B> {
     throw new Error(`Not Implemented`);
   }
 
-  get safeApi(): SA {
+  safeApi(height: number): SA {
     throw new Error(`Not Implemented`);
   }
 
@@ -42,7 +42,7 @@ export abstract class Api<A, SA, B> implements IApi<A, SA, B> {
   }
 }
 
-export abstract class ApiService<A, SA, B> implements IApi<A, SA, B> {
+export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
   constructor(protected connectionPoolService: ConnectionPoolService<Api<A, SA, B>>) {}
   abstract networkMeta: NetworkMetadataPayload;
 
@@ -66,9 +66,9 @@ export abstract class ApiService<A, SA, B> implements IApi<A, SA, B> {
     return this.unsafeApi;
   }
 
-  get safeApi(): SA {
+  safeApi(height: number): SA {
     const apiInstance = this.connectionPoolService.api;
-    return apiInstance.safeApi;
+    return apiInstance.safeApi(height);
   }
 
   get unsafeApi(): A {
