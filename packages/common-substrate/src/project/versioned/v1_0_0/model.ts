@@ -3,6 +3,7 @@
 
 import {
   BaseMapping,
+  FileType,
   NodeSpec,
   ProjectManifestBaseImpl,
   QuerySpec,
@@ -27,11 +28,6 @@ import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {CustomDatasourceTemplate, RuntimeDatasourceTemplate, SubstrateProjectManifestV1_0_0} from './types';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
-
-export class FileType {
-  @IsString()
-  file: string;
-}
 
 export class SubstrateRunnerNodeImpl extends RunnerNodeImpl {
   @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})

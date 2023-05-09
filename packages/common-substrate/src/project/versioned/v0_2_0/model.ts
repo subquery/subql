@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BaseMapping, ProjectManifestBaseImpl} from '@subql/common';
+import {BaseMapping, FileType, ProjectManifestBaseImpl} from '@subql/common';
 import {SubstrateCustomDatasource, SubstrateNetworkFilter} from '@subql/types';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
@@ -16,11 +16,6 @@ import {
 } from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {CustomDatasourceV0_2_0, SubstrateProjectManifestV0_2_0, RuntimeDataSourceV0_2_0} from './types';
-
-export class FileType {
-  @IsString()
-  file: string;
-}
 
 export class ProjectNetworkDeploymentV0_2_0 {
   @IsString()
