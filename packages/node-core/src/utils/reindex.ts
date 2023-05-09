@@ -1,16 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  DynamicDsService,
-  getLogger,
-  MmrService,
-  StoreService,
-} from '@subql/node-core';
-import { SubstrateDatasource } from '@subql/types';
-import { Sequelize } from 'sequelize';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { ForceCleanService } from '../subcommands/forceClean.service';
+import {Sequelize} from 'sequelize';
+import {DynamicDsService, IUnfinalizedBlocksService, MmrService, StoreService} from '../indexer';
+import {getLogger} from '../logger';
+import {ForceCleanService} from '../subcommands';
 
 const logger = getLogger('Reindex');
 
@@ -20,15 +14,15 @@ export async function reindex(
   targetBlockHeight: number,
   lastProcessedHeight: number,
   storeService: StoreService,
-  unfinalizedBlockService: UnfinalizedBlocksService,
-  dynamicDsService: DynamicDsService<SubstrateDatasource>,
+  unfinalizedBlockService: IUnfinalizedBlocksService<any>,
+  dynamicDsService: DynamicDsService<any>,
   mmrService: MmrService,
   sequelize: Sequelize,
-  forceCleanService?: ForceCleanService,
+  forceCleanService?: ForceCleanService
 ): Promise<void> {
   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
     logger.warn(
-      `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
+      `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`
     );
     return;
   }
@@ -36,7 +30,7 @@ export async function reindex(
   // if startHeight is greater than the targetHeight, just force clean
   if (targetBlockHeight < startHeight) {
     logger.info(
-      `targetHeight: ${targetBlockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`,
+      `targetHeight: ${targetBlockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
     if (!forceCleanService) {
       logger.error('ForceCleanService not provided, cannot force clean');
@@ -63,7 +57,7 @@ export async function reindex(
 
       await transaction.commit();
       logger.info('Reindex Success');
-    } catch (err) {
+    } catch (err: any) {
       logger.error(err, 'Reindexing failed');
       await transaction.rollback();
       throw err;

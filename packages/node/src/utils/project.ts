@@ -9,7 +9,6 @@ import {
   CustomDatasourceV0_2_0,
   isCustomDs,
   parseChainTypes,
-  RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
   SubstrateRuntimeHandler,
   SubstrateCustomHandler,
@@ -35,20 +34,6 @@ export function isCustomHandler(
   handler: SubstrateHandler,
 ): handler is SubstrateCustomHandler {
   return !isBaseHandler(handler);
-}
-
-export async function updateDataSourcesV0_0_1(
-  _dataSources: RuntimeDataSourceV0_0_1[],
-  reader: Reader,
-): Promise<SubqlProjectDs[]> {
-  // force convert to updated ds
-  const dataSources = _dataSources as SubqlProjectDs[];
-  await Promise.all(
-    dataSources.map(async (ds) => {
-      ds.mapping.entryScript = await loadDataSourceScript(reader);
-    }),
-  );
-  return dataSources;
 }
 
 export async function updateDataSourcesV0_2_0(
