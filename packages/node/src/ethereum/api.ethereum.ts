@@ -188,6 +188,10 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       includeTx,
     ]);
 
+    if (!rawBlock) {
+      throw new Error(`Failed to fetch block ${num}`);
+    }
+
     const block = formatBlock(rawBlock);
 
     block.stateRoot = this.client.formatter.hash(block.stateRoot);
