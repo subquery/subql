@@ -1,8 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {blake2AsHex} from '@polkadot/util-crypto';
-import {hashName} from '@subql/utils';
+import {hashName, blake2AsHex} from '@subql/utils';
 import {QueryTypes, Sequelize, Utils} from 'sequelize';
 
 export interface SmartTags {

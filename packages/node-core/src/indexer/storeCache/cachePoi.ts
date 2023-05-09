@@ -1,36 +1,41 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {u8aToBuffer} from '@polkadot/util';
-import {Op, Transaction} from 'sequelize';
+import {u8aToBuffer} from '@subql/utils';
+import {Mutex} from 'async-mutex';
+import {Transaction} from 'sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
+import {PlainPoiModel, PoiInterface} from '../poi/poiModel';
 import {ICachedModelControl} from './types';
-
 const logger = getLogger('PoiCache');
 
-const DEFAULT_FETCH_RANGE = 100;
-
-export class CachePoiModel implements ICachedModelControl {
+export class CachePoiModel implements ICachedModelControl, PoiInterface {
   private setCache: Record<number, ProofOfIndex> = {};
   private removeCache: number[] = [];
   flushableRecordCounter = 0;
+  private plainPoiModel: PlainPoiModel;
+  private mutex = new Mutex();
 
-  constructor(readonly model: PoiRepo) {}
+  constructor(readonly model: PoiRepo) {
+    this.plainPoiModel = new PlainPoiModel(model);
+  }
 
-  set(proof: ProofOfIndex): void {
-    proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);
-    proof.hash = u8aToBuffer(proof.hash);
-    proof.parentHash = u8aToBuffer(proof.parentHash);
+  bulkUpsert(proofs: ProofOfIndex[]): void {
+    for (const proof of proofs) {
+      proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);
+      proof.hash = u8aToBuffer(proof.hash);
+      proof.parentHash = u8aToBuffer(proof.parentHash);
 
-    if (this.setCache[proof.id] === undefined) {
-      this.flushableRecordCounter += 1;
+      if (this.setCache[proof.id] === undefined) {
+        this.flushableRecordCounter += 1;
+      }
+      this.setCache[proof.id] = proof;
     }
-
-    this.setCache[proof.id] = proof;
   }
 
   async getById(id: number): Promise<ProofOfIndex | undefined> {
+    await this.mutex.waitForUnlock();
     if (this.removeCache.includes(id)) {
       logger.debug(`Attempted to get deleted POI with id="${id}"`);
       return undefined;
@@ -52,17 +57,9 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
-    const result = await this.model.findAll({
-      limit: DEFAULT_FETCH_RANGE,
-      where: {id: {[Op.gte]: startHeight}},
-      order: [['id', 'ASC']],
-    });
-
-    const resultData = result.map((r) => r?.toJSON<ProofOfIndex>());
-
-    const poiBlocks = Object.values(this.mergeResultsWithCache(resultData)).filter(
-      (poiBlock) => poiBlock.id >= startHeight
-    );
+    await this.mutex.waitForUnlock();
+    const resultData = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
+    const poiBlocks = this.mergeResultsWithCache(resultData).filter((poiBlock) => poiBlock.id >= startHeight);
     if (poiBlocks.length !== 0) {
       return poiBlocks.sort((v) => v.id);
     } else {
@@ -71,34 +68,18 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async getLatestPoi(): Promise<ProofOfIndex | null | undefined> {
+    await this.mutex.waitForUnlock();
     const result = await this.model.findOne({
       order: [['id', 'DESC']],
     });
 
-    if (!result) return null;
-
-    return Object.values(this.mergeResultsWithCache([result.toJSON()])).reduce((acc, val) => {
-      if (acc && acc.id < val.id) return acc;
-      return val;
-    }, null as ProofOfIndex | null);
+    return this.mergeResultsWithCache([result?.toJSON()], 'desc')[0];
   }
 
   async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
-    const result = await this.model.findOne({
-      order: [['id', 'DESC']],
-      where: {mmrRoot: {[Op.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
-    });
-
-    if (!result) {
-      return null;
-    }
-
-    return Object.values(this.mergeResultsWithCache([result.toJSON()]))
-      .filter((v) => !!v.mmrRoot)
-      .reduce((acc, val) => {
-        if (acc && acc.id < val.id) return acc;
-        return val;
-      }, null as ProofOfIndex | null);
+    await this.mutex.waitForUnlock();
+    const result = (await this.plainPoiModel.getLatestPoiWithMmr()) ?? undefined;
+    return this.mergeResultsWithCache([result], 'desc').find((v) => !!v.mmrRoot) ?? null;
   }
 
   get isFlushable(): boolean {
@@ -106,29 +87,44 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
-    const pendingFlush = Promise.all([
-      this.model.bulkCreate(Object.values(this.setCache), {transaction: tx, updateOnDuplicate: ['mmrRoot']}),
-      this.model.destroy({where: {id: this.removeCache}, transaction: tx}),
-    ]);
+    const release = await this.mutex.acquire();
+    try {
+      tx.afterCommit(() => {
+        release();
+      });
+      logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
+      const pendingFlush = Promise.all([
+        this.model.bulkCreate(Object.values(this.setCache), {transaction: tx, updateOnDuplicate: ['mmrRoot']}),
+        this.model.destroy({where: {id: this.removeCache}, transaction: tx}),
+      ]);
 
-    // Don't await DB operations to complete before clearing.
-    // This allows new data to be cached while flushing
-    this.clear();
+      // Don't await DB operations to complete before clearing.
+      // This allows new data to be cached while flushing
+      this.clear();
 
-    await pendingFlush;
+      await pendingFlush;
+    } catch (e) {
+      release();
+      throw e;
+    }
   }
 
-  private mergeResultsWithCache(results: ProofOfIndex[]): Record<number, ProofOfIndex> {
+  private mergeResultsWithCache(results: (ProofOfIndex | undefined)[], order: 'asc' | 'desc' = 'asc'): ProofOfIndex[] {
     const copy = {...this.setCache};
 
-    results.map((result) => {
+    results.forEach((result) => {
       if (result) {
         copy[result.id] = result;
       }
     });
 
-    return copy;
+    const ascending = Object.values(copy).sort((a, b) => a.id - b.id);
+
+    if (order === 'asc') {
+      return ascending;
+    }
+
+    return ascending.reverse();
   }
 
   private clear(): void {

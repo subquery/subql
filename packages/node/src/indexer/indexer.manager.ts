@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   isBlockHandlerProcessor,
@@ -47,8 +46,8 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
+  ApiService,
   ApiAt,
-  ApiPromise,
   BlockContent,
   SubstrateDatasource,
   SubstrateCustomDataSource,
@@ -78,7 +77,6 @@ export class IndexerManager extends BaseIndexerManager<
       FilterTypeMap,
       ProcessorTypeMap,
     );
-    logger.info('indexer manager start');
   }
 
   async start(): Promise<void> {
@@ -110,10 +108,7 @@ export class IndexerManager extends BaseIndexerManager<
     block: BlockContent,
     runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
-    return (this.apiService as ApiService).getPatchedApi(
-      block.block,
-      runtimeVersion,
-    );
+    return this.apiService.getPatchedApi(block.block, runtimeVersion);
   }
 
   protected async processUnfinalizedBlocks(

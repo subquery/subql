@@ -25,8 +25,8 @@ export interface CustomHandler<K extends string = string, F = Record<string, unk
 }
 
 export abstract class BaseIndexerManager<
+  AS extends ApiService,
   SA, // Api Type
-  A, // SafeApi Type
   B, // Block Type
   DS extends BaseDataSource,
   CDS extends DS, // Custom datasource
@@ -56,7 +56,7 @@ export abstract class BaseIndexerManager<
   protected abstract baseCustomHandlerFilter(kind: keyof FilterMap, data: any, baseFilter: any): boolean;
 
   constructor(
-    protected readonly apiService: ApiService<A, SA, B>,
+    protected readonly apiService: AS,
     protected readonly nodeConfig: NodeConfig,
     private sandboxService: {getDsProcessor: (ds: DS, api: SA) => IndexerSandbox},
     private dsProcessorService: IDSProcessorService<CDS>,

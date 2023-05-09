@@ -1,8 +1,17 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {isHex, hexToU8a, u8aToBuffer, u8aToHex, bufferToU8a, isBuffer, isNull} from '@polkadot/util';
-import {getTypeByScalarName, GraphQLModelsType} from '@subql/utils';
+import {
+  getTypeByScalarName,
+  GraphQLModelsType,
+  isHex,
+  hexToU8a,
+  u8aToBuffer,
+  u8aToHex,
+  bufferToU8a,
+  isBuffer,
+  isNull,
+} from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from 'sequelize';
 
 export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums: Map<string, string>): ModelAttributes {

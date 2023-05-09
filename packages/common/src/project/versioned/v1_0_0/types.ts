@@ -12,11 +12,18 @@ export interface RunnerSpecs {
 export interface NodeSpec {
   name: string;
   version: string;
+  options?: NodeOptions;
 }
 
 export interface QuerySpec {
   name: string;
   version: string;
+}
+
+export interface NodeOptions {
+  historical?: boolean;
+  unsafe?: boolean;
+  unfinalizedBlocks?: boolean;
 }
 
 export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extends object = BaseDataSource>

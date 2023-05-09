@@ -18,8 +18,9 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   abstract readonly deployment: D;
 
   toDeployment(): string {
-    // classToPlain fixes Map type with assets fields
-    return yaml.dump(classToPlain(this.deployment), {
+    // plainToClass was used but ran into issues
+    // We convert it to a plain object to get Maps converted to Records/Objects
+    return yaml.dump(JSON.parse(JSON.stringify(this.deployment)), {
       sortKeys: true,
       condenseFlow: true,
     });

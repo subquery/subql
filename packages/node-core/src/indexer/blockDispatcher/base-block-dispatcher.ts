@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {hexToU8a, u8aEq} from '@polkadot/util';
+import {hexToU8a, u8aEq} from '@subql/utils';
 import {
   DynamicDsService,
   IProjectNetworkConfig,
@@ -209,7 +209,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
         await this.poiService.getLatestPoiBlockHash(),
         this.project.id
       );
-      this.poi.set(poiBlock);
+      // This is the first creation of POI
+      this.poi.bulkUpsert([poiBlock]);
       this.poiService.setLatestPoiBlockHash(poiBlock.hash);
       this.storeCacheService.metadata.set('lastPoiHeight', height);
     }

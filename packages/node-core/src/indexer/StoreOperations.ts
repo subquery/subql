@@ -1,9 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {u8aConcat, u8aToBuffer, isString} from '@polkadot/util';
 import {Entity} from '@subql/types';
-import {getTypeByScalarName, GraphQLModelsType} from '@subql/utils';
+import {getTypeByScalarName, GraphQLModelsType, u8aConcat, u8aToBuffer, isString} from '@subql/utils';
 import MerkleTools from 'merkle-tools';
 import {OperationEntity, OperationType} from './types';
 

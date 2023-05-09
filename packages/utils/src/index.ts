@@ -5,3 +5,4 @@ export * from './graphql';
 export {levelFilter, Logger, LoggerOption} from './logger';
 export * from './query';
 export * from './types';
+export * from './buffer';

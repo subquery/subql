@@ -3,10 +3,7 @@
 
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
-import {hexToU8a} from '@polkadot/util';
-import {blake2AsHex} from '@polkadot/util-crypto';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -16,6 +13,8 @@ import {
   IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
+  hexToU8a,
+  blake2AsHex,
 } from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
@@ -90,7 +89,7 @@ class NoInitError extends Error {
 
 @Injectable()
 export class StoreService {
-  private poiRepo?: PoiRepo;
+  poiRepo?: PoiRepo;
   private removedIndexes: RemovedIndexes = {};
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
@@ -599,6 +598,7 @@ export class StoreService {
         exclude: ['__id', '__block_range'],
       },
     });
+
     sequelizeModel.addHook('beforeFind', (options) => {
       (options.where as any).__block_range = {
         [Op.contains]: this.blockHeight as any,
@@ -788,9 +788,10 @@ group by
               (indexField) =>
                 upperFirst(camelCase(indexField.entityName)) === entity &&
                 camelCase(indexField.fieldName) === field &&
-                indexField.isUnique
+                // With historical indexes are not unique
+                (this.historical || indexField.isUnique)
             ) > -1;
-          assert(indexed, `to query by field ${String(field)}, an unique index must be created on model ${entity}`);
+          assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
           return this.storeCache.getModel<T>(entity).getOneByField(field, value);
         } catch (e) {
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
@@ -837,6 +838,18 @@ group by
           this.operationStack?.put(OperationType.Remove, entity, id);
         } catch (e) {
           throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
+        }
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      bulkRemove: async (entity: string, ids: string[]): Promise<void> => {
+        try {
+          this.storeCache.getModel(entity).bulkRemove(ids, this.blockHeight);
+
+          for (const id of ids) {
+            this.operationStack?.put(OperationType.Remove, entity, id);
+          }
+        } catch (e) {
+          throw new Error(`Failed to bulkRemove Entity ${entity}: ${e}`);
         }
       },
     };
