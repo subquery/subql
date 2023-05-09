@@ -41,11 +41,13 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   ) {
     this.storeCacheThreshold = config.storeCacheThreshold;
 
-    const interval = setInterval(
-      () => void this.flushCache(true, false),
-      config.storeFlushInterval * 1000 // Convert to miliseconds
+    this.schedulerRegistry.addInterval(
+      INTERVAL_NAME,
+      setInterval(
+        () => void this.flushCache(true, false),
+        config.storeFlushInterval * 1000 // Convert to miliseconds
+      )
     );
-    this.schedulerRegistry.addInterval(INTERVAL_NAME, interval);
   }
 
   init(historical: boolean, useCockroachDb: boolean): void {

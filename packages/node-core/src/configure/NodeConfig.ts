@@ -152,7 +152,7 @@ export class NodeConfig implements IConfig {
   }
 
   get storeFlushInterval(): number {
-    return this.storeFlushInterval;
+    return this._config.storeFlushInterval;
   }
 
   get dictionaryResolver(): string | undefined {
