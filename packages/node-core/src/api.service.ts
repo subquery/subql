@@ -12,7 +12,7 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 type FetchFunction<T, A> = (batch: number[], api: A) => Promise<T[]>;
 type FetchFunctionProvider<T, A> = () => [FetchFunction<T, A>, A];
 
-export interface IApi<A, SA, B> {
+export interface IApi<A = any, SA = any, B = any> {
   fetchBlocks(heights: number[], ...args: any): Promise<B[]>;
   safeApi(height: number): SA;
   unsafeApi: A;

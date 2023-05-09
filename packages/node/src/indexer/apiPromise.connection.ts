@@ -4,7 +4,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 import { Api, ApiConnectionError, ApiErrorType } from '@subql/node-core';
-import { BlockContent } from './types';
+import { ApiAt, BlockContent } from './types';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -12,11 +12,7 @@ const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
 
-export class ApiPromiseConnection extends Api<
-  ApiPromise,
-  ApiPromise,
-  BlockContent
-> {
+export class ApiPromiseConnection extends Api<ApiPromise, ApiAt, BlockContent> {
   constructor(unsafeApiInstance: ApiPromise, private fetchBlocksBatches) {
     super(unsafeApiInstance);
   }
