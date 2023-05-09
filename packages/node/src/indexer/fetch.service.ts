@@ -74,9 +74,7 @@ function callFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  ApiPromise,
-  ApiAt,
-  BlockContent,
+  ApiService,
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
   DictionaryService

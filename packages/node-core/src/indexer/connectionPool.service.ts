@@ -38,15 +38,19 @@ export class ApiConnectionError extends Error {
   }
 }
 
+interface ConnectionPoolItem<T> {
+  endpoint: string;
+  connection: T;
+  performanceScore: number;
+  backoffDelay: number;
+  failureCount: number;
+}
+
 @Injectable()
 export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnApplicationShutdown {
   private allApi: T[] = [];
   private apiToIndexMap: Map<any, number> = new Map();
-  private indexToEndpointMap: Record<number, string> = {};
-  private connectionPool: Record<number, T> = {};
-  private performanceScores: Record<number, number> = {};
-  private backoffDelays: Record<number, number> = {};
-  private failureCounts: Record<number, number> = {};
+  private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   private errorTypeToScoreAdjustment = {
     [ApiErrorType.Timeout]: -10,
@@ -54,24 +58,23 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
     [ApiErrorType.Default]: -5,
   };
 
-  constructor() {
-    this.startLoggingEndpointStatus(LOG_INTERVAL_MS);
-  }
-
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all(
-      Object.keys(this.connectionPool).map((key) => this.connectionPool[toNumber(key)].apiDisconnect!())
-    );
+    await Promise.all(Object.values(this.pool).map((poolItem) => poolItem.connection.apiDisconnect!()));
   }
 
   addToConnections(api: T, endpoint: string): void {
     const index = this.allApi.length;
     this.allApi.push(api);
-    this.connectionPool[index] = api;
-    this.performanceScores[index] = 100; //set to non-zero value
-    this.failureCounts[index] = 0;
+
+    const poolItem: ConnectionPoolItem<T> = {
+      connection: api,
+      performanceScore: 100,
+      failureCount: 0,
+      endpoint: endpoint,
+      backoffDelay: 0,
+    };
+    this.pool[index] = poolItem;
     this.apiToIndexMap.set(api, index);
-    this.indexToEndpointMap[index] = endpoint;
   }
 
   addBatchToConnections(endpointToApiIndex: Record<string, T>): void {
@@ -82,7 +85,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
 
   async connectToApi(apiIndex: number): Promise<void> {
     await this.allApi[apiIndex].apiConnect!();
-    this.connectionPool[apiIndex] = this.allApi[apiIndex];
+    this.pool[apiIndex].connection = this.allApi[apiIndex];
   }
 
   get api(): T {
@@ -90,7 +93,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
     if (index === -1) {
       throw new Error('No connected api');
     }
-    const api = this.connectionPool[index];
+    const api = this.pool[index].connection;
 
     // Create a proxy object that delegates calls to the original api object
     const wrappedApi = new Proxy(api, {
@@ -119,25 +122,25 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   }
 
   getNextConnectedApiIndex(): number {
-    const indices = Object.keys(this.connectionPool)
-      .map(toNumber)
-      .filter((index) => !this.backoffDelays[index]);
+    const indices = Object.keys(this.pool)
+      .map(Number)
+      .filter((index) => !this.pool[index].backoffDelay);
 
     if (indices.length === 0) {
       return -1;
     }
 
     // Sort indices based on their performance scores in descending order
-    indices.sort((a, b) => this.performanceScores[b] - this.performanceScores[a]);
+    indices.sort((a, b) => this.pool[b].performanceScore - this.pool[a].performanceScore);
 
     // Calculate the sum of performance scores
-    const sumScores = indices.reduce((acc, idx) => acc + this.performanceScores[idx], 0);
+    const sumScores = indices.reduce((acc, idx) => acc + this.pool[idx].performanceScore, 0);
 
     // Calculate the cumulative probability distribution
     const cumulativeProbs: number[] = [];
     indices.forEach((idx, i) => {
       const prevProb = i > 0 ? cumulativeProbs[i - 1] : 0;
-      cumulativeProbs[i] = prevProb + this.performanceScores[idx] / sumScores;
+      cumulativeProbs[i] = prevProb + this.pool[idx].performanceScore / sumScores;
     });
 
     // Choose a random number between 0 and 1
@@ -151,12 +154,12 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   }
 
   get numConnections(): number {
-    return Object.keys(this.connectionPool).length;
+    return Object.keys(this.pool).length;
   }
 
   async handleApiDisconnects(apiIndex: number, endpoint: string): Promise<void> {
     logger.warn(`disconnected from ${endpoint}`);
-    delete this.connectionPool[apiIndex];
+    delete this.pool[apiIndex];
 
     try {
       logger.debug(`reconnecting to ${endpoint}...`);
@@ -177,9 +180,9 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
 
   @Interval(LOG_INTERVAL_MS)
   logEndpointStatus(): void {
-    const suspendedIndices = Object.keys(this.connectionPool)
+    const suspendedIndices = Object.keys(this.pool)
       .map(toNumber)
-      .filter((index) => this.backoffDelays[index]);
+      .filter((index) => this.pool[index].backoffDelay !== 0);
 
     if (suspendedIndices.length === 0) {
       logger.info(chalk.green('No suspended endpoints.'));
@@ -189,9 +192,9 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
     let suspendedEndpointsInfo = chalk.yellow('Suspended endpoints:\n');
 
     suspendedIndices.forEach((index) => {
-      const endpoint = chalk.cyan(new URL(this.indexToEndpointMap[index]).hostname);
-      const failures = chalk.red(`Failures: ${this.failureCounts[index]}`);
-      const backoff = chalk.yellow(`Backoff (ms): ${this.backoffDelays[index]}`);
+      const endpoint = chalk.cyan(new URL(this.pool[index].endpoint).hostname);
+      const failures = chalk.red(`Failures: ${this.pool[index].failureCount}`);
+      const backoff = chalk.yellow(`Backoff (ms): ${this.pool[index].backoffDelay}`);
 
       suspendedEndpointsInfo += `\n- ${endpoint}\n  ${failures}\n  ${backoff}\n`;
     });
@@ -201,19 +204,19 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
 
   handleApiError(apiIndex: number, error: ApiConnectionError): void {
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
-    this.performanceScores[apiIndex] += adjustment;
-    this.failureCounts[apiIndex]++;
+    this.pool[apiIndex].performanceScore += adjustment;
+    this.pool[apiIndex].failureCount++;
 
     if (error.errorType === ApiErrorType.Timeout || error.errorType === ApiErrorType.Connection) {
-      const nextDelay = RETRY_DELAY * Math.pow(2, this.failureCounts[apiIndex] - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
-      this.backoffDelays[apiIndex] = nextDelay;
+      const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[apiIndex].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
+      this.pool[apiIndex].backoffDelay = nextDelay;
 
       setTimeout(() => {
-        delete this.backoffDelays[apiIndex]; // Reset backoff delay only if there are no consecutive errors
+        this.pool[apiIndex].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
       }, nextDelay);
 
       logger.warn(
-        `Endpoint ${this.indexToEndpointMap[apiIndex]} experienced an error (${error.errorType}). Suspending for ${
+        `Endpoint ${this.pool[apiIndex].endpoint} experienced an error (${error.errorType}). Suspending for ${
           nextDelay / 1000
         }s.`
       );
@@ -221,7 +224,10 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   }
 
   handleApiSuccess(apiIndex: number, responseTime: number): void {
-    this.performanceScores[apiIndex] += this.calculatePerformanceScore(responseTime, this.failureCounts[apiIndex]);
+    this.pool[apiIndex].performanceScore += this.calculatePerformanceScore(
+      responseTime,
+      this.pool[apiIndex].failureCount
+    );
   }
 
   wrapApiCall<T extends (...args: any[]) => any>(
@@ -243,11 +249,5 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
       }
     };
     return wrappedFunction as T;
-  }
-
-  startLoggingEndpointStatus(intervalMs: number): void {
-    setInterval(() => {
-      this.logEndpointStatus();
-    }, intervalMs);
   }
 }
