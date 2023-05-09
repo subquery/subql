@@ -4,6 +4,7 @@
 import assert from 'assert';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import {sum} from 'lodash';
 import {Deferrable, Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../../configure';
@@ -16,6 +17,8 @@ import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
 
 const logger = getLogger('StoreCache');
+
+const INTERVAL_NAME = 'cacheFlushInterval';
 
 @Injectable()
 export class StoreCacheService implements BeforeApplicationShutdown {
@@ -30,8 +33,19 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
+  constructor(
+    private sequelize: Sequelize,
+    private config: NodeConfig,
+    protected eventEmitter: EventEmitter2,
+    private schedulerRegistry: SchedulerRegistry
+  ) {
     this.storeCacheThreshold = config.storeCacheThreshold;
+
+    const interval = setInterval(
+      () => void this.flushCache(true, false),
+      config.storeFlushInterval * 1000 // Convert to miliseconds
+    );
+    this.schedulerRegistry.addInterval(INTERVAL_NAME, interval);
   }
 
   init(historical: boolean, useCockroachDb: boolean): void {
@@ -183,6 +197,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   }
 
   async beforeApplicationShutdown(): Promise<void> {
+    this.schedulerRegistry.deleteInterval(INTERVAL_NAME);
     await this.flushCache(true);
     logger.info(`Force flush cache successful!`);
   }

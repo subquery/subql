@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from './storeCache.service';
@@ -62,7 +63,7 @@ describe('Store Cache Service historical', () => {
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
+    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
   });
 
   it('could init store cache service and init cache for models', () => {
@@ -256,7 +257,7 @@ describe('Store Cache flush with order', () => {
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
+    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
     storeService.init(false, true);
   });
 

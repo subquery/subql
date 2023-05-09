@@ -3,6 +3,7 @@
 
 // import { Header } from '@polkadot/types/interfaces';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {CacheMetadataModel, Header, StoreCacheService} from '@subql/node-core';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
@@ -233,7 +234,12 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
-    const storeCache = new StoreCacheService(null as any, {storeCacheThreshold: 300} as any, new EventEmitter2());
+    const storeCache = new StoreCacheService(
+      null as any,
+      {storeCacheThreshold: 300} as any,
+      new EventEmitter2(),
+      new SchedulerRegistry(),
+    );
 
     storeCache.setRepos({} as any, undefined);
 
