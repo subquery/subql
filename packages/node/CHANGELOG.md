@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2023-05-09
+### Fixed
+- Error message when failing to fetch block (#67)
+
 ## [2.0.0] - 2023-05-01
 - Major release for 2.0.0, align with other SDK versions
 ### Added
