@@ -22,6 +22,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Fixed
 - POI Cache issues (#1660)
 - `store.getOneByField` with historical and index (#1667)
+- Store cache threshold not including removed items (#1675)
 
 ## [2.0.2] - 2023-04-27
 ### Changed
