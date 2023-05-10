@@ -186,18 +186,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     return numOfRecords >= this.storeCacheThreshold;
   }
 
-  @OnEvent(IndexerEvent.BlockQueueSize)
-  dynamicUpdateCacheThreshold({value}: EventPayload<number>): void {
-    // Ratio of number block left in block queue to queue size
-    // Lesser number of number block left in block queue means we are processing faster
-    // Therefore we should reduce threshold to flush more frequently
-    const waitingProcessingRatio = value / (this.config.batchSize * 3);
-    this.storeCacheThreshold = Math.max(1, Number(waitingProcessingRatio * this.config.storeCacheThreshold));
-    this.eventEmitter.emit(IndexerEvent.StoreCacheThreshold, {
-      value: this.storeCacheThreshold,
-    });
-  }
-
   async beforeApplicationShutdown(): Promise<void> {
     this.schedulerRegistry.deleteInterval(INTERVAL_NAME);
     await this.flushCache(true);
