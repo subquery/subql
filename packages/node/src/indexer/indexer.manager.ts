@@ -62,7 +62,7 @@ export class IndexerManager extends BaseIndexerManager<
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService,
+    sandboxService: SandboxService<ApiAt>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,

@@ -30,27 +30,6 @@ export async function prepareProjectDir(projectPath: string): Promise<string> {
   throw new Error(`Project path: ${projectPath} doesn't exist`);
 }
 
-// We cache this to avoid repeated reads from fs
-const projectEntryCache: Record<string, string> = {};
-
-export function getProjectEntry(root: string): string {
-  const pkgPath = path.join(root, 'package.json');
-  try {
-    if (!projectEntryCache[pkgPath]) {
-      const content = fs.readFileSync(pkgPath).toString();
-      const pkg = JSON.parse(content);
-      if (!pkg.main) {
-        return './dist';
-      }
-      projectEntryCache[pkgPath] = pkg.main.startsWith('./') ? pkg.main : `./${pkg.main}`;
-    }
-
-    return projectEntryCache[pkgPath];
-  } catch (err) {
-    throw new Error(`can not find package.json within directory ${root}`);
-  }
-}
-
 export async function getExistingProjectSchema(
   nodeConfig: NodeConfig,
   sequelize: Sequelize

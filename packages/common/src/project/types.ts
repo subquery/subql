@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {IsString} from 'class-validator';
+
 export interface IProjectManifest<D> {
   specVersion: string;
   description: string;
@@ -18,5 +20,10 @@ export interface ProjectNetworkConfig {
 }
 
 export interface FileReference {
+  file: string;
+}
+
+export class FileType implements FileReference {
+  @IsString()
   file: string;
 }

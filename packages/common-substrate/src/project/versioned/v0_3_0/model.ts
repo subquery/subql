@@ -1,10 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {FileType} from '@subql/common';
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsString, ValidateNested, validateSync} from 'class-validator';
 import {
-  FileType,
   ProjectNetworkV0_2_0,
   ProjectNetworkDeploymentV0_2_0,
   CustomDatasourceV0_2_0,

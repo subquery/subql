@@ -39,7 +39,7 @@ export function checkMemoryUsage(batchSizeScale: number, nodeConfig: NodeConfig)
 
 export const memoryLock = new Mutex();
 
-export async function waitForBatchSize(sizeInBytes: number) {
+export async function waitForBatchSize(sizeInBytes: number): Promise<void> {
   let resolved = false;
   const checkHeap = async () => {
     const heapTotal = getHeapStatistics().heap_size_limit;

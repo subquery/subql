@@ -11,6 +11,7 @@ import {ProjectManifestV0_3_0Impl} from './v0_3_0';
 import {ProjectManifestV1_0_0Impl} from './v1_0_0';
 export type VersionedProjectManifest = {specVersion: string};
 
+/* Retain support for all versions here to continue support for migrations */
 const SUBSTRATE_SUPPORTED_VERSIONS = {
   '0.0.1': ProjectManifestV0_0_1Impl,
   '0.2.0': ProjectManifestV0_2_0Impl,

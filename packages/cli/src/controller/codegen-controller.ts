@@ -35,7 +35,7 @@ import {
   isCustomDs as isCustomSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
-  CustomDatasourceV0_2_0 as SubstrateCustomDatasource,
+  SubstrateCustomDataSource,
 } from '@subql/common-substrate';
 import {
   isCustomTerraDs,
@@ -72,7 +72,7 @@ type TemplateKind =
   | TerraDsTemplate
   | TerraCustomDsTemplate;
 
-type DatasourceKind = SubstrateCustomDatasource | EthereumDs | EthereumCustomDs;
+type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
 
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
