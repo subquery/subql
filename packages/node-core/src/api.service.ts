@@ -9,9 +9,6 @@ const logger = getLogger('api');
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-type FetchFunction<T, A> = (batch: number[], api: A) => Promise<T[]>;
-type FetchFunctionProvider<T, A> = () => [FetchFunction<T, A>, A];
-
 export interface IApi<A = any, SA = any, B = any> {
   fetchBlocks(heights: number[], ...args: any): Promise<B[]>;
   safeApi(height: number): SA;
@@ -21,29 +18,8 @@ export interface IApi<A = any, SA = any, B = any> {
   apiDisconnect?(): Promise<void>;
 }
 
-export abstract class Api<A, SA, B> implements IApi<A, SA, B> {
-  constructor(protected _unsafeApiInstance: A) {}
-
-  //eslint-disable-next-line @typescript-eslint/require-await
-  async fetchBlocks(heights: number[], ...args: any): Promise<B[]> {
-    throw new Error(`Not Implemented`);
-  }
-
-  safeApi(height: number): SA {
-    throw new Error(`Not Implemented`);
-  }
-
-  get unsafeApi(): A {
-    return this._unsafeApiInstance;
-  }
-
-  handleError(error: Error): ApiConnectionError {
-    return new ApiConnectionError(error.name, error.message, ApiErrorType.Default);
-  }
-}
-
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
-  constructor(protected connectionPoolService: ConnectionPoolService<Api<A, SA, B>>) {}
+  constructor(protected connectionPoolService: ConnectionPoolService<IApi<A, SA, B>>) {}
   abstract networkMeta: NetworkMetadataPayload;
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {

@@ -6,7 +6,7 @@ import {isMainThread} from 'worker_threads';
 import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Sequelize} from 'sequelize';
-import {ApiService, IApi} from '../api.service';
+import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
