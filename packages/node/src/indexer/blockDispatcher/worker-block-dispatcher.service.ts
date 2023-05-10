@@ -16,18 +16,14 @@ import {
   HostStore,
   HostDynamicDS,
   WorkerBlockDispatcher,
+  IUnfinalizedBlocksService,
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
-import {
-  SubqlProjectDs,
-  SubqueryProject,
-} from '../../configure/SubqueryProject';
+import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
-import {
-  IUnfinalizedBlocksService,
-  UnfinalizedBlocksService,
-} from '../unfinalizedBlocks.service';
+import { BlockContent } from '../types';
+import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
 import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
@@ -38,7 +34,7 @@ type IndexerWorker = IIndexerWorker & {
 async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubstrateDatasource>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService,
+  unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,

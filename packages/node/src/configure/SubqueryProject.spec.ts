@@ -8,22 +8,10 @@ import { SubqueryProject } from './SubqueryProject';
 
 describe('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
-    let projectDirV0_2_0: string;
-    let projectDirV0_3_0: string;
     let projectDirV1_0_0: string;
     let templateProject: string;
 
     beforeEach(() => {
-      projectDirV0_2_0 = path.resolve(
-        __dirname,
-        '../../test/projectFixture/v0.2.0',
-      );
-
-      projectDirV0_3_0 = path.resolve(
-        __dirname,
-        '../../test/projectFixture/v0.3.0',
-      );
-
       projectDirV1_0_0 = path.resolve(
         __dirname,
         '../../test/projectFixture/v1.0.0',
@@ -33,57 +21,6 @@ describe('SubqueryProject', () => {
         '../../test/projectFixture/template-v1.0.0',
       );
     });
-
-    it('convert local 0.2.0 manifest to project object', async () => {
-      //manually pass the endpoint
-      const reader = await ReaderFactory.create(projectDirV0_2_0);
-      const rawManifest = await reader.getProjectSchema();
-      const project = await SubqueryProject.create(
-        projectDirV0_2_0,
-        rawManifest,
-        reader,
-        {
-          endpoint: ['wss://rpc.polkadot.io/public-ws'],
-        },
-      );
-
-      expect((project.dataSources[1] as any).processor.file).toMatch(
-        /moonbeam.js/,
-      );
-    }, 5000000);
-
-    it('convert local 0.3.0 manifest to project object', async () => {
-      //manually pass the endpoint
-      const reader = await ReaderFactory.create(projectDirV0_3_0);
-      const rawManifest = await reader.getProjectSchema();
-      const project = await SubqueryProject.create(
-        projectDirV0_3_0,
-        rawManifest,
-        reader,
-        {
-          endpoint: ['wss://rpc.polkadot.io/public-ws'],
-        },
-      );
-
-      expect((project.dataSources[1] as any).processor.file).toMatch(
-        /moonbeam.js/,
-      );
-    }, 5000000);
-
-    it.skip('convert 0.2.0 ipfs deployment to project object', async () => {
-      const deployment = `ipfs://QmUdQKsfHox5qcEYKCVZQwWtye8bdGQM2vCZrw6o4NBKwm`;
-      //manually pass the endpoint
-      const reader = await ReaderFactory.create(deployment, {
-        ipfs: 'http://127.0.0.1:8080',
-      });
-      const rawManifest = await reader.getProjectSchema();
-      const project = await SubqueryProject.create(
-        deployment,
-        rawManifest,
-        reader,
-        { endpoint: ['wss://rpc.polkadot.io/public-ws'] },
-      );
-    }, 5000000);
 
     it('convert 1.0.0 ipfs deployment to project object', async () => {
       const reader = await ReaderFactory.create(projectDirV1_0_0);

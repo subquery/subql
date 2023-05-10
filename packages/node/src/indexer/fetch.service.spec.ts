@@ -17,6 +17,7 @@ import {
   SmartBatchService,
   StoreService,
   StoreCacheService,
+  METADATA_UNFINALIZED_BLOCKS_KEY,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
@@ -32,10 +33,7 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent } from './types';
-import {
-  METADATA_UNFINALIZED_BLOCKS_KEY,
-  UnfinalizedBlocksService,
-} from './unfinalizedBlocks.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
@@ -124,6 +122,7 @@ function mockApiService(): ApiService {
           return {
             number: { toNumber: () => 112344 },
             hash: { toHex: () => `0x112344` },
+            parentHash: { toHex: () => `0x112343` },
           };
         }),
         getBlockHash: jest.fn(() => `0x123456`),

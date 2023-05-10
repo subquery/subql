@@ -3,7 +3,6 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ProjectNetworkV0_0_1 } from '@subql/common-substrate';
 import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
@@ -24,7 +23,7 @@ jest.mock('@polkadot/api', () => {
   return { ApiPromise, WsProvider: jest.fn() };
 });
 
-const testNetwork: ProjectNetworkV0_0_1 = {
+const testNetwork = {
   endpoint: ['wss://kusama.api.onfinality.io/public-ws'],
   types: {
     TestType: 'u32',

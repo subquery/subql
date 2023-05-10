@@ -10,15 +10,14 @@ import {
   getExistingProjectSchema,
   CacheMetadataModel,
   initDbSchema,
+  ForceCleanService,
+  reindex,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { reindex } from '../utils/reindex';
-
-import { ForceCleanService } from './forceClean.service';
 
 const logger = getLogger('Reindex');
 
@@ -55,17 +54,15 @@ export class ReindexService {
   async getTargetHeightWithUnfinalizedBlocks(
     inputHeight: number,
   ): Promise<number> {
-    // Why does this happen?
-    (this.unfinalizedBlocksService as any).metadataRepo = this.metadataRepo;
     const unfinalizedBlocks =
       await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
     const bestBlocks = unfinalizedBlocks.filter(
-      ([bestBlockHeight]) => Number(bestBlockHeight) <= inputHeight,
+      ({ blockHeight }) => blockHeight <= inputHeight,
     );
     if (bestBlocks.length === 0) {
       return inputHeight;
     }
-    const [firstBestBlock] = bestBlocks[0];
+    const { blockHeight: firstBestBlock } = bestBlocks[0];
     return Math.min(inputHeight, firstBestBlock);
   }
 

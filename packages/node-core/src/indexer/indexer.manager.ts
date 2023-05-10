@@ -1,15 +1,17 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BaseDataSource} from '@subql/common';
+import {BaseCustomDataSource, BaseDataSource} from '@subql/common';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
 import {ProcessBlockResponse} from './blockDispatcher';
+import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
-import {IDSProcessorService, IIndexerManager} from './types';
+import {IIndexerManager} from './types';
+import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
 
@@ -26,10 +28,10 @@ export interface CustomHandler<K extends string = string, F = Record<string, unk
 
 export abstract class BaseIndexerManager<
   AS extends ApiService,
-  SA, // Api Type
+  A, // Api Type
   B, // Block Type
   DS extends BaseDataSource,
-  CDS extends DS, // Custom datasource
+  CDS extends DS & BaseCustomDataSource, // Custom datasource
   FilterMap extends FilterTypeMap,
   ProcessorMap extends ProcessorTypeMap<FilterMap>,
   HandlerInputMap extends HandlerInputTypeMap<FilterMap>
@@ -46,7 +48,6 @@ export abstract class BaseIndexerManager<
   // Uses asSecondLayerHandlerProcessor_1_0_0 in substrate to transfrom from v0.0.0 -> v1.0.0
   protected abstract updateCustomProcessor: (processor: any) => any;
 
-  protected abstract processUnfinalizedBlocks(block: B): Promise<number | null>;
   protected abstract indexBlockData(
     block: B,
     dataSources: DS[],
@@ -58,9 +59,10 @@ export abstract class BaseIndexerManager<
   constructor(
     protected readonly apiService: AS,
     protected readonly nodeConfig: NodeConfig,
-    private sandboxService: {getDsProcessor: (ds: DS, api: SA) => IndexerSandbox},
-    private dsProcessorService: IDSProcessorService<CDS>,
+    private sandboxService: {getDsProcessor: (ds: DS, api: A) => IndexerSandbox},
+    private dsProcessorService: BaseDsProcessorService<DS, CDS>,
     private dynamicDsService: DynamicDsService<DS>,
+    private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
     private filterMap: FilterMap,
     private processorMap: ProcessorMap
   ) {
@@ -70,7 +72,7 @@ export abstract class BaseIndexerManager<
   protected async internalIndexBlock(
     block: B,
     dataSources: DS[],
-    getApi: () => Promise<SA>
+    getApi: () => Promise<A>
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
     const blockHeight = this.getBlockHeight(block);
@@ -79,8 +81,8 @@ export abstract class BaseIndexerManager<
 
     this.assertDataSources(filteredDataSources, blockHeight);
 
-    let apiAt: SA;
-    const reindexBlockHeight = await this.processUnfinalizedBlocks(block);
+    let apiAt: A;
+    const reindexBlockHeight = (await this.processUnfinalizedBlocks(block)) ?? null;
 
     // Only index block if we're not going to reindex
     if (!reindexBlockHeight) {
@@ -111,6 +113,12 @@ export abstract class BaseIndexerManager<
       blockHash: this.getBlockHash(block),
       reindexBlockHeight,
     };
+  }
+
+  protected async processUnfinalizedBlocks(block: B): Promise<number | undefined> {
+    if (this.nodeConfig.unfinalizedBlocks) {
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
+    }
   }
 
   private filterDataSources(nextProcessingHeight: number, dataSources: DS[]): DS[] {

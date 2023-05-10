@@ -6,11 +6,8 @@ import path from 'path';
 import { LocalReader, Reader, loadFromJsonOrYaml } from '@subql/common';
 import {
   ChainTypes,
-  CustomDatasourceV0_2_0,
   isCustomDs,
   parseChainTypes,
-  RuntimeDataSourceV0_0_1,
-  RuntimeDataSourceV0_2_0,
   SubstrateRuntimeHandler,
   SubstrateCustomHandler,
   SubstrateHandler,
@@ -21,6 +18,10 @@ import {
   updateDataSourcesEntry,
   updateProcessor,
 } from '@subql/node-core';
+import {
+  SubstrateCustomDatasource,
+  SubstrateRuntimeDatasource,
+} from '@subql/types';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
@@ -37,22 +38,8 @@ export function isCustomHandler(
   return !isBaseHandler(handler);
 }
 
-export async function updateDataSourcesV0_0_1(
-  _dataSources: RuntimeDataSourceV0_0_1[],
-  reader: Reader,
-): Promise<SubqlProjectDs[]> {
-  // force convert to updated ds
-  const dataSources = _dataSources as SubqlProjectDs[];
-  await Promise.all(
-    dataSources.map(async (ds) => {
-      ds.mapping.entryScript = await loadDataSourceScript(reader);
-    }),
-  );
-  return dataSources;
-}
-
-export async function updateDataSourcesV0_2_0(
-  _dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[],
+export async function updateDataSourcesV1_0_0(
+  _dataSources: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[],
   reader: Reader,
   root: string,
 ): Promise<SubqlProjectDs[]> {

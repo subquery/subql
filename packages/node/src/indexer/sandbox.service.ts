@@ -3,34 +3,30 @@
 
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
+import { BaseDataSource } from '@subql/common';
 import {
-  isDatasourceV0_2_0,
-  SubstrateDataSource,
-} from '@subql/common-substrate';
-import {
+  hostStoreToStore,
+  IndexerSandbox,
+  ISubqueryProject,
   NodeConfig,
   StoreService,
-  IndexerSandbox,
-  hostStoreToStore,
-  getProjectEntry,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { ApiAt } from './types';
 
+/* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */
 @Injectable()
-export class SandboxService {
+export class SandboxService<Api> {
   private processorCache: Record<string, IndexerSandbox> = {};
 
   constructor(
     private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
-    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: ISubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
+  getDsProcessor(ds: BaseDataSource, api: Api): IndexerSandbox {
     const store: Store = isMainThread
       ? this.storeService.getStore()
       : hostStoreToStore((global as any).host); // Provided in worker.ts
@@ -40,10 +36,8 @@ export class SandboxService {
     if (!processor) {
       processor = new IndexerSandbox(
         {
-          // api: await this.apiService.getPatchedApi(),
           store,
           root: this.project.root,
-          // script: ds.mapping.entryScript,
           entry,
         },
         this.nodeConfig,
@@ -57,11 +51,7 @@ export class SandboxService {
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubstrateDataSource): string {
-    if (isDatasourceV0_2_0(ds)) {
-      return ds.mapping.file;
-    } else {
-      return getProjectEntry(this.project.root);
-    }
+  private getDataSourceEntry(ds: BaseDataSource): string {
+    return ds.mapping.file;
   }
 }

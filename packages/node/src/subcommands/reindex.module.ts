@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import {
   DbModule,
+  ForceCleanService,
   MmrService,
   StoreCacheService,
   StoreService,
@@ -14,7 +15,6 @@ import { ApiService } from '../indexer/api.service';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { ForceCleanService } from './forceClean.service';
 import { ReindexService } from './reindex.service';
 
 @Module({

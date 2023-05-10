@@ -4,8 +4,6 @@
 import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
-import { mmrRegenerateInit } from './subcommands/mmrRegenerate.init';
-import { reindexInit } from './subcommands/reindex.init';
 
 export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
@@ -346,6 +344,14 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe:
         'If enabled the store cache will flush data asyncronously relative to indexing data',
       type: 'boolean',
+    },
+    'store-flush-interval': {
+      demandOption: false,
+      describe:
+        'The interval, in seconds, at which data is flushed from the cache. ' +
+        'This ensures that data is persisted regularly when there is either not much data or the project is up to date.',
+      type: 'number',
+      default: 5,
     },
     subquery: {
       alias: 'f',

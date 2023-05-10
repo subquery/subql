@@ -7,3 +7,5 @@ export * from './health.controller';
 export * from './health.service';
 export * from './ready.controller';
 export * from './ready.service';
+export * from './meta.service';
+export * from './meta';

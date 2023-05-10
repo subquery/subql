@@ -10,7 +10,7 @@ import {
   ChainTypes,
   loadSubstrateProjectManifest,
 } from '@subql/common-substrate';
-import {loadTerraProjectManifest, TerraProjectManifestVersioned, TerraProjectNetworkV0_3_0} from '@subql/common-terra';
+import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
 import {classToPlain} from 'class-transformer';
 import {cli} from 'cli-ux';
 import inquirer from 'inquirer';

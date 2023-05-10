@@ -11,3 +11,4 @@ export * from './project';
 export * from './fetchHelpers';
 export * from './blockSizeBuffer';
 export * from './configure';
+export * from './reindex';

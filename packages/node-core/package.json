@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "2.0.3-9",
+  "version": "2.0.3-12",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -30,8 +30,10 @@
     "@willsoto/nestjs-prometheus": "^5.1.1",
     "async-lock": "^1.4.0",
     "async-mutex": "^0.4.0",
+    "dayjs": "^1.10.7",
     "lodash": "^4.17.21",
     "lru-cache": "8.0.4",
+    "merkle-tools": "^1.4.1",
     "node-fetch": "^2.6.7",
     "prom-client": "^14.0.1",
     "sequelize": "6.28.0",
@@ -43,5 +45,5 @@
   "devDependencies": {
     "@types/async-lock": "^1"
   },
-  "stableVersion": "2.0.3-8"
+  "stableVersion": "2.0.3-11"
 }

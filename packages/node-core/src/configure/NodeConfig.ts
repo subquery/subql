@@ -54,6 +54,7 @@ export interface IConfig {
   readonly storeGetCacheSize: number;
   readonly storeCacheAsync: boolean;
   readonly scaleBatchSize?: boolean;
+  readonly storeFlushInterval: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -79,6 +80,7 @@ const DEFAULT_CONFIG = {
   storeCacheThreshold: 1000,
   storeGetCacheSize: 500,
   storeCacheAsync: true,
+  storeFlushInterval: 5,
 };
 
 export class NodeConfig implements IConfig {
@@ -147,6 +149,10 @@ export class NodeConfig implements IConfig {
 
   get storeCacheAsync(): boolean {
     return !!this._config.storeCacheAsync;
+  }
+
+  get storeFlushInterval(): number {
+    return this._config.storeFlushInterval;
   }
 
   get dictionaryResolver(): string | undefined {
