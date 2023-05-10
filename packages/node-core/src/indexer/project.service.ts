@@ -8,7 +8,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {MetadataKeys} from '@subql/node-core/indexer/entities';
 import {CacheMetadataModel} from '@subql/node-core/indexer/storeCache';
 import {Sequelize} from 'sequelize';
-import {ApiService} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
@@ -29,7 +29,9 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<A, SA, B, DS extends {startBlock?: number}> implements IProjectService<DS> {
+export abstract class BaseProjectService<API extends IApi, DS extends {startBlock?: number}>
+  implements IProjectService<DS>
+{
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -42,7 +44,7 @@ export abstract class BaseProjectService<A, SA, B, DS extends {startBlock?: numb
 
   constructor(
     private readonly dsProcessorService: BaseDsProcessorService,
-    protected readonly apiService: ApiService<A, SA, B>,
+    protected readonly apiService: API,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
     protected readonly sequelize: Sequelize,

@@ -29,9 +29,7 @@ const { version: packageVersion } = require('../../package.json');
 
 @Injectable()
 export class ProjectService extends BaseProjectService<
-  ApiPromise,
-  ApiAt,
-  BlockContent,
+  ApiService,
   SubstrateDatasource
 > {
   protected packageVersion = packageVersion;
