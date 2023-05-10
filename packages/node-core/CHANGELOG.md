@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.1] - 2023-05-11
+### Fixed
+- Extract dictionary meta validation so it can be overridden (#1679)
+
 ## [2.1.0] - 2023-05-10
 ### Added
 - Added interval for flushing the cache. (#1670)
