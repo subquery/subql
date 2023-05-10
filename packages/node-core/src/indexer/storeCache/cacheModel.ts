@@ -207,7 +207,7 @@ export class CachedModel<
   }
 
   get isFlushable(): boolean {
-    return !!Object.keys(this.setCache).length;
+    return !!Object.keys(this.setCache).length || !!Object.keys(this.removeCache).length;
   }
 
   async flush(tx: Transaction, blockHeight?: number): Promise<void> {
