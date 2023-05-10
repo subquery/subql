@@ -3,7 +3,7 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { Api, ApiConnectionError, ApiErrorType } from '@subql/node-core';
+import { ApiConnectionError, ApiErrorType, IApi } from '@subql/node-core';
 import { ApiAt, BlockContent } from './types';
 import { HttpProvider } from './x-provider/http';
 
@@ -12,10 +12,10 @@ const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
 
-export class ApiPromiseConnection extends Api<ApiPromise, ApiAt, BlockContent> {
-  constructor(unsafeApiInstance: ApiPromise, private fetchBlocksBatches) {
-    super(unsafeApiInstance);
-  }
+export class ApiPromiseConnection
+  implements IApi<ApiPromise, ApiAt, BlockContent>
+{
+  constructor(public unsafeApi: ApiPromise, private fetchBlocksBatches) {}
 
   static async create(
     endpoint: string,
@@ -44,6 +44,10 @@ export class ApiPromiseConnection extends Api<ApiPromise, ApiAt, BlockContent> {
     };
     const api = await ApiPromise.create(apiOption);
     return new ApiPromiseConnection(api, fetchBlocksBatches);
+  }
+
+  safeApi(height: number): ApiAt {
+    throw new Error(`Not Implemented`);
   }
 
   async fetchBlocks(
