@@ -1,6 +1,6 @@
 # @subql/cli
 
-cli for polkagraph
+CLI for SubQuery
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/@subql/cli.svg)](https://npmjs.org/package/@subql/cli)

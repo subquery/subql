@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-05-10
+### Added
+- `bulkRemove` method on the store. (#1666)
+- Ability to regenerate MMR (#1664)
+- Ability to migrade MMR from file based db to postgres db and vice versa (#1618)
+### Changed
+- Move more chain agnostic to node-core. (#1658) (#1659)
+- Move any polkadot imports to utils package. (#1653)
+- Update node-core
+
 ## [2.0.2] - 2023-04-27
 ### Fixed
 - Fix api not being defined, fix not using filter on dataSources (#1647)
@@ -30,8 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing Framework, allow users to test their projects filters and handler functions without having to index the project (#1584)
   - Create test files with the naming convention `*.test.ts` and place them in the `src/tests` or `src/test` folder. Each test file should contain test cases for specific mapping handlers. 
   - Run the testing service using the command: `subql-node test`.
-
-
 
 ## [1.21.2] - 2023-04-17
 ### Fix
