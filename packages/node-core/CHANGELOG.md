@@ -10,6 +10,19 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-05-10
+### Added
+- Added interval for flushing the cache. (#1670)
+- `bulkRemove` method on the store. (#1666)
+- Ability to regenerate MMR (#1664)
+- Ability to migrade MMR from file based db to postgres db and vice versa (#1618)
+### Changed
+- Move more chain agnostic code form node. (#1658) (#1659)
+- Move any polkadot imports to utils package. (#1653)
+### Fixed
+- POI Cache issues (#1660)
+- `store.getOneByField` with historical and index (#1667)
+
 ## [2.0.2] - 2023-04-27
 ### Changed
 - Deprecate `localMode` (#1648)
@@ -33,8 +46,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Fixed when Poi block offset 0, it could get updated when app restart (#1459)
 - Fixed index name too long issue (#1599)
 - Fixed dictionary validation issues and improve error messages (#1561)
-
-
 
 ## [1.11.3] - 2023-04-17
 ### Fixed

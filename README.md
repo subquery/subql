@@ -9,10 +9,15 @@ SubQuery allows every Substrate/Polkadot team to process and query their data. T
 The future is multi-chain - SubQuery is no different. SubQuery is well on our way to support all leading blockchain networks with support for the following:
 
 - [Polkadot (and all Substrate networks)](https://academy.subquery.network/quickstart/quickstart_chains/polkadot.html)
+- [Ethereum] (https://academy.subquery.network/quickstart/quickstart_chains/ethereum-gravatar.html)
 - [Cosmos (and all CosmWasm and Ethermint networks)](https://academy.subquery.network/quickstart/quickstart_chains/cosmos.html)
 - [Avalanche (and all Avalanche Subnets)](https://academy.subquery.network/quickstart/quickstart_chains/avalanche.html)
 - [Algorand](https://academy.subquery.network/quickstart/quickstart_chains/algorand.html)
 - [Terra](https://academy.subquery.network/quickstart/quickstart_chains/terra.html)
+- [NEAR](https://academy.subquery.network/quickstart/quickstart_chains/near.html)
+- [Flare](https://academy.subquery.network/quickstart/quickstart_chains/flare.html)
+- [Polygon](https://academy.subquery.network/quickstart/quickstart_chains/polygon.html)
+- [BSC](https://academy.subquery.network/quickstart/quickstart_chains/bsc.html)
 
 ## Get Started
 
