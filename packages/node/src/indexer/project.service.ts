@@ -33,9 +33,7 @@ const logger = getLogger('Project');
 
 @Injectable()
 export class ProjectService extends BaseProjectService<
-  ApiPromise,
-  ApiAt,
-  BlockContent,
+  ApiService,
   SubstrateDatasource
 > {
   protected packageVersion = packageVersion;
