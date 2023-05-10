@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { DbModule, NodeConfig, MMRMigrateService } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 
 @Module({
   providers: [
+    SchedulerRegistry,
     {
       provide: MMRMigrateService,
       useFactory: (config: NodeConfig, sequelize: Sequelize) => {

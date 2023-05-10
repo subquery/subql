@@ -3,6 +3,7 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   DbModule,
   ForceCleanService,
@@ -32,6 +33,7 @@ import { ReindexService } from './reindex.service';
       provide: ApiService,
       useFactory: () => undefined,
     },
+    SchedulerRegistry,
   ],
   controllers: [],
 })

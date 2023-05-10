@@ -3,7 +3,7 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import {
   ConnectionPoolService,
   DbModule,
@@ -66,6 +66,7 @@ import { TestingService } from './testing.service';
       ],
     },
     IndexerManager,
+    SchedulerRegistry,
   ],
 
   imports: [MetaModule, FetchModule],

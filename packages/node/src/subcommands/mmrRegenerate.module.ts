@@ -3,6 +3,7 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   DbModule,
   MmrService,
@@ -18,6 +19,7 @@ import { ConfigureModule } from '../configure/configure.module';
     StoreService,
     MmrService,
     MmrRegenerateService,
+    SchedulerRegistry,
   ],
   controllers: [],
 })
