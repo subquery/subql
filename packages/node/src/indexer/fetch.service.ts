@@ -269,14 +269,14 @@ export class FetchService implements OnApplicationShutdown {
     }
     await this.syncDynamicDatascourcesFromMeta();
 
-    this.updateDictionary();
-    //  Call metadata here, other network should align with this
-    //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
-    const metadata = await this.dictionaryService.getMetadata();
     if (this.project.network.dictionary) {
+      this.updateDictionary();
+      //  Call metadata here, other network should align with this
+      //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
+      const metadata = await this.dictionaryService.getMetadata();
       this.evmChainId = await this.dictionaryService.getEvmChainId();
+      this.dictionaryValidation(metadata);
     }
-    const dictionaryValid = this.dictionaryValidation(metadata);
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
