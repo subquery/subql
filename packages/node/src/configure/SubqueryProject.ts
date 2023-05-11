@@ -3,14 +3,7 @@
 
 import { Block } from '@ethersproject/abstract-provider';
 import { Injectable } from '@nestjs/common';
-import { RegisteredTypes } from '@polkadot/types/types';
-import {
-  ReaderFactory,
-  ReaderOptions,
-  Reader,
-  RunnerSpecs,
-  validateSemver,
-} from '@subql/common';
+import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
   EthereumProjectNetworkConfig,
   parseEthereumProjectManifest,
@@ -20,16 +13,12 @@ import {
   isRuntimeDs,
   EthereumHandlerKind,
 } from '@subql/common-ethereum';
+import { getProjectRoot } from '@subql/node-core';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { EthereumApi } from '../ethereum/api.ethereum';
-import {
-  getChainTypes,
-  getProjectRoot,
-  updateDataSourcesV0_2_0,
-} from '../utils/project';
-// import { getBlockByHeight, getTimestamp } from '../utils/substrate';
+import { updateDataSourcesV1_0_0 } from '../utils/project';
 
 export type SubqlProjectDs = SubqlEthereumDataSource & {
   mapping: SubqlEthereumDataSource['mapping'] & { entryScript: string };
@@ -47,7 +36,7 @@ export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
 };
 
 const NOT_SUPPORT = (name: string) => {
-  throw new Error(`Manifest specVersion ${name}() is not supported`);
+  throw new Error(`Manifest specVersion ${name} is not supported`);
 };
 
 // This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
@@ -61,22 +50,24 @@ export class SubqueryProject {
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
-  chainTypes?: RegisteredTypes;
   runner?: RunnerSpecs;
 
   static async create(
     path: string,
+    rawManifest: unknown,
+    reader: Reader,
     networkOverrides?: Partial<EthereumProjectNetworkConfig>,
-    readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
-    // We have to use reader here, because path can be remote or local
+    // rawManifest and reader can be reused here.
+    // It has been pre-fetched and used for rebase manifest runner options with args
+    // in order to generate correct configs.
+
+    // But we still need reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
-    const reader = await ReaderFactory.create(path, readerOptions);
-    const projectSchema = await reader.getProjectSchema();
-    if (projectSchema === undefined) {
+    if (rawManifest === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
-    const manifest = parseEthereumProjectManifest(projectSchema);
+    const manifest = parseEthereumProjectManifest(rawManifest);
 
     if (manifest.isV1_0_0) {
       return loadProjectFromManifest1_0_0(
@@ -88,6 +79,13 @@ export class SubqueryProject {
     } else {
       NOT_SUPPORT(manifest.specVersion);
     }
+
+    return loadProjectFromManifest1_0_0(
+      manifest.asV1_0_0,
+      reader,
+      path,
+      networkOverrides,
+    );
   }
 }
 
@@ -136,11 +134,7 @@ async function loadProjectFromManifestBase(
   }
   const schema = buildSchemaFromString(schemaString);
 
-  const chainTypes = projectManifest.network.chaintypes
-    ? await getChainTypes(reader, root, projectManifest.network.chaintypes.file)
-    : undefined;
-
-  const dataSources = await updateDataSourcesV0_2_0(
+  const dataSources = await updateDataSourcesV1_0_0(
     projectManifest.dataSources,
     reader,
     root,
@@ -154,15 +148,11 @@ async function loadProjectFromManifestBase(
     network,
     dataSources,
     schema,
-    chainTypes,
     templates,
   };
 }
 
-const {
-  name: packageName,
-  version: packageVersion,
-} = require('../../package.json');
+const { version: packageVersion } = require('../../package.json');
 
 async function loadProjectFromManifest1_0_0(
   projectManifest: ProjectManifestV1_0_0Impl,
@@ -190,17 +180,18 @@ async function loadProjectTemplates(
   root: string,
   reader: Reader,
 ): Promise<SubqlProjectDsTemplate[]> {
-  if (projectManifest.templates && projectManifest.templates.length !== 0) {
-    const dsTemplates = await updateDataSourcesV0_2_0(
-      projectManifest.templates,
-      reader,
-      root,
-    );
-    return dsTemplates.map((ds, index) => ({
-      ...ds,
-      name: projectManifest.templates[index].name,
-    }));
+  if (!projectManifest.templates || !projectManifest.templates.length) {
+    return [];
   }
+  const dsTemplates = await updateDataSourcesV1_0_0(
+    projectManifest.templates,
+    reader,
+    root,
+  );
+  return dsTemplates.map((ds, index) => ({
+    ...ds,
+    name: projectManifest.templates[index].name,
+  }));
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

@@ -27,7 +27,10 @@ export interface Store {
   getOneByField(entity: string, field: string, value: any): Promise<Entity | undefined>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;
+  //if fields in provided, only specify fields will be updated
+  bulkUpdate(entity: string, data: Entity[], fields?: string[]): Promise<void>;
   remove(entity: string, id: string): Promise<void>;
+  bulkRemove(entity: string, ids: string[]): Promise<void>;
 }
 
 export interface BlockWrapper<
@@ -57,7 +60,6 @@ export interface ApiWrapper<BW extends BlockWrapper = EthereumBlockWrapper> {
   getBestBlockHeight: () => Promise<number>;
   getBlockByHeightOrHash: (hashOrHeight: number | string) => Promise<Block>;
   fetchBlocks: (bufferBlocks: number[]) => Promise<BW[]>;
-  freezeApi: (processor: any, blockContent?: BlockWrapper) => void;
 }
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;

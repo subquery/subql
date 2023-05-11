@@ -30,13 +30,13 @@ import {
   HostStore,
   hostDynamicDsKeys,
   HostDynamicDS,
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
-  ProcessBlockResponse,
   WorkerService,
   WorkerStatusResponse,
 } from './worker.service';

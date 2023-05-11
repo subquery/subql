@@ -3,11 +3,12 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import {
   ApiService,
   ConnectionPoolService,
   DbModule,
+  NodeConfig,
   PoiService,
   StoreService,
 } from '@subql/node-core';
@@ -59,6 +60,7 @@ import { TestingService } from './testing.service';
       inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
     },
     IndexerManager,
+    SchedulerRegistry,
   ],
 
   imports: [MetaModule, FetchModule],

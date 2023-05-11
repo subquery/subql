@@ -5,18 +5,21 @@ import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
-import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
-import { JsonRpcSigner, WebSocketProvider } from '@ethersproject/providers';
+import {
+  Provider,
+  Block,
+  TransactionReceipt,
+} from '@ethersproject/abstract-provider';
+import { WebSocketProvider } from '@ethersproject/providers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
-  BlockWrapper,
   EthereumBlockWrapper,
   EthereumTransaction,
   EthereumResult,
   EthereumLog,
+  SubqlRuntimeDatasource,
 } from '@subql/types-ethereum';
 import CacheableLookup from 'cacheable-lookup';
 import { hexDataSlice, hexValue } from 'ethers/lib/utils';
@@ -40,7 +43,7 @@ const { version: packageVersion } = require('../../package.json');
 const logger = getLogger('api.ethereum');
 
 async function loadAssets(
-  ds: RuntimeDataSourceV0_2_0,
+  ds: SubqlRuntimeDatasource,
 ): Promise<Record<string, string>> {
   if (!ds.assets) {
     return {};
@@ -140,18 +143,24 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     });
   }
 
-  async getFinalizedBlockHeight(): Promise<number> {
+  async getFinalizedBlock(): Promise<Block> {
     try {
       if (this.supportsFinalization) {
-        return (await this.client.getBlock('finalized')).number;
+        return await this.client.getBlock('finalized');
       } else {
-        return (await this.getBestBlockHeight()) - this.blockConfirmations;
+        const height =
+          (await this.getBestBlockHeight()) - this.blockConfirmations;
+        return this.client.getBlock(height);
       }
     } catch (e) {
       // TODO handle specific error for this
       this.supportsFinalization = false;
-      return this.getFinalizedBlockHeight();
+      return this.getFinalizedBlock();
     }
+  }
+
+  async getFinalizedBlockHeight(): Promise<number> {
+    return (await this.getFinalizedBlock()).number;
   }
 
   async getBestBlockHeight(): Promise<number> {
@@ -247,17 +256,18 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     );
   }
 
-  freezeApi(processor: any, blockContent: BlockWrapper): void {
+  get api(): Provider {
+    return this.client;
+  }
+
+  getSafeApi(blockHeight: number): SafeEthProvider {
     // We cannot use a batch http client because OnF don't support routing historical queries in batches to an archive nodes
     const client =
       this.client instanceof WebSocketProvider
         ? this.client
         : this.nonBatchClient;
 
-    processor.freeze(
-      new SafeEthProvider(client, blockContent.blockHeight),
-      'api',
-    );
+    return new SafeEthProvider(client, blockHeight);
   }
 
   private buildInterface(
@@ -294,7 +304,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   async parseLog<T extends EthereumResult = EthereumResult>(
     log: EthereumLog,
-    ds: RuntimeDataSourceV0_2_0,
+    ds: SubqlRuntimeDatasource,
   ): Promise<EthereumLog<T> | EthereumLog> {
     try {
       if (!ds?.options?.abi) {
@@ -314,7 +324,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   async parseTransaction<T extends EthereumResult = EthereumResult>(
     transaction: EthereumTransaction,
-    ds: RuntimeDataSourceV0_2_0,
+    ds: SubqlRuntimeDatasource,
   ): Promise<EthereumTransaction<T> | EthereumTransaction> {
     try {
       if (!ds?.options?.abi) {

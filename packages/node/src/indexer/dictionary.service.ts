@@ -37,7 +37,7 @@ export class DictionaryService
       );
       return resp.data.chainAlias.value;
     } catch (e) {
-      logger.debug(e, `failed to fetch evm chainId from dictionary`);
+      logger.debug(`Dictionary doesn't have an evmChainId set`);
       return undefined;
     }
   }

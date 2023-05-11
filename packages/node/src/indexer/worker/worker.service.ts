@@ -9,19 +9,14 @@ import {
   AutoQueue,
   memoryLock,
   IProjectService,
+  ProcessBlockResponse,
+  ApiService,
 } from '@subql/node-core';
 import { BlockWrapper, EthereumBlockWrapper } from '@subql/types-ethereum';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
-import { EthereumApiService } from '../../ethereum';
 import { IndexerManager } from '../indexer.manager';
 
 export type FetchBlockResponse = { parentHash: string } | undefined;
-
-export type ProcessBlockResponse = {
-  dynamicDsCreated: boolean;
-  blockHash: string;
-  reindexBlockHeight: number;
-};
 
 export type WorkerStatusResponse = {
   threadId: number;
@@ -40,7 +35,7 @@ export class WorkerService {
   private queue: AutoQueue<FetchBlockResponse>;
 
   constructor(
-    private apiService: EthereumApiService,
+    private apiService: ApiService,
     private indexerManager: IndexerManager,
     @Inject('IProjectService')
     private projectService: IProjectService<SubqlProjectDs>,
@@ -65,7 +60,6 @@ export class WorkerService {
           this.fetchedBlocks[height] = block;
         }
 
-        // const block = this.fetchedBlocks[height];
         // Return info to get the runtime version, this lets the worker thread know
         return undefined;
       });

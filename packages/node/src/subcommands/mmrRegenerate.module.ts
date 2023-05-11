@@ -5,47 +5,33 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
-  ApiService,
   DbModule,
-  ForceCleanService,
   MmrService,
   StoreCacheService,
   StoreService,
+  MmrRegenerateService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { ReindexService } from './reindex.service';
 
 @Module({
   providers: [
     StoreCacheService,
     StoreService,
-    ReindexService,
     MmrService,
-    ForceCleanService,
-    UnfinalizedBlocksService,
-    DynamicDsService,
-    DsProcessorService,
-    {
-      // Used to work with DI for unfinalizedBlocksService but not used with reindex
-      provide: ApiService,
-      useFactory: () => undefined,
-    },
+    MmrRegenerateService,
     SchedulerRegistry,
   ],
   controllers: [],
 })
-export class ReindexFeatureModule {}
+export class MmrRegenerateFeatureModule {}
 
 @Module({
   imports: [
     DbModule.forRoot(),
     ConfigureModule.register(),
-    ReindexFeatureModule,
+    MmrRegenerateFeatureModule,
     EventEmitterModule.forRoot(),
   ],
   controllers: [],
 })
-export class ReindexModule {}
+export class MmrRegenerateModule {}

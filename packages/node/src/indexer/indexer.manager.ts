@@ -9,30 +9,30 @@ import {
   isCustomDs,
   isRuntimeDs,
   SubqlEthereumCustomDataSource,
-  SubqlCustomHandler,
   EthereumHandlerKind,
   EthereumRuntimeHandlerInputMap,
+  SubqlEthereumDataSource,
 } from '@subql/common-ethereum';
 import {
   NodeConfig,
   getLogger,
   profiler,
-  profilerWrap,
   IndexerSandbox,
   ProcessBlockResponse,
+  BaseIndexerManager,
   ApiService,
-  IIndexerManager,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
   EthereumLog,
-  SubqlRuntimeHandler,
   EthereumBlockWrapper,
   EthereumBlock,
+  SubqlRuntimeDatasource,
 } from '@subql/types-ethereum';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import { EthereumBlockWrapped } from '../ethereum/block.ethereum';
+import SafeEthProvider from '../ethereum/safe-api';
 import { yargsOptions } from '../yargs';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
@@ -46,78 +46,39 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager
-  implements IIndexerManager<EthereumBlockWrapper, SubqlProjectDs>
-{
+export class IndexerManager extends BaseIndexerManager<
+  ApiService,
+  SafeEthProvider,
+  EthereumBlockWrapper,
+  SubqlEthereumDataSource,
+  SubqlEthereumCustomDataSource,
+  typeof FilterTypeMap,
+  typeof ProcessorTypeMap,
+  EthereumRuntimeHandlerInputMap
+> {
+  protected isRuntimeDs = isRuntimeDs;
+  protected isCustomDs = isCustomDs;
+  protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
+
   constructor(
-    private apiService: ApiService,
-    private nodeConfig: NodeConfig,
-    private sandboxService: SandboxService,
-    private dsProcessorService: DsProcessorService,
-    private dynamicDsService: DynamicDsService,
-    private unfinalizedBlocksService: UnfinalizedBlocksService,
+    apiService: ApiService,
+    nodeConfig: NodeConfig,
+    sandboxService: SandboxService,
+    dsProcessorService: DsProcessorService,
+    dynamicDsService: DynamicDsService,
+    unfinalizedBlocksService: UnfinalizedBlocksService,
     @Inject('IProjectService') private projectService: ProjectService,
   ) {
-    logger.info('indexer manager start');
-  }
-
-  @profiler(yargsOptions.argv.profiler)
-  async indexBlock(
-    blockContent: EthereumBlockWrapper,
-    dataSources: SubqlProjectDs[],
-  ): Promise<ProcessBlockResponse> {
-    const { block, blockHeight } = blockContent;
-    let dynamicDsCreated = false;
-    let reindexBlockHeight: number | null = null;
-
-    const filteredDataSources = this.filterDataSources(
-      blockHeight,
-      dataSources,
+    super(
+      apiService,
+      nodeConfig,
+      sandboxService,
+      dsProcessorService,
+      dynamicDsService,
+      unfinalizedBlocksService,
+      FilterTypeMap,
+      ProcessorTypeMap,
     );
-
-    this.assertDataSources(filteredDataSources, blockHeight);
-    reindexBlockHeight = await this.processUnfinalizedBlocks(block);
-
-    // Only index block if we're not going to reindex
-    if (!reindexBlockHeight) {
-      await this.indexBlockData(
-        blockContent,
-        filteredDataSources,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        async (ds: SubqlProjectDs) => {
-          const vm = this.sandboxService.getDsProcessorWrapper(
-            ds,
-            this.apiService.api,
-            blockContent,
-          );
-
-          // Inject function to create ds into vm
-          vm.freeze(
-            async (templateName: string, args?: Record<string, unknown>) => {
-              const newDs = await this.dynamicDsService.createDynamicDatasource(
-                {
-                  templateName,
-                  args,
-                  startBlock: blockHeight,
-                },
-              );
-              // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              filteredDataSources.push(newDs);
-              dynamicDsCreated = true;
-            },
-            'createDynamicDatasource',
-          );
-
-          return vm;
-        },
-      );
-    }
-
-    return {
-      dynamicDsCreated,
-      blockHash: block.hash,
-      reindexBlockHeight,
-    };
   }
 
   async start(): Promise<void> {
@@ -125,58 +86,30 @@ export class IndexerManager
     logger.info('indexer manager started');
   }
 
-  private async processUnfinalizedBlocks(
-    block: EthereumBlock,
-  ): Promise<number | null> {
-    if (this.nodeConfig.unfinalizedBlocks) {
-      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
-    }
-    return null;
-  }
-
-  private filterDataSources(
-    nextProcessingHeight: number,
-    dataSources: SubqlProjectDs[],
-  ): SubqlProjectDs[] {
-    let filteredDs: SubqlProjectDs[];
-
-    filteredDs = dataSources.filter(
-      (ds) => ds.startBlock <= nextProcessingHeight,
+  @profiler(yargsOptions.argv.profiler)
+  async indexBlock(
+    block: EthereumBlockWrapper,
+    dataSources: SubqlEthereumDataSource[],
+  ): Promise<ProcessBlockResponse> {
+    return super.internalIndexBlock(block, dataSources, () =>
+      this.getApi(block),
     );
-
-    if (filteredDs.length === 0) {
-      logger.error(`Did not find any matching datasouces`);
-      process.exit(1);
-    }
-    // perform filter for custom ds
-    filteredDs = filteredDs.filter((ds) => {
-      if (isCustomDs(ds)) {
-        return this.dsProcessorService
-          .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.apiService.api);
-      } else {
-        return true;
-      }
-    });
-
-    if (!filteredDs.length) {
-      logger.error(`Did not find any datasources with associated processor`);
-      process.exit(1);
-    }
-    return filteredDs;
   }
 
-  private assertDataSources(ds: SubqlProjectDs[], blockHeight: number) {
-    if (!ds.length) {
-      logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
-         or delete your database and start again from the currently specified startBlock`,
-      );
-      process.exit(1);
-    }
+  getBlockHeight(block: EthereumBlockWrapper): number {
+    return block.blockHeight;
   }
 
-  private async indexBlockData(
+  getBlockHash(block: EthereumBlockWrapper): string {
+    return block.block.hash;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  private async getApi(block: EthereumBlockWrapper): Promise<SafeEthProvider> {
+    return this.apiService.api.getSafeApi(this.getBlockHeight(block));
+  }
+
+  protected async indexBlockData(
     { block, transactions }: EthereumBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
@@ -222,155 +155,37 @@ export class IndexerManager
     }
   }
 
-  private async indexData<K extends EthereumHandlerKind>(
-    kind: K,
-    data: EthereumRuntimeHandlerInputMap[K],
-    ds: SubqlProjectDs,
-    getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    let vm: IndexerSandbox;
-    if (isRuntimeDs(ds)) {
-      const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
-        (h) =>
-          h.kind === kind &&
-          FilterTypeMap[kind](
-            data as any,
-            h.filter as any,
-            ds.options?.address,
-          ),
-      );
-
-      if (!handlers.length) {
-        return;
-      }
-      const parsedData = await DataAbiParser[kind](this.apiService.api)(
-        data,
-        ds,
-      );
-
-      for (const handler of handlers) {
-        vm = vm ?? (await getVM(ds));
-        this.nodeConfig.profiler
-          ? await profilerWrap(
-              vm.securedExec.bind(vm),
-              'handlerPerformance',
-              handler.handler,
-            )(handler.handler, [parsedData])
-          : await vm.securedExec(handler.handler, [parsedData]);
-      }
-    } else if (isCustomDs(ds)) {
-      const handlers = this.filterCustomDsHandlers<K>(
-        ds,
-        data,
-        ProcessorTypeMap[kind],
-        (data, baseFilter) => {
-          switch (kind) {
-            case EthereumHandlerKind.Block:
-              return EthereumBlockWrapped.filterBlocksProcessor(
-                data as EthereumBlock,
-                baseFilter,
-              );
-            case EthereumHandlerKind.Call:
-              return EthereumBlockWrapped.filterTransactionsProcessor(
-                data as EthereumTransaction,
-                baseFilter,
-              );
-            case EthereumHandlerKind.Event:
-              return EthereumBlockWrapped.filterLogsProcessor(
-                data as EthereumLog,
-                baseFilter,
-              );
-            default:
-              throw new Error('Unsupported handler kind');
-          }
-        },
-      );
-
-      if (!handlers.length) {
-        return;
-      }
-
-      const parsedData = await DataAbiParser[kind](this.apiService.api)(
-        data,
-        ds,
-      );
-
-      for (const handler of handlers) {
-        vm = vm ?? (await getVM(ds));
-        await this.transformAndExecuteCustomDs(ds, vm, handler, parsedData);
-      }
-    }
+  protected async prepareFilteredData(
+    kind: EthereumHandlerKind,
+    data: any,
+    ds: SubqlRuntimeDatasource,
+  ): Promise<any> {
+    return DataAbiParser[kind](this.apiService.api)(data, ds);
   }
 
-  private filterCustomDsHandlers<K extends EthereumHandlerKind>(
-    ds: SubqlEthereumCustomDataSource<string, any>,
-    data: EthereumRuntimeHandlerInputMap[K],
-    baseHandlerCheck: ProcessorTypeMap[K],
-    baseFilter: (
-      data: EthereumRuntimeHandlerInputMap[K],
-      baseFilter: any,
-    ) => boolean,
-  ): SubqlCustomHandler[] {
-    const plugin = this.dsProcessorService.getDsProcessor(ds);
-
-    return ds.mapping.handlers
-      .filter((handler) => {
-        const processor = plugin.handlerProcessors[handler.kind];
-        if (baseHandlerCheck(processor)) {
-          processor.baseFilter;
-
-          return baseFilter(data, processor.baseFilter);
-        }
-        return false;
-      })
-      .filter((handler) => {
-        const processor = asSecondLayerHandlerProcessor_1_0_0(
-          plugin.handlerProcessors[handler.kind],
+  protected baseCustomHandlerFilter(
+    kind: EthereumHandlerKind,
+    data: any,
+    baseFilter: any,
+  ): boolean {
+    switch (kind) {
+      case EthereumHandlerKind.Block:
+        return EthereumBlockWrapped.filterBlocksProcessor(
+          data as EthereumBlock,
+          baseFilter,
         );
-
-        try {
-          return processor.filterProcessor({
-            filter: handler.filter,
-            input: data,
-            ds,
-          });
-        } catch (e) {
-          logger.error(e, 'Failed to run ds processer filter.');
-          throw e;
-        }
-      });
-  }
-
-  private async transformAndExecuteCustomDs<K extends EthereumHandlerKind>(
-    ds: SubqlEthereumCustomDataSource<string, any>,
-    vm: IndexerSandbox,
-    handler: SubqlCustomHandler,
-    data: EthereumRuntimeHandlerInputMap[K],
-  ): Promise<void> {
-    const plugin = this.dsProcessorService.getDsProcessor(ds);
-    const assets = await this.dsProcessorService.getAssets(ds);
-
-    const processor = asSecondLayerHandlerProcessor_1_0_0(
-      plugin.handlerProcessors[handler.kind],
-    );
-
-    const transformedData = await processor
-      .transformer({
-        input: data,
-        ds,
-        api: this.apiService.api,
-        filter: handler.filter,
-        assets,
-      })
-      .catch((e) => {
-        logger.error(e, 'Failed to transform data with ds processor.');
-        throw e;
-      });
-
-    // We can not run this in parallel. the transformed data items may be dependent on one another.
-    // An example of this is with Acala EVM packing multiple EVM logs into a single Substrate event
-    for (const _data of transformedData) {
-      await vm.securedExec(handler.handler, [_data]);
+      case EthereumHandlerKind.Call:
+        return EthereumBlockWrapped.filterTransactionsProcessor(
+          data as EthereumTransaction,
+          baseFilter,
+        );
+      case EthereumHandlerKind.Event:
+        return EthereumBlockWrapped.filterLogsProcessor(
+          data as EthereumLog,
+          baseFilter,
+        );
+      default:
+        throw new Error('Unsupported handler kind');
     }
   }
 }
@@ -395,7 +210,11 @@ const FilterTypeMap = {
 
 const DataAbiParser = {
   [EthereumHandlerKind.Block]: () => (data: EthereumBlock) => data,
-  [EthereumHandlerKind.Event]: (api: EthereumApi) => api.parseLog.bind(api),
-  [EthereumHandlerKind.Call]: (api: EthereumApi) =>
-    api.parseTransaction.bind(api),
+  [EthereumHandlerKind.Event]:
+    (api: EthereumApi) => (data: EthereumLog, ds: SubqlRuntimeDatasource) =>
+      api.parseLog(data, ds),
+  [EthereumHandlerKind.Call]:
+    (api: EthereumApi) =>
+    (data: EthereumTransaction, ds: SubqlRuntimeDatasource) =>
+      api.parseTransaction(data, ds),
 };

@@ -33,14 +33,6 @@ describe.skip('project.yaml', () => {
     expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_invalid_version.yaml'))).toThrow();
   });
 
-  it('can validate a v0.2.0 project.yaml with a custom data source', () => {
-    expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_0.2.0_custom_ds.yaml'))).not.toThrow();
-  });
-
-  it('can validate a v0.2.1 project.yaml with templates', () => {
-    expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_0.2.1.yaml'))).not.toThrow();
-  });
-
   it('can validate a v1.0.0 project.yaml with templates', () => {
     expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'))).not.toThrow();
   });

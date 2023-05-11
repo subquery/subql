@@ -17,18 +17,17 @@ import {
   HostStore,
   HostDynamicDS,
   WorkerBlockDispatcher,
+  IUnfinalizedBlocksService,
 } from '@subql/node-core';
-import { Store } from '@subql/types';
+import { Store } from '@subql/types-ethereum';
 import chalk from 'chalk';
 import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
+import { EthereumBlockWrapped } from '../../ethereum/block.ethereum';
 import { DynamicDsService } from '../dynamic-ds.service';
-import {
-  IUnfinalizedBlocksService,
-  UnfinalizedBlocksService,
-} from '../unfinalizedBlocks.service';
+import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
 import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
@@ -41,7 +40,7 @@ type IndexerWorker = IIndexerWorker & {
 async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService,
+  unfinalizedBlocksService: IUnfinalizedBlocksService<EthereumBlockWrapped>,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
@@ -66,6 +65,7 @@ async function createIndexerWorker(
       storeBulkCreate: store.bulkCreate.bind(store),
       storeBulkUpdate: store.bulkUpdate.bind(store),
       storeRemove: store.remove.bind(store),
+      storeBulkRemove: store.bulkRemove.bind(store),
       dynamicDsCreateDynamicDatasource:
         dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
       dynamicDsGetDynamicDatasources:

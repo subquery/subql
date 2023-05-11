@@ -31,7 +31,6 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     StoreCacheService,
     StoreService,
     ConnectionPoolService,
-    EthereumApiService,
     {
       provide: ApiService,
       useFactory: async (

@@ -34,7 +34,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
   providers: [
     StoreService,
     StoreCacheService,
-    ConnectionPoolService,
     {
       provide: ApiService,
       useFactory: async (
@@ -53,6 +52,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
     },
     IndexerManager,
+    ConnectionPoolService,
+    {
+      provide: SmartBatchService,
+      useFactory: (nodeConfig: NodeConfig) => {
+        return new SmartBatchService(nodeConfig.batchSize);
+      },
+      inject: [NodeConfig],
+    },
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {

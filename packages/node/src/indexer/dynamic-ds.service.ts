@@ -3,7 +3,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  EthereumRuntimeDataSourceV0_3_0Impl,
+  EthereumRuntimeDataSourceImpl,
   isCustomDs,
   isRuntimeDs,
 } from '@subql/common-ethereum';
@@ -57,10 +57,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
           ...params.args,
         };
 
-        const parsedDs = plainToClass(
-          EthereumRuntimeDataSourceV0_3_0Impl,
-          dsObj,
-        );
+        const parsedDs = plainToClass(EthereumRuntimeDataSourceImpl, dsObj);
 
         const errors = validateSync(parsedDs, {
           whitelist: true,

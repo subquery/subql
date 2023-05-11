@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NestFactory } from '@nestjs/core';
-import { getLogger, NestLogger, ApiService } from '@subql/node-core';
+import { ApiService, getLogger, NestLogger } from '@subql/node-core';
 import { ProjectService } from '../indexer/project.service';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
