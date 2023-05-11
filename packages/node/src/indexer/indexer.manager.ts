@@ -175,12 +175,12 @@ export class IndexerManager extends BaseIndexerManager<
     }
   }
 
-  protected prepareFilteredData<T = any>(
+  protected async prepareFilteredData<T = any>(
     kind: SubstrateHandlerKind,
     data: T,
-  ): T {
+  ): Promise<T> {
     // Substrate doesn't need to do anything here
-    return data;
+    return Promise.resolve(data);
   }
 
   protected baseCustomHandlerFilter(
