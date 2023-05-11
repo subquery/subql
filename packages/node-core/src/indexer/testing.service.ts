@@ -59,6 +59,7 @@ export abstract class TestingService<B, DS> {
       const option: SandboxOption = {
         root: this.project.root,
         entry: file,
+        chainId: this.project.network.chainId,
       };
 
       return new TestSandbox(option, this.nodeConfig);
