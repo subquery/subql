@@ -261,7 +261,8 @@ describe('FetchService', () => {
       .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
     const firstApiConnection = (connectionPoolService as any).allApi[0];
 
-    const apiOptions = (firstApiConnection as any)._api._options as ApiOptions;
+    const apiOptions = (firstApiConnection as any).unsafeApi
+      ._options as ApiOptions;
     const provider = apiOptions.provider;
     const getSendSpy = jest.spyOn(provider, 'send');
 
@@ -301,7 +302,8 @@ describe('FetchService', () => {
       .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
     const firstApiConnection = (connectionPoolService as any).allApi[0];
 
-    const apiOptions = (firstApiConnection as any)._api._options as ApiOptions;
+    const apiOptions = (firstApiConnection as any).unsafeApi
+      ._options as ApiOptions;
     const provider = apiOptions.provider;
     const getSendSpy = jest.spyOn(provider, 'send');
 
