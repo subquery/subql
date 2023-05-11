@@ -56,6 +56,9 @@ export abstract class BaseIndexerManager<
 
   protected abstract baseCustomHandlerFilter(kind: keyof FilterMap, data: any, baseFilter: any): boolean;
 
+  // This is used by Ethereum to parse logs and transaction data with ABIs
+  protected abstract prepareFilteredData<T>(kind: keyof FilterMap, data: T, ds: DS): T;
+
   constructor(
     protected readonly apiService: AS,
     protected readonly nodeConfig: NodeConfig,
@@ -170,9 +173,16 @@ export abstract class BaseIndexerManager<
 
       for (const handler of handlers) {
         vm = vm! ?? (await getVM(ds));
+
+        const parsedData = this.prepareFilteredData(kind, data, ds);
+
         this.nodeConfig.profiler
-          ? await profilerWrap(vm.securedExec.bind(vm), 'handlerPerformance', handler.handler)(handler.handler, [data])
-          : await vm.securedExec(handler.handler, [data]);
+          ? await profilerWrap(
+              vm.securedExec.bind(vm),
+              'handlerPerformance',
+              handler.handler
+            )(handler.handler, [parsedData])
+          : await vm.securedExec(handler.handler, [parsedData]);
       }
     } else if (this.isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(ds, data, this.processorMap[kind], (data, baseFilter) => {

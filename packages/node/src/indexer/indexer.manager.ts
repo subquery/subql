@@ -175,6 +175,14 @@ export class IndexerManager extends BaseIndexerManager<
     }
   }
 
+  protected prepareFilteredData<T = any>(
+    kind: SubstrateHandlerKind,
+    data: T,
+  ): T {
+    // Substrate doesn't need to do anything here
+    return data;
+  }
+
   protected baseCustomHandlerFilter(
     kind: SubstrateHandlerKind,
     data: any,
