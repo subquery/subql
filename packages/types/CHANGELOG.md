@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.1] - 2023-05-11
+### Updated
+- `DictionaryQueryCondition` type (#1679)
+
 ## [2.1.0] - 2023-05-10
 ### Added
 - `bulkRemove` method on the store. (#1666)
