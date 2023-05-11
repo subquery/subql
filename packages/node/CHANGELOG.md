@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.2] - 2023-05-12
+- Sync change with `node-core@2.1.2`
+  - Fix metadata check, allow base indexer manager to parse abis with ethereum (#1682)
+  - Move validate function to common (#1683)
+  - Inject the chain id into sandboxes (#1684)
+
 ## [2.1.1] - 2023-05-11
 ### Fixed
 - Fix missing scheduler subcommands (#1677)
