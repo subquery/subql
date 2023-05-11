@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BaseMapping, FileType, ProjectManifestBaseImpl} from '@subql/common';
+import {BaseMapping, FileType, ProjectManifestBaseImpl, validateObject} from '@subql/common';
 import {SubstrateCustomDatasource, SubstrateNetworkFilter} from '@subql/types';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
@@ -35,15 +35,6 @@ export class ProjectNetworkV0_2_0 extends ProjectNetworkDeploymentV0_2_0 {
   @IsString()
   @IsOptional()
   dictionary?: string;
-}
-
-function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
-  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
-  if (errors?.length) {
-    // TODO: print error details
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
-    throw new Error(`${errorMessage}\n${errorMsgs}`);
-  }
 }
 
 export class SubstrateRuntimeDataSourceV0_2_0Impl extends RuntimeDataSourceBase implements RuntimeDataSourceV0_2_0 {

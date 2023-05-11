@@ -10,6 +10,7 @@ import {
   RunnerNodeImpl,
   RunnerQueryBaseModel,
   RunnerSpecs,
+  validateObject,
 } from '@subql/common';
 import {SubstrateCustomDatasource, SubstrateNetworkFilter, SubstrateRuntimeDatasource} from '@subql/types';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
@@ -32,14 +33,6 @@ const SUBSTRATE_NODE_NAME = `@subql/node`;
 export class SubstrateRunnerNodeImpl extends RunnerNodeImpl {
   @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})
   name: string;
-}
-
-function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
-  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
-  if (errors?.length) {
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
-    throw new Error(`${errorMessage}\n${errorMsgs}`);
-  }
 }
 
 export class SubstrateRuntimeDataSourceImpl extends RuntimeDataSourceBase implements SubstrateRuntimeDatasource {

@@ -57,7 +57,7 @@ export abstract class BaseIndexerManager<
   protected abstract baseCustomHandlerFilter(kind: keyof FilterMap, data: any, baseFilter: any): boolean;
 
   // This is used by Ethereum to parse logs and transaction data with ABIs
-  protected abstract prepareFilteredData<T>(kind: keyof FilterMap, data: T, ds: DS): T;
+  protected abstract prepareFilteredData<T>(kind: keyof FilterMap, data: T, ds: DS): Promise<T>;
 
   constructor(
     protected readonly apiService: AS,
@@ -174,7 +174,7 @@ export abstract class BaseIndexerManager<
       for (const handler of handlers) {
         vm = vm! ?? (await getVM(ds));
 
-        const parsedData = this.prepareFilteredData(kind, data, ds);
+        const parsedData = await this.prepareFilteredData(kind, data, ds);
 
         this.nodeConfig.profiler
           ? await profilerWrap(
