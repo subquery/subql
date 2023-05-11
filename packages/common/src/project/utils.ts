@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
+import {validateSync, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
 import {prerelease, satisfies, valid, validRange} from 'semver';
 
@@ -74,4 +74,12 @@ export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, sec * 1000);
   });
+}
+
+export function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
+  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
+  if (errors?.length) {
+    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    throw new Error(`${errorMessage}\n${errorMsgs}`);
+  }
 }
