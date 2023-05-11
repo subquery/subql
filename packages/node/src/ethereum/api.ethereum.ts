@@ -91,6 +91,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private genesisBlock: Record<string, any>;
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
+  private name: string;
 
   // Ethereum POS
   private supportsFinalization = true;
@@ -131,6 +132,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
     const network = await this.client.getNetwork();
     this.chainId = network.chainId;
+    this.name = network.name;
   }
 
   private injectClient(): void {
@@ -169,7 +171,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   getRuntimeChain(): string {
-    return 'ethereum';
+    return this.name;
   }
 
   getChainId(): number {
