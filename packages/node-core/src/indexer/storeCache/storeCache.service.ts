@@ -40,14 +40,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     private schedulerRegistry: SchedulerRegistry
   ) {
     this.storeCacheThreshold = config.storeCacheThreshold;
-
-    this.schedulerRegistry.addInterval(
-      INTERVAL_NAME,
-      setInterval(
-        () => void this.flushCache(true, false),
-        config.storeFlushInterval * 1000 // Convert to miliseconds
-      )
-    );
   }
 
   init(historical: boolean, useCockroachDb: boolean): void {
@@ -63,6 +55,16 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
     this.metadataRepo = meta;
     this.poiRepo = poi;
+
+    // Add flush interval after repos been set,
+    // otherwise flush could not find lastProcessHeight from metadata
+    this.schedulerRegistry.addInterval(
+      INTERVAL_NAME,
+      setInterval(
+        () => void this.flushCache(true, false),
+        this.config.storeFlushInterval * 1000 // Convert to miliseconds
+      )
+    );
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
