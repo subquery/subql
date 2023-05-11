@@ -76,6 +76,7 @@ export abstract class BaseDsProcessorService<
         {
           root: this.project.root,
           entry: ds.processor.file,
+          chainId: this.project.network.chainId,
         },
         this.nodeConfig
       );

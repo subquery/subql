@@ -39,6 +39,7 @@ export class SandboxService<Api> {
           store,
           root: this.project.root,
           entry,
+          chainId: this.project.network.chainId,
         },
         this.nodeConfig,
       );
@@ -48,6 +49,7 @@ export class SandboxService<Api> {
     if (this.nodeConfig.unsafe) {
       processor.freeze(this.apiService.api, 'unsafeApi');
     }
+    processor.freeze(this.project.network.chainId, 'chainId');
     return processor;
   }
 

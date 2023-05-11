@@ -16,6 +16,7 @@ export interface SandboxOption {
   store?: Store;
   root: string;
   entry: string;
+  chainId: string;
 }
 
 const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
@@ -53,6 +54,8 @@ export class Sandbox extends NodeVM {
     );
     this.root = config.subquery.startsWith('ipfs://') ? '' : option.root;
     this.entry = option.entry;
+
+    this.freeze(option.chainId, 'chainId');
 
     const sourceMapFile = path.join(this.root, this.entry);
 
