@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.2] - 2023-05-11
+### Added
+- Inject the chain id into sandboxes (#1684)
+
 ## [2.1.1] - 2023-05-11
 ### Updated
 - `DictionaryQueryCondition` type (#1679)
