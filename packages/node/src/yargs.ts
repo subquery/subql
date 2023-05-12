@@ -211,7 +211,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     'dictionary-resolver': {
       demandOption: false,
       describe: 'Use SubQuery Network dictionary resolver',
-      type: 'boolean',
+      type: 'string',
       default: false,
     },
     'dictionary-timeout': {
