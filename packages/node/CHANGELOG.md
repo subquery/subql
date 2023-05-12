@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.3] - 2023-05-12
+- Sync fix with `node-core@2.1.3`
+  - Fix app could fail to start, due to flush before metadata repo been set (#1688)
+
 ## [2.1.2] - 2023-05-12
 - Sync change with `node-core@2.1.2`
   - Fix metadata check, allow base indexer manager to parse abis with ethereum (#1682)

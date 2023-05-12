@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.3] - 2023-05-12
+### Fixed
+- Fix app could fail to start, due to flush before metadata repo been set (#1688)
+
 ## [2.1.2] - 2023-05-11
 ### Fixed
 - Fix metadata check, allow base indexer manager to parse abis with ethereum (#1682)
