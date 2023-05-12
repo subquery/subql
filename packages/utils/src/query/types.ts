@@ -18,6 +18,7 @@ export type MetaData = {
   queryNodeVersion: string;
   startHeight?: number;
   rowCountEstimate: [TableEstimate];
+  deployments: Record<string, number>;
 };
 
 export type TerraMetaData = {

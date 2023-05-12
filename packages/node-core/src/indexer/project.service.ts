@@ -162,6 +162,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
+      'deployments',
     ] as const;
 
     const existing = await metadata.findMany(keys);
@@ -193,6 +194,22 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
 
     if (existing.specName !== specName) {
       metadata.set('specName', specName);
+    }
+
+    if (!existing.deployments) {
+      const deployments: Record<string, number> = {};
+      deployments[this.project.id] = existing.startHeight ?? this.getStartBlockFromDataSources();
+      metadata.set('deployments', JSON.stringify(deployments));
+    } else {
+      const deployments = JSON.parse(existing.deployments);
+      // avoid 0
+      if (deployments[this.project.id] === undefined) {
+        const newDeploymentStart = await this.getLastProcessedHeight();
+        logger.warn(`Project deployment upgrade found, ID: ${this.project.id}, start height: ${newDeploymentStart}`);
+        deployments[this.project.id] = newDeploymentStart;
+        metadata.set('deployments', JSON.stringify(deployments));
+      }
+      // if we found this deployment, all good.
     }
 
     // If project was created before this feature, don't add the key. If it is project created after, add this key.

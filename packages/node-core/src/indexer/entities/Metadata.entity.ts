@@ -26,6 +26,7 @@ export interface MetadataKeys {
   dynamicDatasources: string;
   unfinalizedBlocks: string;
   schemaMigrationCount: number;
+  deployments: string;
 }
 
 export interface Metadata {

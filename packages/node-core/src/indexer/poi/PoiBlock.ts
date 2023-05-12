@@ -48,6 +48,8 @@ export class PoiBlock implements ProofOfIndex {
     parentHash: Uint8Array,
     projectId: string
   ): PoiBlock {
+    // projectId is deprecated from _POI table, but in order to keep consist with previous hash,
+    // We still take projectId as part of the calculation
     const _poiBlockHash = poiBlockHash(id, chainBlockHash, operationHashRoot, parentHash, projectId);
     let _chainBlockHash: Uint8Array | undefined;
     if (isHex(chainBlockHash)) {
