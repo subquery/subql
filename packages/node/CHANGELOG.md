@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.1] - 2023-05-12
 - Sync fix with `node-core@2.1.3`
-  - Fix app could fail to start, due to flush before metadata repo been set (#1688)
+  - Fix app could fail to start, due to flush before metadata repo been set (#73)
 
 ## [2.1.0] - 2023-05-11
 ### Changed
