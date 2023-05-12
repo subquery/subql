@@ -9,5 +9,6 @@ declare global {
   const api: Provider;
   const logger: Pino.Logger;
   const store: Store;
+  const chainId: string;
   const createDynamicDatasource: DynamicDatasourceCreator;
 }

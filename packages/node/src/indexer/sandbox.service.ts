@@ -51,6 +51,7 @@ export class SandboxService {
     if (this.nodeConfig.unsafe) {
       processor.freeze(this.apiService.api.api, 'unsafeApi');
     }
+    processor.freeze(this.project.network.chainId, 'chainId');
     return processor;
   }
 
