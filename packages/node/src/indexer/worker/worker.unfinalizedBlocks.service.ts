@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable } from '@nestjs/common';
-import { IUnfinalizedBlocksService } from '@subql/node-core';
+import { Header, IUnfinalizedBlocksService } from '@subql/node-core';
 import { BlockContent } from '../types';
+import { substrateHeaderToHeader } from '../unfinalizedBlocks.service';
 
 export type HostUnfinalizedBlocks = {
-  unfinalizedBlocksProcess: (block: BlockContent) => Promise<number | null>;
+  unfinalizedBlocksProcess: (header: Header) => Promise<number | null>;
 };
 
 export const hostUnfinalizedBlocksKeys: (keyof HostUnfinalizedBlocks)[] = [
@@ -20,7 +21,14 @@ export class WorkerUnfinalizedBlocksService
   constructor(private host: HostUnfinalizedBlocks) {}
 
   async processUnfinalizedBlocks(block: BlockContent): Promise<number | null> {
-    return this.host.unfinalizedBlocksProcess(block);
+    return this.host.unfinalizedBlocksProcess(
+      substrateHeaderToHeader(block.block.block.header),
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async processUnfinalizedBlockHeader(header: Header): Promise<number> {
+    throw new Error('This method should not be called from a worker');
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async

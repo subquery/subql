@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import {isMainThread} from 'worker_threads';
 import {last} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -24,6 +25,7 @@ type UnfinalizedBlocks = Header[];
 export interface IUnfinalizedBlocksService<B> {
   init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined>;
   processUnfinalizedBlocks(block: B | undefined): Promise<number | undefined>;
+  processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined>;
   resetUnfinalizedBlocks(): void;
   resetLastFinalizedVerifiedHeight(): void;
 }
@@ -89,8 +91,28 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return this.finalizedHeader.blockHeight;
   }
 
+  async processUnfinalizedBlockHeader(header?: Header): Promise<number | undefined> {
+    if (header) {
+      this.registerFinalizedBlock(header);
+    }
+
+    const forkedHeader = await this.hasForked();
+
+    if (!forkedHeader) {
+      // Remove blocks that are now confirmed finalized
+      this.deleteFinalizedBlock();
+    } else {
+      // Get the last unfinalized block that is now finalized
+      return this.getLastCorrectFinalizedBlock(forkedHeader);
+    }
+
+    return;
+  }
+
   async processUnfinalizedBlocks(block?: B): Promise<number | undefined> {
     if (block) {
+      logger.info('here2');
+      //logger.info(JSON.stringify(block))
       this.registerUnfinalizedBlock(this.blockToHeader(block));
     }
 
