@@ -235,7 +235,7 @@ export class CachedModel<
           ? records.map((r) => this.model.upsert(r, {transaction: tx}))
           : this.model.bulkCreate(records, {
               transaction: tx,
-              updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+              updateOnDuplicate: records?.length ? (Object.keys(records[0]) as unknown as (keyof T)[]) : [],
             }),
         Object.keys(removeRecords).length &&
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
