@@ -69,7 +69,7 @@ export class SetValueModel<T> {
     const newModel = new SetValueModel<T>();
 
     newModel.historicalValues = this.historicalValues
-      .filter((v) => v.startHeight <= height)
+      .filter((v) => v.startHeight < height)
       .map((v) => {
         if (v.endHeight && v.endHeight < height) {
           return v;
