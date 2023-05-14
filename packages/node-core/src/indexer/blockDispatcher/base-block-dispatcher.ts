@@ -35,7 +35,7 @@ export interface IBlockDispatcher {
 
   queueSize: number;
   freeSize: number;
-  latestBufferedHeight: number | undefined;
+  latestBufferedHeight: number;
   smartBatchSize: number;
   minimumHeapLimit: number;
 

@@ -102,7 +102,7 @@ export abstract class BaseFetchService<
       !!this.project.network.dictionary &&
       this.dictionaryMetaValid &&
       !!this.dictionaryService.getDictionaryQueryEntries(
-        this.blockDispatcher.latestBufferedHeight ??
+        this.blockDispatcher.latestBufferedHeight ||
           Math.min(...this.project.dataSources.map((ds) => ds.startBlock).filter(hasValue))
       ).length
     );
