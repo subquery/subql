@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ArtiomTr/jest-coverage-report-action@v2
-          with:
-            github-token: ${{ secrets.REPO_TOKEN }}
-            test-script: yarn test:ci
-            package-manager: yarn
+        with:
+          github-token: ${{ secrets.REPO_TOKEN }}
+          test-script: yarn test:ci
+          package-manager: yarn
