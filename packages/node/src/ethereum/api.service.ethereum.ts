@@ -78,7 +78,7 @@ export class EthereumApiService extends ApiService {
           // });
           if (!this.networkMeta) {
             this.networkMeta = {
-              chain: api.getRuntimeChain(),
+              chain: api.getChainId().toString(),
               specName: api.getSpecName(),
               genesisHash: api.getGenesisHash(),
             };
@@ -87,8 +87,8 @@ export class EthereumApiService extends ApiService {
           if (network.chainId !== api.getChainId().toString()) {
             throw this.metadataMismatchError(
               'ChainId',
-              this.networkMeta.genesisHash,
-              api.getRuntimeChain(),
+              network.chainId,
+              api.getChainId().toString(),
             );
           }
 

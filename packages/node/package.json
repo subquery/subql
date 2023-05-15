@@ -36,6 +36,7 @@
     "cron-converter": "^1.0.2",
     "ethers": "^5.7.0",
     "eventemitter2": "^6.4.5",
+    "json5": "^2.2.3",
     "lodash": "^4.17.21",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
