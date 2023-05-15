@@ -5,7 +5,7 @@ on:
       - '.github/workflows/**'
 jobs:
   code-style:
-    name:
+    name: code-style
     runs-on: ubuntu-latest
     env:
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
