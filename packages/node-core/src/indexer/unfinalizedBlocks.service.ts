@@ -110,23 +110,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   }
 
   async processUnfinalizedBlocks(block?: B): Promise<number | undefined> {
-    if (block) {
-      logger.info('here2');
-      //logger.info(JSON.stringify(block))
-      this.registerUnfinalizedBlock(this.blockToHeader(block));
-    }
-
-    const forkedHeader = await this.hasForked();
-
-    if (!forkedHeader) {
-      // Remove blocks that are now confirmed finalized
-      this.deleteFinalizedBlock();
-    } else {
-      // Get the last unfinalized block that is now finalized
-      return this.getLastCorrectFinalizedBlock(forkedHeader);
-    }
-
-    return;
+    return this.processUnfinalizedBlockHeader(block ? this.blockToHeader(block) : undefined);
   }
 
   registerFinalizedBlock(header: Header): void {

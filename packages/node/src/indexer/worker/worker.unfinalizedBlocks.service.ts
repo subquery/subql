@@ -26,9 +26,8 @@ export class WorkerUnfinalizedBlocksService
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async processUnfinalizedBlockHeader(header: Header): Promise<number> {
-    throw new Error('This method should not be called from a worker');
+  async processUnfinalizedBlockHeader(header: Header): Promise<number | null> {
+    return this.host.unfinalizedBlocksProcess(header);
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async
