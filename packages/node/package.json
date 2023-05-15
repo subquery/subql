@@ -41,7 +41,6 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
     "sequelize": "6.28.0",
-    "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },
   "devDependencies": {

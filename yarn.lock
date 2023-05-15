@@ -4190,7 +4190,7 @@ __metadata:
     sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
-    vm2: ^3.9.9
+    vm2: 3.9.17
     yargs: ^16.2.0
   languageName: unknown
   linkType: soft
@@ -4232,7 +4232,6 @@ __metadata:
     rimraf: ^3.0.2
     rxjs: ^7.5.2
     sequelize: 6.28.0
-    vm2: ^3.9.9
     yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
@@ -17905,6 +17904,18 @@ __metadata:
   version: 2.0.4
   resolution: "vlq@npm:2.0.4"
   checksum: b2ed0d3a5423f34bba98a18250f8b13a96eebff9c8f9427fa9cd78065d31f35641f6fd659c5642253b79532000a37aec0582abac95d1ef4af2cd0c96a716f1b6
+  languageName: node
+  linkType: hard
+
+"vm2@npm:3.9.17":
+  version: 3.9.17
+  resolution: "vm2@npm:3.9.17"
+  dependencies:
+    acorn: ^8.7.0
+    acorn-walk: ^8.2.0
+  bin:
+    vm2: bin/vm2
+  checksum: 9a03740a40ab2be5e3348a95fb31512da1a3c85318febb07e5299fa103ff05bcd7b6f458211fa38a1281dc27beccd04ff90355fc1d34fe2ee6ca10d0bb8c6f35
   languageName: node
   linkType: hard
 
