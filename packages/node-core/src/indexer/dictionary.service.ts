@@ -88,10 +88,8 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
           return {
-            // Use case insensitive here due to go-dictionary generate name is in lower cases
-            // Origin dictionary still using camelCase
             [sanitizeArgField(j.field)]: {
-              [j.matcher || 'equalToInsensitive']: `$${v.name}`,
+              [j.matcher || 'equalTo']: `$${v.name}`,
             },
           };
         }),
@@ -101,7 +99,7 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
       gqlVars.push(v);
       filter.or[outerIdx] = {
         [sanitizeArgField(i[0].field)]: {
-          [i[0].matcher || 'equalToInsensitive']: `$${v.name}`,
+          [i[0].matcher || 'equalTo']: `$${v.name}`,
         },
       };
     }
