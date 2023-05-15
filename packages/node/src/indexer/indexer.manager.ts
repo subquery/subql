@@ -28,6 +28,9 @@ import {
   EthereumBlockWrapper,
   EthereumBlock,
   SubqlRuntimeDatasource,
+  EthereumBlockFilter,
+  EthereumLogFilter,
+  EthereumTransactionFilter,
 } from '@subql/types-ethereum';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
@@ -155,38 +158,13 @@ export class IndexerManager extends BaseIndexerManager<
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   protected async prepareFilteredData(
     kind: EthereumHandlerKind,
     data: any,
     ds: SubqlRuntimeDatasource,
   ): Promise<any> {
     return DataAbiParser[kind](this.apiService.api)(data, ds);
-  }
-
-  protected baseCustomHandlerFilter(
-    kind: EthereumHandlerKind,
-    data: any,
-    baseFilter: any,
-  ): boolean {
-    switch (kind) {
-      case EthereumHandlerKind.Block:
-        return EthereumBlockWrapped.filterBlocksProcessor(
-          data as EthereumBlock,
-          baseFilter,
-        );
-      case EthereumHandlerKind.Call:
-        return EthereumBlockWrapped.filterTransactionsProcessor(
-          data as EthereumTransaction,
-          baseFilter,
-        );
-      case EthereumHandlerKind.Event:
-        return EthereumBlockWrapped.filterLogsProcessor(
-          data as EthereumLog,
-          baseFilter,
-        );
-      default:
-        throw new Error('Unsupported handler kind');
-    }
   }
 }
 
@@ -203,9 +181,32 @@ const ProcessorTypeMap = {
 };
 
 const FilterTypeMap = {
-  [EthereumHandlerKind.Block]: EthereumBlockWrapped.filterBlocksProcessor,
-  [EthereumHandlerKind.Event]: EthereumBlockWrapped.filterLogsProcessor,
-  [EthereumHandlerKind.Call]: EthereumBlockWrapped.filterTransactionsProcessor,
+  [EthereumHandlerKind.Block]: (
+    data: EthereumBlock,
+    filter: EthereumBlockFilter,
+    ds: SubqlEthereumDataSource,
+  ) =>
+    EthereumBlockWrapped.filterBlocksProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+  [EthereumHandlerKind.Event]: (
+    data: EthereumLog,
+    filter: EthereumLogFilter,
+    ds: SubqlEthereumDataSource,
+  ) =>
+    EthereumBlockWrapped.filterLogsProcessor(data, filter, ds.options?.address),
+  [EthereumHandlerKind.Call]: (
+    data: EthereumTransaction,
+    filter: EthereumTransactionFilter,
+    ds: SubqlEthereumDataSource,
+  ) =>
+    EthereumBlockWrapped.filterTransactionsProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
 };
 
 const DataAbiParser = {
