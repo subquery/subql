@@ -22,6 +22,7 @@ jobs:
       run: yarn build
 
   code-style:
+    needs: pr
     runs-on: ubuntu-latest
     steps:
     - name: code-style check
