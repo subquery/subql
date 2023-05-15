@@ -93,7 +93,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   async processUnfinalizedBlockHeader(header?: Header): Promise<number | undefined> {
     if (header) {
-      this.registerFinalizedBlock(header);
+      this.registerUnfinalizedBlock(header);
     }
 
     const forkedHeader = await this.hasForked();
