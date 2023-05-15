@@ -11,6 +11,7 @@ declare global {
   const api: CosmWasmSafeClient;
   const logger: Pino.Logger;
   const store: Store;
+  const chainId: string;
   const createDynamicDatasource: DynamicDatasourceCreator;
   const registry: Registry;
 }

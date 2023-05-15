@@ -9,6 +9,7 @@ import {
   AutoQueue,
   memoryLock,
   IProjectService,
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -16,12 +17,6 @@ import { IndexerManager } from '../indexer.manager';
 import { BlockContent } from '../types';
 
 export type FetchBlockResponse = undefined;
-
-export type ProcessBlockResponse = {
-  dynamicDsCreated: boolean;
-  blockHash: string;
-  reindexBlockHeight: number;
-};
 
 export type WorkerStatusResponse = {
   threadId: number;

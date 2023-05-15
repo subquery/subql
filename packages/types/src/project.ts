@@ -157,7 +157,7 @@ export interface SubqlCosmosCustomDatasource<
 > extends ISubqlCosmosDatasource<M> {
   kind: K;
   assets: Map<string, CustomCosmosDataSourceAsset>;
-  processor?: Processor<O>;
+  processor: Processor<O>;
 }
 
 export interface HandlerInputTransformer_0_0_0<
@@ -211,7 +211,8 @@ export interface SubqlCosmosDatasourceProcessor<
 
 export interface DictionaryQueryCondition {
   field: string;
-  value: string | Record<string, string> | Array<Record<string, string>>;
+  // value: string | Record<string, string> | Array<Record<string, string>>;
+  value: string | string[];
   matcher?: string; // defaults to "equalTo", use "contains" for JSON
 }
 

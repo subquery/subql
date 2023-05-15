@@ -2,55 +2,96 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+  FileType,
   NodeSpec,
   ProjectManifestBaseImpl,
   QuerySpec,
+  RunnerNodeImpl,
   RunnerQueryBaseModel,
   RunnerSpecs,
-  SemverVersionValidator,
+  validateObject,
 } from '@subql/common';
-import {plainToClass, Type} from 'class-transformer';
+import {
+  CustomModule,
+  SubqlCosmosCustomDatasource,
+  SubqlCosmosCustomHandler,
+  SubqlCosmosMapping,
+  SubqlCosmosRuntimeDatasource,
+  SubqlCosmosRuntimeHandler,
+} from '@subql/types-cosmos';
+import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
   IsObject,
   IsString,
-  Matches,
-  Validate,
   ValidateNested,
   validateSync,
   IsOptional,
   IsArray,
+  IsNotEmpty,
 } from 'class-validator';
-import {RuntimeDatasourceTemplate, CustomDatasourceTemplate} from '../v0_2_1';
-import {
-  DeploymentV0_3_0,
-  ProjectManifestV0_3_0Impl,
-  CosmosCustomDataSourceV0_3_0Impl,
-  CosmosRuntimeDataSourceV0_3_0Impl,
-} from '../v0_3_0';
-import {CosmosProjectManifestV1_0_0} from '../v1_0_0';
+import {CosmosCustomDataSourceBase, CosmosCustomModuleImpl, CosmosRuntimeDataSourceBase} from '../../models';
+import {CosmosProjectManifestV1_0_0, CustomDatasourceTemplate, RuntimeDatasourceTemplate} from './types';
 
 const COSMOS_NODE_NAME = `@subql/node-cosmos`;
 
-export class RuntimeDatasourceTemplateImpl
-  extends CosmosRuntimeDataSourceV0_3_0Impl
-  implements RuntimeDatasourceTemplate
-{
-  @IsString()
-  name: string;
-}
-
-export class CustomDatasourceTemplateImpl extends CosmosCustomDataSourceV0_3_0Impl implements CustomDatasourceTemplate {
-  @IsString()
-  name: string;
-}
-
-export class CosmosRunnerNodeImpl implements NodeSpec {
+export class CosmosRunnerNodeImpl extends RunnerNodeImpl {
   @Equals(COSMOS_NODE_NAME, {message: `Runner Cosmos node name incorrect, suppose be '${COSMOS_NODE_NAME}'`})
   name: string;
-  @Validate(SemverVersionValidator)
-  // @Matches(RUNNER_REGEX)
-  version: string;
+}
+
+export class CosmosRuntimeDataSourceImpl
+  extends CosmosRuntimeDataSourceBase<SubqlCosmosMapping<SubqlCosmosRuntimeHandler>>
+  implements SubqlCosmosRuntimeDatasource
+{
+  validate(): void {
+    return validateObject(this, 'failed to validate runtime datasource.');
+  }
+}
+
+export class CosmosCustomDataSourceImpl<
+    K extends string = string,
+    M extends SubqlCosmosMapping = SubqlCosmosMapping<SubqlCosmosCustomHandler>
+  >
+  extends CosmosCustomDataSourceBase<K, M>
+  implements SubqlCosmosCustomDatasource<K, M>
+{
+  validate(): void {
+    return validateObject(this, 'failed to validate custom datasource.');
+  }
+}
+
+export class CosmosProjectNetworkDeployment {
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({value}: TransformFnParams) => value.trim())
+  chainId: string;
+  @Type(() => CosmosCustomModuleImpl)
+  @IsOptional()
+  @ValidateNested({each: true})
+  chainTypes?: Map<string, CustomModule>;
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: (number | string)[];
+}
+
+export class CosmosProjectNetwork extends CosmosProjectNetworkDeployment {
+  @IsString({each: true})
+  @IsOptional()
+  endpoint?: string | string[];
+  @IsString()
+  @IsOptional()
+  dictionary?: string;
+}
+
+export class RuntimeDatasourceTemplateImpl extends CosmosRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
+  @IsString()
+  name: string;
+}
+
+export class CustomDatasourceTemplateImpl extends CosmosCustomDataSourceImpl implements CustomDatasourceTemplate {
+  @IsString()
+  name: string;
 }
 
 export class CosmosRunnerSpecsImpl implements RunnerSpecs {
@@ -64,14 +105,30 @@ export class CosmosRunnerSpecsImpl implements RunnerSpecs {
   query: QuerySpec;
 }
 
-export class DeploymentV1_0_0 extends DeploymentV0_3_0 {
+export class DeploymentV1_0_0 {
   @Equals('1.0.0')
   @IsString()
   specVersion: string;
+  @ValidateNested()
+  @Type(() => CosmosProjectNetworkDeployment)
+  network: CosmosProjectNetworkDeployment;
   @IsObject()
   @ValidateNested()
   @Type(() => CosmosRunnerSpecsImpl)
   runner: RunnerSpecs;
+  @ValidateNested()
+  @Type(() => FileType)
+  schema: FileType;
+  @IsArray()
+  @ValidateNested()
+  @Type(() => CosmosCustomDataSourceImpl, {
+    discriminator: {
+      property: 'kind',
+      subTypes: [{value: CosmosRuntimeDataSourceImpl, name: 'cosmos/Runtime'}],
+    },
+    keepDiscriminatorProperty: true,
+  })
+  dataSources: (SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -85,7 +142,33 @@ export class DeploymentV1_0_0 extends DeploymentV0_3_0 {
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
 }
 
-export class ProjectManifestV1_0_0Impl extends ProjectManifestV0_3_0Impl implements CosmosProjectManifestV1_0_0 {
+export class ProjectManifestV1_0_0Impl
+  extends ProjectManifestBaseImpl<DeploymentV1_0_0>
+  implements CosmosProjectManifestV1_0_0
+{
+  @Equals('0.3.0')
+  specVersion: string;
+  @IsString()
+  name: string;
+  @IsString()
+  version: string;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => CosmosProjectNetwork)
+  network: CosmosProjectNetwork;
+  @ValidateNested()
+  @Type(() => FileType)
+  schema: FileType;
+  @IsArray()
+  @ValidateNested()
+  @Type(() => CosmosCustomDataSourceImpl, {
+    discriminator: {
+      property: 'kind',
+      subTypes: [{value: CosmosRuntimeDataSourceImpl, name: 'cosmos/Runtime'}],
+    },
+    keepDiscriminatorProperty: true,
+  })
+  dataSources: (SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()

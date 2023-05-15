@@ -1,15 +1,13 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { isCustomCosmosDs, isRuntimeCosmosDs } from '@subql/common-cosmos';
 import {
   DatasourceParams,
   DynamicDsService as BaseDynamicDsService,
 } from '@subql/node-core';
-import { cloneDeep, isEqual, unionWith } from 'lodash';
-import type { Transaction } from 'sequelize';
+import { cloneDeep } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 

@@ -9,14 +9,14 @@ import {
   StoreService,
   getExistingProjectSchema,
   CacheMetadataModel,
+  initDbSchema,
+  ForceCleanService,
+  reindex,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { initDbSchema } from '../utils/project';
-import { reindex } from '../utils/reindex';
-
-import { ForceCleanService } from './forceClean.service';
+import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 const logger = getLogger('Reindex');
 
@@ -32,6 +32,7 @@ export class ReindexService {
     private readonly mmrService: MmrService,
     @Inject('ISubqueryProject') private project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
+    private readonly unfinalizedBlocksService: UnfinalizedBlocksService,
     private readonly dynamicDsService: DynamicDsService,
   ) {}
 
@@ -47,6 +48,21 @@ export class ReindexService {
     this.metadataRepo = this.storeService.storeCache.metadata;
 
     this.dynamicDsService.init(this.metadataRepo);
+  }
+
+  async getTargetHeightWithUnfinalizedBlocks(
+    inputHeight: number,
+  ): Promise<number> {
+    const unfinalizedBlocks =
+      await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
+    const bestBlocks = unfinalizedBlocks.filter(
+      ({ blockHeight }) => blockHeight <= inputHeight,
+    );
+    if (bestBlocks.length === 0) {
+      return inputHeight;
+    }
+    const { blockHeight: firstBestBlock } = bestBlocks[0];
+    return Math.min(inputHeight, firstBestBlock);
   }
 
   private async getExistingProjectSchema(): Promise<string> {
@@ -96,12 +112,13 @@ export class ReindexService {
       targetBlockHeight,
       lastProcessedHeight,
       this.storeService,
+      this.unfinalizedBlocksService,
       this.dynamicDsService,
       this.mmrService,
       this.sequelize,
       this.forceCleanService,
     );
 
-    await this.storeService.storeCache.flushCache();
+    await this.storeService.storeCache.flushCache(true, true);
   }
 }

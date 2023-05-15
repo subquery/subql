@@ -3,22 +3,16 @@
 
 import { Block } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
-import {
-  ReaderFactory,
-  ReaderOptions,
-  Reader,
-  RunnerSpecs,
-  validateSemver,
-} from '@subql/common';
+import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
   CosmosProjectNetworkConfig,
   parseCosmosProjectManifest,
-  ProjectManifestV0_3_0Impl,
   SubqlCosmosDataSource,
   ProjectManifestV1_0_0Impl,
   isRuntimeCosmosDs,
   CosmosBlockFilter,
 } from '@subql/common-cosmos';
+import { getProjectRoot } from '@subql/node-core';
 import { CustomModule, SubqlCosmosHandlerKind } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
@@ -27,8 +21,7 @@ import * as protobuf from 'protobufjs';
 import { CosmosClient } from '../indexer/api.service';
 import { blockResponseToBlock } from '../utils/cosmos';
 import {
-  getProjectRoot,
-  updateDataSourcesV0_3_0,
+  updateDataSourcesV1_0_0,
   processNetworkConfig,
 } from '../utils/project';
 
@@ -58,7 +51,7 @@ export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
 };
 
 const NOT_SUPPORT = (name: string) => {
-  throw new Error(`Manifest specVersion ${name}() is not supported`);
+  throw new Error(`Manifest specVersion ${name} is not supported`);
 };
 
 // This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
@@ -76,44 +69,36 @@ export class SubqueryProject {
 
   static async create(
     path: string,
+    rawManifest: unknown,
+    reader: Reader,
     networkOverrides?: Partial<CosmosProjectNetworkConfig>,
-    readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
-    // We have to use reader here, because path can be remote or local
+    // rawManifest and reader can be reused here.
+    // It has been pre-fetched and used for rebase manifest runner options with args
+    // in order to generate correct configs.
+
+    // But we still need reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
-    const reader = await ReaderFactory.create(path, readerOptions);
-    const projectSchema = await reader.getProjectSchema();
-    if (projectSchema === undefined) {
+    if (rawManifest === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
-    const manifest = parseCosmosProjectManifest(projectSchema);
 
-    if (manifest.isV0_3_0) {
-      return loadProjectFromManifestBase(
-        manifest.asV0_3_0,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV1_0_0) {
-      return loadProjectFromManifest1_0_0(
-        manifest.asV1_0_0,
-        reader,
-        path,
-        networkOverrides,
-      );
+    const manifest = parseCosmosProjectManifest(rawManifest);
+
+    if (!manifest.isV1_0_0) {
+      NOT_SUPPORT('<1.0.0');
     }
+
+    return loadProjectFromManifest1_0_0(
+      manifest.asV1_0_0,
+      reader,
+      path,
+      networkOverrides,
+    );
   }
 }
 
-export interface SubqueryProjectNetwork {
-  chainId: string;
-  endpoint?: string[];
-  dictionary?: string;
-  chainTypes?: Map<string, CosmosChainType>;
-}
-
-type SUPPORT_MANIFEST = ProjectManifestV0_3_0Impl | ProjectManifestV1_0_0Impl;
+type SUPPORT_MANIFEST = ProjectManifestV1_0_0Impl;
 
 async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
@@ -151,7 +136,7 @@ async function loadProjectFromManifestBase(
   }
   const schema = buildSchemaFromString(schemaString);
 
-  const dataSources = await updateDataSourcesV0_3_0(
+  const dataSources = await updateDataSourcesV1_0_0(
     projectManifest.dataSources,
     reader,
     root,
@@ -200,19 +185,18 @@ async function loadProjectTemplates(
   root: string,
   reader: Reader,
 ): Promise<SubqlProjectDsTemplate[]> {
-  if (projectManifest.templates && projectManifest.templates.length !== 0) {
-    const dsTemplates = await updateDataSourcesV0_3_0(
-      projectManifest.templates,
-      reader,
-      root,
-    );
-    return dsTemplates.map((ds, index) => ({
-      ...ds,
-      name: projectManifest.templates[index].name,
-    }));
+  if (!projectManifest.templates || !projectManifest.templates.length) {
+    return [];
   }
-
-  return [];
+  const dsTemplates = await updateDataSourcesV1_0_0(
+    projectManifest.templates,
+    reader,
+    root,
+  );
+  return dsTemplates.map((ds, index) => ({
+    ...ds,
+    name: projectManifest.templates[index].name,
+  }));
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

@@ -3,8 +3,10 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   DbModule,
+  ForceCleanService,
   MmrService,
   StoreCacheService,
   StoreService,
@@ -13,7 +15,7 @@ import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { ForceCleanService } from './forceClean.service';
+import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { ReindexService } from './reindex.service';
 
 @Module({
@@ -23,9 +25,15 @@ import { ReindexService } from './reindex.service';
     ReindexService,
     MmrService,
     ForceCleanService,
+    UnfinalizedBlocksService,
     DynamicDsService,
     DsProcessorService,
-    ApiService,
+    {
+      // Used to work with DI for unfinalizedBlocksService but not used with reindex
+      provide: ApiService,
+      useFactory: () => undefined,
+    },
+    SchedulerRegistry,
   ],
   controllers: [],
 })

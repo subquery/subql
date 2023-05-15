@@ -31,6 +31,7 @@ export interface Store {
   //if fields in provided, only specify fields will be updated
   bulkUpdate(entity: string, data: Entity[], fields?: string[]): Promise<void>;
   remove(entity: string, id: string): Promise<void>;
+  bulkRemove(entity: string, ids: string[]): Promise<void>;
 }
 
 export interface CosmosBlock {

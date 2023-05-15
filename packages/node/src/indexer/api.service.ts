@@ -40,9 +40,6 @@ import * as CosmosUtil from '../utils/cosmos';
 import { CosmosClientConnection } from './cosmosClient.connection';
 import { BlockContent } from './types';
 
-// https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
-const MAX_RECONNECT_ATTEMPTS = 5;
-
 const logger = getLogger('api');
 
 @Injectable()

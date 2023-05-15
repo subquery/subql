@@ -30,16 +30,20 @@ import {
   HostStore,
   hostDynamicDsKeys,
   HostDynamicDS,
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
-  ProcessBlockResponse,
   WorkerService,
   WorkerStatusResponse,
 } from './worker.service';
+import {
+  HostUnfinalizedBlocks,
+  hostUnfinalizedBlocksKeys,
+} from './worker.unfinalizedBlocks.service';
 let app: INestApplication;
 let workerService: WorkerService;
 
@@ -116,10 +120,10 @@ async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
 
 // Register these functions to be exposed to worker host
 (global as any).host = WorkerHost.create<
-  HostStore & HostDynamicDS<SubqlProjectDs>,
+  HostStore & HostDynamicDS<SubqlProjectDs> & HostUnfinalizedBlocks,
   IInitIndexerWorker
 >(
-  [...hostStoreKeys, ...hostDynamicDsKeys],
+  [...hostStoreKeys, ...hostDynamicDsKeys, ...hostUnfinalizedBlocksKeys],
   {
     initWorker,
     fetchBlock,

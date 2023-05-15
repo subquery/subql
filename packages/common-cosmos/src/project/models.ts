@@ -206,7 +206,7 @@ export class CosmosCustomDataSourceBase<
   assets: Map<string, CustomDataSourceAsset>;
   @Type(() => CosmosFileReferenceImpl)
   @IsObject()
-  processor?: FileReference;
+  processor: FileReference;
   @Type(() => CosmosCustomModuleImpl)
   @ValidateNested({each: true})
   chainTypes: Map<string, CustomModule>;

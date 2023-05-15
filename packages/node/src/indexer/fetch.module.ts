@@ -26,6 +26,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
   providers: [
@@ -55,6 +56,7 @@ import { SandboxService } from './sandbox.service';
         poiService: PoiService,
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
+        unfinalizedBlocks: UnfinalizedBlocksService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -67,6 +69,7 @@ import { SandboxService } from './sandbox.service';
               poiService,
               project,
               dynamicDsService,
+              unfinalizedBlocks,
             )
           : new BlockDispatcherService(
               apiService,
@@ -93,6 +96,7 @@ import { SandboxService } from './sandbox.service';
         PoiService,
         'ISubqueryProject',
         DynamicDsService,
+        UnfinalizedBlocksService,
       ],
     },
     FetchService,
@@ -115,6 +119,7 @@ import { SandboxService } from './sandbox.service';
       useClass: ProjectService,
       provide: 'IProjectService',
     },
+    UnfinalizedBlocksService,
   ],
   exports: [StoreService, MmrService, StoreCacheService],
 })

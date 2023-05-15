@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NestFactory } from '@nestjs/core';
-import { getLogger } from '@subql/node-core';
+import { ForceCleanService, getLogger } from '@subql/node-core';
 import { ForceCleanModule } from './forceClean.module';
-import { ForceCleanService } from './forceClean.service';
 
 const logger = getLogger('CLI');
 export async function forceCleanInit(): Promise<void> {

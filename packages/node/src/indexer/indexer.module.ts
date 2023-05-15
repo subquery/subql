@@ -19,7 +19,9 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
+import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlocks.service';
 
 @Module({
   providers: [
@@ -57,6 +59,15 @@ import { WorkerService } from './worker/worker.service';
       useClass: ProjectService,
     },
     WorkerService,
+    {
+      provide: UnfinalizedBlocksService,
+      useFactory: () => {
+        if (isMainThread) {
+          throw new Error('Expected to be worker thread');
+        }
+        return new WorkerUnfinalizedBlocksService((global as any).host);
+      },
+    },
   ],
   exports: [StoreService, MmrService],
 })
