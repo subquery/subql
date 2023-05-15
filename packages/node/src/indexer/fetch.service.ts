@@ -52,7 +52,7 @@ function eventFilterToQueryEntry(
       conditions.push({
         field: 'address',
         value: addresses,
-        matcher: 'inInsensitive',
+        matcher: 'in',
       });
     }
   } else {
@@ -60,7 +60,7 @@ function eventFilterToQueryEntry(
       conditions.push({
         field: 'address',
         value: dsOptions.address.toLowerCase(),
-        // matcher: 'equals',
+        matcher: 'equalTo',
       });
     }
   }
@@ -92,12 +92,14 @@ function callFilterToQueryEntry(
     conditions.push({
       field: 'from',
       value: filter.from.toLowerCase(),
+      matcher: 'equalTo',
     });
   }
   if (filter.to) {
     conditions.push({
       field: 'to',
       value: filter.to.toLowerCase(),
+      matcher: 'equalTo',
     });
   }
   if (filter.function) {
