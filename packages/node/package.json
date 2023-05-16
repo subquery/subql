@@ -29,7 +29,7 @@
     "@nestjs/schedule": "^1.0.2",
     "@subql/common": "^2.1.1",
     "@subql/common-cosmos": "workspace:*",
-    "@subql/node-core": "^2.1.2",
+    "@subql/node-core": "^2.2.0",
     "@subql/types-cosmos": "workspace:*",
     "@subql/utils": "^2.1.0",
     "cosmjs-types": "^0.5.0",
