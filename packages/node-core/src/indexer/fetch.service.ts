@@ -99,7 +99,7 @@ export abstract class BaseFetchService<
 
   private get useDictionary(): boolean {
     return (
-      !!this.project.network.dictionary &&
+      (!!this.project.network.dictionary || !!this.nodeConfig.dictionaryResolver) &&
       this.dictionaryMetaValid &&
       !!this.dictionaryService.getDictionaryQueryEntries(
         this.blockDispatcher.latestBufferedHeight ||
