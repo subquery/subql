@@ -3958,7 +3958,7 @@ __metadata:
     "@typechain/ethers-v5": 10.2.0
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.2.0
-    "@types/node": ^14.18.10
+    "@types/node": ^18.16.10
     "@types/rimraf": ^3.0.2
     "@types/websocket": ^1
     algosdk: ^1.19.0
@@ -4968,17 +4968,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.18.10":
-  version: 14.18.16
-  resolution: "@types/node@npm:14.18.16"
-  checksum: 1999799309dc8620a2adf9a5d5e48416af87321bae4c950b4aa8018fcef2c3b6c1fcf98c39eae06f6492c03a643a5a44e2bb3750cd2574d9cf7eac33bac50e24
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^15.6.1":
   version: 15.14.9
   resolution: "@types/node@npm:15.14.9"
   checksum: 49f7f0522a3af4b8389aee660e88426490cd54b86356672a1fedb49919a8797c00d090ec2dcc4a5df34edc2099d57fc2203d796c4e7fbd382f2022ccd789eee7
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.16.10":
+  version: 18.16.10
+  resolution: "@types/node@npm:18.16.10"
+  checksum: 1db35543ae98d4a98731037a11a9478480d1260ff3778da70b9a137a3023666d20bab1573b584c401058f76c0d5f7dfbbc157b70a059452e086c8da5639cc653
   languageName: node
   linkType: hard
 
@@ -16675,7 +16675,7 @@ __metadata:
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
     "@types/cron-converter": ^1
-    "@types/node": ^14.18.10
+    "@types/node": ^18.16.10
     "@types/node-fetch": 2.6.2
     "@typescript-eslint/eslint-plugin": ^5.10.2
     "@typescript-eslint/parser": ^5.10.2

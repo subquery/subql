@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.10",
-    "@types/node": "^14.18.10",
+    "@types/node": "^18.16.10",
     "@types/rimraf": "^3.0.2",
     "@types/websocket": "^1",
     "eslint": "^8.8.0",
