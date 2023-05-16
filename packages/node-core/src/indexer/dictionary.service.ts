@@ -156,7 +156,7 @@ export class DictionaryService implements OnApplicationShutdown {
   protected _startHeight?: number;
 
   constructor(
-    readonly dictionaryEndpoint: string,
+    readonly dictionaryEndpoint: string | undefined,
     readonly chainId: string,
     protected readonly nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
