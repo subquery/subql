@@ -10,6 +10,18 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.2.0] - 2023-05-16
+### Added
+- Worker threads support for unfinalized blocks (#1695)
+### Fixed
+- Logging historical enabled with cockroach db (#1715)
+- Non-historical flushing order (#1711)
+- Filtering arguments to include datasoruce (#1703)
+- Not logging dictionary start height check (#1700)
+### Changed
+- Default matcher from insensitive to sensitive casing (#1706)
+
+
 ## [2.1.3] - 2023-05-12
 ### Fixed
 - Fix app could fail to start, due to flush before metadata repo been set (#1688)
