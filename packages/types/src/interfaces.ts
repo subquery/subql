@@ -3,9 +3,9 @@
 
 import {CosmWasmClient} from '@cosmjs/cosmwasm-stargate';
 import {DecodedTxRaw} from '@cosmjs/proto-signing';
-import {Block, Event} from '@cosmjs/stargate';
+import {Event} from '@cosmjs/stargate';
 import {Log} from '@cosmjs/stargate/build/logs';
-import {TxData, Header} from '@cosmjs/tendermint-rpc';
+import {TxData, Block, BlockId, Header} from '@cosmjs/tendermint-rpc';
 import {Validator} from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
 
 export interface CosmWasmSafeClient extends CosmWasmClient {
@@ -35,7 +35,8 @@ export interface Store {
 }
 
 export interface CosmosBlock {
-  block: Block;
+  blockId: BlockId;
+  block: {id: string} & Block;
   header: Header; // Full header
   txs: TxData[];
 }

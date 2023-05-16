@@ -4,16 +4,10 @@
 import assert from 'assert';
 import { sha256 } from '@cosmjs/crypto';
 import { toHex } from '@cosmjs/encoding';
-import { Uint53 } from '@cosmjs/math';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
-import { Block } from '@cosmjs/stargate';
+import { fromTendermint34Event } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
-import {
-  BlockResultsResponse,
-  TxData,
-  Header,
-  toRfc3339WithNanoseconds,
-} from '@cosmjs/tendermint-rpc';
+import { BlockResultsResponse, TxData, Event } from '@cosmjs/tendermint-rpc';
 import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
 import { getLogger } from '@subql/node-core';
 import {
@@ -30,22 +24,6 @@ import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 
 const logger = getLogger('fetch');
-
-export function blockResponseToBlock(response: BlockResponse): Block {
-  return {
-    id: toHex(response.blockId.hash).toUpperCase(),
-    header: {
-      version: {
-        block: new Uint53(response.block.header.version.block).toString(),
-        app: new Uint53(response.block.header.version.app).toString(),
-      },
-      height: response.block.header.height,
-      chainId: response.block.header.chainId,
-      time: toRfc3339WithNanoseconds(response.block.header.time),
-    },
-    txs: response.block.txs,
-  };
-}
 
 export function filterBlock(
   data: CosmosBlock,
@@ -115,6 +93,10 @@ export function filterMessages(
     | SubqlCosmosMessageFilter[]
     | undefined,
 ): CosmosMessage[] {
+  if (messages === null) {
+    return [];
+  }
+
   if (
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
@@ -206,14 +188,11 @@ export async function fetchCosmosBlocksArray(
   );
 }
 
-export function wrapBlock(
-  block: Block,
-  header: Header,
-  txs: TxData[],
-): CosmosBlock {
+export function wrapBlock(block: BlockResponse, txs: TxData[]): CosmosBlock {
   return {
-    block: block,
-    header: header,
+    blockId: block.blockId,
+    block: { id: toHex(block.blockId.hash).toUpperCase(), ...block.block },
+    header: block.block.header,
     txs: txs,
   };
 }
@@ -269,10 +248,29 @@ function wrapMsg(
   return msgs;
 }
 
+export function wrapBlockBeginAndEndEvents(
+  block: CosmosBlock,
+  events: Event[],
+  idxOffset: number,
+): CosmosEvent[] {
+  return events.map(
+    (event) =>
+      <CosmosEvent>{
+        idx: idxOffset++,
+        event: fromTendermint34Event(event),
+        block: block,
+        msg: null,
+        tx: null,
+        log: null,
+      },
+  );
+}
+
 export function wrapEvent(
   block: CosmosBlock,
   txs: CosmosTransaction[],
   api: CosmosClient,
+  idxOffset: number, //use this offset to avoid clash with idx of begin block events
 ): CosmosEvent[] {
   const events: CosmosEvent[] = [];
   for (const tx of txs) {
@@ -288,7 +286,7 @@ export function wrapEvent(
       const msg = wrapCosmosMsg(block, tx, log.msg_index, api);
       for (let i = 0; i < log.events.length; i++) {
         const event: CosmosEvent = {
-          idx: i,
+          idx: idxOffset++,
           msg,
           tx,
           block,
@@ -315,10 +313,7 @@ export async function fetchBlocksBatches(
         `txInfos doesn't match up with block (${blockInfo.block.header.height}) transactions expected ${blockInfo.block.txs.length}, received: ${blockResults.results.length}`,
       );
 
-      // Make non-readonly
-      const results = [...blockResults.results];
-
-      return new LazyBlockContent(blockInfo, results, api);
+      return new LazyBlockContent(blockInfo, blockResults, api);
     } catch (e) {
       logger.error(
         e,
@@ -334,28 +329,28 @@ class LazyBlockContent implements BlockContent {
   private _wrappedTransaction: CosmosTransaction[];
   private _wrappedMessage: CosmosMessage[];
   private _wrappedEvent: CosmosEvent[];
+  private _wrappedBeginBlockEvents: CosmosEvent[];
+  private _wrappedEndBlockEvents: CosmosEvent[];
+  private _eventIdx = 0; //To maintain a valid count over begin block events, tx events and end block events
 
   constructor(
     private _blockInfo: BlockResponse,
-    private _results: TxData[],
+    private _results: BlockResultsResponse,
     private _api: CosmosClient,
   ) {}
 
   get block() {
     if (!this._wrappedBlock) {
-      const block = blockResponseToBlock(this._blockInfo);
-      this._wrappedBlock = wrapBlock(
-        block,
-        this._blockInfo.block.header,
-        this._results,
-      );
+      this._wrappedBlock = wrapBlock(this._blockInfo, [
+        ...this._results.results,
+      ]);
     }
     return this._wrappedBlock;
   }
 
   get transactions() {
     if (!this._wrappedTransaction) {
-      this._wrappedTransaction = wrapTx(this.block, this._results);
+      this._wrappedTransaction = wrapTx(this.block, [...this._results.results]);
     }
     return this._wrappedTransaction;
   }
@@ -369,9 +364,41 @@ class LazyBlockContent implements BlockContent {
 
   get events() {
     if (!this._wrappedEvent) {
-      this._wrappedEvent = wrapEvent(this.block, this.transactions, this._api);
+      this._wrappedEvent = wrapEvent(
+        this.block,
+        this.transactions,
+        this._api,
+        this._eventIdx,
+      );
+      this._eventIdx += this._wrappedEvent.length;
     }
     return this._wrappedEvent;
+  }
+
+  get beginBlockEvents() {
+    if (!this._wrappedBeginBlockEvents) {
+      this._wrappedBeginBlockEvents = wrapBlockBeginAndEndEvents(
+        this.block,
+        [...this._results.beginBlockEvents],
+        this._eventIdx,
+      );
+      this._eventIdx += this._wrappedBeginBlockEvents.length;
+    }
+
+    return this._wrappedBeginBlockEvents;
+  }
+
+  get endBlockEvents() {
+    if (!this._wrappedEndBlockEvents) {
+      this._wrappedEndBlockEvents = wrapBlockBeginAndEndEvents(
+        this.block,
+        [...this._results.endBlockEvents],
+        this._eventIdx,
+      );
+      this._eventIdx += this._wrappedEndBlockEvents.length;
+    }
+
+    return this._wrappedEndBlockEvents;
   }
 }
 

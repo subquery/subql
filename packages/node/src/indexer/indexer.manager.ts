@@ -115,6 +115,10 @@ export class IndexerManager extends BaseIndexerManager<
   ): Promise<void> {
     await this.indexBlockContent(blockContent, dataSources, getVM);
 
+    for (const evt of blockContent.beginBlockEvents) {
+      await this.indexEvent(evt, dataSources, getVM);
+    }
+
     for (const tx of blockContent.transactions) {
       await this.indexTransaction(tx, dataSources, getVM);
       const msgs = blockContent.messages.filter(
@@ -129,6 +133,10 @@ export class IndexerManager extends BaseIndexerManager<
           await this.indexEvent(evt, dataSources, getVM);
         }
       }
+    }
+
+    for (const evt of blockContent.endBlockEvents) {
+      await this.indexEvent(evt, dataSources, getVM);
     }
   }
 

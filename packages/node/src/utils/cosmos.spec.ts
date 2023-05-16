@@ -158,7 +158,7 @@ describe('CosmosUtils', () => {
       hash: '',
       decodedTx: {} as DecodedTxRaw,
     };
-    const events = wrapEvent({} as CosmosBlock, [tx], api);
+    const events = wrapEvent({} as CosmosBlock, [tx], api, 0);
     expect(events.length).toEqual(0);
   });
 

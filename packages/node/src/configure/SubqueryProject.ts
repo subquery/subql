@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Block } from '@cosmjs/stargate';
+import { toRfc3339WithNanoseconds } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
 import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
@@ -19,7 +20,6 @@ import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import * as protobuf from 'protobufjs';
 import { CosmosClient } from '../indexer/api.service';
-import { blockResponseToBlock } from '../utils/cosmos';
 import {
   updateDataSourcesV1_0_0,
   processNetworkConfig,
@@ -219,8 +219,9 @@ export async function generateTimestampReferenceForBlockFilters(
               if (handler.filter?.timestamp) {
                 if (!block) {
                   const response = await api.blockInfo(startBlock);
-                  block = blockResponseToBlock(response);
-                  timestampReference = new Date(block.header.time);
+                  timestampReference = new Date(
+                    toRfc3339WithNanoseconds(response.block.header.time),
+                  );
                 }
                 try {
                   cron.fromString(handler.filter.timestamp);
