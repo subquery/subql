@@ -36,10 +36,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   }
 
   protected async getFinalizedHead(): Promise<Header> {
-    const finalizedHeight = await this.apiService.api.getFinalizedBlockHeight();
-    const finalizedBlock = await this.apiService.api.getBlockByHeightOrHash(
-      finalizedHeight,
-    );
+    const finalizedBlock = await this.apiService.api.getFinalizedBlock();
     return blockToHeader(finalizedBlock);
   }
 

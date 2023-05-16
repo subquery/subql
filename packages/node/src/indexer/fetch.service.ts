@@ -121,8 +121,6 @@ export class FetchService extends BaseFetchService<
   IEthereumBlockDispatcher,
   DictionaryService
 > {
-  private evmChainId?: string;
-
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
