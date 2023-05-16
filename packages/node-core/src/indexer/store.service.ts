@@ -147,7 +147,6 @@ export class StoreService {
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this._modelsRelations = modelsRelations;
     this._historical = await this.getHistoricalStateEnabled(schema);
-    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
     this._dbType = await getDbType(this.sequelize);
 
     let useSubscription = this.config.subscription;
@@ -157,8 +156,10 @@ export class StoreService {
     }
     if (this.historical && this.dbType === SUPPORT_DB.cockRoach) {
       this._historical = false;
-      logger.warn(`Historical feature is not support with ${this.dbType}`);
+      logger.warn(`Historical feature is not supported with ${this.dbType}`);
     }
+
+    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
     this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
 
     try {
