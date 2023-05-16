@@ -429,7 +429,7 @@ export class StoreService {
 
       if (metadataTableNames.length > 1 && !multiChain) {
         logger.error(
-          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multichain'
+          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multi-chain'
         );
         process.exit(1);
       }
