@@ -32,6 +32,8 @@ jest.mock('sequelize', () => {
           field1: 'set apple at block 5 with sequelize',
         },
       ],
+      bulkCreate: jest.fn(),
+      destroy: jest.fn(),
     }),
     sync: jest.fn(),
     transaction: () => ({
@@ -284,5 +286,59 @@ describe('Store Cache flush with order', () => {
     entity1Model.remove('entity1_id_0x01', 3);
     const entity1 = (storeService as any).cachedModels.entity1;
     expect(entity1.removeCache.entity1_id_0x01.operationIndex).toBe(3);
+  });
+});
+
+describe('Store Cache flush with non-historical', () => {
+  let storeService: StoreCacheService;
+
+  const sequilize = new Sequelize();
+  const nodeConfig: NodeConfig = {disableHistorical: false} as any;
+
+  beforeEach(() => {
+    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService.init(false, false);
+  });
+
+  it('Same Id with multiple operations, when flush it should always pick up the latest operation', () => {
+    const entity1Model = storeService.getModel('entity1');
+
+    //create Id 1
+    entity1Model.set(
+      'entity1_id_0x01',
+      {
+        id: 'entity1_id_0x01',
+        field1: 'set at block 1',
+      },
+      1
+    );
+    // remove Id 1 and 2
+    entity1Model.remove('entity1_id_0x02', 2);
+    entity1Model.remove('entity1_id_0x01', 3);
+
+    // recreate id 1 again
+    entity1Model.set(
+      'entity1_id_0x01',
+      {
+        id: 'entity1_id_0x01',
+        field1: 'set at block 5',
+      },
+      5
+    );
+
+    //simulate flush here
+    (entity1Model as any).flush(undefined, 5);
+
+    const sequelizeModel1 = (entity1Model as any).model;
+    const spyModel1Create = jest.spyOn(sequelizeModel1, 'bulkCreate');
+    const spyModel1Destroy = jest.spyOn(sequelizeModel1, 'destroy');
+
+    // Only last set record with block 5 is created
+    expect(spyModel1Create).toHaveBeenCalledWith([{field1: 'set at block 5', id: 'entity1_id_0x01'}], {
+      transaction: undefined,
+      updateOnDuplicate: ['id', 'field1'],
+    });
+    // remove id 2 only
+    expect(spyModel1Destroy).toHaveBeenCalledWith({transaction: undefined, where: {id: ['entity1_id_0x02']}});
   });
 });

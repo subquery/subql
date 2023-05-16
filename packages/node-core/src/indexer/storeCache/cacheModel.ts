@@ -216,7 +216,7 @@ export class CachedModel<
       ? this.filterRecordsWithHeight(blockHeight)
       : {removeRecords: this.removeCache, setRecords: this.setCache};
     // Filter non-historical could return undefined due to it been removed
-    let records = this.applyBlockRange(setRecords).filter((r) => r);
+    let records = this.applyBlockRange(setRecords).filter((r) => !!r);
     let dbOperation: Promise<unknown>;
     if (this.historical) {
       dbOperation = Promise.all([
