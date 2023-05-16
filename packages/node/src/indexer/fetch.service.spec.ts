@@ -162,6 +162,7 @@ const mockDictionaryRet: Dictionary = {
     indexerNodeVersion: '0.16.1',
     queryNodeVersion: '0.6.0',
     rowCountEstimate: [{ table: '', estimate: 0 }],
+    deployments: { 100: 'v1' },
   },
   //simulate after last process height update to 1000
   batchBlocks: [1000],
@@ -179,6 +180,7 @@ const mockDictionaryNoBatches: Dictionary = {
     indexerNodeVersion: '0.16.1',
     queryNodeVersion: '0.6.0',
     rowCountEstimate: [{ table: '', estimate: 0 }],
+    deployments: { 100: 'v1' },
   },
   batchBlocks: [],
 };
@@ -195,6 +197,7 @@ const mockDictionaryBatches: Dictionary = {
     indexerNodeVersion: '0.16.1',
     queryNodeVersion: '0.6.0',
     rowCountEstimate: [{ table: '', estimate: 0 }],
+    deployments: { 100: 'v1' },
   },
   batchBlocks: [14000, 14200, 14300, 14500, 14600, 14700, 14800, 14900],
 };

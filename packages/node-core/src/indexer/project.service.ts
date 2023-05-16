@@ -5,6 +5,8 @@ import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {MetadataKeys} from '@subql/node-core/indexer/entities';
+import {CacheMetadataModel} from '@subql/node-core/indexer/storeCache';
 import {Sequelize} from 'sequelize';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
@@ -196,6 +198,33 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
       metadata.set('specName', specName);
     }
 
+    // If project was created before this feature, don't add the key. If it is project created after, add this key.
+    if (!existing.processedBlockCount && !existing.lastProcessedHeight) {
+      metadata.set('processedBlockCount', 0);
+    }
+
+    if (existing.indexerNodeVersion !== this.packageVersion) {
+      metadata.set('indexerNodeVersion', this.packageVersion);
+    }
+    if (!existing.schemaMigrationCount) {
+      metadata.set('schemaMigrationCount', 0);
+    }
+    if (!existing.startHeight) {
+      metadata.set('startHeight', this.getStartBlockFromDataSources());
+    }
+
+    await this.syncDeployments(existing, metadata);
+  }
+
+  protected async getMetadataBlockOffset(): Promise<number | undefined> {
+    return this.storeService.storeCache.metadata.find('blockOffset');
+  }
+
+  protected async getLastProcessedHeight(): Promise<number | undefined> {
+    return this.storeService.storeCache.metadata.find('lastProcessedHeight');
+  }
+
+  private async syncDeployments(existing: Partial<MetadataKeys>, metadata: CacheMetadataModel): Promise<void> {
     if (!existing.deployments) {
       const deployments: Record<number, string> = {};
       //If metadata never record deployment, we are safe to use start height
@@ -217,30 +246,6 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
       }
       // if we found this deployment, all good.
     }
-
-    // If project was created before this feature, don't add the key. If it is project created after, add this key.
-    if (!existing.processedBlockCount && !existing.lastProcessedHeight) {
-      metadata.set('processedBlockCount', 0);
-    }
-
-    if (existing.indexerNodeVersion !== this.packageVersion) {
-      metadata.set('indexerNodeVersion', this.packageVersion);
-    }
-    if (!existing.schemaMigrationCount) {
-      metadata.set('schemaMigrationCount', 0);
-    }
-
-    if (!existing.startHeight) {
-      metadata.set('startHeight', this.getStartBlockFromDataSources());
-    }
-  }
-
-  protected async getMetadataBlockOffset(): Promise<number | undefined> {
-    return this.storeService.storeCache.metadata.find('blockOffset');
-  }
-
-  protected async getLastProcessedHeight(): Promise<number | undefined> {
-    return this.storeService.storeCache.metadata.find('lastProcessedHeight');
   }
 
   private async getStartHeight(): Promise<number> {
