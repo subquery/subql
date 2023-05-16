@@ -18,8 +18,7 @@
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",
-    "sequelize": "6.28.0",
-    "vm2": "^3.9.9"
+    "sequelize": "6.28.0"
   },
   "peerDependencies": {
     "class-transformer": "*",

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable } from '@nestjs/common';
-import { IUnfinalizedBlocksService } from '@subql/node-core';
+import { Header, IUnfinalizedBlocksService } from '@subql/node-core';
 import { BlockWrapper, EthereumBlock } from '@subql/types-ethereum';
 
 export type HostUnfinalizedBlocks = {
-  unfinalizedBlocksProcess: (block: BlockWrapper) => Promise<number | null>;
+  unfinalizedBlocksProcess: (header: Header) => Promise<number | null>;
 };
 
 export const hostUnfinalizedBlocksKeys: (keyof HostUnfinalizedBlocks)[] = [
@@ -19,8 +19,19 @@ export class WorkerUnfinalizedBlocksService
 {
   constructor(private host: HostUnfinalizedBlocks) {}
 
-  async processUnfinalizedBlocks(block: BlockWrapper): Promise<number | null> {
-    return this.host.unfinalizedBlocksProcess(block);
+  async processUnfinalizedBlockHeader(header: Header): Promise<number | null> {
+    return this.host.unfinalizedBlocksProcess(header);
+  }
+
+  async processUnfinalizedBlocks({
+    block: { hash: blockHash, parentHash },
+    blockHeight,
+  }: BlockWrapper): Promise<number | null> {
+    return this.host.unfinalizedBlocksProcess({
+      blockHash,
+      blockHeight,
+      parentHash,
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async

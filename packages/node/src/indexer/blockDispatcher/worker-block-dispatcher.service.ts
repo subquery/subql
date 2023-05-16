@@ -71,7 +71,7 @@ async function createIndexerWorker(
       dynamicDsGetDynamicDatasources:
         dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
       unfinalizedBlocksProcess:
-        unfinalizedBlocksService.processUnfinalizedBlocks.bind(
+        unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
     },

@@ -26,7 +26,7 @@
     "@nestjs/schedule": "^1.0.2",
     "@subql/common": "^2.1.1",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "^2.1.4-3",
+    "@subql/node-core": "^2.1.4-5",
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.2",
     "@subql/types-ethereum": "workspace:*",
@@ -43,7 +43,6 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
     "sequelize": "6.28.0",
-    "vm2": "^3.9.9",
     "web3-providers-http": "^1.8.0",
     "web3-providers-ws": "^1.8.0",
     "yargs": "^16.2.0"
