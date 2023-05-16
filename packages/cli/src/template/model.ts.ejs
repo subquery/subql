@@ -22,7 +22,7 @@ export class <%= props.className %> implements Entity {
     }
 
 <% props.fields.forEach(function(field){ %>
-    public <%= field.name %><%= field.required ? "" : "?" %>: <%= field.type %><%= field.isArray ? "[]" : "" %>;
+    public <%= field.name %><%= field.required ? "!" : "?" %>: <%= field.type %><%= field.isArray ? "[]" : "" %>;
 <% }); %>
 
     get _name(): string {
