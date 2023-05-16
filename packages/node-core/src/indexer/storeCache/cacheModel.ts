@@ -184,8 +184,9 @@ export class CachedModel<
   }
 
   remove(id: string, blockHeight: number): void {
-    // we don't need to check whether id is already remove,
-    // because it could be removed->create-> removed again
+    // we don't need to check whether id is already removed,
+    // because it could be removed->create-> removed again,
+    // the operationIndex should always be the latest operation
     this.removeCache[id] = {
       removedAtBlock: blockHeight,
       operationIndex: this.getNextStoreOperationIndex(),
@@ -228,12 +229,12 @@ export class CachedModel<
         }),
       ]);
     } else {
-      // We need to check within the same model and same blockHeight if there is multiple operations (set/remove) to same id
+      // We need to check within the same model if there is multiple operations (set/remove) to the same id
       // we don't have to consider the order in setCache, as we are using getLatest()?.data;
       // also in removeCache only store last remove operation too.
 
-      // If same Id exist in both set and remove records, we only need to pick the last operations for the same ID,
-      // As both cache in final status, we only need to compare their operation index
+      // If same Id exist in both set and remove records, we only need to pick the last operation for this ID,
+      // As both cache in final status, so we can compare their operation index
       for (const v of Object.values(setRecords)) {
         const latestSet = v.getLatest();
         if (latestSet !== undefined && removeRecords[latestSet.data.id]) {
