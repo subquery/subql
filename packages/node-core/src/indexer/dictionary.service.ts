@@ -164,7 +164,7 @@ export class DictionaryService implements OnApplicationShutdown {
   ) {}
 
   async init(): Promise<void> {
-    let link: ApolloLink;
+    let link: ApolloLink = new HttpLink({uri: this.dictionaryEndpoint, fetch});
 
     if (this.nodeConfig.dictionaryResolver) {
       try {
@@ -174,11 +174,8 @@ export class DictionaryService implements OnApplicationShutdown {
           httpOptions: {fetch},
         });
       } catch (e: any) {
-        logger.error(e.message);
-        process.exit(1);
+        logger.error(e, 'Failed to resolve network dictionary');
       }
-    } else {
-      link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
 
     this._client = new ApolloClient({
