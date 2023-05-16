@@ -184,22 +184,22 @@ export class CachedModel<
   }
 
   remove(id: string, blockHeight: number): void {
-    if (this.removeCache[id] === undefined) {
-      this.removeCache[id] = {
-        removedAtBlock: blockHeight,
-        operationIndex: this.getNextStoreOperationIndex(),
-      };
-      this.flushableRecordCounter += 1;
-      if (this.getCache.get(id)) {
-        this.getCache.delete(id);
-        // Also when .get, check removeCache first, should return undefined if removed
-      }
-      if (this.setCache[id]) {
-        // close last record
-        this.setCache[id].markAsRemoved(blockHeight);
-      }
+    // we don't need to check whether id is already removed,
+    // because it could be removed->create-> removed again,
+    // the operationIndex should always be the latest operation
+    this.removeCache[id] = {
+      removedAtBlock: blockHeight,
+      operationIndex: this.getNextStoreOperationIndex(),
+    };
+    this.flushableRecordCounter += 1;
+    if (this.getCache.get(id)) {
+      this.getCache.delete(id);
+      // Also when .get, check removeCache first, should return undefined if removed
     }
-    //else, this already been removed, do nothing
+    if (this.setCache[id]) {
+      // close last record
+      this.setCache[id].markAsRemoved(blockHeight);
+    }
   }
 
   bulkRemove(ids: string[], blockHeight: number): void {
@@ -215,7 +215,8 @@ export class CachedModel<
     const {removeRecords, setRecords} = blockHeight
       ? this.filterRecordsWithHeight(blockHeight)
       : {removeRecords: this.removeCache, setRecords: this.setCache};
-    const records = this.applyBlockRange(setRecords);
+    // Filter non-historical could return undefined due to it been removed
+    let records = this.applyBlockRange(setRecords).filter((r) => !!r);
     let dbOperation: Promise<unknown>;
     if (this.historical) {
       dbOperation = Promise.all([
@@ -228,15 +229,37 @@ export class CachedModel<
         }),
       ]);
     } else {
+      // We need to check within the same model if there is multiple operations (set/remove) to the same id
+      // we don't have to consider the order in setCache, as we are using getLatest()?.data;
+      // also in removeCache only store last remove operation too.
+
+      // If same Id exist in both set and remove records, we only need to pick the last operation for this ID,
+      // As both cache in final status, so we can compare their operation index
+      for (const v of Object.values(setRecords)) {
+        const latestSet = v.getLatest();
+        if (latestSet !== undefined && removeRecords[latestSet.data.id]) {
+          if (removeRecords[latestSet.data.id].operationIndex > latestSet.operationIndex) {
+            records = records.filter((r) => r.id !== latestSet.data.id);
+          } else if (removeRecords[latestSet.data.id].operationIndex < latestSet.operationIndex) {
+            delete removeRecords[latestSet.data.id];
+          } else {
+            throw new Error(
+              `Cache entity ${this.model.name} Id ${latestSet.data.id} has same Operation Indexes in remove and set cache `
+            );
+          }
+        }
+      }
+
       dbOperation = Promise.all([
         // We need to use upsert instead of bulkCreate for cockroach db
         // see this https://github.com/subquery/subql/issues/1606
-        this.useCockroachDb
-          ? records.map((r) => this.model.upsert(r, {transaction: tx}))
-          : this.model.bulkCreate(records, {
-              transaction: tx,
-              updateOnDuplicate: records?.length ? (Object.keys(records[0]) as unknown as (keyof T)[]) : [],
-            }),
+        records.length &&
+          (this.useCockroachDb
+            ? records.map((r) => this.model.upsert(r, {transaction: tx}))
+            : this.model.bulkCreate(records, {
+                transaction: tx,
+                updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+              })),
         Object.keys(removeRecords).length &&
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
