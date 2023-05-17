@@ -1,9 +1,9 @@
 # production images
-FROM node:16 as builder
+FROM node:18 as builder
 ARG RELEASE_VERSION
 RUN npm i -g --unsafe-perm @subql/query@${RELEASE_VERSION}
 
-FROM node:16-alpine
+FROM node:18-alpine
 ENV TZ utc
 
 RUN apk add --no-cache tini
