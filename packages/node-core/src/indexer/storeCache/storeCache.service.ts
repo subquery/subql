@@ -159,10 +159,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
         await this.pendingFlush;
       }
       if ((this.isFlushable() || forceFlush) && this.flushableRecords > 0) {
-        const num =
-          sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter)) +
-          (this.poi?.flushableRecordCounter ?? 0);
-        console.log(`Flushing ${num} records`, this.storeCacheThreshold);
         this.pendingFlush = this._flushCache(flushAll);
 
         // Remove reference to pending flush once it completes
