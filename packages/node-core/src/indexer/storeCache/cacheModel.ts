@@ -251,15 +251,11 @@ export class CachedModel<
       }
 
       dbOperation = Promise.all([
-        // We need to use upsert instead of bulkCreate for cockroach db
-        // see this https://github.com/subquery/subql/issues/1606
         records.length &&
-          (this.useCockroachDb
-            ? records.map((r) => this.model.upsert(r, {transaction: tx}))
-            : this.model.bulkCreate(records, {
-                transaction: tx,
-                updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
-              })),
+          this.model.bulkCreate(records, {
+            transaction: tx,
+            updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+          }),
         Object.keys(removeRecords).length &&
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
