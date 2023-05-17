@@ -5,6 +5,8 @@ import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {MetadataKeys} from '@subql/node-core/indexer/entities';
+import {CacheMetadataModel} from '@subql/node-core/indexer/storeCache';
 import {Sequelize} from 'sequelize';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
@@ -162,6 +164,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
+      'deployments',
     ] as const;
 
     const existing = await metadata.findMany(keys);
@@ -206,10 +209,11 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
     if (!existing.schemaMigrationCount) {
       metadata.set('schemaMigrationCount', 0);
     }
-
     if (!existing.startHeight) {
       metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
+
+    await this.syncDeployments(existing, metadata);
   }
 
   protected async getMetadataBlockOffset(): Promise<number | undefined> {
@@ -218,6 +222,30 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
 
   protected async getLastProcessedHeight(): Promise<number | undefined> {
     return this.storeService.storeCache.metadata.find('lastProcessedHeight');
+  }
+
+  private async syncDeployments(existing: Partial<MetadataKeys>, metadata: CacheMetadataModel): Promise<void> {
+    if (!existing.deployments) {
+      const deployments: Record<number, string> = {};
+      //If metadata never record deployment, we are safe to use start height
+      deployments[existing.startHeight ?? this.getStartBlockFromDataSources()] = this.project.id;
+      metadata.set('deployments', JSON.stringify(deployments));
+    } else {
+      const deployments = JSON.parse(existing.deployments) as Record<number, string>;
+      const values = Object.values(deployments);
+      const lastDeployment = values[values.length - 1];
+      // avoid 0
+      if (lastDeployment !== this.project.id) {
+        const newDeploymentStart = await this.getLastProcessedHeight();
+        if (newDeploymentStart === undefined) {
+          throw new Error(`Try to record new deployment failed, unable to find last processed height from metadata`);
+        }
+        logger.warn(`Project deployment upgrade found, start height: ${newDeploymentStart}, ID: ${this.project.id}`);
+        deployments[newDeploymentStart] = this.project.id;
+        metadata.set('deployments', JSON.stringify(deployments));
+      }
+      // if we found this deployment, all good.
+    }
   }
 
   private async getStartHeight(): Promise<number> {

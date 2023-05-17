@@ -57,7 +57,7 @@ import {
   smartTags,
 } from '../utils';
 import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
+import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
@@ -394,7 +394,8 @@ export class StoreService {
       extraQueries.push(query);
     });
     if (this.config.proofOfIndex) {
-      this.poiRepo = PoiFactory(this.sequelize, schema);
+      const usePoiFactory = (await this.useDeprecatePoi(schema)) ? PoiFactoryDeprecate : PoiFactory;
+      this.poiRepo = usePoiFactory(this.sequelize, schema);
     }
 
     this._metaDataRepo = await MetadataFactory(
@@ -411,6 +412,12 @@ export class StoreService {
     }
 
     this.afterHandleCockroachIndex();
+  }
+
+  private async useDeprecatePoi(schema: string): Promise<boolean> {
+    const sql = `SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name = '_poi' AND column_name = 'projectId'`;
+    const [result] = await this.sequelize.query(sql, {replacements: [schema]});
+    return !!result.length;
   }
 
   async getHistoricalStateEnabled(schema: string): Promise<boolean> {
