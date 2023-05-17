@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2023-05-17
+### Changed
+- Update to latest node-core
+- New method of resolving chain alises (#82)
+- dict use equalTo for address (#81)
+- Add `chainId` to sandbox global types (#77)
+### Fixed
+- Fix `ds.options.address` not being used (#79)
+
 ## [2.1.2] - 2023-05-12
 - Sync fix with `node-core@2.1.3`
   - Fix app could fail to start, due to flush before metadata repo been set (#73)
