@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-05-05
+### Added
+- Support for unfinalized blocks with workers
+### Updated
+- Index all the fields of block responses from tendermint API
+- Index block begin events and block end events
+- Sync with main SDK
+
 ## [2.0.1] - 2023-05-05
 ### Fixed
 - Registry not being provided to the sandbox (#114)
