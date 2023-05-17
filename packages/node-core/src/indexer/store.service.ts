@@ -409,9 +409,8 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
-    // TODO,THIS NOT WORKING.
-    // Failed to update model indexes as it is read-only property https://github.com/subquery/subql/issues/1606
-    // this.afterHandleCockroachIndex()
+
+    this.afterHandleCockroachIndex();
   }
 
   async getHistoricalStateEnabled(schema: string): Promise<boolean> {
@@ -495,26 +494,30 @@ export class StoreService {
     existedIndexes: string[],
     extraQueries: string[]
   ): void {
-    if (this.dbType === SUPPORT_DB.cockRoach) {
-      indexes.forEach((index, i) => {
-        if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
-          const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
-            index.fields
-          }) USING HASH;`;
-          extraQueries.push(cockroachDbIndexQuery);
-          if (this.removedIndexes[modelName] === undefined) {
-            this.removedIndexes[modelName] = [];
-          }
-          this.removedIndexes[modelName].push(indexes[i]);
-          delete indexes[i];
-        }
-      });
+    if (this.dbType !== SUPPORT_DB.cockRoach) {
+      return;
     }
+    indexes.forEach((index, i) => {
+      if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
+        const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
+          index.fields
+        }) USING HASH;`;
+        extraQueries.push(cockroachDbIndexQuery);
+        if (this.removedIndexes[modelName] === undefined) {
+          this.removedIndexes[modelName] = [];
+        }
+        this.removedIndexes[modelName].push(indexes[i]);
+        delete indexes[i];
+      }
+    });
   }
 
   // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
   // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
   private afterHandleCockroachIndex(): void {
+    if (this.dbType !== SUPPORT_DB.cockRoach) {
+      return;
+    }
     const removedIndexes = Object.entries(this.removedIndexes);
     if (removedIndexes.length > 0) {
       for (const [model, indexes] of removedIndexes) {
