@@ -1,26 +1,29 @@
 # Changelog
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
-
 ## [Unreleased]
+
+## [2.2.1] - 2023-05-17
+### Fixed
+- CockroachDB upsert performance issues (#1723)
+- Exiting if dictionary-resolver fails (#1721)
+- Typo in multi-chain logging message (#1722)
 
 ## [2.2.0] - 2023-05-16
 ### Added
 - Worker threads support for unfinalized blocks (#1695)
+
 ### Fixed
 - Logging historical enabled with cockroach db (#1715)
 - Non-historical flushing order (#1711)
 - Filtering arguments to include datasoruce (#1703)
 - Not logging dictionary start height check (#1700)
+
 ### Changed
 - Default matcher from insensitive to sensitive casing (#1706)
-
 
 ## [2.1.3] - 2023-05-12
 ### Fixed
@@ -29,8 +32,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [2.1.2] - 2023-05-11
 ### Fixed
 - Fix metadata check, allow base indexer manager to parse abis with ethereum (#1682)
+
 ### Changed
 - Move validate function to common (#1683)
+
 ### Added
 - Inject the chain id into sandboxes (#1684)
 
@@ -44,9 +49,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - `bulkRemove` method on the store. (#1666)
 - Ability to regenerate MMR (#1664)
 - Ability to migrade MMR from file based db to postgres db and vice versa (#1618)
+
 ### Changed
 - Move more chain agnostic code form node. (#1658) (#1659)
 - Move any polkadot imports to utils package. (#1653)
+
 ### Fixed
 - POI Cache issues (#1660)
 - `store.getOneByField` with historical and index (#1667)
@@ -63,12 +70,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Fix tests (#1640)
 
 ## [2.0.0] - 2023-04-20
+### Changed
 - Major release 2.0.0, align with other package versions
+- Update metadata when dictionary skips large number of blocks (#1577)
+
 ### Added
 - Added StoreCache service and various other improvements (#1561)
 - Added TestingService (#1584)
-### Changed
-- Update metadata when dictionary skips large number of blocks (#1577)
+
 ### Fixed
 - Enable Typescript strict setting and improve code quality (#1625)
 - Fixed enum not being included in POI (#1561)
@@ -88,7 +97,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.11.1] - 2023-03-30
 ### Changed
 - Change to support multiple endpoints (#1551)
-### Fix
+
+### Fixed
 - Fix previous release 1.11.0 failed
 
 ## [1.11.0] - 2023-03-29
@@ -97,9 +107,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Handle bigint in json.stringify (#1562)
 - Generate sourcemap for projects (#1569)
 - Update polkadot api to 10.1.4 (#1580)
+
 ### Fixed
 - Fix enum under schema not being escaped (#1555)
 - Remove blocking in process queueing (#1572)
+
 ### Changed
 - Use `performance.now` instead of date for profiler. (#1549)
 - Rename `--sponsored-dictionary` to `--dictionary-resolver` (#1559)
@@ -107,6 +119,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.10.0] - 2023-03-06
 ### Fixed
 - fix issue store getByField limit could potentially excess config limit (#1529)
+
 ### Changed
 - Move enum under schema (#1527)
 - Deprecate exclude constraint (#1543)
@@ -114,6 +127,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.9.0] - 2023-02-21
 ### Added
 - add blockTime to NodeConfig (#1501)
+
 ### Changed
 - Support array type in dictionary queries (#1510)
 
@@ -121,6 +135,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Add validation of dictionary with start height (#1473)
 - `Store` add count for entity (#1480)
+
 ### Fixed
 - Fix custom metadata keys not being applied (#1496)
 
@@ -132,6 +147,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Fixed
 - Workers: Fix SequelizeDatabaseError - tuple concurrently updated (#1458)
 - Handle `bulkUpdate` when fields are undefined with historical indexing (#1463)
+
 ### Added
 - Add start height to project metadata (#1456)
 
@@ -147,6 +163,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Dictionary auth link integration (#1411)
 - Support multi-chain indexing (#1375)
+
 ### Changed
 - Move enum name generation method to node-core (#1427)
 
@@ -176,12 +193,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Improve dictionary query by filter with data sources start block. (#1371)
 
 ## [1.2.0] - 2022-10-28
-
 ### Added
 - Support for unfinalized blocks. (#1308)
 
 ## [1.1.0] - 2022-10-27
-
 ### Changed
 - Update to `@polkadot/api@9.4.2`/ (#1356)
 - Backport dictionary service features from Algorand. (#1346)
@@ -197,11 +212,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.1.3] - 2022-10-06
 ### Changed
 - Update IPFS endpoints. (#1337)
+
 ### Fixed
 - Benchmark info not being logged. (#1138)
 
 ## [0.1.2] - 2022-09-27
-### Changes
+### Changed
 - Moved `yargs` file from `node-core` to `node`. (#1281)
 - Update `sequelize`. (#1311)
 
@@ -210,5 +226,42 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Imports not being relative (#1268)
 
 ## [0.1.0] - 2022-08-26
-
+### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
+
+[Unreleased]: https://github.com/subquery/subql/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/subquery/subql/compare/node/corev2.2.0...node/corev2.2.1
+[2.2.0]: https://github.com/subquery/subql/compare/node-core/2.1.2...node-core/2.2.0
+[2.1.3]: https://github.com/subquery/subql/compare/node-core/2.1.2...node-core/2.1.3
+[2.1.2]: https://github.com/subquery/subql/compare/node-core/2.1.1...node-core/2.1.2
+[2.1.1]: https://github.com/subquery/subql/compare/node-core/2.1.0...node-core/2.1.1
+[2.1.0]: https://github.com/subquery/subql/compare/node-core/2.0.2...node-core/2.1.0
+[2.0.2]: https://github.com/subquery/subql/compare/node-core/2.0.1...node-core/2.0.2
+[2.0.1]: https://github.com/subquery/subql/compare/node-core/2.0.0...node-core/2.0.1
+[2.0.0]: https://github.com/subquery/subql/compare/node-core/.1.11.3..node-core/2.0.0
+[1.11.3]: https://github.com/subquery/subql/compare/node-core/1.11.2...node-core/1.11.3
+[1.11.2]: https://github.com/subquery/subql/compare/node-core/1.11.1...node-core/1.11.2
+[1.11.1]: https://github.com/subquery/subql/compare/node-core/1.11.0...node-core/1.11.1
+[1.11.0]: https://github.com/subquery/subql/compare/node-core/1.10.0...node-core/1.11.0
+[1.10.0]: https://github.com/subquery/subql/compare/node-core1.9.0/...node-core/1.10.0
+[1.9.0]: https://github.com/subquery/subql/compare/node-core/1.8.0...node-core/1.9.0
+[1.8.0]: https://github.com/subquery/subql/compare/node-core/1.7.1...node-core/1.8.0
+[1.7.1]: https://github.com/subquery/subql/compare/node-core/1.7.0...node-core/1.7.1
+[1.7.0]: https://github.com/subquery/subql/compare/node-core/1.6.0...node-core/1.7.0
+[1.6.0]: https://github.com/subquery/subql/compare/node-core/1.5.1...node-core/1.6.0
+[1.5.1]: https://github.com/subquery/subql/compare/node-core/1.5.0...node-core/1.5.1
+[1.5.0]: https://github.com/subquery/subql/compare/node-core/1.4.1...node-core/1.5.0
+[1.4.1]: https://github.com/subquery/subql/compare/node-core/1.4.0...node-core/1.4.1
+[1.4.0]: https://github.com/subquery/subql/compare/node-core/1.3.3...node-core/1.4.0
+[1.3.3]: https://github.com/subquery/subql/compare/node-core/1.3.2...node-core/1.3.3
+[1.3.2]: https://github.com/subquery/subql/compare/node-core/1.3.1...node-core/1.3.2
+[1.3.1]: https://github.com/subquery/subql/compare/node-core/1.3.0...node-core/1.3.1
+[1.3.0]: https://github.com/subquery/subql/compare/node-core/1.2.0...node-core/1.3.0
+[1.2.0]: https://github.com/subquery/subql/compare/node-core/1.1.0...node-core/1.2.0
+[1.1.0]: https://github.com/subquery/subql/compare/node-core/1.0.1...node-core/1.1.0
+[1.0.1]: https://github.com/subquery/subql/compare/node-core/1.0.0...node-core/1.0.1
+[1.0.0]: https://github.com/subquery/subql/compare/node-core/0.1.3...node-core/1.0.0
+[0.1.3]: https://github.com/subquery/subql/compare/node-core/0.1.2...node-core/0.1.3
+[0.1.2]: https://github.com/subquery/subql/compare/node-core/0.1.1...node-core/0.1.2
+[0.1.1]: https://github.com/subquery/subql/compare/node-core/0.1.0...node-core/0.1.1
+[0.1.0]: https://github.com/subquery/subql/creleases/tag/0.1.0
