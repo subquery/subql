@@ -49,7 +49,7 @@ interface ConnectionPoolItem<T> {
 @Injectable()
 export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnApplicationShutdown {
   private allApi: T[] = [];
-  private apiToIndexMap: Map<any, number> = new Map();
+  private apiToIndexMap: Map<T, number> = new Map();
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   private errorTypeToScoreAdjustment = {
@@ -59,7 +59,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   };
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all(Object.values(this.pool).map((poolItem) => poolItem.connection.apiDisconnect!()));
+    await Promise.all(Object.values(this.pool).map((poolItem) => poolItem.connection.apiDisconnect?.()));
   }
 
   addToConnections(api: T, endpoint: string): void {
@@ -84,7 +84,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   }
 
   async connectToApi(apiIndex: number): Promise<void> {
-    await this.allApi[apiIndex].apiConnect!();
+    await this.allApi[apiIndex].apiConnect?.();
     this.pool[apiIndex].connection = this.allApi[apiIndex];
   }
 
@@ -121,7 +121,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
     return wrappedApi as T;
   }
 
-  getNextConnectedApiIndex(): number {
+  private getNextConnectedApiIndex(): number {
     const indices = Object.keys(this.pool)
       .map(Number)
       .filter((index) => !this.pool[index].backoffDelay);

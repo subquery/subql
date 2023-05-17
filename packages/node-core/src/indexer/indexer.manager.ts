@@ -34,6 +34,7 @@ export abstract class BaseIndexerManager<
   SA, // Api Type
   A, // SafeApi Type
   B, // Block Type
+  API extends IApi<A, SA, B>,
   DS extends BaseDataSource,
   CDS extends DS & BaseCustomDataSource, // Custom datasource
   FilterMap extends FilterTypeMap,
@@ -62,7 +63,7 @@ export abstract class BaseIndexerManager<
   protected abstract prepareFilteredData<T>(kind: keyof FilterMap, data: T, ds: DS): Promise<T>;
 
   constructor(
-    protected readonly apiService: IApi<A, SA, B>,
+    protected readonly apiService: API,
     protected readonly nodeConfig: NodeConfig,
     private sandboxService: {getDsProcessor: (ds: DS, api: SA) => IndexerSandbox},
     private dsProcessorService: BaseDsProcessorService<DS, CDS>,

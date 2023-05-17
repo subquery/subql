@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {CreationAttributes, Model, Sequelize} from 'sequelize';
-import {ApiService} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {SandboxOption, TestSandbox} from './sandbox';
@@ -47,7 +47,7 @@ export abstract class TestingService<A, SA, B, DS> {
     protected readonly nodeConfig: NodeConfig,
     protected readonly storeService: StoreService,
     @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
-    protected readonly apiService: ApiService<A, SA, B>,
+    protected readonly apiService: IApi<A, SA, B>,
     protected readonly indexerManager: IIndexerManager<B, DS>
   ) {
     const projectPath = this.project.root;

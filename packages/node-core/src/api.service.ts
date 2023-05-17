@@ -16,6 +16,7 @@ export interface IApi<A = any, SA = any, B = any> {
   handleError?(error: Error): ApiConnectionError;
   apiConnect?(): Promise<void>;
   apiDisconnect?(): Promise<void>;
+  networkMeta: NetworkMetadataPayload;
 }
 
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {

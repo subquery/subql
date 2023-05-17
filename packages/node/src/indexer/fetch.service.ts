@@ -17,7 +17,7 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { NodeConfig, BaseFetchService } from '@subql/node-core';
+import { NodeConfig, BaseFetchService, IApi } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   SubstrateCustomHandler,
@@ -33,7 +33,6 @@ import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { RuntimeService } from './runtime/runtimeService';
-import { ApiAt, BlockContent } from './types';
 import {
   substrateHeaderToHeader,
   UnfinalizedBlocksService,
@@ -107,7 +106,7 @@ export class FetchService extends BaseFetchService<
   }
 
   get api(): ApiPromise {
-    return this.apiService.api;
+    return this.apiService.unsafeApi;
   }
 
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {

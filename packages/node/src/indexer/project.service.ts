@@ -3,7 +3,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise } from '@polkadot/api';
 import {
   PoiService,
   MmrService,
@@ -21,7 +20,6 @@ import {
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { ApiAt, BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

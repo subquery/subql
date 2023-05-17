@@ -122,11 +122,7 @@ export class ApiService
         });
 
         if (!this.networkMeta) {
-          this.networkMeta = {
-            chain: api.runtimeChain.toString(),
-            specName: api.runtimeVersion.specName.toString(),
-            genesisHash: api.genesisHash.toString(),
-          };
+          this.networkMeta = connection.networkMeta;
 
           if (
             network.chainId &&

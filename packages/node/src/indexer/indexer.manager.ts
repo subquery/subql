@@ -47,10 +47,10 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  ApiService,
   ApiAt,
   ApiPromise,
   BlockContent,
+  ApiService,
   SubstrateDatasource,
   SubstrateCustomDataSource,
   typeof FilterTypeMap,
