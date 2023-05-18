@@ -69,8 +69,6 @@ export abstract class TestingService<B, DS> {
   abstract indexBlock(block: B, handler: string): Promise<void>;
 
   async init() {
-    await this.indexerManager.start();
-
     logger.info(`Found ${this.testSandboxes.length} test files`);
 
     await Promise.all(
@@ -134,8 +132,6 @@ export abstract class TestingService<B, DS> {
         await this.sequelize.createSchema(`"${schema}"`, {});
       }
 
-      const modelRelations = getAllEntitiesRelations(this.project.schema);
-      await this.storeService.init(modelRelations, schema);
       this.storeService.setBlockHeight(test.blockHeight);
       const store = this.storeService.getStore();
       sandbox.freeze(store, 'store');
