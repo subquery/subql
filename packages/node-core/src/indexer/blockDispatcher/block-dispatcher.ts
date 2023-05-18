@@ -111,6 +111,8 @@ export abstract class BlockDispatcher<B, DS>
 
     try {
       while (!this.isShutdown) {
+        // We know processQueue will have freeSpace defined because we define a capacity
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const blockNums = this.queue.takeMany(Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace!));
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;

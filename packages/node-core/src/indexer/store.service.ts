@@ -505,6 +505,7 @@ export class StoreService {
       return;
     }
     indexes.forEach((index, i) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
         const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
           index.fields

@@ -20,6 +20,7 @@ export class SmartBatchService {
 
   addToSizeBuffer(blocks: any[]): void {
     // Non-null assertion because we define a capacity
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const freeSpace = this.blockSizeBuffer.freeSpace!;
     if (this.blockSizeBuffer.capacity && blocks.length > freeSpace) {
       this.blockSizeBuffer.takeMany(blocks.length - freeSpace);
