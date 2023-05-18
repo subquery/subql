@@ -83,7 +83,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   get freeSize(): number {
-    assert(this.queue.freeSpace, 'Queues for base block dispatcher must have a capacity set');
+    assert(this.queue.freeSpace !== undefined, 'Queues for base block dispatcher must have a capacity set');
     return this.queue.freeSpace;
   }
 
