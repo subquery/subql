@@ -11,7 +11,7 @@ import {keccak256} from 'js-sha3';
 import {Op, Sequelize} from 'sequelize';
 import {MmrStoreType, NodeConfig} from '../configure';
 import {MmrPayload, MmrProof} from '../events';
-import {PlainPoiModel, PoiInterface} from '../indexer/poi';
+import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
 import {delay, getExistingProjectSchema} from '../utils';
 import {ProofOfIndex} from './entities';
@@ -183,7 +183,7 @@ export class MmrService implements OnApplicationShutdown {
             where: {id: {[Op.lte]: targetHeight, [Op.gt]: latest}, mmrRoot: {[Op.ne]: null}} as any,
             order: [['id', 'ASC']],
           })
-        ).map((r) => r?.toJSON<ProofOfIndex>());
+        ).map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
         if (results.length) {
           logger.info(
             `Upsert block [${results[0].id} - ${results[results.length - 1].id}] mmr to ${

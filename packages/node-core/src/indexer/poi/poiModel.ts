@@ -16,6 +16,15 @@ export interface PoiInterface {
   resetPoiMmr?(latestPoiMmrHeight: number, targetHeight: number, tx: Transaction): Promise<void>;
 }
 
+// When using cockroach db, poi id is store in bigint format, and sequelize toJSON() can not convert id correctly (to string)
+// This will ensure after toJSON Poi id converted to number
+export function ensureProofOfIndexId(poi: ProofOfIndex): ProofOfIndex {
+  if (typeof poi?.id === 'string') {
+    poi.id = Number(poi.id);
+  }
+  return poi;
+}
+
 export class PlainPoiModel implements PoiInterface {
   constructor(readonly model: PoiRepo) {}
 
@@ -25,7 +34,7 @@ export class PlainPoiModel implements PoiInterface {
       where: {id: {[Op.gte]: startHeight}},
       order: [['id', 'ASC']],
     });
-    return result.map((r) => r?.toJSON<ProofOfIndex>());
+    return result.map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
   }
 
   async bulkUpsert(proofs: ProofOfIndex[]): Promise<void> {
@@ -55,7 +64,7 @@ export class PlainPoiModel implements PoiInterface {
             where: {id: {[Op.lte]: latest, [Op.gte]: targetHeight}, mmrRoot: {[Op.ne]: null}} as any,
             order: [['id', 'DESC']],
           })
-        ).map((r) => r?.toJSON<ProofOfIndex>());
+        ).map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
         if (results.length) {
           logger.info(
             `Reset POI block [${results[0].id} - ${results[results.length - 1].id}] mmr to NULL, total ${
@@ -87,6 +96,6 @@ export class PlainPoiModel implements PoiInterface {
     if (!result) {
       return null;
     }
-    return result.toJSON();
+    return ensureProofOfIndexId(result.toJSON());
   }
 }
