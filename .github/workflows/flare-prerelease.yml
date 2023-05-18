@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-types-flare
@@ -66,14 +66,14 @@ jobs:
         with:
           path: packages/node/package.json
           rename: '@subql/node-flare'
-        
+
       #update imports
-      
+
       - run: chmod +x ./.github/workflows/scripts/update_flare_imports.sh
 
       - name: Update imports to flare
         run: ./.github/workflows/scripts/update_flare_imports.sh
-        
+
       - run: yarn
 
       - name: build
