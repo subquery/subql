@@ -131,10 +131,6 @@ export abstract class BaseIndexerManager<
 
     filteredDs = dataSources.filter((ds) => ds.startBlock !== undefined && ds.startBlock <= nextProcessingHeight);
 
-    if (filteredDs.length === 0) {
-      logger.error(`Did not find any matching datasouces`);
-      process.exit(1);
-    }
     // perform filter for custom ds
     filteredDs = filteredDs.filter((ds) => {
       if (this.isCustomDs(ds)) {
@@ -144,17 +140,13 @@ export abstract class BaseIndexerManager<
       }
     });
 
-    if (!filteredDs.length) {
-      logger.error(`Did not find any datasources with associated processor`);
-      process.exit(1);
-    }
     return filteredDs;
   }
 
   private assertDataSources(ds: DS[], blockHeight: number) {
     if (!ds.length) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
+        `Your start block of all the datasources is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
          or delete your database and start again from the currently specified startBlock`
       );
       process.exit(1);
