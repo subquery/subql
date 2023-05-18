@@ -60,7 +60,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
   }
 
   get startHeight(): number {
-    assert(this._startHeight, new NotInitError());
+    assert(this._startHeight !== undefined, new NotInitError());
     return this._startHeight;
   }
 
