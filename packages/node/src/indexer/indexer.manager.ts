@@ -175,27 +175,12 @@ export class IndexerManager extends BaseIndexerManager<
     }
   }
 
-  protected baseCustomHandlerFilter(
+  protected async prepareFilteredData<T = any>(
     kind: SubstrateHandlerKind,
-    data: any,
-    baseFilter: any,
-  ): boolean {
-    switch (kind) {
-      case SubstrateHandlerKind.Block:
-        return !!SubstrateUtil.filterBlock(data as SubstrateBlock, baseFilter);
-      case SubstrateHandlerKind.Call:
-        return !!SubstrateUtil.filterExtrinsics(
-          [data as SubstrateExtrinsic],
-          baseFilter,
-        ).length;
-      case SubstrateHandlerKind.Event:
-        return !!SubstrateUtil.filterEvents(
-          [data as SubstrateEvent],
-          baseFilter,
-        ).length;
-      default:
-        throw new Error('Unsupported handler kind');
-    }
+    data: T,
+  ): Promise<T> {
+    // Substrate doesn't need to do anything here
+    return Promise.resolve(data);
   }
 }
 

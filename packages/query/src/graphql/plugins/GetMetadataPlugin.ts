@@ -10,7 +10,7 @@ import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
 const {version: packageVersion} = require('../../../package.json');
-
+const META_JSON_FIELDS = ['deployments'];
 const METADATA_TYPES = {
   lastProcessedHeight: 'number',
   lastProcessedTimestamp: 'number',
@@ -24,6 +24,7 @@ const METADATA_TYPES = {
   dynamicDatasources: 'string',
   startHeight: 'number',
   evmChainId: 'string',
+  deployments: 'string',
 };
 
 type MetaType = number | string | boolean;
@@ -93,10 +94,14 @@ async function fetchFromTable(
 
   for (const key in METADATA_TYPES) {
     if (typeof dbKeyValue[key] === METADATA_TYPES[key]) {
-      metadata[key] = dbKeyValue[key];
+      //JSON object are stored in string type, filter here and parse
+      if (META_JSON_FIELDS.includes(key)) {
+        metadata[key] = JSON.parse(dbKeyValue[key].toString());
+      } else {
+        metadata[key] = dbKeyValue[key];
+      }
     }
   }
-
   metadata.queryNodeVersion = packageVersion;
 
   if (useRowEst) {
@@ -154,6 +159,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         rowCountEstimate: [TableEstimate]
         dynamicDatasources: String
         evmChainId: String
+        deployments: JSON
       }
       extend type Query {
         _metadata(chainId: String): _Metadata

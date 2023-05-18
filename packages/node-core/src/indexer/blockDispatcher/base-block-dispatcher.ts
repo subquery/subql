@@ -35,7 +35,7 @@ export interface IBlockDispatcher {
 
   queueSize: number;
   freeSize: number;
-  latestBufferedHeight: number | undefined;
+  latestBufferedHeight: number;
   smartBatchSize: number;
   minimumHeapLimit: number;
 
@@ -83,7 +83,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   get freeSize(): number {
-    return this.queue.freeSpace!;
+    assert(this.queue.freeSpace !== undefined, 'Queues for base block dispatcher must have a capacity set');
+    return this.queue.freeSpace;
   }
 
   get smartBatchSize(): number {

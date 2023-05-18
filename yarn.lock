@@ -3958,7 +3958,7 @@ __metadata:
     "@typechain/ethers-v5": 10.2.0
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.2.0
-    "@types/node": ^14.18.10
+    "@types/node": ^18.16.10
     "@types/rimraf": ^3.0.2
     "@types/websocket": ^1
     algosdk: ^1.19.0
@@ -4190,7 +4190,7 @@ __metadata:
     sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
-    vm2: ^3.9.9
+    vm2: 3.9.17
     yargs: ^16.2.0
   languageName: unknown
   linkType: soft
@@ -4232,7 +4232,6 @@ __metadata:
     rimraf: ^3.0.2
     rxjs: ^7.5.2
     sequelize: 6.28.0
-    vm2: ^3.9.9
     yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
@@ -4969,17 +4968,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.18.10":
-  version: 14.18.16
-  resolution: "@types/node@npm:14.18.16"
-  checksum: 1999799309dc8620a2adf9a5d5e48416af87321bae4c950b4aa8018fcef2c3b6c1fcf98c39eae06f6492c03a643a5a44e2bb3750cd2574d9cf7eac33bac50e24
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^15.6.1":
   version: 15.14.9
   resolution: "@types/node@npm:15.14.9"
   checksum: 49f7f0522a3af4b8389aee660e88426490cd54b86356672a1fedb49919a8797c00d090ec2dcc4a5df34edc2099d57fc2203d796c4e7fbd382f2022ccd789eee7
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.16.10":
+  version: 18.16.10
+  resolution: "@types/node@npm:18.16.10"
+  checksum: 1db35543ae98d4a98731037a11a9478480d1260ff3778da70b9a137a3023666d20bab1573b584c401058f76c0d5f7dfbbc157b70a059452e086c8da5639cc653
   languageName: node
   linkType: hard
 
@@ -16676,7 +16675,7 @@ __metadata:
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
     "@types/cron-converter": ^1
-    "@types/node": ^14.18.10
+    "@types/node": ^18.16.10
     "@types/node-fetch": 2.6.2
     "@typescript-eslint/eslint-plugin": ^5.10.2
     "@typescript-eslint/parser": ^5.10.2
@@ -17905,6 +17904,18 @@ __metadata:
   version: 2.0.4
   resolution: "vlq@npm:2.0.4"
   checksum: b2ed0d3a5423f34bba98a18250f8b13a96eebff9c8f9427fa9cd78065d31f35641f6fd659c5642253b79532000a37aec0582abac95d1ef4af2cd0c96a716f1b6
+  languageName: node
+  linkType: hard
+
+"vm2@npm:3.9.17":
+  version: 3.9.17
+  resolution: "vm2@npm:3.9.17"
+  dependencies:
+    acorn: ^8.7.0
+    acorn-walk: ^8.2.0
+  bin:
+    vm2: bin/vm2
+  checksum: 9a03740a40ab2be5e3348a95fb31512da1a3c85318febb07e5299fa103ff05bcd7b6f458211fa38a1281dc27beccd04ff90355fc1d34fe2ee6ca10d0bb8c6f35
   languageName: node
   linkType: hard
 

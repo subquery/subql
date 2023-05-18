@@ -100,10 +100,10 @@ export abstract class BaseFetchService<
 
   private get useDictionary(): boolean {
     return (
-      !!this.project.network.dictionary &&
+      (!!this.project.network.dictionary || !!this.nodeConfig.dictionaryResolver) &&
       this.dictionaryMetaValid &&
       !!this.dictionaryService.getDictionaryQueryEntries(
-        this.blockDispatcher.latestBufferedHeight ??
+        this.blockDispatcher.latestBufferedHeight ||
           Math.min(...this.project.dataSources.map((ds) => ds.startBlock).filter(hasValue))
       ).length
     );
@@ -364,14 +364,18 @@ export abstract class BaseFetchService<
     this.blockDispatcher.flushQueue(blockHeight);
   }
 
+  protected async validatateDictionaryMeta(metaData: MetaData): Promise<boolean> {
+    const chainId = await this.getChainId();
+    return metaData.chain !== chainId && metaData.genesisHash !== chainId;
+  }
+
   private async dictionaryValidation(dictionary?: {_metadata: MetaData}, startBlockHeight?: number): Promise<boolean> {
     const validate = async (): Promise<boolean> => {
       if (dictionary !== undefined) {
         const {_metadata: metaData} = dictionary;
 
-        const chainId = await this.getChainId();
         // Some dictionaries rely on chain others rely on genesisHash
-        if (metaData.chain !== chainId && metaData.genesisHash !== chainId) {
+        if (await this.validatateDictionaryMeta(metaData)) {
           logger.error(
             'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
           );

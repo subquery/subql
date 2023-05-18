@@ -68,14 +68,11 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       dynamicDsService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.numWorkers = nodeConfig.workers!;
   }
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
-    if (this.nodeConfig.unfinalizedBlocks) {
-      throw new Error('Sorry, best block feature is not supported with workers yet.');
-    }
-
     this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createIndexerWorker()));
 
     return super.init(onDynamicDsCreated);

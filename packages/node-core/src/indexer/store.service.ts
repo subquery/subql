@@ -57,7 +57,7 @@ import {
   smartTags,
 } from '../utils';
 import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
+import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
@@ -147,7 +147,6 @@ export class StoreService {
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this._modelsRelations = modelsRelations;
     this._historical = await this.getHistoricalStateEnabled(schema);
-    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
     this._dbType = await getDbType(this.sequelize);
 
     let useSubscription = this.config.subscription;
@@ -157,8 +156,10 @@ export class StoreService {
     }
     if (this.historical && this.dbType === SUPPORT_DB.cockRoach) {
       this._historical = false;
-      logger.warn(`Historical feature is not support with ${this.dbType}`);
+      logger.warn(`Historical feature is not supported with ${this.dbType}`);
     }
+
+    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
     this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
 
     try {
@@ -393,7 +394,8 @@ export class StoreService {
       extraQueries.push(query);
     });
     if (this.config.proofOfIndex) {
-      this.poiRepo = PoiFactory(this.sequelize, schema);
+      const usePoiFactory = (await this.useDeprecatePoi(schema)) ? PoiFactoryDeprecate : PoiFactory;
+      this.poiRepo = usePoiFactory(this.sequelize, schema);
     }
 
     this._metaDataRepo = await MetadataFactory(
@@ -408,9 +410,14 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
-    // TODO,THIS NOT WORKING.
-    // Failed to update model indexes as it is read-only property https://github.com/subquery/subql/issues/1606
-    // this.afterHandleCockroachIndex()
+
+    this.afterHandleCockroachIndex();
+  }
+
+  private async useDeprecatePoi(schema: string): Promise<boolean> {
+    const sql = `SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name = '_poi' AND column_name = 'projectId'`;
+    const [result] = await this.sequelize.query(sql, {replacements: [schema]});
+    return !!result.length;
   }
 
   async getHistoricalStateEnabled(schema: string): Promise<boolean> {
@@ -428,7 +435,7 @@ export class StoreService {
 
       if (metadataTableNames.length > 1 && !multiChain) {
         logger.error(
-          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multichain'
+          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multi-chain'
         );
         process.exit(1);
       }
@@ -494,26 +501,31 @@ export class StoreService {
     existedIndexes: string[],
     extraQueries: string[]
   ): void {
-    if (this.dbType === SUPPORT_DB.cockRoach) {
-      indexes.forEach((index, i) => {
-        if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
-          const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
-            index.fields
-          }) USING HASH;`;
-          extraQueries.push(cockroachDbIndexQuery);
-          if (this.removedIndexes[modelName] === undefined) {
-            this.removedIndexes[modelName] = [];
-          }
-          this.removedIndexes[modelName].push(indexes[i]);
-          delete indexes[i];
-        }
-      });
+    if (this.dbType !== SUPPORT_DB.cockRoach) {
+      return;
     }
+    indexes.forEach((index, i) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
+        const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
+          index.fields
+        }) USING HASH;`;
+        extraQueries.push(cockroachDbIndexQuery);
+        if (this.removedIndexes[modelName] === undefined) {
+          this.removedIndexes[modelName] = [];
+        }
+        this.removedIndexes[modelName].push(indexes[i]);
+        delete indexes[i];
+      }
+    });
   }
 
   // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
   // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
   private afterHandleCockroachIndex(): void {
+    if (this.dbType !== SUPPORT_DB.cockRoach) {
+      return;
+    }
     const removedIndexes = Object.entries(this.removedIndexes);
     if (removedIndexes.length > 0) {
       for (const [model, indexes] of removedIndexes) {

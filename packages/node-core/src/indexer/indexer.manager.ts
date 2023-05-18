@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import {BaseCustomDataSource, BaseDataSource} from '@subql/common';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
@@ -16,7 +17,10 @@ import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 const logger = getLogger('indexer');
 
 export type HandlerKinds = string[];
-export type FilterTypeMap = Record<string, (data: any, filter: any) => boolean>;
+export type FilterTypeMap<DS extends BaseDataSource = BaseDataSource> = Record<
+  string,
+  (data: any, filter: any, ds: DS) => boolean
+>;
 export type ProcessorTypeMap<FM extends FilterTypeMap> = {[K in keyof FM]: (data: any) => boolean};
 export type HandlerInputTypeMap<FM extends FilterTypeMap> = {[K in keyof FM]: any};
 
@@ -54,7 +58,8 @@ export abstract class BaseIndexerManager<
     getVM: (d: DS) => Promise<IndexerSandbox>
   ): Promise<void>;
 
-  protected abstract baseCustomHandlerFilter(kind: keyof FilterMap, data: any, baseFilter: any): boolean;
+  // This is used by Ethereum to parse logs and transaction data with ABIs
+  protected abstract prepareFilteredData<T>(kind: keyof FilterMap, data: T, ds: DS): Promise<T>;
 
   constructor(
     protected readonly apiService: AS,
@@ -163,24 +168,34 @@ export abstract class BaseIndexerManager<
     getVM: (ds: DS) => Promise<IndexerSandbox>
   ): Promise<void> {
     let vm: IndexerSandbox;
+    assert(this.filterMap[kind], `Unsupported handler kind: ${kind.toString()}`);
+
     if (this.isRuntimeDs(ds)) {
       const handlers = ds.mapping.handlers.filter(
-        (h) => h.kind === kind && this.filterMap[kind](data as any, h.filter)
+        (h) => h.kind === kind && this.filterMap[kind](data as any, h.filter, ds)
       );
 
       for (const handler of handlers) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vm = vm! ?? (await getVM(ds));
+
+        const parsedData = await this.prepareFilteredData(kind, data, ds);
+
         this.nodeConfig.profiler
-          ? await profilerWrap(vm.securedExec.bind(vm), 'handlerPerformance', handler.handler)(handler.handler, [data])
-          : await vm.securedExec(handler.handler, [data]);
+          ? await profilerWrap(
+              vm.securedExec.bind(vm),
+              'handlerPerformance',
+              handler.handler
+            )(handler.handler, [parsedData])
+          : await vm.securedExec(handler.handler, [parsedData]);
       }
     } else if (this.isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(ds, data, this.processorMap[kind], (data, baseFilter) => {
-        // TODO why doesnt this use this.filterMap?
-        return this.baseCustomHandlerFilter(kind, data, baseFilter);
+        return this.filterMap[kind](data, baseFilter, ds);
       });
 
       for (const handler of handlers) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vm = vm! ?? (await getVM(ds));
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }

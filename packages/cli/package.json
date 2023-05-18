@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "2.0.1-0",
+  "version": "2.1.1-0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.10",
-    "@types/node": "^14.18.10",
+    "@types/node": "^18.16.10",
     "@types/rimraf": "^3.0.2",
     "@types/websocket": "^1",
     "eslint": "^8.8.0",
@@ -92,5 +92,5 @@
   "resolutions": {
     "node-fetch": "2.6.7"
   },
-  "stableVersion": "2.0.0"
+  "stableVersion": "2.1.0"
 }

@@ -40,14 +40,6 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     private schedulerRegistry: SchedulerRegistry
   ) {
     this.storeCacheThreshold = config.storeCacheThreshold;
-
-    this.schedulerRegistry.addInterval(
-      INTERVAL_NAME,
-      setInterval(
-        () => void this.flushCache(true, false),
-        config.storeFlushInterval * 1000 // Convert to miliseconds
-      )
-    );
   }
 
   init(historical: boolean, useCockroachDb: boolean): void {
@@ -63,6 +55,16 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
     this.metadataRepo = meta;
     this.poiRepo = poi;
+
+    // Add flush interval after repos been set,
+    // otherwise flush could not find lastProcessHeight from metadata
+    this.schedulerRegistry.addInterval(
+      INTERVAL_NAME,
+      setInterval(
+        () => void this.flushCache(true, false),
+        this.config.storeFlushInterval * 1000 // Convert to miliseconds
+      )
+    );
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
@@ -156,7 +158,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       if (this.pendingFlush !== undefined) {
         await this.pendingFlush;
       }
-      if (this.isFlushable() || forceFlush) {
+      if ((this.isFlushable() || forceFlush) && this.flushableRecords > 0) {
         this.pendingFlush = this._flushCache(flushAll);
 
         // Remove reference to pending flush once it completes
@@ -176,26 +178,17 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     return this.queuedFlush;
   }
 
-  isFlushable(): boolean {
+  private get flushableRecords(): number {
     const numberOfPoiRecords = this.poi?.flushableRecordCounter ?? 0;
-    const numOfRecords =
-      sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter)) + numberOfPoiRecords;
+    return sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter)) + numberOfPoiRecords;
+  }
+
+  isFlushable(): boolean {
+    const numOfRecords = this.flushableRecords;
     this.eventEmitter.emit(IndexerEvent.StoreCacheRecordsSize, {
       value: numOfRecords,
     });
     return numOfRecords >= this.storeCacheThreshold;
-  }
-
-  @OnEvent(IndexerEvent.BlockQueueSize)
-  dynamicUpdateCacheThreshold({value}: EventPayload<number>): void {
-    // Ratio of number block left in block queue to queue size
-    // Lesser number of number block left in block queue means we are processing faster
-    // Therefore we should reduce threshold to flush more frequently
-    const waitingProcessingRatio = value / (this.config.batchSize * 3);
-    this.storeCacheThreshold = Math.max(1, Number(waitingProcessingRatio * this.config.storeCacheThreshold));
-    this.eventEmitter.emit(IndexerEvent.StoreCacheThreshold, {
-      value: this.storeCacheThreshold,
-    });
   }
 
   async beforeApplicationShutdown(): Promise<void> {

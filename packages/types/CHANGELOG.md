@@ -9,13 +9,23 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.2] - 2023-05-11
+### Added
+- Inject the chain id into sandboxes (#1684)
+
+## [2.1.1] - 2023-05-11
+### Updated
+- `DictionaryQueryCondition` type (#1679)
+
+## [2.1.0] - 2023-05-10
+### Added
+- `bulkRemove` method on the store. (#1666)
 
 ## [2.0.0] - 2023-04-20
 - Major release 2.0.0, align with other package versions
 ### Changed
 - Update interfaces to support testing framework (#1584)
 - Removed `count` method from `Store`
-
 
 ## [1.7.2] - 2023-03-29
 ### Changed

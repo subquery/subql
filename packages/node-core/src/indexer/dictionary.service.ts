@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {authHttpLink} from '@subql/apollo-links';
@@ -88,10 +89,8 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
           return {
-            // Use case insensitive here due to go-dictionary generate name is in lower cases
-            // Origin dictionary still using camelCase
             [sanitizeArgField(j.field)]: {
-              [j.matcher || 'equalToInsensitive']: `$${v.name}`,
+              [j.matcher || 'equalTo']: `$${v.name}`,
             },
           };
         }),
@@ -101,7 +100,7 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
       gqlVars.push(v);
       filter.or[outerIdx] = {
         [sanitizeArgField(i[0].field)]: {
-          [i[0].matcher || 'equalToInsensitive']: `$${v.name}`,
+          [i[0].matcher || 'equalTo']: `$${v.name}`,
         },
       };
     }
@@ -142,7 +141,8 @@ function buildDictQueryFragment(
 
   if (useDistinct) {
     // Non null assertion here because we define the object explicitly
-    node.args!.distinct = ['BLOCK_HEIGHT'];
+    assert(node.args, 'Args should be defined in the above definition of node');
+    node.args.distinct = ['BLOCK_HEIGHT'];
   }
 
   return [gqlVars, node];
@@ -158,7 +158,7 @@ export class DictionaryService implements OnApplicationShutdown {
   protected _startHeight?: number;
 
   constructor(
-    readonly dictionaryEndpoint: string,
+    readonly dictionaryEndpoint: string | undefined,
     readonly chainId: string,
     protected readonly nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
@@ -166,7 +166,7 @@ export class DictionaryService implements OnApplicationShutdown {
   ) {}
 
   async init(): Promise<void> {
-    let link: ApolloLink;
+    let link: ApolloLink = new HttpLink({uri: this.dictionaryEndpoint, fetch});
 
     if (this.nodeConfig.dictionaryResolver) {
       try {
@@ -176,11 +176,8 @@ export class DictionaryService implements OnApplicationShutdown {
           httpOptions: {fetch},
         });
       } catch (e: any) {
-        logger.error(e.message);
-        process.exit(1);
+        logger.error(e, 'Failed to resolve network dictionary');
       }
-    } else {
-      link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
 
     this._client = new ApolloClient({

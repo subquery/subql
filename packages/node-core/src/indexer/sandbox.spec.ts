@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import * as path from 'path';
 import {NodeConfig} from '../configure/NodeConfig';
 import {IndexerSandbox} from './sandbox';
@@ -21,6 +20,7 @@ describe('sandbox for subql-node', () => {
         store: undefined,
         root,
         entry,
+        chainId: '1',
         // script: fs.readFileSync(path.join(root, entry)).toString(),
       },
       new NodeConfig({subquery: ' ', subqueryName: ' '})

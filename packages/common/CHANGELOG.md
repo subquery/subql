@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.1] - 2023-05-11
+### Changed
+- Move validate function to common (#1683)
+
+## [2.1.0] - 2023-05-10
+### Added
+- `BaseCustomDataSource` type (#1658)
+- Moved `FileType` from `@subql/common-substrate` (#1659)
 
 ## [2.0.0] - 2023-04-20
 - Major release for 2.0.0, align with other package versions
