@@ -3,7 +3,13 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { ApiConnectionError, ApiErrorType, IApi } from '@subql/node-core';
+import {
+  ApiConnectionError,
+  ApiErrorType,
+  IApi,
+  NetworkMetadataPayload,
+} from '@subql/node-core';
+import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent } from './types';
 import { HttpProvider } from './x-provider/http';
 
@@ -13,7 +19,9 @@ const { version: packageVersion } = require('../../package.json');
 const RETRY_DELAY = 2_500;
 
 export class ApiPromiseConnection
-  implements IApi<ApiPromise, ApiAt, BlockContent>
+  implements
+    IApi<ApiPromise, ApiAt, BlockContent>,
+    IApiConnectionSpecific<ApiPromise, ApiAt, BlockContent>
 {
   constructor(public unsafeApi: ApiPromise, private fetchBlocksBatches) {}
 

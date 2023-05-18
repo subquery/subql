@@ -5,7 +5,7 @@ import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
-import {IApi} from '..';
+import {IApi, IApiConnectionSpecific} from '..';
 import {getLogger} from '../logger';
 
 const logger = getLogger('connection-pool');
@@ -47,9 +47,11 @@ interface ConnectionPoolItem<T> {
 }
 
 @Injectable()
-export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnApplicationShutdown {
+export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectionSpecific<any, any, any>>
+  implements OnApplicationShutdown
+{
   private allApi: T[] = [];
-  private apiToIndexMap: Map<any, number> = new Map();
+  private apiToIndexMap: Map<T, number> = new Map();
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   private errorTypeToScoreAdjustment = {
@@ -59,7 +61,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   };
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all(Object.values(this.pool).map((poolItem) => poolItem.connection.apiDisconnect!()));
+    await Promise.all(Object.values(this.pool).map((poolItem) => poolItem.connection.apiDisconnect()));
   }
 
   addToConnections(api: T, endpoint: string): void {
@@ -84,14 +86,14 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   }
 
   async connectToApi(apiIndex: number): Promise<void> {
-    await this.allApi[apiIndex].apiConnect!();
+    await this.allApi[apiIndex].apiConnect();
     this.pool[apiIndex].connection = this.allApi[apiIndex];
   }
 
   get api(): T {
     const index = this.getNextConnectedApiIndex();
     if (index === -1) {
-      throw new Error('No connected api');
+      throw new Error('All of the endpoints are suspended at the moment');
     }
     const api = this.pool[index].connection;
 
@@ -107,7 +109,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
               this.handleApiSuccess(index, end - start);
               return result;
             } catch (error) {
-              this.handleApiError(index, target.handleError!(error as Error));
+              this.handleApiError(index, target.handleError(error as Error));
               throw error;
             }
           };
@@ -121,7 +123,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
     return wrappedApi as T;
   }
 
-  getNextConnectedApiIndex(): number {
+  private getNextConnectedApiIndex(): number {
     const indices = Object.keys(this.pool)
       .map(Number)
       .filter((index) => !this.pool[index].backoffDelay);
@@ -179,7 +181,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
   }
 
   @Interval(LOG_INTERVAL_MS)
-  logEndpointStatus(): void {
+  private logEndpointStatus(): void {
     const suspendedIndices = Object.keys(this.pool)
       .map(toNumber)
       .filter((index) => this.pool[index].backoffDelay !== 0);
@@ -200,6 +202,14 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
     });
 
     logger.info(suspendedEndpointsInfo);
+
+    Object.keys(this.pool)
+      .map(toNumber)
+      .forEach((index) => {
+        const endpoint = this.pool[index].endpoint;
+        const weight = this.pool[index].performanceScore;
+        logger.debug(`Weight of endpoint ${endpoint}: ${weight}`);
+      });
   }
 
   handleApiError(apiIndex: number, error: ApiConnectionError): void {
@@ -241,10 +251,10 @@ export class ConnectionPoolService<T extends IApi<any, any, any>> implements OnA
         const start = Date.now();
         const result = await fn(...args);
         const end = Date.now();
-        this.handleApiSuccess(index!, end - start);
+        this.handleApiSuccess(index as unknown as number, end - start);
         return result;
       } catch (error) {
-        this.handleApiError(index!, handleError(error as Error));
+        this.handleApiError(index as unknown as number, handleError(error as Error));
         throw error;
       }
     };
