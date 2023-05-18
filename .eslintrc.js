@@ -54,6 +54,7 @@ module.exports = {
     '@typescript-eslint/no-inferrable-types': 'warn',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/dot-notation': 'error',
+    "@typescript-eslint/no-non-null-assertion": "error",
     '@typescript-eslint/explicit-member-accessibility': [
       'error',
       {

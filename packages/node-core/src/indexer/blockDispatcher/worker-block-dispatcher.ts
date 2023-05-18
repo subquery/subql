@@ -68,6 +68,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       dynamicDsService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.numWorkers = nodeConfig.workers!;
   }
 

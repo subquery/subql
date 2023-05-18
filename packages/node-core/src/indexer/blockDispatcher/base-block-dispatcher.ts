@@ -83,7 +83,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   get freeSize(): number {
-    return this.queue.freeSpace!;
+    assert(this.queue.freeSpace, 'Queues for base block dispatcher must have a capacity set');
+    return this.queue.freeSpace;
   }
 
   get smartBatchSize(): number {

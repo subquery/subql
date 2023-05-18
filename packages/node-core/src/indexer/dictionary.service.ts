@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {authHttpLink} from '@subql/apollo-links';
@@ -140,7 +141,8 @@ function buildDictQueryFragment(
 
   if (useDistinct) {
     // Non null assertion here because we define the object explicitly
-    node.args!.distinct = ['BLOCK_HEIGHT'];
+    assert(node.args, 'Args should be defined in the above definition of node');
+    node.args.distinct = ['BLOCK_HEIGHT'];
   }
 
   return [gqlVars, node];

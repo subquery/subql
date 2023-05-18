@@ -166,6 +166,7 @@ export abstract class TestingService<B, DS> {
       let failedTests = 0;
       for (let i = 0; i < test.expectedEntities.length; i++) {
         const expectedEntity = test.expectedEntities[i];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const actualEntity = await store.get(expectedEntity._name!, expectedEntity.id);
         const attributes = actualEntity as unknown as CreationAttributes<Model>;
         const failedAttributes: string[] = [];
