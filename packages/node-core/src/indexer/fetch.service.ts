@@ -129,7 +129,7 @@ export abstract class BaseFetchService<
 
     let dictionaryValid = false;
 
-    if (this.project.network.dictionary) {
+    if (this.project.network.dictionary || this.nodeConfig.dictionaryResolver) {
       this.updateDictionary();
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
