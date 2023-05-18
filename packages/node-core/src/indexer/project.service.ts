@@ -187,7 +187,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
         genesisHash === existing.genesisHash,
-        'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean'
+        `Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using "force-clean".\n Database genesis hash = "${existing.genesisHash}"\n Network genesis hash = "${genesisHash}"`
       );
     }
     if (existing.chain !== chain) {
