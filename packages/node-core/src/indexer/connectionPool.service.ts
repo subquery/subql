@@ -181,7 +181,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
   }
 
   @Interval(LOG_INTERVAL_MS)
-  private logEndpointStatus(): void {
+  logEndpointStatus(): void {
     const suspendedIndices = Object.keys(this.pool)
       .map(toNumber)
       .filter((index) => this.pool[index].backoffDelay !== 0);
@@ -206,7 +206,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
     Object.keys(this.pool)
       .map(toNumber)
       .forEach((index) => {
-        const endpoint = this.pool[index].endpoint;
+        const endpoint = new URL(this.pool[index].endpoint).hostname;
         const weight = this.pool[index].performanceScore;
         logger.debug(`Weight of endpoint ${endpoint}: ${weight}`);
       });

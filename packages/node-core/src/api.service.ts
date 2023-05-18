@@ -16,7 +16,7 @@ export interface IApi<A = any, SA = any, B = any> {
   networkMeta: NetworkMetadataPayload;
 }
 
-export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi<A, SA, B> {
+export interface IApiConnectionSpecific<A = any, SA = any, B = any> {
   handleError(error: Error): ApiConnectionError;
   apiConnect(): Promise<void>;
   apiDisconnect(): Promise<void>;

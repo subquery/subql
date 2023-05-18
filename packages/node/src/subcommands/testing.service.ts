@@ -6,7 +6,6 @@ import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
   StoreService,
-  getLogger,
   TestingService as BaseTestingService,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
@@ -14,8 +13,6 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ApiAt, BlockContent } from '../indexer/types';
-
-const logger = getLogger('subql-testing');
 
 @Injectable()
 export class TestingService extends BaseTestingService<
@@ -44,7 +41,7 @@ export class TestingService extends BaseTestingService<
 
   async indexBlock(block: BlockContent, handler: string): Promise<void> {
     const runtimeVersion =
-      await this.apiService.api.rpc.state.getRuntimeVersion(
+      await this.apiService.unsafeApi.rpc.state.getRuntimeVersion(
         block.block.block.header.hash,
       );
 
