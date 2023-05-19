@@ -30,7 +30,6 @@
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.2",
     "@subql/types-ethereum": "workspace:*",
-    "@subql/utils": "^2.1.0",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cacheable-lookup": "6",
     "cron-converter": "^1.0.2",
@@ -58,6 +57,9 @@
     "@types/yargs": "^16.0.4",
     "dotenv": "^15.0.1",
     "nodemon": "^2.0.15"
+  },
+  "peerDependencies": {
+    "@subql/utils": "*"
   },
   "resolutions": {
     "@polkadot/util": "11.1.1",
