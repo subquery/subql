@@ -3368,10 +3368,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.18.10":
-  version: 14.18.42
-  resolution: "@types/node@npm:14.18.42"
-  checksum: 1c92f04a482ab54a21342b3911fc6f0093f04d3314197bc0e2f20012e9efc929c44e2ea41990b9b3cde420d7859c9ed716733f3e65c0cd6c2910a55799465f6b
+"@types/node@npm:^18.16.10":
+  version: 18.16.13
+  resolution: "@types/node@npm:18.16.13"
+  checksum: ec1ffb814750fc7f7c6c7cb138ed56f24cb23a2ffe50d264a265be52b5cafca37b94b8fb3b5b420f5674baa677b0e011160aeaa1a0edd862aa4cfa11f4467918
   languageName: node
   linkType: hard
 
@@ -10753,7 +10753,7 @@ __metadata:
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
     "@types/cron-converter": ^1
-    "@types/node": ^14.18.10
+    "@types/node": ^18.16.10
     "@types/node-fetch": 2.6.2
     "@typescript-eslint/eslint-plugin": ^5.10.2
     "@typescript-eslint/parser": ^5.10.2
