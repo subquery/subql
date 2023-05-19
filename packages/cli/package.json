@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "2.1.1-0",
+  "version": "2.1.1-1",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -92,5 +92,5 @@
   "resolutions": {
     "node-fetch": "2.6.7"
   },
-  "stableVersion": "2.1.0"
+  "stableVersion": "2.1.1-0"
 }
