@@ -24,6 +24,7 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
+  API extends ApiService,
   DS extends {startBlock?: number; mapping: {handlers: any}},
   B extends IBlockDispatcher,
   D extends DictionaryService
@@ -55,7 +56,7 @@ export abstract class BaseFetchService<
   protected abstract preLoopHook(data: {valid: boolean; startHeight: number}): Promise<void>;
 
   constructor(
-    protected apiService: ApiService,
+    protected apiService: API,
     private nodeConfig: NodeConfig,
     protected project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected blockDispatcher: B,
