@@ -6,7 +6,6 @@ import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ApiConnectionError,
   ApiErrorType,
-  IApi,
   IApiConnectionSpecific,
   NetworkMetadataPayload,
 } from '@subql/node-core';
@@ -22,9 +21,7 @@ const RETRY_DELAY = 2_500;
 type FetchFunc = typeof SubstrateUtil.fetchBlocksBatches;
 
 export class ApiPromiseConnection
-  implements
-    IApi<ApiPromise, ApiAt, BlockContent>,
-    IApiConnectionSpecific<ApiPromise, ApiAt, BlockContent>
+  implements IApiConnectionSpecific<ApiPromise, ApiAt, BlockContent>
 {
   readonly networkMeta: NetworkMetadataPayload;
 
@@ -100,6 +97,8 @@ export class ApiPromiseConnection
       formatted_error = ApiPromiseConnection.handleTimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
       formatted_error = ApiPromiseConnection.handleDisconnectionError(e);
+    } else if (e.message.startsWith(`-32029: Too Many Requests`)) {
+      formatted_error = ApiPromiseConnection.handleRateLimitError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,
@@ -107,6 +106,15 @@ export class ApiPromiseConnection
         ApiErrorType.Default,
       );
     }
+    return formatted_error;
+  }
+
+  static handleRateLimitError(e: Error): ApiConnectionError {
+    const formatted_error = new ApiConnectionError(
+      'RateLimit',
+      e.message,
+      ApiErrorType.RateLimit,
+    );
     return formatted_error;
   }
 

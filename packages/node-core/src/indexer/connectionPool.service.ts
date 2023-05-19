@@ -5,7 +5,7 @@ import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
-import {IApi, IApiConnectionSpecific} from '..';
+import {IApiConnectionSpecific} from '..';
 import {getLogger} from '../logger';
 
 const logger = getLogger('connection-pool');
@@ -16,15 +16,10 @@ const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
 const RETRY_DELAY = 60 * 1000;
 
-export interface ApiConnection {
-  //apiConnect(): Promise<void>;
-  //apiDisconnect(): Promise<void>;
-  api: any;
-}
-
 export enum ApiErrorType {
   Timeout = 'timeout',
   Connection = 'connection',
+  RateLimit = 'ratelimit',
   Default = 'default',
 }
 
@@ -44,12 +39,13 @@ interface ConnectionPoolItem<T> {
   performanceScore: number;
   backoffDelay: number;
   failureCount: number;
+  rateLimited: boolean;
+  failed: boolean;
+  lastRequestTime: number;
 }
 
 @Injectable()
-export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectionSpecific<any, any, any>>
-  implements OnApplicationShutdown
-{
+export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, any>> implements OnApplicationShutdown {
   private allApi: T[] = [];
   private apiToIndexMap: Map<T, number> = new Map();
   private pool: Record<number, ConnectionPoolItem<T>> = {};
@@ -57,6 +53,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
   private errorTypeToScoreAdjustment = {
     [ApiErrorType.Timeout]: -10,
     [ApiErrorType.Connection]: -20,
+    [ApiErrorType.RateLimit]: -10,
     [ApiErrorType.Default]: -5,
   };
 
@@ -74,6 +71,9 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
       failureCount: 0,
       endpoint: endpoint,
       backoffDelay: 0,
+      rateLimited: false,
+      failed: false,
+      lastRequestTime: 0,
     };
     this.pool[index] = poolItem;
     this.apiToIndexMap.set(api, index);
@@ -92,7 +92,7 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
 
   get api(): T {
     const index = this.getNextConnectedApiIndex();
-    if (index === -1) {
+    if (index === undefined) {
       throw new Error('All of the endpoints are suspended at the moment');
     }
     const api = this.pool[index].connection;
@@ -103,10 +103,17 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
         if (prop === 'fetchBlocks') {
           return async (heights: number[], ...args: any): Promise<any> => {
             try {
+              // Check if the endpoint is rate-limited
+              if (this.pool[index].rateLimited) {
+                logger.info('throtling on ratelimited endpoint');
+                await new Promise((resolve) => setTimeout(resolve, this.pool[index].backoffDelay));
+              }
+
               const start = Date.now();
               const result = await target.fetchBlocks(heights, ...args);
               const end = Date.now();
               this.handleApiSuccess(index, end - start);
+              this.pool[index].lastRequestTime = end; // Update the last request time
               return result;
             } catch (error) {
               this.handleApiError(index, target.handleError(error as Error));
@@ -119,17 +126,28 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
         return Reflect.get(target, prop, receiver);
       },
     });
-
     return wrappedApi as T;
   }
 
-  private getNextConnectedApiIndex(): number {
+  private getNextConnectedApiIndex(): number | undefined {
     const indices = Object.keys(this.pool)
       .map(Number)
       .filter((index) => !this.pool[index].backoffDelay);
 
     if (indices.length === 0) {
-      return -1;
+      // If all endpoints are suspended, try to find a rate-limited one
+      const rateLimitedIndices = Object.keys(this.pool)
+        .map(Number)
+        .filter((index) => this.pool[index].backoffDelay && this.pool[index].rateLimited);
+
+      if (rateLimitedIndices.length === 0) {
+        // If no rate-limited endpoints found, return undefined
+        return undefined;
+      }
+
+      // If there are rate-limited endpoints, return one of them at random
+      const randomRateLimitedIndex = rateLimitedIndices[Math.floor(Math.random() * rateLimitedIndices.length)];
+      return randomRateLimitedIndex;
     }
 
     // Sort indices based on their performance scores in descending order
@@ -203,13 +221,11 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
 
     logger.info(suspendedEndpointsInfo);
 
-    Object.keys(this.pool)
-      .map(toNumber)
-      .forEach((index) => {
-        const endpoint = new URL(this.pool[index].endpoint).hostname;
-        const weight = this.pool[index].performanceScore;
-        logger.debug(`Weight of endpoint ${endpoint}: ${weight}`);
-      });
+    Object.values(this.pool).forEach((item) => {
+      const endpoint = new URL(item.endpoint).hostname;
+      const weight = item.performanceScore;
+      logger.debug(`Weight of endpoint ${endpoint}: ${weight}`);
+    });
   }
 
   handleApiError(apiIndex: number, error: ApiConnectionError): void {
@@ -217,12 +233,20 @@ export class ConnectionPoolService<T extends IApi<any, any, any> & IApiConnectio
     this.pool[apiIndex].performanceScore += adjustment;
     this.pool[apiIndex].failureCount++;
 
-    if (error.errorType === ApiErrorType.Timeout || error.errorType === ApiErrorType.Connection) {
+    if (error.errorType !== ApiErrorType.Default) {
       const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[apiIndex].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
       this.pool[apiIndex].backoffDelay = nextDelay;
 
+      if (ApiErrorType.Timeout || ApiErrorType.RateLimit) {
+        this.pool[apiIndex].rateLimited = true;
+      } else {
+        this.pool[apiIndex].failed = true;
+      }
+
       setTimeout(() => {
         this.pool[apiIndex].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
+        this.pool[apiIndex].rateLimited = false;
+        this.pool[apiIndex].failed = false;
       }, nextDelay);
 
       logger.warn(
