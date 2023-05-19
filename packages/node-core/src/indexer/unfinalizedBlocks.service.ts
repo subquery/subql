@@ -65,9 +65,9 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
     this.unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
+    this.finalizedHeader = await this.getFinalizedHead();
 
     if (!this.nodeConfig.unfinalizedBlocks && this.unfinalizedBlocks.length) {
-      this.finalizedHeader = await this.getFinalizedHead();
       logger.info('Processing unfinalized blocks');
       // Validate any previously unfinalized blocks
 
