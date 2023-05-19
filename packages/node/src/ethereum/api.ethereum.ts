@@ -12,7 +12,7 @@ import {
 } from '@ethersproject/abstract-provider';
 import { WebSocketProvider } from '@ethersproject/providers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getLogger } from '@subql/node-core';
+import { getLogger, timeout } from '@subql/node-core';
 import {
   ApiWrapper,
   EthereumBlockWrapper,
@@ -128,11 +128,27 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   async init(): Promise<void> {
     this.injectClient();
-    this.genesisBlock = await this.client.getBlock(0);
-
-    const network = await this.client.getNetwork();
+    const [genesisBlock, network, supportsFinalization] = await Promise.all([
+      this.client.getBlock('earliest'),
+      this.client.getNetwork(),
+      this.getSupportsFinalization(),
+    ]);
+    this.genesisBlock = genesisBlock;
+    this.supportsFinalization = supportsFinalization;
     this.chainId = network.chainId;
     this.name = network.name;
+  }
+
+  private async getSupportsFinalization(): Promise<boolean> {
+    try {
+      // We set the timeout here because theres a bug in ethers where it will never resolve
+      // It was happening with arbitrum on a syncing node
+      await timeout(this.client.getBlock('finalized'), 2);
+      return true;
+    } catch (e) {
+      logger.info('Chain doesnt support finalized tag');
+      return false;
+    }
   }
 
   private injectClient(): void {
@@ -146,19 +162,10 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async getFinalizedBlock(): Promise<Block> {
-    try {
-      if (this.supportsFinalization) {
-        return await this.client.getBlock('finalized');
-      } else {
-        const height =
-          (await this.getBestBlockHeight()) - this.blockConfirmations;
-        return this.client.getBlock(height);
-      }
-    } catch (e) {
-      // TODO handle specific error for this
-      this.supportsFinalization = false;
-      return this.getFinalizedBlock();
-    }
+    const height = this.supportsFinalization
+      ? 'finalized'
+      : (await this.getBestBlockHeight()) - this.blockConfirmations;
+    return this.client.getBlock(height);
   }
 
   async getFinalizedBlockHeight(): Promise<number> {
