@@ -272,7 +272,8 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
   }
 
   protected getStartBlockFromDataSources(): number {
-    const startBlocksList = this.getStartBlockDatasources().map((item) => item.startBlock ?? 1);
+    // Ensure minimum start height should be 1
+    const startBlocksList = this.getStartBlockDatasources().map((item) => item.startBlock || 1);
     if (startBlocksList.length === 0) {
       logger.error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
       process.exit(1);
