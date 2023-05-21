@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2023-05-19
+### Fixed
+- Fix project service init failing due to start height being 0 (#1735)
+- No longer intialize store and indexer inside testing service (#1734)
+- Fix poi read leaf height error under cockroach (#1733)
+- Ensure min start height to be 1, even if set to 0 (#1737)
+- Upgrade apollo link package (#1739)
+
+### Changed
+- allow dictionary when only --dictionaryResolver is enabled (#1730)
+- Improve error messages (#1729)
+- Deprecate project id from poi table, track deployment in metadata (#1696)
+
 ## [2.2.1] - 2023-05-17
 ### Fixed
 - CockroachDB upsert performance issues (#1723)
@@ -229,8 +242,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/v2.2.1...HEAD
-[2.2.1]: https://github.com/subquery/subql/compare/node/corev2.2.0...node/corev2.2.1
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.2.2...HEAD
+[2.2.2]: https://github.com/subquery/subql/compare/node-core/2.2.1...node-core/2.2.2
+[2.2.1]: https://github.com/subquery/subql/compare/node-core/2.2.0...node-core/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/node-core/2.1.2...node-core/2.2.0
 [2.1.3]: https://github.com/subquery/subql/compare/node-core/2.1.2...node-core/2.1.3
 [2.1.2]: https://github.com/subquery/subql/compare/node-core/2.1.1...node-core/2.1.2

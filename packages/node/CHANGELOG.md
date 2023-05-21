@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
+## [2.3.0] - 2023-05-19
+### Changed
+- Update polkadot api to 10.7.1 (#1736)
+- Update Node to 18 (#1719)
 
 ## [2.2.1] - 2023-05-17
 ### Changed
@@ -15,15 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.2.0] - 2023-05-16
 ### Fixed
 - `--dictionray-resolver` flag also requiring dictionary flag (#1714)
-### Updated
+
+### Changed
 - Changes relating to node-core and updating node-core
 
 ## [2.1.3] - 2023-05-12
-- Sync fix with `node-core@2.1.3`
+### Changed
+- Sync fix with
   - Fix app could fail to start, due to flush before metadata repo been set (#1688)
 
 ## [2.1.2] - 2023-05-12
-- Sync change with `node-core@2.1.2`
+### Changed
+- Sync change with
   - Fix metadata check, allow base indexer manager to parse abis with ethereum (#1682)
   - Move validate function to common (#1683)
   - Inject the chain id into sandboxes (#1684)
@@ -37,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `bulkRemove` method on the store. (#1666)
 - Ability to regenerate MMR (#1664)
 - Ability to migrade MMR from file based db to postgres db and vice versa (#1618)
+
 ### Changed
 - Move more chain agnostic to node-core. (#1658) (#1659)
 - Move any polkadot imports to utils package. (#1653)
@@ -45,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.2] - 2023-04-27
 ### Fixed
 - Fix api not being defined, fix not using filter on dataSources (#1647)
+
 ### Changed
 - Deprecate `localMode` (#1648)
 
@@ -53,55 +61,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix ApiService abstract class, improve getting all DS (#1638)
 - Fix tests (#1640)
 - Force flush cache with reindex command (#1645)
-- Sync with `node-core@2.0.1`
+- Sync with
   - Fixed `StoreService` not been init due to assertion issue (#1641)
 
 ## [2.0.0] - 2023-04-20
-- Major release for 2.0.0, align with other package versions
 ### Added
 - Added Database cache feature, this significantly improve indexing performance
   - Data flush to database when number of records reaches `--store-cache-threshold` value (default is 1000), this reduces number of transactions to database in order to save time.
   - Direct get data from the cache rather than wait to retrieve it from database, with flag `--store-get-cache-size` user could decide how many records for **each** entity they want to keep in the cache (default is 500)
   - If enabled `--store-cache-async` writing data to the store is asynchronous with regard to block processing (default is enabled)
 - Testing Framework, allow users to test their projects filters and handler functions without having to index the project (#1584)
-  - Create test files with the naming convention `*.test.ts` and place them in the `src/tests` or `src/test` folder. Each test file should contain test cases for specific mapping handlers. 
+  - Create test files with the naming convention `*.test.ts` and place them in the `src/tests` or `src/test` folder. Each test file should contain test cases for specific mapping handlers.
   - Run the testing service using the command: `subql-node test`.
 
 ## [1.21.2] - 2023-04-17
-### Fix
+### Fixed
 - Fix workers fetching blocks out of order (#1616)
 
 ## [1.21.1] - 2023-03-30
 ### Added
 - Support multiple endpoints (#1551)
-### Fix
+
+### Fixed
 - Fix previous release 1.21.0 failed
 
 ## [1.21.0] - 2023-03-29
 ### Changed
 - Increase wsProvider timeout (#1550)
 - Rename `--sponsored-dictionary` to `--dictionary-resolver` (#1559)
+
 ### Added
 - Add SmartBatchService and BlockSizeBuffer (#1506)
 - Improve api error handling (#1576)
 - Update polkadot api to 10.1.4 (#1580)
+
 ### Fixed
 - Fix POI block offset been reset to 1 (#1571)
 - Remove blocking in process queueing (#1572)
 
-
 ## [1.20.0] - 2023-03-06
 ### Changed
 - Move enum under schema (#1527)
-### Fixed 
+
+### Fixed
 - update for Deprecate `excludeConstraint` in node-core
 
 ## [1.19.0] - 2023-02-21
 ### Added
 - Support Cockroach database (#1521)
 - Add SSL connection option (#1513)
+
 ### Changed
 - Worker use runtime service (#1491)
+
 ### Fixed
 - When create new dynamic datasource, check queue for lower blocks before processing fetched blocks (#1509)
 - Fix error with tempDsRecords being undefined with workers (#1516)
@@ -110,15 +122,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add validation of dictionary with start height (#1473)
 - Add block hash validation after fetch (#1494)
-### Updated
+
+### Changed
 - Update Polkadot api to 9.11.1 (#1469)
-### Fixed 
+
+### Fixed
 - Fix workers stuck due to missing set last buffered height from empty dictionary (#1492)
 
-
 ## [1.17.1] - 2022-12-22
-### Update 
+### Changed
 - error message for `genesisHash` (#1471)
+
 ### Fixed
 - `triggerName`/ `channelName` too long, preventing indexer to start (#1469)
 
@@ -129,27 +143,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix SequelizeDatabaseError - tuple concurrently updated (#1458)
 - Fix handle when Poi offset is 0 (#1459)
 - Fix missing blocks when using workers (#1464)
+
 ### Added
 - Add start height to project metadata (#1456)
 
 ## [1.16.0] - 2022-12-06
 ### Added
-- Support for `bypassBlocks`feature. User can now state blocks to skip, this can be implemented by stating an array of blocks in the `project.yaml`. See docs  [link](https://github.com/subquery/documentation/blob/master/docs/build/manifest/polkadot.md#bypass-blocks) (#1435)
+- Support for `bypassBlocks`feature. User can now state blocks to skip, this can be implemented by stating an array of blocks in the `project.yaml`. See docs [link](https://github.com/subquery/documentation/blob/master/docs/build/manifest/polkadot.md#bypass-blocks) (#1435)
 
 ## [1.15.1] - 2022-11-30
-## Fixed
+### Fixed
 - Patch release with @subql/node-core fix
 
 ## [1.15.0] - 2022-11-23
-## Added
+### Added
 - Dictionary auth link integration (#1411)
 - Support multi chain indexing (#1375)
-## Changed
+
+### Changed
 - Move runtime logic to its own service, fix missing speChanged logic with getRuntime (#1421)
-## Fixed
+
+### Fixed
 - Fix force-clean missing remove relate enums (#1427)
 
 ## [1.14.1] - 2022-11-16
+### Changed
 - Patch release with @subql/node-core fix (#1404)
 
 ## [1.14.0] - 2022-11-15
@@ -161,28 +179,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issue with reindex missing bind (#1391)
 
 ## [1.13.2] - 2022-11-08
+### Changed
 - Patch release with @subql/node-core fix
 
 ## [1.13.1] - 2022-11-08
+### Changed
 - Patch release with @subql/node-core fix
 
 ## [1.13.0] - 2022-11-07
 ### Changed
 - Update polkadot to 9.7.1 (#1384)
+
 ### Fixed
 - Fix logic with reindex and unfinalized height, also reset dynamic ds (#1382)
 - Improve dictionary query (#1371)
 
 ## [1.12.0] - 2022-10-28
-
 ### Added
 - Support for unfinalized blocks. This can be enabled with `--unfinalized-blocks` and requires historical indexing to be enabled. (#1308)
 
-## Fixed
+### Fixed
 - Incomplete dynamic datasources in the same block. (#1370)
 
 ## [1.11.0] - 2022-10-27
-
 ### Fixed
 - Issues with Dynamic Datasources being created in the same block. (#1363)
 - Fixed log format flag not being applied. (#1351)
@@ -196,19 +215,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Log the node version on startup. (#1348)
 
 ## [1.10.2] - 2022-10-10
-
 ### Removed
 - `Subqueries` database table. This is an internal change that should not affect users. (#1340)
 
 ## [1.10.1] - 2022-10-06
 ### Changed
 - Update IPFS endpoints. (#1337)
+
 ### Fixed
 - Benchmark info not being logged. (#1138)
 
 ## [1.10.0] - 2022-09-29
 ### Changed
 - Enable historical feature by default. (#1327)
+
 ### Added
 - Subcommands for `force-clean` and `reindex`. (#1281)
 - `yargs` file has been moved back into `node` from `node-core`. (#1281)
@@ -218,7 +238,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - In order to fix go-dictionary integration we changed dictionary query to use case-insensitive search for events/extrinsics name. (#1301)
 
-
 ## [1.9.1] - 2022-08-29
 ### Fixed
 - Fixed `@subql/node-core` import path issues (#1272)
@@ -227,6 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Use `@subql/node-core` package. (#1222)
 - Updated store.getByField to have limit and offset options. `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;`. (#1259)
+
 ### Fixed
 - Indexing stop processing blocks. (#1261)
 
@@ -234,31 +254,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Not parsing BigInt array entity fields correctly. (#1252)
 - Cache lookup error with worker threads due to schema migration changes. (#1250)
+
 ### Added
 - Improved performance logging. (#1244)
 - `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing. (#1246)
-
 
 ## [1.7.0] - 2022-08-11
 ### Changed
 - Update Polkadot/api to v9 (#1234)
 - schema migration, allow user add/remove entity field after indexing started (#1226)
+
 ### Fixed
 - Utilise dictionary if all block filters have `modulo` set (#1232)
 - Bring back profiling fetchBlocksBatches, remove unnecessary await (#1235)
 - Fix running custom ds processors in parallel on different data (#1243)
 
 ## [1.6.1] - 2022-08-02
-Priority: High. Fixes 1.6.0 failed to start issue.
 ### Fixed
 - Fix one off events being missed on startup (#1224)
 
 ## [1.6.0] - 2022-07-27
 ### Changed
 - Make handler data types generic (#1194)
+
 ### Added
-- [Experimental Feature] Support for worker threads. This will move block fetching and processing into a worker. It can increase performance by up to 4 times. By default, this feature is disabled. You can enable it with the `--workers=<number>` flag. The number of workers will be capped to the number of CPU cores. (#1103)
-- [Experimental Feature] Add reindexing feature. You can use `--reindex=<blockNumber>` to remove indexed data and reindex from specified block height. Please note that the way of using this feature will be updated soon. (#1208)
+- \[Experimental Feature] Support for worker threads. This will move block fetching and processing into a worker. It can increase performance by up to 4 times. By default, this feature is disabled. You can enable it with the `--workers=<number>` flag. The number of workers will be capped to the number of CPU cores. (#1103)
+- \[Experimental Feature] Add reindexing feature. You can use `--reindex=<blockNumber>` to remove indexed data and reindex from specified block height. Please note that the way of using this feature will be updated soon. (#1208)
 - Add block modulo filter on substrate blockHandler, E.g. if modulo: 50, the block handler will run on every 50 blocks. (#1196)
 
 ## [1.5.1] - 2022-07-15
@@ -268,10 +289,10 @@ Priority: High. Fixes 1.6.0 failed to start issue.
 ## [1.5.0] - 2022-07-12
 ### Added
 - add option `dictionary-timeout`, allow indexer decide timeout for query dictionary result (#1177)
+
 ### Changed
 - Improve error log (#1174)
 - Update Polkadot to 8.12.2 (#1179)
-
 - Use `node-core` package
 
 ## [1.4.1] - 2022-07-07
@@ -282,6 +303,7 @@ Priority: High. Fixes 1.6.0 failed to start issue.
 ### Fixed
 - Fix DI issue with EventEmitter not being resolved (#1154)
 - Validate dictionary before use its specVersion (#1152)
+
 ### Changed
 - use Http keepAlive and maxSockets, use http2 (#1150)
 
@@ -290,6 +312,7 @@ Priority: High. Fixes 1.6.0 failed to start issue.
 - Update tests with Manifest v1.0.0 (#1114)
 - Update redecorate api, allow apiAt object to query data earlier than current indexing block (#1111)
 - Using chain block time as interval to fetch latest finalized and best block height (#1134)
+
 ### Fixed
 - Fix set block offset twice issue (#1133)
 - Fix warning for fetch specVersion when dictionary undefined, and tidy up logs (#1127)
@@ -303,8 +326,10 @@ Priority: High. Fixes 1.6.0 failed to start issue.
 ### Added
 - Use dictionary SpecVersion map (#1046)
 - Support dictionary for dynamic ds (#1110)
+
 ### Changed
 - Split setup code from indexer manager to another service (#1092)
+
 ### Fixed
 - Handle when specVersion query response is undefined (#1097)
 - Fix templates not being processed for manifest v1.0.0 (#1116)
@@ -322,20 +347,18 @@ Priority: High. Fixes 1.6.0 failed to start issue.
 ## [1.1.0] - 2022-05-31
 ### Fixed
 - Move POI logic under option check (#1064)
+
 ### Added
 - Add api to query file based mmr (#968)
 - Experimental feature: Support query by block number (#992)
-### Changed
-Remove `contract-processors` to [subquery/datasource-processors](https://github.com/subquery/datasource-processors), types improvements and support for datasource processors v1.0.0 (#1012)
 
 ## [1.0.0] - 2022-05-11
+### Changed
 - Major release
 
 ## [0.35.2] - 2022-05-10
-Priority: High. Fixes events being handled multiple times, issue was introduced in 0.34.0
-
 ### Fixed
-- Events being handled multiple times (#994)
+- Priority: High. Fixes events being handled multiple times, issue was introduced in 0.34.0 (#994)
 
 ## [0.35.1] - 2022-05-06
 ### Changed
@@ -344,8 +367,10 @@ Priority: High. Fixes events being handled multiple times, issue was introduced 
 ## [0.35.0] - 2022-05-02
 ### Added
 - Add utils package (#928)
+
 ### Fixed
 - Handle undefined filters (#929)
+
 ### Changed
 - Update polkadot 8.2.1 (#910)
 
@@ -354,6 +379,7 @@ Priority: High. Fixes events being handled multiple times, issue was introduced 
 - Remove notify trigger if subscription disabled (#882)
 - Drop support for manifest v0.0.1 (#900)
 - Process block content in time secquence rather than ds/handler order (#853)
+
 ### Fixed
 - Fixed the mmr inconsistent value issue, remove redundant code,  and set `blockOffset` value to the first store operation blockHeight -1 (#894)
 
@@ -374,6 +400,7 @@ Priority: High. Fixes events being handled multiple times, issue was introduced 
 ## [0.31.0] - 2022-03-22
 ### Changed
 - Update Polkadot/api to 7.12.1 (#849)
+
 ### Added
 - Add Notification Trigger in order to support GraphQL subscription (#846)
 
@@ -408,18 +435,20 @@ Priority: High. Fixes events being handled multiple times, issue was introduced 
 
 ## [0.28.0] - 2022-02-09
 ### Added
-- Support running the indexer from locations other than the filesystem, and refactor `SubqueryProject` class (#511) 
+- Support running the indexer from locations other than the filesystem, and refactor `SubqueryProject` class (#511)
 - Add support for index dynamic datasources (#773)
 - Add support for historical RPC methods that use BlockNumber (#788)
+
 ### Changed
 - Update Polkadot/api to 7.7.1 (#787)
+
 ### Fixed
 - Fixed mmr initialization start height issue (#600)
-
 
 ## [0.27.2] - 2022-01-23
 ### Changed
 - Update Polkadot/api to 7.4.1 (#757)
+
 ### Fixed
 - Fix genesis hash validation for manifest v0.0.1 (#762)
 
@@ -431,16 +460,17 @@ Priority: High. Fixes events being handled multiple times, issue was introduced 
 ### Changed
 - Deprecate local mode (#725)
 - Update Polkadot/api to 7.3.1 (#745)
-### Added 
+
+### Added
 - Add ready status of indexer to endpoint (#728)
 - Add `--port` option, auto find available port when the default one is occupied. (#739)ss
+
 ### Fixed
 - Fix handle chainTypes error (#732)
 - Try catch on init api with chainTypes (#738)
 - Verify project store genesis hash with network genesis hash, instead of check specName only (#735)
 - Remove update metadata last processed block by interval (#740)
 - Use Promise.all for set metadata (#743)
-
 
 ## [0.26.0] - 2021-12-16
 ### Added
@@ -449,38 +479,38 @@ Priority: High. Fixes events being handled multiple times, issue was introduced 
 - Depreciate subqueries table (#683)
 - Add `bulkCreate()` to `store`  (#699)
 - Add support for loading chaintypes from js (#698)
+
 ### Fixed
 - Fix name escaping with db queries (#702)
 - Fix `lastProcessedHeight` value representation (#711)
 
 ## [0.25.3] - 2021-12-02
-Priority: High. Any project use enum should re-index with latest node ASAP.
-### Fixed:
+### Fixed
 - Skip insert poi when db transaction is null (#687)
 - Replace enum index with unique hash value, in order resolve schema type name conflict issue.(#688)
 
-
 ## [0.25.2] - 2021-11-30
-Priority: high for projects indexed with 0.25.x or above
-### Fixed:
+### Fixed
 - Upgrade dependency common, in order to remove auto generated enum types from entities relations (#682)
 
 ## [0.25.1] - 2021-11-27
-Priority: high for projects use dictionary
-### Fixed:
+### Fixed
 - Fix variable replacement in dictionary's gql, remove the quote wrapping (#673)
-### Changed:
+
+### Changed
 - set default false for `--timestamp-field` (#661)
 
 ## [0.25.0] - 2021-11-19
-### Fixed: 
+### Fixed
 - Fix publish failing with custom ds and assets (#610)
 - Support for enum, add into store and store operations (#551)
-### Added:
+
+### Added
 - Allow running node from a different port through flag `—port`(#618)
 - Add flag `force-clean`, force clean the database, dropping project schemas and tables (#619)
 - Add `unsafe` flag for subql/node (#629)
-### Changed:
+
+### Changed
 - Merge metadata from query and node (#555)
 - Refactor dictionary gql queries (#613)
 - Use types mapping in storeOperation (#532)
@@ -489,18 +519,20 @@ Priority: high for projects use dictionary
 
 ## [0.24.0] - 2021-11-03
 ### Added
-- [custom ds] Read and feed assets to custom ds's `validate()` (#547)
+- \[custom ds] Read and feed assets to custom ds's `validate()` (#547)
 - Improve error msg when fetch block fails (#602)
+
 ### Changed
 - Bump dependencies (#584)
 - Moonbeam EVM,  filter before transforming with custom datasource (#593)
 - Update Polkadot/api to 6.6.1 (#599)
+
 ### Fixed
 - Moonbeam networks shows negative bps and fail Healthy checks (#589)
 
 ## [0.23.1] - 2021-10-27
 ### Fixed
-- Disable the profiler on health check and remove logs (#569) 
+- Disable the profiler on health check and remove logs (#569)
 
 ## [0.23.0] - 2021-10-26
 ### Added
@@ -659,7 +691,7 @@ Priority: high for projects use dictionary
 ## [0.12.3] - 2021-05-04
 ### Added
 - Automatically verifies that a model's indexed fields are supported by extracting indexed fields from the database (#289)
-- [Experimental Feature] We're removed the restrictions on using third party CommonJS libraries in your SubQuery project sandbox - please read more about this in our [updated documentation](https://doc.subquery.network/create/mapping.html##modules-and-libraries) (#292)
+- \[Experimental Feature] We're removed the restrictions on using third party CommonJS libraries in your SubQuery project sandbox - please read more about this in our [updated documentation](https://doc.subquery.network/create/mapping.html##modules-and-libraries) (#292)
 - Support for more NodeJS modules (`buffer`, `crypto`, `util`, `events`, and `path`) (#294)
 
 ## [0.12.2] - 2021-04-21
@@ -716,7 +748,7 @@ Priority: high for projects use dictionary
 
 ## [0.9.1] - 2021-03-03
 ### Fixed
-- revert metrics name changes (#193) 
+- revert metrics name changes (#193)
 
 ### Added
 - Update subquery starter repo path to new organization (#196)
@@ -793,7 +825,7 @@ Priority: high for projects use dictionary
 - read db connection strings from env (#63)
 
 ### Changed
-- [BREAKING] project manifest spec updated to support custom types (#65)
+- \[BREAKING] project manifest spec updated to support custom types (#65)
 
 ## [0.3.0] - 2021-01-06
 ### Added
@@ -808,7 +840,66 @@ Priority: high for projects use dictionary
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.30.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/subquery/subql/compare/v2.2.1...v2.3.0
+[2.2.1]: https://github.com/subquery/subql/compare/node/2.2.0...node/2.2.1
+[2.2.0]: https://github.com/subquery/subql/compare/node/2.1.3...node/2.2.0
+[2.1.3]: https://github.com/subquery/subql/compare/node/2.1.2...node/2.1.3
+[2.1.2]: https://github.com/subquery/subql/compare/node/2.1.1...node/2.1.2
+[2.1.1]: https://github.com/subquery/subql/compare/node/2.1.0...node/2.1.1
+[2.1.0]: https://github.com/subquery/subql/compare/node/2.0.2...node/2.1.0
+[2.0.2]: https://github.com/subquery/subql/compare/node/2.0.1...node/2.0.2
+[2.0.1]: https://github.com/subquery/subql/compare/node/2.0.0...node/2.0.1
+[2.0.0]: https://github.com/subquery/subql/compare/node/1.21.2...node2.0.0/
+[1.21.2]: https://github.com/subquery/subql/compare/node/1.21.1...node1.21.2/
+[1.21.1]: https://github.com/subquery/subql/compare/node/1.21.0...node/1.21.1
+[1.21.0]: https://github.com/subquery/subql/compare/node/1.20.0...node/1.21.0
+[1.20.0]: https://github.com/subquery/subql/compare/node/1.19.0...node/1.20.0
+[1.19.0]: https://github.com/subquery/subql/compare/node/1.18.0...node/1.19.0
+[1.18.0]: https://github.com/subquery/subql/compare/node/1.17.1...node/1.18.0
+[1.17.1]: https://github.com/subquery/subql/compare/node/1.17.0...node/1.17.1
+[1.17.0]: https://github.com/subquery/subql/compare/node/1.16.0...node/1.17.0
+[1.16.0]: https://github.com/subquery/subql/compare/node/1.15.1...node/1.16.0
+[1.15.1]: https://github.com/subquery/subql/compare/node/1.15.0...node/1.15.1
+[1.15.0]: https://github.com/subquery/subql/compare/node/1.14.1...node/1.15.0
+[1.14.1]: https://github.com/subquery/subql/compare/node/1.14.0...node/1.14.1
+[1.14.0]: https://github.com/subquery/subql/compare/node/1.13.3...node/1.14.0
+[1.13.3]: https://github.com/subquery/subql/compare/node/1.13.2...node/1.13.3
+[1.13.2]: https://github.com/subquery/subql/compare/node/1.13.1...node/1.13.2
+[1.13.1]: https://github.com/subquery/subql/compare/node/1.13.0...node/1.13.1
+[1.13.0]: https://github.com/subquery/subql/compare/node/1.12.0...node/1.13.0
+[1.12.0]: https://github.com/subquery/subql/compare/node/1.11.0...node/1.12.0
+[1.11.0]: https://github.com/subquery/subql/compare/node/1.10.2...node/1.11.0
+[1.10.2]: https://github.com/subquery/subql/compare/node/1.10.1...node/1.10.2
+[1.10.1]: https://github.com/subquery/subql/compare/node/1.10.0...node/1.10.1
+[1.10.0]: https://github.com/subquery/subql/compare/node/1.9.2...node/1.10.0
+[1.9.2]: https://github.com/subquery/subql/compare/node/1.9.1...node/1.9.2
+[1.9.1]: https://github.com/subquery/subql/compare/node/1.9.0...node/1.9.1
+[1.9.0]: https://github.com/subquery/subql/compare/node/1.8.0...node/1.9.0
+[1.8.0]: https://github.com/subquery/subql/compare/node/1.7.0...node/1.8.0
+[1.7.0]: https://github.com/subquery/subql/compare/node/1.6.1...node/1.7.0
+[1.6.1]: https://github.com/subquery/subql/compare/node/1.6.0...node/1.6.1
+[1.6.0]: https://github.com/subquery/subql/compare/node/1.5.1...node/1.6.0
+[1.5.1]: https://github.com/subquery/subql/compare/node/1.5.0...node/1.5.1
+[1.5.0]: https://github.com/subquery/subql/compare/node/1.4.1...node/1.5.0
+[1.4.1]: https://github.com/subquery/subql/compare/node/1.4.0...node/1.4.1
+[1.4.0]: https://github.com/subquery/subql/compare/node/1.3.0...node/1.4.0
+[1.3.0]: https://github.com/subquery/subql/compare/node/1.2.1...node/1.3.0
+[1.2.1]: https://github.com/subquery/subql/compare/node/1.2.0...node/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/node/1.1.2...node/1.2.0
+[1.1.2]: https://github.com/subquery/subql/compare/node/1.1.1...node/1.1.2
+[1.1.1]: https://github.com/subquery/subql/compare/node/1.1.0...node/1.1.1
+[1.1.0]: https://github.com/subquery/subql/compare/node/1.0.0...node/1.1.0
+[1.0.0]: https://github.com/subquery/subql/compare/node/0.35.2...node1.0.0/
+[0.35.2]: https://github.com/subquery/subql/compare/node/0.35.1...node0.35.2/
+[0.35.1]: https://github.com/subquery/subql/compare/node/0.35.0...node/0.35.1
+[0.35.0]: https://github.com/subquery/subql/compare/node/0.34.0...node/0.35.0
+[0.34.0]: https://github.com/subquery/subql/compare/node/0.33.0...node/0.34.0
+[0.33.0]: https://github.com/subquery/subql/compare/node/0.32.0...node/0.33.0
+[0.32.0]: https://github.com/subquery/subql/compare/node/0.31.1...node/0.32.0
+[0.31.1]: https://github.com/subquery/subql/compare/node/0.31.0...node/0.31.1
+[0.31.0]: https://github.com/subquery/subql/compare/node/0.30.2...node/0.31.0
+[0.30.2]: https://github.com/subquery/subql/compare/node/0.30.1...node/0.30.2
 [0.30.1]: https://github.com/subquery/subql/compare/node/0.30.0...node/0.30.1
 [0.30.0]: https://github.com/subquery/subql/compare/node/0.29.1...node/0.30.0
 [0.29.1]: https://github.com/subquery/subql/compare/node/0.29.0...node/0.29.1
@@ -869,3 +960,4 @@ Priority: high for projects use dictionary
 [0.5.0]: https://github.com/OnFinality-io/subql/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OnFinality-io/subql/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OnFinality-io/subql/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/OnFinality-io/subql/tags/v0.2.0
