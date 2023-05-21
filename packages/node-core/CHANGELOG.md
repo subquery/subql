@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No longer intialize store and indexer inside testing service (#1734)
 - Fix poi read leaf height error under cockroach (#1733)
 - Ensure min start height to be 1, even if set to 0 (#1737)
+- Upgrade apollo link package (#1739)
 
 ### Changed
 - allow dictionary when only --dictionaryResolver is enabled (#1730)
