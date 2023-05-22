@@ -124,6 +124,9 @@ export class IndexerSandbox extends Sandbox {
       option,
       new VMScript(
         `const mappingFunctions = require('${option.entry}');
+        if(mappingFunctions[funcName] === undefined){
+          throw new Error('Handler function '+ funcName + ' is not found, available functions:' + JSON.stringify(Object.keys(mappingFunctions)))
+        }
       module.exports = mappingFunctions[funcName](...args);
     `,
         path.join(option.root, 'sandbox')
