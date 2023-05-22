@@ -4,6 +4,8 @@
 import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
+import { bootstrap } from './init';
+import { mmrRegenerateInit } from './subcommands/mmrRegenerate.init';
 
 export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
@@ -109,17 +111,11 @@ export const yargsOptions = yargs(hideBin(process.argv))
             'File based only : local path of the merkle mountain range (.mmr) file',
           type: 'string',
         },
-        'db-schema': {
+        'proof-of-index': {
           demandOption: false,
-          describe: 'Db schema name of the project',
-          type: 'string',
-        },
-        subquery: {
-          alias: 'f',
-          demandOption: true,
-          default: process.cwd(),
-          describe: 'Local path or IPFS cid of the subquery project',
-          type: 'string',
+          describe: 'Enable/disable proof of index',
+          type: 'boolean',
+          default: false,
         },
       }),
     handler: (argv) => {
@@ -158,17 +154,183 @@ export const yargsOptions = yargs(hideBin(process.argv))
           describe: 'Local path of the merkle mountain range (.mmr) file',
           type: 'string',
         },
-        'db-schema': {
+      }),
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFmt as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
+      return mmrMigrateInit(argv.direction);
+    },
+  })
+  // Note we must have default command $0 at last to avoid override
+  .command({
+    command: '$0', //default command
+    describe: 'Indexing a SubQuery application',
+    builder: (yargs) =>
+      yargs.options({
+        'batch-size': {
           demandOption: false,
-          describe: 'Db schema name of the project',
+          describe: 'Batch size of blocks to fetch in one round',
+          type: 'number',
+        },
+        'dictionary-resolver': {
+          demandOption: false,
+          describe: 'Use SubQuery Network dictionary resolver',
+          type: 'string',
+          default: false,
+        },
+        'dictionary-timeout': {
+          demandOption: false,
+          describe: 'Max timeout for dictionary query',
+          type: 'number',
+        },
+        'disable-historical': {
+          demandOption: false,
+          default: false,
+          describe: 'Disable storing historical state entities',
+          type: 'boolean',
+        },
+        'log-level': {
+          demandOption: false,
+          describe: 'Specify log level to print. Ignored when --debug is used',
+          type: 'string',
+          choices: [
+            'fatal',
+            'error',
+            'warn',
+            'info',
+            'debug',
+            'trace',
+            'silent',
+          ],
+        },
+        'mmr-path': {
+          alias: 'm',
+          demandOption: false,
+          describe: 'Local path of the merkle mountain range (.mmr) file',
           type: 'string',
         },
-        subquery: {
-          alias: 'f',
-          demandOption: true,
-          default: process.cwd(),
-          describe: 'Local path or IPFS cid of the subquery project',
+        'multi-chain': {
+          demandOption: false,
+          default: false,
+          describe:
+            'Enables indexing multiple subquery projects into the same database schema',
+          type: 'boolean',
+        },
+        'network-dictionary': {
+          alias: 'd',
+          demandOption: false,
+          describe: 'Specify the dictionary api for this network',
           type: 'string',
+        },
+        'network-endpoint': {
+          demandOption: false,
+          type: 'string',
+          describe: 'Blockchain network endpoint to connect',
+        },
+        'output-fmt': {
+          demandOption: false,
+          describe: 'Print log as json or plain text',
+          type: 'string',
+          choices: ['json', 'colored'],
+        },
+        profiler: {
+          demandOption: false,
+          describe: 'Show profiler information to console output',
+          type: 'boolean',
+          default: false,
+        },
+        'proof-of-index': {
+          demandOption: false,
+          describe: 'Enable/disable proof of index',
+          type: 'boolean',
+          default: false,
+        },
+        'mmr-store-type': {
+          demandOption: false,
+          describe: 'Store MMR in either a file or a postgres DB',
+          type: 'string',
+          choices: ['file', 'postgres'],
+          default: 'file',
+        },
+        'query-limit': {
+          demandOption: false,
+          describe:
+            'The limit of items a project can query with store.getByField at once',
+          type: 'number',
+          default: 100,
+        },
+        'scale-batch-size': {
+          type: 'boolean',
+          demandOption: false,
+          describe: 'scale batch size based on memory usage',
+          default: false,
+        },
+        'store-cache-threshold': {
+          demandOption: false,
+          describe:
+            'Store cache will flush data to the database when number of records excess this threshold',
+          type: 'number',
+        },
+        'store-get-cache-size': {
+          demandOption: false,
+          describe: 'Store get cache size for each model',
+          type: 'number',
+        },
+        'store-cache-async': {
+          demandOption: false,
+          describe:
+            'If enabled the store cache will flush data asyncronously relative to indexing data',
+          type: 'boolean',
+        },
+        'store-flush-interval': {
+          demandOption: false,
+          describe:
+            'The interval, in seconds, at which data is flushed from the cache. ' +
+            'This ensures that data is persisted regularly when there is either not much data or the project is up to date.',
+          type: 'number',
+          default: 5,
+        },
+        'subquery-name': {
+          deprecated: true,
+          demandOption: false,
+          describe: 'Name of the subquery project',
+          type: 'string',
+        },
+        subscription: {
+          demandOption: false,
+          describe: 'Enable subscription by create notification triggers',
+          type: 'boolean',
+          default: false,
+        },
+        timeout: {
+          demandOption: false,
+          describe:
+            'Timeout for indexer sandbox to execute the mapping functions',
+          type: 'number',
+        },
+        'unfinalized-blocks': {
+          demandOption: false,
+          default: false,
+          describe: 'Enable to fetch and index unfinalized blocks',
+          type: 'boolean',
+        },
+        unsafe: {
+          type: 'boolean',
+          demandOption: false,
+          describe: 'Allows usage of any built-in module within the sandbox',
+        },
+        workers: {
+          alias: 'w',
+          demandOption: false,
+          describe:
+            'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
+          type: 'number',
         },
       }),
     handler: (argv) => {
@@ -177,19 +339,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
-
-      // lazy import to make sure logger is instantiated before all other services
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
-      return mmrMigrateInit(argv.direction);
+      const { bootstrap } = require('./init');
+      void bootstrap();
     },
   })
+  // Default options, shared with all command
   .options({
-    'batch-size': {
-      demandOption: false,
-      describe: 'Batch size of blocks to fetch in one round',
-      type: 'number',
-    },
     config: {
       alias: 'c',
       demandOption: false,
@@ -208,107 +364,16 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
     },
-    'dictionary-resolver': {
-      demandOption: false,
-      describe: 'Use SubQuery Network dictionary resolver',
-      type: 'string',
-      default: false,
-    },
-    'dictionary-timeout': {
-      demandOption: false,
-      describe: 'Max timeout for dictionary query',
-      type: 'number',
-    },
-    'disable-historical': {
-      demandOption: false,
-      default: false,
-      describe: 'Disable storing historical state entities',
-      type: 'boolean',
-    },
     ipfs: {
       demandOption: false,
       describe: 'IPFS gateway endpoint',
       type: 'string',
-    },
-    local: {
-      deprecated: true,
-      type: 'boolean',
-      demandOption: false,
-      describe: 'Use local mode',
-    },
-    'log-level': {
-      demandOption: false,
-      describe: 'Specify log level to print. Ignored when --debug is used',
-      type: 'string',
-      choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
-    },
-    'mmr-path': {
-      alias: 'm',
-      demandOption: false,
-      describe: 'Local path of the merkle mountain range (.mmr) file',
-      type: 'string',
-    },
-    'multi-chain': {
-      demandOption: false,
-      default: false,
-      describe:
-        'Enables indexing multiple subquery projects into the same database schema',
-      type: 'boolean',
-    },
-    'network-dictionary': {
-      alias: 'd',
-      demandOption: false,
-      describe: 'Specify the dictionary api for this network',
-      type: 'string',
-    },
-    'network-endpoint': {
-      demandOption: false,
-      type: 'string',
-      describe: 'Blockchain network endpoint to connect',
-    },
-    'output-fmt': {
-      demandOption: false,
-      describe: 'Print log as json or plain text',
-      type: 'string',
-      choices: ['json', 'colored'],
     },
     port: {
       alias: 'p',
       demandOption: false,
       describe: 'The port the service will bind to',
       type: 'number',
-    },
-    profiler: {
-      demandOption: false,
-      describe: 'Show profiler information to console output',
-      type: 'boolean',
-      default: false,
-    },
-    'proof-of-index': {
-      demandOption: false,
-      describe: 'Enable/disable proof of index',
-      type: 'boolean',
-      default: false,
-    },
-    'mmr-store-type': {
-      demandOption: false,
-      describe: 'Store MMR in either a file or a postgres DB',
-      type: 'string',
-      choices: ['file', 'postgres'],
-      default: 'file',
-    },
-    'query-limit': {
-      demandOption: false,
-      describe:
-        'The limit of items a project can query with store.getByField at once',
-      type: 'number',
-      default: 100,
-    },
-    'scale-batch-size': {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'scale batch size based on memory usage',
-      default: false,
     },
     'pg-ca': {
       demandOption: false,
@@ -328,31 +393,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
       type: 'string',
     },
-    'store-cache-threshold': {
-      demandOption: false,
-      describe:
-        'Store cache will flush data to the database when number of records excess this threshold',
-      type: 'number',
-    },
-    'store-get-cache-size': {
-      demandOption: false,
-      describe: 'Store get cache size for each model',
-      type: 'number',
-    },
-    'store-cache-async': {
-      demandOption: false,
-      describe:
-        'If enabled the store cache will flush data asyncronously relative to indexing data',
-      type: 'boolean',
-    },
-    'store-flush-interval': {
-      demandOption: false,
-      describe:
-        'The interval, in seconds, at which data is flushed from the cache. ' +
-        'This ensures that data is persisted regularly when there is either not much data or the project is up to date.',
-      type: 'number',
-      default: 5,
-    },
     subquery: {
       alias: 'f',
       demandOption: true,
@@ -360,45 +400,11 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Local path or IPFS cid of the subquery project',
       type: 'string',
     },
-    'subquery-name': {
-      deprecated: true,
-      demandOption: false,
-      describe: 'Name of the subquery project',
-      type: 'string',
-    },
-    subscription: {
-      demandOption: false,
-      describe: 'Enable subscription by create notification triggers',
-      type: 'boolean',
-      default: false,
-    },
-    timeout: {
-      demandOption: false,
-      describe: 'Timeout for indexer sandbox to execute the mapping functions',
-      type: 'number',
-    },
+    // this need to be in default option, it impacts on outcome of index/reindex/regen
     'timestamp-field': {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',
       type: 'boolean',
       default: false,
-    },
-    'unfinalized-blocks': {
-      demandOption: false,
-      default: false,
-      describe: 'Enable to fetch and index unfinalized blocks',
-      type: 'boolean',
-    },
-    unsafe: {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'Allows usage of any built-in module within the sandbox',
-    },
-    workers: {
-      alias: 'w',
-      demandOption: false,
-      describe:
-        'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
-      type: 'number',
     },
   });
