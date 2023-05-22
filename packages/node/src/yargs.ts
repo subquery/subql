@@ -71,31 +71,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       'Re-generate mmr between Filebased/Postgres mmr and Proof of index',
     builder: (yargs) =>
       yargs.options({
-        probe: {
-          type: 'boolean',
-          description:
-            'Fetch latest mmr height information from file based/postgres DB and Poi table',
-          demandOption: false,
-          default: false,
-        },
-        targetHeight: {
-          type: 'number',
-          description: 'Re-genrate mmr value from this block height',
-          demandOption: false,
-        },
-        resetOnly: {
-          type: 'boolean',
-          description:
-            'Only reset the mmr value in both POI and file based/postgres DB to target height',
-          demandOption: false,
-          default: false,
-        },
-        unsafe: {
-          type: 'boolean',
-          description: 'Allow sync mmr from Poi table to file or a postgres DB',
-          demandOption: false,
-          default: false,
-        },
         'mmr-store-type': {
           demandOption: false,
           describe:
@@ -111,10 +86,35 @@ export const yargsOptions = yargs(hideBin(process.argv))
             'File based only : local path of the merkle mountain range (.mmr) file',
           type: 'string',
         },
+        probe: {
+          type: 'boolean',
+          description:
+            'Fetch latest mmr height information from file based/postgres DB and Poi table',
+          demandOption: false,
+          default: false,
+        },
         'proof-of-index': {
           demandOption: false,
           describe: 'Enable/disable proof of index',
           type: 'boolean',
+          default: false,
+        },
+        resetOnly: {
+          type: 'boolean',
+          description:
+            'Only reset the mmr value in both POI and file based/postgres DB to target height',
+          demandOption: false,
+          default: false,
+        },
+        targetHeight: {
+          type: 'number',
+          description: 'Re-genrate mmr value from this block height',
+          demandOption: false,
+        },
+        unsafe: {
+          type: 'boolean',
+          description: 'Allow sync mmr from Poi table to file or a postgres DB',
+          demandOption: false,
           default: false,
         },
       }),
