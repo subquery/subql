@@ -79,13 +79,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
           choices: ['file', 'postgres'],
           default: 'file',
         },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe:
-            'File based only : local path of the merkle mountain range (.mmr) file',
-          type: 'string',
-        },
         probe: {
           type: 'boolean',
           description:
@@ -148,12 +141,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
           choices: ['dbToFile', 'fileToDb'],
           default: 'dbToFile',
         },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe: 'Local path of the merkle mountain range (.mmr) file',
-          type: 'string',
-        },
       }),
     handler: (argv) => {
       initLogger(
@@ -208,12 +195,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
             'trace',
             'silent',
           ],
-        },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe: 'Local path of the merkle mountain range (.mmr) file',
-          type: 'string',
         },
         'multi-chain': {
           demandOption: false,
@@ -367,6 +348,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
     ipfs: {
       demandOption: false,
       describe: 'IPFS gateway endpoint',
+      type: 'string',
+    },
+    'mmr-path': {
+      alias: 'm',
+      demandOption: false,
+      describe:
+        'File based only : local path of the merkle mountain range (.mmr) file',
       type: 'string',
     },
     port: {
