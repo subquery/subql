@@ -86,12 +86,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
           demandOption: false,
           default: false,
         },
-        'proof-of-index': {
-          demandOption: false,
-          describe: 'Enable/disable proof of index',
-          type: 'boolean',
-          default: false,
-        },
         resetOnly: {
           type: 'boolean',
           description:
