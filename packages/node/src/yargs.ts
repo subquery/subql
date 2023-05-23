@@ -151,7 +151,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
   // Note we must have default command $0 at last to avoid override
   .command({
     command: '$0', //default command
-    describe: 'Indexing a SubQuery application',
+    describe: 'Index a SubQuery application',
     builder: (yargs) =>
       yargs.options({
         'batch-size': {
@@ -308,15 +308,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
           type: 'number',
         },
       }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { bootstrap } = require('./init');
-      void bootstrap();
+    handler: () => {
+      // Do nothing here, main logic will be triggered from main.ts
     },
   })
   // Default options, shared with all command
