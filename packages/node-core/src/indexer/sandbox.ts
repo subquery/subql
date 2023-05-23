@@ -25,7 +25,7 @@ const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
     wasm: unsafe,
     sandbox: {},
     require: {
-      builtin: unsafe ? ['*'] : ['assert', 'buffer', 'crypto', 'util', 'path'],
+      builtin: unsafe ? ['*'] : ['assert', 'buffer', 'crypto', 'util', 'path', 'url'],
       external: true,
       context: 'sandbox',
     },
@@ -52,6 +52,8 @@ export class Sandbox extends NodeVM {
         },
       })
     );
+
+    this.setGlobal('URL', require('url').URL);
     this.root = config.subquery.startsWith('ipfs://') ? '' : option.root;
     this.entry = option.entry;
 
