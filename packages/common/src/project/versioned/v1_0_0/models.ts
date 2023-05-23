@@ -2,10 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Type} from 'class-transformer';
-import {Equals, IsBoolean, IsObject, IsOptional, IsString, Matches, Validate, ValidateNested} from 'class-validator';
+import {
+  Equals,
+  IsBoolean,
+  IsObject,
+  IsOptional,
+  IsString,
+  Matches,
+  Validate,
+  ValidateNested,
+  equals,
+} from 'class-validator';
 import {RUNNER_REGEX} from '../../../constants';
 import {SemverVersionValidator} from '../../utils';
-import {NodeOptions, NodeSpec, QuerySpec} from './types';
+import {NodeOptions, NodeSpec, ProjectManifestParentV1_0_0, QuerySpec} from './types';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
@@ -40,4 +50,14 @@ export class RunnerNodeOptionsModel implements NodeOptions {
   @IsOptional()
   @IsBoolean()
   unfinalizedBlocks?: boolean;
+}
+
+export class ProjectManifestParentV1_0_0Model implements ProjectManifestParentV1_0_0 {
+  @Equals('1.0.0')
+  specVersion: string;
+  @IsString({each: true})
+  projects: string[];
+  @IsObject()
+  @Type(() => RunnerQueryBaseModel)
+  query: QuerySpec;
 }

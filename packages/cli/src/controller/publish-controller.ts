@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, getProjectRootAndManifest} from '@subql/common';
+import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, getProjectRootAndManifest, ProjectRootAndManifest} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
@@ -17,10 +17,9 @@ import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
-export async function createIPFSFile(projectPath: string, cid: string): Promise<void> {
-  const filePath = getProjectRootAndManifest(projectPath);
-  const {name} = path.parse(filePath.manifest);
-  const MANIFEST_FILE = path.join(filePath.root, `.${name}-cid`);
+export async function createIPFSFile(root: string, manifest: string, cid: string): Promise<void> {
+  const {name} = path.parse(manifest);
+  const MANIFEST_FILE = path.join(root, `.${name}-cid`);
   try {
     await fs.promises.writeFile(MANIFEST_FILE, cid, 'utf8');
   } catch (e) {

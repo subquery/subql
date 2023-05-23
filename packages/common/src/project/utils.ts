@@ -6,7 +6,9 @@ import os from 'os';
 import path from 'path';
 import {validateSync, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
+import * as yaml from 'js-yaml';
 import {prerelease, satisfies, valid, validRange} from 'semver';
+import {ProjectManifestParentV1_0_0} from './versioned';
 
 export async function makeTempDir(): Promise<string> {
   const sep = path.sep;
@@ -32,24 +34,66 @@ export async function findAvailablePort(startPort: number, range = 10): Promise<
 
 export interface ProjectRootAndManifest {
   root: string;
-  manifest: string;
+  manifests: string[];
 }
 
-// --subquery -f pass in can be project.yaml or project.path,
-// use this to determine its project root and manifest
 export function getProjectRootAndManifest(subquery: string): ProjectRootAndManifest {
-  const project = {} as ProjectRootAndManifest;
+  const project: ProjectRootAndManifest = {
+    root: '',
+    manifests: [],
+  };
+
   const stats = fs.statSync(subquery);
+
   if (stats.isDirectory()) {
     project.root = subquery;
-    project.manifest = path.resolve(subquery, 'project.yaml');
+
+    // Check for 'project.yaml' first
+    if (fs.existsSync(path.resolve(subquery, 'project.yaml'))) {
+      project.manifests.push(path.resolve(subquery, 'project.yaml'));
+    }
+    // Then check for a 'multichain manifest'
+    else if (fs.existsSync(path.resolve(subquery, 'multichain-manifest.yaml'))) {
+      const multichainManifestContent: ProjectManifestParentV1_0_0 = yaml.load(
+        fs.readFileSync(path.resolve(subquery, 'multichain-manifest.yaml'), 'utf8')
+      ) as ProjectManifestParentV1_0_0;
+
+      if (!multichainManifestContent.projects || !Array.isArray(multichainManifestContent.projects)) {
+        throw new Error('Multichain manifest does not contain a valid "projects" field');
+      }
+
+      addMultichainManifestProjects(subquery, multichainManifestContent, project);
+    }
   } else if (stats.isFile()) {
     const {dir} = path.parse(subquery);
     project.root = dir;
-    project.manifest = subquery;
+    const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as ProjectManifestParentV1_0_0;
+    if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
+      addMultichainManifestProjects(dir, multichainManifestContent, project);
+    } else {
+      project.manifests.push(subquery);
+    }
   }
+
   project.root = path.resolve(project.root);
+
   return project;
+}
+
+function addMultichainManifestProjects(
+  parentDir: string,
+  multichainManifestContent: any,
+  project: ProjectRootAndManifest
+) {
+  for (const projectPath of multichainManifestContent.projects) {
+    if (fs.existsSync(path.resolve(parentDir, projectPath))) {
+      project.manifests.push(path.resolve(parentDir, projectPath));
+    }
+  }
+
+  if (project.manifests.length === 0) {
+    throw new Error('None of the project files specified in the multichain manifest could be found');
+  }
 }
 
 export function validateSemver(current: string, required: string): boolean {

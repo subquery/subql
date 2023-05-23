@@ -48,14 +48,16 @@ export default class Publish extends Command {
     } else {
       throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
-    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
-    await createIPFSFile(location, cid);
+    for (const manifest of project.manifests) {
+      const cid = await uploadToIpfs(manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+      await createIPFSFile(project.root, manifest, cid);
 
-    if (!flags.output) {
-      this.log('Uploading SubQuery project to IPFS');
-      this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
-    } else {
-      this.log(`${cid}`);
+      if (!flags.output) {
+        this.log('Uploading SubQuery project to IPFS');
+        this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
+      } else {
+        this.log(`${cid}`);
+      }
     }
   }
 }
