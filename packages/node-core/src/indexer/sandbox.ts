@@ -53,6 +53,7 @@ export class Sandbox extends NodeVM {
       })
     );
 
+    // polkadot api uses URL global
     this.setGlobal('URL', require('url').URL);
     this.root = config.subquery.startsWith('ipfs://') ? '' : option.root;
     this.entry = option.entry;
