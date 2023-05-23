@@ -10,28 +10,28 @@ export function getYargsOption() {
   return yargs(hideBin(process.argv))
     .env('SUBQL_QUERY')
     .options({
-      name: {
-        demandOption: true,
-        alias: 'n',
-        describe: 'Project name',
-        type: 'string',
-      },
-      playground: {
+      aggregate: {
         demandOption: false,
-        describe: 'Enable graphql playground',
+        default: true,
+        describe: 'Enable aggregate feature',
         type: 'boolean',
       },
-      'playground-settings': {
+      'disable-hot-schema': {
         demandOption: false,
-        describe: 'Pass the settings to the graphql playground (JSON format)',
-        type: 'string',
+        describe: 'Hot reload schema on schema-changes',
+        type: 'boolean',
+        default: false,
       },
-      'output-fmt': {
+      'dictionary-optimisation': {
         demandOption: false,
-        describe: 'Print log as json or plain text',
+        describe: 'Dictionary optimisation',
+        type: 'boolean',
+        default: false,
+      },
+      indexer: {
+        demandOption: false,
+        describe: 'Url that allows query to access indexer metadata',
         type: 'string',
-        default: 'colored',
-        choices: ['json', 'colored'],
       },
       'log-level': {
         demandOption: false,
@@ -51,67 +51,24 @@ export function getYargsOption() {
         type: 'boolean',
         default: false,
       },
-      indexer: {
-        demandOption: false,
-        describe: 'Url that allows query to access indexer metadata',
-        type: 'string',
-      },
-      unsafe: {
-        demandOption: false,
-        describe: 'Disable limits on query depth and allowable number returned query records',
-        type: 'boolean',
-      },
-      'query-limit': {
-        demandOption: false,
-        describe: 'Set limit on query depth',
-        type: 'number',
-        default: 100,
-      },
-      subscription: {
-        demandOption: false,
-        describe: 'Enable subscription service',
-        type: 'boolean',
-        default: false,
-      },
-      port: {
-        alias: 'p',
-        demandOption: false,
-        describe: 'The port the service will bind to',
-        type: 'number',
-      },
-      'query-complexity': {
-        demandOption: false,
-        describe: 'Level of query complexity',
-        type: 'number',
-      },
       'max-connection': {
         demandOption: false,
         describe: 'Max connection to pg pool',
         type: 'number',
         default: 10,
       },
-      'query-timeout': {
-        demandOption: false,
-        describe: 'Query timeout in milliseconds',
-        type: 'number',
-        default: 10000,
+      name: {
+        demandOption: true,
+        alias: 'n',
+        describe: 'Project name',
+        type: 'string',
       },
-      'query-explain': {
+      'output-fmt': {
         demandOption: false,
-        describe: 'Explain query in SQL statement',
-        type: 'boolean',
-      },
-      aggregate: {
-        demandOption: false,
-        default: true,
-        describe: 'Enable aggregate feature',
-        type: 'boolean',
-      },
-      'disable-hot-schema': {
-        demandOption: false,
-        describe: 'Hot reload schema on schema-changes',
-        type: 'boolean',
-        default: false,
+        describe: 'Print log as json or plain text',
+        type: 'string',
+        default: 'colored',
+        choices: ['json', 'colored'],
       },
       'pg-ca': {
         demandOption: false,
@@ -130,9 +87,52 @@ export function getYargsOption() {
           'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
         type: 'string',
       },
-      'dictionary-optimisation': {
+      port: {
+        alias: 'p',
         demandOption: false,
-        describe: 'Dictionary optimisation',
+        describe: 'The port the service will bind to',
+        type: 'number',
+      },
+      playground: {
+        demandOption: false,
+        describe: 'Enable graphql playground',
+        type: 'boolean',
+      },
+      'playground-settings': {
+        demandOption: false,
+        describe: 'Pass the settings to the graphql playground (JSON format)',
+        type: 'string',
+      },
+      'query-limit': {
+        demandOption: false,
+        describe: 'Set limit on query depth',
+        type: 'number',
+        default: 100,
+      },
+      'query-complexity': {
+        demandOption: false,
+        describe: 'Level of query complexity',
+        type: 'number',
+      },
+      'query-timeout': {
+        demandOption: false,
+        describe: 'Query timeout in milliseconds',
+        type: 'number',
+        default: 10000,
+      },
+      'query-explain': {
+        demandOption: false,
+        describe: 'Explain query in SQL statement',
+        type: 'boolean',
+      },
+      unsafe: {
+        demandOption: false,
+        describe: 'Disable limits on query depth and allowable number returned query records',
+        type: 'boolean',
+      },
+      subscription: {
+        demandOption: false,
+        describe: 'Enable subscription service',
         type: 'boolean',
         default: false,
       },
