@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.3.0] - 2023-05-24
 ### Added
 - Base58 util functions (#1750)
 
@@ -65,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/v2.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/v2.3.0...HEAD
+[2.3.0]: https://github.com/subquery/subql/compare/utils/v2.2.0...utils/v2.3.0
 [2.2.0]: https://github.com/subquery/subql/compare/utils/2.1.0...utils/2.2.0
 [2.1.0]: https://github.com/subquery/subql/compare/utils/2.0.0...utils/2.1.0
 [2.0.0]: https://github.com/subquery/subql/compare/utils/1.5.0...utils/2.0.0
