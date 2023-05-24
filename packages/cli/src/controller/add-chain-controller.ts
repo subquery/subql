@@ -105,22 +105,23 @@ function validateAndAddChainManifest(chainManifestPath: string, multichainManife
   multichainManifest.projects.push(chainManifestPath);
 }
 
-function updateDockerCompose(chainManifestPath: string): void {
-  const serviceName = `subquery-node-${path.basename(chainManifestPath, '.yaml')}`;
-
-  const dockerComposePath = path.resolve(process.cwd(), 'docker-compose.yml');
-
-  let dockerCompose: DockerComposeType;
+function loadDockerComposeFile(dockerComposePath: string): DockerComposeType | undefined {
   if (fs.existsSync(dockerComposePath)) {
-    dockerCompose = yaml.load(fs.readFileSync(dockerComposePath, 'utf8')) as DockerComposeType;
-  } else {
-    dockerCompose = {
-      version: '3',
-      services: {},
-    };
+    return yaml.load(fs.readFileSync(dockerComposePath, 'utf8')) as DockerComposeType;
   }
+}
 
-  dockerCompose.services[serviceName] = {
+function getSubqlNodeService(dockerCompose: DockerComposeType): any {
+  const subqlNodeServices = Object.keys(dockerCompose.services).filter((key) =>
+    dockerCompose.services[key].image?.startsWith('onfinality/subql-node')
+  );
+  if (subqlNodeServices.length > 0) {
+    return dockerCompose.services[subqlNodeServices[0]];
+  }
+}
+
+function getDefaultServiceConfiguration(chainManifestPath: string, serviceName: string): any {
+  return {
     image: 'onfinality/subql-node:latest',
     depends_on: {
       postgres: {
@@ -136,12 +137,7 @@ function updateDockerCompose(chainManifestPath: string): void {
       DB_PORT: '5432',
     },
     volumes: ['./:/app'],
-    command: [
-      `-f=app/${path.basename(chainManifestPath)}`,
-      '--multi-chain',
-      '--db-schema=multi-transfers',
-      '--disable-historical',
-    ],
+    command: [`-f=app/${path.basename(chainManifestPath)}`, '--multi-chain', '--disable-historical'],
     healthcheck: {
       test: ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`],
       interval: '3s',
@@ -149,6 +145,38 @@ function updateDockerCompose(chainManifestPath: string): void {
       retries: 10,
     },
   };
+}
+
+function createNewServiceConfiguration(
+  defaultServiceConfiguration: any,
+  chainManifestPath: string,
+  serviceName: string
+): any {
+  const newServiceConfiguration = JSON.parse(JSON.stringify(defaultServiceConfiguration));
+  newServiceConfiguration.command[0] = `-f=app/${path.basename(chainManifestPath)}`;
+  newServiceConfiguration.healthcheck.test = ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`];
+  return newServiceConfiguration;
+}
+
+function updateDockerCompose(chainManifestPath: string): void {
+  const serviceName = `subquery-node-${path.basename(chainManifestPath, '.yaml')}`;
+  const dockerComposePath = path.resolve(process.cwd(), 'docker-compose.yml');
+  const dockerCompose = loadDockerComposeFile(dockerComposePath) || {version: '3', services: {}};
+  const defaultServiceConfiguration =
+    getSubqlNodeService(dockerCompose) || getDefaultServiceConfiguration(chainManifestPath, serviceName);
+
+  // If service with the given name already exists, do not add it again
+  if (dockerCompose.services[serviceName]) {
+    console.log(`Service ${serviceName} already exists, skipping addition.`);
+    return;
+  }
+
+  // Add the new service to the docker compose services
+  dockerCompose.services[serviceName] = createNewServiceConfiguration(
+    defaultServiceConfiguration,
+    chainManifestPath,
+    serviceName
+  );
 
   // Update docker-compose file
   fs.writeFileSync(dockerComposePath, yaml.dump(dockerCompose));
