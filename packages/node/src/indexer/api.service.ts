@@ -87,6 +87,10 @@ export class ApiService
 
     const connections: ApiPromiseConnection[] = [];
 
+    if (chainTypes) {
+      logger.info('Using provided chain types');
+    }
+
     await Promise.all(
       network.endpoint.map(async (endpoint, i) => {
         const connection = await ApiPromiseConnection.create(endpoint, {

@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import { ReaderFactory } from '@subql/common';
+import { IPFS_NODE_ENDPOINT, ReaderFactory } from '@subql/common';
 import { SubqueryProject } from './SubqueryProject';
 
 describe('SubqueryProject', () => {
@@ -75,7 +75,7 @@ describe('SubqueryProject', () => {
         },
       );
       const reader1 = await ReaderFactory.create(projectDirV1_0_0);
-      const rawManifest = await await reader1.getProjectSchema();
+      const rawManifest = await reader1.getProjectSchema();
       const project_v1 = await SubqueryProject.create(
         projectDirV1_0_0,
         rawManifest,
@@ -87,5 +87,23 @@ describe('SubqueryProject', () => {
       expect(project_v1).not.toContain('template');
       expect(project.templates.length).toBe(1);
     });
+  });
+
+  it('loads chainTypes from deplyoment', async () => {
+    const reader = await ReaderFactory.create(
+      'ipfs://QmZYR6tpRYvmnKoUtugpwYfH9CpP7a8fYYcLVX3d7dph2j',
+      { ipfs: IPFS_NODE_ENDPOINT },
+    );
+
+    const project = await SubqueryProject.create(
+      'ipfs://QmZYR6tpRYvmnKoUtugpwYfH9CpP7a8fYYcLVX3d7dph2j',
+      await reader.getProjectSchema(),
+      reader,
+      {
+        endpoint: ['wss://astar.api.onfinality.io/public-ws'],
+      },
+    );
+
+    expect(project.chainTypes).toBeDefined();
   });
 });

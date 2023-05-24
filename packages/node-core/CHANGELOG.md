@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix datasource processors base filters not working (#1745)
 
+### Added
+- Support for base58 blockhashes with POI (#1750)
+
 ## [2.2.2] - 2023-05-19
 ### Fixed
 - Fix project service init failing due to start height being 0 (#1735)

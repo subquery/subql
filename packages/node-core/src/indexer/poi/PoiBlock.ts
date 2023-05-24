@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {u8aConcat, numberToU8a, hexToU8a, isHex, isU8a, blake2AsU8a} from '@subql/utils';
+import {u8aConcat, numberToU8a, hexToU8a, isHex, isU8a, blake2AsU8a, isBase58, base58Decode} from '@subql/utils';
 import {ProofOfIndex} from '../entities/Poi.entity';
 
 const poiBlockHash = (
@@ -56,6 +56,9 @@ export class PoiBlock implements ProofOfIndex {
       _chainBlockHash = hexToU8a(chainBlockHash);
     } else if (isU8a(chainBlockHash)) {
       _chainBlockHash = chainBlockHash;
+    } else if (isBase58(chainBlockHash)) {
+      // Near block hashes are base58 encoded
+      _chainBlockHash = base58Decode(chainBlockHash);
     } else {
       throw new Error(`Unable to create PoiBlock, chainBlockHash was not valid. Received: "${chainBlockHash}"`);
     }
