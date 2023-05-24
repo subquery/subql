@@ -28,7 +28,6 @@ export default class Codegen extends Command {
     const projectPath = path.resolve(file ?? location ?? process.cwd());
 
     const {manifests} = getProjectRootAndManifest(projectPath);
-    this.log(JSON.stringify(manifests));
 
     let firstSchemaPath: string | null = null;
 

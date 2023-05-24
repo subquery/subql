@@ -9,7 +9,7 @@ export default class AddChain extends Command {
 
   static flags = {
     multichain: Flags.string({char: 'm', description: 'specify multichain manifest file path'}),
-    chainManifestPath: Flags.string({description: 'path to the new chain manifest'}),
+    chainManifestPath: Flags.string({char: 'f', description: 'path to the new chain manifest'}),
     chainId: Flags.string({char: 'c', description: 'ID of the new chain'}),
     schema: Flags.string({char: 's', description: 'specify schema path for the new chain manifest'}),
   };
