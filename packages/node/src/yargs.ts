@@ -1,10 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
-import { mmrRegenerateInit } from './subcommands/mmrRegenerate.init';
 
 export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
@@ -12,16 +10,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
     command: 'test',
     describe: 'Run tests for a SubQuery application',
     builder: {},
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { testingInit } = require('./subcommands/testing.init');
-      return testingInit();
+    handler: () => {
+      // handled in main.ts
     },
   })
   .command({
@@ -29,17 +19,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
     describe:
       'Clean the database dropping project schemas and tables. Once the command is executed, the application would exit upon completion.',
     builder: {},
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { forceCleanInit } = require('./subcommands/forceClean.init');
-      return forceCleanInit();
+    handler: () => {
+      // handled in main.ts
     },
   })
   .command({
@@ -52,16 +33,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
         description: 'set targetHeight',
         require: true,
       }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { reindexInit } = require('./subcommands/reindex.init');
-      return reindexInit(argv.targetHeight);
+    handler: () => {
+      // handled in main.ts
     },
   })
   .command({
@@ -96,22 +69,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
           default: false,
         },
       }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrRegenerateInit } = require('./subcommands/mmrRegenerate.init');
-      return mmrRegenerateInit(
-        argv.probe,
-        argv.resetOnly,
-        argv.unsafe,
-        argv.targetHeight,
-      );
+    handler: () => {
+      // handled in main.ts
     },
   })
   .command({
@@ -127,16 +86,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
           default: 'dbToFile',
         },
       }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
-      return mmrMigrateInit(argv.direction);
+    handler: () => {
+      // handled in main.ts
     },
   })
   // Note we must have default command $0 at last to avoid override
