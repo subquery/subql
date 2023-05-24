@@ -1,6 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+// APP API PORT
+export const DEFAULT_PORT = 3000;
+
 //IPFS
 export const IPFS_READ = 'https://unauthipfs.subquery.network';
 export const IPFS_WRITE = 'https://authipfs.subquery.network';

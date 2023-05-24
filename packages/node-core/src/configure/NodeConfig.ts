@@ -70,7 +70,7 @@ const DEFAULT_CONFIG = {
   indexCountLimit: 10,
   timestampField: true,
   proofOfIndex: false,
-  mmrStoreType: MmrStoreType.File,
+  mmrStoreType: MmrStoreType.Postgres,
   dictionaryTimeout: 30,
   profiler: false,
   subscription: false,
