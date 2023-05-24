@@ -5,11 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.3.0] - 2023-05-24
 ### Fixed
 - Fix datasource processors base filters not working (#1745)
 
 ### Added
 - Support for base58 blockhashes with POI (#1750)
+- Allow url in sandbox and set URL global (#1747)
+- Log for unfound mappingHandlers and list available ones (#1742)
 
 ## [2.2.2] - 2023-05-19
 ### Fixed
@@ -247,7 +251,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.3.0...HEAD
+[2.3.0]: https://github.com/subquery/subql/compare/node-core/v2.2.2...node-core/v2.3.0
 [2.2.2]: https://github.com/subquery/subql/compare/node-core/2.2.1...node-core/2.2.2
 [2.2.1]: https://github.com/subquery/subql/compare/node-core/2.2.0...node-core/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/node-core/2.1.2...node-core/2.2.0

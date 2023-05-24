@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2023-05-24
+### Changed
+- Tidy up commands and their args (#1741)
+- Update node-core
+
 ## [2.3.0] - 2023-05-19
 ### Changed
 - Update polkadot api to 10.7.1 (#1736)
@@ -840,8 +845,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/v2.3.0...HEAD
-[2.3.0]: https://github.com/subquery/subql/compare/v2.2.1...v2.3.0
+[Unreleased]: https://github.com/subquery/subql/compare/node/v2.4.0...HEAD
+[2.4.0]: https://github.com/subquery/subql/compare/node/v2.3.0...node/v2.4.0
+[2.3.0]: https://github.com/subquery/subql/compare/node/v2.2.1...node/v2.3.0
 [2.2.1]: https://github.com/subquery/subql/compare/node/2.2.0...node/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/node/2.1.3...node/2.2.0
 [2.1.3]: https://github.com/subquery/subql/compare/node/2.1.2...node/2.1.3
