@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {GithubReader, IPFSReader, LocalReader, Reader} from '@subql/common';
+import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader, Reader} from '@subql/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {isNumber, range, uniq, without, flatten} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
@@ -14,6 +14,24 @@ import {ISubqueryProject, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 
 const logger = getLogger('Project-Utils');
+
+export async function getValidPort(argvPort: number): Promise<number> {
+  const validate = (x: any) => {
+    const p = parseInt(x);
+    return isNaN(p) ? null : p;
+  };
+
+  const port = validate(argvPort) ?? (await findAvailablePort(DEFAULT_PORT));
+  if (!port) {
+    logger.error(
+      `Unable to find available port (tried ports in range (${port}..${
+        port + 10
+      })). Try setting a free port manually by setting the --port flag`
+    );
+    process.exit(1);
+  }
+  return port;
+}
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
