@@ -291,4 +291,18 @@ describe('utils that handle schema.graphql', () => {
     expect(entities.models?.[0].indexes[0].fields).toEqual(['field2']);
     expect(entities.models?.[0].indexes[1].fields).toEqual(['field3']);
   });
+
+  it('can read composite index', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity {
+        id: ID! #id is a required field
+        field1: Int!
+        field2: String #field2 is an optional field
+        joinIndex1: CompositeIndex @joinIndex(fields: ["field1", "field2"])
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const entities = getAllEntitiesRelations(schema);
+    expect(entities.models?.[0].indexes[0].fields).toEqual(['field1', 'field2']);
+  });
 });

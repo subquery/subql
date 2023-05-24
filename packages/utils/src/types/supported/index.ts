@@ -10,3 +10,4 @@ export * from './ID';
 export * from './Int';
 export * from './String';
 export * from './Json';
+export * from './CompositeIndex';

@@ -24,6 +24,7 @@ import {
 import {getTypeByScalarName} from '../types';
 import {DirectiveName} from './constant';
 import {buildSchemaFromFile} from './schema';
+import {VIRTUAL_SCALARS} from './schema/scalas';
 import {
   FieldScalar,
   GraphQLEntityField,
@@ -67,6 +68,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
   const modelRelations = {models: [], relations: [], enums: [...enums.values()]} as GraphQLModelsRelationsEnums;
   const derivedFrom = schema.getDirective('derivedFrom');
   const indexDirective = schema.getDirective('index');
+  const joinIndexDirective = schema.getDirective('joinIndex');
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
@@ -75,14 +77,21 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       indexes: [],
     };
 
-    for (const field of Object.values(entity.getFields())) {
+    const entityFields = Object.values(entity.getFields());
+
+    for (const field of entityFields) {
       const typeString = extractType(field.type);
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
+      const joinIndexDirectiveVal = getDirectiveValues(joinIndexDirective, field.astNode);
+
       //If is a basic scalar type
       const typeClass = getTypeByScalarName(typeString);
       if (typeClass?.fieldScalar) {
-        newModel.fields.push(packEntityField(typeString, field, false));
+        if (!VIRTUAL_SCALARS.includes(typeString)) {
+          newModel.fields.push(packEntityField(typeString, field, false));
+        }
+        // SKIP push to field if it is a virtual scalar
       }
       // If is an enum
       else if (enums.has(typeString)) {
@@ -159,11 +168,47 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           throw new Error(`index can not be added on field ${field.name}`);
         }
       }
+      // If is CompositeIndex
+      if (joinIndexDirectiveVal?.fields.length) {
+        const joinFields = getJoinIndexFields(entity, entityFields, field.name, joinIndexDirectiveVal?.fields);
+        newModel.indexes.push({
+          name: field.name,
+          fields: joinFields,
+        });
+      }
     }
     modelRelations.models.push(newModel);
   }
   validateRelations(modelRelations);
   return modelRelations;
+}
+
+function getJoinIndexFields(
+  entity: GraphQLObjectType<any, any>,
+  entityFields: GraphQLField<any, any, {[p: string]: any}>[],
+  currentField: string,
+  IndexArgFields: string[]
+): string[] {
+  if (IndexArgFields.length < 2 || IndexArgFields.length > 3) {
+    throw new Error(`Composite index ${entity}.${currentField} allow 2-3 fields, got ${IndexArgFields.length}`);
+  }
+  // check duplicate fields
+  const duplicateFields = IndexArgFields.filter((name, index, arr) => arr.indexOf(name) !== index);
+  if (duplicateFields.length) {
+    throw new Error(`Composite index ${entity}.${IndexArgFields} got duplicated fields: ${duplicateFields}`);
+  }
+  return IndexArgFields.map((j) => {
+    const fieldInEntity = entityFields.find((f) => f.name === j);
+    // check whether these fields are exist in the entity
+    if (fieldInEntity === undefined) {
+      throw new Error(`Composite index ${entity}.${currentField} field ${j} not found within entity`);
+    }
+    // check is fk
+    if (fieldInEntity.type.toString() === 'relationEntity') {
+      return `${j}Id`;
+    }
+    return j;
+  });
 }
 
 function packEntityField(
