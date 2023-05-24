@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "2.1.1-0",
+  "version": "2.3.0",
   "description": "",
   "author": "Naveen Veluswamy",
   "license": "Apache-2.0",
@@ -29,9 +29,8 @@
     "@nestjs/schedule": "^1.0.2",
     "@subql/common": "^2.1.1",
     "@subql/common-cosmos": "workspace:*",
-    "@subql/node-core": "^2.2.1",
+    "@subql/node-core": "^2.2.2",
     "@subql/types-cosmos": "workspace:*",
-    "@subql/utils": "^2.1.0",
     "cosmjs-types": "^0.5.0",
     "cron-converter": "^1.0.2",
     "eventemitter2": "^6.4.5",
@@ -57,9 +56,11 @@
     "dotenv": "^15.0.1",
     "nodemon": "^2.0.15"
   },
+  "peerDependencies": {
+    "@subql/utils": "*"
+  },
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "2.1.0"
+  ]
 }
