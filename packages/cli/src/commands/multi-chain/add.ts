@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, Flags} from '@oclif/core';
-import {addChain} from '../controller/add-chain-controller';
+import {addChain} from '../../controller/add-chain-controller';
 
-export default class AddChain extends Command {
+export default class MultiChainAdd extends Command {
   static description = 'Add new chain manifest to multi-chain configuration';
 
   static flags = {
@@ -15,7 +15,7 @@ export default class AddChain extends Command {
   };
 
   async run() {
-    const {flags} = await this.parse(AddChain);
+    const {flags} = await this.parse(MultiChainAdd);
     const {chainId, chainManifestPath, multichain, schema} = flags;
 
     addChain(multichain, chainManifestPath, chainId, schema);
