@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitterModule, EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   DbModule,
@@ -10,6 +10,8 @@ import {
   StoreCacheService,
   StoreService,
   MmrRegenerateService,
+  ReadyController,
+  ReadyService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 
@@ -20,8 +22,9 @@ import { ConfigureModule } from '../configure/configure.module';
     MmrService,
     MmrRegenerateService,
     SchedulerRegistry,
+    ReadyService,
   ],
-  controllers: [],
+  controllers: [ReadyController],
 })
 export class MmrRegenerateFeatureModule {}
 

@@ -4,7 +4,6 @@
 import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
-import { bootstrap } from './init';
 import { mmrRegenerateInit } from './subcommands/mmrRegenerate.init';
 
 export const yargsOptions = yargs(hideBin(process.argv))
@@ -71,14 +70,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       'Re-generate mmr between Filebased/Postgres mmr and Proof of index',
     builder: (yargs) =>
       yargs.options({
-        'mmr-store-type': {
-          demandOption: false,
-          describe:
-            'When regenerate MMR store in either a file or a postgres DB',
-          type: 'string',
-          choices: ['file', 'postgres'],
-          default: 'file',
-        },
         probe: {
           type: 'boolean',
           description:
@@ -226,13 +217,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
           type: 'boolean',
           default: false,
         },
-        'mmr-store-type': {
-          demandOption: false,
-          describe: 'Store MMR in either a file or a postgres DB',
-          type: 'string',
-          choices: ['file', 'postgres'],
-          default: 'file',
-        },
         'query-limit': {
           demandOption: false,
           describe:
@@ -343,6 +327,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe:
         'File based only : local path of the merkle mountain range (.mmr) file',
       type: 'string',
+    },
+    'mmr-store-type': {
+      demandOption: false,
+      describe: 'Store MMR in either a file or a postgres DB',
+      type: 'string',
+      choices: ['file', 'postgres'],
+      default: 'postgres',
     },
     port: {
       alias: 'p',
