@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [2.1.2] - 2023-05-26
+### Added
+- Add `DEFAULT_PORT` constant (#1752)
+
 ## [2.1.1] - 2023-05-11
 ### Changed
 - Move validate function to common (#1683)
