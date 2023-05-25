@@ -1,13 +1,12 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { profiler } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import * as SubstrateUtil from '../../utils/substrate';
-import { yargsOptions } from '../../yargs';
 import { ApiService } from '../api.service';
 import { SpecVersion } from './../dictionary.service';
 export const SPEC_VERSION_BLOCK_GAP = 100;
@@ -74,7 +73,7 @@ export abstract class BaseRuntimeService {
     return specVersion;
   }
 
-  @profiler(yargsOptions.argv.profiler)
+  @profiler()
   async prefetchMeta(height: number): Promise<void> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (

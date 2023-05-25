@@ -30,7 +30,6 @@ import {
 } from '@subql/types';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
-import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
@@ -85,7 +84,7 @@ export class IndexerManager extends BaseIndexerManager<
     logger.info('indexer manager started');
   }
 
-  @profiler(yargsOptions.argv.profiler)
+  @profiler()
   async indexBlock(
     block: BlockContent,
     dataSources: SubstrateDatasource[],
