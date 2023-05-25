@@ -204,18 +204,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
           type: 'string',
           choices: ['json', 'colored'],
         },
-        profiler: {
-          demandOption: false,
-          describe: 'Show profiler information to console output',
-          type: 'boolean',
-          default: false,
-        },
-        'proof-of-index': {
-          demandOption: false,
-          describe: 'Enable/disable proof of index',
-          type: 'boolean',
-          default: false,
-        },
         'query-limit': {
           demandOption: false,
           describe:
@@ -348,6 +336,18 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'The port the service will bind to',
       type: 'number',
     },
+    profiler: {
+      demandOption: false,
+      describe: 'Show profiler information to console output',
+      type: 'boolean',
+      default: false,
+    },
+    'proof-of-index': {
+      demandOption: false,
+      describe: 'Enable/disable proof of index',
+      type: 'boolean',
+      default: false,
+    },
     'pg-ca': {
       demandOption: false,
       describe:
@@ -380,4 +380,5 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
     },
-  });
+  })
+  .strict();
