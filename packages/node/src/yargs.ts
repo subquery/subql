@@ -4,7 +4,6 @@
 import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
-import { mmrRegenerateInit } from './subcommands/mmrRegenerate.init';
 
 export const yargsOptions = yargs(hideBin(process.argv))
   .env('SUBQL_NODE')
@@ -292,8 +291,16 @@ export const yargsOptions = yargs(hideBin(process.argv))
           type: 'number',
         },
       }),
-    handler: () => {
-      // Do nothing here, main logic will be triggered from main.ts
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFmt as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { bootstrap } = require('./init');
+      void bootstrap();
     },
   })
   // Default options, shared with all command

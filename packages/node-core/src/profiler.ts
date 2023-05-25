@@ -16,9 +16,15 @@ function printCost(start: number, end: number, target: string, method: string | 
   logger.info(`${target}, ${method.toString()}, ${end - start} ms`);
 }
 
-export function profiler(enabled = true): MethodDecorator {
+let enableProfiler = false;
+
+export function setProfiler(enabled: boolean): void {
+  enableProfiler = enabled;
+}
+
+export function profiler(): MethodDecorator {
   return (target, name: string | symbol, descriptor: PropertyDescriptor): void => {
-    if (enabled && !!descriptor && typeof descriptor.value === 'function') {
+    if (enableProfiler && !!descriptor && typeof descriptor.value === 'function') {
       const orig = descriptor.value;
       // tslint:disable no-function-expression no-invalid-this
       descriptor.value = function (...args: any[]): any {
