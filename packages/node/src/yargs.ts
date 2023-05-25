@@ -380,5 +380,4 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
     },
-  })
-  .strict();
+  });
