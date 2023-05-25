@@ -4,8 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
 
 ## [2.1.2] - 2023-05-26
@@ -22,12 +20,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Moved `FileType` from `@subql/common-substrate` (#1659)
 
 ## [2.0.0] - 2023-04-20
+### Changed
 - Major release for 2.0.0, align with other package versions
 
 ## [1.8.1] - 2023-03-30
 ### Added
 - Add types to support Multiple endpoints (#1551)
-### Fix
+
+### Fixed
 - Fix previous release 1.8.0 failed
 
 ## [1.8.0] - 2023-03-29
@@ -46,6 +46,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.5.0] - 2022-12-06
 ### Fixed
 - Fixed `subql codegen` flags. (#1446)
+
 ### Added
 - Support for `bypassBlocks`. (#1435)
 
@@ -88,15 +89,18 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.1.0] - 2022-05-31
 ### Fixed
 - Fix runner error check with pre-release (#1027)
+
 ### Added
 - Add constants for Mmr query api (#968)
 
 ## [1.0.0] - 2022-05-11
+### Changed
 - Major release
 
 ## [0.23.0] - 2022-05-11
 ### Fixed
 - Fix toDeployment with ds processor assets (#1000)
+
 ### Added
 - Add method to get path for manifest and schema, in order improve cli codegen (#1001)
 
@@ -113,7 +117,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Fix Terra dictionary queries type (#893)
 
 ## [0.21.0] - 2021-04-06
-### Add
+### Added
 - Add types for manifest 1.0.0 (#845)
 
 ## [0.20.0] - 2021-04-04
@@ -125,28 +129,32 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Moved substrate components to `@subql/common-substrate`
 
 ## [0.18.0] - 2021-02-24
-### Fixed 
+### Fixed
 - Fix function call from calling itself (#808)
+
 ### Changed
 - Update readers to support reader project from its manifest file (#800)
 
 ## [0.17.0] - 2021-02-09
 ### Added
 - Add manifest v0.2.1 to support dynamic data source
-### Changed 
+
+### Changed
 - Move readers from validator to common and use them for loading projects in the node (#511)
+
 ### Fixed
 - Add missing interfaces to common classes (#782)
 
 ## [0.16.0] - 2021-01-13
-### Added 
+### Added
 - Add rowCountEstimate to Metadata (#736)
 - Add method `findAvailablePort` (#739)
 
 ## [0.15.0] - 2021-12-16
-### Added 
+### Added
 - Support provide `filePath` and `rotate` option with logger. (#667)
 - Add support for loading chaintypes from js (#698)
+
 ### Fixed
 - Fixed load js file in sandbox (#717)
 
@@ -160,6 +168,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Add TypeClass, supported types mapping , support float type(#532)
 - Refactor dictionary gql queries (#613)
 - Process enum in entities (#551)
+
 ### Changed
 - Moved isCustomDs and isRuntimeDs to here (#610)
 - Remove descriptive field in deployment (#637)
@@ -169,8 +178,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Add `abi` to to project CustomDataSourceBase (#547)
 - Add `address` and rule to project CustomDataSourceBase, improve Moonbeam EVM (#593);
 - Move `abi` and `address` under `processor.options` (#598)
+
 ### Changed
 - Bump dependencies (#584)
+
 ### Fixed
 - Allow dictionary in ProjectManifest v0.2.0 (#578)
 
@@ -201,12 +212,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.9.0] - 2021-06-25
 ### Added
 - Add metadata type for query and additional rule of dictionary for project validation(#342)
+
 ### Changed
 - Update dependencies (#358)
 
 ## [0.8.3] - 2021-05-04
 ### Added
--  Indexing is automatically added into JSON field types in database to speed up query performance. Users should not add the `@index` annotation to any `@jsonField` as it will be automatically managed during the codegen process. We implement GIN indexes for JSON fields in our database (#291)
+- Indexing is automatically added into JSON field types in database to speed up query performance. Users should not add the `@index` annotation to any `@jsonField` as it will be automatically managed during the codegen process. We implement GIN indexes for JSON fields in our database (#291)
 
 ## [0.8.2] - 2021-04-21
 ### Added
@@ -215,7 +227,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.8.0] - 2021-04-20
 ### Fixed
 - We now support injecting a custom logger into your project that can accept different logging levels (#248)
-    - Read more about it in our [updated documentation](https://doc.subquery.network/create/introduction.html#logging)
+  - Read more about it in our [updated documentation](https://doc.subquery.network/create/introduction.html#logging)
 
 ### Added
 - Support network filter for dataSources (#247)
@@ -243,7 +255,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.4.0] - 2021-01-12
 ### Changed
-- [BREAKING] project manifest spec updated to support custom types (#65)
+- \[BREAKING] project manifest spec updated to support custom types (#65)
 
 ## [0.3.0] - 2021-01-06
 ### Added
@@ -253,17 +265,55 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/0.17.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/subquery/subql/compare/v2.1.1...v2.1.2
+[2.1.1]: https://github.com/subquery/subql/compare/common/2.1.0...common/2.1.1
+[2.1.0]: https://github.com/subquery/subql/compare/common/2.0.0...common/2.1.0
+[2.0.0]: https://github.com/subquery/subql/compare/common/1.8.1...common/2.0.0
+[1.8.1]: https://github.com/subquery/subql/compare/common/1.8.0...common/1.8.1
+[1.8.0]: https://github.com/subquery/subql/compare/common/1.7.0...common/1.8.0
+[1.7.0]: https://github.com/subquery/subql/compare/common/1.6.0...common/1.7.0
+[1.6.0]: https://github.com/subquery/subql/compare/common/1.5.0...common/1.6.0
+[1.5.0]: https://github.com/subquery/subql/compare/common/1.4.4...common/1.5.0
+[1.4.4]: https://github.com/subquery/subql/compare/common/1.4.4...common/1.4.4
+[1.4.3]: https://github.com/subquery/subql/compare/common/1.4.2...common/1.4.3
+[1.4.2]: https://github.com/subquery/subql/compare/common/1.4.1...common/1.4.2
+[1.4.1]: https://github.com/subquery/subql/compare/common/1.4.0...common/1.4.1
+[1.4.0]: https://github.com/subquery/subql/compare/common/1.3.0...common/1.4.0
+[1.3.0]: https://github.com/subquery/subql/compare/common/1.2.2...common/1.3.0
+[1.2.2]: https://github.com/subquery/subql/compare/common/1.2.1...common/1.2.2
+[1.2.1]: https://github.com/subquery/subql/compare/common/1.2.0...common/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/common/1.1.0...common/1.2.0
+[1.1.0]: https://github.com/subquery/subql/compare/common/1.0.0...common/1.1.0
+[1.0.0]: https://github.com/subquery/subql/compare/common/0.23.0...common/1.0.0
+[0.23.0]: https://github.com/subquery/subql/compare/common/0.22.0...common/0.23.0
+[0.22.0]: https://github.com/subquery/subql/compare/common/0.21.2...common/0.22.0
+[0.21.2]: https://github.com/subquery/subql/compare/common/0.21.1...common/0.21.2
+[0.21.1]: https://github.com/subquery/subql/compare/common/0.21.0...common/0.21.1
+[0.21.0]: https://github.com/subquery/subql/compare/common/0.20.0...common/0.21.0
+[0.20.0]: https://github.com/subquery/subql/compare/common/0.19.0...common/0.20.0
+[0.19.0]: https://github.com/subquery/subql/compare/common/0.18.0...common/0.19.0
+[0.18.0]: https://github.com/subquery/subql/compare/common/0.17.0...common/0.18.0
 [0.17.0]: https://github.com/subquery/subql/compare/common/0.16.0...common/0.17.0
 [0.16.0]: https://github.com/subquery/subql/compare/common/0.15.0...common/0.16.0
 [0.15.0]: https://github.com/subquery/subql/compare/common/0.14.1...common/0.15.0
 [0.14.1]: https://github.com/subquery/subql/compare/common/0.14.0...common/0.14.1
 [0.14.0]: https://github.com/subquery/subql/compare/common/0.13.0...common/0.14.0
 [0.13.0]: https://github.com/subquery/subql/compare/common/0.12.0...common/0.13.0
+[0.12.0]: https://github.com/subquery/subql/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/subquery/subql/compare/v0.10.1...v0.11.0
+[0.10.1]: https://github.com/subquery/subql/compare/v0.10.0...v0.10.1
+[0.10.0]: https://github.com/subquery/subql/compare/v0.9.2...v0.10.0
+[0.9.2]: https://github.com/subquery/subql/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/subquery/subql/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/subquery/subql/compare/v0.8.3...v0.9.0
+[0.8.3]: https://github.com/subquery/subql/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/subquery/subql/compare/v0.8.0...v0.8.2
 [0.8.0]: https://github.com/subquery/subql/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/subquery/subql/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/OnFinality-io/subql/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/OnFinality-io/subql/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/OnFinality-io/subql/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OnFinality-io/subql/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OnFinality-io/subql/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/OnFinality-io/subql/tags/v0.2.0
