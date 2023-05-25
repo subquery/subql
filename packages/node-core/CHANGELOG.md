@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2023-05-26
+### Fixed
+- Improve mmr error and expose ready status (#1752)
+- Fix subcommand could escape issue, setup profiler at application init (#1755)
+
 ## [2.3.0] - 2023-05-24
 ### Fixed
 - Fix datasource processors base filters not working (#1745)
@@ -251,7 +256,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.3.1...HEAD
+[2.3.1]: https://github.com/subquery/subql/compare/node-core/v2.3.0...node-core/v2.3.1
 [2.3.0]: https://github.com/subquery/subql/compare/node-core/v2.2.2...node-core/v2.3.0
 [2.2.2]: https://github.com/subquery/subql/compare/node-core/2.2.1...node-core/2.2.2
 [2.2.1]: https://github.com/subquery/subql/compare/node-core/2.2.0...node-core/2.2.1
