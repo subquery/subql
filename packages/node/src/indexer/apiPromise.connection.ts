@@ -26,7 +26,9 @@ export class ApiPromiseConnection implements ApiConnection {
     };
 
     if (endpoint.startsWith('ws')) {
-      provider = new WsProvider(endpoint, RETRY_DELAY, headers);
+      provider = ApiPromiseConnection.createCachedWsProvider(
+        new WsProvider(endpoint, RETRY_DELAY, headers),
+      );
     } else if (endpoint.startsWith('http')) {
       provider = new HttpProvider(endpoint, headers);
       throwOnConnect = true;
@@ -53,16 +55,52 @@ export class ApiPromiseConnection implements ApiConnection {
     await this._api.disconnect();
   }
 
-  static handleError(e: Error): Error {
-    let formatted_error: Error;
-    if (e.message.startsWith(`No response received from RPC endpoint in`)) {
-      formatted_error = this.handleTimeoutError(e);
-    } else if (e.message.startsWith(`disconnected from `)) {
-      formatted_error = this.handleDisconnectionError(e);
-    } else {
-      formatted_error = e;
-    }
-    return formatted_error;
+  /* eslint-disable prefer-rest-params */
+  static createCachedWsProvider(wsProvider) {
+    const cacheMap = new Map();
+
+    const cachedMethodHandler = (method, params, target, args) => {
+      const cacheKey = `${method}-${params[0]}`;
+      if (cacheMap.has(cacheKey)) {
+        return Promise.resolve(cacheMap.get(cacheKey));
+      }
+
+      return (Reflect.apply(target, wsProvider, args) as Promise<any>).then(
+        (result) => {
+          cacheMap.set(cacheKey, result);
+          return result;
+        },
+      );
+    };
+
+    return new Proxy(wsProvider, {
+      get: function (target, prop, receiver) {
+        if (prop === 'send') {
+          return function (method, params, isCacheable, subscription) {
+            if (
+              ['state_getRuntimeVersion', 'chain_getHeader'].includes(method)
+            ) {
+              return cachedMethodHandler(
+                method,
+                params,
+                target.send.bind(target),
+                arguments,
+              );
+            }
+
+            // For other methods, just forward the call to the original method.
+            return Reflect.apply(
+              target.send.bind(target),
+              wsProvider,
+              arguments,
+            );
+          };
+        }
+
+        // For other properties, just return the original value.
+        return Reflect.get(target, prop, receiver);
+      },
+    });
   }
 
   static handleTimeoutError(e: Error): Error {
