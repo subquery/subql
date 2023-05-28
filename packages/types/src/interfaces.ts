@@ -5,8 +5,7 @@ import {CosmWasmClient} from '@cosmjs/cosmwasm-stargate';
 import {DecodedTxRaw} from '@cosmjs/proto-signing';
 import {Event} from '@cosmjs/stargate';
 import {Log} from '@cosmjs/stargate/build/logs';
-import {TxData, Block, BlockId, Header} from '@cosmjs/tendermint-rpc';
-import {Validator} from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+import {Validator, TxData, Block, BlockId, Header} from '@cosmjs/tendermint-rpc/build/tendermint37';
 
 export interface CosmWasmSafeClient extends CosmWasmClient {
   validators: () => Promise<readonly Validator[]>;

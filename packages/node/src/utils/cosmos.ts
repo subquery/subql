@@ -5,10 +5,14 @@ import assert from 'assert';
 import { sha256 } from '@cosmjs/crypto';
 import { toHex } from '@cosmjs/encoding';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
-import { fromTendermint34Event } from '@cosmjs/stargate';
+import { fromTendermintEvent } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
-import { BlockResultsResponse, TxData, Event } from '@cosmjs/tendermint-rpc';
-import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+import {
+  BlockResponse,
+  BlockResultsResponse,
+  TxData,
+  Event,
+} from '@cosmjs/tendermint-rpc/build/tendermint37';
 import { getLogger } from '@subql/node-core';
 import {
   SubqlCosmosEventFilter,
@@ -257,7 +261,7 @@ export function wrapBlockBeginAndEndEvents(
     (event) =>
       <CosmosEvent>{
         idx: idxOffset++,
-        event: fromTendermint34Event(event),
+        event: fromTendermintEvent(event),
         block: block,
         msg: null,
         tx: null,

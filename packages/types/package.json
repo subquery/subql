@@ -15,8 +15,8 @@
     "/dist"
   ],
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "^0.29.5",
-    "@cosmjs/proto-signing": "^0.29.5",
-    "@cosmjs/stargate": "^0.29.5"
+    "@cosmjs/cosmwasm-stargate": "^0.30.1",
+    "@cosmjs/proto-signing": "^0.30.1",
+    "@cosmjs/stargate": "^0.30.1"
   }
 }

@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TextDecoder } from 'util';
-import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { CosmWasmClient, IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
-import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
+import { Block, defaultRegistryTypes } from '@cosmjs/stargate';
 import {
-  Tendermint34Client,
+  Tendermint37Client,
   toRfc3339WithNanoseconds,
-  BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import {
   BlockResponse,
   Validator,
-} from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+  BlockResultsResponse,
+} from '@cosmjs/tendermint-rpc/build/tendermint37/responses';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
   getLogger,
@@ -199,7 +199,7 @@ export class ApiService
 
 export class CosmosClient extends CosmWasmClient {
   constructor(
-    private readonly tendermintClient: Tendermint34Client,
+    private readonly tendermintClient: Tendermint37Client,
     public registry: Registry,
   ) {
     super(tendermintClient);
@@ -277,7 +277,7 @@ export class CosmosSafeClient
 {
   height: number;
 
-  constructor(tmClient: Tendermint34Client, height: number) {
+  constructor(tmClient: Tendermint37Client, height: number) {
     super(tmClient);
     this.height = height;
   }
@@ -319,6 +319,7 @@ export class CosmosSafeClient
     const results = await this.forceGetTmClient().txSearchAll({ query: query });
     return results.txs.map((tx) => {
       return {
+        txIndex: tx.index,
         height: tx.height,
         hash: toHex(tx.hash).toUpperCase(),
         code: tx.result.code,

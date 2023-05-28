@@ -14,7 +14,6 @@ import {
 } from '@subql/common-cosmos';
 import {
   NodeConfig,
-  getLogger,
   profiler,
   IndexerSandbox,
   ProcessBlockResponse,
@@ -41,8 +40,6 @@ import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-
-const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
@@ -85,7 +82,7 @@ export class IndexerManager extends BaseIndexerManager<
     logger.info('indexer manager started');
   }
 
-  @profiler(yargsOptions.argv.profiler)
+  @profiler()
   async indexBlock(
     block: BlockContent,
     dataSources: SubqlCosmosDatasource[],

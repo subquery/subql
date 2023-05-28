@@ -3,7 +3,7 @@
 
 import { Registry } from '@cosmjs/proto-signing';
 import { HttpEndpoint } from '@cosmjs/stargate';
-import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
+import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { ApiConnection } from '@subql/node-core';
 import { getLogger } from '@subql/node-core/dist';
 import { CosmosClient, CosmosSafeClient } from './api.service';
@@ -17,7 +17,7 @@ const RETRY_DELAY = 2_500;
 const logger = getLogger('cosmos-client-connection');
 
 export class CosmosClientConnection implements ApiConnection {
-  private tmClient: Tendermint34Client;
+  private tmClient: Tendermint37Client;
   private registry: Registry;
 
   constructor(private _api: CosmosClient) {}
@@ -41,7 +41,7 @@ export class CosmosClientConnection implements ApiConnection {
           })
         : new HttpClient(httpEndpoint);
 
-    const tendermint = await Tendermint34Client.create(rpcClient);
+    const tendermint = await Tendermint37Client.create(rpcClient);
 
     const api = new CosmosClient(tendermint, registry);
 
@@ -62,7 +62,7 @@ export class CosmosClientConnection implements ApiConnection {
     return new CosmosSafeClient(this.tmClient, height);
   }
 
-  private setTmClient(tmClient: Tendermint34Client): void {
+  private setTmClient(tmClient: Tendermint37Client): void {
     this.tmClient = tmClient;
   }
 
