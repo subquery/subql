@@ -16,4 +16,4 @@ export {
   isNull,
 } from '@polkadot/util';
 
-export {blake2AsHex, blake2AsU8a, isBase58, base58Decode} from '@polkadot/util-crypto';
+export {blake2AsHex, blake2AsU8a, isBase58, isBase64, base58Decode, base64Decode} from '@polkadot/util-crypto';
