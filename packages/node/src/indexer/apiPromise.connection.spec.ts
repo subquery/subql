@@ -20,14 +20,17 @@ describe('ApiPromiseConnection', () => {
       'User-Agent': `SubQuery-Node ${packageVersion}`,
     };
 
-    //wsProvider = new WsProvider('wss://kusama.api.onfinality.io/public-ws', RETRY_DELAY, headers);
+    wsProvider = new WsProvider(
+      'wss://kusama.api.onfinality.io/public-ws',
+      RETRY_DELAY,
+      headers,
+    );
     httpProvider = new HttpProvider('https://kusama.api.onfinality.io/public');
 
-    //jest.spyOn(wsProvider, 'send');
+    jest.spyOn(wsProvider, 'send');
     jest.spyOn(httpProvider, 'send');
   });
 
-  /*
   afterEach(async () => {
     if (wsProvider.isConnected) {
       await wsProvider.disconnect();
@@ -35,7 +38,8 @@ describe('ApiPromiseConnection', () => {
   });
 
   it('should not make duplicate requests for state_getRuntimeVersion on wsProvider', async () => {
-    const cachedProvider = ApiPromiseConnection.createCachedProvider(wsProvider);
+    const cachedProvider =
+      ApiPromiseConnection.createCachedProvider(wsProvider);
 
     await cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]);
     await cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]);
@@ -44,14 +48,14 @@ describe('ApiPromiseConnection', () => {
   });
 
   it('should not make duplicate requests for chain_getHeader on wsProvider', async () => {
-    const cachedProvider = ApiPromiseConnection.createCachedProvider(wsProvider);
+    const cachedProvider =
+      ApiPromiseConnection.createCachedProvider(wsProvider);
 
     await cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]);
     await cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]);
 
     expect(wsProvider.send).toHaveBeenCalledTimes(1);
   });
-  */
 
   it('should not make duplicate requests for state_getRuntimeVersion on httpProvider', async () => {
     const cachedProvider =
