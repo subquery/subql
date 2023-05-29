@@ -69,7 +69,23 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async delete(key: string): Promise<void> {
+  async bulkSet(entries: Record<number, any>): Promise<void> {
+    const data = Object.entries(entries).map(([key, value]) => {
+      if (value === null || value === undefined) {
+        throw new Error(`Cannot set a null or undefined value for key: ${key}`);
+      }
+      // Parse to work around Object.entries converting all keys to string
+      return {key: parseInt(key, 10), value};
+    });
+
+    try {
+      await this.mmrIndexValueStore.bulkCreate(data);
+    } catch (error) {
+      throw new Error(`Failed to bulk store MMR Node: ${error}`);
+    }
+  }
+
+  async delete(key: number): Promise<void> {
     try {
       await this.mmrIndexValueStore.destroy({where: {key}});
     } catch (error) {

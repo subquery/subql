@@ -14,9 +14,8 @@ import {MmrPayload, MmrProof} from '../events';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
 import {delay, getExistingProjectSchema} from '../utils';
-import {ProofOfIndex} from './entities';
-import {PgBasedMMRDB} from './postgresMmrDb';
-import {StoreCacheService} from './storeCache';
+import {ProofOfIndex, PgBasedMMRDB} from './entities';
+import {StoreCacheService, CachePgMmrDb} from './storeCache';
 const logger = getLogger('mmr');
 
 const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
@@ -259,8 +258,8 @@ export class MmrService implements OnApplicationShutdown {
   private async ensurePostgresBasedMmr(): Promise<MMR> {
     const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
     assert(schema, 'Unable to check for MMR table, schema is undefined');
-    const postgresBasedDb = await PgBasedMMRDB.create(this.sequelize, schema);
-    return new MMR(keccak256Hash, postgresBasedDb);
+    const db = await CachePgMmrDb.create(this.sequelize, schema);
+    return new MMR(keccak256Hash, db);
   }
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {
