@@ -4,12 +4,15 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 import { ApiConnection } from '@subql/node-core';
+import LRUCache from 'lru-cache';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
+const MAX_CACHE_SIZE = 200;
+const CACHE_TTL = 60 * 1000;
 
 export class ApiPromiseConnection implements ApiConnection {
   constructor(private _api: ApiPromise) {}
@@ -26,11 +29,13 @@ export class ApiPromiseConnection implements ApiConnection {
     };
 
     if (endpoint.startsWith('ws')) {
-      provider = ApiPromiseConnection.createCachedWsProvider(
+      provider = ApiPromiseConnection.createCachedProvider(
         new WsProvider(endpoint, RETRY_DELAY, headers),
       );
     } else if (endpoint.startsWith('http')) {
-      provider = new HttpProvider(endpoint, headers);
+      provider = ApiPromiseConnection.createCachedProvider(
+        new HttpProvider(endpoint, headers),
+      );
       throwOnConnect = true;
     }
 
@@ -56,8 +61,8 @@ export class ApiPromiseConnection implements ApiConnection {
   }
 
   /* eslint-disable prefer-rest-params */
-  static createCachedWsProvider(wsProvider) {
-    const cacheMap = new Map();
+  static createCachedProvider(provider: WsProvider | HttpProvider) {
+    const cacheMap = new LRUCache({ max: MAX_CACHE_SIZE, ttl: CACHE_TTL });
 
     const cachedMethodHandler = (method, params, target, args) => {
       const cacheKey = `${method}-${params[0]}`;
@@ -65,7 +70,7 @@ export class ApiPromiseConnection implements ApiConnection {
         return Promise.resolve(cacheMap.get(cacheKey));
       }
 
-      return (Reflect.apply(target, wsProvider, args) as Promise<any>).then(
+      return (Reflect.apply(target, provider, args) as Promise<any>).then(
         (result) => {
           cacheMap.set(cacheKey, result);
           return result;
@@ -73,7 +78,7 @@ export class ApiPromiseConnection implements ApiConnection {
       );
     };
 
-    return new Proxy(wsProvider, {
+    return new Proxy(provider, {
       get: function (target, prop, receiver) {
         if (prop === 'send') {
           return function (method, params, isCacheable, subscription) {
@@ -89,11 +94,7 @@ export class ApiPromiseConnection implements ApiConnection {
             }
 
             // For other methods, just forward the call to the original method.
-            return Reflect.apply(
-              target.send.bind(target),
-              wsProvider,
-              arguments,
-            );
+            return Reflect.apply(target.send.bind(target), provider, arguments);
           };
         }
 
@@ -101,6 +102,18 @@ export class ApiPromiseConnection implements ApiConnection {
         return Reflect.get(target, prop, receiver);
       },
     });
+  }
+
+  static handleError(e: Error): Error {
+    let formatted_error: Error;
+    if (e.message.startsWith(`No response received from RPC endpoint in`)) {
+      formatted_error = this.handleTimeoutError(e);
+    } else if (e.message.startsWith(`disconnected from `)) {
+      formatted_error = this.handleDisconnectionError(e);
+    } else {
+      formatted_error = e;
+    }
+    return formatted_error;
   }
 
   static handleTimeoutError(e: Error): Error {
