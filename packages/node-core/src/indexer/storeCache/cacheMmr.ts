@@ -56,6 +56,7 @@ export class CachePgMmrDb implements Db {
   async delete(key: number): Promise<void> {
     await this.db.delete(key);
     this.cacheData.delete(key);
+    delete this.setData[key];
   }
 
   async getLeafLength(): Promise<number> {
@@ -73,6 +74,6 @@ export class CachePgMmrDb implements Db {
   }
 
   async getNodes(): Promise<Record<number, Uint8Array>> {
-    return this.db.getNodes();
+    return {...(await this.db.getNodes()), ...this.setData};
   }
 }
