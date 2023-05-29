@@ -3,3 +3,4 @@
 
 export * from './Poi.entity';
 export * from './Metadata.entity';
+export * from './Mmr.entitiy';

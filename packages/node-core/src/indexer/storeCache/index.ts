@@ -5,3 +5,4 @@ export * from './storeCache.service';
 export * from './types';
 export * from './cacheModel';
 export * from './cacheMetadata';
+export * from './cacheMmr';
