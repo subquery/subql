@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ApiPromise } from '@polkadot/api';
 import { WsProvider, HttpProvider } from '@polkadot/rpc-provider';
 import { ApiPromiseConnection } from './apiPromise.connection';
 
@@ -15,26 +16,14 @@ describe('ApiPromiseConnection', () => {
   let wsProvider;
   let httpProvider;
 
-  beforeEach(() => {
-    const headers = {
-      'User-Agent': `SubQuery-Node ${packageVersion}`,
-    };
-
-    wsProvider = new WsProvider(
-      'wss://kusama.api.onfinality.io/public-ws',
-      RETRY_DELAY,
-      headers,
-    );
+  beforeEach(async () => {
+    wsProvider = new WsProvider('wss://kusama.api.onfinality.io/public-ws');
     httpProvider = new HttpProvider('https://kusama.api.onfinality.io/public');
+
+    const api = await ApiPromise.create({ provider: wsProvider });
 
     jest.spyOn(wsProvider, 'send');
     jest.spyOn(httpProvider, 'send');
-  });
-
-  afterEach(async () => {
-    if (wsProvider.isConnected) {
-      await wsProvider.disconnect();
-    }
   });
 
   it('should not make duplicate requests for state_getRuntimeVersion on wsProvider', async () => {
