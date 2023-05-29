@@ -87,71 +87,85 @@ export class ApiService
 
     const endpointToApiIndex: Record<string, ApiPromiseConnection> = {};
 
-    await Promise.all(
+    const results = await Promise.allSettled(
       network.endpoint.map(async (endpoint, i) => {
-        const connection = await ApiPromiseConnection.create(
-          endpoint,
-          this.fetchBlocksBatches,
-          {
-            chainTypes,
-          },
-        );
+        try {
+          const connection = await ApiPromiseConnection.create(
+            endpoint,
+            this.fetchBlocksBatches,
+            {
+              chainTypes,
+            },
+          );
 
-        const api = connection.unsafeApi;
+          const api = connection.unsafeApi;
 
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 1,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-
-        api.on('connected', () => {
           this.eventEmitter.emit(IndexerEvent.ApiConnected, {
             value: 1,
             apiIndex: i,
             endpoint: endpoint,
           });
-        });
-        api.on('disconnected', () => {
-          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-            value: 0,
-            apiIndex: i,
-            endpoint: endpoint,
+
+          api.on('connected', () => {
+            this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+              value: 1,
+              apiIndex: i,
+              endpoint: endpoint,
+            });
           });
-          this.connectionPoolService.handleApiDisconnects(i, endpoint);
-        });
+          api.on('disconnected', () => {
+            this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+              value: 0,
+              apiIndex: i,
+              endpoint: endpoint,
+            });
+            this.connectionPoolService.handleApiDisconnects(i, endpoint);
+          });
 
-        if (!this.networkMeta) {
-          this.networkMeta = connection.networkMeta;
+          if (!this.networkMeta) {
+            if (
+              network.chainId &&
+              network.chainId !== connection.networkMeta.genesisHash
+            ) {
+              const err = new Error(
+                `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
+                  network.chainId ?? network.genesisHash
+                }", however the endpoint that you are connecting to is different("${
+                  connection.networkMeta.genesisHash
+                }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
+              );
+              logger.error(err, err.message);
+              throw err;
+            }
 
-          if (
-            network.chainId &&
-            network.chainId !== this.networkMeta.genesisHash
-          ) {
-            const err = new Error(
-              `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
-                network.chainId ?? network.genesisHash
-              }", however the endpoint that you are connecting to is different("${
-                this.networkMeta.genesisHash
-              }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-            );
-            logger.error(err, err.message);
-            throw err;
+            this.networkMeta = connection.networkMeta;
+          } else {
+            const genesisHash = api.genesisHash.toString();
+            if (this.networkMeta.genesisHash !== genesisHash) {
+              throw this.metadataMismatchError(
+                'Genesis Hash',
+                this.networkMeta.genesisHash,
+                genesisHash,
+              );
+            }
           }
-        } else {
-          const genesisHash = api.genesisHash.toString();
-          if (this.networkMeta.genesisHash !== genesisHash) {
-            throw this.metadataMismatchError(
-              'Genesis Hash',
-              this.networkMeta.genesisHash,
-              genesisHash,
-            );
-          }
+
+          endpointToApiIndex[endpoint] = connection;
+          return { status: 'fulfilled', value: connection };
+        } catch (err) {
+          logger.error(
+            `Error connecting to endpoint ${endpoint}: ${err.message}`,
+          );
+          return { status: 'rejected', reason: err, endpoint: endpoint };
         }
-
-        endpointToApiIndex[endpoint] = connection;
       }),
     );
+
+    if (
+      results.filter((result) => result.status === 'fulfilled').length === 0
+    ) {
+      throw new Error('None of the endpoints are working.');
+    }
 
     this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
     return this;

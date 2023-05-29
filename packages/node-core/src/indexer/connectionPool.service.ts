@@ -42,6 +42,7 @@ interface ConnectionPoolItem<T> {
   rateLimited: boolean;
   failed: boolean;
   lastRequestTime: number;
+  timeoutId?: NodeJS.Timeout;
 }
 
 @Injectable()
@@ -58,6 +59,13 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   };
 
   async onApplicationShutdown(): Promise<void> {
+    // Clear all timeouts before disconnecting from APIs
+    Object.values(this.pool).forEach((poolItem) => {
+      if (poolItem.timeoutId) {
+        clearTimeout(poolItem.timeoutId);
+      }
+    });
+
     await Promise.all(Object.values(this.pool).map((poolItem) => poolItem.connection.apiDisconnect()));
   }
 
@@ -243,10 +251,15 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
         this.pool[apiIndex].failed = true;
       }
 
-      setTimeout(() => {
+      if (this.pool[apiIndex].timeoutId) {
+        clearTimeout(this.pool[apiIndex].timeoutId as NodeJS.Timeout);
+      }
+
+      this.pool[apiIndex].timeoutId = setTimeout(() => {
         this.pool[apiIndex].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
         this.pool[apiIndex].rateLimited = false;
         this.pool[apiIndex].failed = false;
+        this.pool[apiIndex].timeoutId = undefined; // Clear the timeout ID
       }, nextDelay);
 
       logger.warn(

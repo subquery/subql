@@ -23,9 +23,7 @@ export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi
 }
 
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
-  constructor(
-    protected connectionPoolService: ConnectionPoolService<IApi<A, SA, B> & IApiConnectionSpecific<A, SA, B>>
-  ) {}
+  constructor(protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>) {}
   abstract networkMeta: NetworkMetadataPayload;
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {
