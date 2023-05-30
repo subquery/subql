@@ -22,6 +22,7 @@ import {
   BooleanValueNode,
 } from 'graphql';
 import {findDuplicateStringArray} from '../array';
+import {Logger} from '../logger';
 import {getTypeByScalarName} from '../types';
 import {DirectiveName} from './constant';
 import {buildSchemaFromFile} from './schema';
@@ -35,6 +36,8 @@ import {
   GraphQLRelationsType,
   IndexType,
 } from './types';
+
+const logger = new Logger({level: 'info', outputFormat: 'colored'}).getLogger('Utils.entities');
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
   return Object.values(getSchema(_schema).getTypeMap())
@@ -197,9 +200,12 @@ function getJoinIndexFields(
   fkNameSet: string[],
   IndexArgFields: string[]
 ): string[] {
-  if (IndexArgFields.length < 2 || IndexArgFields.length > 3) {
+  if (IndexArgFields.length === 1) {
+    logger.warn(`Composite index expected to be more than 1 field , entity ${entity} [${IndexArgFields}]`);
+  }
+  if (IndexArgFields.length > 3) {
     throw new Error(
-      `Composite index on entity ${entity} allow 2-3 fields, index [${IndexArgFields}] got ${IndexArgFields.length} fields`
+      `Composite index on entity ${entity} expected not more than 3 fields, index [${IndexArgFields}] got ${IndexArgFields.length} fields`
     );
   }
   // check duplicate fields
