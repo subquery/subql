@@ -55,6 +55,7 @@ export interface IConfig {
   readonly storeCacheAsync: boolean;
   readonly scaleBatchSize?: boolean;
   readonly storeFlushInterval: number;
+  readonly isTest?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -85,8 +86,9 @@ const DEFAULT_CONFIG = {
 
 export class NodeConfig implements IConfig {
   private readonly _config: IConfig;
+  private readonly _isTest: boolean;
 
-  static fromFile(filePath: string, configFromArgs?: Partial<IConfig>): NodeConfig {
+  static fromFile(filePath: string, configFromArgs?: Partial<IConfig>, isTest?: boolean): NodeConfig {
     if (!fs.existsSync(filePath)) {
       throw new Error(`Load config from file ${filePath} is not exist`);
     }
@@ -99,16 +101,17 @@ export class NodeConfig implements IConfig {
     }
 
     const config = assign(configFromFile, configFromArgs) as IConfig;
-    return new NodeConfig(config);
+    return new NodeConfig(config, isTest);
   }
 
-  static rebaseWithArgs(config: NodeConfig, configFromArgs?: Partial<IConfig>): NodeConfig {
+  static rebaseWithArgs(config: NodeConfig, configFromArgs?: Partial<IConfig>, isTest?: boolean): NodeConfig {
     const _config = assign({}, (config as any)._config, configFromArgs) as IConfig;
-    return new NodeConfig(_config);
+    return new NodeConfig(_config, isTest);
   }
 
-  constructor(config: MinConfig) {
+  constructor(config: MinConfig, isTest?: boolean) {
     this._config = assign({}, DEFAULT_CONFIG, config);
+    this._isTest = isTest ?? false;
   }
 
   get subquery(): string {
@@ -215,7 +218,8 @@ export class NodeConfig implements IConfig {
   }
 
   get dbSchema(): string {
-    return this._config.dbSchema ?? this.subqueryName;
+    const schema = this._config.dbSchema ?? this.subqueryName;
+    return this._isTest ? `test-${schema}` : schema;
   }
 
   get workers(): number | undefined {

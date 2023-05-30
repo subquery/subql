@@ -61,18 +61,20 @@ export class ConfigureModule {
     let rawManifest: unknown;
     let reader: Reader;
 
+    const isTest = argv._[0] === 'test';
+
     // Override order : Sub-command/Args/Flags > Manifest Runner options > Default configs
     // Therefore, we should rebase the manifest runner options with args first but not the config in the end
     if (argv.config) {
       // get manifest options
-      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
+      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv), isTest);
       reader = await ReaderFactory.create(config.subquery, {
         ipfs: config.ipfs,
       });
       rawManifest = await reader.getProjectSchema();
       rebaseArgsWithManifest(argv, rawManifest);
       // use rebased argv generate config to override current config
-      config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv));
+      config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv), isTest);
     } else {
       if (!argv.subquery) {
         logger.error(
@@ -90,7 +92,10 @@ export class ConfigureModule {
       rawManifest = await reader.getProjectSchema();
       rebaseArgsWithManifest(argv, rawManifest);
       // Create new nodeConfig with rebased argv
-      config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
+      config = new NodeConfig(
+        defaultSubqueryName(yargsToIConfig(argv)),
+        isTest,
+      );
     }
 
     if (!validDbSchemaName(config.dbSchema)) {
@@ -120,25 +125,12 @@ export class ConfigureModule {
       return p;
     };
 
-    //append `test-` dbSchema if test sub-command is called
-    const proxyConfig = new Proxy(config, {
-      get: function (target, property, receiver) {
-        if (property === 'dbSchema') {
-          if (argv._[0] === 'test') {
-            const originalGetter = Reflect.get(target, property, receiver);
-            return `test-${originalGetter}`;
-          }
-        }
-        return Reflect.get(target, property, receiver);
-      },
-    });
-
     return {
       module: ConfigureModule,
       providers: [
         {
           provide: NodeConfig,
-          useValue: proxyConfig,
+          useValue: config,
         },
         {
           provide: 'ISubqueryProject',
