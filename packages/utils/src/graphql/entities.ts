@@ -164,7 +164,6 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           throw new Error(`index can not be added on field ${field.name}`);
         }
       }
-      // If is CompositeIndex
     }
 
     // Composite Indexes
