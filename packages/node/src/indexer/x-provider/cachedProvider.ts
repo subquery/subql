@@ -8,18 +8,23 @@ const MAX_CACHE_SIZE = 200;
 const CACHE_TTL = 60 * 1000;
 
 /* eslint-disable prefer-rest-params */
-export function createCachedProvider(provider: ProviderInterface) {
-  const cacheMap = new LRUCache({ max: MAX_CACHE_SIZE, ttl: CACHE_TTL });
+export function createCachedProvider(
+  provider: ProviderInterface,
+): ProviderInterface {
+  const cacheMap = new LRUCache<string, Promise<any>>({
+    max: MAX_CACHE_SIZE,
+    ttl: CACHE_TTL,
+  });
 
   const cachedMethodHandler = (method, params, target, args) => {
     const cacheKey = `${method}-${params[0]}`;
     if (cacheMap.has(cacheKey)) {
-      return Promise.resolve(cacheMap.get(cacheKey));
+      return cacheMap.get(cacheKey);
     }
 
     const resultPromise: Promise<any> = Reflect.apply(target, provider, args);
     cacheMap.set(cacheKey, resultPromise);
-    return Promise.resolve(resultPromise);
+    return resultPromise;
   };
 
   return new Proxy(provider, {
