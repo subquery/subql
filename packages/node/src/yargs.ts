@@ -279,16 +279,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
           type: 'number',
         },
       }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { bootstrap } = require('./init');
-      void bootstrap();
+    handler: () => {
+      // boostrap trigger in main.ts
     },
   })
   // Default options, shared with all command
