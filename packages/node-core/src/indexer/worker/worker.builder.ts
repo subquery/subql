@@ -189,10 +189,9 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     hostFns: H,
     root: string
   ): Worker<T> & T {
-    const argv = argsWithRoot(root);
     const worker = new Worker(
       new workers.Worker(path, {
-        argv,
+        argv: [...process.argv, '--root', root],
       }),
       workerFns,
       hostFns
@@ -209,12 +208,4 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
   async terminate(): Promise<number> {
     return this.worker.terminate();
   }
-}
-
-// Replaces the project path with a root.
-// This is so that workers can used the local temp files if its originally from IPFS or GitHub
-function argsWithRoot(root?: string) {
-  if (!root) return process.argv;
-
-  return [...process.argv, '--root', root];
 }
