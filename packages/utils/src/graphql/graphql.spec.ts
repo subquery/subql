@@ -360,6 +360,8 @@ describe('utils that handle schema.graphql', () => {
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
-    expect(() => getAllEntitiesRelations(schema)).toThrow(/Composite index on entity StarterEntity allow 2-3 fields,/);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(
+      /Composite index on entity StarterEntity expected not more than 3 fields,/
+    );
   });
 });
