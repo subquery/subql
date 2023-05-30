@@ -242,7 +242,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         block,
         includeTx
           ? block.transactions.map((tx) => ({
-              ...formatTransaction(tx),
+              ...formatTransaction(tx, block),
               // TODO memoise
               receipt: () =>
                 this.getTransactionReceipt(tx.hash).then((r) =>

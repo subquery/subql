@@ -57,6 +57,7 @@ export type FlareBlock = EthereumBlock;
 export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   blockHash: string;
   blockNumber: number;
+  blockTimestamp: bigint;
   from: string;
   gas: bigint;
   gasPrice: bigint;

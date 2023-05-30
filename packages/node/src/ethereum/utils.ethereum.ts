@@ -81,12 +81,14 @@ export function formatLog(
 
 export function formatTransaction(
   tx: Record<string, any>,
+  block: EthereumBlock,
 ): EthereumTransaction {
   return {
     ...(tx as Partial<EthereumTransaction>),
     from: handleAddress(tx.from),
     to: handleAddress(tx.to),
     blockNumber: handleNumber(tx.blockNumber).toNumber(),
+    blockTimestamp: block.timestamp,
     gas: handleNumber(tx.gas).toBigInt(),
     gasPrice: handleNumber(tx.gasPrice).toBigInt(),
     nonce: handleNumber(tx.nonce).toBigInt(),
