@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { Reader, ReaderFactory } from '@subql/common';
+import { Reader, ReaderFactory, RUNNER_ERROR_REGEX } from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
 import {
   IConfig,
@@ -115,7 +115,17 @@ export class ConfigureModule {
         ),
         config.root,
       ).catch((err) => {
-        logger.error(err, 'Create Subquery project from given path failed!');
+        if (JSON.stringify(err.message).includes(RUNNER_ERROR_REGEX)) {
+          // lazy load, only fetch package.json when required
+          const pjson = require('../../package.json');
+          logger.error(
+            `Failed to init project, required runner is ${
+              (rawManifest as any).runner.node.name
+            }, got ${pjson.name}`,
+          );
+        } else {
+          logger.error(err, 'Create Subquery project from given path failed!');
+        }
         process.exit(1);
       });
       return p;
