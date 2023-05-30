@@ -415,10 +415,6 @@ export async function generateModels(projectPath: string, schema: string): Promi
     const importJsonInterfaces = uniq(fields.filter((field) => field.isJsonInterface).map((f) => f.type));
     const importEnums = fields.filter((field) => field.isEnum).map((f) => f.type);
     const indexedFields = fields.filter((field) => field.indexed && !field.isJsonInterface);
-
-    //TODO, use composite indexes generate get method in model interface
-    const compositeIndexes = Object.values(entity.indexes).filter((c) => c.fields.length > 1);
-
     const modelTemplate = {
       props: {
         baseFolderPath,
