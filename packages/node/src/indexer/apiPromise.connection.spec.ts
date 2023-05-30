@@ -1,68 +1,64 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApiPromise } from '@polkadot/api';
-import { WsProvider, HttpProvider } from '@polkadot/rpc-provider';
-import { ApiPromiseConnection } from './apiPromise.connection';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
-const RETRY_DELAY = 2_500;
+import { WsProvider } from '@polkadot/rpc-provider';
+import { createCachedProvider } from './x-provider/cachedProvider';
+import { HttpProvider } from './x-provider/http';
 
 const TEST_BLOCKHASH =
   '0x3b712c10ba98c5421a468d1411c94479381be307b7ecb5b2602cf0d395eb4292';
 
 describe('ApiPromiseConnection', () => {
-  let wsProvider;
-  let httpProvider;
+  let wsProvider: WsProvider;
+  let httpProvider: HttpProvider;
 
   beforeEach(async () => {
-    wsProvider = new WsProvider('wss://kusama.api.onfinality.io/public-ws');
+    wsProvider = await new WsProvider(
+      'wss://kusama.api.onfinality.io/public-ws',
+    ).isReady;
     httpProvider = new HttpProvider('https://kusama.api.onfinality.io/public');
-
-    const api = await ApiPromise.create({ provider: wsProvider });
 
     jest.spyOn(wsProvider, 'send');
     jest.spyOn(httpProvider, 'send');
   });
 
   it('should not make duplicate requests for state_getRuntimeVersion on wsProvider', async () => {
-    const cachedProvider =
-      ApiPromiseConnection.createCachedProvider(wsProvider);
+    const cachedProvider = createCachedProvider(wsProvider);
 
-    await cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]);
-    await cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]);
+    await Promise.all([
+      cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
+      cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
+    ]);
 
     expect(wsProvider.send).toHaveBeenCalledTimes(1);
   });
 
   it('should not make duplicate requests for chain_getHeader on wsProvider', async () => {
-    const cachedProvider =
-      ApiPromiseConnection.createCachedProvider(wsProvider);
-
-    await cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]);
-    await cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]);
-
+    const cachedProvider = createCachedProvider(wsProvider);
+    await Promise.all([
+      cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
+      cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
+    ]);
     expect(wsProvider.send).toHaveBeenCalledTimes(1);
   });
 
   it('should not make duplicate requests for state_getRuntimeVersion on httpProvider', async () => {
-    const cachedProvider =
-      ApiPromiseConnection.createCachedProvider(httpProvider);
+    const cachedProvider = createCachedProvider(httpProvider);
 
-    await cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]);
-    await cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]);
-
+    await Promise.all([
+      cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
+      cachedProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
+    ]);
     expect(httpProvider.send).toHaveBeenCalledTimes(1);
   });
 
   it('should not make duplicate requests for chain_getHeader on httpProvider', async () => {
-    const cachedProvider =
-      ApiPromiseConnection.createCachedProvider(httpProvider);
+    const cachedProvider = createCachedProvider(httpProvider);
 
-    await cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]);
-    await cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]);
-
+    await Promise.all([
+      cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
+      cachedProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
+    ]);
     expect(httpProvider.send).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
 import { ApiConnection } from '@subql/node-core';
-import LRUCache from 'lru-cache';
+import { createCachedProvider } from './x-provider/cachedProvider';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
-const MAX_CACHE_SIZE = 200;
-const CACHE_TTL = 60 * 1000;
 
 export class ApiPromiseConnection implements ApiConnection {
   constructor(private _api: ApiPromise) {}
@@ -21,7 +20,7 @@ export class ApiPromiseConnection implements ApiConnection {
     endpoint: string,
     args: { chainTypes: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
-    let provider: WsProvider | HttpProvider;
+    let provider: ProviderInterface;
     let throwOnConnect = false;
 
     const headers = {
@@ -29,13 +28,11 @@ export class ApiPromiseConnection implements ApiConnection {
     };
 
     if (endpoint.startsWith('ws')) {
-      provider = ApiPromiseConnection.createCachedProvider(
+      provider = createCachedProvider(
         new WsProvider(endpoint, RETRY_DELAY, headers),
       );
     } else if (endpoint.startsWith('http')) {
-      provider = ApiPromiseConnection.createCachedProvider(
-        new HttpProvider(endpoint, headers),
-      );
+      provider = createCachedProvider(new HttpProvider(endpoint, headers));
       throwOnConnect = true;
     }
 
@@ -58,50 +55,6 @@ export class ApiPromiseConnection implements ApiConnection {
   }
   async apiDisconnect(): Promise<void> {
     await this._api.disconnect();
-  }
-
-  /* eslint-disable prefer-rest-params */
-  static createCachedProvider(provider: WsProvider | HttpProvider) {
-    const cacheMap = new LRUCache({ max: MAX_CACHE_SIZE, ttl: CACHE_TTL });
-
-    const cachedMethodHandler = (method, params, target, args) => {
-      const cacheKey = `${method}-${params[0]}`;
-      if (cacheMap.has(cacheKey)) {
-        return Promise.resolve(cacheMap.get(cacheKey));
-      }
-
-      return (Reflect.apply(target, provider, args) as Promise<any>).then(
-        (result) => {
-          cacheMap.set(cacheKey, result);
-          return result;
-        },
-      );
-    };
-
-    return new Proxy(provider, {
-      get: function (target, prop, receiver) {
-        if (prop === 'send') {
-          return function (method, params, isCacheable, subscription) {
-            if (
-              ['state_getRuntimeVersion', 'chain_getHeader'].includes(method)
-            ) {
-              return cachedMethodHandler(
-                method,
-                params,
-                target.send.bind(target),
-                arguments,
-              );
-            }
-
-            // For other methods, just forward the call to the original method.
-            return Reflect.apply(target.send.bind(target), provider, arguments);
-          };
-        }
-
-        // For other properties, just return the original value.
-        return Reflect.get(target, prop, receiver);
-      },
-    });
   }
 
   static handleError(e: Error): Error {
