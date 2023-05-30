@@ -16,7 +16,17 @@ export function createCachedProvider(
     ttl: CACHE_TTL,
   });
 
-  const cachedMethodHandler = (method, params, target, args) => {
+  const cachedMethodHandler = (
+    method: string,
+    params: unknown[],
+    target,
+    args,
+  ) => {
+    // If there are no parameters then we don't cache as we want the latest results
+    if (!params.length) {
+      return Reflect.apply(target, provider, args);
+    }
+
     const cacheKey = `${method}-${params[0]}`;
     if (cacheMap.has(cacheKey)) {
       return cacheMap.get(cacheKey);
@@ -30,7 +40,12 @@ export function createCachedProvider(
   return new Proxy(provider, {
     get: function (target, prop, receiver) {
       if (prop === 'send') {
-        return function (method, params, isCacheable, subscription) {
+        return function (
+          method: string,
+          params: unknown[],
+          isCacheable: boolean,
+          subscription: boolean,
+        ) {
           //caching state_getRuntimeVersion and chain_getHeader
           //because they are fetched twice per block
           if (['state_getRuntimeVersion', 'chain_getHeader'].includes(method)) {
