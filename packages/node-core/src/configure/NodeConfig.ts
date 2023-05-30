@@ -55,6 +55,7 @@ export interface IConfig {
   readonly storeCacheAsync: boolean;
   readonly scaleBatchSize?: boolean;
   readonly storeFlushInterval: number;
+  readonly root?: string;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -289,6 +290,10 @@ export class NodeConfig implements IConfig {
       logger.error(e, 'Unable to get postgres client cert');
       throw e;
     }
+  }
+
+  get root(): string | undefined {
+    return this._config.root;
   }
 
   merge(config: Partial<IConfig>): this {

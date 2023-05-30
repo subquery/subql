@@ -6,25 +6,15 @@ import path from 'path';
 import { LocalReader, Reader, loadFromJsonOrYaml } from '@subql/common';
 import {
   ChainTypes,
-  isCustomDs,
   parseChainTypes,
   SubstrateRuntimeHandler,
   SubstrateCustomHandler,
   SubstrateHandler,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import {
-  loadDataSourceScript,
-  updateDataSourcesEntry,
-  updateProcessor,
-} from '@subql/node-core';
-import {
-  SubstrateCustomDatasource,
-  SubstrateRuntimeDatasource,
-} from '@subql/types';
+import { saveFile } from '@subql/node-core';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export function isBaseHandler(
   handler: SubstrateHandler,
@@ -36,61 +26,6 @@ export function isCustomHandler(
   handler: SubstrateHandler,
 ): handler is SubstrateCustomHandler {
   return !isBaseHandler(handler);
-}
-
-export async function updateDataSourcesV1_0_0(
-  _dataSources: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[],
-  reader: Reader,
-  root: string,
-): Promise<SubqlProjectDs[]> {
-  // force convert to updated ds
-  return Promise.all(
-    _dataSources.map(async (dataSource) => {
-      const entryScript = await loadDataSourceScript(
-        reader,
-        dataSource.mapping.file,
-      );
-      const file = await updateDataSourcesEntry(
-        reader,
-        dataSource.mapping.file,
-        root,
-        entryScript,
-      );
-      if (isCustomDs(dataSource)) {
-        if (dataSource.processor) {
-          dataSource.processor.file = await updateProcessor(
-            reader,
-            root,
-            dataSource.processor.file,
-          );
-        }
-        if (dataSource.assets) {
-          for (const [, asset] of dataSource.assets) {
-            if (reader instanceof LocalReader) {
-              asset.file = path.resolve(root, asset.file);
-            } else {
-              const res = await reader.getFile(asset.file);
-              const outputPath = path.resolve(
-                root,
-                asset.file.replace('ipfs://', ''),
-              );
-              await fs.promises.writeFile(outputPath, res as string);
-              asset.file = outputPath;
-            }
-          }
-        }
-        return {
-          ...dataSource,
-          mapping: { ...dataSource.mapping, entryScript, file },
-        };
-      } else {
-        return {
-          ...dataSource,
-          mapping: { ...dataSource.mapping, entryScript, file },
-        };
-      }
-    }),
-  );
 }
 
 export async function getChainTypes(
@@ -113,11 +48,7 @@ export async function getChainTypes(
       raw = yaml.load(res);
       return parseChainTypes(raw);
     } catch (e) {
-      const chainTypesPath = `${path.resolve(
-        root,
-        file.replace('ipfs://', ''),
-      )}.js`;
-      await fs.promises.writeFile(chainTypesPath, res);
+      const chainTypesPath = await saveFile(reader, root, file, res);
       raw = loadChainTypesFromJs(chainTypesPath); //root not required, as it been packed in single js
       return parseChainTypes(raw);
     }
