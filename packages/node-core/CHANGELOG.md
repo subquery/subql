@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add cache layer to postgres mmr db (#1762)
 
+### Changed
+- Update vm2 past problimatic version
+
 ## [2.3.1] - 2023-05-26
 ### Fixed
 - Improve mmr error and expose ready status (#1752)
