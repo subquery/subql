@@ -120,12 +120,25 @@ export class ConfigureModule {
       return p;
     };
 
+    //append `test-` dbSchema if test sub-command is called
+    const proxyConfig = new Proxy(config, {
+      get: function (target, property, receiver) {
+        if (property === 'dbSchema') {
+          if (argv._[0] === 'test') {
+            const originalGetter = Reflect.get(target, property, receiver);
+            return `test-${originalGetter}`;
+          }
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    });
+
     return {
       module: ConfigureModule,
       providers: [
         {
           provide: NodeConfig,
-          useValue: config,
+          useValue: proxyConfig,
         },
         {
           provide: 'ISubqueryProject',
