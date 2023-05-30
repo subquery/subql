@@ -187,7 +187,7 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     path: string,
     workerFns: (keyof T)[],
     hostFns: H,
-    root?: string
+    root: string
   ): Worker<T> & T {
     const argv = argsWithRoot(root);
     const worker = new Worker(

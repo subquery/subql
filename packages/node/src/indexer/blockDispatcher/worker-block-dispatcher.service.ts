@@ -35,7 +35,7 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubstrateDatasource>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
-  root?: string,
+  root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
