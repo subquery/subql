@@ -9,8 +9,4 @@ export const scalas = gql`
   scalar Date
   scalar Bytes
   scalar Float
-  scalar CompositeIndex
 `;
-
-// Where entity field is virtual
-export const VIRTUAL_SCALARS = ['CompositeIndex'];

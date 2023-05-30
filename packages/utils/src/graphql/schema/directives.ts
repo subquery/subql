@@ -8,5 +8,5 @@ export const directives = gql`
   directive @entity on OBJECT
   directive @jsonField(indexed: Boolean) on OBJECT
   directive @index(unique: Boolean) on FIELD_DEFINITION
-  directive @joinIndex(fields: [String]!) on FIELD_DEFINITION
+  directive @compositeIndexes(fields: [[String]]!) on OBJECT
 `;
