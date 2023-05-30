@@ -71,8 +71,6 @@ export interface GraphQLEntityIndex {
   unique?: boolean;
 
   using?: IndexType;
-
-  name?: string;
 }
 
 export interface GraphQLRelationsType {
