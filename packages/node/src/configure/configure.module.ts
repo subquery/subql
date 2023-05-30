@@ -113,6 +113,7 @@ export class ConfigureModule {
           },
           isNil,
         ),
+        config.root,
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
