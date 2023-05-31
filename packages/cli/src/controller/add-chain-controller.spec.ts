@@ -1,0 +1,161 @@
+// Copyright 2020-2022 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import fs, {existsSync} from 'fs';
+import os from 'os';
+import path from 'path';
+import {promisify} from 'util';
+import {ProjectManifestParentV1_0_0, ProjectManifestV1_0_0} from '@subql/common';
+import * as yaml from 'js-yaml';
+import rimraf from 'rimraf';
+import {loadOrCreateMultichainManifest, validateAndAddChainManifest} from './add-chain-controller';
+
+const multichainManifest: ProjectManifestParentV1_0_0 = {
+  specVersion: '1.0.0',
+  query: {
+    name: '@subql/query',
+    version: '*',
+  },
+  projects: ['./project-polkadot.yaml'],
+};
+
+const childChainManifest_1: ProjectManifestV1_0_0 = {
+  specVersion: '1.0.0',
+  version: '1.0.0',
+  name: 'project-polkadot',
+  runner: {
+    node: {
+      name: '@subql/node',
+      version: '*',
+    },
+    query: {
+      name: '@subql/query',
+      version: '*',
+    },
+  },
+  network: {
+    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+    dictionary: 'https://api.subquery.network/sq/subquery/polkadot-dictionary',
+  },
+  schema: {
+    file: './schema.graphql',
+  },
+  dataSources: null,
+};
+
+const childChainManifest_2: ProjectManifestV1_0_0 = {
+  specVersion: '1.0.0',
+  version: '1.0.0',
+  name: 'project-kusama',
+  runner: {
+    node: {
+      name: '@subql/node',
+      version: '*',
+    },
+    query: {
+      name: '@subql/query',
+      version: '*',
+    },
+  },
+  network: {
+    chainId: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+    endpoint: 'wss://kusama.api.onfinality.io/public-ws',
+    dictionary: 'https://api.subquery.network/sq/subquery/kusama-dictionary',
+  },
+  schema: {
+    file: './schema.graphql',
+  },
+  dataSources: null,
+};
+
+const childChainManifest_2_wrongSchema: ProjectManifestV1_0_0 = {
+  specVersion: '1.0.0',
+  version: '1.0.0',
+  name: 'project-kusama',
+  runner: {
+    node: {
+      name: '@subql/node',
+      version: '*',
+    },
+    query: {
+      name: '@subql/query',
+      version: '*',
+    },
+  },
+  network: {
+    chainId: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+    endpoint: 'wss://kusama.api.onfinality.io/public-ws',
+    dictionary: 'https://api.subquery.network/sq/subquery/kusama-dictionary',
+  },
+  schema: {
+    file: './schema_wrong.graphql',
+  },
+  dataSources: null,
+};
+
+export async function createMultichainProject(
+  multichainManifest: ProjectManifestParentV1_0_0,
+  childManifests: ProjectManifestV1_0_0[]
+): Promise<string> {
+  const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
+  const projectDir = path.join(tmpdir, 'multichain');
+  await fs.promises.mkdir(projectDir);
+  // Create multichain manifest YAML
+  const multichainYaml = yaml.dump(multichainManifest);
+  if (!existsSync(projectDir)) {
+    throw new Error(`${projectDir} does not exist`);
+  }
+  await fs.promises.writeFile(path.join(projectDir, 'multichain-manifest.yaml'), multichainYaml);
+
+  // Create child manifest YAML files
+  const childManifestPromises = childManifests.map(async (childManifest) => {
+    const childManifestYaml = yaml.dump(childManifest);
+    const fileName = `${childManifest.name}.yaml`;
+    await fs.promises.writeFile(path.join(projectDir, fileName), childManifestYaml);
+    return fileName;
+  });
+
+  await Promise.all(childManifestPromises);
+
+  return projectDir;
+}
+
+export async function createChildManifestFile(
+  childManifest: ProjectManifestV1_0_0,
+  projectDir: string
+): Promise<string> {
+  const childManifestYaml = yaml.dump(childManifest);
+  const fileName = `${childManifest.name}.yaml`;
+  await fs.promises.writeFile(path.join(projectDir, fileName), childManifestYaml);
+  return fileName;
+}
+
+describe('MultiChain - ADD', () => {
+  let projectDir: string;
+
+  afterEach(async () => {
+    try {
+      await promisify(rimraf)(projectDir);
+    } catch (e) {
+      console.warn('Failed to clean up tmp dir after test', e);
+    }
+  });
+
+  it('can add chain to multichain manifest - valid schema paths', async () => {
+    projectDir = await createMultichainProject(multichainManifest, [childChainManifest_1]);
+    const chainFile = await createChildManifestFile(childChainManifest_2, projectDir);
+    const multichainManifestPath = path.join(projectDir, 'multichain-manifest.yaml');
+    const multiManifest = loadOrCreateMultichainManifest(multichainManifestPath);
+    validateAndAddChainManifest(projectDir, chainFile, multiManifest);
+    expect(multiManifest.projects[1]).toEqual(`${childChainManifest_2.name}.yaml`);
+  });
+
+  it('cannot add chain to multichain manifest - invalid schema path', async () => {
+    projectDir = await createMultichainProject(multichainManifest, [childChainManifest_1]);
+    const chainFile = await createChildManifestFile(childChainManifest_2_wrongSchema, projectDir);
+    const multichainManifestPath = path.join(projectDir, 'multichain-manifest.yaml');
+    const multiManifest = loadOrCreateMultichainManifest(multichainManifestPath);
+    expect(() => validateAndAddChainManifest(projectDir, chainFile, multiManifest)).toThrow();
+  });
+});

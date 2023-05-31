@@ -48,8 +48,14 @@ export default class Publish extends Command {
     } else {
       throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
+    let directory: string;
+    if (project.manifests.length > 1) {
+      directory = path.basename(project.root); // Using project root name as directory
+      // or use a timestamp for uniqueness
+      directory += `_${new Date().getTime()}`;
+    }
     for (const manifest of project.manifests) {
-      const cid = await uploadToIpfs(manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+      const cid = await uploadToIpfs(manifest, authToken.trim(), flags.ipfs, directory).catch((e) => this.error(e));
       await createIPFSFile(project.root, manifest, cid);
 
       if (!flags.output) {

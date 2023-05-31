@@ -27,7 +27,12 @@ export async function createIPFSFile(root: string, manifest: string, cid: string
   }
 }
 
-export async function uploadToIpfs(projectPath: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
+export async function uploadToIpfs(
+  projectPath: string,
+  authToken: string,
+  ipfsEndpoint?: string,
+  directory?: string
+): Promise<string> {
   const reader = await ReaderFactory.create(projectPath);
   let manifest;
   const schema = await reader.getProjectSchema();
@@ -79,7 +84,7 @@ export async function uploadToIpfs(projectPath: string, authToken: string, ipfsE
   }
   const deployment = await replaceFileReferences(reader.root, manifest, authToken, ipfs);
   // Upload schema
-  return uploadFile(deployment.toDeployment(), authToken, ipfs);
+  return uploadFile(deployment.toDeployment(), authToken, ipfs, directory);
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
@@ -119,12 +124,13 @@ const fileMap = new Map<string | fs.ReadStream, string>();
 export async function uploadFile(
   content: string | fs.ReadStream,
   authToken: string,
-  ipfs?: IPFSHTTPClient
+  ipfs?: IPFSHTTPClient,
+  directory?: string
 ): Promise<string> {
   let ipfsClientCid: string;
   if (ipfs) {
     try {
-      ipfsClientCid = (await ipfs.add(content, {pin: true, cidVersion: 0})).cid.toString();
+      ipfsClientCid = (await ipfs.add({path: directory, content: content}, {pin: true, cidVersion: 0})).cid.toString();
     } catch (e) {
       throw new Error(`Publish project to provided IPFS gateway failed, ${e}`);
     }

@@ -77,6 +77,11 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
 
   project.root = path.resolve(project.root);
 
+  // Convert manifest paths to be relative to the project root
+  project.manifests = project.manifests.map((manifestPath) => {
+    return path.relative(project.root, manifestPath);
+  });
+
   return project;
 }
 
