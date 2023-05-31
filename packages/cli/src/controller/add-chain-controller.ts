@@ -25,7 +25,7 @@ export function addChain(multichain: string, chainManifestPath: string, chainId:
   const multichainManifestPath = determineMultichainManifestPath(multichain);
   const multichainManifest = loadOrCreateMultichainManifest(multichainManifestPath);
   chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, schema, multichainManifestPath);
-  validateAndAddChainManifest(path.basename(multichainManifestPath), chainManifestPath, multichainManifest);
+  validateAndAddChainManifest(path.parse(multichainManifestPath).dir, chainManifestPath, multichainManifest);
   fs.writeFileSync(multichainManifestPath, yaml.dump(multichainManifest));
   updateDockerCompose(chainManifestPath);
 }
