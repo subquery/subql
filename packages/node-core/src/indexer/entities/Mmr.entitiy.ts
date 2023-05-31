@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
-import {Sequelize, DataTypes, Model, ModelStatic} from 'sequelize';
+import {Sequelize, DataTypes, Model, ModelStatic, Transaction} from 'sequelize';
 
 const LEAF_LENGTH_INDEX = -1;
 
@@ -57,19 +57,19 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async set(value: any, key: number): Promise<void> {
+  async set(value: any, key: number, tx?: Transaction): Promise<void> {
     if (value === null || value === undefined) {
       throw new Error('Cannot set a null or undefined value');
     }
 
     try {
-      await this.mmrIndexValueStore.upsert({key, value});
+      await this.mmrIndexValueStore.upsert({key, value}, {transaction: tx});
     } catch (error) {
       throw new Error(`Failed to store MMR Node: ${error}`);
     }
   }
 
-  async bulkSet(entries: Record<number, any>): Promise<void> {
+  async bulkSet(entries: Record<number, any>, tx?: Transaction): Promise<void> {
     const data = Object.entries(entries).map(([key, value]) => {
       if (value === null || value === undefined) {
         throw new Error(`Cannot set a null or undefined value for key: ${key}`);
@@ -79,15 +79,18 @@ export class PgBasedMMRDB implements Db {
     });
 
     try {
-      await this.mmrIndexValueStore.bulkCreate(data);
+      await this.mmrIndexValueStore.bulkCreate(data, {
+        transaction: tx,
+        updateOnDuplicate: ['value'],
+      });
     } catch (error) {
       throw new Error(`Failed to bulk store MMR Node: ${error}`);
     }
   }
 
-  async delete(key: number): Promise<void> {
+  async delete(key: number, tx?: Transaction): Promise<void> {
     try {
-      await this.mmrIndexValueStore.destroy({where: {key}});
+      await this.mmrIndexValueStore.destroy({where: {key}, transaction: tx});
     } catch (error) {
       throw new Error(`Failed to delete MMR node: ${error}`);
     }
