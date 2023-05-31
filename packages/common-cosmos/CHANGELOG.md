@@ -4,12 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
 
+## [2.2.0] - 2023-06-01
+### Changed
+- Update common package (#128)
+
 ## [2.1.0] - 2023-05-17
-### Updated
+### Changed
 - Sync with main SDK
 
 ## [2.0.0] - 2023-05-01
@@ -17,23 +19,22 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Sync with main SDK for 2.0 release
 
 ## [0.2.2] - 2023-02-14
-### Updated
+### Changed
 - Sync with main sdk (#97)
 
 ## [0.2.1] - 2022-12-20
 ### Added
-- Support `bypassBlocks` feature 
+- Support `bypassBlocks` feature
 
 ## [0.2.0] - 2022-11-02
 ### Added
 - `timestamp` filter to block handler. (#76)
 
 ## [0.1.1] - 2022-10-06
-### Updated
+### Changed
 - `@subql/common` dependency updated.
 
 ## [0.1.0] - 2022-09-27
-
 ### Added
 - `attributes` filter to event handlers. (#56)
 - Filter for `includeFailedTx` on Transaction and Message handlers. (#53)
@@ -47,9 +48,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-First release
-
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.7...HEAD
-[0.0.7]: https://github.com/subquery/subql-cosmos/compare/types/0.0.6...common-cosmos/0.0.7
-[0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...common-cosmos/0.0.6
-
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/v2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.1.0...common-cosmos/2.2.0
+[2.1.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.0.0...common-cosmos/2.1.0
+[2.0.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.2.2...common-cosmos/2.0.0
+[0.2.2]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.2.1...common-cosmos/0.2.2
+[0.2.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.2.0...common-cosmos/0.2.1
+[0.2.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.1.1...common-cosmos/0.2.0
+[0.1.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.1.0...common-cosmos/0.1.1
+[0.1.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.7...common-cosmos/0.1.0
+[0.0.7]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.6...common-cosmos/0.0.7
+[0.0.6]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.5...common-cosmos/0.0.6
+[0.0.5]: https://github.com/subquery/subql-cosmos/tags/common-cosmos/0.0.5

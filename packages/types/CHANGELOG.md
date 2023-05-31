@@ -4,12 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
 
+## [2.2.0] - 2023-06-01
+### Changed
+- upgrade to tendermint37 client (#126)
+
 ## [2.1.0] - 2023-05-17
-### Updated
+### Changed
 - Use Block interface from `@cosmjs/tendermint-rpc`
 - Sync with main SDK
 
@@ -18,7 +20,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Sync with main SDK for 2.0 release
 
 ## [0.4.3] - 2023-02-14
-### Updated
+### Changed
 - Sync with main sdk (#97)
 - Update cosmjs (#96)
 
@@ -39,20 +41,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - `attributes` filter to event handlers. (#56)
 
 ## [0.2.0] - 2022-09-02
-
 ### Changed
-Sync changes from main SDK:
 - Updated `store.getByField` to have limit and offset options: `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;`.
 - Added `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing.
 
-
 ## [0.1.1] - 2022-07-01
+### Added
 - Inject the types registry into the sandbox (#34)
 
-### Added
-
 ## [0.1.0] - 2022-06-27
-
 ### Changed
 - Messages and events have changed `message.msg.msg` to `message.msg.decodeMsg.msg`. This is due to lazy loading and will mean you don't need to provide chain types for messages you don't care about (#17)
 
@@ -61,10 +58,17 @@ Sync changes from main SDK:
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-First release
-
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql-cosmos/compare/types/2.1.0...types/2.2.0
+[2.1.0]: https://github.com/subquery/subql-cosmos/compare/types/2.0.0...types/2.1.0
+[2.0.0]: https://github.com/subquery/subql-cosmos/compare/types/0.4.3...types/2.0.0
+[0.4.3]: https://github.com/subquery/subql-cosmos/compare/types/0.4.2...types/0.4.3
+[0.4.2]: https://github.com/subquery/subql-cosmos/compare/types/0.4.1...types/0.4.2
+[0.4.1]: https://github.com/subquery/subql-cosmos/compare/types/0.4.0...types/0.4.1
+[0.4.0]: https://github.com/subquery/subql-cosmos/compare/types/0.3.0...types/0.4.0
+[0.3.0]: https://github.com/subquery/subql-cosmos/compare/types/0.2.0...types/0.3.0
 [0.2.0]: https://github.com/subquery/subql-cosmos/compare/types/0.1.1...types/0.2.0
 [0.1.1]: https://github.com/subquery/subql-cosmos/compare/types/0.1.0...types/0.1.1
 [0.1.0]: https://github.com/subquery/subql-cosmos/compare/types/0.0.6...types/0.1.0
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...types/0.0.6
+[0.0.5]: https://github.com/subquery/subql-cosmos/tag/types/0.0.5
