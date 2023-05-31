@@ -37,7 +37,8 @@
     "@polkadot/api": "10.1.4",
     "@polkadot/util": "11.1.1",
     "node-fetch": "2.6.7",
-    "sequelize": "6.28.0"
+    "sequelize": "6.28.0",
+    "vm2": "3.9.19"
   },
   "scripts": {
     "build": "yarn workspaces foreach -ptA run build",

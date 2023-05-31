@@ -41,6 +41,7 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<EthereumBlockWrapped>,
+  root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
@@ -75,6 +76,7 @@ async function createIndexerWorker(
           unfinalizedBlocksService,
         ),
     },
+    root,
   );
 
   await indexerWorker.initWorker();
@@ -114,6 +116,7 @@ export class WorkerBlockDispatcherService
           storeService.getStore(),
           dynamicDsService,
           unfinalizedBlocksSevice,
+          project.root,
         ),
     );
   }

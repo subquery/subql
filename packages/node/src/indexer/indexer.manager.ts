@@ -36,7 +36,6 @@ import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import { EthereumBlockWrapped } from '../ethereum/block.ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
-import { yargsOptions } from '../yargs';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -89,7 +88,7 @@ export class IndexerManager extends BaseIndexerManager<
     logger.info('indexer manager started');
   }
 
-  @profiler(yargsOptions.argv.profiler)
+  @profiler()
   async indexBlock(
     block: EthereumBlockWrapper,
     dataSources: SubqlEthereumDataSource[],

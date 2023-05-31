@@ -2717,7 +2717,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": ^2.1.1
+    "@subql/common": ^2.2.0
     "@subql/types-ethereum": "workspace:*"
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
@@ -2731,9 +2731,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.1.1, @subql/common@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "@subql/common@npm:2.1.1"
+"@subql/common@npm:2.2.0, @subql/common@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@subql/common@npm:2.2.0"
   dependencies:
     axios: ^0.27.2
     class-transformer: ^0.5.1
@@ -2743,22 +2743,22 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: d8bbc9b7646bca970286d32b3582b9dfc20797ee4bd08e05341ecdb60803f4babd07af902b7ae2b7aaa4835a8963b55f7cb48140bd9e0d37674547b2b2d65c59
+  checksum: 54f90ff784ed1f638337304cea8f84a0dcfe9fefad383ea8d3a364475ce7500e141757ca48d384c781473c5922a4afb486a5e10a63f282414c1bfbae4d6ad1ad
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^2.2.2":
-  version: 2.2.2
-  resolution: "@subql/node-core@npm:2.2.2"
+"@subql/node-core@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "@subql/node-core@npm:2.4.1"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@subql/apollo-links": ^0.3.3-2
-    "@subql/common": 2.1.1
+    "@subql/common": 2.2.0
     "@subql/testing": 2.0.1
     "@subql/types": 2.1.2
-    "@subql/utils": 2.2.0
+    "@subql/utils": 2.4.0
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
     "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
@@ -2772,9 +2772,9 @@ __metadata:
     sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
-    vm2: 3.9.17
+    vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 49d6c540e20ca2fc2fe4e99b89fb31818e84534f36a0e03776ccdb500779894a46ad0608c49b568b510e38b694fb4991e0330c38a8ef32426efe158020f52e78
+  checksum: 126983f76d9780452e593290acdf015be930d4d5cd0f554c9ad23f714d99de8fa1638186fe90f4892171cb9c00431867eed458b7360832064851af7aecd68712
   languageName: node
   linkType: hard
 
@@ -2790,9 +2790,9 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": ^2.1.1
+    "@subql/common": ^2.2.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^2.2.2
+    "@subql/node-core": ^2.4.1
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.1.2
     "@subql/types-ethereum": "workspace:*"
@@ -2870,9 +2870,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@subql/utils@npm:2.2.0"
+"@subql/utils@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@subql/utils@npm:2.4.0"
   dependencies:
     "@polkadot/util": ^12.2.1
     "@polkadot/util-crypto": ^12.2.1
@@ -2883,12 +2883,13 @@ __metadata:
     flatted: ^3.2.5
     graphql: ^15.8.0
     graphql-tag: ^2.12.6
+    lodash: ^4.17.21
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
     sequelize: 6.28.0
     tar: ^6.1.11
-  checksum: 4dd61522ef52ae74f95f9f1f5b3fd0b1d5df92f622b0687a5cda08d005f34818c723a5f49100b7fa7b90ac5908833b5049070291816bcf12851d8cbdec952f1f
+  checksum: 3358ce8501d2ce36396717d693c86c5f72782c0e65c5487a1b535bb7e07c0b41fec5b18ee8b8b8668e9ef34accc7821405bd5012a7509a9f08fb30b888265069
   languageName: node
   linkType: hard
 
@@ -11902,15 +11903,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vm2@npm:3.9.17":
-  version: 3.9.17
-  resolution: "vm2@npm:3.9.17"
+"vm2@npm:3.9.19":
+  version: 3.9.19
+  resolution: "vm2@npm:3.9.19"
   dependencies:
     acorn: ^8.7.0
     acorn-walk: ^8.2.0
   bin:
     vm2: bin/vm2
-  checksum: 9a03740a40ab2be5e3348a95fb31512da1a3c85318febb07e5299fa103ff05bcd7b6f458211fa38a1281dc27beccd04ff90355fc1d34fe2ee6ca10d0bb8c6f35
+  checksum: fc6cf553134145cd7bb5246985bf242b056e3fb5ea71e2eef6710b2a5d6c6119cc6bc960435ff62480ee82efb43369be8f4db07b6690916ae7d3b2e714f395d8
   languageName: node
   linkType: hard
 
