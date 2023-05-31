@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.2.0] - 2023-05-31
 ### Changed
-- Improve incorrect runner message
+- Improve incorrect runner message (#1775)
 
 ## [2.1.2] - 2023-05-26
 ### Added

@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.1] - 2023-05-31
 ### Changed
-- Improve incorrect runner message
-- Update node-core to fix MMR db issues
+- Improve incorrect runner message (#1775)
+- Update node-core to fix MMR db issues (#1777)
 
 ## [2.5.0] - 2023-05-30
 ### Fixed
