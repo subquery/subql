@@ -32,18 +32,20 @@ export class CachePgMmrDb implements Db {
 
   async set(value: Uint8Array, key: number): Promise<void> {
     this.cacheData.set(key, value);
-    this.setData[key] = value;
 
-    if (Object.keys(this.setData).length >= this.setThreshold) {
-      const data = {...this.setData};
-      this.setData = {};
-      await this.db.bulkSet(data);
-    }
+    await this.db.set(value, key);
+
+    // Disabled for now, this can result in cache data being lost and the db becoming corrupt
+    // this.setData[key] = value;
+    // if (Object.keys(this.setData).length >= this.setThreshold) {
+    //   const data = {...this.setData};
+    //   this.setData = {};
+    //   await this.db.bulkSet(data);
+    // }
   }
 
   async get(key: number): Promise<Uint8Array | null> {
     const result = this.cacheData.get(key);
-
     if (result) return result;
 
     const dbResult = await this.db.get(key);
