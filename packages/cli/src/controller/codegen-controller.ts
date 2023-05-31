@@ -247,7 +247,6 @@ function processAbis(sortedAssets: Map<string, string>, projectPath: string): ab
     if (!Array.isArray(readAbi)) {
       readAbi = [readAbi];
     }
-
     const duplicateEventNames = readAbi
       .filter((abiObject) => abiObject.type === 'event')
       .map((obj) => obj.name)
@@ -409,7 +408,7 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
   }
 
   if (customDatasource.length !== 0) {
-    datasources.concat(customDatasource);
+    datasources = datasources.concat(customDatasource);
   }
   const schemaPath = getSchemaPath(projectPath, fileName);
 

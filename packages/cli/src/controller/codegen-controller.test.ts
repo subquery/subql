@@ -17,6 +17,7 @@ describe('Codegen can generate schema', () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest3/src'));
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest4/src'));
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest5/src'));
+    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/src'));
   });
 
   it('codegen with correct schema should pass', async () => {
@@ -46,5 +47,12 @@ describe('Codegen can generate schema', () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest5');
     await codegen(projectPath);
     await expect(fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')).rejects.toThrow();
+  });
+  it('Codegen should be able to generate ABIs from customName datasources', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest6');
+    await codegen(projectPath);
+    await expect(
+      fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')
+    ).resolves.toBeTruthy();
   });
 });
