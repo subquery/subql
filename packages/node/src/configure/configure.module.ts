@@ -3,7 +3,12 @@
 
 import assert from 'assert';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { Reader, ReaderFactory, RUNNER_ERROR_REGEX } from '@subql/common';
+import {
+  handleCreateSubqueryProjectError,
+  Reader,
+  ReaderFactory,
+  RUNNER_ERROR_REGEX,
+} from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
 import {
   IConfig,
@@ -115,17 +120,8 @@ export class ConfigureModule {
         ),
         config.root,
       ).catch((err) => {
-        if (JSON.stringify(err.message).includes(RUNNER_ERROR_REGEX)) {
-          // lazy load, only fetch package.json when required
-          const pjson = require('../../package.json');
-          logger.error(
-            `Failed to init project, required runner is ${
-              (rawManifest as any).runner.node.name
-            }, got ${pjson.name}`,
-          );
-        } else {
-          logger.error(err, 'Create Subquery project from given path failed!');
-        }
+        const pjson = require('../../package.json');
+        handleCreateSubqueryProjectError(err, pjson, rawManifest, logger);
         process.exit(1);
       });
       return p;
