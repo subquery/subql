@@ -13,45 +13,13 @@ import {
   isRuntimeDs,
   EthereumHandlerKind,
   isCustomDs,
-  EthereumDatasourceKind,
 } from '@subql/common-ethereum';
 import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
-import { SubqlDatasource } from '@subql/types-ethereum';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { EthereumApi } from '../ethereum/api.ethereum';
-
-function updateDatasourcesFlare(
-  _dataSources: SubqlDatasource[],
-): SubqlDatasource[] {
-  // Cast to any to make types happy
-  return _dataSources.map((dataSource) => {
-    if ((dataSource.kind as string) === 'flare/Runtime') {
-      dataSource.kind = EthereumDatasourceKind.Runtime;
-    }
-    dataSource.mapping.handlers = dataSource.mapping.handlers.map((handler) => {
-      switch (handler.kind as string) {
-        case 'flare/BlockHandler': {
-          handler.kind = EthereumHandlerKind.Block;
-          break;
-        }
-        case 'flare/TransactionHandler': {
-          handler.kind = EthereumHandlerKind.Call;
-          break;
-        }
-        case 'flare/LogHandler': {
-          handler.kind = EthereumHandlerKind.Event;
-          break;
-        }
-        default:
-      }
-      return handler;
-    });
-
-    return dataSource;
-  });
-}
+import { updateDatasourcesFlare } from '../utils/project';
 
 export type SubqlProjectDs = SubqlEthereumDataSource & {
   mapping: SubqlEthereumDataSource['mapping'] & { entryScript: string };
@@ -163,11 +131,10 @@ async function loadProjectFromManifestBase(
   }
   const schema = buildSchemaFromString(schemaString);
 
-  const dataSources = await updateDataSourcesV1_0_0(
-    updateDatasourcesFlare(projectManifest.dataSources),
+  const dataSources = await updateDatasourcesFlare(
+    projectManifest.dataSources,
     reader,
     root,
-    isCustomDs,
   );
 
   const templates = await loadProjectTemplates(projectManifest, root, reader);
@@ -215,12 +182,12 @@ async function loadProjectTemplates(
   if (!projectManifest.templates || !projectManifest.templates.length) {
     return [];
   }
-  const dsTemplates = await updateDataSourcesV1_0_0(
-    updateDatasourcesFlare(projectManifest.templates),
+  const dsTemplates = await updateDatasourcesFlare(
+    projectManifest.templates,
     reader,
     root,
-    isCustomDs,
   );
+
   return dsTemplates.map((ds, index) => ({
     ...ds,
     name: projectManifest.templates[index].name,

@@ -1,14 +1,19 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
+import path from 'path';
+import { LocalReader, Reader } from '@subql/common';
 import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,
   SubqlHandler,
   EthereumHandlerKind,
   SubqlEthereumHandlerKind,
+  isCustomDs,
 } from '@subql/common-ethereum';
-import { retryOnFail } from '@subql/node-core';
+import { retryOnFail, updateDataSourcesV1_0_0 } from '@subql/node-core';
+import { EthereumDatasourceKind, SubqlDatasource } from '@subql/types-ethereum';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export function isBaseHandler(
@@ -45,4 +50,59 @@ export function onlyHasLogDataSources(dataSources: SubqlProjectDs[]): boolean {
   }
 
   return true;
+}
+
+export async function updateDatasourcesFlare(
+  _dataSources: SubqlDatasource[],
+  reader: Reader,
+  root: string,
+): Promise<SubqlProjectDs[]> {
+  // Cast to any to make types happy
+  const partialUpdate = await Promise.all(
+    _dataSources.map(async (dataSource) => {
+      if ((dataSource.kind as string) === 'flare/Runtime') {
+        dataSource.kind = EthereumDatasourceKind.Runtime;
+      }
+      dataSource.mapping.handlers = dataSource.mapping.handlers.map(
+        (handler) => {
+          switch (handler.kind as string) {
+            case 'flare/BlockHandler': {
+              handler.kind = EthereumHandlerKind.Block;
+              break;
+            }
+            case 'flare/TransactionHandler': {
+              handler.kind = EthereumHandlerKind.Call;
+              break;
+            }
+            case 'flare/LogHandler': {
+              handler.kind = EthereumHandlerKind.Event;
+              break;
+            }
+            default:
+          }
+          return handler;
+        },
+      );
+
+      if (dataSource.assets) {
+        for (const [, asset] of Object.entries(dataSource.assets)) {
+          if (reader instanceof LocalReader) {
+            asset.file = path.resolve(root, asset.file);
+          } else {
+            const res = await reader.getFile(asset.file);
+            const outputPath = path.resolve(
+              root,
+              asset.file.replace('ipfs://', ''),
+            );
+            await fs.promises.writeFile(outputPath, res as string);
+            asset.file = outputPath;
+          }
+        }
+      }
+
+      return dataSource;
+    }),
+  );
+
+  return updateDataSourcesV1_0_0(partialUpdate, reader, root, isCustomDs);
 }
