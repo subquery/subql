@@ -370,13 +370,16 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     templates?: TemplateKind[];
     dataSources: DatasourceKind[];
   };
+  let datasources = plainManifest.dataSources;
+
   if (plainManifest.templates && plainManifest.templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
+    datasources = plainManifest.dataSources.concat(plainManifest.templates as DatasourceKind[]);
   }
 
   const schemaPath = getSchemaPath(projectPath, fileName);
 
-  await generateAbis(plainManifest.dataSources, projectPath);
+  await generateAbis(datasources, projectPath);
   await generateJsonInterfaces(projectPath, schemaPath);
   await generateModels(projectPath, schemaPath);
   await generateEnums(projectPath, schemaPath);
