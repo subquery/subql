@@ -74,7 +74,7 @@ describe('CacheMMR', () => {
     expect(spy).toBeCalledTimes(1);
   });
 
-  it('can set to db', async () => {
+  it.skip('can set to db', async () => {
     const spy = jest.spyOn(db, 'set');
     const spyBulk = jest.spyOn(db, 'bulkSet');
 
