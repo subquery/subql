@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.4.0] - 2023-05-30
 ### Added
 - Add cache layer to postgres mmr db (#1762)
-- Cache layer to postgress mmr db (#1762)
 - Support for block hashes with base64 format for POI (#1761)
 
 ### Changed
