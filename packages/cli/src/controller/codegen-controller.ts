@@ -239,10 +239,15 @@ function processAbis(sortedAssets: Map<string, string>, projectPath: string): ab
   const renderInterfaceJobs: abiRenderProps[] = [];
   sortedAssets.forEach((value, key) => {
     const renderProps: abiRenderProps = {name: key, events: [], functions: []};
-    const readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
+    let readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
     // We need to use for loop instead of map, due to events/function name could be duplicate,
     // because they have different input, and following ether typegen rules, name also changed
     // we need to find duplicates, and update its name rather than just unify them.
+
+    if (!Array.isArray(readAbi)) {
+      readAbi = [readAbi];
+    }
+
     const duplicateEventNames = readAbi
       .filter((abiObject) => abiObject.type === 'event')
       .map((obj) => obj.name)
@@ -370,6 +375,32 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     templates?: TemplateKind[];
     dataSources: DatasourceKind[];
   };
+
+  const expectKeys = [
+    'specVersion',
+    'templates',
+    'dataSources',
+    'name',
+    'version',
+    'runner',
+    'description',
+    'repository',
+    'schema',
+    'network',
+  ];
+  const dsKeys = ['assets', 'kind', 'processor'];
+  // I need to determine if it is a datasource
+
+  const customDatasource = Object.keys(plainManifest)
+    .filter((key) => !expectKeys.includes(key))
+    .map((dsKey) => {
+      if (typeof (plainManifest as any)[dsKey] === 'object') {
+        const value = (plainManifest as any)[dsKey] as DatasourceKind;
+        const isDs = value && Object.keys(value).filter((key) => dsKeys.includes(key)).length >= dsKeys.length;
+        return isDs && value;
+      }
+    });
+
   let datasources = plainManifest.dataSources;
 
   if (plainManifest.templates && plainManifest.templates.length !== 0) {
@@ -377,6 +408,9 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     datasources = plainManifest.dataSources.concat(plainManifest.templates as DatasourceKind[]);
   }
 
+  if (customDatasource.length !== 0) {
+    datasources.concat(customDatasource);
+  }
   const schemaPath = getSchemaPath(projectPath, fileName);
 
   await generateAbis(datasources, projectPath);
