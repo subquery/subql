@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { WsProvider } from '@polkadot/rpc-provider';
+import { delay } from '@subql/common';
 import { createCachedProvider } from './x-provider/cachedProvider';
 import { HttpProvider } from './x-provider/http';
 
@@ -61,4 +62,16 @@ describe('ApiPromiseConnection', () => {
     ]);
     expect(httpProvider.send).toHaveBeenCalledTimes(1);
   });
+
+  it('should not cache requests if there are no args', async () => {
+    const cachedProvider = createCachedProvider(httpProvider);
+
+    const result1 = await cachedProvider.send('chain_getHeader', []);
+    // Enough time for a new block
+    await delay(7);
+    const result2 = await cachedProvider.send('chain_getHeader', []);
+
+    expect(httpProvider.send).toHaveBeenCalledTimes(2);
+    expect(result1).not.toEqual(result2);
+  }, 10000);
 });
