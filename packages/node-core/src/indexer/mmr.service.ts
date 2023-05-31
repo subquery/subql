@@ -259,6 +259,7 @@ export class MmrService implements OnApplicationShutdown {
     const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
     assert(schema, 'Unable to check for MMR table, schema is undefined');
     const db = await CachePgMmrDb.create(this.sequelize, schema);
+    this.storeCacheService.setMmrRepo(db);
     return new MMR(keccak256Hash, db);
   }
 

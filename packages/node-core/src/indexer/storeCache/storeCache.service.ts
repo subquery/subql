@@ -12,6 +12,7 @@ import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
+import {CachePgMmrDb} from './cacheMmr';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
@@ -25,6 +26,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo?: MetadataRepo;
   private poiRepo?: PoiRepo;
+  private mmrRepo?: CachePgMmrDb;
   private pendingFlush?: Promise<void>;
   private queuedFlush?: Promise<void>;
   private storeCacheThreshold: number;
@@ -67,12 +69,20 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     );
   }
 
+  setMmrRepo(mmr: CachePgMmrDb) {
+    this.mmrRepo = mmr;
+    this.cachedModels._mmr = mmr;
+  }
+
   getModel<T>(entity: string): ICachedModel<T> {
     if (entity === '_metadata') {
       throw new Error('Please use getMetadataModel instead');
     }
     if (entity === '_poi') {
       throw new Error('Please use getPoiModel instead');
+    }
+    if (entity === '_mmr') {
+      throw new Error('MMR repo is not publicly accessible');
     }
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
