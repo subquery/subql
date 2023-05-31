@@ -12,18 +12,16 @@ import {
   ProjectManifestV1_0_0Impl,
   isRuntimeCosmosDs,
   CosmosBlockFilter,
+  isCustomCosmosDs,
 } from '@subql/common-cosmos';
-import { getProjectRoot } from '@subql/node-core';
+import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
 import { CustomModule, SubqlCosmosHandlerKind } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import * as protobuf from 'protobufjs';
 import { CosmosClient } from '../indexer/api.service';
-import {
-  updateDataSourcesV1_0_0,
-  processNetworkConfig,
-} from '../utils/project';
+import { processNetworkConfig } from '../utils/project';
 
 export type CosmosChainType = CustomModule & {
   proto: protobuf.Root;
@@ -72,6 +70,7 @@ export class SubqueryProject {
     rawManifest: unknown,
     reader: Reader,
     networkOverrides?: Partial<CosmosProjectNetworkConfig>,
+    root?: string,
   ): Promise<SubqueryProject> {
     // rawManifest and reader can be reused here.
     // It has been pre-fetched and used for rebase manifest runner options with args
@@ -94,6 +93,7 @@ export class SubqueryProject {
       reader,
       path,
       networkOverrides,
+      root,
     );
   }
 }
@@ -105,8 +105,9 @@ async function loadProjectFromManifestBase(
   reader: Reader,
   path: string,
   networkOverrides?: Partial<CosmosProjectNetworkConfig>,
+  root?: string,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader);
+  root = root ?? (await getProjectRoot(reader));
 
   if (typeof projectManifest.network.endpoint === 'string') {
     projectManifest.network.endpoint = [projectManifest.network.endpoint];
@@ -140,6 +141,7 @@ async function loadProjectFromManifestBase(
     projectManifest.dataSources,
     reader,
     root,
+    isCustomCosmosDs,
   );
   return {
     id: reader.root ? reader.root : path, //TODO, need to method to get project_id
@@ -158,12 +160,14 @@ async function loadProjectFromManifest1_0_0(
   reader: Reader,
   path: string,
   networkOverrides?: Partial<CosmosProjectNetworkConfig>,
+  root?: string,
 ): Promise<SubqueryProject> {
   const project = await loadProjectFromManifestBase(
     projectManifest,
     reader,
     path,
     networkOverrides,
+    root,
   );
   project.templates = await loadProjectTemplates(
     projectManifest,
@@ -192,6 +196,7 @@ async function loadProjectTemplates(
     projectManifest.templates,
     reader,
     root,
+    isCustomCosmosDs,
   );
   return dsTemplates.map((ds, index) => ({
     ...ds,

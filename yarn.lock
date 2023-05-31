@@ -2930,7 +2930,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-cosmos@workspace:packages/common-cosmos"
   dependencies:
-    "@subql/common": ^2.1.1
+    "@subql/common": ^2.2.0
     "@subql/types-cosmos": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
@@ -2943,9 +2943,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.1.2, @subql/common@npm:^2.1.1":
-  version: 2.1.2
-  resolution: "@subql/common@npm:2.1.2"
+"@subql/common@npm:2.2.0, @subql/common@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@subql/common@npm:2.2.0"
   dependencies:
     axios: ^0.27.2
     class-transformer: ^0.5.1
@@ -2955,22 +2955,22 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: 565964e1e54737d8021b7338b89e54fc3ce146e6eae7f5671d53bab096140e9e7a658afb8b29ebbc8610d2573fbc78300a9c8b4acfe86ba23ea54e9f12ade4d6
+  checksum: 54f90ff784ed1f638337304cea8f84a0dcfe9fefad383ea8d3a364475ce7500e141757ca48d384c781473c5922a4afb486a5e10a63f282414c1bfbae4d6ad1ad
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^2.2.2":
-  version: 2.3.1
-  resolution: "@subql/node-core@npm:2.3.1"
+"@subql/node-core@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "@subql/node-core@npm:2.4.1"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@subql/apollo-links": ^0.3.3-2
-    "@subql/common": 2.1.2
+    "@subql/common": 2.2.0
     "@subql/testing": 2.0.1
     "@subql/types": 2.1.2
-    "@subql/utils": 2.3.0
+    "@subql/utils": 2.4.0
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
     "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
@@ -2984,9 +2984,9 @@ __metadata:
     sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
-    vm2: 3.9.17
+    vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 01e2682b8812de1202154f757adb7493f94c482f251b3b78bfa3d73eb6c1109e8de9e4c8a83eca1bb86eb3bf55cd7ba9aacdef9d867a7004ffa8cbe4043c6576
+  checksum: 126983f76d9780452e593290acdf015be930d4d5cd0f554c9ad23f714d99de8fa1638186fe90f4892171cb9c00431867eed458b7360832064851af7aecd68712
   languageName: node
   linkType: hard
 
@@ -3005,9 +3005,9 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": ^2.1.1
+    "@subql/common": ^2.2.0
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": ^2.2.2
+    "@subql/node-core": ^2.4.1
     "@subql/types-cosmos": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -3064,9 +3064,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.3.0":
-  version: 2.3.0
-  resolution: "@subql/utils@npm:2.3.0"
+"@subql/utils@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@subql/utils@npm:2.4.0"
   dependencies:
     "@polkadot/util": ^12.2.1
     "@polkadot/util-crypto": ^12.2.1
@@ -3077,12 +3077,13 @@ __metadata:
     flatted: ^3.2.5
     graphql: ^15.8.0
     graphql-tag: ^2.12.6
+    lodash: ^4.17.21
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
     sequelize: 6.28.0
     tar: ^6.1.11
-  checksum: 5242d5cdd60d4e10774e21d4e672caec7489da6b71567546bb09fbe6ce66e0d5d118019e405cb6ab04e17d06dc4ee055d8e3a0065e2239ff99f865919ea5a101
+  checksum: 3358ce8501d2ce36396717d693c86c5f72782c0e65c5487a1b535bb7e07c0b41fec5b18ee8b8b8668e9ef34accc7821405bd5012a7509a9f08fb30b888265069
   languageName: node
   linkType: hard
 
@@ -11512,19 +11513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vm2@npm:3.9.17":
-  version: 3.9.17
-  resolution: "vm2@npm:3.9.17"
-  dependencies:
-    acorn: ^8.7.0
-    acorn-walk: ^8.2.0
-  bin:
-    vm2: bin/vm2
-  checksum: 9a03740a40ab2be5e3348a95fb31512da1a3c85318febb07e5299fa103ff05bcd7b6f458211fa38a1281dc27beccd04ff90355fc1d34fe2ee6ca10d0bb8c6f35
-  languageName: node
-  linkType: hard
-
-"vm2@npm:^3.9.9":
+"vm2@npm:^3.9.19, vm2@npm:^3.9.9":
   version: 3.9.19
   resolution: "vm2@npm:3.9.19"
   dependencies:

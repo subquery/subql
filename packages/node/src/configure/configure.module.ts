@@ -3,7 +3,11 @@
 
 import assert from 'assert';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { Reader, ReaderFactory } from '@subql/common';
+import {
+  handleCreateSubqueryProjectError,
+  Reader,
+  ReaderFactory,
+} from '@subql/common';
 import { CosmosProjectNetworkConfig } from '@subql/common-cosmos';
 import {
   IConfig,
@@ -118,8 +122,10 @@ export class ConfigureModule {
           },
           isNil,
         ),
+        config.root,
       ).catch((err) => {
-        logger.error(err, 'Create Subquery project from given path failed!');
+        const pjson = require('../../package.json');
+        handleCreateSubqueryProjectError(err, pjson, rawManifest, logger);
         process.exit(1);
       });
       return p;
