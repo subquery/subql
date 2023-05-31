@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2023-05-31
+### Changed
+- Improve incorrect runner message (#1775)
+
 ## [2.1.2] - 2023-05-26
 ### Added
 - Add `DEFAULT_PORT` constant (#1752)
@@ -265,8 +269,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/v2.1.2...HEAD
-[2.1.2]: https://github.com/subquery/subql/compare/v2.1.1...v2.1.2
+[Unreleased]: https://github.com/subquery/subql/compare/common/2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql/compare/common2.1.2...common/2.2.0
+[2.1.2]: https://github.com/subquery/subql/compare/common/2.1.1...common/2.1.2
 [2.1.1]: https://github.com/subquery/subql/compare/common/2.1.0...common/2.1.1
 [2.1.0]: https://github.com/subquery/subql/compare/common/2.0.0...common/2.1.0
 [2.0.0]: https://github.com/subquery/subql/compare/common/1.8.1...common/2.0.0
