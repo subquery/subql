@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.4.0] - 2023-05-30
 ### Added
+- Composite indexes for entities (#1759)
 - Expose base64 functions (#1761)
 
 ## [2.3.0] - 2023-05-24
