@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2023-05-31
+### Changed
+- Improve incorrect runner message
+- Update node-core to fix MMR db issues
+
 ## [2.5.0] - 2023-05-30
 ### Fixed
 - Workers creating their own temp dir for IPFS based projects (#1771)
@@ -858,7 +863,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/2.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/2.5.1...HEAD
+[2.5.1]: https://github.com/subquery/subql/compare/node/2.5.0...node/2.5.1
 [2.5.0]: https://github.com/subquery/subql/compare/node/2.4.1...node/2.5.0
 [2.4.1]: https://github.com/subquery/subql/compare/node/2.4.0...node/2.4.1
 [2.4.0]: https://github.com/subquery/subql/compare/node/2.3.0...node/2.4.0
