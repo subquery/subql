@@ -118,11 +118,11 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async setLeafLength(leafLength: number): Promise<number> {
+  async setLeafLength(leafLength: number, tx?: Transaction): Promise<number> {
     try {
       const leafLengthBuffer = Buffer.alloc(4);
       leafLengthBuffer.writeUInt32BE(leafLength, 0);
-      await this.mmrIndexValueStore.upsert({key: LEAF_LENGTH_INDEX, value: leafLengthBuffer});
+      await this.mmrIndexValueStore.upsert({key: LEAF_LENGTH_INDEX, value: leafLengthBuffer}, {transaction: tx});
       return leafLength;
     } catch (error) {
       throw new Error(`Failed to set leaf length for MMR: ${error}`);
