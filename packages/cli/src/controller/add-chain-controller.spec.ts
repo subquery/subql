@@ -8,6 +8,7 @@ import {promisify} from 'util';
 import {ProjectManifestParentV1_0_0, ProjectManifestV1_0_0} from '@subql/common';
 import * as yaml from 'js-yaml';
 import rimraf from 'rimraf';
+import {YAMLSeq} from 'yaml';
 import {loadOrCreateMultichainManifest, validateAndAddChainManifest} from './add-chain-controller';
 
 const multichainManifest: ProjectManifestParentV1_0_0 = {
@@ -148,7 +149,7 @@ describe('MultiChain - ADD', () => {
     const multichainManifestPath = path.join(projectDir, 'multichain-manifest.yaml');
     const multiManifest = loadOrCreateMultichainManifest(multichainManifestPath);
     validateAndAddChainManifest(projectDir, chainFile, multiManifest);
-    expect(multiManifest.projects[1]).toEqual(`${childChainManifest_2.name}.yaml`);
+    expect((multiManifest.get('projects') as YAMLSeq).get(1)).toEqual(`${childChainManifest_2.name}.yaml`);
   });
 
   it('cannot add chain to multichain manifest - invalid schema path', async () => {

@@ -3,13 +3,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {ProjectManifestParentV1_0_0, getProjectRootAndManifest, getSchemaPath} from '@subql/common';
-import * as yaml from 'js-yaml';
-
-interface DockerComposeType {
-  version: string;
-  services: {[key: string]: DockerComposeService};
-}
+import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
+import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';
 
 type DockerComposeService = {
   image?: string;
@@ -26,7 +21,7 @@ export function addChain(multichain: string, chainManifestPath: string, chainId:
   const multichainManifest = loadOrCreateMultichainManifest(multichainManifestPath);
   chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, schema, multichainManifestPath);
   validateAndAddChainManifest(path.parse(multichainManifestPath).dir, chainManifestPath, multichainManifest);
-  fs.writeFileSync(multichainManifestPath, yaml.dump(multichainManifest));
+  fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
   updateDockerCompose(chainManifestPath);
 }
 
@@ -37,23 +32,24 @@ export function determineMultichainManifestPath(multichain: string): string {
   return multichain ? path.resolve(multichain) : defaultMultichainManifestPath;
 }
 
-export function loadOrCreateMultichainManifest(multichainManifestPath: string): ProjectManifestParentV1_0_0 {
-  let multichainManifest: ProjectManifestParentV1_0_0;
+export function loadOrCreateMultichainManifest(multichainManifestPath: string): Document {
+  let multichainManifest: Document;
 
   if (fs.existsSync(multichainManifestPath)) {
-    multichainManifest = yaml.load(fs.readFileSync(multichainManifestPath, 'utf8')) as ProjectManifestParentV1_0_0;
+    const content = fs.readFileSync(multichainManifestPath, 'utf8');
+    multichainManifest = parseDocument(content);
   } else {
-    multichainManifest = {
+    multichainManifest = new Document({
       specVersion: '1.0.0',
       query: {
         name: '@subql/query',
         version: '*',
       },
       projects: [],
-    };
+    });
 
     // Save the new multichain manifest
-    fs.writeFileSync(multichainManifestPath, yaml.dump(multichainManifest));
+    fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
   }
 
   return multichainManifest;
@@ -77,10 +73,9 @@ export function handleChainManifestOrId(
 
     // Fetch schema from existing manifest if not provided via CLI args
     if (!schema) {
-      const multichainManifest = yaml.load(
-        fs.readFileSync(multichainManifestPath, 'utf8')
-      ) as ProjectManifestParentV1_0_0;
-      const project = getProjectRootAndManifest(multichainManifest.projects[0]);
+      const multichainManifestContent = fs.readFileSync(multichainManifestPath, 'utf8');
+      const multichainManifest = parseDocument(multichainManifestContent);
+      const project = getProjectRootAndManifest(multichainManifest.get('projects') as string[][0]);
       schema = getSchemaPath(project.root, project.manifests[0]);
     }
 
@@ -98,13 +93,15 @@ export function handleChainManifestOrId(
 export function validateAndAddChainManifest(
   projectDir: string,
   chainManifestPath: string,
-  multichainManifest: ProjectManifestParentV1_0_0
+  multichainManifest: Document
 ): void {
   // Validate schema paths
   const chainManifestProject = getProjectRootAndManifest(path.resolve(projectDir, chainManifestPath));
   const chainManifestSchemaPath = getSchemaPath(chainManifestProject.root, chainManifestProject.manifests[0]);
 
-  for (const manifestPath of multichainManifest.projects) {
+  for (const manifestPath of (multichainManifest.get('projects') as YAMLSeq).items.map(
+    (item) => (item as Scalar).value as string
+  )) {
     const project = getProjectRootAndManifest(path.resolve(projectDir, manifestPath));
     const schemaPath = getSchemaPath(project.root, project.manifests[0]);
 
@@ -116,17 +113,30 @@ export function validateAndAddChainManifest(
   }
 
   // Add the chain manifest path to multichain manifest
-  multichainManifest.projects.push(chainManifestPath);
+  (multichainManifest.get('projects') as YAMLSeq).add(chainManifestPath);
 }
 
-export function loadDockerComposeFile(dockerComposePath: string): DockerComposeType | undefined {
+export function loadDockerComposeFile(dockerComposePath: string): Document | undefined {
   if (fs.existsSync(dockerComposePath)) {
-    return yaml.load(fs.readFileSync(dockerComposePath, 'utf8')) as DockerComposeType;
+    const content = fs.readFileSync(dockerComposePath, 'utf8');
+    return parseDocument(content);
   }
 }
 
-function getSubqlNodeService(dockerCompose: DockerComposeType): DockerComposeService | undefined {
-  return Object.values(dockerCompose.services).find((service) => service.image?.startsWith('onfinality/subql-node'));
+function getSubqlNodeService(dockerCompose: Document): DockerComposeService | undefined {
+  const services = dockerCompose.get('services');
+  if (services && services instanceof YAMLMap) {
+    const service = services.items.find((item) => {
+      const image = item.value.get('image') as string;
+      return image?.startsWith('onfinality/subql-node');
+    });
+
+    if (service && service.value instanceof YAMLMap) {
+      return service.value.toJSON() as DockerComposeService;
+    }
+  }
+
+  return undefined;
 }
 
 function getDefaultServiceConfiguration(chainManifestPath: string, serviceName: string): DockerComposeService {
@@ -156,39 +166,35 @@ function getDefaultServiceConfiguration(chainManifestPath: string, serviceName: 
   };
 }
 
-function createNewServiceConfiguration(
-  defaultServiceConfiguration: DockerComposeService,
-  chainManifestPath: string,
-  serviceName: string
-): any {
-  const newServiceConfiguration = JSON.parse(JSON.stringify(defaultServiceConfiguration));
-  newServiceConfiguration.command[0] = `-f=app/${path.basename(chainManifestPath)}`;
-  newServiceConfiguration.healthcheck.test = ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`];
-  return newServiceConfiguration;
-}
-
 export function updateDockerCompose(chainManifestPath: string): void {
   const serviceName = `subquery-node-${path.basename(chainManifestPath, '.yaml')}`;
-  const dockerComposePath = path.resolve(process.cwd(), 'docker-compose.yml');
-  const dockerCompose: DockerComposeType = loadDockerComposeFile(dockerComposePath) || {version: '3', services: {}};
-  const defaultServiceConfiguration =
-    getSubqlNodeService(dockerCompose) || getDefaultServiceConfiguration(chainManifestPath, serviceName);
-
-  // If service with the given name already exists, do not add it again
-  if (dockerCompose.services[serviceName]) {
-    console.log(`Service ${serviceName} already exists, skipping addition.`);
-    return;
+  const dockerComposePath = path.join(process.cwd(), 'docker-compose.yml');
+  const dockerCompose = loadDockerComposeFile(dockerComposePath);
+  if (!dockerCompose) {
+    throw new Error(`Docker Compose file does not exist at the specified location: ${dockerComposePath}`);
   }
 
-  // Add the new service to the docker compose services
-  dockerCompose.services[serviceName] = createNewServiceConfiguration(
-    defaultServiceConfiguration,
-    chainManifestPath,
-    serviceName
-  );
+  const services = dockerCompose.get('services');
+  if (services && services instanceof YAMLMap) {
+    const existingService = services.items.find((item) => item.key?.value === serviceName);
+    if (existingService) {
+      console.log(`service ${serviceName} already exists, skipping addition`);
+      return;
+    }
+  }
 
-  // Update docker-compose file
-  fs.writeFileSync(dockerComposePath, yaml.dump(dockerCompose));
+  let subqlNodeService = getSubqlNodeService(dockerCompose);
+  if (subqlNodeService) {
+    // If the service already exists, update its configuration
+    subqlNodeService.command[0] = `-f=app/${path.basename(chainManifestPath)}`;
+    subqlNodeService.healthcheck.test = ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`];
+  } else {
+    // Otherwise, create a new service configuration
+    subqlNodeService = getDefaultServiceConfiguration(chainManifestPath, serviceName);
+  }
+  (services as YAMLMap).add({key: serviceName, value: subqlNodeService});
+  // Save the updated Docker Compose file
+  fs.writeFileSync(dockerComposePath, dockerCompose.toString());
 }
 
 function generateChainManifest(chainId: string, schema: string): string {
