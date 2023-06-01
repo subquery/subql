@@ -22,6 +22,7 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   private leafLengthChanged = false;
   private mutex = new Mutex();
 
+
   constructor(private db: PgBasedMMRDB) {}
 
   get isFlushable(): boolean {

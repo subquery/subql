@@ -119,7 +119,7 @@ export abstract class TestingService<B, DS> {
 
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
-    const schema = `test-${this.nodeConfig.subqueryName}`;
+    const schema = this.nodeConfig.dbSchema;
 
     try {
       // Fetch block
@@ -144,6 +144,7 @@ export abstract class TestingService<B, DS> {
 
       try {
         await this.indexBlock(block, test.handler);
+        await this.storeService.storeCache.flushCache(true, true);
       } catch (e: any) {
         this.totalFailedTests += test.expectedEntities.length;
         logger.warn(`Test: ${test.name} field due to runtime error`, e);
@@ -164,21 +165,24 @@ export abstract class TestingService<B, DS> {
         const expectedEntity = test.expectedEntities[i];
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const actualEntity = await store.get(expectedEntity._name!, expectedEntity.id);
-        const attributes = actualEntity as unknown as CreationAttributes<Model>;
-        const failedAttributes: string[] = [];
-        let passed = true;
-        Object.keys(attributes).map((attr) => {
-          const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
-          const actualAttr = (actualEntity as Record<string, any>)[attr];
-          if (!isEqual(expectedAttr, actualAttr)) {
-            passed = false;
-            failedAttributes.push(
-              `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`
-            );
-          }
-        });
 
-        if (passed) {
+        const failedAttributes: string[] = [];
+        if (!actualEntity) {
+          failedAttributes.push(`\t\tExpected entity was not found`);
+        } else {
+          const attributes = actualEntity;
+          Object.keys(attributes).map((attr) => {
+            const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
+            const actualAttr = (actualEntity as Record<string, any>)[attr];
+            if (!isEqual(expectedAttr, actualAttr)) {
+              failedAttributes.push(
+                `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`
+              );
+            }
+          });
+        }
+
+        if (!failedAttributes.length) {
           logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
           passedTests++;
         } else {
