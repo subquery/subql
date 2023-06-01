@@ -77,14 +77,13 @@ export abstract class BlockDispatcher<B, DS>
     this.processQueue.abort();
   }
 
-  async enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
     // In the case where factors of batchSize is equal to bypassBlock or when heights is []
-    // to ensure block is bypassed, latestBufferHeight needs to be manually set
+    // to ensure block is bypassed, we set the latestBufferHeight to the heights
+    // make sure lastProcessedHeight in metadata is updated
     if (!!latestBufferHeight && !heights.length) {
-      await this.jumpBufferedHeight(latestBufferHeight);
-      return;
+      heights = [latestBufferHeight];
     }
-
     logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
     this.queue.putMany(heights);
