@@ -9,7 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [2.1.0] - 2023-05-1
+## [2.1.1] - 2023-06-01
+### Changed
+- Update common package (#94)
+
+## [2.1.0] - 2023-05-01
 ### Removed
 - Support for manifest versions < 1.0.0
 - Use more code from common package

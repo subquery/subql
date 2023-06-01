@@ -2747,9 +2747,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^2.4.1":
-  version: 2.4.1
-  resolution: "@subql/node-core@npm:2.4.1"
+"@subql/node-core@npm:^2.4.2":
+  version: 2.4.2
+  resolution: "@subql/node-core@npm:2.4.2"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
@@ -2774,7 +2774,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 126983f76d9780452e593290acdf015be930d4d5cd0f554c9ad23f714d99de8fa1638186fe90f4892171cb9c00431867eed458b7360832064851af7aecd68712
+  checksum: ece800d3f03e45dbce5f3d4913ba5369f54c8c7ef63ab3d1447f748b8a90cd2c0609724d2004a96c97cee5652b0b9ad208bf757853b128206f2c9e40c7c073bd
   languageName: node
   linkType: hard
 
@@ -2792,7 +2792,7 @@ __metadata:
     "@nestjs/testing": ^8.2.6
     "@subql/common": ^2.2.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^2.4.1
+    "@subql/node-core": ^2.4.2
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.1.2
     "@subql/types-ethereum": "workspace:*"
