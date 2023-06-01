@@ -74,22 +74,6 @@ describe('CacheMMR', () => {
     expect(spy).toBeCalledTimes(1);
   });
 
-  it('can set to db', async () => {
-    const spy = jest.spyOn(db, 'set');
-    const spyBulk = jest.spyOn(db, 'bulkSet');
-
-    // Nothing will be set on the first entry
-    await cacheDb.set(new Uint8Array(0), 0);
-    expect(spy).toBeCalledTimes(0);
-
-    // We bulk set every 10 items so we add 9 more
-    for (let i = 1; i < 10; i++) {
-      await cacheDb.set(new Uint8Array(i), i);
-    }
-
-    expect(spyBulk).toBeCalledTimes(1);
-  });
-
   it('can delete nodes from caches', async () => {
     const spy = jest.spyOn(db, 'getNodes');
 

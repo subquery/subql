@@ -143,142 +143,150 @@ export const yargsOptions = yargs(hideBin(process.argv))
     command: '$0', //default command
     describe: 'Index a SubQuery application',
     builder: (yargs) =>
-      yargs.options({
-        'batch-size': {
-          demandOption: false,
-          describe: 'Batch size of blocks to fetch in one round',
-          type: 'number',
-        },
-        'dictionary-resolver': {
-          demandOption: false,
-          describe: 'Use SubQuery Network dictionary resolver',
-          type: 'string',
-          default: false,
-        },
-        'dictionary-timeout': {
-          demandOption: false,
-          describe: 'Max timeout for dictionary query',
-          type: 'number',
-        },
-        'disable-historical': {
-          demandOption: false,
-          default: false,
-          describe: 'Disable storing historical state entities',
-          type: 'boolean',
-        },
-        'log-level': {
-          demandOption: false,
-          describe: 'Specify log level to print. Ignored when --debug is used',
-          type: 'string',
-          choices: [
-            'fatal',
-            'error',
-            'warn',
-            'info',
-            'debug',
-            'trace',
-            'silent',
-          ],
-        },
-        'multi-chain': {
-          demandOption: false,
-          default: false,
-          describe:
-            'Enables indexing multiple subquery projects into the same database schema',
-          type: 'boolean',
-        },
-        'network-dictionary': {
-          alias: 'd',
-          demandOption: false,
-          describe: 'Specify the dictionary api for this network',
-          type: 'string',
-        },
-        'network-endpoint': {
-          demandOption: false,
-          type: 'string',
-          describe: 'Blockchain network endpoint to connect',
-        },
-        'output-fmt': {
-          demandOption: false,
-          describe: 'Print log as json or plain text',
-          type: 'string',
-          choices: ['json', 'colored'],
-        },
-        'query-limit': {
-          demandOption: false,
-          describe:
-            'The limit of items a project can query with store.getByField at once',
-          type: 'number',
-          default: 100,
-        },
-        'scale-batch-size': {
-          type: 'boolean',
-          demandOption: false,
-          describe: 'scale batch size based on memory usage',
-          default: false,
-        },
-        'store-cache-threshold': {
-          demandOption: false,
-          describe:
-            'Store cache will flush data to the database when number of records excess this threshold',
-          type: 'number',
-        },
-        'store-get-cache-size': {
-          demandOption: false,
-          describe: 'Store get cache size for each model',
-          type: 'number',
-        },
-        'store-cache-async': {
-          demandOption: false,
-          describe:
-            'If enabled the store cache will flush data asyncronously relative to indexing data',
-          type: 'boolean',
-        },
-        'store-flush-interval': {
-          demandOption: false,
-          describe:
-            'The interval, in seconds, at which data is flushed from the cache. ' +
-            'This ensures that data is persisted regularly when there is either not much data or the project is up to date.',
-          type: 'number',
-          default: 5,
-        },
-        'subquery-name': {
-          deprecated: true,
-          demandOption: false,
-          describe: 'Name of the subquery project',
-          type: 'string',
-        },
-        subscription: {
-          demandOption: false,
-          describe: 'Enable subscription by create notification triggers',
-          type: 'boolean',
-          default: false,
-        },
-        timeout: {
-          demandOption: false,
-          describe:
-            'Timeout for indexer sandbox to execute the mapping functions',
-          type: 'number',
-        },
-        'unfinalized-blocks': {
-          demandOption: false,
-          default: false,
-          describe: 'Enable to fetch and index unfinalized blocks',
-          type: 'boolean',
-        },
-        unsafe: {
-          type: 'boolean',
-          demandOption: false,
-          describe: 'Allows usage of any built-in module within the sandbox',
-        },
-        workers: {
-          alias: 'w',
-          demandOption: false,
-          describe:
-            'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
-          type: 'number',
-        },
-      }),
+      yargs
+        .options({
+          'batch-size': {
+            demandOption: false,
+            describe: 'Batch size of blocks to fetch in one round',
+            type: 'number',
+          },
+          'dictionary-resolver': {
+            demandOption: false,
+            describe: 'Use SubQuery Network dictionary resolver',
+            type: 'string',
+            default: false,
+          },
+          'dictionary-timeout': {
+            demandOption: false,
+            describe: 'Max timeout for dictionary query',
+            type: 'number',
+          },
+          'disable-historical': {
+            demandOption: false,
+            default: false,
+            describe: 'Disable storing historical state entities',
+            type: 'boolean',
+          },
+          'log-level': {
+            demandOption: false,
+            describe:
+              'Specify log level to print. Ignored when --debug is used',
+            type: 'string',
+            choices: [
+              'fatal',
+              'error',
+              'warn',
+              'info',
+              'debug',
+              'trace',
+              'silent',
+            ],
+          },
+          'multi-chain': {
+            demandOption: false,
+            default: false,
+            describe:
+              'Enables indexing multiple subquery projects into the same database schema',
+            type: 'boolean',
+          },
+          'network-dictionary': {
+            alias: 'd',
+            demandOption: false,
+            describe: 'Specify the dictionary api for this network',
+            type: 'string',
+          },
+          'network-endpoint': {
+            demandOption: false,
+            type: 'string',
+            describe: 'Blockchain network endpoint to connect',
+          },
+          'output-fmt': {
+            demandOption: false,
+            describe: 'Print log as json or plain text',
+            type: 'string',
+            choices: ['json', 'colored'],
+          },
+          'query-limit': {
+            demandOption: false,
+            describe:
+              'The limit of items a project can query with store.getByField at once',
+            type: 'number',
+            default: 100,
+          },
+          'scale-batch-size': {
+            type: 'boolean',
+            demandOption: false,
+            describe: 'scale batch size based on memory usage',
+            default: false,
+          },
+          'store-cache-threshold': {
+            demandOption: false,
+            describe:
+              'Store cache will flush data to the database when number of records excess this threshold',
+            type: 'number',
+          },
+          'store-get-cache-size': {
+            demandOption: false,
+            describe: 'Store get cache size for each model',
+            type: 'number',
+          },
+          'store-cache-async': {
+            demandOption: false,
+            describe:
+              'If enabled the store cache will flush data asyncronously relative to indexing data',
+            type: 'boolean',
+          },
+          'store-flush-interval': {
+            demandOption: false,
+            describe:
+              'The interval, in seconds, at which data is flushed from the cache. ' +
+              'This ensures that data is persisted regularly when there is either not much data or the project is up to date.',
+            type: 'number',
+            default: 5,
+          },
+          'subquery-name': {
+            deprecated: true,
+            demandOption: false,
+            describe: 'Name of the subquery project',
+            type: 'string',
+          },
+          subscription: {
+            demandOption: false,
+            describe: 'Enable subscription by create notification triggers',
+            type: 'boolean',
+            default: false,
+          },
+          timeout: {
+            demandOption: false,
+            describe:
+              'Timeout for indexer sandbox to execute the mapping functions',
+            type: 'number',
+          },
+          'unfinalized-blocks': {
+            demandOption: false,
+            default: false,
+            describe: 'Enable to fetch and index unfinalized blocks',
+            type: 'boolean',
+          },
+          unsafe: {
+            type: 'boolean',
+            demandOption: false,
+            describe: 'Allows usage of any built-in module within the sandbox',
+          },
+          workers: {
+            alias: 'w',
+            demandOption: false,
+            describe:
+              'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
+            type: 'number',
+          },
+          root: {
+            describe:
+              'This is a hidden flag only used from the main thread to workers. It provides a root directory for the project. This is a temp directory with IPFS and GitHub projects.',
+            type: 'string',
+          },
+        })
+        .hide('root'), // root is hidden because its for internal use
     handler: () => {
       // boostrap trigger in main.ts
     },

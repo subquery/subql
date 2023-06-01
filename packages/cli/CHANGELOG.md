@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-05-31
+### Changed
+- Handle composite indexes with codegen (#1759)
+
 ## [3.0.0] - 2023-05-19
 ### Changed
 - Codegen will now generate code that is compatible with TS strict settings. This changes entity constructors to take all required parameters. The create method is still the preferred way of defining entities. (#1713)
@@ -375,8 +379,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/v3.0.0...HEAD
-[3.0.0]: https://github.com/subquery/subql/compare/cli/v2.1.0...cli/v3.0.0
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.1.0...HEAD
+[3.1.0]: https://github.com/subquery/subql/compare/cli/3.0.0...cli/3.1.0
+[3.0.0]: https://github.com/subquery/subql/compare/cli/2.1.0...cli/3.0.0
 [2.1.0]: https://github.com/subquery/subql/compare/cli/2.0.0.../cli/2.1.0
 [2.0.0]: https://github.com/subquery/subql/compare/cli/.1.13.1../cli/2.0.0
 [1.13.1]: https://github.com/subquery/subql/compare/cli/1.13.0.../cli/1.13.1

@@ -186,11 +186,12 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
   static create<T extends AsyncMethods, H extends AsyncMethods>(
     path: string,
     workerFns: (keyof T)[],
-    hostFns: H
+    hostFns: H,
+    root: string
   ): Worker<T> & T {
     const worker = new Worker(
       new workers.Worker(path, {
-        argv: process.argv,
+        argv: [...process.argv, '--root', root],
       }),
       workerFns,
       hostFns

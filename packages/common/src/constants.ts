@@ -57,3 +57,6 @@ export const RESET_MMR_BLOCK_BATCH = 1000;
 
 // Default Model fetch range
 export const DEFAULT_FETCH_RANGE = 100;
+
+// RUNNER ERROR REGEX
+export const RUNNER_ERROR_REGEX = 'property runner.node.name has failed the following constraints: equals';
