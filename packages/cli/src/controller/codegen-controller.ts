@@ -189,7 +189,8 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
     if (!d?.assets) {
       return;
     }
-    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d)) {
+    // is the ds check here needed ?
+    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d) || 'assets' in d) {
       Object.entries(d.assets).map(([name, value]) => {
         const filePath = path.join(projectPath, value.file);
         if (!fs.existsSync(filePath)) {
@@ -375,30 +376,18 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     dataSources: DatasourceKind[];
   };
 
-  const expectKeys = [
-    'specVersion',
-    'templates',
-    'dataSources',
-    'name',
-    'version',
-    'runner',
-    'description',
-    'repository',
-    'schema',
-    'network',
-  ];
-  const dsKeys = ['assets', 'kind', 'processor'];
+  const expectKeys = ['datasources', 'templates'];
   // I need to determine if it is a datasource
 
   const customDatasource = Object.keys(plainManifest)
     .filter((key) => !expectKeys.includes(key))
-    .map((dsKey) => {
-      if (typeof (plainManifest as any)[dsKey] === 'object') {
-        const value = (plainManifest as any)[dsKey] as DatasourceKind;
-        const isDs = value && Object.keys(value).filter((key) => dsKeys.includes(key)).length >= dsKeys.length;
-        return isDs && value;
+    ?.map((dsKey) => {
+      const value = (plainManifest as any)[dsKey];
+      if (typeof value === 'object' && value) {
+        return !!Object.keys(value).find((d) => d === 'assets') && value;
       }
-    });
+    })
+    ?.filter(Boolean);
 
   let datasources = plainManifest.dataSources;
 

@@ -4,6 +4,8 @@ name: 'example'
 schema:
   file: './schema.graphql'
 
+goodDs:
+
 dataSources:
   - kind: ethereum/Runtime
     startBlock: 1
@@ -14,11 +16,6 @@ dataSources:
 templates:
   - name: ERC721
     kind: ethereum/Runtime
-    #    options:
-    #      abi: erc721
-    #    assets:
-    #      erc721:
-    #        file: "./erc721.json"
     mapping:
       handlers:
         - handler: handleERC721

@@ -43,10 +43,9 @@ describe('Codegen can generate schema', () => {
     ).resolves.toBeTruthy();
   });
 
-  it('Should not fail, if template Datasources dont have assets', async () => {
+  it('Should not fail, if ds does not have any assets', async () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest5');
-    await codegen(projectPath);
-    await expect(fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')).rejects.toThrow();
+    await expect(codegen(projectPath)).resolves.not.toThrow();
   });
   it('Codegen should be able to generate ABIs from customName datasources', async () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest6');

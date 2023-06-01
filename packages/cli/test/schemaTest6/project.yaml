@@ -5,9 +5,6 @@ schema:
   file: './schema.graphql'
 
 customDs:
-  kind: ethereum/Runtime
-  startBlock: 1
-  processor: 'good'
   assets:
     erc721:
       file: ./erc721.json
