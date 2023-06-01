@@ -5,11 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.4.2] - 2023-06-01
 ### Changed
 - Cache MMR leaf length and flush with rest of db, enable more mmr logging (#1782)
 
 ### Fixed
 - Fix jump buffer height issue (#1781)
+- Error if testing entitiy not found (#1766)
 
 ## [2.4.1] - 2023-05-31
 ### Fixed
@@ -274,7 +277,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.4.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.4.2...HEAD
+[2.4.2]: https://github.com/subquery/subql/compare/node-core/2.4.1...node-core/2.4.2
 [2.4.1]: https://github.com/subquery/subql/compare/node-core/2.4.0...node-core/2.4.1
 [2.4.0]: https://github.com/subquery/subql/compare/node-core/2.3.1...node-core/2.4.0
 [2.3.1]: https://github.com/subquery/subql/compare/node-core/2.3.0...node-core/2.3.1
