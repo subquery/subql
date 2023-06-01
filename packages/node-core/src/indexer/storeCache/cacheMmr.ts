@@ -18,11 +18,12 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   flushableRecordCounter = 0;
   private cacheData = new LRUCache<number, Uint8Array>(cacheOptions);
   private setData: Record<number, Uint8Array> = {};
+  private leafLengthChanged = false;
 
   constructor(private db: PgBasedMMRDB) {}
 
   get isFlushable(): boolean {
-    return !!Object.keys(this.setData).length;
+    return !!Object.keys(this.setData).length || this.leafLengthChanged;
   }
 
   async flush(tx: Transaction, blockHeight?: number | undefined): Promise<void> {
@@ -30,6 +31,10 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
       const data = {...this.setData};
       this.setData = {};
       await this.db.bulkSet(data, tx);
+      if (this.leafLength) {
+        this.leafLengthChanged = false;
+        await this.db.setLeafLength(this.leafLength, tx);
+      }
     }
   }
 
@@ -71,10 +76,10 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
     return this.leafLength;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async setLeafLength(length: number): Promise<number> {
     this.leafLength = length;
-
-    await this.db.setLeafLength(length);
+    this.leafLengthChanged = true;
     return length;
   }
 
