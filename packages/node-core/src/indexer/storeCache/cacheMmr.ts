@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
+import {Mutex} from 'async-mutex';
 import LRUCache from 'lru-cache';
 import {Sequelize, Transaction} from 'sequelize';
 import {PgBasedMMRDB} from '../entities/Mmr.entitiy';
@@ -19,6 +20,8 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   private cacheData = new LRUCache<number, Uint8Array>(cacheOptions);
   private setData: Record<number, Uint8Array> = {};
   private leafLengthChanged = false;
+  private mutex = new Mutex();
+
 
   constructor(private db: PgBasedMMRDB) {}
 
@@ -28,6 +31,10 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
 
   async flush(tx: Transaction, blockHeight?: number | undefined): Promise<void> {
     if (this.isFlushable) {
+      const release = await this.mutex.acquire();
+      tx.afterCommit(() => {
+        release();
+      });
       const data = {...this.setData};
       this.setData = {};
       await this.db.bulkSet(data, tx);
@@ -52,8 +59,10 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   }
 
   async get(key: number): Promise<Uint8Array | null> {
+    await this.mutex.waitForUnlock();
     const result = this.cacheData.get(key);
     if (result) return result;
+    if (this.setData[key]) return this.setData[key];
 
     const dbResult = await this.db.get(key);
     if (dbResult) {
@@ -64,12 +73,14 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
 
   // Not sure when this gets used
   async delete(key: number): Promise<void> {
+    await this.mutex.waitForUnlock();
     await this.db.delete(key);
     this.cacheData.delete(key);
     delete this.setData[key];
   }
 
   async getLeafLength(): Promise<number> {
+    await this.mutex.waitForUnlock();
     if (this.leafLength === undefined) {
       this.leafLength = await this.db.getLeafLength();
     }
@@ -84,6 +95,7 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   }
 
   async getNodes(): Promise<Record<number, Uint8Array>> {
+    await this.mutex.waitForUnlock();
     return {...(await this.db.getNodes()), ...this.setData};
   }
 }
