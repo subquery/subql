@@ -119,7 +119,7 @@ export abstract class TestingService<B, DS> {
 
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
-    const schema = `test-${this.nodeConfig.dbSchema}`;
+    const schema = this.nodeConfig.dbSchema;
 
     try {
       // Fetch block
