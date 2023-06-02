@@ -344,6 +344,13 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       const iface = this.buildInterface(ds.options.abi, assets);
       const func = iface.getFunction(hexDataSlice(transaction.input, 0, 4));
       const args = iface.decodeFunctionData(func, transaction.input) as T;
+
+      transaction.logs =
+        transaction.logs &&
+        (await Promise.all(
+          transaction.logs.map(async (log) => this.parseLog(log, ds)),
+        ));
+
       return {
         ...transaction,
         args,
