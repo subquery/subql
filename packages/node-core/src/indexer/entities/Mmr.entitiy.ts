@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
-import {Sequelize, DataTypes, Model, ModelStatic, Transaction, Op} from 'sequelize';
+import {Sequelize, DataTypes, Model, ModelStatic, Transaction} from 'sequelize';
 
 const LEAF_LENGTH_INDEX = -1;
 
