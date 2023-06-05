@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
-import {Sequelize, DataTypes, Model, ModelStatic, Transaction} from 'sequelize';
+import {Sequelize, DataTypes, Model, ModelStatic, Transaction, Op} from 'sequelize';
 
 const LEAF_LENGTH_INDEX = -1;
 
@@ -85,14 +85,6 @@ export class PgBasedMMRDB implements Db {
       });
     } catch (error) {
       throw new Error(`Failed to bulk store MMR Node: ${error}`);
-    }
-  }
-
-  async delete(key: number, tx?: Transaction): Promise<void> {
-    try {
-      await this.mmrIndexValueStore.destroy({where: {key}, transaction: tx});
-    } catch (error) {
-      throw new Error(`Failed to delete MMR node: ${error}`);
     }
   }
 
