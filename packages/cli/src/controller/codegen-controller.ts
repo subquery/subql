@@ -363,8 +363,34 @@ async function prepareDirPath(path: string, recreate: boolean) {
   }
 }
 
+function directoryExists(dirPath: string): boolean {
+  try {
+    return fs.statSync(dirPath).isDirectory();
+  } catch (e) {
+    return false;
+  }
+}
+
+function removeDirectory(directoryPath: string): void {
+  // remove regardless if the directory is empty or not
+  fs.rm(directoryPath, {recursive: true, force: true}, (err) => {
+    if (err?.code !== 'ENOTEMPTY' && err) {
+      // Swallow ENOTEMPTY error
+      console.error(`Failed to remove generated directory: ${directoryPath}`, err);
+    } else {
+      console.log(`Cleared generated directory: ${directoryPath}`);
+    }
+  });
+}
+
 //1. Prepare models directory and load schema
 export async function codegen(projectPath: string, fileName?: string): Promise<void> {
+  const rootPath = path.join(projectPath, TYPE_ROOT_DIR);
+  if (directoryExists(rootPath)) {
+    console.log('Clearing generated files');
+    removeDirectory(rootPath);
+  }
+
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
@@ -377,8 +403,8 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
   };
 
   const expectKeys = ['datasources', 'templates'];
-  // I need to determine if it is a datasource
 
+  // if Object with assets key exists, need check for abi
   const customDatasource = Object.keys(plainManifest)
     .filter((key) => !expectKeys.includes(key))
     ?.map((dsKey) => {
