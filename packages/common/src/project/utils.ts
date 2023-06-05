@@ -7,8 +7,19 @@ import path from 'path';
 import {validateSync, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
 import * as yaml from 'js-yaml';
+import Pino from 'pino';
 import {prerelease, satisfies, valid, validRange} from 'semver';
+import {RUNNER_ERROR_REGEX} from '../constants';
 import {ProjectManifestParentV1_0_0} from './versioned';
+
+// Input manifest here, we might need to handler other error later on
+export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger) {
+  if (JSON.stringify(err.message).includes(RUNNER_ERROR_REGEX)) {
+    logger.error(`Failed to init project, required runner is ${rawManifest.runner.node.name}, got ${pjson.name}`);
+  } else {
+    logger.error(err, 'Create Subquery project from given path failed!');
+  }
+}
 
 export async function makeTempDir(): Promise<string> {
   const sep = path.sep;

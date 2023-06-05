@@ -6,6 +6,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.3] - 2023-06-02
+### Fixed
+- Sync with node-core 2.4.3, fixed mmr missing node due to cache lock (#1784)
+
+## [2.5.2] - 2023-06-01
+### Fixed
+- Testing db schema (#1766)
+
+## [2.5.1] - 2023-05-31
+### Changed
+- Improve incorrect runner message (#1775)
+- Update node-core to fix MMR db issues (#1777)
+
+## [2.5.0] - 2023-05-30
+### Fixed
+- Workers creating their own temp dir for IPFS based projects (#1771)
+- Workers failing to start (#1769)
+
+### Added
+- Cache rpc requests for `state_getRuntimeVersion` and `chain_getHeader` (#1760)
+
+## [2.4.1] - 2023-05-26
+### Fixed
+- Improve mmr error and status, set `mmr-store-type` default to postgres db (#1752)
+- Fix subcommand could escape issue, setup profiler at application init (#1755)
+
+## [2.4.0] - 2023-05-24
+### Changed
+- Tidy up commands and their args (#1741)
+- Update node-core
+
 ## [2.3.0] - 2023-05-19
 ### Changed
 - Update polkadot api to 10.7.1 (#1736)
@@ -840,8 +871,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/v2.3.0...HEAD
-[2.3.0]: https://github.com/subquery/subql/compare/v2.2.1...v2.3.0
+[Unreleased]: https://github.com/subquery/subql/compare/node/v2.5.3...HEAD
+[2.5.3]: https://github.com/subquery/subql/compare/node/v2.5.2...node/v2.5.3
+[2.5.2]: https://github.com/subquery/subql/compare/node/v2.5.1...node/v2.5.2
+[2.5.1]: https://github.com/subquery/subql/compare/node/2.5.0...node/2.5.1
+[2.5.0]: https://github.com/subquery/subql/compare/node/2.4.1...node/2.5.0
+[2.4.1]: https://github.com/subquery/subql/compare/node/2.4.0...node/2.4.1
+[2.4.0]: https://github.com/subquery/subql/compare/node/2.3.0...node/2.4.0
+[2.3.0]: https://github.com/subquery/subql/compare/node/2.2.1...node/2.3.0
 [2.2.1]: https://github.com/subquery/subql/compare/node/2.2.0...node/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/node/2.1.3...node/2.2.0
 [2.1.3]: https://github.com/subquery/subql/compare/node/2.1.2...node/2.1.3

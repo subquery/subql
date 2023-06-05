@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
 import { ApiConnection } from '@subql/node-core';
+import { createCachedProvider } from './x-provider/cachedProvider';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -18,7 +20,7 @@ export class ApiPromiseConnection implements ApiConnection {
     endpoint: string,
     args: { chainTypes: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
-    let provider: WsProvider | HttpProvider;
+    let provider: ProviderInterface;
     let throwOnConnect = false;
 
     const headers = {
@@ -26,9 +28,11 @@ export class ApiPromiseConnection implements ApiConnection {
     };
 
     if (endpoint.startsWith('ws')) {
-      provider = new WsProvider(endpoint, RETRY_DELAY, headers);
+      provider = createCachedProvider(
+        new WsProvider(endpoint, RETRY_DELAY, headers),
+      );
     } else if (endpoint.startsWith('http')) {
-      provider = new HttpProvider(endpoint, headers);
+      provider = createCachedProvider(new HttpProvider(endpoint, headers));
       throwOnConnect = true;
     }
 

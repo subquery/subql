@@ -265,7 +265,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
     }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
-    return this.mmrService.syncFileBaseFromPoi(offset, undefined, this.nodeConfig.debug).catch((err) => {
+    return this.mmrService.syncFileBaseFromPoi(offset, undefined, true).catch((err) => {
       logger.error(err, 'failed to sync poi to mmr');
       process.exit(1);
     });

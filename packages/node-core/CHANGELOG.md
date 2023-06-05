@@ -6,6 +6,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.3] - 2023-06-02
+### Fixed
+- Fixed mmr missing node due to cache lock (#1784)
+
+## [2.4.2] - 2023-06-01
+### Changed
+- Cache MMR leaf length and flush with rest of db, enable more mmr logging (#1782)
+
+### Fixed
+- Fix jump buffer height issue (#1781)
+- Error if testing entitiy not found (#1766)
+
+## [2.4.1] - 2023-05-31
+### Fixed
+- Sync flushing MMR potentially getting corrupt (#1777)
+
+## [2.4.0] - 2023-05-30
+### Added
+- Add cache layer to postgres mmr db (#1762)
+- Support for block hashes with base64 format for POI (#1761)
+
+### Changed
+- Update vm2 past problimatic version (#1770)
+- Add optional root option to config (#1771)
+
+## [2.3.1] - 2023-05-26
+### Fixed
+- Improve mmr error and expose ready status (#1752)
+- Fix subcommand could escape issue, setup profiler at application init (#1755)
+
+## [2.3.0] - 2023-05-24
+### Fixed
+- Fix datasource processors base filters not working (#1745)
+
+### Added
+- Support for base58 blockhashes with POI (#1750)
+- Allow url in sandbox and set URL global (#1747)
+- Log for unfound mappingHandlers and list available ones (#1742)
+
 ## [2.2.2] - 2023-05-19
 ### Fixed
 - Fix project service init failing due to start height being 0 (#1735)
@@ -242,7 +281,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.4.3...HEAD
+[2.4.3]: https://github.com/subquery/subql/compare/node-core/v2.4.2...node-corev2.4.3
+[2.4.2]: https://github.com/subquery/subql/compare/node-core/2.4.1...node-core/2.4.2
+[2.4.1]: https://github.com/subquery/subql/compare/node-core/2.4.0...node-core/2.4.1
+[2.4.0]: https://github.com/subquery/subql/compare/node-core/2.3.1...node-core/2.4.0
+[2.3.1]: https://github.com/subquery/subql/compare/node-core/2.3.0...node-core/2.3.1
+[2.3.0]: https://github.com/subquery/subql/compare/node-core/2.2.2...node-core/2.3.0
 [2.2.2]: https://github.com/subquery/subql/compare/node-core/2.2.1...node-core/2.2.2
 [2.2.1]: https://github.com/subquery/subql/compare/node-core/2.2.0...node-core/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/node-core/2.1.2...node-core/2.2.0
@@ -252,7 +297,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.1.0]: https://github.com/subquery/subql/compare/node-core/2.0.2...node-core/2.1.0
 [2.0.2]: https://github.com/subquery/subql/compare/node-core/2.0.1...node-core/2.0.2
 [2.0.1]: https://github.com/subquery/subql/compare/node-core/2.0.0...node-core/2.0.1
-[2.0.0]: https://github.com/subquery/subql/compare/node-core/.1.11.3..node-core/2.0.0
+[2.0.0]: https://github.com/subquery/subql/compare/node-core/1.11.3..node-core/2.0.0
 [1.11.3]: https://github.com/subquery/subql/compare/node-core/1.11.2...node-core/1.11.3
 [1.11.2]: https://github.com/subquery/subql/compare/node-core/1.11.1...node-core/1.11.2
 [1.11.1]: https://github.com/subquery/subql/compare/node-core/1.11.0...node-core/1.11.1

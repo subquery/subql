@@ -291,4 +291,77 @@ describe('utils that handle schema.graphql', () => {
     expect(entities.models?.[0].indexes[0].fields).toEqual(['field2']);
     expect(entities.models?.[0].indexes[1].fields).toEqual(['field3']);
   });
+
+  it('can read composite index', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity @compositeIndexes(fields: [["field1", "field2"], ["field2", "field3"]]) {
+        id: ID! #id is a required field
+        field1: Int!
+        field2: String #field2 is an optional field
+        field3: String
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const entities = getAllEntitiesRelations(schema);
+    expect(entities.models?.[0].indexes[0].fields).toEqual(['field1', 'field2']);
+  });
+
+  it('can create composite index for fk field', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity @compositeIndexes(fields: [["field1", "field2"], ["field2", "relate"]]) {
+        id: ID! #id is a required field
+        field1: Int!
+        field2: String
+        relate: RelateEntity
+      }
+      type RelateEntity @entity {
+        id: ID! #id is a required field
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const entities = getAllEntitiesRelations(schema);
+    expect(entities.models?.[0].indexes[2].fields).toEqual(['field2', 'relateId']);
+  });
+
+  it('will throw if composite index field not found within entity', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity @compositeIndexes(fields: [["field1", "field5"]]) {
+        id: ID!
+        field1: Int!
+        field2: String
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/not found within entity/);
+  });
+
+  it('will throw when found duplicate composite index ', () => {
+    const graphqlSchema = gql`
+      type StarterEntity
+        @entity
+        @compositeIndexes(fields: [["field1", "field2"], ["field2", "field3"], ["field3", "field2"]]) {
+        id: ID!
+        field1: Int!
+        field2: String
+        field3: String
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/Found duplicate composite indexes/);
+  });
+
+  it('will throw if number of composite indexes excess limit ', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity @compositeIndexes(fields: [["id", "field1", "field2", "field3"]]) {
+        id: ID!
+        field1: Int!
+        field2: String
+        field3: String
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(
+      /Composite index on entity StarterEntity expected not more than 3 fields,/
+    );
+  });
 });

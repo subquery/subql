@@ -3,7 +3,6 @@
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { profiler } from '@subql/node-core';
-import { yargsOptions } from '../../yargs';
 import { ApiService } from '../api.service';
 import {
   DictionaryService,
@@ -73,7 +72,7 @@ export class RuntimeService
   }
 
   // the specVersion is always undefined
-  @profiler(yargsOptions.argv.profiler)
+  @profiler()
   async specChanged(height: number, specVersion?: number): Promise<boolean> {
     if (specVersion === undefined) {
       const { blockSpecVersion } = await this.getSpecVersion(height);

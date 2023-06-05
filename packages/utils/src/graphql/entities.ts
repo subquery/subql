@@ -21,6 +21,8 @@ import {
   ValueNode,
   BooleanValueNode,
 } from 'graphql';
+import {findDuplicateStringArray} from '../array';
+import {Logger} from '../logger';
 import {getTypeByScalarName} from '../types';
 import {DirectiveName} from './constant';
 import {buildSchemaFromFile} from './schema';
@@ -34,6 +36,8 @@ import {
   GraphQLRelationsType,
   IndexType,
 } from './types';
+
+const logger = new Logger({level: 'info', outputFormat: 'colored'}).getLogger('Utils.entities');
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
   return Object.values(getSchema(_schema).getTypeMap())
@@ -74,11 +78,14 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       fields: [],
       indexes: [],
     };
+    const entityFields = Object.values(entity.getFields());
 
-    for (const field of Object.values(entity.getFields())) {
+    const fkNameSet: string[] = [];
+    for (const field of entityFields) {
       const typeString = extractType(field.type);
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
+
       //If is a basic scalar type
       const typeClass = getTypeByScalarName(typeString);
       if (typeClass?.fieldScalar) {
@@ -109,6 +116,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           fields: [`${field.name}Id`],
           using: IndexType.HASH,
         });
+        fkNameSet.push(field.name);
       }
       // If is derivedFrom
       else if (entityNameSet.includes(typeString) && derivedFromDirectValues) {
@@ -160,10 +168,63 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
         }
       }
     }
+
+    // Composite Indexes
+    const compositeIndexDirective = schema.getDirective('compositeIndexes');
+    const compositeIndexDirectiveVal = getDirectiveValues(compositeIndexDirective, entity.astNode) as {
+      fields?: string[][];
+    };
+    if (compositeIndexDirectiveVal?.fields.length) {
+      const duplicateIndexes = findDuplicateStringArray(compositeIndexDirectiveVal.fields);
+      if (duplicateIndexes.length) {
+        throw new Error(
+          `Found duplicate composite indexes ${JSON.stringify(duplicateIndexes)} on entity ${entity.name}`
+        );
+      }
+      compositeIndexDirectiveVal.fields.forEach((indexFields) => {
+        const joinFields = getJoinIndexFields(entity, entityFields, fkNameSet, indexFields);
+        newModel.indexes.push({
+          fields: joinFields,
+        });
+      });
+    }
     modelRelations.models.push(newModel);
   }
   validateRelations(modelRelations);
   return modelRelations;
+}
+
+function getJoinIndexFields(
+  entity: GraphQLObjectType<any, any>,
+  entityFields: GraphQLField<any, any, {[p: string]: any}>[],
+  fkNameSet: string[],
+  IndexArgFields: string[]
+): string[] {
+  if (IndexArgFields.length === 1) {
+    logger.warn(`Composite index expected to be more than 1 field , entity ${entity} [${IndexArgFields}]`);
+  }
+  if (IndexArgFields.length > 3) {
+    throw new Error(
+      `Composite index on entity ${entity} expected not more than 3 fields, index [${IndexArgFields}] got ${IndexArgFields.length} fields`
+    );
+  }
+  // check duplicate fields
+  const duplicateFields = IndexArgFields.filter((name, index, arr) => arr.indexOf(name) !== index);
+  if (duplicateFields.length) {
+    throw new Error(`Composite index ${entity}.${IndexArgFields} got duplicated fields: ${duplicateFields}`);
+  }
+  return IndexArgFields.map((j) => {
+    const fieldInEntity = entityFields.find((f) => f.name === j);
+    // check whether these fields are exist in the entity
+    if (fieldInEntity === undefined) {
+      throw new Error(`Composite index [${IndexArgFields}], field ${j} not found within entity ${entity} `);
+    }
+    // check is fk
+    if (fkNameSet.includes(fieldInEntity.name)) {
+      return `${j}Id`;
+    }
+    return j;
+  });
 }
 
 function packEntityField(

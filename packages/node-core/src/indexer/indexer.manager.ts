@@ -183,7 +183,9 @@ export abstract class BaseIndexerManager<
       }
     } else if (this.isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(ds, data, this.processorMap[kind], (data, baseFilter) => {
-        return this.filterMap[kind](data, baseFilter, ds);
+        if (!baseFilter.length) return true;
+
+        return baseFilter.find((filter) => this.filterMap[kind](data, filter, ds));
       });
 
       for (const handler of handlers) {
@@ -198,7 +200,7 @@ export abstract class BaseIndexerManager<
     ds: CDS, //SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
     data: HandlerInputMap[K],
     baseHandlerCheck: ProcessorMap[K],
-    baseFilter: (data: HandlerInputMap[K], baseFilter: any) => boolean
+    baseFilter: (data: HandlerInputMap[K], baseFilter: any[]) => boolean
   ): CustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
 
@@ -206,7 +208,6 @@ export abstract class BaseIndexerManager<
       .filter((handler) => {
         const processor = plugin.handlerProcessors[handler.kind];
         if (baseHandlerCheck(processor)) {
-          processor.baseFilter;
           return baseFilter(data, processor.baseFilter);
         }
         return false;

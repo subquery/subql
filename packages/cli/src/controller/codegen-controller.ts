@@ -300,7 +300,7 @@ export function processFields(
     if (type === 'entity') {
       const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
         (acc, indexField) => {
-          if (indexField.fields.includes(field.name)) {
+          if (indexField.fields.includes(field.name) && indexField.fields.length <= 1) {
             acc[0] = true;
             if (indexField.fields.length === 1 && indexField.unique) {
               acc[1] = true;

@@ -3,7 +3,12 @@
 
 import assert from 'assert';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { Reader, ReaderFactory } from '@subql/common';
+import {
+  handleCreateSubqueryProjectError,
+  Reader,
+  ReaderFactory,
+  RUNNER_ERROR_REGEX,
+} from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
 import {
   IConfig,
@@ -61,18 +66,20 @@ export class ConfigureModule {
     let rawManifest: unknown;
     let reader: Reader;
 
+    const isTest = argv._[0] === 'test';
+
     // Override order : Sub-command/Args/Flags > Manifest Runner options > Default configs
     // Therefore, we should rebase the manifest runner options with args first but not the config in the end
     if (argv.config) {
       // get manifest options
-      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
+      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv), isTest);
       reader = await ReaderFactory.create(config.subquery, {
         ipfs: config.ipfs,
       });
       rawManifest = await reader.getProjectSchema();
       rebaseArgsWithManifest(argv, rawManifest);
       // use rebased argv generate config to override current config
-      config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv));
+      config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv), isTest);
     } else {
       if (!argv.subquery) {
         logger.error(
@@ -90,7 +97,10 @@ export class ConfigureModule {
       rawManifest = await reader.getProjectSchema();
       rebaseArgsWithManifest(argv, rawManifest);
       // Create new nodeConfig with rebased argv
-      config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
+      config = new NodeConfig(
+        defaultSubqueryName(yargsToIConfig(argv)),
+        isTest,
+      );
     }
 
     if (!validDbSchemaName(config.dbSchema)) {
@@ -113,8 +123,10 @@ export class ConfigureModule {
           },
           isNil,
         ),
+        config.root,
       ).catch((err) => {
-        logger.error(err, 'Create Subquery project from given path failed!');
+        const pjson = require('../../package.json');
+        handleCreateSubqueryProjectError(err, pjson, rawManifest, logger);
         process.exit(1);
       });
       return p;

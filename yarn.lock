@@ -4197,7 +4197,7 @@ __metadata:
     sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
-    vm2: 3.9.17
+    vm2: ^3.9.19
     yargs: ^16.2.0
   languageName: unknown
   linkType: soft
@@ -4394,6 +4394,7 @@ __metadata:
     flatted: ^3.2.5
     graphql: ^15.8.0
     graphql-tag: ^2.12.6
+    lodash: ^4.17.21
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
@@ -17914,15 +17915,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vm2@npm:3.9.17":
-  version: 3.9.17
-  resolution: "vm2@npm:3.9.17"
+"vm2@npm:^3.9.19":
+  version: 3.9.19
+  resolution: "vm2@npm:3.9.19"
   dependencies:
     acorn: ^8.7.0
     acorn-walk: ^8.2.0
   bin:
     vm2: bin/vm2
-  checksum: 9a03740a40ab2be5e3348a95fb31512da1a3c85318febb07e5299fa103ff05bcd7b6f458211fa38a1281dc27beccd04ff90355fc1d34fe2ee6ca10d0bb8c6f35
+  checksum: fc6cf553134145cd7bb5246985bf242b056e3fb5ea71e2eef6710b2a5d6c6119cc6bc960435ff62480ee82efb43369be8f4db07b6690916ae7d3b2e714f395d8
   languageName: node
   linkType: hard
 
