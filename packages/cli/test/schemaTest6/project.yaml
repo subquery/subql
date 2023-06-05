@@ -1,0 +1,17 @@
+specVersion: '1.0.0'
+name: 'example'
+
+schema:
+  file: './schema.graphql'
+
+customDs:
+  assets:
+    erc721:
+      file: ./erc721.json
+dataSources:
+  - kind: ethereum/Runtime
+    startBlock: 1
+    mapping:
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler
