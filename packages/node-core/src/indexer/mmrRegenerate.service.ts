@@ -100,7 +100,7 @@ export class MmrRegenerateService {
 
   private async resetMmr(regenStartHeight: number): Promise<void> {
     // remove value in filebased/postgres
-    await this.mmrService.deleteMmrNode(regenStartHeight + 1, this._blockOffset);
+    await this.mmrService.deleteMmrNode(regenStartHeight, this._blockOffset);
     // set null for mmr in POI table
     await this.poi.resetPoiMmr(this.poiMmrLatestHeight, regenStartHeight);
     logger.info(`Reset mmr on POI AND ${this.nodeConfig.mmrStoreType} DB both completed!`);
@@ -131,7 +131,7 @@ export class MmrRegenerateService {
 
     if (!unsafe) {
       if (this.dbMmrLatestHeight < this.poiMmrLatestHeight) {
-        if (targetHeight === undefined || targetHeight > this.dbMmrLatestHeight) {
+        if (targetHeight === undefined || targetHeight > this.dbMmrLatestHeight + 1) {
           throw new Error(
             `The latest MMR height In POI table is ahead of ${this.nodeConfig.mmrStoreType} DB. ${targetHeightHelpMsg(
               this.dbMmrLatestHeight,
@@ -140,7 +140,7 @@ export class MmrRegenerateService {
           );
         }
         // other case pass, when targetHeight <= this.dbMmrLatestHeight, we will start from targetHeight
-      } else if (targetHeight !== undefined && this.poiMmrLatestHeight < targetHeight) {
+      } else if (targetHeight !== undefined && this.poiMmrLatestHeight + 1 < targetHeight) {
         throw new Error(
           `Re-generate --targetHeight ${targetHeight} is ahead of POI table latest MMR height ${
             this.poiMmrLatestHeight
@@ -148,9 +148,12 @@ export class MmrRegenerateService {
         );
       }
       // use undefined avoid 0
-      const regenStartHeight = targetHeight !== undefined ? targetHeight : this.poiMmrLatestHeight;
+      const regenStartHeight = Math.max(
+        targetHeight !== undefined ? targetHeight : this.poiMmrLatestHeight,
+        this.blockOffset + 1
+      );
       logger.info(
-        `${resetOnly ? `Reset to` : `Regenerate from`} block ${Math.max(this.blockOffset + 1, regenStartHeight)} ${
+        `${resetOnly ? `Reset to` : `Regenerate from`} block ${regenStartHeight} ${
           resetOnly ? `.` : `, final sync height will be ${this.lastPoiHeight}.`
         }`
       );
@@ -179,6 +182,8 @@ export class MmrRegenerateService {
     if (!resetOnly) {
       await this.mmrService.syncFileBaseFromPoi(this.blockOffset, this.lastPoiHeight, true);
     }
+    // Force flush mmr cache before completed
+    await this.storeService.storeCache.flushCache(true, true);
     logger.warn(`-------- Final status -------- `);
     await this.probeStatus();
   }

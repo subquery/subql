@@ -98,13 +98,15 @@ export class MmrService implements OnApplicationShutdown {
       // The latestPoiWithMmr its mmr value in filebase db
       const latestPoiMmrValue = await this.mmrDb.getRoot(latestPoiWithMmr.id - blockOffset - 1);
       this.validatePoiMmr(latestPoiWithMmr, latestPoiMmrValue);
-      // Ensure aligned poi table and file based mmr
-      // If cache poi generated mmr haven't success write back to poi table,
-      // but latestPoiWithMmr still valid, mmr should delete advanced mmr
-      if (this.nextMmrBlockHeight > latestPoiWithMmr.id + 1) {
-        await this.deleteMmrNode(latestPoiWithMmr.id + 1, blockOffset);
-        this._nextMmrBlockHeight = latestPoiWithMmr.id + 1;
-      }
+    }
+    // Ensure aligned poi table and file based mmr
+    // If cache poi generated mmr haven't success write back to poi table,
+    // but latestPoiWithMmr still valid, mmr should delete advanced mmr
+    const poiNextMmrHeight = (latestPoiWithMmr?.id ?? blockOffset) + 1;
+    // If latestPoiWithMmr got null, should use blockOffset, so next sync height is blockOffset + 1
+    if (this.nextMmrBlockHeight > poiNextMmrHeight) {
+      await this.deleteMmrNode(poiNextMmrHeight, blockOffset);
+      this._nextMmrBlockHeight = poiNextMmrHeight;
     }
     logger.info(`MMR database start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
@@ -319,6 +321,7 @@ export class MmrService implements OnApplicationShutdown {
     if (leafIndex < 0) {
       throw new Error(`Target block height must greater equal to ${blockOffset + 1} `);
     }
+    // This will reset the leaf length in db, but not remove rest of nodes, because new value will override
     await this.mmrDb.delete(leafIndex);
   }
 }
