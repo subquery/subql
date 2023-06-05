@@ -27,13 +27,12 @@ export default class Codegen extends Command {
 
     const projectPath = path.resolve(file ?? location ?? process.cwd());
 
-    const {manifests} = getProjectRootAndManifest(projectPath);
+    const {manifests, root} = getProjectRootAndManifest(projectPath);
 
     let firstSchemaPath: string | null = null;
 
     for (const manifest of manifests) {
-      const [fileDir, fileName] = [path.dirname(manifest), path.basename(manifest)];
-      const schemaPath = getSchemaPath(fileDir, fileName);
+      const schemaPath = getSchemaPath(root, manifest);
 
       if (firstSchemaPath === null) {
         firstSchemaPath = schemaPath;
@@ -44,11 +43,10 @@ export default class Codegen extends Command {
 
     try {
       for (const manifest of manifests) {
-        const [fileDir, fileName] = [path.dirname(manifest), path.basename(manifest)];
-        if (!fileDir) {
+        if (!root) {
           throw new Error('Cannot resolve project manifest from --file argument given');
         }
-        await codegen(fileDir, fileName);
+        await codegen(root, manifest);
       }
     } catch (err) {
       console.error(err.message);

@@ -22,14 +22,25 @@ export function addChain(multichain: string, chainManifestPath: string, chainId:
   chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, schema, multichainManifestPath);
   validateAndAddChainManifest(path.parse(multichainManifestPath).dir, chainManifestPath, multichainManifest);
   fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
-  updateDockerCompose(chainManifestPath);
+  updateDockerCompose(path.parse(multichainManifestPath).dir, chainManifestPath);
 }
 
 export function determineMultichainManifestPath(multichain: string): string {
-  // Default multichain manifest path
-  const defaultMultichainManifestPath = path.resolve(process.cwd(), 'multichain-manifest.yaml');
+  if (!multichain) {
+    throw new Error(`Multichain project path -m not provided`);
+  }
 
-  return multichain ? path.resolve(multichain) : defaultMultichainManifestPath;
+  let multichainPath: string;
+  if (fs.lstatSync(multichain).isDirectory()) {
+    multichainPath = path.resolve(multichain, 'multichain-manifest.yaml');
+  } else {
+    if (!fs.existsSync(multichain)) {
+      throw new Error(`Could not resolve multichain project path: ${multichain}`);
+    }
+    multichainPath = multichain;
+  }
+
+  return multichainPath;
 }
 
 export function loadOrCreateMultichainManifest(multichainManifestPath: string): Document {
@@ -87,7 +98,7 @@ export function handleChainManifestOrId(
     throw new Error(`Chain manifest file does not exist at the specified location: ${chainManifestPath}`);
   }
 
-  return chainManifestPath;
+  return path.resolve(chainManifestPath);
 }
 
 export function validateAndAddChainManifest(
@@ -113,7 +124,7 @@ export function validateAndAddChainManifest(
   }
 
   // Add the chain manifest path to multichain manifest
-  (multichainManifest.get('projects') as YAMLSeq).add(chainManifestPath);
+  (multichainManifest.get('projects') as YAMLSeq).add(path.relative(projectDir, chainManifestPath));
 }
 
 export function loadDockerComposeFile(dockerComposePath: string): Document | undefined {
@@ -166,9 +177,9 @@ function getDefaultServiceConfiguration(chainManifestPath: string, serviceName: 
   };
 }
 
-export function updateDockerCompose(chainManifestPath: string): void {
+export function updateDockerCompose(projectDir: string, chainManifestPath: string): void {
   const serviceName = `subquery-node-${path.basename(chainManifestPath, '.yaml')}`;
-  const dockerComposePath = path.join(process.cwd(), 'docker-compose.yml');
+  const dockerComposePath = path.join(projectDir, 'docker-compose.yml');
   const dockerCompose = loadDockerComposeFile(dockerComposePath);
   if (!dockerCompose) {
     throw new Error(`Docker Compose file does not exist at the specified location: ${dockerComposePath}`);

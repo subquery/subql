@@ -55,7 +55,9 @@ export default class Publish extends Command {
       directory += `_${new Date().getTime()}`;
     }
     for (const manifest of project.manifests) {
-      const cid = await uploadToIpfs(manifest, authToken.trim(), flags.ipfs, directory).catch((e) => this.error(e));
+      const cid = await uploadToIpfs(path.join(project.root, manifest), authToken.trim(), flags.ipfs, directory).catch(
+        (e) => this.error(e)
+      );
       await createIPFSFile(project.root, manifest, cid);
 
       if (!flags.output) {
