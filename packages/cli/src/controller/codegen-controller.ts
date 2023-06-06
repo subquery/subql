@@ -202,37 +202,39 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
       });
     }
   });
-  if (sortedAssets.size !== 0) {
-    await prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), true);
-    try {
-      const allFiles = glob(projectPath, [...sortedAssets.values()]);
-      // Typechain generate interfaces under CONTRACTS_DIR
-      await runTypeChain({
-        cwd: projectPath,
-        filesToProcess: allFiles,
-        allFiles,
-        outDir: CONTRACTS_DIR,
-        target: TYPECHAIN_TARGET,
-      });
-      // Iterate here as we have to make sure type chain generated successful,
-      // also avoid duplicate generate same abi interfaces
-      const renderAbiJobs = processAbis(sortedAssets, projectPath);
-      await Promise.all(
-        renderAbiJobs.map((renderProps) => {
-          console.log(`* Abi Interface ${renderProps.name} generated`);
-          return renderTemplate(
-            ABI_INTERFACE_TEMPLATE_PATH,
-            path.join(projectPath, ABI_INTERFACES_ROOT_DIR, `${renderProps.name}.ts`),
-            {
-              props: {abi: renderProps},
-              helper: {upperFirst},
-            }
-          );
-        })
-      );
-    } catch (e) {
-      console.error(`! Unable to generate abi interface. ${e.message}`);
-    }
+  if (sortedAssets.size === 0) {
+    return prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), false);
+  }
+
+  await prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), true);
+  try {
+    const allFiles = glob(projectPath, [...sortedAssets.values()]);
+    // Typechain generate interfaces under CONTRACTS_DIR
+    await runTypeChain({
+      cwd: projectPath,
+      filesToProcess: allFiles,
+      allFiles,
+      outDir: CONTRACTS_DIR,
+      target: TYPECHAIN_TARGET,
+    });
+    // Iterate here as we have to make sure type chain generated successful,
+    // also avoid duplicate generate same abi interfaces
+    const renderAbiJobs = processAbis(sortedAssets, projectPath);
+    await Promise.all(
+      renderAbiJobs.map((renderProps) => {
+        console.log(`* Abi Interface ${renderProps.name} generated`);
+        return renderTemplate(
+          ABI_INTERFACE_TEMPLATE_PATH,
+          path.join(projectPath, ABI_INTERFACES_ROOT_DIR, `${renderProps.name}.ts`),
+          {
+            props: {abi: renderProps},
+            helper: {upperFirst},
+          }
+        );
+      })
+    );
+  } catch (e) {
+    console.error(`! Unable to generate abi interface. ${e.message}`);
   }
 }
 
@@ -359,28 +361,8 @@ async function prepareDirPath(path: string, recreate: boolean) {
       await fs.promises.mkdir(path, {recursive: true});
     }
   } catch (e) {
-    throw new Error(`Failed to prepare ${path}`);
+    throw new Error(`Failed to prepare ${path}: ${e.message}`);
   }
-}
-
-function directoryExists(dirPath: string): boolean {
-  try {
-    return fs.statSync(dirPath).isDirectory();
-  } catch (e) {
-    return false;
-  }
-}
-
-function removeDirectory(directoryPath: string): void {
-  // remove regardless if the directory is empty or not
-  fs.rm(directoryPath, {recursive: true, force: true}, (err) => {
-    if (err?.code !== 'ENOTEMPTY' && err) {
-      // Swallow ENOTEMPTY error
-      console.error(`Failed to remove generated directory: ${directoryPath}`, err);
-    } else {
-      console.log(`Cleared generated directory: ${directoryPath}`);
-    }
-  });
 }
 
 //1. Prepare models directory and load schema
@@ -428,12 +410,6 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
 }
 
 export async function generateSchema(projectPath: string, schemaPath: string) {
-  const rootPath = path.join(projectPath, TYPE_ROOT_DIR);
-  if (directoryExists(rootPath)) {
-    console.log('Clearing generated files');
-    removeDirectory(rootPath);
-  }
-
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
