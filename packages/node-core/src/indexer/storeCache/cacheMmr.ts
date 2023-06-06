@@ -52,6 +52,7 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async set(value: Uint8Array, key: number): Promise<void> {
+    await this.mutex.waitForUnlock();
     this.cacheData.set(key, value);
     this.setData[key] = value;
     this.flushableRecordCounter++;
@@ -70,14 +71,6 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
     return dbResult;
   }
 
-  // Not sure when this gets used
-  async delete(key: number): Promise<void> {
-    await this.mutex.waitForUnlock();
-    await this.db.delete(key);
-    this.cacheData.delete(key);
-    delete this.setData[key];
-  }
-
   async getLeafLength(): Promise<number> {
     await this.mutex.waitForUnlock();
     if (this.leafLength === undefined) {
@@ -88,6 +81,7 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async setLeafLength(length: number): Promise<number> {
+    await this.mutex.waitForUnlock();
     this.leafLength = length;
     this.leafLengthChanged = true;
     return length;

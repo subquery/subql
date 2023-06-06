@@ -88,14 +88,6 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async delete(key: number, tx?: Transaction): Promise<void> {
-    try {
-      await this.mmrIndexValueStore.destroy({where: {key}, transaction: tx});
-    } catch (error) {
-      throw new Error(`Failed to delete MMR node: ${error}`);
-    }
-  }
-
   async getNodes(): Promise<NodeMap> {
     try {
       const nodes = await this.mmrIndexValueStore.findAll();

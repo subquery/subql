@@ -25,6 +25,7 @@ export async function mmrRegenerateInit(
     const app = await NestFactory.create(MmrRegenerateModule);
     await app.init();
     const mmrRegenerateService = app.get(MmrRegenerateService);
+    app.enableShutdownHooks();
     await app.listen(port);
     await mmrRegenerateService.init();
     if (!probeMode) {

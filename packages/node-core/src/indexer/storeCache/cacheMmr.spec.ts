@@ -74,27 +74,6 @@ describe('CacheMMR', () => {
     expect(spy).toBeCalledTimes(1);
   });
 
-  it('can delete nodes from caches', async () => {
-    const spy = jest.spyOn(db, 'getNodes');
-
-    for (let i = 0; i < 10; i++) {
-      await db.set(new Uint8Array(i), i);
-    }
-
-    // Inserts from db into cache
-    await cacheDb.get(1);
-    // Insert into set cache
-    await cacheDb.set(new Uint8Array(11), 11);
-
-    await cacheDb.delete(1);
-    await cacheDb.delete(11);
-
-    expect(await cacheDb.get(1)).not.toBeDefined();
-    expect(await cacheDb.get(11)).not.toBeDefined();
-
-    expect(await db.get(1)).not.toBeDefined();
-  });
-
   it('can get cached items when getting all nodes', async () => {
     for (let i = 1; i <= 15; i++) {
       await cacheDb.set(new Uint8Array(i), i);
