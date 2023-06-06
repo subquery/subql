@@ -87,6 +87,10 @@ export class ApiService
 
     const endpointToApiIndex: Record<string, ApiPromiseConnection> = {};
 
+    if (chainTypes) {
+      logger.info('Using provided chain types');
+    }
+
     await Promise.all(
       network.endpoint.map(async (endpoint, i) => {
         const connection = await ApiPromiseConnection.create(

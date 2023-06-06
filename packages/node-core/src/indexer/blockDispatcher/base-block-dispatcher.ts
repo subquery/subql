@@ -31,7 +31,7 @@ export type ProcessBlockResponse = {
 };
 
 export interface IBlockDispatcher {
-  enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void | Promise<void>;
 
   queueSize: number;
   freeSize: number;
@@ -70,7 +70,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     protected dynamicDsService: DynamicDsService<any>
   ) {}
 
-  abstract enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
+  abstract enqueueBlocks(heights: number[], latestBufferHeight?: number): void | Promise<void>;
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
     this._onDynamicDsCreated = onDynamicDsCreated;
@@ -215,20 +215,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       this.poiService.setLatestPoiBlockHash(poiBlock.hash);
       this.storeCacheService.metadata.set('lastPoiHeight', height);
     }
-  }
-
-  // Used when dictionary results skip a large number of blocks
-  protected async jumpBufferedHeight(height: number): Promise<void> {
-    this.updateStoreMetadata(height, false);
-    this.latestBufferedHeight = height;
-
-    // We're not actually processing this block, we just want to update health/benchmark
-    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height,
-      timestamp: Date.now(),
-    });
-
-    await this.storeCacheService.flushCache(true);
   }
 
   private updateStoreMetadata(height: number, updateProcessed = true): void {

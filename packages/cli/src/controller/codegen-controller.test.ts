@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
 
@@ -14,6 +15,9 @@ describe('Codegen can generate schema', () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest1/src'));
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest2/src'));
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest3/src'));
+    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest4/src'));
+    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest5/src'));
+    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/src'));
   });
 
   it('codegen with correct schema should pass', async () => {
@@ -30,5 +34,34 @@ describe('Codegen can generate schema', () => {
     await expect(codegen(projectPath)).rejects.toThrow(
       'EntityName: exampleEntityFilter cannot end with reservedKey: filter'
     );
+  });
+  it('Codegen should be able to generate ABIs from template datasources', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest4');
+    await codegen(projectPath);
+    await expect(
+      fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')
+    ).resolves.toBeTruthy();
+  });
+
+  it('Should not fail, if ds does not have any assets', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest5');
+    await expect(codegen(projectPath)).resolves.not.toThrow();
+  });
+  it('Codegen should be able to generate ABIs from customName datasources', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest6');
+    await codegen(projectPath);
+    await expect(
+      fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')
+    ).resolves.toBeTruthy();
+  });
+
+  it('Should clean out existing types directory', async () => {
+    const projectPath1 = path.join(__dirname, '../../test/schemaTest6');
+    const projectPath2 = path.join(__dirname, '../../test/schemaTest6');
+    await codegen(projectPath1);
+    await codegen(projectPath2, 'project-no-abi.yaml');
+
+    // should not contain abi directory
+    await expect(fs.promises.readFile(`${projectPath1}/src/types/abi-interfaces/Erc721.ts`, 'utf8')).rejects.toThrow();
   });
 });

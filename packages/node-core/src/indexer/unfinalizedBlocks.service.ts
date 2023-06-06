@@ -62,7 +62,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
-    // unfinalized blocks
+
     this.unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
     this.finalizedHeader = await this.getFinalizedHead();

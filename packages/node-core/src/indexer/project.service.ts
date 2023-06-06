@@ -62,7 +62,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
   }
 
   get startHeight(): number {
-    assert(this._startHeight, new NotInitError());
+    assert(this._startHeight !== undefined, new NotInitError());
     return this._startHeight;
   }
 
@@ -189,7 +189,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
         genesisHash === existing.genesisHash,
-        'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean'
+        `Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using "force-clean".\n Database genesis hash = "${existing.genesisHash}"\n Network genesis hash = "${genesisHash}"`
       );
     }
     if (existing.chain !== chain) {
@@ -267,14 +267,15 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
-    return this.mmrService.syncFileBaseFromPoi(offset, undefined, this.nodeConfig.debug).catch((err) => {
+    return this.mmrService.syncFileBaseFromPoi(offset, undefined, true).catch((err) => {
       logger.error(err, 'failed to sync poi to mmr');
       process.exit(1);
     });
   }
 
   protected getStartBlockFromDataSources(): number {
-    const startBlocksList = this.getStartBlockDatasources().map((item) => item.startBlock ?? 1);
+    // Ensure minimum start height should be 1
+    const startBlocksList = this.getStartBlockDatasources().map((item) => item.startBlock || 1);
     if (startBlocksList.length === 0) {
       logger.error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
       process.exit(1);

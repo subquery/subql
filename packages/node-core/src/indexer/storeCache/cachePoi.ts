@@ -6,7 +6,7 @@ import {Mutex} from 'async-mutex';
 import {Transaction} from 'sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
-import {PlainPoiModel, PoiInterface} from '../poi/poiModel';
+import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../poi/poiModel';
 import {ICachedModelControl} from './types';
 const logger = getLogger('PoiCache');
 
@@ -47,7 +47,10 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
     const res = await this.model.findByPk(id);
 
-    return res?.toJSON<ProofOfIndex>();
+    if (res) {
+      return ensureProofOfIndexId(res?.toJSON<ProofOfIndex>());
+    }
+    return;
   }
 
   remove(id: number): void {

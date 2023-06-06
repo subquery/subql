@@ -21,3 +21,4 @@ Please delete options that are not relevant.
 - [ ] I have added tests relevant to my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
 - [ ] My code is up to date with the base branch
+- [ ] I have updated relevant changelogs. [We suggest using chan](https://github.com/geut/chan/tree/main/packages/chan)

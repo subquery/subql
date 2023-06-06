@@ -10,8 +10,11 @@ import {Deferrable, Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {profiler} from '../../profiler';
+import {timeout} from '../../utils';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
+import {CachePgMmrDb} from './cacheMmr';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
@@ -25,6 +28,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo?: MetadataRepo;
   private poiRepo?: PoiRepo;
+  private mmrRepo?: CachePgMmrDb;
   private pendingFlush?: Promise<void>;
   private queuedFlush?: Promise<void>;
   private storeCacheThreshold: number;
@@ -67,12 +71,20 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     );
   }
 
+  setMmrRepo(mmr: CachePgMmrDb) {
+    this.mmrRepo = mmr;
+    this.cachedModels._mmr = mmr;
+  }
+
   getModel<T>(entity: string): ICachedModel<T> {
     if (entity === '_metadata') {
       throw new Error('Please use getMetadataModel instead');
     }
     if (entity === '_poi') {
       throw new Error('Please use getPoiModel instead');
+    }
+    if (entity === '_mmr') {
+      throw new Error('MMR repo is not publicly accessible');
     }
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
@@ -121,6 +133,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     this._lastFlushedOperationIndex = flushToIndex;
   }
 
+  @profiler()
   private async _flushCache(flushAll?: boolean): Promise<void> {
     logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
@@ -193,7 +206,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
 
   async beforeApplicationShutdown(): Promise<void> {
     this.schedulerRegistry.deleteInterval(INTERVAL_NAME);
-    await this.flushCache(true);
+    await timeout(this.flushCache(true), 5);
     logger.info(`Force flush cache successful!`);
   }
 }

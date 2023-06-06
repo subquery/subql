@@ -4,7 +4,16 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {GithubReader, IPFSReader, LocalReader, Reader} from '@subql/common';
+import {
+  BaseCustomDataSource,
+  BaseDataSource,
+  DEFAULT_PORT,
+  findAvailablePort,
+  GithubReader,
+  IPFSReader,
+  LocalReader,
+  Reader,
+} from '@subql/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {isNumber, range, uniq, without, flatten} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
@@ -14,6 +23,24 @@ import {ISubqueryProject, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 
 const logger = getLogger('Project-Utils');
+
+export async function getValidPort(argvPort: number): Promise<number> {
+  const validate = (x: any) => {
+    const p = parseInt(x);
+    return isNaN(p) ? null : p;
+  };
+
+  const port = validate(argvPort) ?? (await findAvailablePort(DEFAULT_PORT));
+  if (!port) {
+    logger.error(
+      `Unable to find available port (tried ports in range (${port}..${
+        port + 10
+      })). Try setting a free port manually by setting the --port flag`
+    );
+    process.exit(1);
+  }
+  return port;
+}
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -82,6 +109,49 @@ export async function getEnumDeprecated(sequelize: Sequelize, enumTypeNameDeprec
   return resultsDeprecated;
 }
 
+type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
+export type SubqlProjectDs<DS extends BaseDataSource> = DS & {
+  mapping: DS['mapping'] & {entryScript: string};
+};
+
+export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
+  _dataSources: (DS | CDS)[],
+  reader: Reader,
+  root: string,
+  isCustomDs: IsCustomDs<DS, CDS>
+): Promise<SubqlProjectDs<DS | CDS>[]> {
+  // force convert to updated ds
+  return Promise.all(
+    _dataSources.map(async (dataSource) => {
+      const entryScript = await loadDataSourceScript(reader, dataSource.mapping.file);
+      const file = await updateDataSourcesEntry(reader, dataSource.mapping.file, root, entryScript);
+      if (isCustomDs(dataSource)) {
+        if (dataSource.processor) {
+          dataSource.processor.file = await updateProcessor(reader, root, dataSource.processor.file);
+        }
+        if (dataSource.assets) {
+          for (const [, asset] of dataSource.assets) {
+            if (reader instanceof LocalReader) {
+              asset.file = path.resolve(root, asset.file);
+            } else {
+              asset.file = await saveFile(reader, root, asset.file, '');
+            }
+          }
+        }
+        return {
+          ...dataSource,
+          mapping: {...dataSource.mapping, entryScript, file},
+        };
+      } else {
+        return {
+          ...dataSource,
+          mapping: {...dataSource.mapping, entryScript, file},
+        };
+      }
+    })
+  );
+}
+
 export async function updateDataSourcesEntry(
   reader: Reader,
   file: string,
@@ -90,9 +160,7 @@ export async function updateDataSourcesEntry(
 ): Promise<string> {
   if (reader instanceof LocalReader) return file;
   else if (reader instanceof IPFSReader || reader instanceof GithubReader) {
-    const outputPath = `${path.resolve(root, file.replace('ipfs://', ''))}.js`;
-    await fs.promises.writeFile(outputPath, script);
-    return outputPath;
+    return saveFile(reader, root, file, script);
   }
   throw new Error('Un-known reader type');
 }
@@ -101,14 +169,32 @@ export async function updateProcessor(reader: Reader, root: string, file: string
   if (reader instanceof LocalReader) {
     return path.resolve(root, file);
   } else {
-    const res = await reader.getFile(file);
-    if (!res) {
-      throw new Error(`Unable to read file ${file}`);
-    }
-    const outputPath = `${path.resolve(root, file.replace('ipfs://', ''))}.js`;
-    await fs.promises.writeFile(outputPath, res);
+    return fetchAndSaveFile(reader, root, file);
+  }
+}
+
+export async function fetchAndSaveFile(reader: Reader, root: string, file: string, ext = 'js'): Promise<string> {
+  if (!(reader instanceof IPFSReader || reader instanceof GithubReader)) {
+    throw new Error('Only IPFS and Github readers can save remote files');
+  }
+  const res = await reader.getFile(file);
+  if (!res) {
+    throw new Error(`Unable to read file ${file}`);
+  }
+  return saveFile(reader, root, file, res, ext);
+}
+
+export async function saveFile(reader: Reader, root: string, file: string, data: string, ext = 'js'): Promise<string> {
+  if (!(reader instanceof IPFSReader || reader instanceof GithubReader)) {
+    throw new Error('Only IPFS and Github readers can save remote files');
+  }
+  const resolved = path.resolve(root, file.replace('ipfs://', ''));
+  const outputPath = ext ? `${resolved}.${ext}` : resolved;
+  if (fs.existsSync(outputPath)) {
     return outputPath;
   }
+  await fs.promises.writeFile(outputPath, data);
+  return outputPath;
 }
 
 export async function loadDataSourceScript(reader: Reader, file?: string): Promise<string> {

@@ -11,12 +11,11 @@ import {keccak256} from 'js-sha3';
 import {Op, Sequelize} from 'sequelize';
 import {MmrStoreType, NodeConfig} from '../configure';
 import {MmrPayload, MmrProof} from '../events';
-import {PlainPoiModel, PoiInterface} from '../indexer/poi';
+import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
 import {delay, getExistingProjectSchema} from '../utils';
-import {ProofOfIndex} from './entities';
-import {PgBasedMMRDB} from './postgresMmrDb';
-import {StoreCacheService} from './storeCache';
+import {ProofOfIndex, PgBasedMMRDB} from './entities';
+import {StoreCacheService, CachePgMmrDb} from './storeCache';
 const logger = getLogger('mmr');
 
 const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
@@ -99,13 +98,15 @@ export class MmrService implements OnApplicationShutdown {
       // The latestPoiWithMmr its mmr value in filebase db
       const latestPoiMmrValue = await this.mmrDb.getRoot(latestPoiWithMmr.id - blockOffset - 1);
       this.validatePoiMmr(latestPoiWithMmr, latestPoiMmrValue);
-      // Ensure aligned poi table and file based mmr
-      // If cache poi generated mmr haven't success write back to poi table,
-      // but latestPoiWithMmr still valid, mmr should delete advanced mmr
-      if (this.nextMmrBlockHeight > latestPoiWithMmr.id + 1) {
-        await this.deleteMmrNode(latestPoiWithMmr.id + 1, blockOffset);
-        this._nextMmrBlockHeight = latestPoiWithMmr.id + 1;
-      }
+    }
+    // Ensure aligned poi table and file based mmr
+    // If cache poi generated mmr haven't success write back to poi table,
+    // but latestPoiWithMmr still valid, mmr should delete advanced mmr
+    const poiNextMmrHeight = (latestPoiWithMmr?.id ?? blockOffset) + 1;
+    // If latestPoiWithMmr got null, should use blockOffset, so next sync height is blockOffset + 1
+    if (this.nextMmrBlockHeight > poiNextMmrHeight) {
+      await this.deleteMmrNode(poiNextMmrHeight, blockOffset);
+      this._nextMmrBlockHeight = poiNextMmrHeight;
     }
     logger.info(`MMR database start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
@@ -183,7 +184,7 @@ export class MmrService implements OnApplicationShutdown {
             where: {id: {[Op.lte]: targetHeight, [Op.gt]: latest}, mmrRoot: {[Op.ne]: null}} as any,
             order: [['id', 'ASC']],
           })
-        ).map((r) => r?.toJSON<ProofOfIndex>());
+        ).map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
         if (results.length) {
           logger.info(
             `Upsert block [${results[0].id} - ${results[results.length - 1].id}] mmr to ${
@@ -259,8 +260,9 @@ export class MmrService implements OnApplicationShutdown {
   private async ensurePostgresBasedMmr(): Promise<MMR> {
     const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
     assert(schema, 'Unable to check for MMR table, schema is undefined');
-    const postgresBasedDb = await PgBasedMMRDB.create(this.sequelize, schema);
-    return new MMR(keccak256Hash, postgresBasedDb);
+    const db = await CachePgMmrDb.create(this.sequelize, schema);
+    this.storeCacheService.setMmrRepo(db);
+    return new MMR(keccak256Hash, db);
   }
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {
@@ -319,6 +321,7 @@ export class MmrService implements OnApplicationShutdown {
     if (leafIndex < 0) {
       throw new Error(`Target block height must greater equal to ${blockOffset + 1} `);
     }
+    // This will reset the leaf length in db, but not remove rest of nodes, because new value will override
     await this.mmrDb.delete(leafIndex);
   }
 }

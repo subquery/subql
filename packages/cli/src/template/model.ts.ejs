@@ -17,8 +17,14 @@ export type <%= props.className %>Props = Omit<<%=props.className %>, NonNullabl
 
 export class <%= props.className %> implements Entity {
 
-    constructor(id: string) {
-        this.id = id;
+    constructor(
+        <% props.fields.forEach(function(field) { if (field.required) { %>
+            <%= field.name %>: <%= field.type %>,<% } %>
+        <% }) %>
+    ) {
+        <% props.fields.filter(function(field) {return field.required === true;}).forEach(function(requiredField) { %>
+            this.<%= requiredField.name %> = <%= requiredField.name %>;
+        <% }) %>
     }
 
 <% props.fields.forEach(function(field){ %>
@@ -67,7 +73,10 @@ export class <%= props.className %> implements Entity {
 
     static create(record: <%= props.className %>Props): <%=props.className %> {
         assert(typeof record.id === 'string', "id must be provided");
-        let entity = new this(record.id);
+        let entity = new this(
+        <% props.fields.filter(function(field) {return field.required === true;}).forEach(function(requiredField) { %>
+            record.<%= requiredField.name %>,
+        <% }) %>);
         Object.assign(entity,record);
         return entity;
     }

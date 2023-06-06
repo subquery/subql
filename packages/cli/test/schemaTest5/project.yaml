@@ -1,0 +1,25 @@
+specVersion: '1.0.0'
+name: 'example'
+
+schema:
+  file: './schema.graphql'
+
+goodDs:
+
+dataSources:
+  - kind: ethereum/Runtime
+    startBlock: 1
+    mapping:
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler
+templates:
+  - name: ERC721
+    kind: ethereum/Runtime
+    mapping:
+      handlers:
+        - handler: handleERC721
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address, address, uint256)

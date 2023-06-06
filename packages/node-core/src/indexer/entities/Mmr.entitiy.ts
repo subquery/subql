@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
-import {Sequelize, DataTypes, Model, ModelStatic} from 'sequelize';
+import {Sequelize, DataTypes, Model, ModelStatic, Transaction} from 'sequelize';
 
 const LEAF_LENGTH_INDEX = -1;
 
@@ -57,23 +57,34 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async set(value: any, key: number): Promise<void> {
+  async set(value: any, key: number, tx?: Transaction): Promise<void> {
     if (value === null || value === undefined) {
       throw new Error('Cannot set a null or undefined value');
     }
 
     try {
-      await this.mmrIndexValueStore.upsert({key, value});
+      await this.mmrIndexValueStore.upsert({key, value}, {transaction: tx});
     } catch (error) {
       throw new Error(`Failed to store MMR Node: ${error}`);
     }
   }
 
-  async delete(key: string): Promise<void> {
+  async bulkSet(entries: Record<number, any>, tx?: Transaction): Promise<void> {
+    const data = Object.entries(entries).map(([key, value]) => {
+      if (value === null || value === undefined) {
+        throw new Error(`Cannot set a null or undefined value for key: ${key}`);
+      }
+      // Parse to work around Object.entries converting all keys to string
+      return {key: parseInt(key, 10), value};
+    });
+
     try {
-      await this.mmrIndexValueStore.destroy({where: {key}});
+      await this.mmrIndexValueStore.bulkCreate(data, {
+        transaction: tx,
+        updateOnDuplicate: ['value'],
+      });
     } catch (error) {
-      throw new Error(`Failed to delete MMR node: ${error}`);
+      throw new Error(`Failed to bulk store MMR Node: ${error}`);
     }
   }
 
@@ -99,11 +110,11 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async setLeafLength(leafLength: number): Promise<number> {
+  async setLeafLength(leafLength: number, tx?: Transaction): Promise<number> {
     try {
       const leafLengthBuffer = Buffer.alloc(4);
       leafLengthBuffer.writeUInt32BE(leafLength, 0);
-      await this.mmrIndexValueStore.upsert({key: LEAF_LENGTH_INDEX, value: leafLengthBuffer});
+      await this.mmrIndexValueStore.upsert({key: LEAF_LENGTH_INDEX, value: leafLengthBuffer}, {transaction: tx});
       return leafLength;
     } catch (error) {
       throw new Error(`Failed to set leaf length for MMR: ${error}`);

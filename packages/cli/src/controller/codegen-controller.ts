@@ -189,7 +189,8 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
     if (!d?.assets) {
       return;
     }
-    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d)) {
+    // is the ds check here needed ?
+    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d) || 'assets' in d) {
       Object.entries(d.assets).map(([name, value]) => {
         const filePath = path.join(projectPath, value.file);
         if (!fs.existsSync(filePath)) {
@@ -239,10 +240,14 @@ function processAbis(sortedAssets: Map<string, string>, projectPath: string): ab
   const renderInterfaceJobs: abiRenderProps[] = [];
   sortedAssets.forEach((value, key) => {
     const renderProps: abiRenderProps = {name: key, events: [], functions: []};
-    const readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
+    let readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
     // We need to use for loop instead of map, due to events/function name could be duplicate,
     // because they have different input, and following ether typegen rules, name also changed
     // we need to find duplicates, and update its name rather than just unify them.
+
+    if (!Array.isArray(readAbi)) {
+      readAbi = [readAbi];
+    }
     const duplicateEventNames = readAbi
       .filter((abiObject) => abiObject.type === 'event')
       .map((obj) => obj.name)
@@ -300,7 +305,7 @@ export function processFields(
     if (type === 'entity') {
       const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
         (acc, indexField) => {
-          if (indexField.fields.includes(field.name)) {
+          if (indexField.fields.includes(field.name) && indexField.fields.length <= 1) {
             acc[0] = true;
             if (indexField.fields.length === 1 && indexField.unique) {
               acc[1] = true;
@@ -358,8 +363,34 @@ async function prepareDirPath(path: string, recreate: boolean) {
   }
 }
 
+function directoryExists(dirPath: string): boolean {
+  try {
+    return fs.statSync(dirPath).isDirectory();
+  } catch (e) {
+    return false;
+  }
+}
+
+function removeDirectory(directoryPath: string): void {
+  // remove regardless if the directory is empty or not
+  fs.rm(directoryPath, {recursive: true, force: true}, (err) => {
+    if (err?.code !== 'ENOTEMPTY' && err) {
+      // Swallow ENOTEMPTY error
+      console.error(`Failed to remove generated directory: ${directoryPath}`, err);
+    } else {
+      console.log(`Cleared generated directory: ${directoryPath}`);
+    }
+  });
+}
+
 //1. Prepare models directory and load schema
 export async function codegen(projectPath: string, fileName?: string): Promise<void> {
+  const rootPath = path.join(projectPath, TYPE_ROOT_DIR);
+  if (directoryExists(rootPath)) {
+    console.log('Clearing generated files');
+    removeDirectory(rootPath);
+  }
+
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
@@ -370,13 +401,33 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     templates?: TemplateKind[];
     dataSources: DatasourceKind[];
   };
+
+  const expectKeys = ['datasources', 'templates'];
+
+  // if Object with assets key exists, need check for abi
+  const customDatasource = Object.keys(plainManifest)
+    .filter((key) => !expectKeys.includes(key))
+    ?.map((dsKey) => {
+      const value = (plainManifest as any)[dsKey];
+      if (typeof value === 'object' && value) {
+        return !!Object.keys(value).find((d) => d === 'assets') && value;
+      }
+    })
+    ?.filter(Boolean);
+
+  let datasources = plainManifest.dataSources;
+
   if (plainManifest.templates && plainManifest.templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
+    datasources = plainManifest.dataSources.concat(plainManifest.templates as DatasourceKind[]);
   }
 
+  if (customDatasource.length !== 0) {
+    datasources = datasources.concat(customDatasource);
+  }
   const schemaPath = getSchemaPath(projectPath, fileName);
 
-  await generateAbis(plainManifest.dataSources, projectPath);
+  await generateAbis(datasources, projectPath);
   await generateJsonInterfaces(projectPath, schemaPath);
   await generateModels(projectPath, schemaPath);
   await generateEnums(projectPath, schemaPath);

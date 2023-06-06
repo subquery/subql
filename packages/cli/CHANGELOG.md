@@ -1,45 +1,55 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
+
+## [3.1.0] - 2023-05-31
+### Changed
+- Handle composite indexes with codegen (#1759)
+
+## [3.0.0] - 2023-05-19
+### Changed
+- Codegen will now generate code that is compatible with TS strict settings. This changes entity constructors to take all required parameters. The create method is still the preferred way of defining entities. (#1713)
 
 ## [2.1.0] - 2023-05-10
 ### Removed
 - Support for older manifest versions (except for migrations) (#1659)
 
 ## [2.0.0] - 2023-04-20
+### Changed
 - Major release 2.0.0, align with other package versions
+
 ### Added
 - Build `*.test.ts` file to support testing Framework (#1584)
 
 ## [1.13.1] - 2023-03-30
 ### Added
 - Change in migrate controller, add support for Multiple endpoints (#1551)
-### Fix
+
+### Fixed
 - Fix previous release 1.13.0 failed
 
 ## [1.13.0] - 2023-03-29
 ### Added
 - `Build` generate sourcemap for projects (#1569)
-### Fix
+
+### Fixed
 - Fix codegen exit when ABI is not valid (#1570)
 - Add validation for `codegen`, graphql conflicts (#1564)
 
 ## [1.12.3] - 2023-03-09
-### Fix
+### Fixed
 - Fix ABI codegen skipped due to runtime validation (#1552)
 
 ## [1.12.2] - 2023-03-07
-### Fix
+### Fixed
 - Fix `subql publish` with Avalanche manifest (#1546)
 
 ## [1.12.1] - 2023-03-07
-### Update
+### Changed
 - `@subql/common-avalanche` dependency update
 
 ## [1.12.0] - 2023-03-06
@@ -74,7 +84,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Fix CLI init project manifest missing comments issue (#1380)
 
 ## [1.7.0] - 2022-10-27
-
 ### Added
 - `--dedicatedDB` option to project deployement. (#1355)
 - Flags for advanced settings. (#1352)
@@ -83,6 +92,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Specifying query and node versions with or without a `v`. (#1354)
 
 ## [1.6.4] - 2022-10-06
+### Changed
 - Update IPFS endpoints. (#1337)
 
 ## [1.6.3] - 2022-09-29
@@ -117,6 +127,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Added redeploy deployment feature (#1205)
 - Rename `--project_name` flag to `--projectName` (#1205)
+
 ### Fixed
 - Use latest runner validation from common package. (#1195)
 
@@ -128,9 +139,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.3.0] - 2022-07-12
 ### Fixed
 - CLI deployment when no dictionary or matching endpoint is provided (#1180)
+
 ### Added
 - Storing ipfs-cid locally (#1169)
 - New Flag `-d` added to `deployment:deploy` command allowing runner versions and endpoints to use default values from manifest (#1176)
+
 ### Changed
 - Rename `deploy` command back to `deployment` (#1176)
 
@@ -141,12 +154,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.2.0] - 2022-07-05
 ### Fixed
 - update common-avalanche,fix missing filter, asset and options (#1158)
+
 ### Changed
 - Rename `deployment` command to `deploy`(#1149)
 
 ## [1.1.1] - 2022-06-29
 ### Fixed
 - Fixed typo in publish log (#1135)
+
 ### Changed
 - Update init and publish tests with manifest 1.0.0 (#1114)
 
@@ -154,6 +169,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Changed
 - Increase publish project body size up to 50mb (#1100)
 - Validate support multi networks, also support validate IPFS deployment. To validate project manifest spec version below 1.0.0, will require to provide `network-family` (#1115)
+
 ### Added
 - Added avalanche and cosmos to publish (#1105)
 - Now cli able to manage deployment on host service, promote, deploy and delete (#1102)
@@ -163,7 +179,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Fix cli init duplicate chainId and genesisHash (#1058)
 
 ## [1.0.0] - 2022-05-11
-- Major release
 ### Fixed
 - fix undefined file under chainTypes (#1010)
 
@@ -174,6 +189,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.28.0] - 2022-05-06
 ### Fixed
 - Fix migrate missing chain types (#975)
+
 ### Changed
 - Refactor init command and add network family (#979)
 
@@ -184,12 +200,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.26.1] - 2022-04-27
 ### Added
 - Support for Terra dynamic datasources (#899)
+
 ### Changed
 - Output build errors (#901)
 
 ## [0.26.0] - 2022-04-26
 ### Added
 - Add manifest specVersion 1.0.0 template to `subql init` command  (#888)
+
 ### Changed
 - Drop support for manifest 0.0.1 templates (#900)
 
@@ -215,12 +233,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.20.1] - 2022-02-15
 ### Fixed
-- Patch release with @subql/validator version bump, in order to fix validation issue. 
+- Patch release with @subql/validator version bump, in order to fix validation issue.
 
 ## [0.20.0] - 2022-02-09
 ### Added
 - Add support for dynamic data sources (#773)
 - Add authentication for publish command, access token will read from `SUBQL_ACCESS_TOKEN` in environment or under `$HOME/.subql/SUBQL_ACCESS_TOKEN` (#778)
+
 ### Fixed
 - Fix codegen importing jsonType interface multiple times (#784)
 - Fix cli build command issues (#789)
@@ -228,6 +247,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.19.0] - 2022-01-21
 ### Added
 - Allow use `subql build` self contained js as instructed by `exports` fields under`package.json` (#753)
+
 ### Changed
 - Remove .github directory from new projects (#763)
 
@@ -253,10 +273,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Fixed
 - Fix migrate datasource entry path (#641)
 - Touch up command line description (#628)
+
 ### Changed
 - Codegen controller using new type mappings (#532)
 - Update publish command to handle custom datasource (#641)
 - init command now create spec v0.2.0 project by default (#643)
+
 ### Added
 - Support enums in codegen (#551)
 
@@ -266,12 +288,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Use jsonrpc client to fetch genesis hash , drop dependencies of polkadot-api (#595)
 - Update `subql validate` to validate custom ds (#596)
 - Bump dependencies (#584)
+
 ### Added
 - New command `Subql migrate` allow convert project manifest v0.0.1 to v0.2.0 (#587)
 
 ## [0.14.0] - 2021-10-26
 ### Added
 - Added publish CLI command which uploads a project to IPFS if it is using project manifest v0.2.0 (#486)
+
 ### Changed
 - Update Polkadot/api to 6.5.2 (#564)
 
@@ -355,7 +379,50 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.20.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.1.0...HEAD
+[3.1.0]: https://github.com/subquery/subql/compare/cli/3.0.0...cli/3.1.0
+[3.0.0]: https://github.com/subquery/subql/compare/cli/2.1.0...cli/3.0.0
+[2.1.0]: https://github.com/subquery/subql/compare/cli/2.0.0.../cli/2.1.0
+[2.0.0]: https://github.com/subquery/subql/compare/cli/.1.13.1../cli/2.0.0
+[1.13.1]: https://github.com/subquery/subql/compare/cli/1.13.0.../cli/1.13.1
+[1.13.0]: https://github.com/subquery/subql/compare/cli/1.12.3.../cli/1.13.0
+[1.12.3]: https://github.com/subquery/subql/compare/cli/1.12.2.../cli/1.12.3
+[1.12.2]: https://github.com/subquery/subql/compare/cli/1.12.1.../cli/1.12.2
+[1.12.1]: https://github.com/subquery/subql/compare/cli/1.12.0.../cli/1.12.1
+[1.12.0]: https://github.com/subquery/subql/compare/cli/1.11.0.../cli/1.12.0
+[1.11.0]: https://github.com/subquery/subql/compare/cli/1.10.1.../cli/1.11.0
+[1.10.1]: https://github.com/subquery/subql/compare/cli/1.10.0.../cli/1.10.1
+[1.10.0]: https://github.com/subquery/subql/compare/cli1.9.1/.../cli/1.10.0
+[1.9.1]: https://github.com/subquery/subql/compare/cli/1.9.0.../cli/1.9.1
+[1.9.0]: https://github.com/subquery/subql/compare/cli/1.8.0.../cli/1.9.0
+[1.8.0]: https://github.com/subquery/subql/compare/cli/1.7.0.../cli/1.8.0
+[1.7.0]: https://github.com/subquery/subql/compare/cli/1.6.4.../cli/1.7.0
+[1.6.4]: https://github.com/subquery/subql/compare/cli/1.6.3.../cli/1.6.4
+[1.6.3]: https://github.com/subquery/subql/compare/cli/1.6.2.../cli/1.6.3
+[1.6.2]: https://github.com/subquery/subql/compare/cli/1.6.1.../cli/1.6.2
+[1.6.1]: https://github.com/subquery/subql/compare/cli/1.6.0.../cli/1.6.1
+[1.6.0]: https://github.com/subquery/subql/compare/cli/1.5.1.../cli/1.6.0
+[1.5.1]: https://github.com/subquery/subql/compare/cli/1.5.0.../cli/1.5.1
+[1.5.0]: https://github.com/subquery/subql/compare/cli/1.4.0.../cli/1.5.0
+[1.4.0]: https://github.com/subquery/subql/compare/cli/1.3.1.../cli/1.4.0
+[1.3.1]: https://github.com/subquery/subql/compare/cli/1.3.0.../cli/1.3.1
+[1.3.0]: https://github.com/subquery/subql/compare/cli/1.2.1.../cli/1.3.0
+[1.2.1]: https://github.com/subquery/subql/compare/cli/1.2.0.../cli/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/cli/1.1.1.../cli/1.2.0
+[1.1.1]: https://github.com/subquery/subql/compare/cli/1.1.0.../cli/1.1.1
+[1.1.0]: https://github.com/subquery/subql/compare/cli/1.0.1.../cli/1.1.0
+[1.0.1]: https://github.com/subquery/subql/compare/cli/1.0.0.../cli/1.0.1
+[1.0.0]: https://github.com/subquery/subql/compare/cli/.0.29.0../cli/1.0.0
+[0.29.0]: https://github.com/subquery/subql/compare/cli/0.28.0.../cli/0.29.0
+[0.28.0]: https://github.com/subquery/subql/compare/cli/0.27.0.../cli/0.28.0
+[0.27.0]: https://github.com/subquery/subql/compare/cli/0.26.1.../cli/0.27.0
+[0.26.1]: https://github.com/subquery/subql/compare/cli/0.26.0.../cli/0.26.1
+[0.26.0]: https://github.com/subquery/subql/compare/cli/0.25.0.../cli/0.26.0
+[0.25.0]: https://github.com/subquery/subql/compare/cli/0.24.0.../cli/0.25.0
+[0.24.0]: https://github.com/subquery/subql/compare/cli/0.23.0.../cli/0.24.0
+[0.23.0]: https://github.com/subquery/subql/compare/cli/0.22.0.../cli/0.23.0
+[0.22.0]: https://github.com/subquery/subql/compare/cli/0.21.0.../cli/0.22.0
+[0.21.0]: https://github.com/subquery/subql/compare/cli/0.20.1.../cli/0.21.0
 [0.20.1]: https://github.com/subquery/subql/compare/cli/0.20.0...cli/0.20.1
 [0.20.0]: https://github.com/subquery/subql/compare/cli/0.19.0...cli/0.20.0
 [0.19.0]: https://github.com/subquery/subql/compare/cli/0.18.0...cli/0.19.0
@@ -366,6 +433,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 [0.16.0]: https://github.com/subquery/subql/compare/cli/0.15.0...cli/0.16.0
 [0.15.0]: https://github.com/subquery/subql/compare/cli/0.14.0...cli/0.15.0
 [0.14.0]: https://github.com/subquery/subql/compare/cli/0.13.0...cli/0.14.0
+[0.13.0]: https://github.com/subquery/subql/compare/cli/0.12.0...cli/0.13.0
+[0.12.0]: https://github.com/subquery/subql/compare/cli/0.11.2...cli/0.12.0
+[0.11.2]: https://github.com/subquery/subql/compare/cli/0.11.1...cli/0.11.2
+[0.11.1]: https://github.com/subquery/subql/compare/cli/0.11.0...cli/0.11.1
+[0.11.0]: https://github.com/subquery/subql/compare/cli/0.10.0...cli/0.11.0
+[0.10.0]: https://github.com/subquery/subql/compare/cli/0.9.3...cli/0.10.0
+[0.9.3]: https://github.com/subquery/subql/compare/cli/0.9.2...cli/0.9.3
 [0.9.2]: https://github.com/subquery/subql/compare/v0.9.0...v0.9.2
 [0.9.0]: https://github.com/subquery/subql/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/subquery/subql/compare/v0.7.3...v0.8.0
@@ -375,3 +449,4 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 [0.7.0]: https://github.com/OnFinality-io/subql/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/OnFinality-io/subql/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/OnFinality-io/subql/compare/v0.2.0...v0.5.0
+[0.2.0]: https://github.com/OnFinality-io/subql/tags/0.2.0
