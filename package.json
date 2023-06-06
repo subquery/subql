@@ -46,6 +46,7 @@
     "test": "jest --coverage",
     "test:all": "node --expose-gc ./node_modules/.bin/jest --logHeapUsage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --ci -w=2 --clearMocks",
     "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
+    "test-jest": "jest --testRegex='.*\\.(spec|test)\\.ts$'",
     "postinstall": "husky install"
   },
   "lint-staged": {
