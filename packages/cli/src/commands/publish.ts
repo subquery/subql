@@ -61,10 +61,10 @@ export default class Publish extends Command {
       await createIPFSFile(project.root, manifest, cid);
 
       if (!flags.output) {
-        this.log('Uploading SubQuery project to IPFS');
-        this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
+        this.log(`Uploading SubQuery project ${manifest} to IPFS`);
+        this.log(`SubQuery Project ${manifest} uploaded to IPFS: ${cid}`);
       } else {
-        this.log(`${cid}`);
+        this.log(`${manifest}: ${cid}`);
       }
     }
   }

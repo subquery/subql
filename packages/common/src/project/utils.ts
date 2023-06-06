@@ -64,9 +64,9 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       project.manifests.push(path.resolve(subquery, 'project.yaml'));
     }
     // Then check for a 'multichain manifest'
-    else if (fs.existsSync(path.resolve(subquery, 'multichain-manifest.yaml'))) {
+    else if (fs.existsSync(path.resolve(subquery, 'subquery-multichain.yaml'))) {
       const multichainManifestContent: ProjectManifestParentV1_0_0 = yaml.load(
-        fs.readFileSync(path.resolve(subquery, 'multichain-manifest.yaml'), 'utf8')
+        fs.readFileSync(path.resolve(subquery, 'subquery-multichain.yaml'), 'utf8')
       ) as ProjectManifestParentV1_0_0;
 
       if (!multichainManifestContent.projects || !Array.isArray(multichainManifestContent.projects)) {
@@ -74,6 +74,8 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       }
 
       addMultichainManifestProjects(subquery, multichainManifestContent, project);
+    } else {
+      throw new Error(`Unable to resolve manifest file from given directory: ${subquery}`);
     }
   } else if (stats.isFile()) {
     const {dir} = path.parse(subquery);

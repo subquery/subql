@@ -360,11 +360,6 @@ async function prepareDirPath(path: string, recreate: boolean) {
 
 //1. Prepare models directory and load schema
 export async function codegen(projectPath: string, fileName?: string): Promise<void> {
-  const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
-  const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
-  await prepareDirPath(modelDir, true);
-  await prepareDirPath(interfacesPath, false);
-
   const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
     specVersion: string;
     templates?: TemplateKind[];
@@ -374,12 +369,7 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
   }
 
-  const schemaPath = getSchemaPath(projectPath, fileName);
-
   await generateAbis(plainManifest.dataSources, projectPath);
-  await generateJsonInterfaces(projectPath, schemaPath);
-  await generateModels(projectPath, schemaPath);
-  await generateEnums(projectPath, schemaPath);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
@@ -394,6 +384,18 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     console.log(`* Types index generated !`);
   }
 }
+
+export async function generateSchema(projectPath: string, schemaPath: string) {
+  const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
+  const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
+  await prepareDirPath(modelDir, true);
+  await prepareDirPath(interfacesPath, false);
+
+  await generateJsonInterfaces(projectPath, schemaPath);
+  await generateModels(projectPath, schemaPath);
+  await generateEnums(projectPath, schemaPath);
+}
+
 export function validateEntityName(name: string): string {
   for (const reservedKey of RESERVED_KEYS) {
     if (name.toLowerCase().endsWith(reservedKey.toLowerCase())) {

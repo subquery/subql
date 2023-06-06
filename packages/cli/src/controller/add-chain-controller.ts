@@ -32,7 +32,7 @@ export function determineMultichainManifestPath(multichain: string): string {
 
   let multichainPath: string;
   if (fs.lstatSync(multichain).isDirectory()) {
-    multichainPath = path.resolve(multichain, 'multichain-manifest.yaml');
+    multichainPath = path.resolve(multichain, 'subquery-multichain.yaml');
   } else {
     if (!fs.existsSync(multichain)) {
       throw new Error(`Could not resolve multichain project path: ${multichain}`);
@@ -110,21 +110,39 @@ export function validateAndAddChainManifest(
   const chainManifestProject = getProjectRootAndManifest(path.resolve(projectDir, chainManifestPath));
   const chainManifestSchemaPath = getSchemaPath(chainManifestProject.root, chainManifestProject.manifests[0]);
 
+  console.log('Validating chain manifest...');
+  console.log(`Chain manifest: ${chainManifestProject.manifests[0]}`);
+  console.log(`Chain manifest schema path: ${chainManifestSchemaPath}`);
+
   for (const manifestPath of (multichainManifest.get('projects') as YAMLSeq).items.map(
     (item) => (item as Scalar).value as string
   )) {
     const project = getProjectRootAndManifest(path.resolve(projectDir, manifestPath));
     const schemaPath = getSchemaPath(project.root, project.manifests[0]);
 
+    console.log(`Validating project: ${project.manifests[0]}`);
+    console.log(`Project schema path: ${schemaPath}`);
+
     if (schemaPath !== chainManifestSchemaPath) {
-      throw new Error(
-        `Schema path in the provided chain manifest is different from the schema path in the existing chain manifest: ${manifestPath}`
+      console.error(
+        `Error: Schema path in the provided chain manifest is different from the schema path in the existing chain manifest for project: ${project.root}`
       );
+      throw new Error('Schema path mismatch error');
+    }
+  }
+
+  for (const project of (multichainManifest.get('projects') as YAMLSeq<string>).toJSON()) {
+    if (path.resolve(projectDir, project as string) === chainManifestPath) {
+      console.log(`project ${project} already exists in multichain manifest, skipping addition`);
+      return;
     }
   }
 
   // Add the chain manifest path to multichain manifest
-  (multichainManifest.get('projects') as YAMLSeq).add(path.relative(projectDir, chainManifestPath));
+  const relativePath = path.relative(projectDir, chainManifestPath);
+
+  console.log(`Adding chain manifest path: ${relativePath}`);
+  (multichainManifest.get('projects') as YAMLSeq).add(relativePath);
 }
 
 export function loadDockerComposeFile(dockerComposePath: string): Document | undefined {
@@ -143,6 +161,10 @@ function getSubqlNodeService(dockerCompose: Document): DockerComposeService | un
     });
 
     if (service && service.value instanceof YAMLMap) {
+      const commands = service.value.get('command') as YAMLSeq<string>;
+      if (!(commands.toJSON() as string[]).includes('--multi-chain')) {
+        commands.add('--multi-chain');
+      }
       return service.value.toJSON() as DockerComposeService;
     }
   }
@@ -185,11 +207,26 @@ export function updateDockerCompose(projectDir: string, chainManifestPath: strin
     throw new Error(`Docker Compose file does not exist at the specified location: ${dockerComposePath}`);
   }
 
+  console.log(`Updating Docker Compose for chain manifest: ${chainManifestPath}`);
+  console.log(`Service name: ${serviceName}`);
+  console.log(`Docker Compose file path: ${dockerComposePath}`);
+
+  //check if service already exists
   const services = dockerCompose.get('services');
   if (services && services instanceof YAMLMap) {
-    const existingService = services.items.find((item) => item.key?.value === serviceName);
+    const existingService = services.items.find((item) => {
+      const image = item.value.toJSON().image;
+      if (!image || !image.startsWith('onfinality/subql-node')) {
+        return false;
+      }
+      const commands: string[] = item.value.toJSON().command;
+      return commands?.includes(`-f=app/${path.basename(chainManifestPath)}`);
+    });
+
     if (existingService) {
-      console.log(`service ${serviceName} already exists, skipping addition`);
+      console.log(
+        `Service for ${path.basename(chainManifestPath)} already exists in Docker Compose, skipping addition`
+      );
       return;
     }
   }
@@ -203,9 +240,13 @@ export function updateDockerCompose(projectDir: string, chainManifestPath: strin
     // Otherwise, create a new service configuration
     subqlNodeService = getDefaultServiceConfiguration(chainManifestPath, serviceName);
   }
+  console.log(`Created new service configuration: ${serviceName}`);
+
   (services as YAMLMap).add({key: serviceName, value: subqlNodeService});
+
   // Save the updated Docker Compose file
   fs.writeFileSync(dockerComposePath, dockerCompose.toString());
+  console.log(`Docker Compose file updated successfully at: ${dockerComposePath}`);
 }
 
 function generateChainManifest(chainId: string, schema: string): string {
