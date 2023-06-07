@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
     "@nestjs/schedule": "^1.0.2",
     "@subql/common": "^2.2.0",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "^2.4.3",
+    "@subql/node-core": "^2.4.4",
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.2",
     "@subql/types-ethereum": "workspace:*",
@@ -67,6 +67,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "2.5.0"
+  ]
 }
