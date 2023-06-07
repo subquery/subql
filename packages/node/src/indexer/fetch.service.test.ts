@@ -320,7 +320,6 @@ describe('FetchService', () => {
 
     const getSendSpy = jest.spyOn(provider, 'send');
 
-    //(firstApiConnection as any).unsafeApi = await
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
