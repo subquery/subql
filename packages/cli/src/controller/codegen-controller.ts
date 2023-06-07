@@ -202,37 +202,39 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
       });
     }
   });
-  if (sortedAssets.size !== 0) {
-    await prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), true);
-    try {
-      const allFiles = glob(projectPath, [...sortedAssets.values()]);
-      // Typechain generate interfaces under CONTRACTS_DIR
-      await runTypeChain({
-        cwd: projectPath,
-        filesToProcess: allFiles,
-        allFiles,
-        outDir: CONTRACTS_DIR,
-        target: TYPECHAIN_TARGET,
-      });
-      // Iterate here as we have to make sure type chain generated successful,
-      // also avoid duplicate generate same abi interfaces
-      const renderAbiJobs = processAbis(sortedAssets, projectPath);
-      await Promise.all(
-        renderAbiJobs.map((renderProps) => {
-          console.log(`* Abi Interface ${renderProps.name} generated`);
-          return renderTemplate(
-            ABI_INTERFACE_TEMPLATE_PATH,
-            path.join(projectPath, ABI_INTERFACES_ROOT_DIR, `${renderProps.name}.ts`),
-            {
-              props: {abi: renderProps},
-              helper: {upperFirst},
-            }
-          );
-        })
-      );
-    } catch (e) {
-      console.error(`! Unable to generate abi interface. ${e.message}`);
-    }
+  if (sortedAssets.size === 0) {
+    return prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), false);
+  }
+
+  await prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), true);
+  try {
+    const allFiles = glob(projectPath, [...sortedAssets.values()]);
+    // Typechain generate interfaces under CONTRACTS_DIR
+    await runTypeChain({
+      cwd: projectPath,
+      filesToProcess: allFiles,
+      allFiles,
+      outDir: CONTRACTS_DIR,
+      target: TYPECHAIN_TARGET,
+    });
+    // Iterate here as we have to make sure type chain generated successful,
+    // also avoid duplicate generate same abi interfaces
+    const renderAbiJobs = processAbis(sortedAssets, projectPath);
+    await Promise.all(
+      renderAbiJobs.map((renderProps) => {
+        console.log(`* Abi Interface ${renderProps.name} generated`);
+        return renderTemplate(
+          ABI_INTERFACE_TEMPLATE_PATH,
+          path.join(projectPath, ABI_INTERFACES_ROOT_DIR, `${renderProps.name}.ts`),
+          {
+            props: {abi: renderProps},
+            helper: {upperFirst},
+          }
+        );
+      })
+    );
+  } catch (e) {
+    console.error(`! Unable to generate abi interface. ${e.message}`);
   }
 }
 
