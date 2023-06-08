@@ -67,7 +67,8 @@ export class PoiBlock implements ProofOfIndex {
       _chainBlockHash = hexToU8a(chainBlockHash);
     } else if (isU8a(chainBlockHash)) {
       _chainBlockHash = chainBlockHash;
-    } else if (isBase58(chainBlockHash)) {
+      // needs release with to remove second check https://github.com/polkadot-js/common/pull/1842
+    } else if (isBase58(chainBlockHash) && !chainBlockHash.includes('=')) {
       // Near block hashes are base58 encoded
       _chainBlockHash = base58Decode(chainBlockHash);
     } else if (isBase64(chainBlockHash)) {
