@@ -14,6 +14,7 @@
   "dependencies": {
     "@polkadot/util": "^12.2.1",
     "@polkadot/util-crypto": "^12.2.1",
+    "@subql/x-sequelize": "6.32.0-0.0.2",
     "ansi-styles": "^6.1.0",
     "axios": "^0.27.1",
     "chalk": "^4.1.2",
@@ -25,7 +26,6 @@
     "pino": "^6.13.3",
     "rotating-file-stream": "^3.0.2",
     "semver": "^7.3.7",
-    "sequelize": "6.28.0",
     "tar": "^6.1.11"
   },
   "devDependencies": {

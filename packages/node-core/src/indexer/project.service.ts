@@ -7,7 +7,7 @@ import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {MetadataKeys} from '@subql/node-core/indexer/entities';
 import {CacheMetadataModel} from '@subql/node-core/indexer/storeCache';
-import {Sequelize} from 'sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {ApiService} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';

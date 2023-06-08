@@ -3,13 +3,13 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {Sequelize} from 'sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from './storeCache.service';
 
 const eventEmitter = new EventEmitter2();
 
-jest.mock('sequelize', () => {
+jest.mock('@subql/x-sequelize', () => {
   const mSequelize = {
     authenticate: jest.fn(),
     Op: {
@@ -43,7 +43,7 @@ jest.mock('sequelize', () => {
     }),
     // createSchema: jest.fn(),
   };
-  const actualSequelize = jest.requireActual('sequelize');
+  const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
     Sequelize: jest.fn(() => mSequelize),
     DataTypes: actualSequelize.DataTypes,

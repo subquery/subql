@@ -4,7 +4,7 @@
 import fs from 'fs';
 import {Inject, Injectable} from '@nestjs/common';
 import {getAllEntitiesRelations} from '@subql/utils';
-import {QueryTypes, Sequelize} from 'sequelize';
+import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
 import {ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';

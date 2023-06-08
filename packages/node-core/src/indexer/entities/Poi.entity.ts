@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BuildOptions, DataTypes, Model, Sequelize} from 'sequelize';
+import {BuildOptions, DataTypes, Model, Sequelize} from '@subql/x-sequelize';
 
 export interface ProofOfIndex {
   id: number; //blockHeight

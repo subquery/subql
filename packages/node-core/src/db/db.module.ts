@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {DynamicModule, Global} from '@nestjs/common';
-import {Sequelize, Options as SequelizeOption} from 'sequelize';
+import {Sequelize, Options as SequelizeOption} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';

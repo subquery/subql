@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {Sequelize} from '@subql/x-sequelize';
 import {Pool} from 'pg';
-import {Sequelize} from 'sequelize';
 import {SUPPORT_DB} from '../../constants';
 
 export async function getDbType(queryFrom: Sequelize | Pool): Promise<SUPPORT_DB> {
