@@ -27,7 +27,7 @@ import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-jest.mock('@subql/x-sequelize', () => {
+jest.mock('sequelize', () => {
   const mSequelize = {
     authenticate: jest.fn(),
     define: () => ({
