@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {Transaction} from '@subql/x-sequelize';
 import LRUCache from 'lru-cache';
-import {Transaction} from 'sequelize';
 import {SetValueModel} from './setValueModel';
 
 export type HistoricalModel = {__block_range: any};

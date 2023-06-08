@@ -4,7 +4,7 @@
 import { Module } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { DbModule, NodeConfig, MMRMigrateService } from '@subql/node-core';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 
 @Module({

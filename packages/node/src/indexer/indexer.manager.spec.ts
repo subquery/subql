@@ -15,8 +15,8 @@ import {
   ConnectionPoolService,
   StoreCacheService,
 } from '@subql/node-core';
+import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
-import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
@@ -27,7 +27,7 @@ import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-jest.mock('sequelize', () => {
+jest.mock('@subql/x-sequelize', () => {
   const mSequelize = {
     authenticate: jest.fn(),
     define: () => ({
@@ -45,7 +45,7 @@ jest.mock('sequelize', () => {
     }),
     // createSchema: jest.fn(),
   };
-  const actualSequelize = jest.requireActual('sequelize');
+  const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
     Sequelize: jest.fn(() => mSequelize),
     DataTypes: actualSequelize.DataTypes,

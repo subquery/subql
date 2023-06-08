@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {DataTypes, Model, ModelAttributes} from 'sequelize';
+import {DataTypes, Model, ModelAttributes} from '@subql/x-sequelize';
 import {StoreService} from './store.service';
 
 describe('Store Service', () => {

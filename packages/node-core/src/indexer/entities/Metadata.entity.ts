@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {getMetadataTableName} from '@subql/utils';
-import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from 'sequelize';
+import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from '@subql/x-sequelize';
 
 export interface MetadataKeys {
   chain: string;

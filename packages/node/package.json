@@ -31,6 +31,7 @@
     "@subql/testing": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
+    "@subql/x-sequelize": "6.32.0-0.0.2",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cron-converter": "^1.0.2",
     "eventemitter2": "^6.4.5",
@@ -40,7 +41,6 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "sequelize": "6.28.0",
     "yargs": "^16.2.0"
   },
   "devDependencies": {

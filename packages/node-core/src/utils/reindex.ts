@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Sequelize} from 'sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {DynamicDsService, IUnfinalizedBlocksService, MmrService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {ForceCleanService} from '../subcommands';

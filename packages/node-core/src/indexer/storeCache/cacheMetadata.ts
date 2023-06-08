@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Transaction} from 'sequelize';
+import {Transaction} from '@subql/x-sequelize';
 import {hasValue} from '../../utils';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
 import {ICachedModelControl} from './types';
