@@ -46,8 +46,8 @@ describe('CacheMMR', () => {
     const spy = jest.spyOn(db, 'setLeafLength');
 
     await cacheDb.setLeafLength(100);
-    //there will be no call to db.setLeafLength
-    expect(spy).toBeCalledTimes(0);
+    await cacheDb.flush({afterCommit: jest.fn()} as any, undefined);
+    expect(spy).toBeCalledTimes(1);
   });
 
   it('can get from cache', async () => {
