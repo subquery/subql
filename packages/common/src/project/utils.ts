@@ -78,6 +78,10 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       throw new Error(`Unable to resolve manifest file from given directory: ${subquery}`);
     }
   } else if (stats.isFile()) {
+    const {ext} = path.parse(subquery);
+    if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+      throw new Error(`Extension ${ext} not supported for project ${subquery}`);
+    }
     const {dir} = path.parse(subquery);
     project.root = dir;
     const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as ProjectManifestParentV1_0_0;
@@ -104,8 +108,15 @@ function addMultichainManifestProjects(
   project: ProjectRootAndManifest
 ) {
   for (const projectPath of multichainManifestContent.projects) {
+    const {ext} = path.parse(projectPath);
+    if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+      throw new Error(`Extension ${ext} not supported for project ${projectPath}`);
+    }
+
     if (fs.existsSync(path.resolve(parentDir, projectPath))) {
       project.manifests.push(path.resolve(parentDir, projectPath));
+    } else {
+      throw new Error(`Project ${projectPath} not found`);
     }
   }
 

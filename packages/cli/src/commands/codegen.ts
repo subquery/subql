@@ -4,7 +4,7 @@
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
-import {codegen, generateSchema} from '../controller/codegen-controller';
+import {codegen} from '../controller/codegen-controller';
 
 export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
@@ -42,13 +42,7 @@ export default class Codegen extends Command {
     }
 
     try {
-      await generateSchema(root, firstSchemaPath);
-      for (const manifest of manifests) {
-        if (!root) {
-          throw new Error('Cannot resolve project manifest from --file argument given');
-        }
-        await codegen(root, manifest);
-      }
+      await codegen(root, manifests);
     } catch (err) {
       console.error(err.message);
       process.exit(1);

@@ -3,7 +3,13 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
+import {
+  ProjectManifestParentV1_0_0,
+  ProjectManifestParentV1_0_0Model,
+  getProjectRootAndManifest,
+  getSchemaPath,
+  loadFromJsonOrYaml,
+} from '@subql/common';
 import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';
 
 type DockerComposeService = {
@@ -16,10 +22,10 @@ type DockerComposeService = {
   healthcheck?: Record<string, any>;
 };
 
-export function addChain(multichain: string, chainManifestPath: string, chainId: string, schema: string) {
+export function addChain(multichain: string, chainManifestPath: string, chainId: string) {
   const multichainManifestPath = determineMultichainManifestPath(multichain);
-  const multichainManifest = loadOrCreateMultichainManifest(multichainManifestPath);
-  chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, schema, multichainManifestPath);
+  const multichainManifest = loadMultichainManifest(multichainManifestPath);
+  chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, multichainManifestPath);
   validateAndAddChainManifest(path.parse(multichainManifestPath).dir, chainManifestPath, multichainManifest);
   fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
   updateDockerCompose(path.parse(multichainManifestPath).dir, chainManifestPath);
@@ -27,7 +33,7 @@ export function addChain(multichain: string, chainManifestPath: string, chainId:
 
 export function determineMultichainManifestPath(multichain: string): string {
   if (!multichain) {
-    throw new Error(`Multichain project path -m not provided`);
+    throw new Error(`Multichain project path -f not provided`);
   }
 
   let multichainPath: string;
@@ -43,24 +49,18 @@ export function determineMultichainManifestPath(multichain: string): string {
   return multichainPath;
 }
 
-export function loadOrCreateMultichainManifest(multichainManifestPath: string): Document {
+export function loadMultichainManifest(multichainManifestPath: string): Document {
   let multichainManifest: Document;
+
+  if (!isMultiChainProject(multichainManifestPath)) {
+    throw new Error(`${multichainManifestPath} is an invalid multichain project manifest`);
+  }
 
   if (fs.existsSync(multichainManifestPath)) {
     const content = fs.readFileSync(multichainManifestPath, 'utf8');
     multichainManifest = parseDocument(content);
   } else {
-    multichainManifest = new Document({
-      specVersion: '1.0.0',
-      query: {
-        name: '@subql/query',
-        version: '*',
-      },
-      projects: [],
-    });
-
-    // Save the new multichain manifest
-    fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
+    throw new Error(`Multichain project ${multichainManifestPath} does not exist`);
   }
 
   return multichainManifest;
@@ -69,7 +69,6 @@ export function loadOrCreateMultichainManifest(multichainManifestPath: string): 
 export function handleChainManifestOrId(
   chainManifestPath: string,
   chainId: string,
-  schema: string,
   multichainManifestPath: string
 ): string {
   if (!chainManifestPath && !chainId) {
@@ -78,19 +77,12 @@ export function handleChainManifestOrId(
 
   // If a chain ID is provided, generate a chain manifest for it.
   if (chainId) {
-    if (!schema && !fs.existsSync(multichainManifestPath)) {
-      throw new Error('You must provide a schema path if no multichain manifest is found.');
-    }
-
     // Fetch schema from existing manifest if not provided via CLI args
-    if (!schema) {
-      const multichainManifestContent = fs.readFileSync(multichainManifestPath, 'utf8');
-      const multichainManifest = parseDocument(multichainManifestContent);
-      const project = getProjectRootAndManifest(multichainManifest.get('projects') as string[][0]);
-      schema = getSchemaPath(project.root, project.manifests[0]);
-    }
+    const multichainManifestContent = fs.readFileSync(multichainManifestPath, 'utf8');
+    const multichainManifest = parseDocument(multichainManifestContent);
+    const project = getProjectRootAndManifest(multichainManifest.get('projects') as string[][0]);
 
-    chainManifestPath = generateChainManifest(chainId, schema);
+    chainManifestPath = generateChainManifest(chainId);
   }
 
   // Check if the provided chain manifest path exists
@@ -249,7 +241,11 @@ export function updateDockerCompose(projectDir: string, chainManifestPath: strin
   console.log(`Docker Compose file updated successfully at: ${dockerComposePath}`);
 }
 
-function generateChainManifest(chainId: string, schema: string): string {
+function generateChainManifest(chainId: string): string {
   // TODO: Implement the actual logic for generating a chain manifest based on a chain ID.
   throw new Error('generateChainManifest() is not implemented yet.');
+}
+
+function isMultiChainProject(content: string): boolean {
+  return Array.isArray((loadFromJsonOrYaml(content) as ProjectManifestParentV1_0_0).projects);
 }

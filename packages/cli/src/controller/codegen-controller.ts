@@ -366,34 +366,34 @@ async function prepareDirPath(path: string, recreate: boolean) {
 }
 
 //1. Prepare models directory and load schema
-export async function codegen(projectPath: string, fileName?: string): Promise<void> {
-  const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
-    specVersion: string;
-    templates?: TemplateKind[];
-    dataSources: DatasourceKind[];
-  };
-
-  const expectKeys = ['datasources', 'templates'];
-
-  // if Object with assets key exists, need check for abi
-  const customDatasource = Object.keys(plainManifest)
-    .filter((key) => !expectKeys.includes(key))
-    ?.map((dsKey) => {
-      const value = (plainManifest as any)[dsKey];
-      if (typeof value === 'object' && value) {
-        return !!Object.keys(value).find((d) => d === 'assets') && value;
+export async function codegen(projectPath: string, fileNames?: string[]): Promise<void> {
+  const plainManifests = fileNames.map(
+    (fileName) =>
+      loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
+        specVersion: string;
+        templates?: TemplateKind[];
+        dataSources: DatasourceKind[];
       }
-    })
-    ?.filter(Boolean);
+  );
 
-  let datasources = plainManifest.dataSources;
+  const schema = getSchemaPath(projectPath, fileNames[0]);
+  await generateSchemaModels(projectPath, schema);
 
-  if (plainManifest.templates && plainManifest.templates.length !== 0) {
-    await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
-    datasources = plainManifest.dataSources.concat(plainManifest.templates as DatasourceKind[]);
-  }
+  let datasources = plainManifests.reduce((prev, current) => {
+    return prev.concat(current.dataSources);
+  }, []);
 
-  await generateAbis(plainManifest.dataSources, projectPath);
+  const templates = plainManifests.reduce((prev, current) => {
+    if (current.templates && current.templates.length !== 0) {
+      return prev.concat(current.templates);
+    }
+    return prev;
+  }, []);
+
+  await generateDatasourceTemplates(projectPath, templates);
+  datasources = datasources.concat(templates as DatasourceKind[]);
+
+  await generateAbis(datasources, projectPath);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
@@ -409,7 +409,7 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
   }
 }
 
-export async function generateSchema(projectPath: string, schemaPath: string) {
+export async function generateSchemaModels(projectPath: string, schemaPath: string) {
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
@@ -486,18 +486,21 @@ export async function generateModels(projectPath: string, schema: string): Promi
   }
 }
 
-export async function generateDatasourceTemplates(
-  projectPath: string,
-  specVersion: string,
-  templates: TemplateKind[]
-): Promise<void> {
+export async function generateDatasourceTemplates(projectPath: string, templates: TemplateKind[]): Promise<void> {
   const props = templates.map((t) => ({
     name: t.name,
     args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
   }));
+
+  const propsWithoutDuplicates = props.filter((prop, index) => {
+    const isDuplicate = props.findIndex((p, i) => p.name === prop.name && p.args === prop.args && i < index) !== -1;
+
+    return !isDuplicate;
+  });
+
   try {
     await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
-      props,
+      props: propsWithoutDuplicates,
     });
     exportTypes.datasources = true;
   } catch (e) {

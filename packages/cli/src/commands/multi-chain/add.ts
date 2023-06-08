@@ -9,26 +9,27 @@ export default class MultiChainAdd extends Command {
   static description = 'Add new chain manifest to multi-chain configuration';
 
   static flags = {
-    multichain: Flags.string({char: 'f', description: 'specify multichain manifest file path'}),
+    multichain: Flags.string({char: 'f', description: 'specify multichain manifest file path', default: process.cwd()}),
     chainManifestPath: Flags.string({char: 'c', description: 'path to the new chain manifest'}),
     chainId: Flags.string({description: 'ID of the new chain'}),
-    schema: Flags.string({char: 's', description: 'specify schema path for the new chain manifest'}),
   };
 
   async run() {
     const {flags} = await this.parse(MultiChainAdd);
 
-    let {chainManifestPath, multichain} = flags;
-    const {chainId, schema} = flags;
+    const {multichain} = flags;
+    let {chainManifestPath} = flags;
+    let {chainId} = flags;
 
-    if (!multichain) {
-      multichain = await cli.prompt('Enter the path to the multichain project/manifest file', {default: process.cwd()});
+    if (chainId) {
+      this.log('Generating chain manifest from chain ID is not supported yet');
+      chainId = undefined;
     }
 
     if (!chainManifestPath) {
       chainManifestPath = await cli.prompt('Enter the path to the new chain manifest');
     }
 
-    addChain(multichain, chainManifestPath, chainId, schema);
+    addChain(multichain, chainManifestPath, chainId);
   }
 }
