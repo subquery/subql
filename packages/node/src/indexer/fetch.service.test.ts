@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ApiOptions } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { delay } from '@subql/common';
@@ -37,6 +38,7 @@ import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import { createCachedProvider } from './x-provider/cachedProvider';
 
 const WS_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
 const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';
@@ -261,8 +263,14 @@ describe('FetchService', () => {
       .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
     const firstApiConnection = (connectionPoolService as any).allApi[0];
 
-    const apiOptions = (firstApiConnection as any)._api._options as ApiOptions;
-    const provider = apiOptions.provider;
+    const provider = new WsProvider(WS_ENDPOINT);
+    const cachedProvider = createCachedProvider(provider);
+    const apiOptions = (firstApiConnection as any).unsafeApi
+      ._options as ApiOptions;
+    apiOptions.provider = cachedProvider;
+
+    (firstApiConnection as any).unsafeApi = await ApiPromise.create(apiOptions);
+
     const getSendSpy = jest.spyOn(provider, 'send');
 
     const pendingCondition = new Promise((resolve) => {
@@ -301,8 +309,14 @@ describe('FetchService', () => {
       .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
     const firstApiConnection = (connectionPoolService as any).allApi[0];
 
-    const apiOptions = (firstApiConnection as any)._api._options as ApiOptions;
-    const provider = apiOptions.provider;
+    const provider = new WsProvider(WS_ENDPOINT);
+    const cachedProvider = createCachedProvider(provider);
+    const apiOptions = (firstApiConnection as any).unsafeApi
+      ._options as ApiOptions;
+    apiOptions.provider = cachedProvider;
+
+    (firstApiConnection as any).unsafeApi = await ApiPromise.create(apiOptions);
+
     const getSendSpy = jest.spyOn(provider, 'send');
 
     const pendingCondition = new Promise((resolve) => {

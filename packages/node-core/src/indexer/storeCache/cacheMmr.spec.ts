@@ -46,6 +46,7 @@ describe('CacheMMR', () => {
     const spy = jest.spyOn(db, 'setLeafLength');
 
     await cacheDb.setLeafLength(100);
+    await cacheDb.flush({afterCommit: jest.fn()} as any, undefined);
     expect(spy).toBeCalledTimes(1);
   });
 
