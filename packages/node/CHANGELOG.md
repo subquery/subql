@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.5] - 2023-06-09
+### Changed
+- Use @subql/x-sequelize in order to support cockroach (#1791)
+
 ## [2.5.4] - 2023-06-07
 ### Fixed
 - Sync with node-core 2.4.4, fixed various issue for mmr (#1787)
@@ -875,7 +879,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/2.5.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/v2.5.5...HEAD
+[2.5.5]: https://github.com/subquery/subql/compare/node/v2.5.4...node/v2.5.5
 [2.5.4]: https://github.com/subquery/subql/compare/node/2.5.3...node/2.5.4
 [2.5.3]: https://github.com/subquery/subql/compare/node/v2.5.2...node/v2.5.3
 [2.5.2]: https://github.com/subquery/subql/compare/node/v2.5.1...node/v2.5.2
