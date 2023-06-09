@@ -11,7 +11,7 @@ import {
   NodeConfig,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import {
   generateTimestampReferenceForBlockFilters,
   SubqlProjectDs,

@@ -16,7 +16,6 @@ import {
   hexToU8a,
   blake2AsHex,
 } from '@subql/utils';
-import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
   DataTypes,
   IndexesOptions,
@@ -29,7 +28,8 @@ import {
   Sequelize,
   Transaction,
   Utils,
-} from 'sequelize';
+} from '@subql/x-sequelize';
+import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {

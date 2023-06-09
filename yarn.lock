@@ -4184,6 +4184,7 @@ __metadata:
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
+    "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/async-lock": ^1
     "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
@@ -4194,7 +4195,6 @@ __metadata:
     merkle-tools: ^1.4.1
     node-fetch: ^2.6.7
     prom-client: ^14.0.1
-    sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
     vm2: ^3.9.19
@@ -4221,6 +4221,7 @@ __metadata:
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
+    "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
     "@types/lodash": ^4.14.178
@@ -4238,7 +4239,6 @@ __metadata:
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^7.5.2
-    sequelize: 6.28.0
     yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
@@ -4386,6 +4386,7 @@ __metadata:
   dependencies:
     "@polkadot/util": ^12.2.1
     "@polkadot/util-crypto": ^12.2.1
+    "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/semver": ^7
     ansi-styles: ^6.1.0
     axios: ^0.27.1
@@ -4398,7 +4399,6 @@ __metadata:
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
-    sequelize: 6.28.0
     tar: ^6.1.11
   languageName: unknown
   linkType: soft
@@ -4484,6 +4484,49 @@ __metadata:
     graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
     pg: ">=6.1.0 <9"
   checksum: 2f87b78ca021b7314e8a2c2cbf5a732a64d714558cd36d64a0c5e298f1cd8941f894effb6f0d3ab3c5e1513d53f4bdc901baa56ede79927c7b389bd306db030f
+  languageName: node
+  linkType: hard
+
+"@subql/x-sequelize@npm:6.32.0-0.0.2":
+  version: 6.32.0-0.0.2
+  resolution: "@subql/x-sequelize@npm:6.32.0-0.0.2"
+  dependencies:
+    "@types/debug": ^4.1.7
+    "@types/validator": ^13.7.1
+    debug: ^4.3.3
+    dottie: ^2.0.2
+    inflection: ^1.13.2
+    lodash: ^4.17.21
+    moment: ^2.29.1
+    moment-timezone: ^0.5.35
+    pg-connection-string: ^2.5.0
+    retry-as-promised: ^7.0.3
+    semver: ^7.3.5
+    sequelize-pool: ^7.1.0
+    toposort-class: ^1.0.1
+    uuid: ^8.3.2
+    validator: ^13.7.0
+    wkx: ^0.5.0
+  peerDependenciesMeta:
+    ibm_db:
+      optional: true
+    mariadb:
+      optional: true
+    mysql2:
+      optional: true
+    oracledb:
+      optional: true
+    pg:
+      optional: true
+    pg-hstore:
+      optional: true
+    snowflake-sdk:
+      optional: true
+    sqlite3:
+      optional: true
+    tedious:
+      optional: true
+  checksum: e8f7ab7c7be694f4f8892e40e11626ff7a20c6fed7ac7834394e432b77527f57eb04a5cfc25d316599ac481a5b250e24020a337bc03f36d05eb442be571fc432
   languageName: node
   linkType: hard
 
@@ -13390,7 +13433,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment-timezone@npm:^0.5.34, moment-timezone@npm:^0.5.x":
+"moment-timezone@npm:^0.5.35":
+  version: 0.5.43
+  resolution: "moment-timezone@npm:0.5.43"
+  dependencies:
+    moment: ^2.29.4
+  checksum: 8075c897ed8a044f992ef26fe8cdbcad80caf974251db424cae157473cca03be2830de8c74d99341b76edae59f148c9d9d19c1c1d9363259085688ec1cf508d0
+  languageName: node
+  linkType: hard
+
+"moment-timezone@npm:^0.5.x":
   version: 0.5.34
   resolution: "moment-timezone@npm:0.5.34"
   dependencies:
@@ -13415,7 +13467,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:>=2.14.0":
+"moment@npm:>=2.14.0, moment@npm:^2.29.4":
   version: 2.29.4
   resolution: "moment@npm:2.29.4"
   checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e
@@ -15979,9 +16031,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:6.28.0":
-  version: 6.28.0
-  resolution: "sequelize@npm:6.28.0"
+"sequelize@npm:^6.6.2":
+  version: 6.32.0
+  resolution: "sequelize@npm:6.32.0"
   dependencies:
     "@types/debug": ^4.1.7
     "@types/validator": ^13.7.1
@@ -15990,7 +16042,7 @@ __metadata:
     inflection: ^1.13.2
     lodash: ^4.17.21
     moment: ^2.29.1
-    moment-timezone: ^0.5.34
+    moment-timezone: ^0.5.35
     pg-connection-string: ^2.5.0
     retry-as-promised: ^7.0.3
     semver: ^7.3.5
@@ -16018,7 +16070,7 @@ __metadata:
       optional: true
     tedious:
       optional: true
-  checksum: 7e10ba4ebabab1ed54d6769fa73cac86dd3df88415ee32dd82f01ade6e1ebd9f6672288b601bd12507eae9eb2480ba905f74c93b1e380eb335430bf43ed757e9
+  checksum: eeb4385617248651c8cc4a4460b05974b3058187a37206b94544310984961e1e169d3faf77ac2beb6dad5b4d78da0e12aa0b7ff2eee6d82c2644e61e51250b8c
   languageName: node
   linkType: hard
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {isHex, hexToU8a} from '@polkadot/util';
-import {DataTypes} from 'sequelize';
+import {DataTypes} from '@subql/x-sequelize';
 import {TypeClass} from '../TypeClass';
 
 export const Bytes = new TypeClass(

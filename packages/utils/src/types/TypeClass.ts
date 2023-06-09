@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {DataTypes} from 'sequelize';
+import {DataTypes} from '@subql/x-sequelize';
 type ValueOf<T> = T[keyof T];
 export type SequelizeTypes = string | ValueOf<typeof DataTypes>;
 

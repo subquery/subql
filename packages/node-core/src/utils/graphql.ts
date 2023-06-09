@@ -12,7 +12,7 @@ import {
   isBuffer,
   isNull,
 } from '@subql/utils';
-import {ModelAttributes, ModelAttributeColumnOptions} from 'sequelize';
+import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
 
 export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums: Map<string, string>): ModelAttributes {
   const fields = modelType.fields;
