@@ -366,7 +366,12 @@ async function prepareDirPath(path: string, recreate: boolean) {
 }
 
 //1. Prepare models directory and load schema
-export async function codegen(projectPath: string, fileNames?: string[]): Promise<void> {
+export async function codegen(projectPath: string, fileNames: string[] = ['project.yaml']): Promise<void> {
+  const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
+  const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
+  await prepareDirPath(modelDir, true);
+  await prepareDirPath(interfacesPath, false);
+
   const plainManifests = fileNames.map(
     (fileName) =>
       loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
@@ -375,6 +380,20 @@ export async function codegen(projectPath: string, fileNames?: string[]): Promis
         dataSources: DatasourceKind[];
       }
   );
+
+  const expectKeys = ['datasources', 'templates'];
+
+  const customDatasources = plainManifests.flatMap((plainManifest) => {
+    return Object.keys(plainManifest)
+      .filter((key) => !expectKeys.includes(key))
+      .map((dsKey) => {
+        const value = (plainManifest as any)[dsKey];
+        if (typeof value === 'object' && value) {
+          return !!Object.keys(value).find((d) => d === 'assets') && value;
+        }
+      })
+      .filter(Boolean);
+  });
 
   const schema = getSchemaPath(projectPath, fileNames[0]);
   await generateSchemaModels(projectPath, schema);
@@ -393,6 +412,10 @@ export async function codegen(projectPath: string, fileNames?: string[]): Promis
   if (templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, templates);
     datasources = datasources.concat(templates as DatasourceKind[]);
+  }
+
+  if (customDatasources.length !== 0) {
+    datasources = datasources.concat(customDatasources);
   }
 
   await generateAbis(datasources, projectPath);
