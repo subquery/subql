@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2023-06-09
+### Changed
+- Use @subql/x-sequelize in order support cockroach (#1791)
+
 ## [2.4.0] - 2023-05-30
 ### Added
 - Composite indexes for entities (#1759)
@@ -72,7 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/v2.4.1...HEAD
+[2.4.1]: https://github.com/subquery/subql/compare/utils/2.4.0...utils/2.4.1
 [2.4.0]: https://github.com/subquery/subql/compare/utils/2.3.0...utils/2.4.0
 [2.3.0]: https://github.com/subquery/subql/compare/utils/2.2.0...utils/2.3.0
 [2.2.0]: https://github.com/subquery/subql/compare/utils/2.1.0...utils/2.2.0
