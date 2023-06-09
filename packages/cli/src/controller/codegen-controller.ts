@@ -390,8 +390,10 @@ export async function codegen(projectPath: string, fileNames?: string[]): Promis
     return prev;
   }, []);
 
-  await generateDatasourceTemplates(projectPath, templates);
-  datasources = datasources.concat(templates as DatasourceKind[]);
+  if (templates.length !== 0) {
+    await generateDatasourceTemplates(projectPath, templates);
+    datasources = datasources.concat(templates as DatasourceKind[]);
+  }
 
   await generateAbis(datasources, projectPath);
 

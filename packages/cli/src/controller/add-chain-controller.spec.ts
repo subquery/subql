@@ -9,7 +9,7 @@ import {ProjectManifestParentV1_0_0, ProjectManifestV1_0_0} from '@subql/common'
 import * as yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import {YAMLSeq} from 'yaml';
-import {loadOrCreateMultichainManifest, validateAndAddChainManifest} from './add-chain-controller';
+import {loadMultichainManifest, validateAndAddChainManifest} from './add-chain-controller';
 
 const multichainManifest: ProjectManifestParentV1_0_0 = {
   specVersion: '1.0.0',
@@ -147,7 +147,7 @@ describe('MultiChain - ADD', () => {
     projectDir = await createMultichainProject(multichainManifest, [childChainManifest_1]);
     const chainFile = await createChildManifestFile(childChainManifest_2, projectDir);
     const multichainManifestPath = path.join(projectDir, 'subquery-multichain.yaml');
-    const multiManifest = loadOrCreateMultichainManifest(multichainManifestPath);
+    const multiManifest = loadMultichainManifest(multichainManifestPath);
     validateAndAddChainManifest(projectDir, chainFile, multiManifest);
     expect((multiManifest.get('projects') as YAMLSeq).get(1)).toEqual(`${childChainManifest_2.name}.yaml`);
   });
@@ -156,7 +156,7 @@ describe('MultiChain - ADD', () => {
     projectDir = await createMultichainProject(multichainManifest, [childChainManifest_1]);
     const chainFile = await createChildManifestFile(childChainManifest_2_wrongSchema, projectDir);
     const multichainManifestPath = path.join(projectDir, 'subquery-multichain.yaml');
-    const multiManifest = loadOrCreateMultichainManifest(multichainManifestPath);
+    const multiManifest = loadMultichainManifest(multichainManifestPath);
     expect(() => validateAndAddChainManifest(projectDir, chainFile, multiManifest)).toThrow();
   });
 });
