@@ -17,7 +17,7 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { NodeConfig, BaseFetchService } from '@subql/node-core';
+import { NodeConfig, BaseFetchService, IApi } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   SubstrateCustomHandler,
@@ -73,6 +73,7 @@ function callFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
+  ApiService,
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
   DictionaryService
@@ -105,7 +106,7 @@ export class FetchService extends BaseFetchService<
   }
 
   get api(): ApiPromise {
-    return this.apiService.api;
+    return this.apiService.unsafeApi;
   }
 
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {

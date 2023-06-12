@@ -6,12 +6,11 @@ import path from 'path';
 import {Inject, Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
-import {getAllEntitiesRelations} from '@subql/utils';
-import {CreationAttributes, Model, Sequelize} from '@subql/x-sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
-import {ApiService} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {SandboxOption, TestSandbox} from './sandbox';
@@ -28,7 +27,7 @@ declare global {
 }
 
 @Injectable()
-export abstract class TestingService<B, DS> {
+export abstract class TestingService<A, SA, B, DS> {
   private tests: Record<number, SubqlTest[]> = {};
   private testSandboxes: TestSandbox[];
   private failedTestsSummary: {
@@ -47,7 +46,7 @@ export abstract class TestingService<B, DS> {
     protected readonly nodeConfig: NodeConfig,
     protected readonly storeService: StoreService,
     @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
-    protected readonly apiService: ApiService,
+    protected readonly apiService: IApi<A, SA, B>,
     protected readonly indexerManager: IIndexerManager<B, DS>
   ) {
     const projectPath = this.project.root;
