@@ -5,7 +5,7 @@ import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {Sequelize} from 'sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
@@ -91,12 +91,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
 
       await this.initHotSchemaReload();
 
-      if (this.nodeConfig.proofOfIndex) {
-        const blockOffset = await this.getMetadataBlockOffset();
-        void this.setBlockOffset(Number(blockOffset));
-        await this.poiService.init();
-      }
-
       this._startHeight = await this.getStartHeight();
 
       const reindexedTo = await this.initUnfinalized();
@@ -104,9 +98,18 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
       if (reindexedTo !== undefined) {
         this._startHeight = reindexedTo;
       }
-
-      // Flush any pending operations to setup DB
+      // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true);
+
+      if (this.nodeConfig.proofOfIndex) {
+        const blockOffset = await this.getMetadataBlockOffset();
+        await this.poiService.init();
+        // Flush cache to setup rest of POI related meta
+        await this.storeService.storeCache.flushCache(true);
+        // syncFileBaseFromPoi at the bottom, avoid DB be blocked lead project init not completed,
+        // And fetch service have to keep waiting
+        void this.setBlockOffset(Number(blockOffset));
+      }
     } else {
       this._schema = await this.getExistingProjectSchema();
 

@@ -14,7 +14,7 @@ import {
   reindex,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';

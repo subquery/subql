@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
+import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {Mutex} from 'async-mutex';
 import LRUCache from 'lru-cache';
-import {Sequelize, Transaction} from 'sequelize';
 import {PgBasedMMRDB} from '../entities/Mmr.entitiy';
 import {ICachedModelControl} from './types';
 

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {u8aToBuffer} from '@subql/utils';
+import {Transaction} from '@subql/x-sequelize';
 import {Mutex} from 'async-mutex';
-import {Transaction} from 'sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../poi/poiModel';

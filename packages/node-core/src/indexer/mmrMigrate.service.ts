@@ -4,7 +4,7 @@
 import {existsSync} from 'fs';
 import {DEFAULT_WORD_SIZE} from '@subql/common';
 import {FileBasedDb} from '@subql/x-merkle-mountain-range';
-import {Logging, QueryTypes, Sequelize} from 'sequelize';
+import {Logging, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema} from '../utils/project';

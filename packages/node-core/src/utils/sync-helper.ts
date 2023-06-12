@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {hashName, blake2AsHex} from '@subql/utils';
-import {QueryTypes, Sequelize, Utils} from 'sequelize';
+import {QueryTypes, Sequelize, Utils} from '@subql/x-sequelize';
 
 export interface SmartTags {
   foreignKey?: string;

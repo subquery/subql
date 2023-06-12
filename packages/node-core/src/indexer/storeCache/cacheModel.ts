@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {flatten, includes, isEqual, uniq} from 'lodash';
-import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
 import {SetValueModel} from './setValueModel';

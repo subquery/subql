@@ -22,8 +22,8 @@ import {
   StoreCacheService,
   ConnectionPoolService,
 } from '@subql/node-core';
+import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
-import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';

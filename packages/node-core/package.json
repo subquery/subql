@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "2.4.4-1",
+  "version": "2.4.5",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -27,6 +27,7 @@
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
     "@subql/x-merkle-mountain-range": "^2.0.0-0.1.3",
+    "@subql/x-sequelize": "6.32.0-0.0.2",
     "@willsoto/nestjs-prometheus": "^5.1.1",
     "async-lock": "^1.4.0",
     "async-mutex": "^0.4.0",
@@ -36,7 +37,6 @@
     "merkle-tools": "^1.4.1",
     "node-fetch": "^2.6.7",
     "prom-client": "^14.0.1",
-    "sequelize": "6.28.0",
     "source-map": "^0.7.4",
     "tar": "^6.1.11",
     "vm2": "^3.9.19",
@@ -44,6 +44,5 @@
   },
   "devDependencies": {
     "@types/async-lock": "^1"
-  },
-  "stableVersion": "2.4.4-0"
+  }
 }

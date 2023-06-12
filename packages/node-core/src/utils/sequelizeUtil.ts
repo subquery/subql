@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import NodeUtil from 'node:util';
-import {IndexesOptions, TableName, Utils} from 'sequelize';
+import {IndexesOptions, TableName, Utils} from '@subql/x-sequelize';
 import {underscored} from './sync-helper';
 
 // This method is simplified from https://github.com/sequelize/sequelize/blob/066421c00aad61694dcdbb624d4b73dbac7c7b42/packages/core/src/model-definition.ts#L245
