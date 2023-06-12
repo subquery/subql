@@ -10,7 +10,7 @@ import {
   MmrService,
   BaseProjectService,
 } from '@subql/node-core';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import {
   SubqueryProject,
   generateTimestampReferenceForBlockFilters,

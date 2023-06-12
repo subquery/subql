@@ -7,7 +7,7 @@ import {
   StoreService,
   TestingService as BaseTestingService,
 } from '@subql/node-core';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';

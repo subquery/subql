@@ -2930,7 +2930,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-cosmos@workspace:packages/common-cosmos"
   dependencies:
-    "@subql/common": ^2.2.0
+    "@subql/common": ^2.2.1
     "@subql/types-cosmos": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
@@ -2943,9 +2943,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.2.0, @subql/common@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@subql/common@npm:2.2.0"
+"@subql/common@npm:2.2.1, @subql/common@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@subql/common@npm:2.2.1"
   dependencies:
     axios: ^0.27.2
     class-transformer: ^0.5.1
@@ -2955,23 +2955,24 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: 54f90ff784ed1f638337304cea8f84a0dcfe9fefad383ea8d3a364475ce7500e141757ca48d384c781473c5922a4afb486a5e10a63f282414c1bfbae4d6ad1ad
+  checksum: e9ba29809034e8e3d5823c72fa4495482b400a5556971b3995229c595c3d3237cb26a1309ea1223ea9a2ea32bcb2b2fefee21671d393fb8d4fc1197825c0d8a2
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^2.4.4":
-  version: 2.4.4
-  resolution: "@subql/node-core@npm:2.4.4"
+"@subql/node-core@npm:^2.4.5":
+  version: 2.4.5
+  resolution: "@subql/node-core@npm:2.4.5"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@subql/apollo-links": ^0.3.3-2
-    "@subql/common": 2.2.0
+    "@subql/common": 2.2.1
     "@subql/testing": 2.0.1
     "@subql/types": 2.1.2
-    "@subql/utils": 2.4.0
+    "@subql/utils": 2.4.1
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
+    "@subql/x-sequelize": 6.32.0-0.0.2
     "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
@@ -2981,12 +2982,11 @@ __metadata:
     merkle-tools: ^1.4.1
     node-fetch: ^2.6.7
     prom-client: ^14.0.1
-    sequelize: 6.28.0
     source-map: ^0.7.4
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: c1cf102df8d63c79a2a604ccdbc36b1f71a69000f6faefc792ac53a3ca5e6a88fd1353426025832d23437952782dc8cc427858d3e39c01d7517f7d36ff62347b
+  checksum: 606795b1113defad7bd15be0fe87b96efeac9391b36286adce6c19ac928bae11f43783c1164a8b61fb1a0263c1d846fd36e121cdac3945c87d69024aa8744e41
   languageName: node
   linkType: hard
 
@@ -3005,9 +3005,9 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": ^2.2.0
+    "@subql/common": ^2.2.1
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": ^2.4.4
+    "@subql/node-core": ^2.4.5
     "@subql/types-cosmos": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -3064,12 +3064,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@subql/utils@npm:2.4.0"
+"@subql/utils@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@subql/utils@npm:2.4.1"
   dependencies:
     "@polkadot/util": ^12.2.1
     "@polkadot/util-crypto": ^12.2.1
+    "@subql/x-sequelize": 6.32.0-0.0.2
     ansi-styles: ^6.1.0
     axios: ^0.27.1
     chalk: ^4.1.2
@@ -3081,9 +3082,8 @@ __metadata:
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
-    sequelize: 6.28.0
     tar: ^6.1.11
-  checksum: 3358ce8501d2ce36396717d693c86c5f72782c0e65c5487a1b535bb7e07c0b41fec5b18ee8b8b8668e9ef34accc7821405bd5012a7509a9f08fb30b888265069
+  checksum: 7932c0a113fd459ff92ca96e7d8aca02c38d9be2b5c46edae4245ad2d8ac04134b03d6c2e33ba4575d482084fa418203151dd01a64389f55652c69e083f75241
   languageName: node
   linkType: hard
 
@@ -3099,6 +3099,49 @@ __metadata:
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
   checksum: fcd17a07b77c79730fe2847f4b2fefa376beae59b942b6eb71ffefa683f4e1988e00a2ed974e422560ccb914f72e98067c6b8c6923128371b6e2611dde866265
+  languageName: node
+  linkType: hard
+
+"@subql/x-sequelize@npm:6.32.0-0.0.2":
+  version: 6.32.0-0.0.2
+  resolution: "@subql/x-sequelize@npm:6.32.0-0.0.2"
+  dependencies:
+    "@types/debug": ^4.1.7
+    "@types/validator": ^13.7.1
+    debug: ^4.3.3
+    dottie: ^2.0.2
+    inflection: ^1.13.2
+    lodash: ^4.17.21
+    moment: ^2.29.1
+    moment-timezone: ^0.5.35
+    pg-connection-string: ^2.5.0
+    retry-as-promised: ^7.0.3
+    semver: ^7.3.5
+    sequelize-pool: ^7.1.0
+    toposort-class: ^1.0.1
+    uuid: ^8.3.2
+    validator: ^13.7.0
+    wkx: ^0.5.0
+  peerDependenciesMeta:
+    ibm_db:
+      optional: true
+    mariadb:
+      optional: true
+    mysql2:
+      optional: true
+    oracledb:
+      optional: true
+    pg:
+      optional: true
+    pg-hstore:
+      optional: true
+    snowflake-sdk:
+      optional: true
+    sqlite3:
+      optional: true
+    tedious:
+      optional: true
+  checksum: e8f7ab7c7be694f4f8892e40e11626ff7a20c6fed7ac7834394e432b77527f57eb04a5cfc25d316599ac481a5b250e24020a337bc03f36d05eb442be571fc432
   languageName: node
   linkType: hard
 
@@ -8786,7 +8829,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment-timezone@npm:^0.5.34, moment-timezone@npm:^0.5.x, moment-timezone@npm:~0.5":
+"moment-timezone@npm:^0.5.34, moment-timezone@npm:^0.5.35, moment-timezone@npm:^0.5.x, moment-timezone@npm:~0.5":
   version: 0.5.43
   resolution: "moment-timezone@npm:0.5.43"
   dependencies:
