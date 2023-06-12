@@ -11,7 +11,7 @@ import {
   NodeConfig,
   ApiService,
 } from '@subql/node-core';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import {
   generateTimestampReferenceForBlockFilters,
   SubqlProjectDs,

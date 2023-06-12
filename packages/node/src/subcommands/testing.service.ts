@@ -9,7 +9,7 @@ import {
   ApiService,
 } from '@subql/node-core';
 import { EthereumBlockWrapper } from '@subql/types-ethereum';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { IndexerManager } from '../indexer/indexer.manager';
 

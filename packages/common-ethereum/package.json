@@ -13,12 +13,12 @@
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@subql/common": "^2.2.0",
+    "@subql/common": "^2.2.1",
     "@subql/types-ethereum": "workspace:*",
+    "@subql/x-sequelize": "6.32.0-0.0.2",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
-    "reflect-metadata": "^0.1.13",
-    "sequelize": "6.28.0"
+    "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {
     "class-transformer": "*",
