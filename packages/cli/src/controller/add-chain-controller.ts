@@ -6,11 +6,21 @@ import * as path from 'path';
 import {
   DEFAULT_MULTICHAIN_MANIFEST,
   MultichainProjectManifest,
+  ProjectManifestBaseImpl,
+  ReaderFactory,
   getProjectRootAndManifest,
   getSchemaPath,
   loadFromJsonOrYaml,
 } from '@subql/common';
 import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';
+
+const nodeToDockerImage: Record<string, string> = {
+  '@subql/node': 'onfinality/subql-node',
+  '@subql/node-ethereum': 'onfinality/subql-node-ethereum',
+  '@subql/node-cosmos': 'onfinality/subql-node-cosmos',
+  '@subql/node-algorand': 'onfinality/subql-node-algoran',
+  '@subql/node-near': 'onfinality/subql-node-near',
+};
 
 type DockerComposeService = {
   image?: string;
@@ -22,13 +32,13 @@ type DockerComposeService = {
   healthcheck?: Record<string, any>;
 };
 
-export function addChain(multichain: string, chainManifestPath: string, chainId: string) {
+export async function addChain(multichain: string, chainManifestPath: string, chainId: string): Promise<void> {
   const multichainManifestPath = determineMultichainManifestPath(multichain);
   const multichainManifest = loadMultichainManifest(multichainManifestPath);
   chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, multichainManifestPath);
   validateAndAddChainManifest(path.parse(multichainManifestPath).dir, chainManifestPath, multichainManifest);
   fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
-  updateDockerCompose(path.parse(multichainManifestPath).dir, chainManifestPath);
+  await updateDockerCompose(path.parse(multichainManifestPath).dir, chainManifestPath);
 }
 
 export function determineMultichainManifestPath(multichain: string): string {
@@ -159,9 +169,25 @@ function getSubqlNodeService(dockerCompose: Document): DockerComposeService | un
   return undefined;
 }
 
-function getDefaultServiceConfiguration(chainManifestPath: string, serviceName: string): DockerComposeService {
+async function getDefaultServiceConfiguration(
+  chainManifestPath: string,
+  serviceName: string
+): Promise<DockerComposeService> {
+  const manifest = await loadFromJsonOrYaml(chainManifestPath);
+  let nodeName: string;
+  try {
+    nodeName = (manifest as any).runner.node.name;
+  } catch (e) {
+    throw new Error(`unable to retrieve runner node from manifest: ${e}`);
+  }
+
+  const dockerImage = nodeToDockerImage[nodeName];
+  if (!dockerImage) {
+    throw new Error(`unknown node runner name ${nodeName}`);
+  }
+
   return {
-    image: 'onfinality/subql-node:latest',
+    image: `${dockerImage}:latest`,
     depends_on: {
       postgres: {
         condition: 'service_healthy',
@@ -186,7 +212,7 @@ function getDefaultServiceConfiguration(chainManifestPath: string, serviceName: 
   };
 }
 
-export function updateDockerCompose(projectDir: string, chainManifestPath: string): void {
+export async function updateDockerCompose(projectDir: string, chainManifestPath: string): Promise<void> {
   const serviceName = `subquery-node-${path.basename(chainManifestPath, '.yaml')}`;
   const dockerComposePath = path.join(projectDir, 'docker-compose.yml');
   const dockerCompose = loadDockerComposeFile(dockerComposePath);
@@ -224,7 +250,7 @@ export function updateDockerCompose(projectDir: string, chainManifestPath: strin
     subqlNodeService.healthcheck.test = ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`];
   } else {
     // Otherwise, create a new service configuration
-    subqlNodeService = getDefaultServiceConfiguration(chainManifestPath, serviceName);
+    subqlNodeService = await getDefaultServiceConfiguration(chainManifestPath, serviceName);
   }
   console.log(`Created new service configuration: ${serviceName}`);
 

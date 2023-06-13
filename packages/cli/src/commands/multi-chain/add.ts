@@ -30,6 +30,6 @@ export default class MultiChainAdd extends Command {
       chainManifestPath = await cli.prompt('Enter the path to the new chain manifest');
     }
 
-    addChain(multichain, chainManifestPath, chainId);
+    await addChain(multichain, chainManifestPath, chainId);
   }
 }
