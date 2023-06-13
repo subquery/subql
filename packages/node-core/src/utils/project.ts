@@ -7,15 +7,20 @@ import path from 'path';
 import {
   BaseCustomDataSource,
   BaseDataSource,
+  BaseHandler,
+  BaseMapping,
   DEFAULT_PORT,
   findAvailablePort,
   GithubReader,
   IPFSReader,
   LocalReader,
+  ProjectManifestV1_0_0,
   Reader,
+  TemplateBase,
 } from '@subql/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
+import Cron from 'cron-converter';
 import {isNumber, range, uniq, without, flatten} from 'lodash';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
@@ -242,4 +247,70 @@ export async function initDbSchema(
 
 export async function initHotSchemaReload(schema: string, storeService: StoreService): Promise<void> {
   await storeService.initHotSchemaReloadQueries(schema);
+}
+
+type IsRuntimeDs = (ds: BaseDataSource) => boolean;
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource = BaseDataSource>(
+  dataSources: DS[],
+  getBlockTimestamp: (height: number) => Promise<Date>,
+  isRuntimeDs: IsRuntimeDs,
+  blockHandlerKind: string
+): Promise<DS[]> {
+  const cron = new Cron();
+
+  dataSources = await Promise.all(
+    dataSources.map(async (ds) => {
+      if (isRuntimeDs(ds)) {
+        const startBlock = ds.startBlock ?? 1;
+        let timestampReference: Date;
+
+        ds.mapping.handlers = await Promise.all(
+          ds.mapping.handlers.map(async (handler) => {
+            if (handler.kind === blockHandlerKind) {
+              if (handler.filter?.timestamp) {
+                if (!timestampReference) {
+                  timestampReference = await getBlockTimestamp(startBlock);
+                }
+                try {
+                  cron.fromString(handler.filter.timestamp);
+                } catch (e) {
+                  throw new Error(`Invalid Cron string: ${handler.filter.timestamp}`);
+                }
+
+                const schedule = cron.schedule(timestampReference);
+                handler.filter.cronSchedule = {
+                  schedule: schedule,
+                  get next() {
+                    return Date.parse(this.schedule.next().format());
+                  },
+                };
+              }
+            }
+            return handler;
+          })
+        );
+      }
+      return ds;
+    })
+  );
+
+  return dataSources;
+}
+
+export async function loadProjectTemplates<T extends BaseDataSource & TemplateBase>(
+  templates: T[] | undefined,
+  root: string,
+  reader: Reader,
+  isCustomDs: IsCustomDs<BaseDataSource, BaseCustomDataSource>
+): Promise<SubqlProjectDs<T>[]> {
+  if (!templates || !templates.length) {
+    return [];
+  }
+  const dsTemplates = await updateDataSourcesV1_0_0(templates, reader, root, isCustomDs);
+  return dsTemplates.map((ds, index) => ({
+    ...ds,
+    name: templates[index].name,
+  })) as SubqlProjectDs<T>[]; // How to get rid of cast here?
 }

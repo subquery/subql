@@ -2,9 +2,21 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Type} from 'class-transformer';
-import {Equals, IsBoolean, IsInt, IsObject, IsOptional, IsString, Validate, ValidateNested} from 'class-validator';
+import {
+  Equals,
+  IsBoolean,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsInt,
+  Matches,
+  Validate,
+  ValidateNested,
+} from 'class-validator';
+import {RUNNER_REGEX} from '../../../constants';
 import {SemverVersionValidator} from '../../utils';
-import {BlockFilter, NodeOptions, NodeSpec, QuerySpec} from './types';
+import {BlockFilter, NodeOptions, NodeSpec, ParentProject, QuerySpec} from './types';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
@@ -48,4 +60,11 @@ export class BlockFilterImpl implements BlockFilter {
   @IsOptional()
   @IsString()
   timestamp?: string;
+}
+
+export class ParentProjectModel implements ParentProject {
+  @IsNumber()
+  block: number;
+  @IsString()
+  reference: string;
 }

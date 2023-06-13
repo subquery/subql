@@ -15,7 +15,7 @@ import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
 import {
   generateTimestampReferenceForBlockFilters,
-  SubqlProjectDs,
+  SubstrateProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -64,8 +64,8 @@ export class ProjectService extends BaseProjectService<
   }
 
   protected async generateTimestampReferenceForBlockFilters(
-    ds: SubqlProjectDs[],
-  ): Promise<SubqlProjectDs[]> {
+    ds: SubstrateProjectDs[],
+  ): Promise<SubstrateProjectDs[]> {
     return generateTimestampReferenceForBlockFilters(ds, this.apiService.api);
   }
 

@@ -8,6 +8,6 @@ export interface RuntimeDatasourceTemplate extends Omit<SubstrateRuntimeDatasour
 export interface CustomDatasourceTemplate extends Omit<SubstrateCustomDatasource, 'name'>, TemplateBase {}
 
 export type SubstrateProjectManifestV1_0_0 = ProjectManifestV1_0_0<
-  RuntimeDatasourceTemplate | CustomDatasourceTemplate,
-  SubstrateRuntimeDatasource | SubstrateCustomDatasource
+  SubstrateRuntimeDatasource | SubstrateCustomDatasource,
+  RuntimeDatasourceTemplate | CustomDatasourceTemplate
 >;

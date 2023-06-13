@@ -8,33 +8,39 @@ import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
-  SubstrateDataSource,
   ProjectManifestV1_0_0Impl,
   SubstrateBlockFilter,
   isRuntimeDs,
   SubstrateHandlerKind,
   isCustomDs,
+  RuntimeDatasourceTemplate,
+  CustomDatasourceTemplate,
 } from '@subql/common-substrate';
-import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
+import {
+  getProjectRoot,
+  insertBlockFiltersCronSchedules,
+  ISubqueryProject,
+  loadProjectTemplates,
+  SubqlProjectDs,
+  updateDataSourcesV1_0_0,
+} from '@subql/node-core';
+import { SubstrateDatasource } from '@subql/types';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { getChainTypes } from '../utils/project';
 import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 
-export type SubqlProjectDs = SubstrateDataSource & {
-  mapping: SubstrateDataSource['mapping'] & { entryScript: string };
-};
+export type SubstrateProjectDs = SubqlProjectDs<SubstrateDatasource>;
+export type SubqlProjectDsTemplate =
+  | SubqlProjectDs<RuntimeDatasourceTemplate>
+  | SubqlProjectDs<CustomDatasourceTemplate>;
 
 export type SubqlProjectBlockFilter = SubstrateBlockFilter & {
   cronSchedule?: {
     schedule: Cron.Seeker;
     next: number;
   };
-};
-
-export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
-  name: string;
 };
 
 const NOT_SUPPORT = (name: string) => {
@@ -45,11 +51,11 @@ const NOT_SUPPORT = (name: string) => {
 type NetworkConfig = SubstrateProjectNetworkConfig & { chainId: string };
 
 @Injectable()
-export class SubqueryProject {
+export class SubqueryProject implements ISubqueryProject {
   id: string;
   root: string;
   network: NetworkConfig;
-  dataSources: SubqlProjectDs[];
+  dataSources: SubstrateProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
@@ -173,9 +179,10 @@ async function loadProjectFromManifest1_0_0(
     root,
   );
   project.templates = await loadProjectTemplates(
-    projectManifest,
+    projectManifest.templates,
     project.root,
     reader,
+    isCustomDs,
   );
   project.runner = projectManifest.runner;
   if (!validateSemver(packageVersion, project.runner.node.version)) {
@@ -186,72 +193,17 @@ async function loadProjectFromManifest1_0_0(
   return project;
 }
 
-async function loadProjectTemplates(
-  projectManifest: ProjectManifestV1_0_0Impl,
-  root: string,
-  reader: Reader,
-): Promise<SubqlProjectDsTemplate[]> {
-  if (!projectManifest.templates || !projectManifest.templates.length) {
-    return [];
-  }
-  const dsTemplates = await updateDataSourcesV1_0_0(
-    projectManifest.templates,
-    reader,
-    root,
-    isCustomDs as any,
-  );
-  return dsTemplates.map((ds, index) => ({
-    ...ds,
-    name: projectManifest.templates[index].name,
-  }));
-}
-
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function generateTimestampReferenceForBlockFilters(
-  dataSources: SubqlProjectDs[],
+  dataSources: SubstrateProjectDs[],
   api: ApiPromise,
-): Promise<SubqlProjectDs[]> {
-  const cron = new Cron();
-
-  dataSources = await Promise.all(
-    dataSources.map(async (ds) => {
-      if (isRuntimeDs(ds)) {
-        const startBlock = ds.startBlock ?? 1;
-        let block;
-        let timestampReference: Date;
-
-        ds.mapping.handlers = await Promise.all(
-          ds.mapping.handlers.map(async (handler) => {
-            if (handler.kind === SubstrateHandlerKind.Block) {
-              if (handler.filter?.timestamp) {
-                if (!block) {
-                  block = await getBlockByHeight(api, startBlock);
-                  timestampReference = getTimestamp(block);
-                }
-                try {
-                  cron.fromString(handler.filter.timestamp);
-                } catch (e) {
-                  throw new Error(
-                    `Invalid Cron string: ${handler.filter.timestamp}`,
-                  );
-                }
-
-                const schedule = cron.schedule(timestampReference);
-                (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
-                  schedule: schedule,
-                  get next() {
-                    return Date.parse(this.schedule.next().format());
-                  },
-                };
-              }
-            }
-            return handler;
-          }),
-        );
-      }
-      return ds;
-    }),
+): Promise<SubstrateProjectDs[]> {
+  return insertBlockFiltersCronSchedules(
+    dataSources,
+    async (height: number) => {
+      const block = await getBlockByHeight(api, height);
+      return getTimestamp(block);
+    },
+    isRuntimeDs,
+    SubstrateHandlerKind.Block,
   );
-
-  return dataSources;
 }
