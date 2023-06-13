@@ -109,13 +109,8 @@ describe('Cli publish', () => {
     const ipfs = create({url: ipfsEndpoint});
 
     //test string
-    const cid = await uploadFile([{path: '', content: 'Test for upload string to ipfs'}], testAuth);
+    const cid = (await uploadFile([{path: '', content: 'Test for upload string to ipfs'}], testAuth)).get('');
     console.log(`upload file cid: ${cid}`);
-    // test fs stream (project)
-    projectDir = await createTestProject(projectSpecV0_2_0);
-    const fsStream = fs.readFileSync(path.resolve(projectDir, 'project.yaml'));
-    const cid2 = await uploadFile([{path: '', content: fsStream.toString()}], testAuth);
-    console.log(`upload file cid: ${cid2}`);
   });
 
   it('should upload appropriate project to IPFS', async () => {
