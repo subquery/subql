@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.3] - 2023-06-13
+### Fixed
+- Fix module missing sequelize, use subql/x-sequelize (#101)
+
 ## [2.5.2] - 2023-06-08
 ### Fixed
 - Sync with node-core 2.4.4, fixed various issue for mmr
@@ -156,7 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2022-07-28
 ### Changed
-- Sync with latest development from origin. See [@subql/node changelog](https://github.com/subquery/subql/blob/main/packages/node/CHANGELOG.md) from v1.2.1 to v1.6.0 (#44) (#45)
+- Sync with the latest development from origin. See [@subql/node changelog](https://github.com/subquery/subql/blob/main/packages/node/CHANGELOG.md) from v1.2.1 to v1.6.0 (#44) (#45)
   - Support for worker threads
   - Added `dictionary-timeout` flag
 
@@ -216,7 +220,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.3...HEAD
+[2.5.3]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.2...node/v2.5.3
 [2.5.2]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.1...node/v2.5.2
 [2.5.1]: https://github.com/subquery/subql-cosmos/compare/node/2.5.0...node/2.5.1
 [2.5.0]: https://github.com/subquery/subql-cosmos/compare/node/2.3.0...node/2.5.0
