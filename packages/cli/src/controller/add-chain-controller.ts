@@ -4,8 +4,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  ProjectManifestParentV1_0_0,
-  ProjectManifestParentV1_0_0Model,
+  DEFAULT_MULTICHAIN_MANIFEST,
+  MultichainProjectManifest,
   getProjectRootAndManifest,
   getSchemaPath,
   loadFromJsonOrYaml,
@@ -38,7 +38,7 @@ export function determineMultichainManifestPath(multichain: string): string {
 
   let multichainPath: string;
   if (fs.lstatSync(multichain).isDirectory()) {
-    multichainPath = path.resolve(multichain, 'subquery-multichain.yaml');
+    multichainPath = path.resolve(multichain, DEFAULT_MULTICHAIN_MANIFEST);
   } else {
     if (!fs.existsSync(multichain)) {
       throw new Error(`Could not resolve multichain project path: ${multichain}`);
@@ -102,18 +102,13 @@ export function validateAndAddChainManifest(
   const chainManifestProject = getProjectRootAndManifest(path.resolve(projectDir, chainManifestPath));
   const chainManifestSchemaPath = getSchemaPath(chainManifestProject.root, chainManifestProject.manifests[0]);
 
-  console.log('Validating chain manifest...');
   console.log(`Chain manifest: ${chainManifestProject.manifests[0]}`);
-  console.log(`Chain manifest schema path: ${chainManifestSchemaPath}`);
 
   for (const manifestPath of (multichainManifest.get('projects') as YAMLSeq).items.map(
     (item) => (item as Scalar).value as string
   )) {
     const project = getProjectRootAndManifest(path.resolve(projectDir, manifestPath));
     const schemaPath = getSchemaPath(project.root, project.manifests[0]);
-
-    console.log(`Validating project: ${project.manifests[0]}`);
-    console.log(`Project schema path: ${schemaPath}`);
 
     if (schemaPath !== chainManifestSchemaPath) {
       console.error(
@@ -133,8 +128,8 @@ export function validateAndAddChainManifest(
   // Add the chain manifest path to multichain manifest
   const relativePath = path.relative(projectDir, chainManifestPath);
 
-  console.log(`Adding chain manifest path: ${relativePath}`);
   (multichainManifest.get('projects') as YAMLSeq).add(relativePath);
+  console.log(`Successfully added chain manifest path: ${relativePath}`);
 }
 
 export function loadDockerComposeFile(dockerComposePath: string): Document | undefined {
@@ -200,8 +195,6 @@ export function updateDockerCompose(projectDir: string, chainManifestPath: strin
   }
 
   console.log(`Updating Docker Compose for chain manifest: ${chainManifestPath}`);
-  console.log(`Service name: ${serviceName}`);
-  console.log(`Docker Compose file path: ${dockerComposePath}`);
 
   //check if service already exists
   const services = dockerCompose.get('services');
@@ -226,7 +219,8 @@ export function updateDockerCompose(projectDir: string, chainManifestPath: strin
   let subqlNodeService = getSubqlNodeService(dockerCompose);
   if (subqlNodeService) {
     // If the service already exists, update its configuration
-    subqlNodeService.command[0] = `-f=app/${path.basename(chainManifestPath)}`;
+    subqlNodeService.command = subqlNodeService.command.filter((cmd) => !cmd.startsWith('-f='));
+    subqlNodeService.command.push(`-f=app/${path.basename(chainManifestPath)}`);
     subqlNodeService.healthcheck.test = ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`];
   } else {
     // Otherwise, create a new service configuration
@@ -247,5 +241,5 @@ function generateChainManifest(chainId: string): string {
 }
 
 function isMultiChainProject(content: string): boolean {
-  return Array.isArray((loadFromJsonOrYaml(content) as ProjectManifestParentV1_0_0).projects);
+  return Array.isArray((loadFromJsonOrYaml(content) as MultichainProjectManifest).projects);
 }

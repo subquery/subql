@@ -10,7 +10,10 @@ import * as yaml from 'js-yaml';
 import Pino from 'pino';
 import {prerelease, satisfies, valid, validRange} from 'semver';
 import {RUNNER_ERROR_REGEX} from '../constants';
-import {ProjectManifestParentV1_0_0} from './versioned';
+import {MultichainProjectManifest} from '../multichain';
+
+export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
+export const DEFAULT_MANIFEST = 'project.yaml';
 
 // Input manifest here, we might need to handler other error later on
 export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger) {
@@ -60,14 +63,14 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
     project.root = subquery;
 
     // Check for 'project.yaml' first
-    if (fs.existsSync(path.resolve(subquery, 'project.yaml'))) {
-      project.manifests.push(path.resolve(subquery, 'project.yaml'));
+    if (fs.existsSync(path.resolve(subquery, DEFAULT_MANIFEST))) {
+      project.manifests.push(path.resolve(subquery, DEFAULT_MANIFEST));
     }
     // Then check for a 'multichain manifest'
-    else if (fs.existsSync(path.resolve(subquery, 'subquery-multichain.yaml'))) {
-      const multichainManifestContent: ProjectManifestParentV1_0_0 = yaml.load(
-        fs.readFileSync(path.resolve(subquery, 'subquery-multichain.yaml'), 'utf8')
-      ) as ProjectManifestParentV1_0_0;
+    else if (fs.existsSync(path.resolve(subquery, DEFAULT_MULTICHAIN_MANIFEST))) {
+      const multichainManifestContent: MultichainProjectManifest = yaml.load(
+        fs.readFileSync(path.resolve(subquery, DEFAULT_MULTICHAIN_MANIFEST), 'utf8')
+      ) as MultichainProjectManifest;
 
       if (!multichainManifestContent.projects || !Array.isArray(multichainManifestContent.projects)) {
         throw new Error('Multichain manifest does not contain a valid "projects" field');
@@ -79,12 +82,12 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
     }
   } else if (stats.isFile()) {
     const {ext} = path.parse(subquery);
-    if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+    if (!extensionIsYamlOrJSON(ext)) {
       throw new Error(`Extension ${ext} not supported for project ${subquery}`);
     }
     const {dir} = path.parse(subquery);
     project.root = dir;
-    const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as ProjectManifestParentV1_0_0;
+    const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
     if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
       addMultichainManifestProjects(dir, multichainManifestContent, project);
     } else {
@@ -109,7 +112,7 @@ function addMultichainManifestProjects(
 ) {
   for (const projectPath of multichainManifestContent.projects) {
     const {ext} = path.parse(projectPath);
-    if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+    if (!extensionIsYamlOrJSON(ext)) {
       throw new Error(`Extension ${ext} not supported for project ${projectPath}`);
     }
 
@@ -155,4 +158,8 @@ export function validateObject(object: any, errorMessage = 'failed to validate o
     const errorMsgs = errors.map((e) => e.toString()).join('\n');
     throw new Error(`${errorMessage}\n${errorMsgs}`);
   }
+}
+
+export function extensionIsYamlOrJSON(ext: string): boolean {
+  return ext === '.yaml' || ext === '.yml' || ext === '.json';
 }

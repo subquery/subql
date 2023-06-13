@@ -54,18 +54,24 @@ export default class Publish extends Command {
       // or use a timestamp for uniqueness
       directory += `_${new Date().getTime()}`;
     }
-    for (const manifest of project.manifests) {
-      const cid = await uploadToIpfs(path.join(project.root, manifest), authToken.trim(), flags.ipfs, directory).catch(
-        (e) => this.error(e)
-      );
-      await createIPFSFile(project.root, manifest, cid);
 
+    const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));
+    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), flags.ipfs, directory).catch((e) =>
+      this.error(e)
+    );
+
+    await Promise.all(
+      project.manifests.map((manifest) =>
+        createIPFSFile(project.root, manifest, fileToCidMap.get(path.join(directory ?? '', manifest)))
+      )
+    );
+
+    fileToCidMap.forEach((cid, file, _) => {
       if (!flags.output) {
-        this.log(`Uploading SubQuery project ${manifest} to IPFS`);
-        this.log(`SubQuery Project ${manifest} uploaded to IPFS: ${cid}`);
+        this.log(`SubQuery Project ${file} uploaded to IPFS: ${cid}`);
       } else {
-        this.log(`${manifest}: ${cid}`);
+        this.log(`${file}: ${cid}`);
       }
-    }
+    });
   }
 }

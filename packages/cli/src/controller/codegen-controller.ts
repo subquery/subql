@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomDs as isCustomAvalancheDs,
   isRuntimeDs as isRuntimeAvalancheDs,
@@ -366,7 +366,7 @@ async function prepareDirPath(path: string, recreate: boolean) {
 }
 
 //1. Prepare models directory and load schema
-export async function codegen(projectPath: string, fileNames: string[] = ['project.yaml']): Promise<void> {
+export async function codegen(projectPath: string, fileNames: string[] = [DEFAULT_MANIFEST]): Promise<void> {
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);

@@ -101,7 +101,7 @@ describe('Cli publish', () => {
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
-    await expect(uploadToIpfs('', ipfsEndpoint, projectDir)).rejects.toBeDefined();
+    await expect(uploadToIpfs([''], ipfsEndpoint, projectDir)).rejects.toBeDefined();
   });
 
   it(`upload file to ipfs`, async () => {
@@ -109,18 +109,18 @@ describe('Cli publish', () => {
     const ipfs = create({url: ipfsEndpoint});
 
     //test string
-    const cid = await uploadFile('Test for upload string to ipfs', testAuth);
+    const cid = await uploadFile([{path: '', content: 'Test for upload string to ipfs'}], testAuth);
     console.log(`upload file cid: ${cid}`);
     // test fs stream (project)
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const fsStream = fs.createReadStream(path.resolve(projectDir, 'project.yaml'));
-    const cid2 = await uploadFile(fsStream, testAuth);
+    const fsStream = fs.readFileSync(path.resolve(projectDir, 'project.yaml'));
+    const cid2 = await uploadFile([{path: '', content: fsStream.toString()}], testAuth);
     console.log(`upload file cid: ${cid2}`);
   });
 
   it('should upload appropriate project to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const cid = await uploadToIpfs(projectDir, testAuth);
+    const cid = await uploadToIpfs([projectDir], testAuth);
     expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
@@ -136,7 +136,7 @@ describe('Cli publish', () => {
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
-    await expect(uploadToIpfs('', ipfsEndpoint, projectDir)).rejects.toBeDefined();
+    await expect(uploadToIpfs([''], ipfsEndpoint, projectDir)).rejects.toBeDefined();
   });
 
   it('v1.0.0 should deploy', async () => {

@@ -41,9 +41,3 @@ export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extend
     };
   };
 }
-
-export interface ProjectManifestParentV1_0_0 {
-  specVersion: string;
-  projects: string[];
-  query: QuerySpec;
-}

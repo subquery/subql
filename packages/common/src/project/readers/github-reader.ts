@@ -5,6 +5,7 @@ import path from 'path';
 import axios, {AxiosInstance} from 'axios';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
+import {DEFAULT_MANIFEST} from '../utils';
 import {Reader} from './reader';
 
 export class GithubReader implements Reader {
@@ -26,7 +27,7 @@ export class GithubReader implements Reader {
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
-    const projectYaml = await this.getFile('project.yaml');
+    const projectYaml = await this.getFile(DEFAULT_MANIFEST);
     if (projectYaml === undefined) {
       throw new Error('Fetch project from github got undefined');
     }

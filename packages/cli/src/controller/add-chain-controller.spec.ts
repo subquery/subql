@@ -5,13 +5,13 @@ import fs, {existsSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {ProjectManifestParentV1_0_0, ProjectManifestV1_0_0} from '@subql/common';
+import {DEFAULT_MULTICHAIN_MANIFEST, MultichainProjectManifest, ProjectManifestV1_0_0} from '@subql/common';
 import * as yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import {YAMLSeq} from 'yaml';
 import {loadMultichainManifest, validateAndAddChainManifest} from './add-chain-controller';
 
-const multichainManifest: ProjectManifestParentV1_0_0 = {
+const multichainManifest: MultichainProjectManifest = {
   specVersion: '1.0.0',
   query: {
     name: '@subql/query',
@@ -95,8 +95,8 @@ const childChainManifest_2_wrongSchema: ProjectManifestV1_0_0 = {
   dataSources: null,
 };
 
-export async function createMultichainProject(
-  multichainManifest: ProjectManifestParentV1_0_0,
+async function createMultichainProject(
+  multichainManifest: MultichainProjectManifest,
   childManifests: ProjectManifestV1_0_0[]
 ): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
@@ -107,7 +107,7 @@ export async function createMultichainProject(
   if (!existsSync(projectDir)) {
     throw new Error(`${projectDir} does not exist`);
   }
-  await fs.promises.writeFile(path.join(projectDir, 'subquery-multichain.yaml'), multichainYaml);
+  await fs.promises.writeFile(path.join(projectDir, DEFAULT_MULTICHAIN_MANIFEST), multichainYaml);
 
   // Create child manifest YAML files
   const childManifestPromises = childManifests.map(async (childManifest) => {
@@ -146,7 +146,7 @@ describe('MultiChain - ADD', () => {
   it('can add chain to multichain manifest - valid schema paths', async () => {
     projectDir = await createMultichainProject(multichainManifest, [childChainManifest_1]);
     const chainFile = await createChildManifestFile(childChainManifest_2, projectDir);
-    const multichainManifestPath = path.join(projectDir, 'subquery-multichain.yaml');
+    const multichainManifestPath = path.join(projectDir, DEFAULT_MULTICHAIN_MANIFEST);
     const multiManifest = loadMultichainManifest(multichainManifestPath);
     validateAndAddChainManifest(projectDir, chainFile, multiManifest);
     expect((multiManifest.get('projects') as YAMLSeq).get(1)).toEqual(`${childChainManifest_2.name}.yaml`);
@@ -155,7 +155,7 @@ describe('MultiChain - ADD', () => {
   it('cannot add chain to multichain manifest - invalid schema path', async () => {
     projectDir = await createMultichainProject(multichainManifest, [childChainManifest_1]);
     const chainFile = await createChildManifestFile(childChainManifest_2_wrongSchema, projectDir);
-    const multichainManifestPath = path.join(projectDir, 'subquery-multichain.yaml');
+    const multichainManifestPath = path.join(projectDir, DEFAULT_MULTICHAIN_MANIFEST);
     const multiManifest = loadMultichainManifest(multichainManifestPath);
     expect(() => validateAndAddChainManifest(projectDir, chainFile, multiManifest)).toThrow();
   });

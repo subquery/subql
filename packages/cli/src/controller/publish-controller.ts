@@ -3,7 +3,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, getProjectRootAndManifest, ProjectRootAndManifest} from '@subql/common';
+import {
+  ReaderFactory,
+  IPFS_CLUSTER_ENDPOINT,
+  getProjectRootAndManifest,
+  ProjectRootAndManifest,
+  Reader,
+} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
@@ -28,47 +34,66 @@ export async function createIPFSFile(root: string, manifest: string, cid: string
 }
 
 export async function uploadToIpfs(
-  projectPath: string,
+  projectPaths: string[],
   authToken: string,
   ipfsEndpoint?: string,
   directory?: string
-): Promise<string> {
-  const reader = await ReaderFactory.create(projectPath);
-  let manifest;
-  const schema = await reader.getProjectSchema();
-  //substrate
-  try {
-    manifest = parseSubstrateProjectManifest(schema).asImpl;
-    if (manifestIsV0_0_1(manifest)) {
-      throw new Error('Unsupported project manifest spec, only 0.2.0 or greater is supported');
-    }
-  } catch (e) {
-    //terra
+): Promise<Map<string, string>> {
+  const projectToReader: Record<string, Reader> = {};
+
+  await Promise.all(
+    projectPaths.map(async (projectPath) => {
+      const reader = await ReaderFactory.create(projectPath);
+      projectToReader[projectPath] = reader;
+    })
+  );
+
+  const contents: {path: string; content: string}[] = [];
+
+  let ipfs: IPFSHTTPClient;
+  if (ipfsEndpoint) {
+    ipfs = create({url: ipfsEndpoint});
+  }
+
+  for (const project in projectToReader) {
+    const reader = projectToReader[project];
+    let manifest;
+    const schema = await reader.getProjectSchema();
+
+    //substrate
     try {
-      manifest = parseTerraProjectManifest(schema).asImpl;
+      manifest = parseSubstrateProjectManifest(schema).asImpl;
+      if (manifestIsV0_0_1(manifest)) {
+        throw new Error('Unsupported project manifest spec, only 0.2.0 or greater is supported');
+      }
     } catch (e) {
-      // cosmos
+      //terra
       try {
-        manifest = parseCosmosProjectManifest(schema).asImpl;
+        manifest = parseTerraProjectManifest(schema).asImpl;
       } catch (e) {
-        //avalanche
+        // cosmos
         try {
-          manifest = parseAvalancheProjectManifest(schema).asImpl;
+          manifest = parseCosmosProjectManifest(schema).asImpl;
         } catch (e) {
-          // algorand
+          //avalanche
           try {
-            manifest = parseAlgorandProjectManifest(schema).asImpl;
+            manifest = parseAvalancheProjectManifest(schema).asImpl;
           } catch (e) {
+            // algorand
             try {
-              manifest = parseEthereumProjectManifest(schema).asImpl;
+              manifest = parseAlgorandProjectManifest(schema).asImpl;
             } catch (e) {
               try {
-                manifest = parseFlareProjectManifest(schema).asImpl;
+                manifest = parseEthereumProjectManifest(schema).asImpl;
               } catch (e) {
                 try {
-                  manifest = parseNearProjectManifest(schema).asImpl;
+                  manifest = parseFlareProjectManifest(schema).asImpl;
                 } catch (e) {
-                  throw new Error('Unable to pass project manifest');
+                  try {
+                    manifest = parseNearProjectManifest(schema).asImpl;
+                  } catch (e) {
+                    throw new Error('Unable to pass project manifest');
+                  }
                 }
               }
             }
@@ -76,15 +101,16 @@ export async function uploadToIpfs(
         }
       }
     }
+
+    const deployment = await replaceFileReferences(reader.root, manifest, authToken, ipfs);
+    contents.push({
+      path: path.join(directory ?? '', path.basename(project)),
+      content: deployment.toDeployment(),
+    });
   }
 
-  let ipfs: IPFSHTTPClient;
-  if (ipfsEndpoint) {
-    ipfs = create({url: ipfsEndpoint});
-  }
-  const deployment = await replaceFileReferences(reader.root, manifest, authToken, ipfs);
   // Upload schema
-  return uploadFile(deployment.toDeployment(), authToken, ipfs, directory);
+  return uploadFile(contents, authToken, ipfs);
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
@@ -103,8 +129,9 @@ async function replaceFileReferences<T>(
       input = mapToObject(input) as T;
     }
     if (isFileReference(input)) {
-      input.file = await uploadFile(fs.createReadStream(path.resolve(projectDir, input.file)), authToken, ipfs).then(
-        (cid) => `ipfs://${cid}`
+      const content = fs.readFileSync(path.resolve(projectDir, input.file));
+      input.file = await uploadFile([{content: content.toString(), path: ''}], authToken, ipfs).then(
+        (fileToCidMap) => `ipfs://${fileToCidMap.get('')}`
       );
     }
     const keys = Object.keys(input) as unknown as (keyof T)[];
@@ -122,39 +149,48 @@ async function replaceFileReferences<T>(
 const fileMap = new Map<string | fs.ReadStream, string>();
 
 export async function uploadFile(
-  content: string | fs.ReadStream,
+  contents: {path: string; content: string}[],
   authToken: string,
-  ipfs?: IPFSHTTPClient,
-  directory?: string
-): Promise<string> {
-  let ipfsClientCid: string;
+  ipfs?: IPFSHTTPClient
+): Promise<Map<string, string>> {
+  const fileCidMap: Map<string, string> = new Map();
+
   if (ipfs) {
     try {
-      ipfsClientCid = (await ipfs.add({path: directory, content: content}, {pin: true, cidVersion: 0})).cid.toString();
+      const results = ipfs.addAll(contents, {wrapWithDirectory: true});
+
+      for await (const result of results) {
+        fileCidMap.set(result.path, result.cid.toString());
+      }
     } catch (e) {
       throw new Error(`Publish project to provided IPFS gateway failed, ${e}`);
     }
   }
-  let ipfsClusterCid: string;
-  try {
-    if (fileMap.has(content)) {
-      ipfsClusterCid = fileMap.get(content);
-    } else {
-      ipfsClusterCid = await uploadFileByCluster(
-        determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
-        authToken
-      );
-      fileMap.set(content, ipfsClusterCid);
+
+  for (const content of contents) {
+    let ipfsClusterCid: string;
+
+    try {
+      if (fileMap.has(content.content)) {
+        ipfsClusterCid = fileMap.get(content.content);
+      } else {
+        ipfsClusterCid = await uploadFileByCluster(content.content, authToken);
+        fileMap.set(content.content, ipfsClusterCid);
+      }
+
+      fileCidMap.set(content.path, ipfsClusterCid);
+    } catch (e) {
+      throw new Error(`Publish project to default cluster failed, ${e}`);
     }
-  } catch (e) {
-    throw new Error(`Publish project to default cluster failed, ${e}`);
+
+    const ipfsClientCid = fileCidMap.get(content.path);
+    if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
+      throw new Error(`Published and received IPFS cid not identical for ${content.path}\n,
+      IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
+    }
   }
-  // Validate IPFS cid
-  if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
-    throw new Error(`Published and received IPFS cid not identical \n,
-    IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
-  }
-  return ipfsClusterCid;
+
+  return fileCidMap;
 }
 
 function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is fs.ReadStream {
