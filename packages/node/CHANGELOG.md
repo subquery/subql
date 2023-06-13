@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.3] - 2023-06-13
+### Fixed
+- Fix module missing sequelize, use subql/x-sequelize (#101)
+
 ## [2.5.2] - 2023-06-07
 ### Fixed
 - Sync with node-core 2.4.4, fixed various issue for mmr
@@ -126,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry request when encouraging timeout/rate limit behaviours (#9)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/v2.5.3...HEAD
+[2.5.3]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.2...node/v2.5.3
 [2.5.2]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.1...node/v2.5.2
 [2.5.1]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.0...node/v2.5.1
 [2.5.0]: https://github.com/subquery/subql-ethereum/compare/node/2.2.2...node/2.5.0

@@ -2719,7 +2719,6 @@ __metadata:
   dependencies:
     "@subql/common": ^2.2.1
     "@subql/types-ethereum": "workspace:*"
-    "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
     js-yaml: ^4.1.0

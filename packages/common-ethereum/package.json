@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-ethereum",
-  "version": "2.1.2-0",
+  "version": "2.1.2",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -15,7 +15,6 @@
   "dependencies": {
     "@subql/common": "^2.2.1",
     "@subql/types-ethereum": "workspace:*",
-    "@subql/x-sequelize": "6.32.0-0.0.2",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13"
@@ -27,6 +26,5 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  },
-  "stableVersion": "2.1.1"
+  }
 }
