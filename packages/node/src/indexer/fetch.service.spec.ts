@@ -145,6 +145,9 @@ function mockApiService(): ApiService {
     get api() {
       return mockApi;
     },
+    get unsafeApi() {
+      return mockApi;
+    },
     fetchBlocks: (batch: number[], specVer?: number) =>
       fetchBlocksBatches(mockApi as any, batch, specVer),
   } as any;

@@ -5,19 +5,19 @@ import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {MetadataKeys} from '@subql/node-core/indexer/entities';
-import {CacheMetadataModel} from '@subql/node-core/indexer/storeCache';
 import {Sequelize} from '@subql/x-sequelize';
-import {ApiService} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
+import {MetadataKeys} from './entities';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
+import {CacheMetadataModel} from './storeCache/cacheMetadata';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
@@ -29,7 +29,9 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<DS extends {startBlock?: number}> implements IProjectService<DS> {
+export abstract class BaseProjectService<API extends IApi, DS extends {startBlock?: number}>
+  implements IProjectService<DS>
+{
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -42,7 +44,7 @@ export abstract class BaseProjectService<DS extends {startBlock?: number}> imple
 
   constructor(
     private readonly dsProcessorService: BaseDsProcessorService,
-    protected readonly apiService: ApiService,
+    protected readonly apiService: API,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
     protected readonly sequelize: Sequelize,

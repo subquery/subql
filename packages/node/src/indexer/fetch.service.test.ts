@@ -308,6 +308,7 @@ describe('FetchService', () => {
     const connectionPoolService = (apiService as any)
       .connectionPoolService as ConnectionPoolService<ApiPromiseConnection>;
     const firstApiConnection = (connectionPoolService as any).allApi[0];
+    (connectionPoolService as any).allApi[0] = firstApiConnection;
 
     const provider = new WsProvider(WS_ENDPOINT);
     const cachedProvider = createCachedProvider(provider);

@@ -34,7 +34,7 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService
-  extends BaseApiService<SubqueryProject, ApiPromise>
+  extends BaseApiService<ApiPromise, ApiAt, BlockContent>
   implements OnApplicationShutdown
 {
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
@@ -43,12 +43,12 @@ export class ApiService
   networkMeta: NetworkMetadataPayload;
 
   constructor(
-    @Inject('ISubqueryProject') project: SubqueryProject,
-    private connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
+    connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,
   ) {
-    super(project);
+    super(connectionPoolService);
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -85,7 +85,7 @@ export class ApiService
       );
     }
 
-    const connections: ApiPromiseConnection[] = [];
+    const endpointToApiIndex: Record<string, ApiPromiseConnection> = {};
 
     if (chainTypes) {
       logger.info('Using provided chain types');
@@ -93,10 +93,15 @@ export class ApiService
 
     await Promise.all(
       network.endpoint.map(async (endpoint, i) => {
-        const connection = await ApiPromiseConnection.create(endpoint, {
-          chainTypes,
-        });
-        const api = connection.api;
+        const connection = await ApiPromiseConnection.create(
+          endpoint,
+          this.fetchBlocksBatches,
+          {
+            chainTypes,
+          },
+        );
+
+        const api = connection.unsafeApi;
 
         this.eventEmitter.emit(IndexerEvent.ApiConnected, {
           value: 1,
@@ -121,11 +126,7 @@ export class ApiService
         });
 
         if (!this.networkMeta) {
-          this.networkMeta = {
-            chain: api.runtimeChain.toString(),
-            specName: api.runtimeVersion.specName.toString(),
-            genesisHash: api.genesisHash.toString(),
-          };
+          this.networkMeta = connection.networkMeta;
 
           if (
             network.chainId &&
@@ -152,16 +153,16 @@ export class ApiService
           }
         }
 
-        connections.push(connection);
+        endpointToApiIndex[endpoint] = connection;
       }),
     );
 
-    this.connectionPoolService.addBatchToConnections(connections);
+    this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
     return this;
   }
 
   get api(): ApiPromise {
-    return this.connectionPoolService.api.api;
+    return this.unsafeApi;
   }
 
   async getPatchedApi(
@@ -262,13 +263,26 @@ export class ApiService
   }
 
   async fetchBlocks(
-    batch: number[],
+    heights: number[],
     overallSpecVer?: number,
+    numAttempts = MAX_RECONNECT_ATTEMPTS,
   ): Promise<BlockContent[]> {
-    return this.fetchBlocksGeneric<BlockContent>(
-      () => (blockArray: number[]) =>
-        this.fetchBlocksBatches(this.api, blockArray, overallSpecVer),
-      batch,
-    );
+    let reconnectAttempts = 0;
+    while (reconnectAttempts < numAttempts) {
+      try {
+        const apiInstance = this.connectionPoolService.api;
+        return await apiInstance.fetchBlocks(heights, overallSpecVer);
+      } catch (e: any) {
+        logger.error(
+          e,
+          `Failed to fetch blocks ${heights[0]}...${
+            heights[heights.length - 1]
+          }`,
+        );
+
+        reconnectAttempts++;
+      }
+    }
+    throw new Error(`Maximum number of retries (${numAttempts}) reached.`);
   }
 }
