@@ -9,8 +9,10 @@ import {
   TestingService as BaseTestingService,
   NestLogger,
   TestRunner,
+  SubqlProjectDs,
 } from '@subql/node-core';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubstrateDatasource } from '@subql/types';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
@@ -22,7 +24,7 @@ export class TestingService extends BaseTestingService<
   ApiPromise,
   ApiAt,
   BlockContent,
-  SubqlProjectDs
+  SubqlProjectDs<SubstrateDatasource>
 > {
   constructor(
     nodeConfig: NodeConfig,
@@ -32,7 +34,7 @@ export class TestingService extends BaseTestingService<
   }
 
   async getTestRunner(): Promise<
-    TestRunner<ApiPromise, ApiAt, BlockContent, SubqlProjectDs>
+    TestRunner<ApiPromise, ApiAt, BlockContent, SubqlProjectDs<SubstrateDatasource>>
   > {
     const testContext = await NestFactory.createApplicationContext(
       TestingModule,
