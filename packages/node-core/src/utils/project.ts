@@ -314,3 +314,12 @@ export async function loadProjectTemplates<T extends BaseDataSource & TemplateBa
     name: templates[index].name,
   })) as SubqlProjectDs<T>[]; // How to get rid of cast here?
 }
+
+export function getStartHeight(dataSources: BaseDataSource[]): number {
+  const startBlocksList = dataSources.map((item) => item.startBlock || 1);
+  if (startBlocksList.length === 0) {
+    throw new Error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
+  } else {
+    return Math.min(...startBlocksList);
+  }
+}

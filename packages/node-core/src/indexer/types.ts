@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
+import {BaseDataSource, ParentProject, ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
 import {Entity} from '@subql/types';
 import {GraphQLSchema} from 'graphql';
 import {ProcessBlockResponse} from './blockDispatcher';
@@ -23,7 +23,7 @@ export interface IProjectNetworkConfig extends ProjectNetworkConfig {
 
 export interface ISubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
-  DS = unknown,
+  DS extends BaseDataSource = BaseDataSource,
   T = unknown,
   C = unknown
 > {
@@ -35,6 +35,7 @@ export interface ISubqueryProject<
   templates: T[];
   chainTypes?: C;
   runner?: RunnerSpecs;
+  parent?: ParentProject;
 }
 
 export interface IIndexerManager<B, DS> {

@@ -4,6 +4,7 @@
 import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Injectable} from '@nestjs/common';
+import {BaseDataSource} from '@subql/common';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
 import chalk from 'chalk';
@@ -28,7 +29,7 @@ declare global {
 }
 
 @Injectable()
-export abstract class TestingService<A, SA, B, DS> {
+export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
   private tests: Record<number, SubqlTest[]> = {};
   private testSandboxes: TestSandbox[];
   private failedTestsSummary: {

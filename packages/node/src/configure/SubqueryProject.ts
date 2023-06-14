@@ -4,7 +4,12 @@
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
+import {
+  ParentProject,
+  Reader,
+  RunnerSpecs,
+  validateSemver,
+} from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
@@ -60,6 +65,7 @@ export class SubqueryProject implements ISubqueryProject {
   templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
   runner?: RunnerSpecs;
+  parent?: ParentProject;
 
   static async create(
     path: string,
@@ -159,6 +165,7 @@ async function loadProjectFromManifestBase(
     schema,
     chainTypes,
     templates: [],
+    parent: projectManifest.parent,
   };
 }
 

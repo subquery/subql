@@ -5,6 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval, SchedulerRegistry} from '@nestjs/schedule';
+import {BaseDataSource} from '@subql/common';
 import {DictionaryQueryEntry} from '@subql/types';
 import {MetaData} from '@subql/utils';
 import {range, uniq, without} from 'lodash';
@@ -25,7 +26,7 @@ const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
   API extends IApi,
-  DS extends {startBlock?: number; mapping: {handlers: any}},
+  DS extends BaseDataSource,
   B extends IBlockDispatcher,
   D extends DictionaryService
 > implements OnApplicationShutdown
@@ -224,7 +225,7 @@ export abstract class BaseFetchService<
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = [].concat(...this.project.dataSources.map((ds) => ds.mapping.handlers));
+    const handlers = [...this.project.dataSources.map((ds) => ds.mapping.handlers)];
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight

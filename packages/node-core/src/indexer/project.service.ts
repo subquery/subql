@@ -5,13 +5,14 @@ import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {BaseDataSource} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {MmrQueryService} from '../meta/mmrQuery.service';
-import {getExistingProjectSchema, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {getExistingProjectSchema, getStartHeight, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {MetadataKeys} from './entities';
@@ -30,9 +31,7 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<API extends IApi, DS extends {startBlock?: number}>
-  implements IProjectService<DS>
-{
+export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSource> implements IProjectService<DS> {
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -280,13 +279,11 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
   }
 
   protected getStartBlockFromDataSources(): number {
-    // Ensure minimum start height should be 1
-    const startBlocksList = this.getStartBlockDatasources().map((item) => item.startBlock || 1);
-    if (startBlocksList.length === 0) {
-      logger.error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
+    try {
+      return getStartHeight(this.getStartBlockDatasources());
+    } catch (e: any) {
+      logger.error(e);
       process.exit(1);
-    } else {
-      return Math.min(...startBlocksList);
     }
   }
 
