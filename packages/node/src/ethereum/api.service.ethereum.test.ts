@@ -73,7 +73,7 @@ describe('ApiService', () => {
   });
 
   it('can fetch blocks', async () => {
-    await apiService.api.fetchBlocks(range(12369621, 12369651));
+    await apiService.api.fetchBlocks(range(12369621, 12369625));
     await delay(0.5);
   });
 

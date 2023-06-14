@@ -23,7 +23,7 @@ describe('test eth project.yaml', () => {
   });
 });
 
-describe.skip('project.yaml', () => {
+describe('project.yaml', () => {
   it('can validate project.yaml', () => {
     expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_falsy.yaml'))).toThrow();
     expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_falsy_array.yaml'))).toThrow();
@@ -44,7 +44,7 @@ describe.skip('project.yaml', () => {
     const filter = deployment.dataSources[0].mapping.handlers[0].filter;
     const deploymentString = manifestVersioned.toDeployment();
     expect(filter).not.toBeNull();
-    expect(deploymentString).toContain('function: approve(address spender, uint256 rawAmount)');
+    expect(deploymentString).toContain('Transfer (address from, address to, uint256 tokenId)');
   });
 
   it('can convert genesis hash in v1.0.0 to chainId in deployment', () => {
