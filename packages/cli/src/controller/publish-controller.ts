@@ -3,13 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import {
-  ReaderFactory,
-  IPFS_CLUSTER_ENDPOINT,
-  getProjectRootAndManifest,
-  ProjectRootAndManifest,
-  Reader,
-} from '@subql/common';
+import {Readable} from 'stream';
+import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, Reader} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
@@ -167,28 +162,22 @@ export async function uploadFile(
     }
   }
 
-  for (const content of contents) {
-    let ipfsClusterCid: string;
-
-    try {
-      if (fileMap.has(content.content)) {
-        ipfsClusterCid = fileMap.get(content.content);
-      } else {
-        ipfsClusterCid = await uploadFileByCluster(content.content, authToken);
-        fileMap.set(content.content, ipfsClusterCid);
-      }
-
-      fileCidMap.set(content.path, ipfsClusterCid);
-    } catch (e) {
-      throw new Error(`Publish project to default cluster failed, ${e}`);
-    }
-
-    const ipfsClientCid = fileCidMap.get(content.path);
-    if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
-      throw new Error(`Published and received IPFS cid not identical for ${content.path}\n,
-      IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
-    }
+  let ipfsClusterContent;
+  try {
+    ipfsClusterContent = await uploadFileByCluster(contents, authToken);
+  } catch (e) {
+    throw new Error(`Publish project to default cluster failed, ${e}`);
   }
+
+  ipfsClusterContent.map((clusterContent) => {
+    const clientCid = fileMap.get(clusterContent.content);
+    if (clientCid !== clusterContent.cid) {
+      throw new Error(`Published and received IPFS cid not identical for ${clusterContent.name}\n,
+      IPFS gateway: ${clientCid}, IPFS cluster: ${clusterContent.cid}`);
+    }
+
+    fileCidMap.set(clusterContent.name, clusterContent.cid);
+  });
 
   return fileCidMap;
 }
@@ -197,34 +186,76 @@ function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is f
   return !!(toBeDetermined as fs.ReadStream).path;
 }
 
-async function uploadFileByCluster(content: string, authToken: string): Promise<string> {
+async function uploadFileByCluster(
+  content: {path: string; content: string}[],
+  authToken: string
+): Promise<{name: string; content: string; cid: string}[]> {
+  // Determine the endpoint based on the number of content items
+  const endpoint = content.length > 1 ? `${IPFS_CLUSTER_ENDPOINT}?wrap-with-directory=true` : IPFS_CLUSTER_ENDPOINT;
+
+  // Identify new files not present in the fileMap
+  const newFiles = content.filter((ct) => !fileMap.has(ct.content));
+
+  // If all content is available in fileMap, return the results using existing CIDs
+  if (newFiles.length === 0) {
+    return content.map((ct) => ({name: ct.path, content: ct.content, cid: fileMap.get(ct.content) as string}));
+  }
+
+  // Create FormData and append new files
   const bodyFormData = new FormData();
-  bodyFormData.append('data', content);
-  const result = (
-    await axios({
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        'Content-Type': 'multipart/form-data',
-        ...bodyFormData.getHeaders(),
-      },
-      method: 'post',
-      url: IPFS_CLUSTER_ENDPOINT,
-      data: bodyFormData,
-      maxBodyLength: 50 * 1024 * 1024, //50 MB
-      maxContentLength: 50 * 1024 * 1024,
-    })
-  ).data as ClusterResponseData;
+  newFiles.forEach((ct) => bodyFormData.append('file', Readable.from(ct.content), {filepath: ct.path}));
 
-  if (typeof result.cid === 'string') {
-    return result.cid;
+  // Perform the axios request to upload files
+  const result = await axios.post(endpoint, bodyFormData, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      'Content-Type': 'multipart/form-data',
+      ...bodyFormData.getHeaders(),
+    },
+    maxBodyLength: 50 * 1024 * 1024, // 50 MB
+    maxContentLength: 50 * 1024 * 1024,
+  });
+
+  // Parse the axios response
+  let parsedResult;
+  if (typeof result.data === 'string') {
+    parsedResult = result.data.split(/\r?\n/).reduce((accumulator, res) => {
+      if (res !== '') {
+        accumulator.push(JSON.parse(res));
+      }
+      return accumulator;
+    }, []);
+  } else {
+    parsedResult = Array.isArray(result.data) ? result.data : [result.data];
   }
-  const cid = result.cid?.['/'];
 
-  if (!cid) {
-    throw new Error('Failed to get CID from response');
-  }
+  // Process the parsed result to obtain the uploaded files data
+  const uploadedFiles = parsedResult.map((res) => {
+    // Extract the CID from the response
+    const cid = res.cid?.['/'] || res.cid;
+    if (!cid) throw new Error('Failed to get CID from IPFS response');
 
-  return cid;
+    // Find the corresponding content item for the uploaded file
+    const ct = content.find((ct) => ct.path === res.name);
+
+    // Create the file data object for the uploaded file
+    const fileData = ct
+      ? {name: ct.path, content: ct.content, cid: cid.toString()}
+      : {name: res.name, content: res.name, cid: cid.toString()};
+
+    // Update the fileMap with the new CID
+    fileMap.set(fileData.content, fileData.cid);
+
+    return fileData;
+  });
+
+  // Include the CIDs from the fileMap for the files that were not uploaded in this request
+  const existingFiles = content
+    .filter((ct) => !newFiles.includes(ct))
+    .map((ct) => ({name: ct.path, content: ct.content, cid: fileMap.get(ct.content) as string}));
+
+  // Combine the results from uploaded and existing files
+  return [...uploadedFiles, ...existingFiles];
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {

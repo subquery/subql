@@ -67,6 +67,11 @@ export default class Publish extends Command {
     );
 
     fileToCidMap.forEach((cid, file, _) => {
+      if (file === '') return;
+      if (file === directory) {
+        this.log(`Directory ${directory} uploaded to IPFS: ${cid}`);
+        return;
+      }
       if (!flags.output) {
         this.log(`SubQuery Project ${file} uploaded to IPFS: ${cid}`);
       } else {

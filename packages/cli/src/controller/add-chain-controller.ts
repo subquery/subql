@@ -6,8 +6,6 @@ import * as path from 'path';
 import {
   DEFAULT_MULTICHAIN_MANIFEST,
   MultichainProjectManifest,
-  ProjectManifestBaseImpl,
-  ReaderFactory,
   getProjectRootAndManifest,
   getSchemaPath,
   loadFromJsonOrYaml,
