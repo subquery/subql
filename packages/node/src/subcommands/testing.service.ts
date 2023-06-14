@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
+import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
   StoreService,
-  getLogger,
   TestingService as BaseTestingService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { BlockContent } from '../indexer/types';
-
-const logger = getLogger('subql-testing');
+import { ApiAt, BlockContent } from '../indexer/types';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
+  ApiPromise,
+  ApiAt,
   BlockContent,
   SubqlProjectDs
 > {
@@ -41,7 +41,7 @@ export class TestingService extends BaseTestingService<
 
   async indexBlock(block: BlockContent, handler: string): Promise<void> {
     const runtimeVersion =
-      await this.apiService.api.rpc.state.getRuntimeVersion(
+      await this.apiService.unsafeApi.rpc.state.getRuntimeVersion(
         block.block.block.header.hash,
       );
 
