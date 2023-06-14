@@ -111,7 +111,9 @@ export class FetchService extends BaseFetchService<
   }
 
   // eslint-disable-next-line complexity
-  buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
+  protected buildDictionaryQueryEntries(
+    startBlock: number,
+  ): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter(

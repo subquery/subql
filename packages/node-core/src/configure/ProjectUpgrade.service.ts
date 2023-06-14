@@ -4,15 +4,54 @@
 import {ISubqueryProject} from '../indexer/types';
 import {getStartHeight} from '../utils';
 
-export class ProjectUpgradeSevice<P extends ISubqueryProject> {
+export interface IProjectUpgradeService<P extends ISubqueryProject> {
+  currentHeight: number;
+  projects: Record<number, P>;
+  getProject: (height: number) => P;
+}
+
+const serviceKeys: Array<keyof IProjectUpgradeService<ISubqueryProject>> = ['getProject', 'currentHeight', 'projects'];
+
+/*
+  We setup a proxy here so that we can have a class that matches ISubquery project but will change when we set the current height to the correct project
+*/
+export function upgradableSubqueryProject<P extends ISubqueryProject>(
+  upgradeService: ProjectUpgradeSevice<P>
+): P & IProjectUpgradeService<P> {
+  return new Proxy<P & IProjectUpgradeService<P>>(upgradeService as any, {
+    set(target, key, value) {
+      if (key !== 'currentHeight') {
+        throw new Error('All properties except `currentHeight` are readonly');
+        // TODO should this return false?
+      }
+      target.currentHeight = value;
+      return true;
+    },
+    get(target, prop, receiver) {
+      if ((serviceKeys as Array<string | symbol>).includes(prop)) {
+        return Reflect.get(target, prop, receiver);
+      }
+      // TODO can we cache this?
+      const project = target.getProject(target.currentHeight);
+      return project[prop as keyof P];
+    },
+  });
+}
+
+export class ProjectUpgradeSevice<P extends ISubqueryProject> implements IProjectUpgradeService<P> {
   // Mapping of the start height -> Project version
   // private projects: Record<number, P> = {};
 
-  private constructor(readonly projects: Record<number, P>) {}
+  currentHeight: number;
+
+  private constructor(readonly projects: Record<number, P>, currentHeight: number) {
+    this.currentHeight = currentHeight;
+  }
 
   static async create<P extends ISubqueryProject>(
     startProject: P, // The project passed in via application start
     loadProject: (ipfsCid: string) => Promise<P>,
+    currentHeight: number,
     startHeight?: number // How far back we need to load parent versions
   ): Promise<ProjectUpgradeSevice<P>> {
     const projects: Record<number, P> = {};
@@ -26,7 +65,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject> {
       // At the end of the chain
       if (!currentProject.parent) {
         // At the limit of the start height for DS
-        if (startHeight !== undefined && startHeight >= projectStartHeight) {
+        if (startHeight !== undefined && startHeight <= projectStartHeight) {
           break;
         }
         projects[projectStartHeight] = currentProject;
@@ -50,7 +89,11 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject> {
       currentProject = nextProject;
     }
 
-    return new ProjectUpgradeSevice(projects);
+    if (!Object.keys(projects).length) {
+      throw new Error('No valid projects found, this could be due to the startHeight.');
+    }
+
+    return new ProjectUpgradeSevice(projects, currentHeight);
   }
 
   getProject(height: number): P {

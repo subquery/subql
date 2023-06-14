@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ISubqueryProject} from '../indexer';
-import {ProjectUpgradeSevice} from './ProjectUpgrade.service';
+import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
 const demoProjects = [
   {
@@ -85,16 +85,20 @@ const futureProjects = [
 describe('Project Upgrades', () => {
   describe('Loading projects', () => {
     it('can load a project with no parents', async () => {
-      const upgradeService = await ProjectUpgradeSevice.create(demoProjects[0], (id) =>
-        Promise.resolve(demoProjects[parseInt(id, 10)])
+      const upgradeService = await ProjectUpgradeSevice.create(
+        demoProjects[0],
+        (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1
       );
 
       expect(Object.keys(upgradeService.projects)).toEqual(['1']);
     });
 
     it('can load all parent projects', async () => {
-      const upgradeService = await ProjectUpgradeSevice.create(demoProjects[5], (id) =>
-        Promise.resolve(demoProjects[parseInt(id, 10)])
+      const upgradeService = await ProjectUpgradeSevice.create(
+        demoProjects[5],
+        (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1
       );
 
       expect(Object.keys(upgradeService.projects)).toEqual(['1', '10', '20', '30', '40', '50']);
@@ -102,7 +106,7 @@ describe('Project Upgrades', () => {
 
     it('can handle projects that somehow refer to each other', async () => {
       await expect(
-        ProjectUpgradeSevice.create(loopProjects[1], (id) => Promise.resolve(loopProjects[parseInt(id, 10)]))
+        ProjectUpgradeSevice.create(loopProjects[1], (id) => Promise.resolve(loopProjects[parseInt(id, 10)]), 1, 1)
       ).rejects.toThrow();
     });
 
@@ -110,6 +114,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1,
         21
       );
 
@@ -120,6 +125,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1,
         20
       );
 
@@ -128,7 +134,16 @@ describe('Project Upgrades', () => {
 
     it('will throw if parent projects are not at an earlier height', async () => {
       await expect(
-        ProjectUpgradeSevice.create(futureProjects[2], (id) => Promise.resolve(futureProjects[parseInt(id, 10)]))
+        ProjectUpgradeSevice.create(futureProjects[2], (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1, 1)
+      ).rejects.toThrow();
+    });
+
+    it('will throw if there are no parents and earlier start height', async () => {
+      const project = {
+        dataSources: [{startBlock: 20}],
+      } as ISubqueryProject;
+      await expect(
+        ProjectUpgradeSevice.create(project, (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1, 1)
       ).rejects.toThrow();
     });
   });
@@ -137,8 +152,10 @@ describe('Project Upgrades', () => {
     let upgradeService: ProjectUpgradeSevice<ISubqueryProject>;
 
     beforeAll(async () => {
-      upgradeService = await ProjectUpgradeSevice.create(demoProjects[5], (id) =>
-        Promise.resolve(demoProjects[parseInt(id, 10)])
+      upgradeService = await ProjectUpgradeSevice.create(
+        demoProjects[5],
+        (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1
       );
     });
 
@@ -152,6 +169,45 @@ describe('Project Upgrades', () => {
 
     it('throws an error before the first project start height', () => {
       expect(() => upgradeService.getProject(-1)).toThrow();
+    });
+  });
+
+  describe('Upgradable subquery project', () => {
+    let upgradeService: ProjectUpgradeSevice<ISubqueryProject>;
+    let project: ISubqueryProject & IProjectUpgradeService<ISubqueryProject>;
+
+    beforeEach(async () => {
+      upgradeService = await ProjectUpgradeSevice.create(
+        demoProjects[5],
+        (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1
+      );
+
+      project = upgradableSubqueryProject(upgradeService);
+    });
+
+    it('cant set values other than `currentHeight`', () => {
+      expect(() => (project.id = 'not possible')).toThrow();
+    });
+
+    it('can set the current height on the service', () => {
+      upgradeService.currentHeight = 20;
+
+      expect(upgradeService.currentHeight).toEqual(20);
+      expect(project.currentHeight).toEqual(20);
+    });
+
+    it('can set the current height on the project', () => {
+      project.currentHeight = 20;
+
+      expect(upgradeService.currentHeight).toEqual(20);
+      expect(project.currentHeight).toEqual(20);
+    });
+
+    it('the project is the right project for a set height', () => {
+      project.currentHeight = 25;
+
+      expect(project.parent?.block).toEqual(20);
     });
   });
 });
