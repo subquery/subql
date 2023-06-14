@@ -4,13 +4,12 @@
 // import { Header } from '@polkadot/types/interfaces';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {CacheMetadataModel} from './storeCache/cacheMetadata';
-import {StoreCacheService} from './storeCache/storeCache.service';
+import {StoreCacheService, CacheMetadataModel} from './storeCache';
 import {
-  Header,
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,
   BaseUnfinalizedBlocksService,
+  Header,
 } from './unfinalizedBlocks.service';
 
 /* Notes:

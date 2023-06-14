@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './storeCache.service';
+export * from './pgMmrCache.service';
 export * from './types';
 export * from './cacheModel';
 export * from './cacheMetadata';
