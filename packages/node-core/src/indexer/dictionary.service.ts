@@ -167,7 +167,7 @@ export class DictionaryService implements OnApplicationShutdown {
     this.init();
   }
 
-  init(): void {
+  private init(): void {
     let link: ApolloLink;
 
     if (this.nodeConfig.dictionaryResolver) {
