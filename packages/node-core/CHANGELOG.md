@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2023-06-15
+### Added
+- Implemented load balancing for multiple endpoints, with distribution based on endpoint performance
+- Introduced a suspension mechanism for rate-limited endpoints using exponential backoff to regulate usage
+
 ## [2.4.5] - 2023-06-09
 ### Changed
 - Use @subql/x-sequelize in order support cockroach (#1791)
