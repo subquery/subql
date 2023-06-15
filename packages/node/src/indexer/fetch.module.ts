@@ -102,13 +102,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     },
     FetchService,
     BenchmarkService,
-    {
-      provide: DictionaryService,
-      useFactory: (project: SubqueryProject, nodeConfig: NodeConfig) => {
-        return new DictionaryService(project, nodeConfig);
-      },
-      inject: ['ISubqueryProject', NodeConfig],
-    },
+    DictionaryService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,

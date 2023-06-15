@@ -213,12 +213,7 @@ async function createApp(
         inject: [DsProcessorService, 'ISubqueryProject'],
       },
       ProjectService,
-      {
-        provide: DictionaryService,
-        useFactory: () => {
-          return new DictionaryService(project, nodeConfig);
-        },
-      },
+      DictionaryService,
       SchedulerRegistry,
       UnfinalizedBlocksService,
       FetchService,
