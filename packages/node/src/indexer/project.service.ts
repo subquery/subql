@@ -17,7 +17,6 @@ import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { EthereumApiService } from '../ethereum';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
@@ -27,14 +26,14 @@ const { version: packageVersion } = require('../../package.json');
 
 @Injectable()
 export class ProjectService extends BaseProjectService<
-  EthereumApiService,
+  ApiService,
   SubqlProjectDs
 > {
   protected packageVersion = packageVersion;
 
   constructor(
     dsProcessorService: DsProcessorService,
-    apiService: EthereumApiService,
+    apiService: ApiService,
     poiService: PoiService,
     mmrService: MmrService,
     sequelize: Sequelize,

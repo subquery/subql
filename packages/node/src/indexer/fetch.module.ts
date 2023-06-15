@@ -15,6 +15,7 @@ import {
   StoreCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { EthereumApiConnection } from '../ethereum/api.connection';
 import { EthereumApiService } from '../ethereum/api.service.ethereum';
 import {
   BlockDispatcherService,
@@ -33,7 +34,23 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
   providers: [
     StoreService,
     StoreCacheService,
-    EthereumApiService,
+    {
+      provide: ApiService,
+      useFactory: async (
+        project: SubqueryProject,
+        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
+        eventEmitter: EventEmitter2,
+      ) => {
+        const apiService = new EthereumApiService(
+          project,
+          connectionPoolService,
+          eventEmitter,
+        );
+        await apiService.init();
+        return apiService;
+      },
+      inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
+    },
     IndexerManager,
     ConnectionPoolService,
     {
@@ -96,7 +113,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         NodeConfig,
         EventEmitter2,
         'IProjectService',
-        EthereumApiService,
+        ApiService,
         IndexerManager,
         SmartBatchService,
         StoreService,

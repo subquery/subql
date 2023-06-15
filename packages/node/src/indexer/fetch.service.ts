@@ -12,7 +12,7 @@ import {
   SubqlEthereumProcessorOptions,
   EthereumTransactionFilter,
 } from '@subql/common-ethereum';
-import { NodeConfig, BaseFetchService } from '@subql/node-core';
+import { NodeConfig, BaseFetchService, ApiService } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import { SubqlDatasource } from '@subql/types-ethereum';
 import { MetaData } from '@subql/utils';
@@ -183,13 +183,13 @@ export function buildDictionaryQueryEntries(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  EthereumApiService,
+  ApiService,
   SubqlDatasource,
   IEthereumBlockDispatcher,
   DictionaryService
 > {
   constructor(
-    apiService: EthereumApiService,
+    apiService: ApiService,
     nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')

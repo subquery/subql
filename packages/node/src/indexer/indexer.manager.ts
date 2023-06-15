@@ -20,6 +20,7 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
+  ApiService,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
@@ -51,7 +52,7 @@ export class IndexerManager extends BaseIndexerManager<
   SafeEthProvider,
   EthereumApi,
   EthereumBlockWrapper,
-  EthereumApiService,
+  ApiService,
   SubqlEthereumDataSource,
   SubqlEthereumCustomDataSource,
   typeof FilterTypeMap,
@@ -63,7 +64,7 @@ export class IndexerManager extends BaseIndexerManager<
   protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
 
   constructor(
-    apiService: EthereumApiService,
+    apiService: ApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService,
     dsProcessorService: DsProcessorService,

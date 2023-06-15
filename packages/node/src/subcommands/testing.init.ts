@@ -17,10 +17,8 @@ export async function testingInit(): Promise<void> {
 
     await app.init();
     const projectService = app.get(ProjectService);
-    const apiService = app.get(EthereumApiService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await apiService.init();
     await projectService.init();
 
     const testingService = app.get(TestingService);

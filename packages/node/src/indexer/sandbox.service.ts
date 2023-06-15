@@ -13,7 +13,6 @@ import {
   ApiService,
 } from '@subql/node-core';
 import { Store } from '@subql/types-ethereum';
-import { EthereumApiService } from '../ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
 
 /* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */
@@ -22,7 +21,7 @@ export class SandboxService {
   private processorCache: Record<string, IndexerSandbox> = {};
 
   constructor(
-    private readonly apiService: EthereumApiService,
+    private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject,
