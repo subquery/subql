@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2023-06-15
+### Added
+- Integrated multiple endpoint improvements from node-core (#1657)
+- Improved error handling within ApiPromiseConnection class (#1657)
+
 ## [2.5.5] - 2023-06-09
 ### Changed
 - Use @subql/x-sequelize in order to support cockroach (#1791)
@@ -879,7 +884,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/v2.5.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/v2.6.0...HEAD
+[2.6.0]: https://github.com/subquery/subql/compare/node/v2.5.5...node/v2.6.0
 [2.5.5]: https://github.com/subquery/subql/compare/node/v2.5.4...node/v2.5.5
 [2.5.4]: https://github.com/subquery/subql/compare/node/2.5.3...node/2.5.4
 [2.5.3]: https://github.com/subquery/subql/compare/node/v2.5.2...node/v2.5.3
