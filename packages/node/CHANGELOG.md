@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.6.0] - 2023-06-15
 ### Added
-- Integrated multiple endpoint improvements from node-core
-- Improved error handling within ApiPromiseConnection class
+- Integrated multiple endpoint improvements from node-core (#1657)
+- Improved error handling within ApiPromiseConnection class (#1657)
 
 ## [2.5.5] - 2023-06-09
 ### Changed
