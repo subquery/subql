@@ -31,7 +31,6 @@ describe('DictionaryService', () => {
   it('should return all specVersion', async () => {
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project, nodeConfig);
-    await dictionaryService.init();
 
     const specVersions = await dictionaryService.getSpecVersions();
 
