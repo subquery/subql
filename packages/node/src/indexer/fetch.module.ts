@@ -104,10 +104,8 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     BenchmarkService,
     {
       provide: DictionaryService,
-      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
-        const dictionaryService = new DictionaryService(project, nodeConfig);
-        await dictionaryService.init();
-        return dictionaryService;
+      useFactory: (project: SubqueryProject, nodeConfig: NodeConfig) => {
+        return new DictionaryService(project, nodeConfig);
       },
       inject: ['ISubqueryProject', NodeConfig],
     },

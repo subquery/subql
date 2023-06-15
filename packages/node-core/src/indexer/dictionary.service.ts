@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {authHttpLink} from '@subql/apollo-links';
+import {dictHttpLink} from '@subql/apollo-links';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
 import fetch from 'node-fetch';
@@ -163,21 +163,23 @@ export class DictionaryService implements OnApplicationShutdown {
     protected readonly nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
     protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
-  ) {}
+  ) {
+    this.init();
+  }
 
-  async init(): Promise<void> {
-    let link: ApolloLink = new HttpLink({uri: this.dictionaryEndpoint, fetch});
+  init(): void {
+    let link: ApolloLink;
 
     if (this.nodeConfig.dictionaryResolver) {
-      try {
-        link = await authHttpLink({
-          authUrl: this.nodeConfig.dictionaryResolver,
-          chainId: this.chainId,
-          httpOptions: {fetch},
-        });
-      } catch (e: any) {
-        logger.error(e, 'Failed to resolve network dictionary');
-      }
+      link = dictHttpLink({
+        authUrl: this.nodeConfig.dictionaryResolver,
+        chainId: this.chainId,
+        logger,
+        httpOptions: {fetch},
+        fallbackServiceUrl: this.dictionaryEndpoint,
+      });
+    } else {
+      link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
 
     this._client = new ApolloClient({

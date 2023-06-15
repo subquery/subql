@@ -215,10 +215,8 @@ async function createApp(
       ProjectService,
       {
         provide: DictionaryService,
-        useFactory: async () => {
-          const dictionaryService = new DictionaryService(project, nodeConfig);
-          await dictionaryService.init();
-          return dictionaryService;
+        useFactory: () => {
+          return new DictionaryService(project, nodeConfig);
         },
       },
       SchedulerRegistry,
