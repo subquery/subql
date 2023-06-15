@@ -12,17 +12,14 @@ import {
   SubqlEthereumProcessorOptions,
   EthereumTransactionFilter,
 } from '@subql/common-ethereum';
-import { ApiService, NodeConfig, BaseFetchService } from '@subql/node-core';
+import { NodeConfig, BaseFetchService } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
-import {
-  // DictionaryQueryCondition,
-  // DictionaryQueryEntry,
-  SubqlDatasource,
-} from '@subql/types-ethereum';
+import { SubqlDatasource } from '@subql/types-ethereum';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApi } from '../ethereum';
+import { EthereumApi, EthereumApiService } from '../ethereum';
+import SafeEthProvider from '../ethereum/safe-api';
 import { calcInterval } from '../ethereum/utils.ethereum';
 import { eventToTopic, functionToSighash } from '../utils/string';
 import { IEthereumBlockDispatcher } from './blockDispatcher';
@@ -117,12 +114,13 @@ function callFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
+  EthereumApiService,
   SubqlDatasource,
   IEthereumBlockDispatcher,
   DictionaryService
 > {
   constructor(
-    apiService: ApiService,
+    apiService: EthereumApiService,
     nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
@@ -148,7 +146,7 @@ export class FetchService extends BaseFetchService<
   }
 
   get api(): EthereumApi {
-    return this.apiService.api;
+    return this.apiService.unsafeApi;
   }
 
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {

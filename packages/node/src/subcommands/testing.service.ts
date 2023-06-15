@@ -11,10 +11,14 @@ import {
 import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { EthereumApi } from '../ethereum';
+import SafeEthProvider from '../ethereum/safe-api';
 import { IndexerManager } from '../indexer/indexer.manager';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
+  EthereumApi,
+  SafeEthProvider,
   EthereumBlockWrapper,
   SubqlProjectDs
 > {

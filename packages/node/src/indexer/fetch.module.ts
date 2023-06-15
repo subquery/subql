@@ -33,10 +33,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
   providers: [
     StoreService,
     StoreCacheService,
-    {
-      provide: ApiService,
-      useClass: EthereumApiService,
-    },
+    EthereumApiService,
     IndexerManager,
     ConnectionPoolService,
     {
@@ -99,7 +96,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         NodeConfig,
         EventEmitter2,
         'IProjectService',
-        ApiService,
+        EthereumApiService,
         IndexerManager,
         SmartBatchService,
         StoreService,

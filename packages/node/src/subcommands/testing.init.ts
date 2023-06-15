@@ -3,6 +3,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { ApiService, getLogger, NestLogger } from '@subql/node-core';
+import { EthereumApiService } from '../ethereum';
 import { ProjectService } from '../indexer/project.service';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
@@ -16,7 +17,7 @@ export async function testingInit(): Promise<void> {
 
     await app.init();
     const projectService = app.get(ProjectService);
-    const apiService = app.get(ApiService);
+    const apiService = app.get(EthereumApiService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
     await apiService.init();

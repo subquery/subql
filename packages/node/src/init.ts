@@ -3,8 +3,9 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
-import { getLogger, ApiService, NestLogger } from '@subql/node-core';
+import { getLogger, NestLogger } from '@subql/node-core';
 import { AppModule } from './app.module';
+import { EthereumApiService } from './ethereum';
 import { FetchService } from './indexer/fetch.service';
 import { ProjectService } from './indexer/project.service';
 import { yargsOptions } from './yargs';
@@ -48,7 +49,7 @@ export async function bootstrap(): Promise<void> {
 
     const projectService: ProjectService = app.get('IProjectService');
     const fetchService = app.get(FetchService);
-    const apiService = app.get(ApiService);
+    const apiService = app.get(EthereumApiService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
     await apiService.init();

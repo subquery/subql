@@ -15,17 +15,24 @@ import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from './api.connection';
 import { EthereumApi } from './api.ethereum';
+import SafeEthProvider from './safe-api';
 
 const logger = getLogger('api');
 
+const MAX_RECONNECT_ATTEMPTS = 5;
+
 @Injectable()
-export class EthereumApiService extends ApiService {
+export class EthereumApiService extends ApiService<
+  EthereumApi,
+  SafeEthProvider,
+  EthereumBlockWrapper
+> {
   constructor(
-    @Inject('ISubqueryProject') project: SubqueryProject,
-    private connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
+    connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
     private eventEmitter: EventEmitter2,
   ) {
-    super(project);
+    super(connectionPoolService);
   }
 
   networkMeta: NetworkMetadataPayload;
@@ -44,14 +51,17 @@ export class EthereumApiService extends ApiService {
         ? network.endpoint
         : [network.endpoint];
 
-      const connections = await Promise.all(
+      const endpointToApiIndex: Record<string, EthereumApiConnection> = {};
+
+      await Promise.all(
         endpoints.map(async (endpoint, i) => {
           const connection = await EthereumApiConnection.create(
             endpoint,
+            this.fetchBlockBatches,
             this.eventEmitter,
           );
 
-          const { api } = connection;
+          const api = connection.unsafeApi;
 
           this.eventEmitter.emit(IndexerEvent.ApiConnected, {
             value: 1,
@@ -60,11 +70,7 @@ export class EthereumApiService extends ApiService {
           });
 
           if (!this.networkMeta) {
-            this.networkMeta = {
-              chain: api.getChainId().toString(),
-              specName: api.getSpecName(),
-              genesisHash: api.getGenesisHash(),
-            };
+            this.networkMeta = connection.networkMeta;
           }
 
           if (network.chainId !== api.getChainId().toString()) {
@@ -75,24 +81,17 @@ export class EthereumApiService extends ApiService {
             );
           }
 
-          return connection;
+          endpointToApiIndex[endpoint] = connection;
         }),
       );
 
-      this.connectionPoolService.addBatchToConnections(connections);
+      this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
 
       return this;
     } catch (e) {
       logger.error(e, 'Failed to init api service');
       process.exit(1);
     }
-  }
-
-  async fetchBlocks(batch: number[]): Promise<EthereumBlockWrapper[]> {
-    return this.fetchBlocksGeneric<EthereumBlockWrapper>(
-      () => (b: number[]) => this.api.fetchBlocks(b),
-      batch,
-    );
   }
 
   private metadataMismatchError(
@@ -108,6 +107,13 @@ export class EthereumApiService extends ApiService {
   }
 
   get api(): EthereumApi {
-    return this.connectionPoolService.api.api;
+    return this.unsafeApi;
+  }
+
+  private async fetchBlockBatches(
+    api: EthereumApi,
+    batch: number[],
+  ): Promise<EthereumBlockWrapper[]> {
+    return api.fetchBlocks(batch);
   }
 }

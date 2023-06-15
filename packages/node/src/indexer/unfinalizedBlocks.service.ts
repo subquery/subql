@@ -11,7 +11,7 @@ import {
   StoreCacheService,
 } from '@subql/node-core';
 import { BlockWrapper, EthereumBlock } from '@subql/types-ethereum';
-import { EthereumApi } from '../ethereum';
+import { EthereumApiService } from '../ethereum';
 
 export function blockToHeader(block: EthereumBlock | Block): Header {
   return {
@@ -24,7 +24,7 @@ export function blockToHeader(block: EthereumBlock | Block): Header {
 @Injectable()
 export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockWrapper> {
   constructor(
-    private readonly apiService: ApiService<any, EthereumApi>,
+    private readonly apiService: EthereumApiService,
     nodeConfig: NodeConfig,
     storeCache: StoreCacheService,
   ) {

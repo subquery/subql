@@ -141,7 +141,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
           provider: this,
         });
 
-        logger.error(error);
+        //logger.error(error);
 
         batch.forEach((inflightRequest) => {
           inflightRequest.reject(error);
