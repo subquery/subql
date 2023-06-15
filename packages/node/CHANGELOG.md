@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.6.0] - 2023-06-15
+### Added
+- Implement multiple-endpoint improvements from node-core (#102)
+
 ### Fixed
 - Dictionary queries not including null filters (#104)
 
@@ -132,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry request when encouraging timeout/rate limit behaviours (#9)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/v2.5.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.3...node/v2.6.0
 [2.5.3]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.2...node/v2.5.3
 [2.5.2]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.1...node/v2.5.2
 [2.5.1]: https://github.com/subquery/subql-ethereum/compare/node/v2.5.0...node/v2.5.1

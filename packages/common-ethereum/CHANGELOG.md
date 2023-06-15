@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 
-## [Unreleased]
+## [2.1.3] - 2023-06-15
+### Fixed
+- Fix failing tests
 
 ## [2.1.2] - 2023-06-13
 ### Changed
@@ -39,7 +41,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.1.0] - 2022-10-31
 Initial release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v2.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v2.1.3...HEAD
+[2.1.3]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v2.1.2.../common-ethereum/v2.1.3
+[2.1.2]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v2.1.1.../common-ethereum/v2.1.2
 [2.1.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v2.1.0.../common-ethereum/v2.1.1
 [2.1.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v2.0.0.../common-ethereum/v2.1.0
 [2.0.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/v1.0.0.../common-ethereum/v2.0.0

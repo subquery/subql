@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-ethereum",
-  "version": "2.1.3-0",
+  "version": "2.1.3",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -26,6 +26,5 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  },
-  "stableVersion": "2.1.2"
+  }
 }
