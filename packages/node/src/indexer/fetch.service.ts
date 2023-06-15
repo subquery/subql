@@ -98,6 +98,12 @@ function callFilterToQueryEntry(
       value: filter.to.toLowerCase(),
       matcher: 'equalTo',
     });
+  } else if (filter.to === null) {
+    conditions.push({
+      field: 'to',
+      value: true as any, // TODO update types to allow boolean
+      matcher: 'isNull',
+    });
   }
   if (filter.function) {
     conditions.push({
@@ -110,6 +116,69 @@ function callFilterToQueryEntry(
     entity: 'evmTransactions',
     conditions,
   };
+}
+
+type GroupedSubqlProjectDs = SubqlDatasource & {
+  groupedOptions?: SubqlEthereumProcessorOptions[];
+};
+export function buildDictionaryQueryEntries(
+  dataSources: GroupedSubqlProjectDs[],
+  startBlock: number,
+): DictionaryQueryEntry[] {
+  const queryEntries: DictionaryQueryEntry[] = [];
+
+  // Only run the ds that is equal or less than startBlock
+  // sort array from lowest ds.startBlock to highest
+  const filteredDs = dataSources
+    .filter((ds) => ds.startBlock <= startBlock)
+    .sort((a, b) => a.startBlock - b.startBlock);
+
+  for (const ds of filteredDs) {
+    for (const handler of ds.mapping.handlers) {
+      // No filters, cant use dictionary
+      if (!handler.filter) return [];
+
+      switch (handler.kind) {
+        case EthereumHandlerKind.Block:
+          return [];
+        case EthereumHandlerKind.Call: {
+          const filter = handler.filter as EthereumTransactionFilter;
+          if (
+            filter.from !== undefined ||
+            filter.to !== undefined ||
+            filter.function
+          ) {
+            queryEntries.push(callFilterToQueryEntry(filter));
+          } else {
+            return [];
+          }
+          break;
+        }
+        case EthereumHandlerKind.Event: {
+          const filter = handler.filter as EthereumLogFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              eventFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (ds.options?.address || filter.topics) {
+            queryEntries.push(eventFilterToQueryEntry(filter, ds.options));
+          } else {
+            return [];
+          }
+          break;
+        }
+        default:
+      }
+    }
+  }
+
+  return uniqBy(
+    queryEntries,
+    (item) =>
+      `${item.entity}|${JSON.stringify(
+        sortBy(item.conditions, (c) => c.field),
+      )}`,
+  );
 }
 
 @Injectable()
@@ -150,12 +219,6 @@ export class FetchService extends BaseFetchService<
   }
 
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
-    const queryEntries: DictionaryQueryEntry[] = [];
-
-    type GroupedSubqlProjectDs = SubqlDatasource & {
-      groupedOptions?: SubqlEthereumProcessorOptions[];
-    };
-
     const groupdDynamicDs: GroupedSubqlProjectDs[] = Object.values(
       groupBy(this.templateDynamicDatasouces, (ds) => ds.name),
     ).map((grouped: SubqlProjectDs[]) => {
@@ -170,57 +233,10 @@ export class FetchService extends BaseFetchService<
 
     // Only run the ds that is equal or less than startBlock
     // sort array from lowest ds.startBlock to highest
-    const filteredDs: GroupedSubqlProjectDs[] = this.project.dataSources
-      .concat(groupdDynamicDs)
-      .filter((ds) => ds.startBlock <= startBlock)
-      .sort((a, b) => a.startBlock - b.startBlock);
+    const filteredDs: GroupedSubqlProjectDs[] =
+      this.project.dataSources.concat(groupdDynamicDs);
 
-    for (const ds of filteredDs) {
-      for (const handler of ds.mapping.handlers) {
-        // No filters, cant use dictionary
-        if (!handler.filter) return [];
-
-        switch (handler.kind) {
-          case EthereumHandlerKind.Block:
-            return [];
-          case EthereumHandlerKind.Call: {
-            const filter = handler.filter as EthereumTransactionFilter;
-            if (
-              filter.from !== undefined ||
-              filter.to !== undefined ||
-              filter.function
-            ) {
-              queryEntries.push(callFilterToQueryEntry(filter));
-            } else {
-              return [];
-            }
-            break;
-          }
-          case EthereumHandlerKind.Event: {
-            const filter = handler.filter as EthereumLogFilter;
-            if (ds.groupedOptions) {
-              queryEntries.push(
-                eventFilterToQueryEntry(filter, ds.groupedOptions),
-              );
-            } else if (ds.options?.address || filter.topics) {
-              queryEntries.push(eventFilterToQueryEntry(filter, ds.options));
-            } else {
-              return [];
-            }
-            break;
-          }
-          default:
-        }
-      }
-    }
-
-    return uniqBy(
-      queryEntries,
-      (item) =>
-        `${item.entity}|${JSON.stringify(
-          sortBy(item.conditions, (c) => c.field),
-        )}`,
-    );
+    return buildDictionaryQueryEntries(filteredDs, startBlock);
   }
 
   protected async getFinalizedHeight(): Promise<number> {
