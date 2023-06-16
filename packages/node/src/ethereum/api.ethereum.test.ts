@@ -71,7 +71,7 @@ describe('Api.ethereum', () => {
     ethApi = new EthereumApi(beamEndpoint, eventEmitter);
     await ethApi.init();
     blockData = await ethApi.fetchBlock(2847447, true);
-    const result = blockData.transactions.find((tx) => {
+    const result = blockData.transactions.filter((tx) => {
       if (
         EthereumBlockWrapped.filterTransactionsProcessor(
           tx,
@@ -82,9 +82,27 @@ describe('Api.ethereum', () => {
         return tx.hash;
       }
     });
-
-    expect(result.hash).toBe(
+    expect(result[0].hash).toBe(
       '0x24bef923522a4d6a79f9ab9242a74fb987dce94002c0f107c2a7d0b7e24bcf05',
     );
+    expect(result.length).toBe(1);
+  });
+  it('Should return all tx if filter.to is not defined', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    const result = blockData.transactions.filter((tx) => {
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          undefined,
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+    expect(result.length).toBe(2);
   });
 });
