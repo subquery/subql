@@ -13,7 +13,7 @@ export default class MultiChainAdd extends Command {
     chainManifestPath: Flags.string({char: 'c', description: 'path to the new chain manifest'}),
   };
 
-  async run() {
+  async run(): Promise<void> {
     const {flags} = await this.parse(MultiChainAdd);
 
     const {multichain} = flags;

@@ -14,7 +14,7 @@ import {parseNearProjectManifest} from '@subql/common-near';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 import {FileReference} from '@subql/types';
-import axios from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
@@ -191,10 +191,6 @@ export async function uploadFile(
   return fileCidMap;
 }
 
-function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is fs.ReadStream {
-  return !!(toBeDetermined as fs.ReadStream).path;
-}
-
 async function uploadFileByCluster(
   content: {path: string; content: string}[],
   authToken: string
@@ -279,14 +275,4 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
-}
-
-interface ClusterResponseData {
-  name: string;
-  cid: CidSpec | string;
-  size: number;
-}
-// cluster response cid stored as {'/': 'QmVq2bqunmkmEmMCY3x9U9kDcgoRBGRbuBm5j7XKZDvSYt'}
-interface CidSpec {
-  '/': string;
 }

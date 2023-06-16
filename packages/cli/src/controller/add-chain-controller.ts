@@ -6,6 +6,7 @@ import * as path from 'path';
 import {
   DEFAULT_MULTICHAIN_MANIFEST,
   MultichainProjectManifest,
+  ProjectManifestV1_0_0,
   getProjectRootAndManifest,
   getSchemaPath,
   loadFromJsonOrYaml,
@@ -20,14 +21,29 @@ const nodeToDockerImage: Record<string, string> = {
   '@subql/node-near': 'onfinality/subql-node-near',
 };
 
+type DockerComposeDependsOn = {
+  condition: string;
+};
+
+type DockerComposeEnvironment = {
+  [key: string]: string;
+};
+
+type DockerComposeHealthcheck = {
+  test: Array<string | 'CMD'>;
+  interval: string;
+  timeout: string;
+  retries: number;
+};
+
 type DockerComposeService = {
   image?: string;
-  depends_on?: Record<string, any>;
+  depends_on?: Record<string, DockerComposeDependsOn>;
   restart?: string;
-  environment?: Record<string, any>;
+  environment?: DockerComposeEnvironment;
   volumes?: string[];
   command?: string[];
-  healthcheck?: Record<string, any>;
+  healthcheck?: DockerComposeHealthcheck;
 };
 
 export async function addChain(multichain: string, chainManifestPath: string): Promise<void> {
@@ -160,7 +176,7 @@ async function getDefaultServiceConfiguration(
   const manifest = await loadFromJsonOrYaml(chainManifestPath);
   let nodeName: string;
   try {
-    nodeName = (manifest as any).runner.node.name;
+    nodeName = (manifest as ProjectManifestV1_0_0).runner.node.name;
   } catch (e) {
     throw new Error(`unable to retrieve runner node from manifest: ${e}`);
   }
@@ -186,7 +202,7 @@ async function getDefaultServiceConfiguration(
       DB_PORT: '5432',
     },
     volumes: ['./:/app'],
-    command: [`-f=app/${path.basename(chainManifestPath)}`, '--multi-chain', '--disable-historical'],
+    command: [`-f=app/${path.basename(chainManifestPath)}`, '--multi-chain'],
     healthcheck: {
       test: ['CMD', 'curl', '-f', `http://${serviceName}:3000/ready`],
       interval: '3s',

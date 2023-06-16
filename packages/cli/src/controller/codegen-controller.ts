@@ -434,7 +434,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   }
 }
 
-export async function generateSchemaModels(projectPath: string, schemaPath: string) {
+export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
