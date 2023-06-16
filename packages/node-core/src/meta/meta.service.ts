@@ -4,6 +4,7 @@
 import {Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {NodeConfig} from '../configure';
 import {
   BestBlockPayload,
   EventPayload,
@@ -13,9 +14,9 @@ import {
   ProcessedBlockCountPayload,
   TargetBlockPayload,
 } from '../events';
-import {StoreService} from '../indexer';
+import {StoreCacheService} from '../indexer';
 
-const UPDATE_HEIGHT_INTERVAL = 60000;
+let UPDATE_HEIGHT_INTERVAL: number;
 
 export abstract class BaseMetaService {
   private currentProcessingHeight?: number;
@@ -29,7 +30,9 @@ export abstract class BaseMetaService {
   private lastProcessedTimestamp?: number;
   private processedBlockCount?: number;
 
-  constructor(private storeService: StoreService) {}
+  constructor(private storeCacheService: StoreCacheService, private config: NodeConfig) {
+    UPDATE_HEIGHT_INTERVAL = config.storeFlushInterval * 1000;
+  }
 
   protected abstract packageVersion: string;
 
@@ -61,7 +64,7 @@ export abstract class BaseMetaService {
   @Interval(UPDATE_HEIGHT_INTERVAL)
   getTargetHeight(): void {
     if (this.targetHeight === undefined) return;
-    this.storeService.storeCache.metadata.set('targetHeight', this.targetHeight);
+    this.storeCacheService.metadata.set('targetHeight', this.targetHeight);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
