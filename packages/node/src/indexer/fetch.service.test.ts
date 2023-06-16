@@ -109,6 +109,7 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
   batchSize: 5,
   storeCacheAsync: false,
+  dictionaryResolver: false,
 });
 
 async function createApp(
