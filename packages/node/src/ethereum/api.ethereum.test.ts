@@ -66,4 +66,25 @@ describe('Api.ethereum', () => {
     expect(parsedLog).not.toHaveProperty('args');
     expect(parsedLog).toBeTruthy();
   });
+  it('Null filter support', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    const result = blockData.transactions.find((tx) => {
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          { to: null },
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+
+    expect(result.hash).toBe(
+      '0x24bef923522a4d6a79f9ab9242a74fb987dce94002c0f107c2a7d0b7e24bcf05',
+    );
+  });
 });
