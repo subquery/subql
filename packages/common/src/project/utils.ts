@@ -128,6 +128,35 @@ function addMultichainManifestProjects(
   }
 }
 
+export function getMultichainManifestPath(subquery: string): string | undefined {
+  const stats = fs.statSync(subquery);
+  let multichainManifestPath: string | undefined;
+  let projectRoot: string | undefined;
+
+  if (stats.isDirectory()) {
+    projectRoot = subquery;
+    const multichainManifestCandidate = path.resolve(subquery, DEFAULT_MULTICHAIN_MANIFEST);
+    if (fs.existsSync(multichainManifestCandidate)) {
+      multichainManifestPath = multichainManifestCandidate;
+    }
+  } else if (stats.isFile()) {
+    const {dir, ext} = path.parse(subquery);
+    projectRoot = dir;
+    if (extensionIsYamlOrJSON(ext)) {
+      const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
+      if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
+        multichainManifestPath = path.resolve(dir, subquery);
+      }
+    }
+  }
+
+  if (multichainManifestPath && projectRoot) {
+    return path.relative(projectRoot, multichainManifestPath);
+  }
+
+  return undefined;
+}
+
 export function validateSemver(current: string, required: string): boolean {
   return satisfies(current, required, {includePrerelease: true});
 }

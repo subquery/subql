@@ -31,6 +31,7 @@ export async function createIPFSFile(root: string, manifest: string, cid: string
 export async function uploadToIpfs(
   projectPaths: string[],
   authToken: string,
+  multichainProjectPath?: string,
   ipfsEndpoint?: string,
   directory?: string
 ): Promise<Map<string, string>> {
@@ -101,6 +102,14 @@ export async function uploadToIpfs(
     contents.push({
       path: path.join(directory ?? '', path.basename(project)),
       content: deployment.toDeployment(),
+    });
+  }
+
+  if (multichainProjectPath) {
+    const content = fs.readFileSync(multichainProjectPath);
+    contents.push({
+      path: path.join(directory ?? '', path.basename(multichainProjectPath)),
+      content: content.toString(),
     });
   }
 

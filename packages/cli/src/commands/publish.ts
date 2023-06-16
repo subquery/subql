@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getProjectRootAndManifest} from '@subql/common';
+import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
@@ -48,28 +48,25 @@ export default class Publish extends Command {
     } else {
       throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
-    let directory: string;
-    if (project.manifests.length > 1) {
-      directory = path.basename(project.root); // Using project root name as directory
-      // or use a timestamp for uniqueness
-      directory += `_${new Date().getTime()}`;
-    }
 
     const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));
-    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), flags.ipfs, directory).catch((e) =>
-      this.error(e)
+
+    let multichainManifestPath = getMultichainManifestPath(location);
+    if (multichainManifestPath) {
+      multichainManifestPath = path.join(project.root, multichainManifestPath);
+    }
+
+    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
+      (e) => this.error(e)
     );
 
     await Promise.all(
-      project.manifests.map((manifest) =>
-        createIPFSFile(project.root, manifest, fileToCidMap.get(path.join(directory ?? '', manifest)))
-      )
+      project.manifests.map((manifest) => createIPFSFile(project.root, manifest, fileToCidMap.get(path.join(manifest))))
     );
 
     fileToCidMap.forEach((cid, file, _) => {
-      if (file === '') return;
-      if (file === directory) {
-        this.log(`Directory ${directory} uploaded to IPFS: ${cid}`);
+      if (file === '') {
+        this.log(`Directory uploaded to IPFS: ${cid}`);
         return;
       }
       if (!flags.output) {
