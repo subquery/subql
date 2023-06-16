@@ -18,6 +18,7 @@ import {
   SubstrateProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
+import { filterDataSourcesBySpecName } from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -70,11 +71,9 @@ export class ProjectService extends BaseProjectService<
   }
 
   protected getStartBlockDatasources(): SubstrateDatasource[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName ===
-          this.apiService.api.runtimeVersion.specName.toString(),
+    return filterDataSourcesBySpecName(
+      this.project.dataSources,
+      this.apiService.api.runtimeVersion.specName.toString(),
     );
   }
 }

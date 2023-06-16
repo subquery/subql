@@ -18,6 +18,10 @@ export const hostDynamicDsKeys: (keyof HostDynamicDS<any>)[] = [
 export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
   constructor(private host: HostDynamicDS<DS>) {}
 
+  get dynamicDatasources(): DS[] {
+    throw new Error('Worker does not support this property. Use getDynamicDatasources instead');
+  }
+
   async createDynamicDatasource(params: DatasourceParams): Promise<DS> {
     // Make sure the params are serializable over the bridge by using JSON conversion
     return this.host.dynamicDsCreateDynamicDatasource(JSON.parse(JSON.stringify(params)));

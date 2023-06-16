@@ -15,6 +15,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { BlockContent } from '../indexer/types';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
+import { filterDataSourcesBySpecName } from '../utils/project';
 
 @Injectable()
 export class ReindexService extends BaseReindexService<
@@ -45,9 +46,10 @@ export class ReindexService extends BaseReindexService<
   }
 
   protected async getStartBlockDatasources(): Promise<SubstrateDatasource[]> {
-    const specName = await this.getMetadataSpecName();
-    return this.project.dataSources.filter(
-      (ds) => !ds.filter?.specName || ds.filter.specName === specName,
+    return filterDataSourcesBySpecName(
+      this.project.dataSources,
+      await this.getMetadataSpecName(),
     );
   }
 }
+

@@ -63,8 +63,8 @@ export abstract class BaseDsProcessorService<
     }
   }
 
-  async validateProjectCustomDatasources(): Promise<void> {
-    await this.validateCustomDs(this.project.dataSources.filter((ds) => this.isCustomDs(ds)) as unknown as CDS[]);
+  async validateProjectCustomDatasources(dataSources: DS[]): Promise<void> {
+    await this.validateCustomDs(dataSources.filter((ds) => this.isCustomDs(ds)) as unknown as CDS[]);
   }
 
   getDsProcessor(ds: CDS): P {

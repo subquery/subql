@@ -13,6 +13,7 @@ import {
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
 import { saveFile } from '@subql/node-core';
+import { SubstrateDatasource } from '@subql/types';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
 
@@ -110,4 +111,13 @@ export function loadChainTypesFromJs(
     );
   }
   return rawContent;
+}
+
+export function filterDataSourcesBySpecName(
+  dataSources: SubstrateDatasource[],
+  specName: string,
+): SubstrateDatasource[] {
+  return dataSources.filter(
+    (ds) => !ds.filter?.specName || ds.filter.specName === specName,
+  );
 }

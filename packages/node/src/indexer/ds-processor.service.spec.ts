@@ -51,7 +51,7 @@ describe('DsProcessorService', () => {
 
   it('can validate custom ds', async () => {
     await expect(
-      service.validateProjectCustomDatasources(),
+      service.validateProjectCustomDatasources(project.dataSources),
     ).resolves.not.toThrow();
   });
 
@@ -69,7 +69,9 @@ describe('DsProcessorService', () => {
     project = getTestProject([badDs]);
     service = new DsProcessorService(project, nodeConfig);
 
-    await expect(service.validateProjectCustomDatasources()).rejects.toThrow();
+    await expect(
+      service.validateProjectCustomDatasources(project.dataSources),
+    ).rejects.toThrow();
   });
 
   it('can run a custom ds processor', () => {

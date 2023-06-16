@@ -17,6 +17,7 @@ export interface DatasourceParams {
 }
 
 export interface IDynamicDsService<DS> {
+  dynamicDatasources: DS[];
   createDynamicDatasource(params: DatasourceParams): Promise<DS>;
   getDynamicDatasources(): Promise<DS[]>;
 }
@@ -27,8 +28,17 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
 
   private _datasources?: DS[];
 
-  init(metadata: CacheMetadataModel): void {
+  async init(metadata: CacheMetadataModel): Promise<void> {
     this._metadata = metadata;
+
+    this._datasources = await this.loadDynamicDatasources();
+  }
+
+  get dynamicDatasources(): DS[] {
+    if (!this._datasources) {
+      throw new Error('DynamicDsService has not been initialized');
+    }
+    return this._datasources;
   }
 
   private get metadata(): CacheMetadataModel {
@@ -72,11 +82,6 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     }
 
     return this._datasources;
-  }
-
-  // This is used to sync between worker threads
-  async reloadDynamicDatasources(): Promise<void> {
-    this._datasources = await this.loadDynamicDatasources();
   }
 
   private async loadDynamicDatasources(): Promise<DS[]> {

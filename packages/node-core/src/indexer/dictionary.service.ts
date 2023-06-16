@@ -314,13 +314,18 @@ export class DictionaryService implements OnApplicationShutdown {
   }
   buildDictionaryEntryMap<DS extends {startBlock?: number}>(
     dataSources: Array<DS>,
-    buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
+    buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
   ): void {
     const dsWithStartBlock = (dataSources.filter((ds) => !!ds.startBlock) as (DS & {startBlock: number})[]).sort(
       (a, b) => a.startBlock - b.startBlock
     );
-    for (const ds of dsWithStartBlock) {
-      this.mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
+
+    for (let i = 0; i < dsWithStartBlock.length; i++) {
+      this.mappedDictionaryQueryEntries.set(
+        dsWithStartBlock[i].startBlock,
+        // Subset of DS up to the current height
+        buildDictionaryQueryEntries(dsWithStartBlock.slice(0, i + 1))
+      );
     }
   }
 

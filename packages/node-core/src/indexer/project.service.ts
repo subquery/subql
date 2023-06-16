@@ -80,19 +80,17 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   }
 
   async init(): Promise<void> {
-    // Used to load assets into DS-processor, has to be done in any thread
-    await this.dsProcessorService.validateProjectCustomDatasources();
     // Do extra work on main thread to setup stuff
     this.project.dataSources = await this.generateTimestampReferenceForBlockFilters(this.project.dataSources);
     if (isMainThread) {
       this._schema = await this.ensureProject();
       await this.initDbSchema();
       await this.ensureMetadata();
-      this.dynamicDsService.init(this.storeService.storeCache.metadata);
+      await this.dynamicDsService.init(this.storeService.storeCache.metadata);
 
       await this.initHotSchemaReload();
 
-      this._startHeight = await this.getStartHeight();
+      this._startHeight = this.getStartBlockFromDataSources();
 
       const reindexedTo = await this.initUnfinalized();
 
@@ -123,6 +121,9 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
         await this.poiService.init();
       }
     }
+
+    // Used to load assets into DS-processor, has to be done in any thread
+    await this.dsProcessorService.validateProjectCustomDatasources(this.getAllDataSources());
   }
 
   private async ensureProject(): Promise<string> {
@@ -254,17 +255,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     }
   }
 
-  private async getStartHeight(): Promise<number> {
-    let startHeight: number;
-    const lastProcessedHeight = await this.getLastProcessedHeight();
-    if (lastProcessedHeight !== null && lastProcessedHeight !== undefined) {
-      startHeight = Number(lastProcessedHeight) + 1;
-    } else {
-      startHeight = this.getStartBlockFromDataSources();
-    }
-    return startHeight;
-  }
-
   async setBlockOffset(offset: number): Promise<void> {
     if (this._blockOffset !== undefined || offset === null || offset === undefined || isNaN(offset)) {
       return;
@@ -278,7 +268,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     });
   }
 
-  protected getStartBlockFromDataSources(): number {
+  getStartBlockFromDataSources(): number {
     try {
       return getStartHeight(this.getStartBlockDatasources());
     } catch (e: any) {
@@ -287,12 +277,23 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     }
   }
 
-  async getAllDataSources(blockHeight: number): Promise<DS[]> {
+  // This is used everywhere but within indexing blocks, see comment on getDataSources for more info
+  getAllDataSources(): DS[] {
+    if (!isMainThread) {
+      throw new Error('This method is only avaiable on the main thread');
+    }
+    const dataSources = this.getStartBlockDatasources();
+    const dynamicDs = this.dynamicDsService.dynamicDatasources;
+
+    return [...dataSources, ...dynamicDs];
+  }
+
+  // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
+  async getDataSources(blockHeight: number): Promise<DS[]> {
+    const dataSources = this.getStartBlockDatasources();
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
 
-    return [...this.project.dataSources, ...dynamicDs].filter(
-      (ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight
-    );
+    return [...dataSources, ...dynamicDs].filter((ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight);
   }
 
   private async initUnfinalized(): Promise<number | undefined> {

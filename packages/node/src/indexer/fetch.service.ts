@@ -17,7 +17,7 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { NodeConfig, BaseFetchService, IApi } from '@subql/node-core';
+import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
@@ -33,6 +33,7 @@ import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dis
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import {
   substrateHeaderToHeader,
@@ -82,6 +83,7 @@ export class FetchService extends BaseFetchService<
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
+    @Inject('IProjectService') projectService: ProjectService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: ISubstrateBlockDispatcher,
@@ -96,7 +98,8 @@ export class FetchService extends BaseFetchService<
     super(
       apiService,
       nodeConfig,
-      project,
+      projectService,
+      project.network,
       blockDispatcher,
       dictionaryService,
       dsProcessorService,
@@ -112,24 +115,11 @@ export class FetchService extends BaseFetchService<
 
   // eslint-disable-next-line complexity
   protected buildDictionaryQueryEntries(
-    startBlock: number,
+    dataSources: SubstrateDatasource[],
   ): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    const dataSources = this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
-    );
-
-    // Only run the ds that is equal or less than startBlock
-    // sort array from lowest ds.startBlock to highest
-    const filteredDs = dataSources
-      .concat(this.templateDynamicDatasouces)
-      .filter((ds) => ds.startBlock <= startBlock)
-      .sort((a, b) => a.startBlock - b.startBlock);
-
-    for (const ds of filteredDs) {
+    for (const ds of dataSources) {
       const plugin = isCustomDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
@@ -235,22 +225,11 @@ export class FetchService extends BaseFetchService<
   }
 
   protected getModulos(): number[] {
-    const modulos: number[] = [];
-    for (const ds of this.project.dataSources) {
-      if (isCustomDs(ds)) {
-        continue;
-      }
-      for (const handler of ds.mapping.handlers) {
-        if (
-          handler.kind === SubstrateHandlerKind.Block &&
-          handler.filter &&
-          handler.filter.modulo
-        ) {
-          modulos.push(handler.filter.modulo);
-        }
-      }
-    }
-    return modulos;
+    return getModulos(
+      this.projectService.getAllDataSources(),
+      isCustomDs,
+      SubstrateHandlerKind.Block,
+    );
   }
 
   protected async initBlockDispatcher(): Promise<void> {

@@ -436,6 +436,7 @@ async function createFetchService(
   return new FetchService(
     apiService,
     nodeConfig,
+    projectService,
     project,
     new BlockDispatcherService(
       apiService,
@@ -640,6 +641,7 @@ describe('FetchService', () => {
     fetchService = new FetchService(
       apiService,
       nodeConfig,
+      projectService,
       project,
       blockDispatcher,
       dictionaryService,
@@ -741,6 +743,7 @@ describe('FetchService', () => {
     fetchService = new FetchService(
       apiService,
       nodeConfig,
+      projectService,
       project,
       blockDispatcher,
       dictionaryService,
@@ -836,6 +839,7 @@ describe('FetchService', () => {
     fetchService = new FetchService(
       apiService,
       nodeConfig,
+      projectService,
       project,
       blockDispatcher,
       dictionaryService,
@@ -982,6 +986,7 @@ describe('FetchService', () => {
     fetchService = new FetchService(
       apiService,
       nodeConfig,
+      projectService,
       project,
       blockDispatcher,
       dictionaryService,

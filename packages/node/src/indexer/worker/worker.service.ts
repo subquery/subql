@@ -124,7 +124,7 @@ export class WorkerService {
 
       return await this.indexerManager.indexBlock(
         block,
-        await this.projectService.getAllDataSources(height),
+        await this.projectService.getDataSources(height),
         runtimeVersion,
       );
     } catch (e) {

@@ -18,7 +18,7 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {DictionaryService} from './dictionary.service';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {IProjectNetworkConfig, ISubqueryProject} from './types';
+import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 
 const logger = getLogger('FetchService');
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
@@ -35,11 +35,10 @@ export abstract class BaseFetchService<
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
   private batchSizeScale = 1;
-  protected templateDynamicDatasouces: DS[] = [];
   private dictionaryMetaValid = false;
   private bypassBlocks: number[] = [];
 
-  protected abstract buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[];
+  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryQueryEntry[];
 
   // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
   protected abstract getFinalizedHeight(): Promise<number>;
@@ -59,7 +58,8 @@ export abstract class BaseFetchService<
   constructor(
     protected apiService: API,
     private nodeConfig: NodeConfig,
-    protected project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    protected projectService: IProjectService<DS>,
+    protected networkConfig: IProjectNetworkConfig,
     protected blockDispatcher: B,
     protected dictionaryService: D,
     protected dsProcessorService: BaseDsProcessorService,
@@ -88,31 +88,26 @@ export abstract class BaseFetchService<
     this.isShutdown = true;
   }
 
-  private async syncDynamicDatascourcesFromMeta(): Promise<void> {
-    this.templateDynamicDatasouces = await this.dynamicDsService.getDynamicDatasources();
-  }
-
   private updateDictionary(): void {
-    this.dictionaryService.buildDictionaryEntryMap<DS>(
-      this.project.dataSources.concat(this.templateDynamicDatasouces),
+    return this.dictionaryService.buildDictionaryEntryMap<DS>(
+      this.projectService.getAllDataSources(),
       this.buildDictionaryQueryEntries.bind(this)
     );
   }
 
   private get useDictionary(): boolean {
     return (
-      (!!this.project.network.dictionary || !!this.nodeConfig.dictionaryResolver) &&
+      (!!this.networkConfig.dictionary || !!this.nodeConfig.dictionaryResolver) &&
       this.dictionaryMetaValid &&
       !!this.dictionaryService.getDictionaryQueryEntries(
-        this.blockDispatcher.latestBufferedHeight ||
-          Math.min(...this.project.dataSources.map((ds) => ds.startBlock).filter(hasValue))
+        this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
       ).length
     );
   }
 
   async init(startHeight: number): Promise<void> {
-    if (this.project.network?.bypassBlocks !== undefined) {
-      this.bypassBlocks = transformBypassBlocks(this.project.network.bypassBlocks).filter((blk) => blk >= startHeight);
+    if (this.networkConfig?.bypassBlocks !== undefined) {
+      this.bypassBlocks = transformBypassBlocks(this.networkConfig.bypassBlocks).filter((blk) => blk >= startHeight);
     }
     const interval = await this.getChainInterval();
 
@@ -127,11 +122,9 @@ export abstract class BaseFetchService<
       setInterval(() => void this.getBestBlockHead(), interval)
     );
 
-    await this.syncDynamicDatascourcesFromMeta();
-
     let dictionaryValid = false;
 
-    if (this.project.network.dictionary || this.nodeConfig.dictionaryResolver) {
+    if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
       this.updateDictionary();
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
@@ -225,7 +218,7 @@ export abstract class BaseFetchService<
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = [...this.project.dataSources.map((ds) => ds.mapping.handlers)];
+    const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)];
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
@@ -353,15 +346,13 @@ export abstract class BaseFetchService<
     return endBlockHeight;
   }
 
-  async resetForNewDs(blockHeight: number): Promise<void> {
-    await this.syncDynamicDatascourcesFromMeta();
+  resetForNewDs(blockHeight: number): void {
     this.dynamicDsService.deleteTempDsRecords(blockHeight);
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
 
-  async resetForIncorrectBestBlock(blockHeight: number): Promise<void> {
-    await this.syncDynamicDatascourcesFromMeta();
+  resetForIncorrectBestBlock(blockHeight: number): void {
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
