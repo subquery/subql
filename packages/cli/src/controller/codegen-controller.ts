@@ -54,7 +54,7 @@ import {
   getAllEnums,
 } from '@subql/utils';
 import ejs from 'ejs';
-import {upperFirst, uniq} from 'lodash';
+import {upperFirst, uniq, uniqBy} from 'lodash';
 import rimraf from 'rimraf';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 
@@ -517,11 +517,7 @@ export async function generateDatasourceTemplates(projectPath: string, templates
     args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
   }));
 
-  const propsWithoutDuplicates = props.filter((prop, index) => {
-    const isDuplicate = props.findIndex((p, i) => p.name === prop.name && p.args === prop.args && i < index) !== -1;
-
-    return !isDuplicate;
-  });
+  const propsWithoutDuplicates = uniqBy(props, (prop) => `${prop.name}-${prop.args}`);
 
   try {
     await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
