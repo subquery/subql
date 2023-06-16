@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
 import {
@@ -15,7 +14,7 @@ import {
 } from '../events';
 import {StoreService} from '../indexer';
 
-const UPDATE_HEIGHT_INTERVAL = 60000;
+const UPDATE_HEIGHT_INTERVAL = 6000;
 
 export abstract class BaseMetaService {
   private currentProcessingHeight?: number;
@@ -28,8 +27,18 @@ export abstract class BaseMetaService {
   private lastProcessedHeight?: number;
   private lastProcessedTimestamp?: number;
   private processedBlockCount?: number;
+  private _storeService?: StoreService;
 
-  constructor(private storeService: StoreService) {}
+  init(_storeService: StoreService): void {
+    this._storeService = _storeService;
+  }
+
+  get storeService(): StoreService {
+    if (this._storeService === undefined) {
+      throw new Error(`MetaService failed to get storeService`);
+    }
+    return this._storeService;
+  }
 
   protected abstract packageVersion: string;
 
