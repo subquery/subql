@@ -72,13 +72,25 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
     address?: string,
   ): boolean {
     if (!filter) return true;
+
+    if (
+      filter.to === null &&
+      !(transaction.to === null || transaction.to === undefined)
+    ) {
+      return false;
+    }
+
     if (filter.to && !stringNormalizedEq(filter.to, transaction.to)) {
       return false;
     }
     if (filter.from && !stringNormalizedEq(filter.from, transaction.from)) {
       return false;
     }
-    if (address && !filter.to && !stringNormalizedEq(address, transaction.to)) {
+    if (
+      address &&
+      filter.to === undefined &&
+      !stringNormalizedEq(address, transaction.to)
+    ) {
       return false;
     }
     if (

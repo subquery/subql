@@ -66,4 +66,104 @@ describe('Api.ethereum', () => {
     expect(parsedLog).not.toHaveProperty('args');
     expect(parsedLog).toBeTruthy();
   });
+  it('Null filter support', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    const result = blockData.transactions.filter((tx) => {
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          { to: null },
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+    expect(result[0].hash).toBe(
+      '0x24bef923522a4d6a79f9ab9242a74fb987dce94002c0f107c2a7d0b7e24bcf05',
+    );
+    expect(result.length).toBe(1);
+  });
+  it('Null filter support, for undefined transaction.to', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    blockData.transactions[1].to = undefined;
+    const result = blockData.transactions.filter((tx) => {
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          { to: null },
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+    expect(result[0].hash).toBe(
+      '0x24bef923522a4d6a79f9ab9242a74fb987dce94002c0f107c2a7d0b7e24bcf05',
+    );
+    expect(result.length).toBe(1);
+  });
+
+  it('Should return all tx if filter.to is not defined', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    const result = blockData.transactions.filter((tx) => {
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          undefined,
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+    expect(result.length).toBe(2);
+  });
+
+  it('filter.to Should support only null not undefined', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    const result = blockData.transactions.filter((tx) => {
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          { to: undefined },
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+    expect(result.length).toBe(0);
+  });
+  it('If transaction is undefined, with null filter, should be supported', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    blockData = await ethApi.fetchBlock(2847447, true);
+    const result = blockData.transactions.filter((tx) => {
+      tx.to = undefined;
+      if (
+        EthereumBlockWrapped.filterTransactionsProcessor(
+          tx,
+          { to: null },
+          '0x72a33394f0652e2bf15d7901f3cd46863d968424',
+        )
+      ) {
+        return tx.hash;
+      }
+    });
+    expect(result.length).toBe(2);
+  });
 });
