@@ -30,10 +30,10 @@ type DockerComposeService = {
   healthcheck?: Record<string, any>;
 };
 
-export async function addChain(multichain: string, chainManifestPath: string, chainId: string): Promise<void> {
+export async function addChain(multichain: string, chainManifestPath: string): Promise<void> {
   const multichainManifestPath = determineMultichainManifestPath(multichain);
   const multichainManifest = loadMultichainManifest(multichainManifestPath);
-  chainManifestPath = handleChainManifestOrId(chainManifestPath, chainId, multichainManifestPath);
+  chainManifestPath = handleChainManifestOrId(chainManifestPath);
   validateAndAddChainManifest(path.parse(multichainManifestPath).dir, chainManifestPath, multichainManifest);
   fs.writeFileSync(multichainManifestPath, multichainManifest.toString());
   await updateDockerCompose(path.parse(multichainManifestPath).dir, chainManifestPath);
@@ -74,23 +74,9 @@ export function loadMultichainManifest(multichainManifestPath: string): Document
   return multichainManifest;
 }
 
-export function handleChainManifestOrId(
-  chainManifestPath: string,
-  chainId: string,
-  multichainManifestPath: string
-): string {
-  if (!chainManifestPath && !chainId) {
-    throw new Error('You must provide either a chain manifest path or a chain ID.');
-  }
-
-  // If a chain ID is provided, generate a chain manifest for it.
-  if (chainId) {
-    // Fetch schema from existing manifest if not provided via CLI args
-    const multichainManifestContent = fs.readFileSync(multichainManifestPath, 'utf8');
-    const multichainManifest = parseDocument(multichainManifestContent);
-    const project = getProjectRootAndManifest(multichainManifest.get('projects') as string[][0]);
-
-    chainManifestPath = generateChainManifest(chainId);
+export function handleChainManifestOrId(chainManifestPath: string): string {
+  if (!chainManifestPath) {
+    throw new Error('You must provide chain manifest path');
   }
 
   // Check if the provided chain manifest path exists
@@ -257,11 +243,6 @@ export async function updateDockerCompose(projectDir: string, chainManifestPath:
   // Save the updated Docker Compose file
   fs.writeFileSync(dockerComposePath, dockerCompose.toString());
   console.log(`Docker Compose file updated successfully at: ${dockerComposePath}`);
-}
-
-function generateChainManifest(chainId: string): string {
-  // TODO: Implement the actual logic for generating a chain manifest based on a chain ID.
-  throw new Error('generateChainManifest() is not implemented yet.');
 }
 
 function isMultiChainProject(content: string): boolean {
