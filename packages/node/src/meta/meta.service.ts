@@ -29,8 +29,11 @@ export class MetaService extends BaseMetaService {
   private lastReportedRpcCalls = 0;
   private lastStatsReportedTs: Date;
 
-  constructor(private nodeConfig: NodeConfig, storeService: StoreCacheService) {
-    super(storeService, nodeConfig);
+  constructor(
+    private nodeConfig: NodeConfig,
+    storeCacheService: StoreCacheService,
+  ) {
+    super(storeCacheService, nodeConfig);
   }
 
   protected packageVersion = packageVersion;
