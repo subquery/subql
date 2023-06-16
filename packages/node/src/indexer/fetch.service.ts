@@ -108,6 +108,7 @@ export function messageFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
+  ApiService,
   SubqlCosmosDatasource,
   ICosmosBlockDispatcher,
   DictionaryService
@@ -139,7 +140,7 @@ export class FetchService extends BaseFetchService<
   }
 
   get api(): CosmosClient {
-    return this.apiService.api;
+    return this.apiService.unsafeApi;
   }
 
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {

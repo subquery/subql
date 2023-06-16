@@ -44,7 +44,7 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService
-  extends BaseApiService<SubqueryProject, CosmosClient>
+  extends BaseApiService<CosmosClient, CosmosSafeClient, BlockContent>
   implements OnApplicationShutdown
 {
   private fetchBlocksBatches = CosmosUtil.fetchBlocksBatches;
@@ -52,10 +52,10 @@ export class ApiService
   registry: Registry;
 
   constructor(
-    @Inject('ISubqueryProject') public project: SubqueryProject,
-    private connectionPoolService: ConnectionPoolService<CosmosClientConnection>,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
+    connectionPoolService: ConnectionPoolService<CosmosClientConnection>,
   ) {
-    super(project);
+    super(connectionPoolService);
   }
 
   private async buildRegistry(): Promise<Registry> {
@@ -101,7 +101,7 @@ export class ApiService
 
       this.registry = await this.buildRegistry();
 
-      const connections: CosmosClientConnection[] = [];
+      const endpointToApiIndex: Record<string, CosmosClientConnection> = {};
 
       const endpoints = Array.isArray(network.endpoint)
         ? network.endpoint
@@ -111,15 +111,12 @@ export class ApiService
         endpoints.map(async (endpoint) => {
           const connection = await CosmosClientConnection.create(
             endpoint,
+            this.fetchBlocksBatches,
             this.registry,
           );
-          const api = connection.api;
+          const api = connection.unsafeApi;
           if (!this.networkMeta) {
-            this.networkMeta = {
-              chain: network.chainId,
-              specName: undefined,
-              genesisHash: undefined,
-            };
+            this.networkMeta = connection.networkMeta;
 
             const chainId = await api.getChainId();
             if (network.chainId !== chainId) {
@@ -140,11 +137,11 @@ export class ApiService
             }
           }
 
-          connections.push(connection);
+          endpointToApiIndex[endpoint] = connection;
         }),
       );
 
-      this.connectionPoolService.addBatchToConnections(connections);
+      this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
 
       return this;
     } catch (e) {
@@ -154,12 +151,12 @@ export class ApiService
   }
 
   get api(): CosmosClient {
-    return this.connectionPoolService.api.api;
+    return this.unsafeApi;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getSafeApi(height: number): Promise<CosmosSafeClient> {
-    return this.connectionPoolService.api.getSafeApi(height);
+    return this.connectionPoolService.api.safeApi(height);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -185,15 +182,6 @@ export class ApiService
       }
     }
     return res;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async fetchBlocks(batch: number[]): Promise<BlockContent[]> {
-    return this.fetchBlocksGeneric<BlockContent>(
-      () => (blockArray: number[]) =>
-        this.fetchBlocksBatches(this.api, blockArray),
-      batch,
-    );
   }
 }
 

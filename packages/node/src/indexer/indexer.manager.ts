@@ -30,8 +30,7 @@ import {
 } from '@subql/types-cosmos';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
-import { yargsOptions } from '../yargs';
-import { ApiService, CosmosSafeClient } from './api.service';
+import { ApiService, CosmosClient, CosmosSafeClient } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -46,9 +45,10 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  ApiService,
   CosmosSafeClient,
+  CosmosClient,
   BlockContent,
+  ApiService,
   SubqlCosmosDatasource,
   SubqlCosmosCustomDatasource,
   typeof FilterTypeMap,

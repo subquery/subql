@@ -9,12 +9,18 @@ import {
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from '../indexer/api.service';
+import {
+  ApiService,
+  CosmosClient,
+  CosmosSafeClient,
+} from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { BlockContent } from '../indexer/types';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
+  CosmosClient,
+  CosmosSafeClient,
   BlockContent,
   SubqlProjectDs
 > {
