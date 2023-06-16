@@ -4,44 +4,51 @@
 import {ISubqueryProject} from '../indexer';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
+const templateProject = {
+  network: {
+    chainId: '1',
+  },
+  dataSources: [{startBlock: 1}],
+};
+
 const demoProjects = [
   {
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 10,
       reference: '0',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 20,
       reference: '1',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 30,
       reference: '2',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 40,
       reference: '3',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 50,
       reference: '4',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
 ] as ISubqueryProject[];
 
@@ -51,34 +58,34 @@ const loopProjects = [
       block: 10,
       reference: '1',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 20,
       reference: '0',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
 ] as ISubqueryProject[];
 
 const futureProjects = [
   {
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 30,
       reference: '0',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
   {
     parent: {
       block: 20,
       reference: '1',
     },
-    dataSources: [{startBlock: 1}],
+    ...templateProject,
   },
 ] as ISubqueryProject[];
 
@@ -144,6 +151,50 @@ describe('Project Upgrades', () => {
       } as ISubqueryProject;
       await expect(
         ProjectUpgradeSevice.create(project, (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1, 1)
+      ).rejects.toThrow();
+    });
+
+    it('will validate all parents are for the same network', async () => {
+      const projects = [
+        {
+          ...templateProject,
+          network: {chainId: 2},
+        },
+        {
+          parent: {
+            block: 30,
+            reference: '0',
+          },
+          ...templateProject,
+        },
+      ] as ISubqueryProject[];
+
+      await expect(
+        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1, 1)
+      ).rejects.toThrow();
+    });
+
+    it('will validate all parents are for the same node runner', async () => {
+      const projects = [
+        {
+          ...templateProject,
+          runner: {
+            node: {
+              name: 'subql-node-wrong',
+            },
+          },
+        },
+        {
+          parent: {
+            block: 30,
+            reference: '0',
+          },
+          ...templateProject,
+        },
+      ] as ISubqueryProject[];
+
+      await expect(
+        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1, 1)
       ).rejects.toThrow();
     });
   });

@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import {ISubqueryProject} from '../indexer/types';
 import {getStartHeight} from '../utils';
 
@@ -11,6 +12,10 @@ export interface IProjectUpgradeService<P extends ISubqueryProject> {
 }
 
 const serviceKeys: Array<keyof IProjectUpgradeService<ISubqueryProject>> = ['getProject', 'currentHeight', 'projects'];
+
+function assertEqual<T>(valueA: T, valueB: T, name: string) {
+  assert(valueA === valueB, `Expected ${name} to be equal. expected="${valueA}" parent has="${valueB}"`);
+}
 
 /*
   We setup a proxy here so that we can have a class that matches ISubquery project but will change when we set the current height to the correct project
@@ -58,6 +63,11 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject> implements IProjec
 
     let currentProject = startProject;
 
+    const addProject = (height: number, project: P) => {
+      this.validateProject(startProject, project);
+      projects[height] = project;
+    };
+
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const projectStartHeight = getStartHeight(currentProject.dataSources);
@@ -65,14 +75,14 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject> implements IProjec
       // At the end of the chain
       if (!currentProject.parent) {
         // At the limit of the start height for DS
-        if (startHeight !== undefined && startHeight <= projectStartHeight) {
+        if (startHeight !== undefined && startHeight < projectStartHeight) {
           break;
         }
-        projects[projectStartHeight] = currentProject;
+        addProject(projectStartHeight, currentProject);
         break;
       }
       if (currentProject.parent.block) {
-        projects[currentProject.parent.block] = currentProject;
+        addProject(currentProject.parent.block, currentProject);
       }
       // At the limit of the start height for Parent
       if (startHeight !== undefined && startHeight >= currentProject.parent.block) {
@@ -120,5 +130,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject> implements IProjec
     }
 
     return this.projects[matchingHeight];
+  }
+
+  private static validateProject<P extends ISubqueryProject>(startProject: P, parentProject: P): void {
+    assertEqual(startProject.network.chainId, parentProject.network.chainId, 'chainId');
+    assertEqual(startProject.runner?.node.name, parentProject.runner?.node.name, 'subquery node');
+
+    // TODO validate schema
   }
 }
