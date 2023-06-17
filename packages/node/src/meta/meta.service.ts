@@ -8,7 +8,7 @@ import {
   BaseMetaService,
   getLogger,
   NodeConfig,
-  StoreService,
+  StoreCacheService,
 } from '@subql/node-core';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -29,8 +29,11 @@ export class MetaService extends BaseMetaService {
   private lastReportedRpcCalls = 0;
   private lastStatsReportedTs: Date;
 
-  constructor(private nodeConfig: NodeConfig, storeService: StoreService) {
-    super(storeService);
+  constructor(
+    private nodeConfig: NodeConfig,
+    storeCacheService: StoreCacheService,
+  ) {
+    super(storeCacheService, nodeConfig);
   }
 
   protected packageVersion = packageVersion;
