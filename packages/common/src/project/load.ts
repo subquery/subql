@@ -7,9 +7,10 @@ import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
 import {ProjectManifestV0_2_0} from '../project/versioned';
+import {DEFAULT_MANIFEST, extensionIsYamlOrJSON} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+  if (!extensionIsYamlOrJSON(ext)) {
     throw new Error(`Extension ${ext} not supported`);
   }
   const rawContent = fs.readFileSync(file, 'utf-8');
@@ -19,7 +20,7 @@ export function loadFromJsonOrYaml(file: string): unknown {
 export function getManifestPath(manifestDir: string, fileName?: string): string {
   let manifestPath = manifestDir;
   if (fs.existsSync(manifestDir) && fs.lstatSync(manifestDir).isDirectory()) {
-    const yamlFilePath = path.join(manifestDir, fileName ?? 'project.yaml');
+    const yamlFilePath = path.join(manifestDir, fileName ?? DEFAULT_MANIFEST);
     const jsonFilePath = path.join(manifestDir, fileName ?? 'project.json');
     if (fs.existsSync(yamlFilePath)) {
       manifestPath = yamlFilePath;

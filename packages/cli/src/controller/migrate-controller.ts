@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ProjectManifestV1_0_0} from '@subql/common';
+import {ProjectManifestV1_0_0, extensionIsYamlOrJSON} from '@subql/common';
 import {
   SubstrateProjectManifestVersioned,
   ProjectNetworkV0_0_1,
@@ -88,7 +88,7 @@ export async function prepare(
           required: true,
         });
         const {ext} = path.parse(chainTypesRelativePath);
-        if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+        if (!extensionIsYamlOrJSON(ext)) {
           throw new Error(`Extension ${ext} not supported`);
         }
         const projectChainTypesPath = path.join(location, chainTypesRelativePath);

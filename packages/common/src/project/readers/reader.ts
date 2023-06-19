@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
+import path from 'path';
 import {IPackageJson} from 'package-json-type';
 import {IPFS_REGEX} from '../../constants';
 import {getProjectRootAndManifest} from '../../project';
@@ -37,7 +38,10 @@ export class ReaderFactory {
     //local mode
     if (fs.existsSync(location)) {
       const project = getProjectRootAndManifest(location);
-      return new LocalReader(project.root, project.manifest);
+      if (project.manifests.length > 1) {
+        throw new Error(`Mulitple manifests found, expected only one`);
+      }
+      return new LocalReader(project.root, path.join(project.root, project.manifests[0]));
     }
 
     throw new Error(`unknown location: ${location}`);

@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getProjectRootAndManifest} from '@subql/common';
+import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
@@ -48,14 +48,32 @@ export default class Publish extends Command {
     } else {
       throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
-    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
-    await createIPFSFile(location, cid);
 
-    if (!flags.output) {
-      this.log('Uploading SubQuery project to IPFS');
-      this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
-    } else {
-      this.log(`${cid}`);
+    const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));
+
+    let multichainManifestPath = getMultichainManifestPath(location);
+    if (multichainManifestPath) {
+      multichainManifestPath = path.join(project.root, multichainManifestPath);
     }
+
+    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
+      (e) => this.error(e)
+    );
+
+    await Promise.all(
+      project.manifests.map((manifest) => createIPFSFile(project.root, manifest, fileToCidMap.get(path.join(manifest))))
+    );
+
+    fileToCidMap.forEach((cid, file, _) => {
+      if (file === '') {
+        this.log(`Directory uploaded to IPFS: ${cid}`);
+        return;
+      }
+      if (!flags.output) {
+        this.log(`SubQuery Project ${file} uploaded to IPFS: ${cid}`);
+      } else {
+        this.log(`${file}: ${cid}`);
+      }
+    });
   }
 }

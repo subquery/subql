@@ -59,7 +59,7 @@ describe('Codegen can generate schema', () => {
     const projectPath1 = path.join(__dirname, '../../test/schemaTest6');
     const projectPath2 = path.join(__dirname, '../../test/schemaTest6');
     await codegen(projectPath1);
-    await codegen(projectPath2, 'project-no-abi.yaml');
+    await codegen(projectPath2, ['project-no-abi.yaml']);
 
     // should not contain abi directory
     await expect(fs.promises.readFile(`${projectPath1}/src/types/abi-interfaces/Erc721.ts`, 'utf8')).rejects.toThrow();

@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomDs as isCustomAvalancheDs,
   isRuntimeDs as isRuntimeAvalancheDs,
@@ -54,7 +54,7 @@ import {
   getAllEnums,
 } from '@subql/utils';
 import ejs from 'ejs';
-import {upperFirst, uniq} from 'lodash';
+import {upperFirst, uniq, uniqBy} from 'lodash';
 import rimraf from 'rimraf';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 
@@ -361,78 +361,64 @@ async function prepareDirPath(path: string, recreate: boolean) {
       await fs.promises.mkdir(path, {recursive: true});
     }
   } catch (e) {
-    throw new Error(`Failed to prepare ${path}`);
+    throw new Error(`Failed to prepare ${path}: ${e.message}`);
   }
-}
-
-function directoryExists(dirPath: string): boolean {
-  try {
-    return fs.statSync(dirPath).isDirectory();
-  } catch (e) {
-    return false;
-  }
-}
-
-function removeDirectory(directoryPath: string): void {
-  // remove regardless if the directory is empty or not
-  fs.rm(directoryPath, {recursive: true, force: true}, (err) => {
-    if (err?.code !== 'ENOTEMPTY' && err) {
-      // Swallow ENOTEMPTY error
-      console.error(`Failed to remove generated directory: ${directoryPath}`, err);
-    } else {
-      console.log(`Cleared generated directory: ${directoryPath}`);
-    }
-  });
 }
 
 //1. Prepare models directory and load schema
-export async function codegen(projectPath: string, fileName?: string): Promise<void> {
-  const rootPath = path.join(projectPath, TYPE_ROOT_DIR);
-  if (directoryExists(rootPath)) {
-    console.log('Clearing generated files');
-    removeDirectory(rootPath);
-  }
-
+export async function codegen(projectPath: string, fileNames: string[] = [DEFAULT_MANIFEST]): Promise<void> {
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
-    specVersion: string;
-    templates?: TemplateKind[];
-    dataSources: DatasourceKind[];
-  };
+  const plainManifests = fileNames.map(
+    (fileName) =>
+      loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
+        specVersion: string;
+        templates?: TemplateKind[];
+        dataSources: DatasourceKind[];
+      }
+  );
 
   const expectKeys = ['datasources', 'templates'];
 
-  // if Object with assets key exists, need check for abi
-  const customDatasource = Object.keys(plainManifest)
-    .filter((key) => !expectKeys.includes(key))
-    ?.map((dsKey) => {
-      const value = (plainManifest as any)[dsKey];
-      if (typeof value === 'object' && value) {
-        return !!Object.keys(value).find((d) => d === 'assets') && value;
-      }
-    })
-    ?.filter(Boolean);
+  const customDatasources = plainManifests.flatMap((plainManifest) => {
+    return Object.keys(plainManifest)
+      .filter((key) => !expectKeys.includes(key))
+      .map((dsKey) => {
+        const value = (plainManifest as any)[dsKey];
+        if (typeof value === 'object' && value) {
+          return !!Object.keys(value).find((d) => d === 'assets') && value;
+        }
+      })
+      .filter(Boolean);
+  });
 
-  let datasources = plainManifest.dataSources;
+  const schema = getSchemaPath(projectPath, fileNames[0]);
+  await generateSchemaModels(projectPath, schema);
 
-  if (plainManifest.templates && plainManifest.templates.length !== 0) {
-    await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
-    datasources = plainManifest.dataSources.concat(plainManifest.templates as DatasourceKind[]);
+  let datasources = plainManifests.reduce((prev, current) => {
+    return prev.concat(current.dataSources);
+  }, []);
+
+  const templates = plainManifests.reduce((prev, current) => {
+    if (current.templates && current.templates.length !== 0) {
+      return prev.concat(current.templates);
+    }
+    return prev;
+  }, []);
+
+  if (templates.length !== 0) {
+    await generateDatasourceTemplates(projectPath, templates);
+    datasources = datasources.concat(templates as DatasourceKind[]);
   }
 
-  if (customDatasource.length !== 0) {
-    datasources = datasources.concat(customDatasource);
+  if (customDatasources.length !== 0) {
+    datasources = datasources.concat(customDatasources);
   }
-  const schemaPath = getSchemaPath(projectPath, fileName);
 
   await generateAbis(datasources, projectPath);
-  await generateJsonInterfaces(projectPath, schemaPath);
-  await generateModels(projectPath, schemaPath);
-  await generateEnums(projectPath, schemaPath);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
@@ -447,6 +433,18 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     console.log(`* Types index generated !`);
   }
 }
+
+export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {
+  const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
+  const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
+  await prepareDirPath(modelDir, true);
+  await prepareDirPath(interfacesPath, false);
+
+  await generateJsonInterfaces(projectPath, schemaPath);
+  await generateModels(projectPath, schemaPath);
+  await generateEnums(projectPath, schemaPath);
+}
+
 export function validateEntityName(name: string): string {
   for (const reservedKey of RESERVED_KEYS) {
     if (name.toLowerCase().endsWith(reservedKey.toLowerCase())) {
@@ -513,18 +511,17 @@ export async function generateModels(projectPath: string, schema: string): Promi
   }
 }
 
-export async function generateDatasourceTemplates(
-  projectPath: string,
-  specVersion: string,
-  templates: TemplateKind[]
-): Promise<void> {
+export async function generateDatasourceTemplates(projectPath: string, templates: TemplateKind[]): Promise<void> {
   const props = templates.map((t) => ({
     name: t.name,
     args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
   }));
+
+  const propsWithoutDuplicates = uniqBy(props, (prop) => `${prop.name}-${prop.args}`);
+
   try {
     await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
-      props,
+      props: propsWithoutDuplicates,
     });
     exportTypes.datasources = true;
   } catch (e) {

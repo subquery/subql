@@ -2,7 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Type} from 'class-transformer';
-import {Equals, IsBoolean, IsObject, IsOptional, IsString, Matches, Validate, ValidateNested} from 'class-validator';
+import {
+  Equals,
+  IsBoolean,
+  IsObject,
+  IsOptional,
+  IsString,
+  Matches,
+  Validate,
+  ValidateNested,
+  equals,
+} from 'class-validator';
 import {RUNNER_REGEX} from '../../../constants';
 import {SemverVersionValidator} from '../../utils';
 import {NodeOptions, NodeSpec, QuerySpec} from './types';

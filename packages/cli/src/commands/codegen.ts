@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getProjectRootAndManifest} from '@subql/common';
+import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
 import {codegen} from '../controller/codegen-controller';
 
 export default class Codegen extends Command {
@@ -27,16 +27,22 @@ export default class Codegen extends Command {
 
     const projectPath = path.resolve(file ?? location ?? process.cwd());
 
-    const {manifest} = getProjectRootAndManifest(projectPath);
+    const {manifests, root} = getProjectRootAndManifest(projectPath);
 
-    // Split directory and file name
-    const [fileDir, fileName] = [path.dirname(manifest), path.basename(manifest)];
+    let firstSchemaPath: string | null = null;
+
+    for (const manifest of manifests) {
+      const schemaPath = getSchemaPath(root, manifest);
+
+      if (firstSchemaPath === null) {
+        firstSchemaPath = schemaPath;
+      } else if (schemaPath !== firstSchemaPath) {
+        throw new Error('All schema paths are not the same');
+      }
+    }
 
     try {
-      if (!fileDir) {
-        throw new Error('Cannot resolve project manifest from --file argument given');
-      }
-      await codegen(fileDir, fileName);
+      await codegen(root, manifests);
     } catch (err) {
       console.error(err.message);
       process.exit(1);
