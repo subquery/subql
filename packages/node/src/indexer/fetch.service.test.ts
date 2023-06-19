@@ -109,6 +109,7 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
   batchSize: 5,
   storeCacheAsync: false,
+  dictionaryResolver: false,
 });
 
 async function createApp(
@@ -213,14 +214,7 @@ async function createApp(
         inject: [DsProcessorService, 'ISubqueryProject'],
       },
       ProjectService,
-      {
-        provide: DictionaryService,
-        useFactory: async () => {
-          const dictionaryService = new DictionaryService(project, nodeConfig);
-          await dictionaryService.init();
-          return dictionaryService;
-        },
-      },
+      DictionaryService,
       SchedulerRegistry,
       UnfinalizedBlocksService,
       FetchService,

@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2023-06-16
+### Fixed
+- Fixed meta service missing construct, align blockHeight update with store cache flush interval (#1804)
+
+## [2.5.0] - 2023-06-15
+### Added
+- Implemented load balancing for multiple endpoints, with distribution based on endpoint performance (#1657)
+- Introduced a suspension mechanism for rate-limited endpoints using exponential backoff to regulate usage (#1657)
+
 ## [2.4.5] - 2023-06-09
 ### Changed
 - Use @subql/x-sequelize in order support cockroach (#1791)
@@ -293,7 +302,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.4.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.5.1...HEAD
+[2.5.1]: https://github.com/subquery/subql/compare/node-core/v2.5.0...node-core/v2.5.1
+[2.5.0]: https://github.com/subquery/subql/compare/node-core/v2.4.5...node-core/v2.5.0
 [2.4.5]: https://github.com/subquery/subql/compare/node-core/v2.4.4...node-core/v2.4.5
 [2.4.4]: https://github.com/subquery/subql/compare/node-core/2.4.3...node-core/2.4.4
 [2.4.3]: https://github.com/subquery/subql/compare/node-core/v2.4.2...node-corev2.4.3

@@ -21,8 +21,11 @@ const logger = getLogger('subql-testing');
 
 declare global {
   //const api: ApiAt;
+  // @ts-ignore
   const logger: Pino.Logger;
+  // @ts-ignore
   const store: Store;
+  // @ts-ignore
   const createDynamicDatasource: DynamicDatasourceCreator;
 }
 
