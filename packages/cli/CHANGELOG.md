@@ -343,7 +343,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2021-04-19
 ### Added
-- `@index` annotation is now supported in `graphql.schema` (#255):  - Can be added on any field of any entity except primary or foreign keys
+- `@index` annotation is now supported in `graphql.schema` (#255):  
+  - Can be added on any field of any entity except primary or foreign keys
   - `@subql/node` will recognise it and create table with additional indexes to speed querying
   - Allow query by indexed field via `global.store` (#271)
 - `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
