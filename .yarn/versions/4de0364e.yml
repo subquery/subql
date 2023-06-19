@@ -1,2 +1,5 @@
 undecided:
+  - "@subql/common"
+  - "@subql/node"
   - "@subql/node-core"
+  - "@subql/utils"

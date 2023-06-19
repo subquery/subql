@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2023-06-19
+### Changed
+- Sync with @subql/node-core, upgrade @subql/apollo-links, enable dictionary-resolver by default (#1801)
+
 ## [2.6.1] - 2023-06-16
 ### Fixed
 - sync with node-core 2.5.1, fixed meta service missing construct (#1804)
@@ -888,7 +892,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/v2.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/v2.7.0...HEAD
+[2.7.0]: https://github.com/subquery/subql/compare/node/v2.6.1...node/v2.7.0
 [2.6.1]: https://github.com/subquery/subql/compare/node/v2.6.0...node/v2.6.1
 [2.6.0]: https://github.com/subquery/subql/compare/node/v2.5.5...node/v2.6.0
 [2.5.5]: https://github.com/subquery/subql/compare/node/v2.5.4...node/v2.5.5
