@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.2.2] - 2023-06-19
 ### Fixed
 - Fixed test (#1806)
+### Added
+- Simply multi-chain running (#1746)
 
 ## [2.2.1] - 2023-06-09
 ### Changed
