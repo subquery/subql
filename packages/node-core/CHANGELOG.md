@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2023-06-19
+### Changed
+- upgrade @subql/apollo-links (#1801)
+
 ## [2.5.1] - 2023-06-16
 ### Fixed
 - Fixed meta service missing construct, align blockHeight update with store cache flush interval (#1804)
@@ -302,7 +306,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.6.0...HEAD
+[2.6.0]: https://github.com/subquery/subql/compare/node-core/v2.5.1...node-core/v2.6.0
 [2.5.1]: https://github.com/subquery/subql/compare/node-core/v2.5.0...node-core/v2.5.1
 [2.5.0]: https://github.com/subquery/subql/compare/node-core/v2.4.5...node-core/v2.5.0
 [2.4.5]: https://github.com/subquery/subql/compare/node-core/v2.4.4...node-core/v2.4.5

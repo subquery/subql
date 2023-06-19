@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2023-06-19
+### Fixed
+- Fixed test (#1806)
+
 ## [2.2.1] - 2023-06-09
 ### Changed
 - Use @subql/x-sequelize in order to support cockroach (#1791)
@@ -273,7 +277,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/v2.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/v2.2.2...HEAD
+[2.2.2]: https://github.com/subquery/subql/compare/common/v2.2.1...common/v2.2.2
 [2.2.1]: https://github.com/subquery/subql/compare/common/v2.2.0...common/v2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/common2.1.2...common/2.2.0
 [2.1.2]: https://github.com/subquery/subql/compare/common/2.1.1...common/2.1.2
