@@ -413,5 +413,11 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'This is a hidden flag only used from the main thread to workers. It provides a root directory for the project. This is a temp directory with IPFS and GitHub projects.',
       type: 'string',
     },
+    'query-address-limit': {
+      describe:
+        'Set the limit for address on dictionary queries for dynamic datasources',
+      type: 'number',
+      default: 100,
+    },
   })
   .hide('root'); // root is hidden because its for internal use
