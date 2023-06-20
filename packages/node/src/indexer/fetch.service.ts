@@ -45,12 +45,17 @@ function eventFilterToQueryEntry(
   if (Array.isArray(dsOptions)) {
     const addresses = dsOptions.map((option) => option.address).filter(Boolean);
 
-    if (addresses.length !== 0 && addresses.length <= QUERY_ADDRESS_LIMIT) {
+    if (addresses.length !== 0) {
       conditions.push({
         field: 'address',
         value: addresses,
         matcher: 'in',
       });
+      if (addresses.length <= QUERY_ADDRESS_LIMIT) {
+        logger.warn(
+          `Query Address Limit: ${QUERY_ADDRESS_LIMIT} has been reached. Addresses length=${addresses.length}`,
+        );
+      }
     }
   } else {
     if (dsOptions?.address) {
