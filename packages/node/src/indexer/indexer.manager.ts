@@ -109,7 +109,7 @@ export class IndexerManager extends BaseIndexerManager<
 
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(block: EthereumBlockWrapper): Promise<SafeEthProvider> {
-    return this.apiService.api.getSafeApi(this.getBlockHeight(block));
+    return this.apiService.safeApi(this.getBlockHeight(block));
   }
 
   protected async indexBlockData(

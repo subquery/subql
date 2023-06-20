@@ -61,3 +61,4 @@ jobs:
                   skip-step: install
                   working-directory: ${{ matrix.path }}
                   test-script: yarn test-jest
+                  annotations: none

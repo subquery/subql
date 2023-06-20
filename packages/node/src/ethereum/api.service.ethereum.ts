@@ -110,6 +110,41 @@ export class EthereumApiService extends ApiService<
     return this.unsafeApi;
   }
 
+  safeApi(height: number): SafeEthProvider {
+    const maxRetries = 5;
+
+    const handler: ProxyHandler<SafeEthProvider> = {
+      get: (target, prop, receiver) => {
+        const originalMethod = target[prop as keyof SafeEthProvider];
+        if (typeof originalMethod === 'function') {
+          return async (...args: any[]) => {
+            let retries = 0;
+            let currentApi = target;
+
+            while (retries < maxRetries) {
+              try {
+                return await originalMethod.apply(currentApi, args);
+              } catch (error) {
+                logger.warn(
+                  `Request failed with api at height ${height} (retry ${retries}): ${error.message}`,
+                );
+                currentApi = this.unsafeApi.getSafeApi(height);
+                retries++;
+              }
+            }
+
+            throw new Error(
+              `Maximum retries (${maxRetries}) exceeded for api at height ${height}`,
+            );
+          };
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    };
+
+    return new Proxy(this.unsafeApi.getSafeApi(height), handler);
+  }
+
   private async fetchBlockBatches(
     api: EthereumApi,
     batch: number[],
