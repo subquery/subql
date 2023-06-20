@@ -52,10 +52,6 @@ export abstract class TestingService<A, SA, B, DS> {
     protected readonly apiService: IApi<A, SA, B>,
     protected readonly indexerManager: IIndexerManager<B, DS>
   ) {
-    if (!nodeConfig.disableHistorical) {
-      throw new Error(`Historical data not supported in testing service`);
-    }
-
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist'));
