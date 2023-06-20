@@ -22,6 +22,7 @@ import { EthereumApi, EthereumApiService } from '../ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
 import { calcInterval } from '../ethereum/utils.ethereum';
 import { eventToTopic, functionToSighash } from '../utils/string';
+import { yargsOptions } from '../yargs';
 import { IEthereumBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -34,28 +35,33 @@ import {
 const BLOCK_TIME_VARIANCE = 5000;
 
 const INTERVAL_PERCENT = 0.9;
-const QUERY_ADDRESS_LIMIT = 50;
 
 function eventFilterToQueryEntry(
   filter: EthereumLogFilter,
   dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
 ): DictionaryQueryEntry {
+  const { argv } = yargsOptions;
+
   const conditions: DictionaryQueryCondition[] = [];
 
   if (Array.isArray(dsOptions)) {
     const addresses = dsOptions.map((option) => option.address).filter(Boolean);
 
-    if (addresses.length !== 0) {
+    if (addresses.length > argv['query-address-limit']) {
+      logger.warn(
+        `Addresses length: ${addresses} is exceeding limit: ${argv['query-address-limit']}. Consider increasing this value with the flag --query-address-limit  `,
+      );
+    }
+
+    if (
+      addresses.length !== 0 &&
+      addresses.length <= argv['query-address-limit']
+    ) {
       conditions.push({
         field: 'address',
         value: addresses,
         matcher: 'in',
       });
-      if (addresses.length <= QUERY_ADDRESS_LIMIT) {
-        logger.warn(
-          `Query Address Limit: ${QUERY_ADDRESS_LIMIT} has been reached. Addresses length=${addresses.length}`,
-        );
-      }
     }
   } else {
     if (dsOptions?.address) {
