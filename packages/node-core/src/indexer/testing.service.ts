@@ -52,6 +52,10 @@ export abstract class TestingService<A, SA, B, DS> {
     protected readonly apiService: IApi<A, SA, B>,
     protected readonly indexerManager: IIndexerManager<B, DS>
   ) {
+    if (!nodeConfig.disableHistorical) {
+      throw new Error(`Historical data not supported in testing service`);
+    }
+
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist'));
@@ -176,6 +180,7 @@ export abstract class TestingService<A, SA, B, DS> {
           Object.keys(attributes).map((attr) => {
             const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
             const actualAttr = (actualEntity as Record<string, any>)[attr] ?? null;
+
             if (!isEqual(expectedAttr, actualAttr)) {
               failedAttributes.push(
                 `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`
