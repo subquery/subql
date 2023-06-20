@@ -414,9 +414,10 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'string',
     },
     'query-address-limit': {
-      describe: 'Set the limit for address on dynamic dataSources',
+      describe:
+        'Set the limit for address on dictionary queries for dynamic datasources',
       type: 'number',
-      default: 50,
+      default: 100,
     },
   })
   .hide('root'); // root is hidden because its for internal use

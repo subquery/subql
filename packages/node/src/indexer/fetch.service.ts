@@ -40,23 +40,20 @@ function eventFilterToQueryEntry(
   filter: EthereumLogFilter,
   dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
 ): DictionaryQueryEntry {
-  const { argv } = yargsOptions;
+  const queryAddressLimit = yargsOptions.argv['query-address-limit'];
 
   const conditions: DictionaryQueryCondition[] = [];
 
   if (Array.isArray(dsOptions)) {
     const addresses = dsOptions.map((option) => option.address).filter(Boolean);
 
-    if (addresses.length > argv['query-address-limit']) {
+    if (addresses.length > queryAddressLimit) {
       logger.warn(
-        `Addresses length: ${addresses} is exceeding limit: ${argv['query-address-limit']}. Consider increasing this value with the flag --query-address-limit  `,
+        `Addresses length: ${addresses} is exceeding limit: ${queryAddressLimit}. Consider increasing this value with the flag --query-address-limit  `,
       );
     }
 
-    if (
-      addresses.length !== 0 &&
-      addresses.length <= argv['query-address-limit']
-    ) {
+    if (addresses.length !== 0 && addresses.length <= queryAddressLimit) {
       conditions.push({
         field: 'address',
         value: addresses,
