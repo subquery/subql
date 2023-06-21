@@ -35,7 +35,7 @@
     "node-fetch": "2.6.7",
     "oclif": "^2.4.4",
     "rimraf": "^3.0.2",
-    "simple-git": "^3.12.0",
+    "simple-git": "^3.16.0",
     "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.2.6",
     "tslib": "^2.3.1",
