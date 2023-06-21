@@ -94,21 +94,19 @@ export class ApiPromiseConnection
   }
 
   async apiConnect(): Promise<void> {
-    const headers = {
-      'User-Agent': `SubQuery-Node ${packageVersion}`,
-    };
+    return new Promise<void>((resolve) => {
+      if (this.unsafeApi.isConnected) {
+        resolve();
+      }
 
-    let provider: ProviderInterface;
+      this.unsafeApi.on('connected', () => {
+        resolve();
+      });
 
-    if (this.endpoint.startsWith('ws')) {
-      provider = createCachedProvider(
-        new WsProvider(this.endpoint, RETRY_DELAY, headers),
-      );
-    } else if (this.endpoint.startsWith('http')) {
-      provider = createCachedProvider(new HttpProvider(this.endpoint, headers));
-    }
-    this.apiOptions.provider = provider;
-    this.unsafeApi = await ApiPromise.create(this.apiOptions);
+      if (!this.unsafeApi.isConnected) {
+        this.unsafeApi.connect();
+      }
+    });
   }
 
   async apiDisconnect(): Promise<void> {
