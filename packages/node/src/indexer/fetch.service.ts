@@ -12,7 +12,12 @@ import {
   SubqlEthereumProcessorOptions,
   EthereumTransactionFilter,
 } from '@subql/common-ethereum';
-import { NodeConfig, BaseFetchService, ApiService } from '@subql/node-core';
+import {
+  NodeConfig,
+  BaseFetchService,
+  ApiService,
+  getLogger,
+} from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import { SubqlDatasource } from '@subql/types-ethereum';
 import { MetaData } from '@subql/utils';
@@ -31,6 +36,8 @@ import {
   blockToHeader,
   UnfinalizedBlocksService,
 } from './unfinalizedBlocks.service';
+
+const logger = getLogger('fetch.service');
 
 const BLOCK_TIME_VARIANCE = 5000;
 
