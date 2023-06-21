@@ -40,4 +40,9 @@ export class WorkerUnfinalizedBlocksService
   resetLastFinalizedVerifiedHeight(): void {
     throw new Error('This method should not be called from a worker');
   }
+
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getMetadataUnfinalizedBlocks(): Promise<Header[]> {
+    throw new Error('This method should not be called from a worker');
+  }
 }

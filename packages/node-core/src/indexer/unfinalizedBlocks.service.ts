@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {isMainThread} from 'worker_threads';
 import {last} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -28,6 +27,7 @@ export interface IUnfinalizedBlocksService<B> {
   processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined>;
   resetUnfinalizedBlocks(): void;
   resetLastFinalizedVerifiedHeight(): void;
+  getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks>;
 }
 
 export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlocksService<B> {
