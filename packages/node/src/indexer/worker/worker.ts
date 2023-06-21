@@ -33,8 +33,10 @@ import {
   ProcessBlockResponse,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
+import { ApiPromiseConnection } from '../apiPromise.connection';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
+import { HostApiService, hostApiServiceKeys } from './worker.api.service';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
@@ -136,10 +138,18 @@ async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
 
 // Register these functions to be exposed to worker host
 (global as any).host = WorkerHost.create<
-  HostStore & HostDynamicDS<SubstrateDatasource> & HostUnfinalizedBlocks,
+  HostStore &
+    HostDynamicDS<SubstrateDatasource> &
+    HostUnfinalizedBlocks &
+    HostApiService,
   IInitIndexerWorker
 >(
-  [...hostStoreKeys, ...hostDynamicDsKeys, ...hostUnfinalizedBlocksKeys],
+  [
+    ...hostStoreKeys,
+    ...hostDynamicDsKeys,
+    ...hostUnfinalizedBlocksKeys,
+    ...hostApiServiceKeys,
+  ],
   {
     initWorker,
     fetchBlock,

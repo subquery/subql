@@ -20,11 +20,13 @@ import {
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
+import { ApiService } from '../api.service';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
+import { HostApiService } from '../worker/worker.api.service';
 import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
 type IndexerWorker = IIndexerWorker & {
@@ -35,11 +37,15 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubstrateDatasource>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
+  apiService: ApiService,
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubstrateDatasource> & HostStore & HostUnfinalizedBlocks
+    HostDynamicDS<SubstrateDatasource> &
+      HostStore &
+      HostUnfinalizedBlocks &
+      HostApiService
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -71,6 +77,10 @@ async function createIndexerWorker(
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
+      hostApi: (() => {
+        return apiService.api;
+      }).bind(apiService),
+      hostFetchBlocks: apiService.fetchBlocks.bind(apiService),
     },
     root,
   );
@@ -99,6 +109,7 @@ export class WorkerBlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
+    apiService: ApiService,
   ) {
     super(
       nodeConfig,
@@ -115,6 +126,7 @@ export class WorkerBlockDispatcherService
           storeService.getStore(),
           dynamicDsService,
           unfinalizedBlocksSevice,
+          apiService,
           project.root,
         ),
     );
@@ -150,6 +162,7 @@ export class WorkerBlockDispatcherService
     if (syncedDictionary) {
       this.syncWorkerRuntimes();
     }
+
     // const start = new Date();
     await worker.fetchBlock(height, blockSpecVersion);
     // const end = new Date();

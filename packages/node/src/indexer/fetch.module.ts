@@ -15,6 +15,7 @@ import {
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
@@ -71,6 +72,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               project,
               dynamicDsService,
               unfinalizedBlocks,
+              apiService,
             )
           : new BlockDispatcherService(
               apiService,
