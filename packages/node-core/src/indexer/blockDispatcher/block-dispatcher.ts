@@ -6,6 +6,7 @@ import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
@@ -15,7 +16,7 @@ import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
-import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from '../types';
+import {IProjectService, ISubqueryProject} from '../types';
 import {BaseBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
@@ -43,11 +44,12 @@ export abstract class BlockDispatcher<B, DS>
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     projectService: IProjectService<DS>,
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
-    project: ISubqueryProject<IProjectNetworkConfig>,
+    project: ISubqueryProject,
     dynamicDsService: DynamicDsService<DS>,
     fetchBlocksBatches: BatchBlockFetcher<B>
   ) {
@@ -56,6 +58,7 @@ export abstract class BlockDispatcher<B, DS>
       eventEmitter,
       project,
       projectService,
+      projectUpgradeService,
       new Queue(nodeConfig.batchSize * 3),
       smartBatchService,
       storeService,

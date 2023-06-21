@@ -4,14 +4,16 @@
 import assert from 'assert';
 import {ISubqueryProject} from '../indexer/types';
 import {getStartHeight} from '../utils';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 
-export interface IProjectUpgradeService<P extends ISubqueryProject> {
+export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
   currentHeight: number;
-  projects: Record<number, P>;
+  currentProject: P;
+  projects: Map<number, P>;
   getProject: (height: number) => P;
 }
 
-const serviceKeys: Array<keyof IProjectUpgradeService<ISubqueryProject>> = ['getProject', 'currentHeight', 'projects'];
+const serviceKeys: Array<keyof IProjectUpgradeService> = ['getProject', 'currentHeight', 'projects'];
 
 function assertEqual<T>(valueA: T, valueB: T, name: string) {
   assert(valueA === valueB, `Expected ${name} to be equal. expected="${valueA}" parent has="${valueB}"`);
@@ -26,7 +28,8 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
   return new Proxy<P & IProjectUpgradeService<P>>(upgradeService as any, {
     set(target, key, value) {
       if (key !== 'currentHeight') {
-        throw new Error('All properties except `currentHeight` are readonly');
+        throw new Error(`All properties except 'currentHeight' are readonly. Trying to set "${key.toString()}"`);
+        // return false
         // TODO should this return false?
       }
       target.currentHeight = value;
@@ -34,43 +37,78 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
     },
     get(target, prop, receiver) {
       if ((serviceKeys as Array<string | symbol>).includes(prop)) {
-        return Reflect.get(target, prop, receiver);
+        return target[prop as keyof IProjectUpgradeService<P>];
       }
-      // TODO can we cache this?
-      const project = target.getProject(target.currentHeight);
-      return project[prop as keyof P];
+      const project = target.currentProject;
+      const value = project[prop as keyof P];
+
+      if (value instanceof Function) {
+        return value.bind(project);
+      }
+
+      return value;
     },
   });
 }
 
-export class ProjectUpgradeSevice<P extends ISubqueryProject> implements IProjectUpgradeService<P> {
+export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject> implements IProjectUpgradeService<P> {
   // Mapping of the start height -> Project version
   // private projects: Record<number, P> = {};
 
-  currentHeight: number;
+  #currentHeight: number;
+  #currentProject: P;
 
-  private constructor(readonly projects: Record<number, P>, currentHeight: number) {
-    this.currentHeight = currentHeight;
+  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
+    console.log('PROJECTS', [..._projects.getAll().keys()]);
+    this.#currentHeight = currentHeight;
+    this.#currentProject = this.getProject(this.currentHeight);
+  }
+
+  get projects(): Map<number, P> {
+    return this._projects.getAll();
+  }
+
+  get currentProject(): P {
+    return this.#currentProject;
+  }
+
+  get currentHeight(): number {
+    return this.#currentHeight;
+  }
+
+  set currentHeight(height: number) {
+    this.#currentHeight = height;
+    const newProject = this.getProject(this.#currentHeight);
+
+    if (this.#currentProject !== newProject) {
+      console.log('Project upgraded');
+    }
+    this.#currentProject = newProject;
   }
 
   static async create<P extends ISubqueryProject>(
     startProject: P, // The project passed in via application start
     loadProject: (ipfsCid: string) => Promise<P>,
-    currentHeight: number,
+    currentHeight?: number,
     startHeight?: number // How far back we need to load parent versions
   ): Promise<ProjectUpgradeSevice<P>> {
-    const projects: Record<number, P> = {};
+    const projects: Map<number, P> = new Map();
 
     let currentProject = startProject;
 
     const addProject = (height: number, project: P) => {
       this.validateProject(startProject, project);
-      projects[height] = project;
+      projects.set(height, project);
     };
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const projectStartHeight = getStartHeight(currentProject.dataSources);
+
+      // Set the current height to the start of the startProject if not provided
+      if (currentHeight === undefined) {
+        currentHeight = startProject.parent?.block ?? projectStartHeight;
+      }
 
       // At the end of the chain
       if (!currentProject.parent) {
@@ -99,37 +137,15 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject> implements IProjec
       currentProject = nextProject;
     }
 
-    if (!Object.keys(projects).length) {
+    if (!projects.size) {
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
 
-    return new ProjectUpgradeSevice(projects, currentHeight);
+    return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight);
   }
 
   getProject(height: number): P {
-    const heights = Object.keys(this.projects).map((k) => parseInt(k, 10));
-    let matchingHeight: number | undefined;
-    for (let i = 0; i < heights.length; i++) {
-      const currentHeight = heights[i];
-
-      if (currentHeight === height) {
-        matchingHeight = currentHeight;
-        break;
-      }
-      if (currentHeight <= height) {
-        matchingHeight = currentHeight;
-      }
-
-      if (currentHeight > height) {
-        break;
-      }
-    }
-
-    if (matchingHeight === undefined) {
-      throw new Error(`First project start is at ${heights[0]}`);
-    }
-
-    return this.projects[matchingHeight];
+    return this._projects.get(height);
   }
 
   private static validateProject<P extends ISubqueryProject>(startProject: P, parentProject: P): void {

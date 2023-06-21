@@ -27,15 +27,17 @@ export interface ISubqueryProject<
   T = unknown,
   C = unknown
 > {
-  id: string;
-  root: string;
-  network: N;
-  dataSources: DS[];
-  schema: GraphQLSchema;
-  templates: T[];
-  chainTypes?: C;
-  runner?: RunnerSpecs;
-  parent?: ParentProject;
+  readonly id: string;
+  readonly root: string;
+  readonly network: N;
+  readonly dataSources: DS[];
+  readonly schema: GraphQLSchema;
+  readonly templates: T[];
+  readonly chainTypes?: C;
+  readonly runner?: RunnerSpecs;
+  readonly parent?: ParentProject;
+
+  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date>) => Promise<void>;
 }
 
 export interface IIndexerManager<B, DS> {

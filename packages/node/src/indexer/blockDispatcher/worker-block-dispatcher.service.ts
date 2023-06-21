@@ -20,6 +20,7 @@ import {
   HostConnectionPoolState,
   ConnectionPoolStateManager,
   connectionPoolStateHostFunctions,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -101,6 +102,8 @@ export class WorkerBlockDispatcherService
     eventEmitter: EventEmitter2,
     @Inject('IProjectService')
     projectService: IProjectService<SubstrateDatasource>,
+    @Inject('IProjectUpgradeService')
+    projectUpgadeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -114,6 +117,7 @@ export class WorkerBlockDispatcherService
       nodeConfig,
       eventEmitter,
       projectService,
+      projectUpgadeService,
       smartBatchService,
       storeService,
       storeCacheService,

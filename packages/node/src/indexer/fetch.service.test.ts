@@ -23,10 +23,14 @@ import {
   ConnectionPoolService,
   ConnectionPoolStateManager,
   MmrQueryService,
+  ProjectUpgradeSevice,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import {
+  SubqueryProject,
+  SubstrateProjectDs,
+} from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
@@ -45,37 +49,54 @@ import { createCachedProvider } from './x-provider/cachedProvider';
 const WS_ENDPOINT = 'wss://moonbeam.api.onfinality.io/public-ws';
 const WS_POLKADOT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
 
-function testSubqueryProject(): SubqueryProject {
-  return {
-    network: {
+const defaultDs: SubqueryProject['dataSources'] = [
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 1,
+    mapping: {
+      entryScript: '',
+      handlers: [{ handler: 'handleTest', kind: SubstrateHandlerKind.Event }],
+      file: '',
+    },
+  },
+];
+
+const stakingRewardDs: SubstrateProjectDs = {
+  name: 'runtime',
+  kind: SubstrateDatasourceKind.Runtime,
+  startBlock: 1,
+  mapping: {
+    entryScript: '',
+    file: '',
+    handlers: [
+      {
+        handler: 'handleEvent',
+        kind: SubstrateHandlerKind.Event,
+        filter: { module: 'staking', method: 'Reward' },
+      },
+    ],
+  },
+};
+
+function testSubqueryProject(dataSources = defaultDs): SubqueryProject {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       chainId:
         '0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d',
       endpoint: [WS_ENDPOINT],
     },
-    chainTypes: {
+    dataSources,
+    new GraphQLSchema({}),
+    [],
+    {
       types: {
         TestType: 'u32',
       },
     },
-    dataSources: [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          handlers: [
-            { handler: 'handleTest', kind: SubstrateHandlerKind.Event },
-          ],
-          file: '',
-        },
-      },
-    ],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+  );
 }
 
 function mockIndexerManager(): IndexerManager & {
@@ -125,6 +146,13 @@ async function createApp(
       {
         provide: 'ISubqueryProject',
         useFactory: () => project,
+      },
+      {
+        provide: 'IProjectUpgradeService',
+        useFactory: () =>
+          ProjectUpgradeSevice.create(project, () =>
+            Promise.reject('Not implemented'),
+          ),
       },
       {
         provide: IndexerManager,
@@ -180,6 +208,7 @@ async function createApp(
           storeCahceService,
           poiService,
           dynamicDsService,
+          projectUpgradeSevice,
         ) =>
           new BlockDispatcherService(
             apiService,
@@ -187,6 +216,7 @@ async function createApp(
             indexerManager,
             eventEmitter,
             mockProjectService(),
+            projectUpgradeSevice,
             new SmartBatchService(nodeConfig.batchSize),
             storeService,
             storeCahceService,
@@ -203,6 +233,7 @@ async function createApp(
           StoreCacheService,
           PoiService,
           DynamicDsService,
+          'IProjectUpgradeService',
         ],
       },
       ApiService,
@@ -349,27 +380,8 @@ describe('FetchService', () => {
   }, 100000);
 
   it('not use dictionary if dictionary is not defined in project config', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
-    //filter is defined
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -449,12 +461,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('not use dictionary if block handler is defined in datasource', async () => {
-    const project = testSubqueryProject();
-    const indexerManager = mockIndexerManager();
-    //set dictionary to a different network
-    project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    const project = testSubqueryProject([
       {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
@@ -470,7 +477,11 @@ describe('FetchService', () => {
           ],
         },
       },
-    ];
+    ]);
+    const indexerManager = mockIndexerManager();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
 
@@ -506,12 +517,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('not use dictionary if one of the handler filter module or method is not defined', async () => {
-    const project = testSubqueryProject();
-    const indexerManager = mockIndexerManager();
-    //set dictionary to a different network
-    project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
-    project.dataSources = [
+    const project = testSubqueryProject([
       {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
@@ -534,7 +540,11 @@ describe('FetchService', () => {
           ],
         },
       },
-    ];
+    ]);
+    const indexerManager = mockIndexerManager();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -572,7 +582,7 @@ describe('FetchService', () => {
 
   // at init
   it('set useDictionary to false if dictionary metadata not match with the api', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
     //set dictionary to different network
     //set to a kusama network and use polkadot dictionary
@@ -581,24 +591,6 @@ describe('FetchService', () => {
     project.network.endpoint = ['wss://kusama.api.onfinality.io/public-ws'];
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -637,30 +629,11 @@ describe('FetchService', () => {
   }, 500000);
 
   it('use dictionary and specVersionMap to get block specVersion', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
-
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -673,30 +646,11 @@ describe('FetchService', () => {
   }, 500000);
 
   it('use api to get block specVersion when blockHeight out of specVersionMap', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
-
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -717,30 +671,12 @@ describe('FetchService', () => {
   }, 500000);
 
   it('only fetch SpecVersion from dictionary once', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
     // make sure use dictionary is true
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -762,29 +698,11 @@ describe('FetchService', () => {
   }, 500000);
 
   it('update specVersionMap once when specVersion map is out', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
@@ -811,29 +729,11 @@ describe('FetchService', () => {
 
   // Skip for now, test timeout
   it.skip('prefetch meta for different specVersion range', async () => {
-    const project = testSubqueryProject();
+    const project = testSubqueryProject([stakingRewardDs]);
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
-    project.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          entryScript: '',
-          file: '',
-          handlers: [
-            {
-              handler: 'handleEvent',
-              kind: SubstrateHandlerKind.Event,
-              filter: { module: 'staking', method: 'Reward' },
-            },
-          ],
-        },
-      },
-    ];
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);

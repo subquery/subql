@@ -13,12 +13,9 @@ import {
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
-import {
-  generateTimestampReferenceForBlockFilters,
-  SubstrateProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { filterDataSourcesBySpecName } from '../utils/project';
+import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -64,10 +61,9 @@ export class ProjectService extends BaseProjectService<
     );
   }
 
-  protected async generateTimestampReferenceForBlockFilters(
-    ds: SubstrateProjectDs[],
-  ): Promise<SubstrateProjectDs[]> {
-    return generateTimestampReferenceForBlockFilters(ds, this.apiService.api);
+  protected async getBlockTimestamp(height: number): Promise<Date> {
+    const block = await getBlockByHeight(this.apiService.api, height);
+    return getTimestamp(block);
   }
 
   protected getStartBlockDatasources(): SubstrateDatasource[] {

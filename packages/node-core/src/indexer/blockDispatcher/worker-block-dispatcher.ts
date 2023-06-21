@@ -7,6 +7,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {AutoQueue} from '../../utils';
@@ -15,7 +16,7 @@ import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
-import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from '../types';
+import {IProjectService, ISubqueryProject} from '../types';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
@@ -47,11 +48,12 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     projectService: IProjectService<DS>,
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
-    project: ISubqueryProject<IProjectNetworkConfig>,
+    project: ISubqueryProject,
     dynamicDsService: DynamicDsService<DS>,
     private createIndexerWorker: () => Promise<W>
   ) {
@@ -60,6 +62,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       eventEmitter,
       project,
       projectService,
+      projectUpgradeService,
       initAutoQueue(nodeConfig.workers, nodeConfig.batchSize),
       smartBatchService,
       storeService,

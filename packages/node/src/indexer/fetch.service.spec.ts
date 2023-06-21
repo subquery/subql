@@ -18,6 +18,7 @@ import {
   StoreService,
   StoreCacheService,
   METADATA_UNFINALIZED_BLOCKS_KEY,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
@@ -305,33 +306,37 @@ function mockDictionaryService3(): DictionaryService {
   } as any;
 }
 
-function testSubqueryProject(): SubqueryProject {
-  return {
-    network: {
+function testSubqueryProject(
+  dataSources: SubqueryProject['dataSources'] = [],
+): SubqueryProject {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
-    chainTypes: {
+    dataSources,
+    new GraphQLSchema({}),
+    [],
+    {
       types: {
         TestType: 'u32',
       },
     },
-    dataSources: [],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+  );
 }
 
 function testSubqueryProjectV0_2_0(): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    path.resolve(__dirname, '../../'),
+    {
       chainId: '0x',
       endpoint: [],
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
     },
-    dataSources: [
+    [
       {
         kind: 'substrate/Jsonfy',
         processor: {
@@ -349,11 +354,9 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
         },
       },
     ] as any,
-    id: 'test',
-    schema: new GraphQLSchema({}),
-    root: path.resolve(__dirname, '../../'),
-    templates: [],
-  };
+    new GraphQLSchema({}),
+    [],
+  );
 }
 
 function mockProjectService(project: SubqueryProject): ProjectService {
@@ -364,6 +367,20 @@ function mockProjectService(project: SubqueryProject): ProjectService {
     setBlockOffset: jest.fn(),
     getAllDataSources: () => project.dataSources,
   } as any;
+}
+
+function mockProjectUpgradeService(
+  project: SubqueryProject,
+): IProjectUpgradeService {
+  const startBlock = Math.min(
+    ...project.dataSources.map((ds) => ds.startBlock),
+  );
+  return {
+    currentHeight: startBlock,
+    currentProject: project,
+    projects: new Map([[startBlock, project]]),
+    getProject: () => project,
+  };
 }
 
 function mockStoreService(): StoreService {
@@ -417,6 +434,7 @@ async function createFetchService(
 ): Promise<FetchService> {
   const dsProcessorService = new DsProcessorService(project, config);
   const projectService = mockProjectService(project);
+  const projectUpgradeService = mockProjectUpgradeService(project);
   const storeCache = mockStoreCache();
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
@@ -444,6 +462,7 @@ async function createFetchService(
       indexerManager,
       eventEmitter,
       projectService,
+      projectUpgradeService,
       new SmartBatchService(nodeConfig.batchSize),
       mockStoreService(),
       storeCache,
@@ -580,9 +599,7 @@ describe('FetchService', () => {
   // skip this test, we are using dictionaryValidation method with startHeight, rather than use local useDictionary
   it.skip("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight", async () => {
     const batchSize = 20;
-    project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project = testSubqueryProject([
       {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
@@ -602,11 +619,14 @@ describe('FetchService', () => {
           ],
         },
       },
-    ];
+    ]);
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
     const projectService = mockProjectService(project);
+    const projectUpgradeService = mockProjectUpgradeService(project);
     const storeCache = mockStoreCache();
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
@@ -631,6 +651,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      projectUpgradeService,
       new SmartBatchService(nodeConfig.batchSize),
       mockStoreService(),
       storeCache,
@@ -684,9 +705,7 @@ describe('FetchService', () => {
 
   it('set last buffered Height to dictionary last processed height when dictionary returned batch is empty, and then start use original method', async () => {
     const batchSize = 20;
-    project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project = testSubqueryProject([
       {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
@@ -706,9 +725,12 @@ describe('FetchService', () => {
           ],
         },
       },
-    ];
+    ]);
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     const dictionaryService = mockDictionaryService3();
     const projectService = mockProjectService(project);
+    const projectUpgradeService = mockProjectUpgradeService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
@@ -733,6 +755,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      projectUpgradeService,
       new SmartBatchService(nodeConfig.batchSize),
       mockStoreService(),
       storeCache,
@@ -781,9 +804,7 @@ describe('FetchService', () => {
 
   it('fill the dictionary returned batches to nextBlockBuffer', async () => {
     const batchSize = 20;
-    project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project = testSubqueryProject([
       {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
@@ -803,9 +824,12 @@ describe('FetchService', () => {
           ],
         },
       },
-    ];
+    ]);
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     const dictionaryService = mockDictionaryService1();
     const projectService = mockProjectService(project);
+    const projectUpgradeService = mockProjectUpgradeService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project, config);
@@ -829,6 +853,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      projectUpgradeService,
       new SmartBatchService(nodeConfig.batchSize),
       mockStoreService(),
       storeCache,
@@ -930,8 +955,7 @@ describe('FetchService', () => {
   }, 500000);
   it('given bypassBlocks, should return correct output during runtime', async () => {
     const batchSize = 20;
-    project.network.bypassBlocks = ['1 - 22', 35, 44, 40, 80];
-    project.dataSources = [
+    project = testSubqueryProject([
       {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
@@ -947,7 +971,8 @@ describe('FetchService', () => {
           ],
         },
       },
-    ];
+    ]);
+    project.network.bypassBlocks = ['1 - 22', 35, 44, 40, 80];
     const nodeConfig = new NodeConfig({
       subquery: '',
       subqueryName: '',
@@ -956,6 +981,7 @@ describe('FetchService', () => {
 
     const dictionaryService = new DictionaryService(project, nodeConfig);
     const projectService = mockProjectService(project);
+    const projectUpgradeService = mockProjectUpgradeService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
@@ -976,6 +1002,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      projectUpgradeService,
       new SmartBatchService(nodeConfig.batchSize),
       mockStoreService(),
       storeCache,

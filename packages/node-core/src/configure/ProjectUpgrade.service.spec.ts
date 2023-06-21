@@ -121,7 +121,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        1,
+        20,
         21
       );
 
@@ -132,7 +132,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        1,
+        20,
         20
       );
 
@@ -238,7 +238,14 @@ describe('Project Upgrades', () => {
     });
 
     it('cant set values other than `currentHeight`', () => {
-      expect(() => (project.id = 'not possible')).toThrow();
+      expect(() => ((project as any).id = 'not possible')).toThrow();
+    });
+
+    it('will default the currentHeight if not provided', async () => {
+      upgradeService = await ProjectUpgradeSevice.create(demoProjects[5], (id) =>
+        Promise.resolve(demoProjects[parseInt(id, 10)])
+      );
+      expect(upgradeService.currentHeight).toEqual(50);
     });
 
     it('can set the current height on the service', () => {

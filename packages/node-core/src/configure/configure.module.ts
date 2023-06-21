@@ -1,13 +1,13 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import {handleCreateSubqueryProjectError, Reader, ReaderFactory} from '@subql/common';
 import {camelCase, isNil, omitBy} from 'lodash';
 import {ISubqueryProject} from '../indexer/types';
 import {getLogger, setLevel} from '../logger';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
 import {IConfig, NodeConfig} from './NodeConfig';
+import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
 const logger = getLogger('configure');
 
@@ -70,7 +70,7 @@ export async function registerApp<P extends ISubqueryProject>(
   showHelp: () => void,
   pjson: any,
   nameMapping?: Record<string, string> // Curently only used by cosmos
-): Promise<{nodeConfig: NodeConfig; project: P}> {
+): Promise<{nodeConfig: NodeConfig; project: P & IProjectUpgradeService<P>}> {
   let config: NodeConfig;
   let rawManifest: unknown;
   let reader: Reader;
@@ -97,7 +97,6 @@ export async function registerApp<P extends ISubqueryProject>(
     }
 
     warnDeprecations(argv);
-    assert(argv.subquery, 'subquery path is missing');
     reader = await ReaderFactory.create(argv.subquery, {
       ipfs: argv.ipfs,
     });
@@ -115,8 +114,28 @@ export async function registerApp<P extends ISubqueryProject>(
     setLevel('debug');
   }
 
+  const createParentProject = async (cid: string): Promise<P> => {
+    cid = `ipfs://${cid}`;
+    const reader = await ReaderFactory.create(cid, {
+      ipfs: config.ipfs,
+    });
+    return createProject(
+      cid,
+      await reader.getProjectSchema(),
+      reader,
+      omitBy(
+        {
+          endpoint: config.networkEndpoints,
+          dictionary: config.networkDictionary,
+        },
+        isNil
+      ),
+      config.root
+    );
+  };
+
   const project = await createProject(
-    argv.subquery,
+    config.subquery,
     rawManifest,
     reader,
     omitBy(
@@ -132,5 +151,9 @@ export async function registerApp<P extends ISubqueryProject>(
     process.exit(1);
   });
 
-  return {project, nodeConfig: config};
+  const projectUpgradeService = await ProjectUpgradeSevice.create(project, createParentProject);
+
+  const upgradeableProject = upgradableSubqueryProject(projectUpgradeService);
+
+  return {project: upgradeableProject, nodeConfig: config};
 }

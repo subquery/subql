@@ -7,18 +7,18 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       endpoint: '',
       dictionary: `https://api.subquery.network/sq/subquery/moonbeam-dictionary`,
       chainId: '',
     },
-    dataSources: [],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+    [],
+    new GraphQLSchema({}),
+    [],
+  );
 }
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',

@@ -12,6 +12,7 @@ import {
   PoiService,
   BlockDispatcher,
   ProcessBlockResponse,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -38,6 +39,8 @@ export class BlockDispatcherService
     eventEmitter: EventEmitter2,
     @Inject('IProjectService')
     projectService: IProjectService<SubstrateDatasource>,
+    @Inject('IProjectUpgradeService')
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -49,6 +52,7 @@ export class BlockDispatcherService
       nodeConfig,
       eventEmitter,
       projectService,
+      projectUpgradeService,
       smartBatchService,
       storeService,
       storeCacheService,

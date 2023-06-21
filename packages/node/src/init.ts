@@ -29,7 +29,7 @@ export async function bootstrap(): Promise<void> {
 
   try {
     const app = await NestFactory.create(AppModule, {
-      logger: debug ? new NestLogger() : false,
+      // logger: debug ? new NestLogger() : false,
     });
     await app.init();
 
@@ -48,6 +48,7 @@ export async function bootstrap(): Promise<void> {
 
     logger.info(`Node started on port: ${port}`);
   } catch (e) {
+    console.log('Error', e);
     logger.error(e, 'Node failed to start');
     process.exit(1);
   }

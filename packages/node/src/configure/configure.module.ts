@@ -39,8 +39,12 @@ export class ConfigureModule {
           provide: 'ISubqueryProject',
           useValue: project,
         },
+        {
+          provide: 'IProjectUpgradeService',
+          useValue: project,
+        },
       ],
-      exports: [NodeConfig, 'ISubqueryProject'],
+      exports: [NodeConfig, 'ISubqueryProject', 'IProjectUpgradeService'],
     };
   }
 }

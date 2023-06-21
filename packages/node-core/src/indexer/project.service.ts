@@ -37,7 +37,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   private _blockOffset?: number;
 
   protected abstract packageVersion: string;
-  protected abstract generateTimestampReferenceForBlockFilters(dataSources: DS[]): Promise<DS[]>;
+  protected abstract getBlockTimestamp(height: number): Promise<Date>;
 
   // Used in the substrate SDK to do extra filtering for spec version
   protected abstract getStartBlockDatasources(): DS[];
@@ -81,7 +81,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   async init(): Promise<void> {
     // Do extra work on main thread to setup stuff
-    this.project.dataSources = await this.generateTimestampReferenceForBlockFilters(this.project.dataSources);
+    await this.project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
     if (isMainThread) {
       this._schema = await this.ensureProject();
       await this.initDbSchema();

@@ -1,8 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ParentProject,
@@ -34,7 +34,8 @@ import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { getChainTypes } from '../utils/project';
-import { getBlockByHeight, getTimestamp } from '../utils/substrate';
+
+const { version: packageVersion } = require('../../package.json');
 
 export type SubstrateProjectDs = SubqlProjectDs<SubstrateDatasource>;
 export type SubqlProjectDsTemplate =
@@ -57,15 +58,36 @@ type NetworkConfig = SubstrateProjectNetworkConfig & { chainId: string };
 
 @Injectable()
 export class SubqueryProject implements ISubqueryProject {
-  id: string;
-  root: string;
-  network: NetworkConfig;
-  dataSources: SubstrateProjectDs[];
-  schema: GraphQLSchema;
-  templates: SubqlProjectDsTemplate[];
-  chainTypes?: RegisteredTypes;
-  runner?: RunnerSpecs;
-  parent?: ParentProject;
+  #dataSources: SubstrateProjectDs[];
+
+  constructor(
+    readonly id: string,
+    readonly root: string,
+    readonly network: NetworkConfig,
+    dataSources: SubstrateProjectDs[],
+    readonly schema: GraphQLSchema,
+    readonly templates: SubqlProjectDsTemplate[],
+    readonly chainTypes?: RegisteredTypes,
+    readonly runner?: RunnerSpecs,
+    readonly parent?: ParentProject,
+  ) {
+    this.#dataSources = dataSources;
+  }
+
+  get dataSources(): SubstrateProjectDs[] {
+    return this.#dataSources;
+  }
+
+  async applyCronTimestamps(
+    getTimestamp: (height: number) => Promise<Date>,
+  ): Promise<void> {
+    this.#dataSources = await insertBlockFiltersCronSchedules(
+      this.dataSources,
+      getTimestamp,
+      isRuntimeDs,
+      SubstrateHandlerKind.Block,
+    );
+  }
 
   static async create(
     path: string,
@@ -80,9 +102,10 @@ export class SubqueryProject implements ISubqueryProject {
 
     // But we still need reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
-    if (rawManifest === undefined) {
-      throw new Error(`Get manifest from project path ${path} failed`);
-    }
+    assert(
+      rawManifest !== undefined,
+      new Error(`Get manifest from project path ${path} failed`),
+    );
 
     const manifest = parseSubstrateProjectManifest(rawManifest);
 
@@ -90,7 +113,7 @@ export class SubqueryProject implements ISubqueryProject {
       NOT_SUPPORT('<1.0.0');
     }
 
-    return loadProjectFromManifest1_0_0(
+    return loadProjectFromManifestBase(
       manifest.asV1_0_0,
       reader,
       path,
@@ -131,11 +154,12 @@ async function loadProjectFromManifestBase(
     ...networkOverrides,
   });
 
-  if (!network.endpoint) {
-    throw new Error(
+  assert(
+    network.endpoint,
+    new Error(
       `Network endpoint must be provided for network. chainId="${network.chainId}"`,
-    );
-  }
+    ),
+  );
 
   let schemaString: string;
   try {
@@ -157,60 +181,30 @@ async function loadProjectFromManifestBase(
     root,
     isCustomDs,
   );
-  return {
-    id: reader.root ? reader.root : path, //TODO, need to method to get project_id
+
+  const templates = await loadProjectTemplates(
+    projectManifest.templates,
+    root,
+    reader,
+    isCustomDs,
+  );
+  const runner = projectManifest.runner;
+  assert(
+    validateSemver(packageVersion, runner.node.version),
+    new Error(
+      `Runner require node version ${runner.node.version}, current node ${packageVersion}`,
+    ),
+  );
+
+  return new SubqueryProject(
+    reader.root ? reader.root : path, //TODO, need to method to get project_id
     root,
     network,
     dataSources,
     schema,
+    templates,
     chainTypes,
-    templates: [],
-    parent: projectManifest.parent,
-  };
-}
-
-const { version: packageVersion } = require('../../package.json');
-
-async function loadProjectFromManifest1_0_0(
-  projectManifest: ProjectManifestV1_0_0Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-  root?: string,
-): Promise<SubqueryProject> {
-  const project = await loadProjectFromManifestBase(
-    projectManifest,
-    reader,
-    path,
-    networkOverrides,
-    root,
-  );
-  project.templates = await loadProjectTemplates(
-    projectManifest.templates,
-    project.root,
-    reader,
-    isCustomDs,
-  );
-  project.runner = projectManifest.runner;
-  if (!validateSemver(packageVersion, project.runner.node.version)) {
-    throw new Error(
-      `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
-    );
-  }
-  return project;
-}
-
-export async function generateTimestampReferenceForBlockFilters(
-  dataSources: SubstrateProjectDs[],
-  api: ApiPromise,
-): Promise<SubstrateProjectDs[]> {
-  return insertBlockFiltersCronSchedules(
-    dataSources,
-    async (height: number) => {
-      const block = await getBlockByHeight(api, height);
-      return getTimestamp(block);
-    },
-    isRuntimeDs,
-    SubstrateHandlerKind.Block,
+    runner,
+    projectManifest.parent,
   );
 }
