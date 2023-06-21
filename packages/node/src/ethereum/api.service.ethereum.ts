@@ -120,6 +120,7 @@ export class EthereumApiService extends ApiService<
           return async (...args: any[]) => {
             let retries = 0;
             let currentApi = target;
+            let throwingError: Error;
 
             while (retries < maxRetries) {
               try {
@@ -128,14 +129,16 @@ export class EthereumApiService extends ApiService<
                 logger.warn(
                   `Request failed with api at height ${height} (retry ${retries}): ${error.message}`,
                 );
+                throwingError = error;
                 currentApi = this.unsafeApi.getSafeApi(height);
                 retries++;
               }
             }
 
-            throw new Error(
+            logger.error(
               `Maximum retries (${maxRetries}) exceeded for api at height ${height}`,
             );
+            throw throwingError;
           };
         }
         return Reflect.get(target, prop, receiver);
