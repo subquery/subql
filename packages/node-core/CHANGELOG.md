@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update meta exports to require `MmrQueryController` and move code from node core (#1823)
 
 ## [2.6.0] - 2023-06-19
 ### Changed
@@ -306,13 +308,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/v2.6.0...HEAD
-[2.6.0]: https://github.com/subquery/subql/compare/node-core/v2.5.1...node-core/v2.6.0
-[2.5.1]: https://github.com/subquery/subql/compare/node-core/v2.5.0...node-core/v2.5.1
-[2.5.0]: https://github.com/subquery/subql/compare/node-core/v2.4.5...node-core/v2.5.0
-[2.4.5]: https://github.com/subquery/subql/compare/node-core/v2.4.4...node-core/v2.4.5
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.6.0...HEAD
+[2.6.0]: https://github.com/subquery/subql/compare/node-core/2.5.1...node-core/2.6.0
+[2.5.1]: https://github.com/subquery/subql/compare/node-core/2.5.0...node-core/2.5.1
+[2.5.0]: https://github.com/subquery/subql/compare/node-core/2.4.5...node-core/2.5.0
+[2.4.5]: https://github.com/subquery/subql/compare/node-core/2.4.4...node-core/2.4.5
 [2.4.4]: https://github.com/subquery/subql/compare/node-core/2.4.3...node-core/2.4.4
-[2.4.3]: https://github.com/subquery/subql/compare/node-core/v2.4.2...node-corev2.4.3
+[2.4.3]: https://github.com/subquery/subql/compare/node-core/2.4.2...node-corev2.4.3
 [2.4.2]: https://github.com/subquery/subql/compare/node-core/2.4.1...node-core/2.4.2
 [2.4.1]: https://github.com/subquery/subql/compare/node-core/2.4.0...node-core/2.4.1
 [2.4.0]: https://github.com/subquery/subql/compare/node-core/2.3.1...node-core/2.4.0
