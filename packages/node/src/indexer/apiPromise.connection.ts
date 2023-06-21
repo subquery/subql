@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiOptions } from '@polkadot/api/types';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
@@ -29,6 +30,8 @@ export class ApiPromiseConnection
 
   constructor(
     public unsafeApi: ApiPromise,
+    private apiOptions: ApiOptions,
+    private endpoint: string,
     private fetchBlocksBatches: FetchFunc,
   ) {
     this.networkMeta = {
@@ -66,7 +69,12 @@ export class ApiPromiseConnection
       ...args.chainTypes,
     };
     const api = await ApiPromise.create(apiOption);
-    return new ApiPromiseConnection(api, fetchBlocksBatches);
+    return new ApiPromiseConnection(
+      api,
+      apiOption,
+      endpoint,
+      fetchBlocksBatches,
+    );
   }
 
   safeApi(height: number): ApiAt {
@@ -86,7 +94,21 @@ export class ApiPromiseConnection
   }
 
   async apiConnect(): Promise<void> {
-    await this.unsafeApi.connect();
+    const headers = {
+      'User-Agent': `SubQuery-Node ${packageVersion}`,
+    };
+
+    let provider: ProviderInterface;
+
+    if (this.endpoint.startsWith('ws')) {
+      provider = createCachedProvider(
+        new WsProvider(this.endpoint, RETRY_DELAY, headers),
+      );
+    } else if (this.endpoint.startsWith('http')) {
+      provider = createCachedProvider(new HttpProvider(this.endpoint, headers));
+    }
+    this.apiOptions.provider = provider;
+    this.unsafeApi = await ApiPromise.create(this.apiOptions);
   }
 
   async apiDisconnect(): Promise<void> {

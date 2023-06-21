@@ -124,7 +124,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
               this.pool[index].lastRequestTime = end; // Update the last request time
               return result;
             } catch (error) {
-              this.handleApiError(index, target.handleError(error as Error));
+              await this.handleApiError(index, target.handleError(error as Error));
               throw error;
             }
           };
@@ -138,6 +138,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   private getNextConnectedApiIndex(): number | undefined {
+    if (Object.keys(this.pool).length === 0) {
+      throw new Error(`No connected endpoints available`);
+    }
+
     const indices = Object.keys(this.pool)
       .map(Number)
       .filter((index) => !this.pool[index].backoffDelay);
@@ -185,19 +189,19 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     return Object.keys(this.pool).length;
   }
 
-  async handleApiDisconnects(apiIndex: number, endpoint: string): Promise<void> {
-    logger.warn(`disconnected from ${endpoint}`);
-    delete this.pool[apiIndex];
+  async handleApiDisconnects(apiIndex: number): Promise<void> {
+    logger.warn(`disconnected from ${this.pool[apiIndex].endpoint}`);
 
     try {
-      logger.debug(`reconnecting to ${endpoint}...`);
+      logger.debug(`reconnecting to ${this.pool[apiIndex].endpoint}...`);
       await this.connectToApi(apiIndex);
     } catch (e) {
-      logger.error(`unable to reconnect to endpoint ${endpoint}`, e);
+      logger.error(`unable to reconnect to endpoint ${this.pool[apiIndex].endpoint}: ${e}`);
+      delete this.pool[apiIndex];
       return;
     }
 
-    logger.info(`reconnected to ${endpoint}!`);
+    logger.info(`reconnected to ${this.pool[apiIndex].endpoint}!`);
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
@@ -236,10 +240,15 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     });
   }
 
-  handleApiError(apiIndex: number, error: ApiConnectionError): void {
+  async handleApiError(apiIndex: number, error: ApiConnectionError): Promise<void> {
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
     this.pool[apiIndex].performanceScore += adjustment;
     this.pool[apiIndex].failureCount++;
+
+    if (error.errorType === ApiErrorType.Connection) {
+      await this.handleApiDisconnects(apiIndex);
+      return;
+    }
 
     if (error.errorType !== ApiErrorType.Default) {
       const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[apiIndex].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
