@@ -103,7 +103,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   get api(): T {
     const index = this.getNextConnectedApiIndex();
     if (index === undefined) {
-      throw new Error('All of the endpoints are suspended at the moment');
+      throw new Error(
+        'All endpoints in the pool are either suspended due to rate limits or attempting to reconnect. Please wait or add healthier endpoints.'
+      );
     }
     const api = this.pool[index].connection;
 
@@ -141,7 +143,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
   private getNextConnectedApiIndex(): number | undefined {
     if (Object.keys(this.pool).length === 0) {
-      throw new Error(`No connected endpoints available`);
+      throw new Error(`No endpoints are available in the pool. Please check for connection issues.`);
     }
 
     const indices = Object.keys(this.pool)
