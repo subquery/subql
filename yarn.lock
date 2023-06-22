@@ -64,32 +64,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:3.5.8":
-  version: 3.5.8
-  resolution: "@apollo/client@npm:3.5.8"
+"@apollo/client@npm:^3.7.16":
+  version: 3.7.16
+  resolution: "@apollo/client@npm:3.7.16"
   dependencies:
-    "@graphql-typed-document-node/core": ^3.0.0
-    "@wry/context": ^0.6.0
+    "@graphql-typed-document-node/core": ^3.1.1
+    "@wry/context": ^0.7.0
     "@wry/equality": ^0.5.0
-    "@wry/trie": ^0.3.0
-    graphql-tag: ^2.12.3
+    "@wry/trie": ^0.4.0
+    graphql-tag: ^2.12.6
     hoist-non-react-statics: ^3.3.2
-    optimism: ^0.16.1
+    optimism: ^0.16.2
     prop-types: ^15.7.2
+    response-iterator: ^0.2.6
     symbol-observable: ^4.0.0
-    ts-invariant: ^0.9.4
+    ts-invariant: ^0.10.3
     tslib: ^2.3.0
-    zen-observable-ts: ^1.2.0
+    zen-observable-ts: ^1.2.5
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
-    react: ^16.8.0 || ^17.0.0
+    graphql-ws: ^5.5.5
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     subscriptions-transport-ws: ^0.9.0 || ^0.11.0
   peerDependenciesMeta:
+    graphql-ws:
+      optional: true
     react:
+      optional: true
+    react-dom:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: c896153784ae7b3adbf378e087c2a3150966fd5f5ea029907965dc5987f4751f2058c55142fe0a8e53f6c38124421b0e7f955f7fa5a4c28840be23c53b3a7e64
+  checksum: 6c0035634a15a92d547f06d9a943e9025bef1929775f3c53eea22bcee86aa0916722a196bb9bed6a51d27a2b6ba587ef00bed3831a29be89ced9b8b63f45cbe7
   languageName: node
   linkType: hard
 
@@ -2255,12 +2262,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-typed-document-node/core@npm:^3.0.0":
-  version: 3.1.1
-  resolution: "@graphql-typed-document-node/core@npm:3.1.1"
+"@graphql-typed-document-node/core@npm:^3.1.1":
+  version: 3.2.0
+  resolution: "@graphql-typed-document-node/core@npm:3.2.0"
   peerDependencies:
-    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: 87ff4cee308f1075f4472b80f9f9409667979940f8f701e87f0aa35ce5cf104d94b41258ea8192d05a0893475cd0f086a3929a07663b4fe8d0e805a277f07ed5
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: fa44443accd28c8cf4cb96aaaf39d144a22e8b091b13366843f4e97d19c7bfeaf609ce3c7603a4aeffe385081eaf8ea245d078633a7324c11c5ec4b2011bb76d
   languageName: node
   linkType: hard
 
@@ -4210,6 +4217,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
+    "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
@@ -4224,11 +4232,11 @@ __metadata:
     "@willsoto/nestjs-prometheus": ^5.1.1
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
+    cross-fetch: ^3.1.6
     dayjs: ^1.10.7
     lodash: ^4.17.21
     lru-cache: 8.0.4
     merkle-tools: ^1.4.1
-    node-fetch: ^2.6.7
     prom-client: ^14.0.1
     source-map: ^0.7.4
     tar: ^6.1.11
@@ -4241,7 +4249,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node@workspace:packages/node"
   dependencies:
-    "@apollo/client": 3.5.8
     "@nestjs/common": ^9.4.0
     "@nestjs/core": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
@@ -4275,6 +4282,8 @@ __metadata:
     rimraf: ^3.0.2
     rxjs: ^7.5.2
     yargs: ^16.2.0
+  peerDependencies:
+    "@apollo/client": ^3.7.16
   bin:
     subql-node: ./bin/run
   languageName: unknown
@@ -5716,12 +5725,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/context@npm:^0.6.0":
-  version: 0.6.1
-  resolution: "@wry/context@npm:0.6.1"
+"@wry/context@npm:^0.7.0":
+  version: 0.7.3
+  resolution: "@wry/context@npm:0.7.3"
   dependencies:
     tslib: ^2.3.0
-  checksum: 4187863175061a8f54659f124e3e5c202e010b2b65bf886b4de9777ce8a45cf183b6f6d88f1f537002cbcbea52103a2eadc337d494106490def10acaf9522c5d
+  checksum: 91c1e9eee9046c48ff857d60dcbb59f22246ce0f9bb2d9b190e0555227e7ba3f86024032cc057f3f5141d3bee93fc6b2a15ce2c79fa512569d3432eb8e1af02b
   languageName: node
   linkType: hard
 
@@ -5749,6 +5758,15 @@ __metadata:
   dependencies:
     tslib: ^2.3.0
   checksum: c3f6b200aefc64b5cd9976b7ed0dd22852eb826d835c5dccd3d03ef788d258af50ca64e8de654e5f812134afdb9d5890f334c8de2276d0dca1751785694654f9
+  languageName: node
+  linkType: hard
+
+"@wry/trie@npm:^0.4.0":
+  version: 0.4.3
+  resolution: "@wry/trie@npm:0.4.3"
+  dependencies:
+    tslib: ^2.3.0
+  checksum: 106e021125cfafd22250a6631a0438a6a3debae7bd73f6db87fe42aa0757fe67693db0dfbe200ae1f60ba608c3e09ddb8a4e2b3527d56ed0a7e02aa0ee4c94e1
   languageName: node
   linkType: hard
 
@@ -8040,6 +8058,15 @@ __metadata:
   dependencies:
     luxon: ^3.2.1
   checksum: ac27c257cb8dba4b51978b4767119fc79bfc0dfa35ef0be2533bc4142ae006130515236e2102d04ee3ce44bffc2a4e37a3bee18a2152bbb303bf5ff944e25204
+  languageName: node
+  linkType: hard
+
+"cross-fetch@npm:^3.1.6":
+  version: 3.1.6
+  resolution: "cross-fetch@npm:3.1.6"
+  dependencies:
+    node-fetch: ^2.6.11
+  checksum: 704b3519ab7de488328cc49a52cf1aa14132ec748382be5b9557b22398c33ffa7f8c2530e8a97ed8cb55da52b0a9740a9791d361271c4591910501682d981d9c
   languageName: node
   linkType: hard
 
@@ -10457,7 +10484,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.3, graphql-tag@npm:^2.12.5, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.5, graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -14122,13 +14149,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"optimism@npm:^0.16.1":
-  version: 0.16.1
-  resolution: "optimism@npm:0.16.1"
+"optimism@npm:^0.16.2":
+  version: 0.16.2
+  resolution: "optimism@npm:0.16.2"
   dependencies:
-    "@wry/context": ^0.6.0
+    "@wry/context": ^0.7.0
     "@wry/trie": ^0.3.0
-  checksum: 7506a3e5e37b8945059ffacd68039e920ad121aab3eeff27483b7a8b594f6f694f2a3b61a198aeecc43b81753d35c8cb32b7f662d2b5e2d2449fe7068da678e1
+  checksum: a98ed9a0b8ee2b031010222099b60860d52860bf8182889f2695a7cf2185f21aca59020f78e2b47c0ae7697843caa576798d792967314ff59f6aa7c5d9de7f3a
   languageName: node
   linkType: hard
 
@@ -15604,6 +15631,13 @@ __metadata:
   bin:
     resolve: bin/resolve
   checksum: c79ecaea36c872ee4a79e3db0d3d4160b593f2ca16e031d8283735acd01715a203607e9ded3f91f68899c2937fa0d49390cddbe0fb2852629212f3cda283f4a7
+  languageName: node
+  linkType: hard
+
+"response-iterator@npm:^0.2.6":
+  version: 0.2.6
+  resolution: "response-iterator@npm:0.2.6"
+  checksum: b0db3c0665a0d698d65512951de9623c086b9c84ce015a76076d4bd0bf733779601d0b41f0931d16ae38132fba29e1ce291c1f8e6550fc32daaa2dc3ab4f338d
   languageName: node
   linkType: hard
 
@@ -17123,21 +17157,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-invariant@npm:^0.10.3":
+  version: 0.10.3
+  resolution: "ts-invariant@npm:0.10.3"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: bb07d56fe4aae69d8860e0301dfdee2d375281159054bc24bf1e49e513fb0835bf7f70a11351344d213a79199c5e695f37ebbf5a447188a377ce0cd81d91ddb5
+  languageName: node
+  linkType: hard
+
 "ts-invariant@npm:^0.4.0":
   version: 0.4.4
   resolution: "ts-invariant@npm:0.4.4"
   dependencies:
     tslib: ^1.9.3
   checksum: 58b32fb6b7c479e602e55b9eb63bb99a203c5db09367d3aa7c3cbe000ba62f919eea7f031f55172df9b6d362a6f1a87e906df84b04b8c74c88e507ac58f7a554
-  languageName: node
-  linkType: hard
-
-"ts-invariant@npm:^0.9.4":
-  version: 0.9.4
-  resolution: "ts-invariant@npm:0.9.4"
-  dependencies:
-    tslib: ^2.1.0
-  checksum: c9e5726361fa266916966b2070605f8664b6dd1d8b0ef7565dbf056abb6a87be26195985ef62dd97aeb0894cf2f4ad5b7f0d89dadadc197eaa38e99222afa29c
   languageName: node
   linkType: hard
 
@@ -18531,12 +18565,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zen-observable-ts@npm:^1.2.0":
-  version: 1.2.3
-  resolution: "zen-observable-ts@npm:1.2.3"
+"zen-observable-ts@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "zen-observable-ts@npm:1.2.5"
   dependencies:
     zen-observable: 0.8.15
-  checksum: 0548b555c67671f1240fb416755d2c27abf095b74a9e25c1abf23b2e15de40e6b076c678a162021358fe62914864eb9f0a57cd65e203d66c4988a08b220e6172
+  checksum: 3b707b7a0239a9bc40f73ba71b27733a689a957c1f364fabb9fa9cbd7d04b7c2faf0d517bf17004e3ed3f4330ac613e84c0d32313e450ddaa046f3350af44541
   languageName: node
   linkType: hard
 

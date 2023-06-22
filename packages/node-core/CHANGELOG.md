@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update meta exports to require `MmrQueryController` and move code from node core (#1823)
+- Switch from node-fetch to cross-fetch. [See apollo issue for more](https://github.com/apollographql/apollo-client/issues/4857)
 
 ## [2.6.0] - 2023-06-19
 ### Changed
