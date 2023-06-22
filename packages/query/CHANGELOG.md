@@ -5,9 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Changed
 - Expose all the multi-chain metadatas from query service, this helps to identify multi-chain project and networks been indexed within the project, a proper improvement will be complete in [#1817](https://github.com/subquery/subql/issues/1817). (#1818)
+- Update apollo server with security fixes (#1834)
 
 ## [2.1.0] - 2023-05-24
 ### Changed
@@ -213,9 +213,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
--  annotation is now supported in
-  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+- annotation is now supported in
+- We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+- Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.4.0] - 2021-03-25
 ### Added
