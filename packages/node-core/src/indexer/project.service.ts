@@ -9,7 +9,6 @@ import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
-import {CacheMetadataModel} from '../indexer/storeCache';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BaseDsProcessorService} from './ds-processor.service';
@@ -18,6 +17,7 @@ import {MetadataKeys} from './entities';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
+import {CacheMetadataModel} from './storeCache';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
