@@ -3,12 +3,20 @@
 
 import {Module} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {MmrRegenerateService, MmrService, StoreCacheService, StoreService} from '../indexer';
+import {MmrRegenerateService, MmrService, PgMmrCacheService, StoreCacheService, StoreService} from '../indexer';
 import {ReadyController} from '../meta/ready.controller';
 import {ReadyService} from '../meta/ready.service';
 
 @Module({
-  providers: [StoreCacheService, StoreService, MmrService, MmrRegenerateService, SchedulerRegistry, ReadyService],
+  providers: [
+    StoreCacheService,
+    StoreService,
+    MmrService,
+    PgMmrCacheService,
+    MmrRegenerateService,
+    SchedulerRegistry,
+    ReadyService,
+  ],
   controllers: [ReadyController],
 })
 export class MmrRegenerateFeatureModule {}

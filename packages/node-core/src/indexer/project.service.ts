@@ -18,7 +18,6 @@ import {MetadataKeys} from './entities';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {CacheMetadataModel} from './storeCache/cacheMetadata';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
