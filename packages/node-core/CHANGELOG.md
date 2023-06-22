@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+- Added `pgMmrCacheService` to use independent Db connection, now mmr cache flush by itself. (#1828)
 ### Changed
 - Update meta exports to require `MmrQueryController` and move code from node core (#1823)
 
