@@ -243,7 +243,7 @@ export class NodeConfig implements IConfig {
   }
 
   get disableHistorical(): boolean {
-    return this._config.disableHistorical;
+    return this._isTest ? true : this._config.disableHistorical;
   }
 
   get multiChain(): boolean {
