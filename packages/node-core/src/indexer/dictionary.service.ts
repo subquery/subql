@@ -7,7 +7,7 @@ import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {dictHttpLink} from '@subql/apollo-links';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
-import fetch from 'node-fetch';
+import fetch from 'cross-fetch';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {profiler} from '../profiler';
