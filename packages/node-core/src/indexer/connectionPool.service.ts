@@ -271,7 +271,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     this.pool[apiIndex].failureCount++;
 
     if (error.errorType === ApiErrorType.Connection) {
-      this.handleApiDisconnects(apiIndex);
+      if (this.pool[apiIndex].connected) {
+        //handleApiDisconnects was already called if this is false
+        this.handleApiDisconnects(apiIndex);
+      }
       return;
     }
 

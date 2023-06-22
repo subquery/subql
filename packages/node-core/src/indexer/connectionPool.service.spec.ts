@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {IApiConnectionSpecific} from '..';
+import {ApiErrorType, IApiConnectionSpecific} from '..';
 import {ConnectionPoolService} from './connectionPool.service';
 
 async function waitFor(conditionFn: () => boolean, timeout = 30000, interval = 100): Promise<void> {
@@ -79,5 +79,35 @@ describe('ConnectionPoolService', () => {
       expect(mockApiConnection.apiConnect).toHaveBeenCalledTimes(5);
       expect(connectionPoolService.numConnections).toBe(0);
     }, 31000);
+  });
+
+  describe('handleApiDisconnects', () => {
+    // ...
+
+    it('should call handleApiDisconnects only once when multiple connection errors are triggered', async () => {
+      // Mock apiConnection.apiConnect() to not resolve for a considerable time
+      (mockApiConnection.apiConnect as any).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 10000))
+      );
+
+      const handleApiDisconnectsSpy = jest.spyOn(connectionPoolService, 'handleApiDisconnects');
+
+      // Trigger handleApiError with connection issue twice
+      connectionPoolService.handleApiError(0, {
+        name: 'ConnectionError',
+        errorType: ApiErrorType.Connection,
+        message: 'Connection error',
+      });
+      connectionPoolService.handleApiError(0, {
+        name: 'ConnectionError',
+        errorType: ApiErrorType.Connection,
+        message: 'Connection error',
+      });
+
+      // Wait for a while to see if handleApiDisconnects gets called multiple times
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      expect(handleApiDisconnectsSpy).toHaveBeenCalledTimes(1);
+    }, 15000);
   });
 });
