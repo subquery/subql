@@ -41,6 +41,7 @@ interface ConnectionPoolItem<T> {
   failureCount: number;
   rateLimited: boolean;
   failed: boolean;
+  connected: boolean;
   lastRequestTime: number;
   timeoutId?: NodeJS.Timeout;
 }
@@ -81,6 +82,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       backoffDelay: 0,
       rateLimited: false,
       failed: false,
+      connected: true,
       lastRequestTime: 0,
     };
     this.pool[index] = poolItem;
@@ -124,7 +126,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
               this.pool[index].lastRequestTime = end; // Update the last request time
               return result;
             } catch (error) {
-              await this.handleApiError(index, target.handleError(error as Error));
+              this.handleApiError(index, target.handleError(error as Error));
               throw error;
             }
           };
@@ -144,7 +146,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
     const indices = Object.keys(this.pool)
       .map(Number)
-      .filter((index) => !this.pool[index].backoffDelay);
+      .filter((index) => !this.pool[index].backoffDelay && this.pool[index].connected);
 
     if (indices.length === 0) {
       // If all endpoints are suspended, try to find a rate-limited one
@@ -189,19 +191,42 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     return Object.keys(this.pool).length;
   }
 
-  async handleApiDisconnects(apiIndex: number): Promise<void> {
-    logger.warn(`disconnected from ${this.pool[apiIndex].endpoint}`);
+  handleApiDisconnects(index: number) {
+    logger.warn(`disconnected from ${this.pool[index].endpoint}`);
+    this.pool[index].connected = false;
 
-    try {
-      logger.debug(`reconnecting to ${this.pool[apiIndex].endpoint}...`);
-      await this.connectToApi(apiIndex);
-    } catch (e) {
-      logger.error(`unable to reconnect to endpoint ${this.pool[apiIndex].endpoint}: ${e}`);
-      delete this.pool[apiIndex];
-      return;
-    }
+    const maxAttempts = 5;
+    let currentAttempt = 1;
 
-    logger.info(`reconnected to ${this.pool[apiIndex].endpoint}!`);
+    const tryReconnect = async () => {
+      logger.info(`Attempting to reconnect to ${this.pool[index].endpoint} (attempt ${currentAttempt})`);
+
+      try {
+        await this.pool[index].connection.apiConnect();
+        this.pool[index].connected = true;
+        logger.info(`Reconnected to ${this.pool[index].endpoint} successfully`);
+      } catch (error) {
+        if (currentAttempt < maxAttempts) {
+          logger.error(`Reconnection failed: ${error}`);
+
+          const delay = 2 ** currentAttempt * 1000;
+          currentAttempt += 1;
+
+          setTimeout(() => {
+            tryReconnect();
+          }, delay);
+        } else {
+          logger.error(
+            `Reached max reconnection attempts. Removing connection ${this.pool[index].endpoint} from pool.`
+          );
+          delete this.pool[index];
+        }
+      }
+    };
+
+    (async () => {
+      await tryReconnect();
+    })();
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
@@ -240,13 +265,13 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     });
   }
 
-  async handleApiError(apiIndex: number, error: ApiConnectionError): Promise<void> {
+  handleApiError(apiIndex: number, error: ApiConnectionError): void {
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
     this.pool[apiIndex].performanceScore += adjustment;
     this.pool[apiIndex].failureCount++;
 
     if (error.errorType === ApiErrorType.Connection) {
-      await this.handleApiDisconnects(apiIndex);
+      this.handleApiDisconnects(apiIndex);
       return;
     }
 
