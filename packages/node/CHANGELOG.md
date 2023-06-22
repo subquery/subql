@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add flag `query-address-limit` for dictionary queries (#111)
 
+### Fixed
+- Fix dictionary queries when using `dynamic-datasources` (#116)
+
 ## [2.6.1] - 2023-06-19
 ### Added
 - Support for transaction filter `to: null` (#108)

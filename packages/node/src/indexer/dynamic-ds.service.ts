@@ -43,7 +43,6 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
       ...template,
       startBlock: params.startBlock,
     } as SubqlProjectDs;
-    delete dsObj.name;
     try {
       if (isCustomDs(dsObj)) {
         dsObj.processor.options = {
