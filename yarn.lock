@@ -5,21 +5,22 @@ __metadata:
   version: 5
   cacheKey: 8
 
-"@actions/core@npm:^1.6.0":
-  version: 1.8.0
-  resolution: "@actions/core@npm:1.8.0"
+"@actions/core@npm:^1.10.0":
+  version: 1.10.0
+  resolution: "@actions/core@npm:1.10.0"
   dependencies:
-    "@actions/http-client": ^1.0.11
-  checksum: 0634770fce3fdf56fd76338731921fde67dcea54cba7e5be2398d62445ada2ee8afca6694da1c6f72d9b4d257cbf3ed0dacbd58753adac712e06249f57156cf3
+    "@actions/http-client": ^2.0.1
+    uuid: ^8.3.2
+  checksum: 0a75621e007ab20d887434cdd165f0b9036f14c22252a2faed33543d8b9d04ec95d823e69ca636a25245574e4585d73e1e9e47a845339553c664f9f2c9614669
   languageName: node
   linkType: hard
 
-"@actions/http-client@npm:^1.0.11":
-  version: 1.0.11
-  resolution: "@actions/http-client@npm:1.0.11"
+"@actions/http-client@npm:^2.0.1":
+  version: 2.1.0
+  resolution: "@actions/http-client@npm:2.1.0"
   dependencies:
-    tunnel: 0.0.6
-  checksum: 2c72834ec36a121ae95d2cb61fd28234eae2ab265a2aefe857a9eeb788ea77b284ad727ecd3c67fefd1920d5f2800b6c1ba6916b39d44f81f293b4b0020d367c
+    tunnel: ^0.0.6
+  checksum: 25a72a952cc95fb4b3ab086da73a5754dd0957c206637cace69be2e16f018cc1b3d3c40d3bcf89ffd8a5929d5e8445594b498b50db306a50ad7536023f8e3800
   languageName: node
   linkType: hard
 
@@ -16657,7 +16658,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "subql-mono@workspace:."
   dependencies:
-    "@actions/core": ^1.6.0
+    "@actions/core": ^1.10.0
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
     "@types/cron-converter": ^1
@@ -17321,7 +17322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tunnel@npm:0.0.6":
+"tunnel@npm:^0.0.6":
   version: 0.0.6
   resolution: "tunnel@npm:0.0.6"
   checksum: c362948df9ad34b649b5585e54ce2838fa583aa3037091aaed66793c65b423a264e5229f0d7e9a95513a795ac2bd4cb72cda7e89a74313f182c1e9ae0b0994fa
