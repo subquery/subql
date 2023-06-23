@@ -3,7 +3,7 @@
 
 import {Module} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {ForceCleanService} from '@subql/node-core';
+import {ForceCleanService} from './forceClean.service';
 
 @Module({
   providers: [ForceCleanService, SchedulerRegistry],
