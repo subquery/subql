@@ -1,20 +1,19 @@
 # Changelog
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
-
+### Removed
+- Support for Terra and Avalanche SDKs. Note: Avalanche is still supported through the Ethereum SDK. (#1841)
 
 ## [2.0.0] - 2023-04-20
+### Changed
 - Major release 2.0.0, align with other package versions
 
 ## [1.8.1] - 2023-03-07
-### Updated
+### Changed
 - Updated `suql/common-avalanche` (#1546)
 
 ## [1.8.0] - 2023-01-31
@@ -24,6 +23,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.7.0] - 2022-11-23
 ### Added
 - Add support to validator for flare (#1416)
+
 ### Fixed
 - Validator missing ipfs chainTypes (#1419)
 
@@ -62,6 +62,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.2.0] - 2022-06-22
 ### Changed
 - move out terra pacakges (#1112)
+
 ### Added
 - validate deployment, validate multi network (#1115)
 
@@ -70,6 +71,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Update import types name (#1012)
 
 ## [1.0.0] - 2022-05-11
+### Changed
 - Major release
 
 ## [0.6.0] - 2022-04-06
@@ -95,20 +97,21 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.4.2] - 2022-01-13
 ### Changed
-- Version bump with subql/common 
-
+- Version bump with subql/common
 
 ## [0.4.1] - 2021-12-16
-### Fixed 
+### Fixed
 - Fix chain types checking when load from js (#720)
 
 ## [0.4.0] - 2021-11-19
 ### Added
 - Added ipfs-reader and update reader (#486)
 - Add validator that runs custom ds processor validation (#596)
+
 ### Changed
 - Bump deps (#584)
 - Move `isCustomDs` to Common (#610)
+
 ### Fixed
 - Fix validating custom DS if location param is provided (#639)
 
@@ -125,8 +128,30 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init release: support validation of subquery project
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.4.3...HEAD
-[0.4.3]: https://github.com/subquery/subql/compare/query/0.4.2...query/0.4.3
-[0.4.2]: https://github.com/subquery/subql/compare/query/0.4.1...query/0.4.2
-[0.4.1]: https://github.com/subquery/subql/compare/query/0.4.0...query/0.4.1
-[0.4.0]: https://github.com/subquery/subql/compare/query/0.3.0...query/0.4.0
+[Unreleased]: https://github.com/subquery/subql/compare/validator/2.0.0...HEAD
+[2.0.0]: https://github.com/subquery/subql/compare/validator/1.8.1...validator/2.0.0
+[1.8.1]: https://github.com/subquery/subql/compare/validator/1.8.0...validator/1.8.1
+[1.8.0]: https://github.com/subquery/subql/compare/validator/1.7.0...validator/1.8.0
+[1.7.0]: https://github.com/subquery/subql/compare/validator/1.6.0...validator/1.7.0
+[1.6.0]: https://github.com/subquery/subql/compare/validator/1.5.1...validator/1.6.0
+[1.5.1]: https://github.com/subquery/subql/compare/validator/1.5.0...validator/1.5.1
+[1.5.0]: https://github.com/subquery/subql/compare/validator/1.4.1...validator/1.5.0
+[1.4.1]: https://github.com/subquery/subql/compare/validator/1.4.0...validator/1.4.1
+[1.4.0]: https://github.com/subquery/subql/compare/validator/1.3.0...validator/1.4.0
+[1.3.0]: https://github.com/subquery/subql/compare/validator/1.2.2...validator/1.3.0
+[1.2.2]: https://github.com/subquery/subql/compare/validator/1.2.1...validator/1.2.2
+[1.2.1]: https://github.com/subquery/subql/compare/validator/1.2.0...validator/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/validator/1.1.0...validator/1.2.0
+[1.1.0]: https://github.com/subquery/subql/compare/validator/1.0.0...validator/1.1.0
+[1.0.0]: https://github.com/subquery/subql/compare/validator/0.6.0...validator/1.0.0
+[0.6.0]: https://github.com/subquery/subql/compare/validator/0.5.0...validator/0.6.0
+[0.5.0]: https://github.com/subquery/subql/compare/validator/0.4.5...validator/0.5.0
+[0.4.5]: https://github.com/subquery/subql/compare/validator/0.4.4...validator/0.4.5
+[0.4.4]: https://github.com/subquery/subql/compare/validator/0.4.3...validator/0.4.4
+[0.4.3]: https://github.com/subquery/subql/compare/validator/0.4.2...validator/0.4.3
+[0.4.2]: https://github.com/subquery/subql/compare/validator/0.4.1...validator/0.4.2
+[0.4.1]: https://github.com/subquery/subql/compare/validator/0.4.0...validator/0.4.1
+[0.4.0]: https://github.com/subquery/subql/compare/validator/0.3.0...validator/0.4.0
+[0.3.0]: https://github.com/subquery/subql/compare/validator/0.3.0...validator/0.4.0
+[0.2.0]: https://github.com/subquery/subql/compare/validator/0.1.0...validator/0.2.0
+[0.1.0]: https://github.com/subquery/subql/tag/validator/0.1.0
