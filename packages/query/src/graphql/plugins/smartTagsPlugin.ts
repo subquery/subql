@@ -9,7 +9,7 @@ export const smartTagsPlugin = makePgSmartTagsPlugin([
   {
     //Rule 1, omit `_metadata` from node
     kind: PgEntityKind.CLASS,
-    match: ({name}: PgEntity) => METADATA_REGEX.test(name),
+    match: ({name}: PgEntity) => METADATA_REGEX.test(name) || MULTI_METADATA_REGEX.test(name),
     tags: {
       omit: true,
     },

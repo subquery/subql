@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expose all the multi-chain metadatas from query service, this helps to identify multi-chain project and networks been indexed within the project, a proper improvement will be complete in [#1817](https://github.com/subquery/subql/issues/1817). (#1818)
 - Update apollo server with security fixes (#1834)
 
+### Added
+- Add the ability to get all metadata tables with multichain projects (#1839)
+
 ## [2.1.0] - 2023-05-24
 ### Changed
 - Tidy up commands and their args (#1741)
