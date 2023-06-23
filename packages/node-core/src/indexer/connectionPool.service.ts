@@ -266,6 +266,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   handleApiError(apiIndex: number, error: ApiConnectionError): void {
+    if (this.pool[apiIndex].failed || this.pool[apiIndex].rateLimited) {
+      //if this api was used again then it must be in the same batch of blocks
+      return;
+    }
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
     this.pool[apiIndex].performanceScore += adjustment;
     this.pool[apiIndex].failureCount++;
