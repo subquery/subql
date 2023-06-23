@@ -1,22 +1,22 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import fs from 'fs';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME, RESET_MMR_BLOCK_BATCH} from '@subql/common';
 import {u8aToHex, u8aEq} from '@subql/utils';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
-import {Op, Sequelize} from '@subql/x-sequelize';
+import {Op} from '@subql/x-sequelize';
 import {keccak256} from 'js-sha3';
 import {MmrStoreType, NodeConfig} from '../configure';
 import {MmrPayload, MmrProof} from '../events';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
-import {delay, getExistingProjectSchema} from '../utils';
-import {ProofOfIndex, PgBasedMMRDB} from './entities';
-import {StoreCacheService, CachePgMmrDb} from './storeCache';
+import {delay} from '../utils';
+import {ProofOfIndex} from './entities';
+import {StoreCacheService, PgMmrCacheService} from './storeCache';
 const logger = getLogger('mmr');
+const MMR_FLUSH_THRESHOLD = 100;
 
 const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
@@ -36,7 +36,7 @@ export class MmrService implements OnApplicationShutdown {
   constructor(
     private readonly nodeConfig: NodeConfig,
     private readonly storeCacheService: StoreCacheService,
-    private readonly sequelize: Sequelize
+    private readonly pgMmrCacheService: PgMmrCacheService
   ) {}
 
   onApplicationShutdown(): void {
@@ -87,21 +87,16 @@ export class MmrService implements OnApplicationShutdown {
     this.isSyncing = true;
     await this.ensureMmr();
     this._blockOffset = blockOffset;
-    // The mmr database current leaf length
-    const mmrLeafLength = await this.mmrDb.getLeafLength();
+    // The mmr database last recorded height
+    const dbMmrLatestHeight = await this.getLatestMmrHeight();
     // However, when initialization we pick the previous block for file db and poi mmr validation
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
-    this._nextMmrBlockHeight = mmrLeafLength + blockOffset + 1;
+    this._nextMmrBlockHeight = dbMmrLatestHeight + 1;
     // The latest poi record in database with mmr value
-    const latestPoiWithMmr = await this.poi.getLatestPoiWithMmr();
-    if (latestPoiWithMmr) {
-      // The latestPoiWithMmr its mmr value in filebase db
-      const latestPoiMmrValue = await this.mmrDb.getRoot(latestPoiWithMmr.id - blockOffset - 1);
-      this.validatePoiMmr(latestPoiWithMmr, latestPoiMmrValue);
-    }
     // Ensure aligned poi table and file based mmr
     // If cache poi generated mmr haven't success write back to poi table,
     // but latestPoiWithMmr still valid, mmr should delete advanced mmr
+    const latestPoiWithMmr = await this.ensureLatestPoi(dbMmrLatestHeight, blockOffset);
     const poiNextMmrHeight = (latestPoiWithMmr?.id ?? blockOffset) + 1;
     // If latestPoiWithMmr got null, should use blockOffset, so next sync height is blockOffset + 1
     if (this.nextMmrBlockHeight > poiNextMmrHeight) {
@@ -118,11 +113,9 @@ export class MmrService implements OnApplicationShutdown {
         const appendedBlocks = [];
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
-            for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
-              await this.mmrDb.append(DEFAULT_LEAF);
-              this._nextMmrBlockHeight = i + 1;
-            }
+            await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, block.id);
           }
+          // it is a single mmr node, safe to append without flush here
           appendedBlocks.push(await this.appendMmrNode(block));
           this._nextMmrBlockHeight = block.id + 1;
         }
@@ -144,10 +137,7 @@ export class MmrService implements OnApplicationShutdown {
               Math.max(1, Number(lastProcessedHeight) - this.nextMmrBlockHeight)
             );
           }
-          for (let i = this.nextMmrBlockHeight; i <= Number(lastProcessedHeight); i++) {
-            await this.mmrDb.append(DEFAULT_LEAF);
-            this._nextMmrBlockHeight = i + 1;
-          }
+          await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, Number(lastProcessedHeight) + 1);
         }
         await delay(MMR_AWAIT_TIME);
       }
@@ -156,6 +146,35 @@ export class MmrService implements OnApplicationShutdown {
       }
     }
     this.isSyncing = false;
+  }
+
+  // Ensure start height of the latest poi and mmr value is correct
+  private async ensureLatestPoi(dbMmrLatestHeight: number, blockOffset: number): Promise<ProofOfIndex | null> {
+    // The latest poi record in database with mmr value
+    const latestPoiWithMmr = await this.poi.getLatestPoiWithMmr();
+    if (latestPoiWithMmr) {
+      // ensure poi mmr not beyond of db mmr, if so reset poi mmr to null
+      if (latestPoiWithMmr.id > dbMmrLatestHeight) {
+        await this.poi.resetPoiMmr(latestPoiWithMmr.id, dbMmrLatestHeight);
+        await this.storeCacheService.flushCache(true);
+        return this.ensureLatestPoi(dbMmrLatestHeight, blockOffset);
+      }
+      // The latestPoiWithMmr its mmr value in filebase db
+      const latestPoiMmrValue = await this.mmrDb.getRoot(latestPoiWithMmr.id - blockOffset - 1);
+      this.validatePoiMmr(latestPoiWithMmr, latestPoiMmrValue);
+    }
+    return latestPoiWithMmr;
+  }
+
+  private async addDefaultLeafWithRange(start: number, end: number): Promise<void> {
+    for (let i = start; i < end; i++) {
+      await this.mmrDb.append(DEFAULT_LEAF);
+      this._nextMmrBlockHeight = i + 1;
+      // force flush mmr cache here, avoid too much mmr node created in once
+      if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres && i % MMR_FLUSH_THRESHOLD === 0) {
+        await this.pgMmrCacheService.flushCache(true);
+      }
+    }
   }
 
   private async appendMmrNode(poiBlock: ProofOfIndex): Promise<ProofOfIndex> {
@@ -193,10 +212,7 @@ export class MmrService implements OnApplicationShutdown {
           );
           for (const poiBlock of results) {
             if (this.nextMmrBlockHeight < poiBlock.id) {
-              for (let i = this.nextMmrBlockHeight; i < poiBlock.id; i++) {
-                await this.mmrDb.append(DEFAULT_LEAF);
-                this._nextMmrBlockHeight = i + 1;
-              }
+              await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, poiBlock.id);
             }
             const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
             if (!poiBlock?.hash) {
@@ -241,6 +257,9 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private async ensureMmr(): Promise<void> {
+    if (this._mmrDb) {
+      return;
+    }
     this._mmrDb =
       this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
         ? await this.ensurePostgresBasedMmr()
@@ -258,10 +277,7 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private async ensurePostgresBasedMmr(): Promise<MMR> {
-    const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
-    assert(schema, 'Unable to check for MMR table, schema is undefined');
-    const db = await CachePgMmrDb.create(this.sequelize, schema);
-    this.storeCacheService.setMmrRepo(db);
+    const db = await this.pgMmrCacheService.ensurePostgresBasedDb(this.nodeConfig);
     return new MMR(keccak256Hash, db);
   }
 

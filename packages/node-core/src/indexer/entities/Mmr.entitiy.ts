@@ -69,7 +69,7 @@ export class PgBasedMMRDB implements Db {
     }
   }
 
-  async bulkSet(entries: Record<number, any>, tx?: Transaction): Promise<void> {
+  async bulkSet(entries: Record<number, any>, tx: Transaction): Promise<void> {
     const data = Object.entries(entries).map(([key, value]) => {
       if (value === null || value === undefined) {
         throw new Error(`Cannot set a null or undefined value for key: ${key}`);
@@ -77,7 +77,6 @@ export class PgBasedMMRDB implements Db {
       // Parse to work around Object.entries converting all keys to string
       return {key: parseInt(key, 10), value};
     });
-
     try {
       await this.mmrIndexValueStore.bulkCreate(data, {
         transaction: tx,

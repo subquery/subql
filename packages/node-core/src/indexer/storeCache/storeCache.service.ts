@@ -2,36 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
+import {Injectable} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
-import {EventPayload, IndexerEvent} from '../../events';
-import {getLogger} from '../../logger';
+import {IndexerEvent} from '../../events';
 import {profiler} from '../../profiler';
-import {timeout} from '../../utils';
 import {MetadataRepo, PoiRepo} from '../entities';
+import {BaseCacheService} from './baseCache.service';
 import {CacheMetadataModel} from './cacheMetadata';
-import {CachePgMmrDb} from './cacheMmr';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
 
-const logger = getLogger('StoreCache');
-
 const INTERVAL_NAME = 'cacheFlushInterval';
 
 @Injectable()
-export class StoreCacheService implements BeforeApplicationShutdown {
+export class StoreCacheService extends BaseCacheService {
   private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo?: MetadataRepo;
   private poiRepo?: PoiRepo;
-  private mmrRepo?: CachePgMmrDb;
-  private pendingFlush?: Promise<void>;
-  private queuedFlush?: Promise<void>;
-  private storeCacheThreshold: number;
+  private readonly storeCacheThreshold: number;
   private _historical = true;
   private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
@@ -41,8 +34,9 @@ export class StoreCacheService implements BeforeApplicationShutdown {
     private sequelize: Sequelize,
     private config: NodeConfig,
     protected eventEmitter: EventEmitter2,
-    private schedulerRegistry: SchedulerRegistry
+    schedulerRegistry: SchedulerRegistry
   ) {
+    super(schedulerRegistry, INTERVAL_NAME, 'StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
   }
 
@@ -62,18 +56,7 @@ export class StoreCacheService implements BeforeApplicationShutdown {
 
     // Add flush interval after repos been set,
     // otherwise flush could not find lastProcessHeight from metadata
-    this.schedulerRegistry.addInterval(
-      INTERVAL_NAME,
-      setInterval(
-        () => void this.flushCache(true, false),
-        this.config.storeFlushInterval * 1000 // Convert to miliseconds
-      )
-    );
-  }
-
-  setMmrRepo(mmr: CachePgMmrDb) {
-    this.mmrRepo = mmr;
-    this.cachedModels._mmr = mmr;
+    this.setupInterval(INTERVAL_NAME, this.config.storeFlushInterval);
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
@@ -134,8 +117,8 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   }
 
   @profiler()
-  private async _flushCache(flushAll?: boolean): Promise<void> {
-    logger.debug('Flushing cache');
+  async _flushCache(flushAll?: boolean): Promise<void> {
+    this.logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
       deferrable: this._historical || this._useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
@@ -157,41 +140,13 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       }
       await tx.commit();
     } catch (e: any) {
-      logger.error(e, 'Database transaction failed');
+      this.logger.error(e, 'Database transaction failed');
       await tx.rollback();
       throw e;
     }
   }
 
-  async flushCache(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
-    // Awaits any existing flush
-    const flushCacheGuarded = async (forceFlush?: boolean): Promise<void> => {
-      // When we force flush, this will ensure not interrupt current block flushing,
-      // Force flush will continue after last block flush tx committed.
-      if (this.pendingFlush !== undefined) {
-        await this.pendingFlush;
-      }
-      if ((this.isFlushable() || forceFlush) && this.flushableRecords > 0) {
-        this.pendingFlush = this._flushCache(flushAll);
-
-        // Remove reference to pending flush once it completes
-        this.pendingFlush.finally(() => (this.pendingFlush = undefined));
-
-        await this.pendingFlush;
-      }
-    };
-
-    // Queued flush ensures that we only prepare one more task to flush, successive calls will return the same promise
-    if (this.queuedFlush === undefined) {
-      this.queuedFlush = flushCacheGuarded(forceFlush);
-
-      this.queuedFlush.finally(() => (this.queuedFlush = undefined));
-    }
-
-    return this.queuedFlush;
-  }
-
-  private get flushableRecords(): number {
+  get flushableRecords(): number {
     const numberOfPoiRecords = this.poi?.flushableRecordCounter ?? 0;
     return sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter)) + numberOfPoiRecords;
   }
@@ -202,11 +157,5 @@ export class StoreCacheService implements BeforeApplicationShutdown {
       value: numOfRecords,
     });
     return numOfRecords >= this.storeCacheThreshold;
-  }
-
-  async beforeApplicationShutdown(): Promise<void> {
-    this.schedulerRegistry.deleteInterval(INTERVAL_NAME);
-    await timeout(this.flushCache(true), 5);
-    logger.info(`Force flush cache successful!`);
   }
 }

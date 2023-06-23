@@ -34,6 +34,16 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
     }
   }
 
+  async resetPoiMmr(latestPoiMmrHeight: number, targetHeight: number): Promise<void> {
+    await this.mutex.waitForUnlock();
+    for (let i = latestPoiMmrHeight; i < targetHeight; i++) {
+      if (this.setCache[i] !== undefined) {
+        this.setCache[i].mmrRoot = undefined;
+      }
+    }
+    await this.plainPoiModel.resetPoiMmr(latestPoiMmrHeight, targetHeight);
+  }
+
   async getById(id: number): Promise<ProofOfIndex | undefined> {
     await this.mutex.waitForUnlock();
     if (this.removeCache.includes(id)) {

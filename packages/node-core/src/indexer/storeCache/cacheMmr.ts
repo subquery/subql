@@ -28,25 +28,31 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
     return !!Object.keys(this.setData).length || this.leafLengthChanged;
   }
 
-  async flush(tx: Transaction, blockHeight?: number | undefined): Promise<void> {
-    if (this.isFlushable) {
+  get flushableRecords(): number {
+    return Object.keys(this.setData).length + Number(this.leafLengthChanged);
+  }
+
+  async flush(tx: Transaction): Promise<void> {
+    if (this.leafLength) {
       const release = await this.mutex.acquire();
-      tx.afterCommit(() => {
-        release();
-      });
-      const data = {...this.setData};
-      this.setData = {};
-      await this.db.bulkSet(data, tx);
-      if (this.leafLength) {
+      try {
+        tx.afterCommit(() => {
+          release();
+        });
         this.leafLengthChanged = false;
         await this.db.setLeafLength(this.leafLength, tx);
+        const data = {...this.setData};
+        this.setData = {};
+        await this.db.bulkSet(data, tx);
+      } catch (e) {
+        release();
+        throw e;
       }
     }
   }
 
   static async create(sequelize: Sequelize, schema: string): Promise<CachePgMmrDb> {
     const db = await PgBasedMMRDB.create(sequelize, schema);
-
     return new CachePgMmrDb(db);
   }
 
