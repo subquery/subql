@@ -193,7 +193,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     return Object.keys(this.pool).length;
   }
 
-  handleApiDisconnects(index: number) {
+  async handleApiDisconnects(index: number) {
     logger.warn(`disconnected from ${this.pool[index].endpoint}`);
     this.pool[index].connected = false;
 
@@ -226,9 +226,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       }
     };
 
-    (async () => {
-      await tryReconnect();
-    })();
+    await tryReconnect();
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {

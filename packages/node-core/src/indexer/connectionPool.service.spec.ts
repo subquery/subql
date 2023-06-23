@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {delay} from '@subql/common';
 import {ApiErrorType, IApiConnectionSpecific} from '..';
 import {ConnectionPoolService} from './connectionPool.service';
 
@@ -105,7 +106,7 @@ describe('ConnectionPoolService', () => {
       });
 
       // Wait for a while to see if handleApiDisconnects gets called multiple times
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await delay(5);
 
       expect(handleApiDisconnectsSpy).toHaveBeenCalledTimes(1);
     }, 15000);
