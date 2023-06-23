@@ -16,8 +16,6 @@ import {
   isRuntimeDs as isRuntimeEthereumDs,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
-  RuntimeDataSourceV0_3_0 as EthereumDs,
-  CustomDatasourceV0_3_0 as EthereumCustomDs,
 } from '@subql/common-ethereum';
 import {
   isCustomDs as isCustomNearDs,
@@ -31,6 +29,7 @@ import {
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
   SubstrateCustomDataSource,
 } from '@subql/common-substrate';
+import {SubqlRuntimeDatasource as EthereumDs, SubqlCustomDatasource as EthereumCustomDs} from '@subql/types-ethereum';
 import {
   getAllEntitiesRelations,
   getAllJsonObjects,
