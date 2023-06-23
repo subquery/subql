@@ -9,7 +9,6 @@ import {Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
-import {getLogger} from '../../logger';
 import {profiler} from '../../profiler';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {BaseCacheService} from './baseCache.service';
@@ -17,8 +16,6 @@ import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
-
-const logger = getLogger('StoreCache');
 
 const INTERVAL_NAME = 'cacheFlushInterval';
 
@@ -39,7 +36,7 @@ export class StoreCacheService extends BaseCacheService {
     protected eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry
   ) {
-    super(schedulerRegistry, INTERVAL_NAME);
+    super(schedulerRegistry, INTERVAL_NAME, 'StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
   }
 
@@ -59,13 +56,7 @@ export class StoreCacheService extends BaseCacheService {
 
     // Add flush interval after repos been set,
     // otherwise flush could not find lastProcessHeight from metadata
-    this.schedulerRegistry.addInterval(
-      INTERVAL_NAME,
-      setInterval(
-        () => void this.flushCache(true, false),
-        this.config.storeFlushInterval * 1000 // Convert to miliseconds
-      )
-    );
+    this.setupInterval(INTERVAL_NAME, this.config.storeFlushInterval);
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
@@ -127,7 +118,7 @@ export class StoreCacheService extends BaseCacheService {
 
   @profiler()
   async _flushCache(flushAll?: boolean): Promise<void> {
-    logger.debug('Flushing cache');
+    this.logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
       deferrable: this._historical || this._useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
@@ -149,7 +140,7 @@ export class StoreCacheService extends BaseCacheService {
       }
       await tx.commit();
     } catch (e: any) {
-      logger.error(e, 'Database transaction failed');
+      this.logger.error(e, 'Database transaction failed');
       await tx.rollback();
       throw e;
     }

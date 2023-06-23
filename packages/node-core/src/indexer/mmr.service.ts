@@ -257,6 +257,9 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   private async ensureMmr(): Promise<void> {
+    if (this._mmrDb) {
+      return;
+    }
     this._mmrDb =
       this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
         ? await this.ensurePostgresBasedMmr()

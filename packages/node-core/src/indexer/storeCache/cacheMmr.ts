@@ -33,15 +33,22 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    const release = await this.mutex.acquire();
     if (this.leafLength) {
-      this.leafLengthChanged = false;
-      await this.db.setLeafLength(this.leafLength, tx);
-      const data = {...this.setData};
-      this.setData = {};
-      await this.db.bulkSet(data, tx);
+      const release = await this.mutex.acquire();
+      try {
+        tx.afterCommit(() => {
+          release();
+        });
+        this.leafLengthChanged = false;
+        await this.db.setLeafLength(this.leafLength, tx);
+        const data = {...this.setData};
+        this.setData = {};
+        await this.db.bulkSet(data, tx);
+      } catch (e) {
+        release();
+        throw e;
+      }
     }
-    release();
   }
 
   static async create(sequelize: Sequelize, schema: string): Promise<CachePgMmrDb> {

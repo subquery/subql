@@ -3,6 +3,8 @@
 
 import {BeforeApplicationShutdown, Injectable} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
+import Pino from 'pino';
+import {getLogger} from '../../logger';
 import {profiler} from '../../profiler';
 import {timeout} from '../../utils/promise';
 
@@ -10,8 +12,15 @@ import {timeout} from '../../utils/promise';
 export abstract class BaseCacheService implements BeforeApplicationShutdown {
   private pendingFlush?: Promise<void>;
   private queuedFlush?: Promise<void>;
+  protected logger: Pino.Logger;
 
-  protected constructor(readonly schedulerRegistry: SchedulerRegistry, private intervalName: string) {}
+  protected constructor(
+    readonly schedulerRegistry: SchedulerRegistry,
+    private intervalName: string,
+    private loggerName: string
+  ) {
+    this.logger = getLogger(loggerName);
+  }
 
   @profiler()
   async flushCache(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
@@ -43,9 +52,22 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   abstract isFlushable(): boolean;
   abstract get flushableRecords(): number;
 
+  setupInterval(intervalName: string, interval: number) {
+    if (this.schedulerRegistry.doesExist('interval', intervalName)) {
+      return;
+    }
+    this.schedulerRegistry.addInterval(
+      intervalName,
+      setInterval(
+        () => void this.flushCache(true),
+        interval * 1000 // Convert to miliseconds
+      )
+    );
+  }
+
   async beforeApplicationShutdown(): Promise<void> {
     this.schedulerRegistry.deleteInterval(this.intervalName);
     await timeout(this.flushCache(true), 5);
-    logger.info(`Force flush cache successful!`);
+    this.logger.info(`Force flush cache successful!`);
   }
 }
