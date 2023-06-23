@@ -3,13 +3,11 @@
 
 import {Reader} from '@subql/common';
 import {AlgorandProjectManifestVersioned} from '@subql/common-algorand';
-import {AvalancheProjectManifestVersioned} from '@subql/common-avalanche';
 import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {EthereumProjectManifestVersioned} from '@subql/common-ethereum';
 import {EthereumProjectManifestVersioned as FlareProjectManifestVersioned} from '@subql/common-flare';
 import {NearProjectManifestVersioned} from '@subql/common-near';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
-import {TerraProjectManifestVersioned} from '@subql/common-terra';
 import {IPackageJson} from 'package-json-type';
 
 export interface ContextData {
@@ -17,9 +15,7 @@ export interface ContextData {
   pkg: IPackageJson;
   schema?:
     | SubstrateProjectManifestVersioned
-    | TerraProjectManifestVersioned
     | CosmosProjectManifestVersioned
-    | AvalancheProjectManifestVersioned
     | AlgorandProjectManifestVersioned
     | EthereumProjectManifestVersioned
     | FlareProjectManifestVersioned

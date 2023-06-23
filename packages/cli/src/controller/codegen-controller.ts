@@ -6,12 +6,6 @@ import path from 'path';
 import {promisify} from 'util';
 import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
-  isCustomDs as isCustomAvalancheDs,
-  isRuntimeDs as isRuntimeAvalancheDs,
-  RuntimeDatasourceTemplate as AvalancheDsTemplate,
-  CustomDatasourceTemplate as AvalancheCustomDsTemplate,
-} from '@subql/common-avalanche';
-import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
@@ -38,12 +32,6 @@ import {
   SubstrateCustomDataSource,
 } from '@subql/common-substrate';
 import {
-  isCustomTerraDs,
-  isRuntimeTerraDs,
-  RuntimeDatasourceTemplate as TerraDsTemplate,
-  CustomDatasourceTemplate as TerraCustomDsTemplate,
-} from '@subql/common-terra';
-import {
   getAllEntitiesRelations,
   getAllJsonObjects,
   setJsonObjectType,
@@ -61,16 +49,12 @@ import {runTypeChain, glob, parseContractPath} from 'typechain';
 type TemplateKind =
   | SubstrateDsTemplate
   | SubstrateCustomDsTemplate
-  | AvalancheDsTemplate
-  | AvalancheCustomDsTemplate
   | CosmosDsTemplate
   | CosmosCustomDsTemplate
   | EthereumDsTemplate
   | EthereumCustomDsTemplate
   | NearDsTemplate
-  | NearCustomDsTemplate
-  | TerraDsTemplate
-  | TerraCustomDsTemplate;
+  | NearCustomDsTemplate;
 
 type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
 
@@ -533,15 +517,11 @@ export async function generateDatasourceTemplates(projectPath: string, templates
 
 function hasParameters(t: TemplateKind): boolean {
   return (
-    isRuntimeAvalancheDs(t as AvalancheDsTemplate) ||
-    isCustomAvalancheDs(t as AvalancheDsTemplate) ||
     isRuntimeCosmosDs(t as CosmosDsTemplate) ||
     isCustomCosmosDs(t as CosmosDsTemplate) ||
     isRuntimeEthereumDs(t as EthereumDsTemplate) ||
     isCustomEthereumDs(t as EthereumDsTemplate) ||
     isCustomSubstrateDs(t as SubstrateDsTemplate) ||
-    isRuntimeTerraDs(t as TerraDsTemplate) ||
-    isCustomTerraDs(t as TerraDsTemplate) ||
     isRuntimeNearDs(t as NearDsTemplate) ||
     isCustomNearDs(t as NearDsTemplate)
   );

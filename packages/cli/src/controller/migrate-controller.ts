@@ -10,7 +10,6 @@ import {
   ChainTypes,
   loadSubstrateProjectManifest,
 } from '@subql/common-substrate';
-import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
 import {classToPlain} from 'class-transformer';
 import {cli} from 'cli-ux';
 import inquirer from 'inquirer';
@@ -28,7 +27,7 @@ const DEFAULT_QUERY_NAME = '@subql/query';
 // eslint-disable-next-line complexity
 export async function prepare(
   location: string,
-  manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned
+  manifest: SubstrateProjectManifestVersioned
 ): Promise<[ProjectSpecV1_0_0, string]> {
   const packageData = await fs.promises.readFile(`${location}/package.json`, 'utf8');
   const jsonProjectData = JSON.parse(packageData);
@@ -130,7 +129,7 @@ export async function prepare(
 export async function migrate(
   projectPath: string,
   project: ProjectSpecV1_0_0,
-  manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned,
+  manifest: SubstrateProjectManifestVersioned,
   chainTypes?: string
 ): Promise<void> {
   const originManifestPath = path.join(projectPath, MANIFEST_PATH);
@@ -147,8 +146,6 @@ export async function migrate(
     data.repository = manifest.asV1_0_0.repository ?? '';
     if (manifest instanceof SubstrateProjectManifestVersioned) {
       data.schema = manifest.isV0_0_1 ? {file: manifest.asV0_0_1.schema} : manifest.asV1_0_0.schema;
-    } else if (manifest instanceof TerraProjectManifestVersioned) {
-      data.schema = manifest.asV1_0_0.schema;
     }
     data.network = {
       chainId: project.chainId,
@@ -174,17 +171,13 @@ export async function migrate(
   try {
     loadSubstrateProjectManifest(manifestV1_0_0).isV1_0_0;
   } catch (e) {
-    try {
-      loadTerraProjectManifest(manifestV1_0_0).isV1_0_0;
-    } catch (e) {
-      console.error(`${manifestV1_0_0} failed validation for manifest spec 1.0.0, \n ${e}`);
-      const keep = await cli.confirm(`However, do you want keep ${manifestV1_0_0} for inspection before retry? [Y/N]`);
-      if (keep) {
-        process.exit(0);
-      } else {
-        await fs.promises.unlink(manifestV1_0_0);
-        process.exit(0);
-      }
+    console.error(`${manifestV1_0_0} failed validation for manifest spec 1.0.0, \n ${e}`);
+    const keep = await cli.confirm(`However, do you want keep ${manifestV1_0_0} for inspection before retry? [Y/N]`);
+    if (keep) {
+      process.exit(0);
+    } else {
+      await fs.promises.unlink(manifestV1_0_0);
+      process.exit(0);
     }
   }
   //conversion

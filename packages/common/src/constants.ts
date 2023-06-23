@@ -22,8 +22,6 @@ export const MMR_AWAIT_TIME = 2;
 // NETWORK
 export enum NETWORK_FAMILY {
   substrate = 'Substrate',
-  avalanche = 'Avalanche',
-  terra = 'Terra',
   cosmos = 'Cosmos',
   algorand = 'Algorand',
   ethereum = 'Ethereum',
@@ -34,8 +32,6 @@ export enum NETWORK_FAMILY {
 export const runnerMapping = {
   '@subql/node': NETWORK_FAMILY.substrate,
   '@subql/node-substrate': NETWORK_FAMILY.substrate,
-  '@subql/node-avalanche': NETWORK_FAMILY.avalanche,
-  '@subql/node-terra': NETWORK_FAMILY.terra,
   '@subql/node-cosmos': NETWORK_FAMILY.cosmos,
   '@subql/node-algorand': NETWORK_FAMILY.algorand,
   '@subql/node-ethereum': NETWORK_FAMILY.ethereum,

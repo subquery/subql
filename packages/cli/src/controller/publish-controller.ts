@@ -6,15 +6,13 @@ import path from 'path';
 import {Readable} from 'stream';
 import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, Reader} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
-import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
 import {parseNearProjectManifest} from '@subql/common-near';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
-import {parseTerraProjectManifest} from '@subql/common-terra';
 import {FileReference} from '@subql/types';
-import axios, {AxiosResponse} from 'axios';
+import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
@@ -63,34 +61,24 @@ export async function uploadToIpfs(
         throw new Error('Unsupported project manifest spec, only 0.2.0 or greater is supported');
       }
     } catch (e) {
-      //terra
+      // cosmos
       try {
-        manifest = parseTerraProjectManifest(schema).asImpl;
+        manifest = parseCosmosProjectManifest(schema).asImpl;
       } catch (e) {
-        // cosmos
+        // algorand
         try {
-          manifest = parseCosmosProjectManifest(schema).asImpl;
+          manifest = parseAlgorandProjectManifest(schema).asImpl;
         } catch (e) {
-          //avalanche
           try {
-            manifest = parseAvalancheProjectManifest(schema).asImpl;
+            manifest = parseEthereumProjectManifest(schema).asImpl;
           } catch (e) {
-            // algorand
             try {
-              manifest = parseAlgorandProjectManifest(schema).asImpl;
+              manifest = parseFlareProjectManifest(schema).asImpl;
             } catch (e) {
               try {
-                manifest = parseEthereumProjectManifest(schema).asImpl;
+                manifest = parseNearProjectManifest(schema).asImpl;
               } catch (e) {
-                try {
-                  manifest = parseFlareProjectManifest(schema).asImpl;
-                } catch (e) {
-                  try {
-                    manifest = parseNearProjectManifest(schema).asImpl;
-                  } catch (e) {
-                    throw new Error('Unable to pass project manifest');
-                  }
-                }
+                throw new Error('Unable to pass project manifest');
               }
             }
           }
