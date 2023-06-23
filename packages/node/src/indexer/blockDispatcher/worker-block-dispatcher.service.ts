@@ -17,16 +17,17 @@ import {
   HostDynamicDS,
   WorkerBlockDispatcher,
   IUnfinalizedBlocksService,
+  HostConnectionPoolState,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
-import { ApiService } from '../api.service';
+import { ApiPromiseConnection } from '../apiPromise.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
-import { HostApiService } from '../worker/worker.api.service';
 import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
 type IndexerWorker = IIndexerWorker & {
@@ -37,7 +38,7 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubstrateDatasource>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
-  apiService: ApiService,
+  connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
@@ -45,7 +46,7 @@ async function createIndexerWorker(
     HostDynamicDS<SubstrateDatasource> &
       HostStore &
       HostUnfinalizedBlocks &
-      HostApiService
+      HostConnectionPoolState<ApiPromiseConnection>
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -77,10 +78,20 @@ async function createIndexerWorker(
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
-      hostApi: (() => {
-        return apiService.api;
-      }).bind(apiService),
-      hostFetchBlocks: apiService.fetchBlocks.bind(apiService),
+      hostAddToConnections:
+        connectionPoolState.addToConnections.bind(connectionPoolState),
+      hostGetNextConnectedApiIndex:
+        connectionPoolState.getNextConnectedApiIndex.bind(connectionPoolState),
+      hostGetFieldFromConnectionPoolItem:
+        connectionPoolState.getFieldValue.bind(connectionPoolState),
+      hostSetFieldInConnectionPoolItem:
+        connectionPoolState.setFieldValue.bind(connectionPoolState),
+      hostSetTimeoutIdInConnectionPoolItem:
+        connectionPoolState.setTimeout.bind(connectionPoolState),
+      hostClearTimeoutIdInConnectionPoolItem:
+        connectionPoolState.clearTimeout.bind(connectionPoolState),
+      hostShutdownPoolState:
+        connectionPoolState.shutdown.bind(connectionPoolState),
     },
     root,
   );
@@ -109,7 +120,7 @@ export class WorkerBlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
-    apiService: ApiService,
+    connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
   ) {
     super(
       nodeConfig,
@@ -126,7 +137,7 @@ export class WorkerBlockDispatcherService
           storeService.getStore(),
           dynamicDsService,
           unfinalizedBlocksSevice,
-          apiService,
+          connectionPoolState,
           project.root,
         ),
     );

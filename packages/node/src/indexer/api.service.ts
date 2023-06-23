@@ -157,7 +157,7 @@ export class ApiService
       }),
     );
 
-    this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
+    await this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
     return this;
   }
 

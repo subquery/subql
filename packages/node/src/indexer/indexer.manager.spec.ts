@@ -14,6 +14,7 @@ import {
   NodeConfig,
   ConnectionPoolService,
   StoreCacheService,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -208,7 +209,9 @@ describe('IndexerManager', () => {
   xit('should be able to start the manager (v0.0.1)', async () => {
     indexerManager = createIndexerManager(
       testSubqueryProject_1(),
-      new ConnectionPoolService<ApiPromiseConnection>(),
+      new ConnectionPoolService<ApiPromiseConnection>(
+        new ConnectionPoolStateManager(),
+      ),
       nodeConfig,
     );
     await expect(indexerManager.start()).resolves.toBe(undefined);
@@ -219,7 +222,9 @@ describe('IndexerManager', () => {
   xit('should be able to start the manager (v0.2.0)', async () => {
     indexerManager = createIndexerManager(
       testSubqueryProject_2(),
-      new ConnectionPoolService<ApiPromiseConnection>(),
+      new ConnectionPoolService<ApiPromiseConnection>(
+        new ConnectionPoolStateManager(),
+      ),
       nodeConfig,
     );
     await expect(indexerManager.start()).resolves.toBe(undefined);

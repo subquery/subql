@@ -3,7 +3,11 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
+import {
+  ConnectionPoolService,
+  ConnectionPoolStateManager,
+  NodeConfig,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -83,7 +87,9 @@ describe('ApiService', () => {
     const project = testSubqueryProject();
     const apiService = new ApiService(
       project,
-      new ConnectionPoolService<ApiPromiseConnection>(),
+      new ConnectionPoolService<ApiPromiseConnection>(
+        new ConnectionPoolStateManager(),
+      ),
       new EventEmitter2(),
       nodeConfig,
     );
@@ -108,7 +114,9 @@ describe('ApiService', () => {
 
     const apiService = new ApiService(
       project,
-      new ConnectionPoolService<ApiPromiseConnection>(),
+      new ConnectionPoolService<ApiPromiseConnection>(
+        new ConnectionPoolStateManager(),
+      ),
       new EventEmitter2(),
       nodeConfig,
     );

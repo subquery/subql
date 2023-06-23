@@ -3,6 +3,7 @@
 
 export * from './benchmark.service';
 export * from './connectionPool.service';
+export * from './connectionPoolState.manager';
 export * from './entities';
 export * from './poi';
 export * from './types';

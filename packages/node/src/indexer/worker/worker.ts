@@ -31,12 +31,13 @@ import {
   hostDynamicDsKeys,
   HostDynamicDS,
   ProcessBlockResponse,
+  HostConnectionPoolState,
+  hostConnectionPoolStateKeys,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { ApiPromiseConnection } from '../apiPromise.connection';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
-import { HostApiService, hostApiServiceKeys } from './worker.api.service';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
@@ -47,6 +48,7 @@ import {
   HostUnfinalizedBlocks,
   hostUnfinalizedBlocksKeys,
 } from './worker.unfinalizedBlocks.service';
+
 let app: INestApplication;
 let workerService: WorkerService;
 
@@ -141,14 +143,14 @@ async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
   HostStore &
     HostDynamicDS<SubstrateDatasource> &
     HostUnfinalizedBlocks &
-    HostApiService,
+    HostConnectionPoolState<ApiPromiseConnection>,
   IInitIndexerWorker
 >(
   [
     ...hostStoreKeys,
     ...hostDynamicDsKeys,
     ...hostUnfinalizedBlocksKeys,
-    ...hostApiServiceKeys,
+    ...hostConnectionPoolStateKeys,
   ],
   {
     initWorker,
