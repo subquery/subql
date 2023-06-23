@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expose all the multi-chain metadatas from query service, this helps to identify multi-chain project and networks been indexed within the project, a proper improvement will be complete in [#1817](https://github.com/subquery/subql/issues/1817). (#1818)
 - Update apollo server with security fixes (#1834)
 
+### Added
+- Add the ability to get all metadata tables with multichain projects (#1839)
+
 ## [2.1.0] - 2023-05-24
 ### Changed
 - Tidy up commands and their args (#1741)
@@ -213,7 +216,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
-- `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
+-  annotation is now supported in 
   - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
   - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
