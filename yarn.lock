@@ -4136,7 +4136,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@^2.2.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@npm:^2.2.1":
+  version: 2.2.2
+  resolution: "@subql/common@npm:2.2.2"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: ^52.0.3
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.3.5
+  checksum: ccfe2474d21f26ce8aacd19b4c093a738205b91434b0abc7dd9dae8f39958d5e0e99357b5a9ad63af6df6b78693d1c6b8def8f2becf8ce16c24d0430e3d507ed
+  languageName: node
+  linkType: hard
+
+"@subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -14949,31 +14965,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^6.10.2":
-  version: 6.11.2
-  resolution: "protobufjs@npm:6.11.2"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.2
-    "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
-    "@protobufjs/eventemitter": ^1.1.0
-    "@protobufjs/fetch": ^1.1.0
-    "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
-    "@protobufjs/path": ^1.1.2
-    "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
-    "@types/long": ^4.0.1
-    "@types/node": ">=13.7.0"
-    long: ^4.0.0
-  bin:
-    pbjs: bin/pbjs
-    pbts: bin/pbts
-  checksum: 80e9d9610c3eb66f9eae4e44a1ae30381cedb721b7d5f635d781fe4c507e2c77bb7c879addcd1dda79733d3ae589d9e66fd18d42baf99b35df7382a0f9920795
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:^6.8.8, protobufjs@npm:~6.11.2, protobufjs@npm:~6.11.3":
+"protobufjs@npm:^6.10.2, protobufjs@npm:^6.8.8, protobufjs@npm:~6.11.2, protobufjs@npm:~6.11.3":
   version: 6.11.3
   resolution: "protobufjs@npm:6.11.3"
   dependencies:
