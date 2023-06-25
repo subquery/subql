@@ -17,13 +17,12 @@
   ],
   "dependencies": {
     "@subql/common": "workspace:*",
-    "@subql/common-avalanche": "latest",
+    "@subql/common-algorand": "latest",
     "@subql/common-cosmos": "latest",
     "@subql/common-ethereum": "latest",
     "@subql/common-flare": "latest",
     "@subql/common-near": "latest",
     "@subql/common-substrate": "workspace:*",
-    "@subql/common-terra": "latest",
     "axios": "^0.24.0",
     "js-yaml": "^4.1.0",
     "package-json-type": "^1.0.3"

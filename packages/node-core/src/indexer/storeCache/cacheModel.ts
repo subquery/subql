@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
+import {Fn} from '@subql/x-sequelize/types/utils';
 import {flatten, includes, isEqual, uniq} from 'lodash';
-import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../../configure';
 import {SetValueModel} from './setValueModel';
 import {
