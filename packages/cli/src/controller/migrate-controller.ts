@@ -21,7 +21,6 @@ const MANIFEST_PATH = 'project.yaml';
 const MANIFEST_OLD = `project_old.yaml`;
 const MANIFEST_V_1_0_0 = `project_1_0_0.yaml`;
 const SUBSTRATE_NODE_NAME = '@subql/node';
-const TERRA_NODE_NAME = '@subql/node-terra';
 const DEFAULT_QUERY_NAME = '@subql/query';
 
 // eslint-disable-next-line complexity
@@ -44,7 +43,7 @@ export async function prepare(
       name: 'name', //equivalent to project.runner.node.name
       message: 'select Runner Node spec',
       type: 'list',
-      choices: [{name: SUBSTRATE_NODE_NAME}, {name: TERRA_NODE_NAME}],
+      choices: [{name: SUBSTRATE_NODE_NAME}],
     },
   ]);
   project.runner.node.version = await cli.prompt('Runner node version', {required: true});

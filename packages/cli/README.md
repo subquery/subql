@@ -344,7 +344,7 @@ OPTIONS
                                                                                     endpoint, used for validating
                                                                                     projects on IPFS
 
-  --network-family=(Substrate|Avalanche|Terra|Cosmos|Algorand|Ethereum|Flare|Near)
+  --network-family=(Substrate|Cosmos|Algorand|Ethereum|Flare|Near)
 
   --silent
 ```

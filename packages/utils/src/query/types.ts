@@ -20,13 +20,3 @@ export type MetaData = {
   rowCountEstimate: [TableEstimate];
   deployments: Record<number, string>;
 };
-
-export type TerraMetaData = {
-  lastProcessedHeight: number;
-  lastProcessedTimestamp: number;
-  targetHeight: number;
-  chain: string; // Was a bug in the dictionary, should have been chainId
-  indexerHealthy: boolean;
-  indexerNodeVersion: string;
-  queryNodeVersion: string;
-};
