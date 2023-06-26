@@ -9048,7 +9048,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment-timezone@npm:^0.5.34, moment-timezone@npm:^0.5.35, moment-timezone@npm:~0.5":
+"moment-timezone@npm:^0.5.35, moment-timezone@npm:~0.5":
   version: 0.5.43
   resolution: "moment-timezone@npm:0.5.43"
   dependencies:
@@ -10576,49 +10576,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:6.28.0":
-  version: 6.28.0
-  resolution: "sequelize@npm:6.28.0"
-  dependencies:
-    "@types/debug": ^4.1.7
-    "@types/validator": ^13.7.1
-    debug: ^4.3.3
-    dottie: ^2.0.2
-    inflection: ^1.13.2
-    lodash: ^4.17.21
-    moment: ^2.29.1
-    moment-timezone: ^0.5.34
-    pg-connection-string: ^2.5.0
-    retry-as-promised: ^7.0.3
-    semver: ^7.3.5
-    sequelize-pool: ^7.1.0
-    toposort-class: ^1.0.1
-    uuid: ^8.3.2
-    validator: ^13.7.0
-    wkx: ^0.5.0
-  peerDependenciesMeta:
-    ibm_db:
-      optional: true
-    mariadb:
-      optional: true
-    mysql2:
-      optional: true
-    oracledb:
-      optional: true
-    pg:
-      optional: true
-    pg-hstore:
-      optional: true
-    snowflake-sdk:
-      optional: true
-    sqlite3:
-      optional: true
-    tedious:
-      optional: true
-  checksum: 7e10ba4ebabab1ed54d6769fa73cac86dd3df88415ee32dd82f01ade6e1ebd9f6672288b601bd12507eae9eb2480ba905f74c93b1e380eb335430bf43ed757e9
-  languageName: node
-  linkType: hard
-
 "serve-static@npm:1.15.0":
   version: 1.15.0
   resolution: "serve-static@npm:1.15.0"
@@ -11059,7 +11016,6 @@ __metadata:
     "@actions/core": ^1.10.0
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
-    "@subql/common": ^2.3.0
     "@types/cron-converter": ^1
     "@types/node": ^14.18.10
     "@types/node-fetch": 2.6.2
@@ -11080,7 +11036,6 @@ __metadata:
     prettier: ^2.5.1
     pretty-quick: ^3.1.3
     regenerator-runtime: ^0.13.9
-    sequelize: 6.28.0
     ts-jest: ^29.1.0
     ts-loader: ^9.2.6
     ts-node: ^10.4.0
