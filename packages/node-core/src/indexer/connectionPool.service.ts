@@ -41,6 +41,7 @@ interface ConnectionPoolItem<T> {
   failureCount: number;
   rateLimited: boolean;
   failed: boolean;
+  connected: boolean;
   lastRequestTime: number;
   timeoutId?: NodeJS.Timeout;
 }
@@ -81,6 +82,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       backoffDelay: 0,
       rateLimited: false,
       failed: false,
+      connected: true,
       lastRequestTime: 0,
     };
     this.pool[index] = poolItem;
@@ -101,7 +103,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   get api(): T {
     const index = this.getNextConnectedApiIndex();
     if (index === undefined) {
-      throw new Error('All of the endpoints are suspended at the moment');
+      throw new Error(
+        'All endpoints in the pool are either suspended due to rate limits or attempting to reconnect. Please wait or add healthier endpoints.'
+      );
     }
     const api = this.pool[index].connection;
 
@@ -138,9 +142,13 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   private getNextConnectedApiIndex(): number | undefined {
+    if (Object.keys(this.pool).length === 0) {
+      throw new Error(`No endpoints are available in the pool. Please check for connection issues.`);
+    }
+
     const indices = Object.keys(this.pool)
       .map(Number)
-      .filter((index) => !this.pool[index].backoffDelay);
+      .filter((index) => !this.pool[index].backoffDelay && this.pool[index].connected);
 
     if (indices.length === 0) {
       // If all endpoints are suspended, try to find a rate-limited one
@@ -185,19 +193,40 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     return Object.keys(this.pool).length;
   }
 
-  async handleApiDisconnects(apiIndex: number, endpoint: string): Promise<void> {
-    logger.warn(`disconnected from ${endpoint}`);
-    delete this.pool[apiIndex];
+  private async handleApiDisconnects(index: number) {
+    logger.warn(`disconnected from ${this.pool[index].endpoint}`);
+    this.pool[index].connected = false;
 
-    try {
-      logger.debug(`reconnecting to ${endpoint}...`);
-      await this.connectToApi(apiIndex);
-    } catch (e) {
-      logger.error(`unable to reconnect to endpoint ${endpoint}`, e);
-      return;
-    }
+    const maxAttempts = 5;
+    let currentAttempt = 1;
 
-    logger.info(`reconnected to ${endpoint}!`);
+    const tryReconnect = async () => {
+      logger.info(`Attempting to reconnect to ${this.pool[index].endpoint} (attempt ${currentAttempt})`);
+
+      try {
+        await this.pool[index].connection.apiConnect();
+        this.pool[index].connected = true;
+        logger.info(`Reconnected to ${this.pool[index].endpoint} successfully`);
+      } catch (error) {
+        if (currentAttempt < maxAttempts) {
+          logger.error(`Reconnection failed: ${error}`);
+
+          const delay = 2 ** currentAttempt * 1000;
+          currentAttempt += 1;
+
+          setTimeout(() => {
+            tryReconnect();
+          }, delay);
+        } else {
+          logger.error(
+            `Reached max reconnection attempts. Removing connection ${this.pool[index].endpoint} from pool.`
+          );
+          delete this.pool[index];
+        }
+      }
+    };
+
+    await tryReconnect();
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
@@ -213,7 +242,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       .filter((index) => this.pool[index].backoffDelay !== 0);
 
     if (suspendedIndices.length === 0) {
-      logger.info(chalk.green('No suspended endpoints.'));
       return;
     }
 
@@ -237,9 +265,21 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   handleApiError(apiIndex: number, error: ApiConnectionError): void {
+    if (this.pool[apiIndex].failed || this.pool[apiIndex].rateLimited) {
+      //if this api was used again then it must be in the same batch of blocks
+      return;
+    }
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
     this.pool[apiIndex].performanceScore += adjustment;
     this.pool[apiIndex].failureCount++;
+
+    if (error.errorType === ApiErrorType.Connection) {
+      if (this.pool[apiIndex].connected) {
+        //handleApiDisconnects was already called if this is false
+        this.handleApiDisconnects(apiIndex);
+      }
+      return;
+    }
 
     if (error.errorType !== ApiErrorType.Default) {
       const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[apiIndex].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
@@ -260,6 +300,14 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
         this.pool[apiIndex].rateLimited = false;
         this.pool[apiIndex].failed = false;
         this.pool[apiIndex].timeoutId = undefined; // Clear the timeout ID
+
+        const suspendedIndices = Object.keys(this.pool)
+          .map(toNumber)
+          .filter((index) => this.pool[index].backoffDelay !== 0);
+
+        if (suspendedIndices.length === 0) {
+          logger.info(chalk.green('No suspended endpoints.'));
+        }
       }, nextDelay);
 
       logger.warn(

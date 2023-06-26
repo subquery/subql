@@ -328,7 +328,6 @@ export async function fetchBlocksBatches(
   blockArray: number[],
   overallSpecVer?: number,
 ): Promise<BlockContent[]> {
-  //await api.disconnect();
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);

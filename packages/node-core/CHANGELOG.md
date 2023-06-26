@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Not being able to test with null/undefined values on entities (#1809)
 
+### Fixed
+- Fix reconnection issues in connection pool
+
 ## [2.6.0] - 2023-06-19
 ### Changed
 - upgrade @subql/apollo-links (#1801)
