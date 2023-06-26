@@ -1,0 +1,21 @@
+name: discord notification
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  notify:
+    name: Discord Notification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send release details to Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          webhookUrl: ${{ secrets.DISCORD_RELEASE_NOTES_WEBHOOK }}
+          color: '#6499ff'
+          avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+          details: ${{ github.event.release.body }}
+          description: "[Release] ${{ github.event.release.name }}"
+          footer: ${{ github.event.release.html_url }}

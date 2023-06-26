@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move code into node-core (#1823)
 
+### Fixed
+- Fix apiConnect issues in ApiPromiseConnection
+
 ## [2.7.0] - 2023-06-19
 ### Changed
 - Sync with @subql/node-core, upgrade @subql/apollo-links, enable dictionary-resolver by default (#1801)

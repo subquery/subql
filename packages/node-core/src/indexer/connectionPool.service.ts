@@ -79,7 +79,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     const index = this.cachedApiIndex;
 
     if (index === undefined) {
-      throw new Error('All of the endpoints are suspended at the moment');
+      throw new Error(
+        'All endpoints in the pool are either suspended due to rate limits or attempting to reconnect. Please wait or add healthier endpoints.'
+      );
     }
     const api = this.allApi[index];
 
@@ -121,18 +123,39 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     return this.poolStateManager.numConnections;
   }
 
-  async handleApiDisconnects(apiIndex: number, endpoint: string): Promise<void> {
+  async handleApiDisconnects(apiIndex: number): Promise<void> {
+    const endpoint = await this.poolStateManager.getFieldValue(apiIndex, 'endpoint');
+
     logger.warn(`disconnected from ${endpoint}`);
 
-    try {
-      logger.debug(`reconnecting to ${endpoint}...`);
-      await this.connectToApi(apiIndex);
-    } catch (e) {
-      logger.error(`unable to reconnect to endpoint ${endpoint}`, e);
-      await this.poolStateManager.deleteFromPool(apiIndex);
-      await this.handleConnectionStateChange();
-      return;
-    }
+    const maxAttempts = 5;
+    let currentAttempt = 1;
+
+    const tryReconnect = async () => {
+      logger.info(`Attempting to reconnect to ${endpoint} (attempt ${currentAttempt})`);
+
+      try {
+        await this.allApi[apiIndex].apiConnect();
+        await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
+        logger.info(`Reconnected to ${endpoint} successfully`);
+      } catch (error) {
+        if (currentAttempt < maxAttempts) {
+          logger.error(`Reconnection failed: ${error}`);
+
+          const delay = 2 ** currentAttempt * 1000;
+          currentAttempt += 1;
+
+          setTimeout(() => {
+            tryReconnect();
+          }, delay);
+        } else {
+          logger.error(`Reached max reconnection attempts. Removing connection ${endpoint} from pool.`);
+          await this.poolStateManager.deleteFromPool(apiIndex);
+        }
+      }
+    };
+
+    await tryReconnect();
 
     await this.handleConnectionStateChange();
     logger.info(`reconnected to ${endpoint}!`);
@@ -149,7 +172,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     const suspendedIndices = await this.poolStateManager.getSuspendedIndices();
 
     if (suspendedIndices.length === 0) {
-      logger.info(chalk.green('No suspended endpoints.'));
       return;
     }
 
@@ -171,6 +193,13 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   async handleApiError(apiIndex: number, error: ApiConnectionError): Promise<void> {
+    if (
+      (await this.poolStateManager.getFieldValue(apiIndex, 'failed')) ||
+      (await this.poolStateManager.getFieldValue(apiIndex, 'rateLimited'))
+    ) {
+      //if this api was used again then it must be in the same batch of blocks
+      return;
+    }
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
     const performanceScore = await this.poolStateManager.getFieldValue(apiIndex, 'performanceScore');
     await this.poolStateManager.setFieldValue(apiIndex, 'performanceScore', performanceScore + adjustment);
@@ -180,6 +209,15 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     }
     const failureCount = await this.poolStateManager.getFieldValue(apiIndex, 'failureCount');
     await this.poolStateManager.setFieldValue(apiIndex, 'failureCount', failureCount + 1);
+
+    if (error.errorType === ApiErrorType.Connection) {
+      if (await this.poolStateManager.getFieldValue(apiIndex, 'connected')) {
+        //handleApiDisconnects was already called if this is false
+        await this.poolStateManager.setFieldValue(apiIndex, 'connected', false);
+        await this.handleApiDisconnects(apiIndex);
+      }
+      return;
+    }
 
     if (error.errorType !== ApiErrorType.Default) {
       const nextDelay =

@@ -122,7 +122,6 @@ export class ApiService
             apiIndex: i,
             endpoint: endpoint,
           });
-          this.connectionPoolService.handleApiDisconnects(i, endpoint);
         });
 
         if (!this.networkMeta) {

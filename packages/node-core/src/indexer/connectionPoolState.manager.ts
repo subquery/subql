@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import chalk from 'chalk';
+import {toNumber} from 'lodash';
 import {IApiConnectionSpecific} from '..';
 
 export interface ConnectionPoolItem<T> {
@@ -11,6 +13,7 @@ export interface ConnectionPoolItem<T> {
   rateLimited: boolean;
   failed: boolean;
   lastRequestTime: number;
+  connected: boolean;
   timeoutId?: NodeJS.Timeout;
 }
 
@@ -26,6 +29,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       backoffDelay: 0,
       rateLimited: false,
       failed: false,
+      connected: true,
       lastRequestTime: 0,
     };
     this.pool[index] = poolItem;
@@ -111,6 +115,14 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       this.pool[apiIndex].rateLimited = false;
       this.pool[apiIndex].failed = false;
       this.pool[apiIndex].timeoutId = undefined; // Clear the timeout ID
+
+      const suspendedIndices = Object.keys(this.pool)
+        .map(toNumber)
+        .filter((index) => this.pool[index].backoffDelay !== 0);
+
+      if (suspendedIndices.length === 0) {
+        logger.info(chalk.green('No suspended endpoints.'));
+      }
     }, delay);
   }
 

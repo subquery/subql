@@ -3,13 +3,11 @@
 
 import {getProjectNetwork, NETWORK_FAMILY, Reader, ReaderFactory, ReaderOptions} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
-import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
 import {parseNearProjectManifest} from '@subql/common-near';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
-import {parseTerraProjectManifest} from '@subql/common-terra';
 
 import {Context} from './context';
 import {Rule, RuleType} from './rules';
@@ -66,12 +64,6 @@ export class Validator {
             skipped: false,
           });
         }
-        break;
-      case NETWORK_FAMILY.terra:
-        schema = parseTerraProjectManifest(rawSchema);
-        break;
-      case NETWORK_FAMILY.avalanche:
-        schema = parseAvalancheProjectManifest(rawSchema);
         break;
       case NETWORK_FAMILY.cosmos:
         schema = parseCosmosProjectManifest(rawSchema);

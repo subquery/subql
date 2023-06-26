@@ -1,6 +1,6 @@
 {
   "name": "@subql/validator",
-  "version": "2.0.0",
+  "version": "2.0.1-0",
   "description": "to validate subquery project",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -17,18 +17,18 @@
   ],
   "dependencies": {
     "@subql/common": "workspace:*",
-    "@subql/common-avalanche": "latest",
+    "@subql/common-algorand": "latest",
     "@subql/common-cosmos": "latest",
     "@subql/common-ethereum": "latest",
     "@subql/common-flare": "latest",
     "@subql/common-near": "latest",
     "@subql/common-substrate": "workspace:*",
-    "@subql/common-terra": "latest",
     "axios": "^0.24.0",
     "js-yaml": "^4.1.0",
     "package-json-type": "^1.0.3"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.5"
-  }
+  },
+  "stableVersion": "2.0.0"
 }
