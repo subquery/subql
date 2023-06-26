@@ -38,6 +38,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private allApi: T[] = [];
   private apiToIndexMap: Map<T, number> = new Map();
   private cachedApiIndex: number | undefined;
+  private reconnectingIndices: Record<number, boolean> = {};
 
   private errorTypeToScoreAdjustment = {
     [ApiErrorType.Timeout]: -10,
@@ -102,11 +103,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
               const end = Date.now();
               await this.handleApiSuccess(index, end - start);
               await this.poolStateManager.setFieldValue(index, 'lastRequestTime', end); // Update the last request time
-              await this.handleConnectionStateChange();
               return result;
             } catch (error) {
               await this.handleApiError(index, target.handleError(error as Error));
-              await this.handleConnectionStateChange();
               throw error;
             }
           };
@@ -157,14 +156,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
     await tryReconnect();
 
+    await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
+    this.reconnectingIndices[apiIndex] = false;
     await this.handleConnectionStateChange();
     logger.info(`reconnected to ${endpoint}!`);
-  }
-
-  private calculatePerformanceScore(responseTime: number, failureCount: number): number {
-    const responseTimeScore = 1 / responseTime;
-    const failureScore = 1 - failureCount / MAX_FAILURES;
-    return RESPONSE_TIME_WEIGHT * responseTimeScore + FAILURE_WEIGHT * failureScore;
   }
 
   @Interval(LOG_INTERVAL_MS)
@@ -193,86 +188,27 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   async handleApiError(apiIndex: number, error: ApiConnectionError): Promise<void> {
-    if (
-      (await this.poolStateManager.getFieldValue(apiIndex, 'failed')) ||
-      (await this.poolStateManager.getFieldValue(apiIndex, 'rateLimited'))
-    ) {
-      //if this api was used again then it must be in the same batch of blocks
-      return;
-    }
-    const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
-    const performanceScore = await this.poolStateManager.getFieldValue(apiIndex, 'performanceScore');
-    await this.poolStateManager.setFieldValue(apiIndex, 'performanceScore', performanceScore + adjustment);
-    if ((await this.poolStateManager.getFieldValue(apiIndex, 'backoffDelay')) > 0) {
-      //endpoint is alreay suspended, we must be dealing with requests from same batch
-      return;
-    }
-    const failureCount = await this.poolStateManager.getFieldValue(apiIndex, 'failureCount');
-    await this.poolStateManager.setFieldValue(apiIndex, 'failureCount', failureCount + 1);
-
-    if (error.errorType === ApiErrorType.Connection) {
-      if (await this.poolStateManager.getFieldValue(apiIndex, 'connected')) {
-        //handleApiDisconnects was already called if this is false
-        await this.poolStateManager.setFieldValue(apiIndex, 'connected', false);
-        await this.handleApiDisconnects(apiIndex);
-      }
-      return;
-    }
-
-    if (error.errorType !== ApiErrorType.Default) {
-      const nextDelay =
-        RETRY_DELAY * Math.pow(2, (await this.poolStateManager.getFieldValue(apiIndex, 'failureCount')) - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
-      await this.poolStateManager.setFieldValue(apiIndex, 'backoffDelay', nextDelay);
-
-      if (ApiErrorType.Timeout || ApiErrorType.RateLimit) {
-        await this.poolStateManager.setFieldValue(apiIndex, 'rateLimited', true);
-      } else {
-        await this.poolStateManager.setFieldValue(apiIndex, 'failed', true);
-      }
-
-      await this.poolStateManager.clearTimeout(apiIndex);
-
-      await this.poolStateManager.setTimeout(apiIndex, nextDelay);
-
-      logger.warn(
-        `Endpoint ${await this.poolStateManager.getFieldValue(apiIndex, 'endpoint')} experienced an error (${
-          error.errorType
-        }). Suspending for ${nextDelay / 1000}s.`
-      );
-    }
+    await this.poolStateManager.handleApiError(apiIndex, error.errorType);
+    await this.handleConnectionStateChange();
   }
 
   async handleApiSuccess(apiIndex: number, responseTime: number): Promise<void> {
-    const performanceScore = await this.poolStateManager.getFieldValue(apiIndex, 'performanceScore');
-    const failureCount = await this.poolStateManager.getFieldValue(apiIndex, 'failureCount');
-
-    const updatedScore = performanceScore + this.calculatePerformanceScore(responseTime, failureCount);
-    await this.poolStateManager.setFieldValue(apiIndex, 'performanceScore', updatedScore);
-  }
-
-  wrapApiCall<T extends (...args: any[]) => any>(
-    fn: T,
-    api: any,
-    handleError: (error: Error) => ApiConnectionError
-  ): T {
-    const wrappedFunction = async (...args: Parameters<T>): Promise<ReturnType<T>> => {
-      const index = this.apiToIndexMap.get(api);
-      try {
-        const start = Date.now();
-        const result = await fn(...args);
-        const end = Date.now();
-        await this.handleApiSuccess(index as unknown as number, end - start);
-        return result;
-      } catch (error) {
-        await this.handleApiError(index as unknown as number, handleError(error as Error));
-        throw error;
-      }
-    };
-    return wrappedFunction as T;
+    await this.poolStateManager.handleApiSuccess(apiIndex, responseTime);
+    await this.handleConnectionStateChange();
   }
 
   async handleConnectionStateChange(): Promise<void> {
     // Update the cached value
     await this.updateNextConnectedApiIndex();
+    //TODO: get disconnected indices that are not reconnecting
+    //call handle api disconnects on this indices
+    const disconnectedIndices = await this.poolStateManager.getDisconnectedIndices();
+    disconnectedIndices.map((index) => {
+      if (this.reconnectingIndices[index]) {
+        return;
+      }
+      this.handleApiDisconnects(index);
+      this.reconnectingIndices[index] = true;
+    });
   }
 }

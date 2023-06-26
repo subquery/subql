@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
+import {ApiConnectionError, ApiErrorType} from '../connectionPool.service';
 
 export type HostConnectionPoolState<T> = {
   hostGetNextConnectedApiIndex: () => Promise<number | undefined>;
@@ -12,6 +13,9 @@ export type HostConnectionPoolState<T> = {
   hostClearTimeoutIdInConnectionPoolItem: (index: number) => Promise<void>;
   hostGetSuspendedIndices: () => Promise<number[]>;
   hostDeleteFromPool: (index: number) => Promise<void>;
+  hostHandleApiError: (index: number, errorType: string) => Promise<void>;
+  hostHandleApiSuccess: (index: number, responseTime: number) => Promise<void>;
+  hostGetDisconnectedIndices: () => Promise<number[]>;
   hostShutdownPoolState: () => Promise<void>;
 };
 
@@ -24,6 +28,9 @@ export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[]
   'hostClearTimeoutIdInConnectionPoolItem',
   'hostGetSuspendedIndices',
   'hostDeleteFromPool',
+  'hostHandleApiError',
+  'hostHandleApiSuccess',
+  'hostGetDisconnectedIndices',
   'hostShutdownPoolState',
 ];
 
@@ -61,6 +68,18 @@ export class WorkerConnectionPoolStateManager<T> {
 
   async deleteFromPool(index: number): Promise<void> {
     return this.host.hostDeleteFromPool(index);
+  }
+
+  async handleApiError(index: number, errorType: ApiErrorType): Promise<void> {
+    return this.host.hostHandleApiError(index, errorType);
+  }
+
+  async handleApiSuccess(index: number, responseTime: number): Promise<void> {
+    return this.host.hostHandleApiSuccess(index, responseTime);
+  }
+
+  async getDisconnectedIndices(): Promise<number[]> {
+    return this.host.hostGetDisconnectedIndices();
   }
 
   async shutdown(): Promise<void> {

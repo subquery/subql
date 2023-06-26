@@ -3,7 +3,14 @@
 
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
-import {IApiConnectionSpecific} from '..';
+import {ApiConnectionError, ApiErrorType, IApiConnectionSpecific} from '..';
+import {getLogger} from '../logger';
+
+const RETRY_DELAY = 60 * 1000;
+const MAX_FAILURES = 5;
+const LOG_INTERVAL_MS = 60 * 1000; // Log every 60 seconds
+const RESPONSE_TIME_WEIGHT = 0.7;
+const FAILURE_WEIGHT = 0.3;
 
 export interface ConnectionPoolItem<T> {
   endpoint: string;
@@ -17,8 +24,16 @@ export interface ConnectionPoolItem<T> {
   timeoutId?: NodeJS.Timeout;
 }
 
+const logger = getLogger('connection-pool-state');
+
 export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
   private pool: Record<number, ConnectionPoolItem<T>> = {};
+  private errorTypeToScoreAdjustment = {
+    [ApiErrorType.Timeout]: -10,
+    [ApiErrorType.Connection]: -20,
+    [ApiErrorType.RateLimit]: -10,
+    [ApiErrorType.Default]: -5,
+  };
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async addToConnections(endpoint: string, index: number): Promise<void> {
@@ -39,7 +54,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   async getNextConnectedApiIndex(): Promise<number | undefined> {
     const indices = Object.keys(this.pool)
       .map(Number)
-      .filter((index) => !this.pool[index].backoffDelay);
+      .filter((index) => !this.pool[index].backoffDelay && this.pool[index].connected);
 
     if (indices.length === 0) {
       // If all endpoints are suspended, try to find a rate-limited one
@@ -146,5 +161,83 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
         clearTimeout(poolItem.timeoutId);
       }
     });
+  }
+
+  //eslint-disable-next-line @typescript-eslint/require-await
+  async handleApiError(apiIndex: number, errorType: ApiErrorType): Promise<void> {
+    if (this.pool[apiIndex].failed || this.pool[apiIndex].rateLimited) {
+      //if this api was used again then it must be in the same batch of blocks
+      return;
+    }
+    const adjustment = this.errorTypeToScoreAdjustment[errorType] || this.errorTypeToScoreAdjustment.default;
+    this.pool[apiIndex].performanceScore += adjustment;
+    this.pool[apiIndex].failureCount++;
+
+    if (errorType === ApiErrorType.Connection) {
+      if (this.pool[apiIndex].connected) {
+        //handleApiDisconnects was already called if this is false
+        //this.handleApiDisconnects(apiIndex);
+        this.pool[apiIndex].connected = false;
+      }
+      return;
+    }
+
+    if (errorType !== ApiErrorType.Default) {
+      const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[apiIndex].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
+      this.pool[apiIndex].backoffDelay = nextDelay;
+
+      if (ApiErrorType.Timeout || ApiErrorType.RateLimit) {
+        this.pool[apiIndex].rateLimited = true;
+      } else {
+        this.pool[apiIndex].failed = true;
+      }
+
+      if (this.pool[apiIndex].timeoutId) {
+        clearTimeout(this.pool[apiIndex].timeoutId as NodeJS.Timeout);
+      }
+
+      this.pool[apiIndex].timeoutId = setTimeout(() => {
+        this.pool[apiIndex].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
+        this.pool[apiIndex].rateLimited = false;
+        this.pool[apiIndex].failed = false;
+        this.pool[apiIndex].timeoutId = undefined; // Clear the timeout ID
+
+        const suspendedIndices = Object.keys(this.pool)
+          .map(toNumber)
+          .filter((index) => this.pool[index].backoffDelay !== 0);
+
+        if (suspendedIndices.length === 0) {
+          logger.info(chalk.green('No suspended endpoints.'));
+        }
+      }, nextDelay);
+
+      logger.warn(
+        `Endpoint ${this.pool[apiIndex].endpoint} experienced an error (${errorType}). Suspending for ${
+          nextDelay / 1000
+        }s.`
+      );
+    }
+  }
+
+  private calculatePerformanceScore(responseTime: number, failureCount: number): number {
+    const responseTimeScore = 1 / responseTime;
+    const failureScore = 1 - failureCount / MAX_FAILURES;
+    return RESPONSE_TIME_WEIGHT * responseTimeScore + FAILURE_WEIGHT * failureScore;
+  }
+
+  //eslint-disable-next-line @typescript-eslint/require-await
+  async handleApiSuccess(apiIndex: number, responseTime: number): Promise<void> {
+    const performanceScore = this.pool[apiIndex].performanceScore;
+    const failureCount = this.pool[apiIndex].failureCount;
+
+    const updatedScore = performanceScore + this.calculatePerformanceScore(responseTime, failureCount);
+    this.pool[apiIndex].performanceScore = updatedScore;
+  }
+
+  //eslint-disable-next-line @typescript-eslint/require-await
+  async getDisconnectedIndices(): Promise<number[]> {
+    return Object.keys(this.pool)
+      .map(Number)
+      .filter((index) => !this.pool[index].connected);
   }
 }

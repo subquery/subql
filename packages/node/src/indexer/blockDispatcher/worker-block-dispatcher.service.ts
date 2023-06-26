@@ -94,6 +94,12 @@ async function createIndexerWorker(
         connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
       hostDeleteFromPool:
         connectionPoolState.deleteFromPool.bind(connectionPoolState),
+      hostHandleApiError:
+        connectionPoolState.handleApiError.bind(connectionPoolState),
+      hostHandleApiSuccess:
+        connectionPoolState.handleApiSuccess.bind(connectionPoolState),
+      hostGetDisconnectedIndices:
+        connectionPoolState.getDisconnectedIndices.bind(connectionPoolState),
       hostShutdownPoolState:
         connectionPoolState.shutdown.bind(connectionPoolState),
     },
