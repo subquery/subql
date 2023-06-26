@@ -5,8 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.2.0] - 2023-06-26
 ### Changed
-- Expose all the multi-chain metadatas from query service, this helps to identify multi-chain project and networks been indexed within the project, a proper improvement will be complete in [#1817](https://github.com/subquery/subql/issues/1817). (#1818)
 - Update apollo server with security fixes (#1834)
 
 ### Added
@@ -245,7 +246,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/v2.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql/compare/query/2.1.0...query/2.2.0
 [2.1.0]: https://github.com/subquery/subql/compare/query/v2.0.1..query/.v2.1.0
 [2.0.1]: https://github.com/subquery/subql/compare/query/v2.0.0...query/v2.0.1
 [2.0.0]: https://github.com/subquery/subql/compare/query/v.1.11.2..query/v2.0.0
