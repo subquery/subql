@@ -18,30 +18,33 @@ export class DictionaryService
   extends CoreDictionaryService
   implements OnApplicationShutdown
 {
-  constructor(
+  private constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     nodeConfig: NodeConfig,
+    chainId?: string,
   ) {
-    super(project.network.dictionary, project.network.chainId, nodeConfig);
+    super(
+      project.network.dictionary,
+      chainId ?? project.network.chainId,
+      nodeConfig,
+    );
   }
 
-  async init(): Promise<void> {
+  static async create(
+    project: SubqueryProject,
+    nodeConfig: NodeConfig,
+  ): Promise<DictionaryService> {
     /*Some dictionarys for EVM are built with other SDKs as they are chains with an EVM runtime
      * we maintain a list of aliases so we can map the evmChainId to the genesis hash of the other SDKs
      * e.g moonbeam is built with Substrate SDK but can be used as an EVM dictionary
      */
     const chainAliases = await this.getEvmChainId();
-    const chainAlias = chainAliases[this.chainId];
+    const chainAlias = chainAliases[project.network.chainId];
 
-    if (chainAlias) {
-      // Cast as any to work around read only
-      (this.chainId as any) = chainAlias;
-    }
-
-    await super.init();
+    return new DictionaryService(project, nodeConfig, chainAlias);
   }
 
-  private async getEvmChainId(): Promise<Record<string, string>> {
+  private static async getEvmChainId(): Promise<Record<string, string>> {
     const response = await fetch(CHAIN_ALIASES_URL);
 
     const raw = await response.text();

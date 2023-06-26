@@ -13,6 +13,7 @@ import {
   ConnectionPoolService,
   SmartBatchService,
   StoreCacheService,
+  PgMmrCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from '../ethereum/api.connection';
@@ -129,8 +130,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     {
       provide: DictionaryService,
       useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
-        const dictionaryService = new DictionaryService(project, nodeConfig);
-        await dictionaryService.init();
+        const dictionaryService = await DictionaryService.create(
+          project,
+          nodeConfig,
+        );
         return dictionaryService;
       },
       inject: ['ISubqueryProject', NodeConfig],
@@ -140,6 +143,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DynamicDsService,
     PoiService,
     MmrService,
+    PgMmrCacheService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',

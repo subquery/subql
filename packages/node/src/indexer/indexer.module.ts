@@ -12,6 +12,7 @@ import {
   ConnectionPoolService,
   StoreCacheService,
   WorkerDynamicDsService,
+  PgMmrCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
@@ -61,6 +62,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     },
     PoiService,
     MmrService,
+    PgMmrCacheService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
