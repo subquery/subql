@@ -2,25 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { DbModule, NodeConfig, MMRMigrateService } from '@subql/node-core';
-import { Sequelize } from '@subql/x-sequelize';
+import { DbModule, MMRMigrateFeatureModule } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-
-@Module({
-  providers: [
-    SchedulerRegistry,
-    {
-      provide: MMRMigrateService,
-      useFactory: (config: NodeConfig, sequelize: Sequelize) => {
-        return new MMRMigrateService(config, sequelize);
-      },
-      inject: [NodeConfig, Sequelize],
-    },
-  ],
-  controllers: [],
-})
-export class MMRMigrateFeatureModule {}
 
 @Module({
   imports: [

@@ -13,7 +13,7 @@ export interface PoiInterface {
   bulkUpsert(proofs: ProofOfIndex[]): Promise<void> | void;
   getLatestPoiWithMmr(): Promise<ProofOfIndex | null>;
   getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]>;
-  resetPoiMmr?(latestPoiMmrHeight: number, targetHeight: number, tx: Transaction): Promise<void>;
+  resetPoiMmr(latestPoiMmrHeight: number, targetHeight: number): Promise<void>;
 }
 
 // When using cockroach db, poi id is store in bigint format, and sequelize toJSON() can not convert id correctly (to string)

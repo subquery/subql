@@ -80,6 +80,10 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
   };
 };
 
+export async function establishNewSequelize(nodeConfig: NodeConfig): Promise<Sequelize> {
+  return sequelizeFactory(buildSequelizeOptions(nodeConfig, DEFAULT_DB_OPTION))();
+}
+
 @Global()
 export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {

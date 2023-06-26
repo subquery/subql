@@ -174,7 +174,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     const adjustment = this.errorTypeToScoreAdjustment[error.errorType] || this.errorTypeToScoreAdjustment.default;
     const performanceScore = await this.poolStateManager.getFieldValue(apiIndex, 'performanceScore');
     await this.poolStateManager.setFieldValue(apiIndex, 'performanceScore', performanceScore + adjustment);
-
+    if ((await this.poolStateManager.getFieldValue(apiIndex, 'backoffDelay')) > 0) {
+      //endpoint is alreay suspended, we must be dealing with requests from same batch
+      return;
+    }
     const failureCount = await this.poolStateManager.getFieldValue(apiIndex, 'failureCount');
     await this.poolStateManager.setFieldValue(apiIndex, 'failureCount', failureCount + 1);
 

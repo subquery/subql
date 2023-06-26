@@ -14,6 +14,7 @@ import {
   WorkerConnectionPoolStateManager,
   ConnectionPoolStateManager,
   NodeConfig,
+  PgMmrCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -80,6 +81,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     },
     PoiService,
     MmrService,
+    PgMmrCacheService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,

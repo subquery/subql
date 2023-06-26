@@ -1,6 +1,6 @@
 {
   "name": "@subql/utils",
-  "version": "2.4.1",
+  "version": "2.4.2-1",
   "description": "",
   "packageManager": "yarn@3.1.1",
   "scripts": {
@@ -25,10 +25,11 @@
     "lodash": "^4.17.21",
     "pino": "^6.13.3",
     "rotating-file-stream": "^3.0.2",
-    "semver": "^7.3.7",
+    "semver": "^7.5.2",
     "tar": "^6.1.11"
   },
   "devDependencies": {
     "@types/semver": "^7"
-  }
+  },
+  "stableVersion": "2.4.2-0"
 }

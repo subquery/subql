@@ -10,6 +10,8 @@ export type HostConnectionPoolState<T> = {
   hostSetFieldInConnectionPoolItem: <K extends keyof T>(index: number, field: K, value: T[K]) => Promise<void>;
   hostSetTimeoutIdInConnectionPoolItem: (index: number, delay: number) => Promise<void>;
   hostClearTimeoutIdInConnectionPoolItem: (index: number) => Promise<void>;
+  hostGetSuspendedIndices: () => Promise<number[]>;
+  hostDeleteFromPool: (index: number) => Promise<void>;
   hostShutdownPoolState: () => Promise<void>;
 };
 
@@ -20,6 +22,8 @@ export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[]
   'hostSetFieldInConnectionPoolItem',
   'hostSetTimeoutIdInConnectionPoolItem',
   'hostClearTimeoutIdInConnectionPoolItem',
+  'hostGetSuspendedIndices',
+  'hostDeleteFromPool',
   'hostShutdownPoolState',
 ];
 
@@ -49,6 +53,14 @@ export class WorkerConnectionPoolStateManager<T> {
 
   async clearTimeout(index: number): Promise<void> {
     return this.host.hostClearTimeoutIdInConnectionPoolItem(index);
+  }
+
+  async getSuspendedIndices(): Promise<number[]> {
+    return this.host.hostGetSuspendedIndices();
+  }
+
+  async deleteFromPool(index: number): Promise<void> {
+    return this.host.hostDeleteFromPool(index);
   }
 
   async shutdown(): Promise<void> {

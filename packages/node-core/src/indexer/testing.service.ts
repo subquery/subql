@@ -175,7 +175,8 @@ export abstract class TestingService<A, SA, B, DS> {
           const attributes = actualEntity;
           Object.keys(attributes).map((attr) => {
             const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
-            const actualAttr = (actualEntity as Record<string, any>)[attr];
+            const actualAttr = (actualEntity as Record<string, any>)[attr] ?? null;
+
             if (!isEqual(expectedAttr, actualAttr)) {
               failedAttributes.push(
                 `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`

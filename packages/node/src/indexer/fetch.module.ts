@@ -13,6 +13,7 @@ import {
   SmartBatchService,
   StoreCacheService,
   ConnectionPoolStateManager,
+  PgMmrCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -114,6 +115,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DynamicDsService,
     PoiService,
     MmrService,
+    PgMmrCacheService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',

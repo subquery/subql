@@ -90,6 +90,10 @@ async function createIndexerWorker(
         connectionPoolState.setTimeout.bind(connectionPoolState),
       hostClearTimeoutIdInConnectionPoolItem:
         connectionPoolState.clearTimeout.bind(connectionPoolState),
+      hostGetSuspendedIndices:
+        connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
+      hostDeleteFromPool:
+        connectionPoolState.deleteFromPool.bind(connectionPoolState),
       hostShutdownPoolState:
         connectionPoolState.shutdown.bind(connectionPoolState),
     },

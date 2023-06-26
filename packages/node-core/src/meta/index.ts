@@ -1,11 +1,16 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './event.listener';
-export * from './mmrQuery.controller';
-export * from './health.controller';
-export * from './health.service';
-export * from './ready.controller';
-export * from './ready.service';
+import {MetricEventListener} from './event.listener';
+import {HealthController} from './health.controller';
+import {HealthService} from './health.service';
+import {gaugeProviders} from './meta';
+import {MmrQueryController} from './mmrQuery.controller';
+import {ReadyController} from './ready.controller';
+import {ReadyService} from './ready.service';
+
 export * from './meta.service';
-export * from './meta';
+
+export const metaControllers = [HealthController, ReadyController, MmrQueryController];
+
+export const metaServices = [MetricEventListener, HealthService, ReadyService, ...gaugeProviders];
