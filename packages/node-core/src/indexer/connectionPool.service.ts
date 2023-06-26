@@ -193,7 +193,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     return Object.keys(this.pool).length;
   }
 
-  async handleApiDisconnects(index: number) {
+  private async handleApiDisconnects(index: number) {
     logger.warn(`disconnected from ${this.pool[index].endpoint}`);
     this.pool[index].connected = false;
 

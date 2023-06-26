@@ -51,7 +51,7 @@ describe('ConnectionPoolService', () => {
     it('should handle successful reconnection on the first attempt', async () => {
       (mockApiConnection.apiConnect as any).mockImplementation(() => Promise.resolve());
 
-      connectionPoolService.handleApiDisconnects(0);
+      (connectionPoolService as any).handleApiDisconnects(0);
 
       await waitFor(() => (mockApiConnection.apiConnect as any).mock.calls.length === 1);
       expect(mockApiConnection.apiConnect).toHaveBeenCalledTimes(1);
@@ -64,7 +64,7 @@ describe('ConnectionPoolService', () => {
         .mockImplementationOnce(() => Promise.reject(new Error('Reconnection failed')))
         .mockImplementation(() => Promise.resolve());
 
-      connectionPoolService.handleApiDisconnects(0);
+      (connectionPoolService as any).handleApiDisconnects(0);
 
       await waitFor(() => (mockApiConnection.apiConnect as any).mock.calls.length === 3);
       expect(mockApiConnection.apiConnect).toHaveBeenCalledTimes(3);
@@ -74,7 +74,7 @@ describe('ConnectionPoolService', () => {
     it('should handle failed reconnection after max attempts', async () => {
       (mockApiConnection.apiConnect as any).mockImplementation(() => Promise.reject(new Error('Reconnection failed')));
 
-      connectionPoolService.handleApiDisconnects(0);
+      (connectionPoolService as any).handleApiDisconnects(0);
 
       await waitFor(() => (mockApiConnection.apiConnect as any).mock.calls.length === 5);
       expect(mockApiConnection.apiConnect).toHaveBeenCalledTimes(5);
@@ -83,15 +83,13 @@ describe('ConnectionPoolService', () => {
   });
 
   describe('handleApiDisconnects', () => {
-    // ...
-
     it('should call handleApiDisconnects only once when multiple connection errors are triggered', async () => {
       // Mock apiConnection.apiConnect() to not resolve for a considerable time
       (mockApiConnection.apiConnect as any).mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 10000))
       );
 
-      const handleApiDisconnectsSpy = jest.spyOn(connectionPoolService, 'handleApiDisconnects');
+      const handleApiDisconnectsSpy = jest.spyOn(connectionPoolService as any, 'handleApiDisconnects');
 
       // Trigger handleApiError with connection issue twice
       connectionPoolService.handleApiError(0, {
