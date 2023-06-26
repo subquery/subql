@@ -56,7 +56,7 @@ function eventFilterToQueryEntry(
 
     if (addresses.length > queryAddressLimit) {
       logger.warn(
-        `Addresses length: ${addresses} is exceeding limit: ${queryAddressLimit}. Consider increasing this value with the flag --query-address-limit  `,
+        `Addresses length: ${addresses.length} is exceeding limit: ${queryAddressLimit}. Consider increasing this value with the flag --query-address-limit  `,
       );
     }
 
