@@ -242,7 +242,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       .filter((index) => this.pool[index].backoffDelay !== 0);
 
     if (suspendedIndices.length === 0) {
-      logger.info(chalk.green('No suspended endpoints.'));
       return;
     }
 
@@ -301,6 +300,14 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
         this.pool[apiIndex].rateLimited = false;
         this.pool[apiIndex].failed = false;
         this.pool[apiIndex].timeoutId = undefined; // Clear the timeout ID
+
+        const suspendedIndices = Object.keys(this.pool)
+          .map(toNumber)
+          .filter((index) => this.pool[index].backoffDelay !== 0);
+
+        if (suspendedIndices.length === 0) {
+          logger.info(chalk.green('No suspended endpoints.'));
+        }
       }, nextDelay);
 
       logger.warn(
