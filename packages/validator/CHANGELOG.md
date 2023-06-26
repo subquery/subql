@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.1.0] - 2023-06-26
 ### Removed
 - Support for Terra and Avalanche SDKs. Note: Avalanche is still supported through the Ethereum SDK. (#1841)
 
@@ -128,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init release: support validation of subquery project
 
-[Unreleased]: https://github.com/subquery/subql/compare/validator/2.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/validator/2.1.0...HEAD
+[2.1.0]: https://github.com/subquery/subql/compare/validator/2.0.0...validator/2.1.0
 [2.0.0]: https://github.com/subquery/subql/compare/validator/1.8.1...validator/2.0.0
 [1.8.1]: https://github.com/subquery/subql/compare/validator/1.8.0...validator/1.8.1
 [1.8.0]: https://github.com/subquery/subql/compare/validator/1.7.0...validator/1.8.0

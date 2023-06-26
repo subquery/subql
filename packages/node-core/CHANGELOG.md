@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2023-06-26
 ### Changed
 - Added `pgMmrCacheService` to use independent Db connection, now mmr cache flush by itself. (#1828)
 - Update meta exports to require `MmrQueryController` and move code from node core (#1823)
 - Switch from node-fetch to cross-fetch. [See apollo issue for more](https://github.com/apollographql/apollo-client/issues/4857)
+
 ### Fixed
 - Not being able to test with null/undefined values on entities (#1809)
 
@@ -316,7 +318,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/2.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/3.0.0...HEAD
+[3.0.0]: https://github.com/subquery/subql/compare/node-core/2.6.0...node-core/3.0.0
 [2.6.0]: https://github.com/subquery/subql/compare/node-core/2.5.1...node-core/2.6.0
 [2.5.1]: https://github.com/subquery/subql/compare/node-core/2.5.0...node-core/2.5.1
 [2.5.0]: https://github.com/subquery/subql/compare/node-core/2.4.5...node-core/2.5.0

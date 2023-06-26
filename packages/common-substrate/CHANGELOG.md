@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
+
+## [2.2.0] - 2023-06-26
+### Changed
+- Update common dependency
 
 ## [2.1.1] - 2023-05-11
 ### Changed
@@ -15,10 +17,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [2.1.0] - 2023-05-10
 ### Added
 - Ability to specify node runner options (#1652)
+
 ### Changed
 - Remove support for manifest versions < 1.0.0 (#1659)
 
 ## [2.0.0] - 2023-04-20
+### Changed
 - Major release 2.0.0, align with other package versions
 
 ## [1.5.0] - 2023-03-30
@@ -30,7 +34,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Support for `bypassBlocks` (#1435)
 
 ## [1.3.0] - 2022-10-27
-
 ### Added
 - Timestamp filter to block handlers (#1310)
 
@@ -51,6 +54,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Remove `contract-processors` and types improvements (#1012)
 
 ## [1.0.0] - 2022-05-11
+### Changed
 - Major release
 
 ## [0.5.0] - 2022-05-11
@@ -69,6 +73,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.3.0] - 2022-04-06
 ### Added
 - Add manifest 1.0.0 (#845)
+
 ### Fixed
 - Fix validation for genesisHash or chainId with empty string (#883)
 
@@ -80,4 +85,22 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/0.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql/compare/common-substrate/2.1.1...common-substrate/2.2.0
+[2.1.1]: https://github.com/subquery/subql/compare/common-substrate/2.1.0...common-substrate/2.1.1
+[2.1.0]: https://github.com/subquery/subql/compare/common-substrate/2.0.0...common-substrate/2.1.0
+[2.0.0]: https://github.com/subquery/subql/compare/common-substrate/1.5.0...common-substrate/2.0.0
+[1.5.0]: https://github.com/subquery/subql/compare/common-substrate/1.4.0...common-substrate/1.5.0
+[1.4.0]: https://github.com/subquery/subql/compare/common-substrate/1.3.0...common-substrate/1.4.0
+[1.3.0]: https://github.com/subquery/subql/compare/common-substrate/1.2.1...common-substrate/1.3.0
+[1.2.1]: https://github.com/subquery/subql/compare/common-substrate/1.2.0...common-substrate/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/common-substrate/1.1.1...common-substrate/1.2.0
+[1.1.1]: https://github.com/subquery/subql/compare/common-substrate/1.1.0...common-substrate/1.1.1
+[1.1.0]: https://github.com/subquery/subql/compare/common-substrate/1.0.0...common-substrate/1.1.0
+[1.0.0]: https://github.com/subquery/subql/compare/common-substrate/0.5.0...common-substrate/1.0.0
+[0.5.0]: https://github.com/subquery/subql/compare/common-substrate/0.4.0...common-substrate/0.5.0
+[0.4.0]: https://github.com/subquery/subql/compare/common-substrate/0.3.1...common-substrate/0.4.0
+[0.3.1]: https://github.com/subquery/subql/compare/common-substrate/0.3.0...common-substrate/0.3.1
+[0.3.0]: https://github.com/subquery/subql/compare/common-substrate/0.2.0...common-substrate/0.3.0
+[0.2.0]: https://github.com/subquery/subql/compare/common-substrate/0.1.0...common-substrate/0.2.0
+[0.1.0]: https://github.com/subquery/subql/tags/common-substrate/0.1.0
