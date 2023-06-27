@@ -219,10 +219,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
       extend type Query {
         _metadata(chainId: String): _Metadata
 
-        _metadatas(
-          after: Cursor
-          before: Cursor # distinct: [_mmr_distinct_enum] = null
-        ): # filter: _MetadataFilter
+        _metadatas(after: Cursor, before: Cursor): # distinct: [_mmr_distinct_enum] = null
+        # filter: _MetadataFilter
         # first: Int
         # last: Int
         # offset: Int
