@@ -100,7 +100,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
             'When regenerate MMR store in either a file or a postgres DB',
           type: 'string',
           choices: ['file', 'postgres'],
-          default: 'file',
+          default: 'postgres',
         },
         'mmr-path': {
           alias: 'm',
@@ -294,7 +294,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Store MMR in either a file or a postgres DB',
       type: 'string',
       choices: ['file', 'postgres'],
-      default: 'file',
+      default: 'postgres',
     },
     'query-limit': {
       demandOption: false,

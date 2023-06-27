@@ -3,27 +3,8 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import {
-  DbModule,
-  MmrService,
-  StoreCacheService,
-  StoreService,
-  MmrRegenerateService,
-} from '@subql/node-core';
+import { DbModule, MmrRegenerateFeatureModule } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-
-@Module({
-  providers: [
-    StoreCacheService,
-    StoreService,
-    MmrService,
-    MmrRegenerateService,
-    SchedulerRegistry,
-  ],
-  controllers: [],
-})
-export class MmrRegenerateFeatureModule {}
 
 @Module({
   imports: [
