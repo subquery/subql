@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2023-06-27
+### Added
+- Multiple endpoints improvement (#134)
+### Changed
+- Update dependencies and use new features from node-core (#141)
+- Default POI store to postgres (#141)
+### Fixed
+- Don't filter messages for begin/end block events. (#136)
+
 ## [2.5.3] - 2023-06-13
 ### Fixed
 - Fix module missing sequelize, use subql/x-sequelize (#101)
@@ -220,39 +229,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.3...HEAD
-[2.5.3]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.2...node/v2.5.3
-[2.5.2]: https://github.com/subquery/subql-cosmos/compare/node/v2.5.1...node/v2.5.2
-[2.5.1]: https://github.com/subquery/subql-cosmos/compare/node/2.5.0...node/2.5.1
-[2.5.0]: https://github.com/subquery/subql-cosmos/compare/node/2.3.0...node/2.5.0
-[2.3.0]: https://github.com/subquery/subql-cosmos/compare/node/2.1.0...node/2.3.0
-[2.1.0]: https://github.com/subquery/subql-cosmos/compare/node/2.0.1...node/2.1.0
-[2.0.1]: https://github.com/subquery/subql-cosmos/compare/node/2.0.0...node/2.0.1
-[2.0.0]: https://github.com/subquery/subql-cosmos/compare/node/.1.19.1..node/2.0.0
-[1.19.1]: https://github.com/subquery/subql-cosmos/compare/node/1.19.0...node/1.19.1
-[1.19.0]: https://github.com/subquery/subql-cosmos/compare/node/1.18.0...node/1.19.0
-[1.18.0]: https://github.com/subquery/subql-cosmos/compare/node/1.13.2...node/1.18.0
-[1.13.2]: https://github.com/subquery/subql-cosmos/compare/node/1.13.1...node/1.13.2
-[1.13.1]: https://github.com/subquery/subql-cosmos/compare/node/1.13.0...node/1.13.1
-[1.13.0]: https://github.com/subquery/subql-cosmos/compare/node/1.12.0...node/1.13.0
-[1.12.0]: https://github.com/subquery/subql-cosmos/compare/node/1.11.2...node/1.12.0
-[1.11.2]: https://github.com/subquery/subql-cosmos/compare/node/1.11.1...node/1.11.2
-[1.11.1]: https://github.com/subquery/subql-cosmos/compare/node/1.11.0...node/1.11.1
-[1.11.0]: https://github.com/subquery/subql-cosmos/compare/node/1.10.5...node/1.11.0
-[1.10.5]: https://github.com/subquery/subql-cosmos/compare/node/1.10.4...node/1.10.5
-[1.10.4]: https://github.com/subquery/subql-cosmos/compare/node/1.10.3...node/1.10.4
-[1.10.3]: https://github.com/subquery/subql-cosmos/compare/node/1.10.2...node/1.10.3
-[1.10.2]: https://github.com/subquery/subql-cosmos/compare/node/1.10.1...node/1.10.2
-[1.10.1]: https://github.com/subquery/subql-cosmos/compare/node/1.10.0...node/1.10.1
-[1.10.0]: https://github.com/subquery/subql-cosmos/compare/node/1.9.1...node/1.10.0
-[1.9.1]: https://github.com/subquery/subql-cosmos/compare/node/1.9.0...node/1.9.1
-[1.9.0]: https://github.com/subquery/subql-cosmos/compare/node/0.3.0...node/1.9.0
-[0.3.0]: https://github.com/subquery/subql-cosmos/compare/node/0.2.0...node/0.3.0
-[0.2.0]: https://github.com/subquery/subql-cosmos/compare/node/0.1.3...node/0.2.0
-[0.1.3]: https://github.com/subquery/subql-cosmos/compare/node/0.1.2...node/0.1.3
-[0.1.2]: https://github.com/subquery/subql-cosmos/compare/node/0.1.1...node/0.1.2
-[0.1.1]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...node/0.1.1
-[0.1.0]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...node/0.1.0
-[0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.6...node/0.0.7
-[0.0.6]: https://github.com/subquery/subql-cosmos/compare/node/0.0.5...node/0.0.6
-[0.0.5]: https://github.com/subquery/subql-cosmos/tags/v0.0.5
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.8.0...HEAD
+[2.8.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.3...node-cosmos/2.8.0
+[2.5.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.2...node-cosmos/2.5.3
+[2.5.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.1...node-cosmos/2.5.2
+[2.5.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.0...node-cosmos/2.5.1
+[2.5.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.3.0...node-cosmos/2.5.0
+[2.3.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.1.0...node-cosmos/2.3.0
+[2.1.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.0.1...node-cosmos/2.1.0
+[2.0.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.0.0...node-cosmos/2.0.1
+[2.0.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/.1.19.1..node-cosmos/2.0.0
+[1.19.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.19.0...node-cosmos/1.19.1
+[1.19.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.18.0...node-cosmos/1.19.0
+[1.18.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.13.2...node-cosmos/1.18.0
+[1.13.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.13.1...node-cosmos/1.13.2
+[1.13.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.13.0...node-cosmos/1.13.1
+[1.13.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.12.0...node-cosmos/1.13.0
+[1.12.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.11.2...node-cosmos/1.12.0
+[1.11.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.11.1...node-cosmos/1.11.2
+[1.11.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.11.0...node-cosmos/1.11.1
+[1.11.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.10.5...node-cosmos/1.11.0
+[1.10.5]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.10.4...node-cosmos/1.10.5
+[1.10.4]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.10.3...node-cosmos/1.10.4
+[1.10.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.10.2...node-cosmos/1.10.3
+[1.10.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.10.1...node-cosmos/1.10.2
+[1.10.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.10.0...node-cosmos/1.10.1
+[1.10.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.9.1...node-cosmos/1.10.0
+[1.9.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/1.9.0...node-cosmos/1.9.1
+[1.9.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.3.0...node-cosmos/1.9.0
+[0.3.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.2.0...node-cosmos/0.3.0
+[0.2.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.1.3...node-cosmos/0.2.0
+[0.1.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.1.2...node-cosmos/0.1.3
+[0.1.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.1.1...node-cosmos/0.1.2
+[0.1.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.1.0...node-cosmos/0.1.1
+[0.1.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.0.7...node-cosmos/0.1.0
+[0.0.7]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.0.6...node-cosmos/0.0.7
+[0.0.6]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/0.0.5...node-cosmos/0.0.6
+[0.0.5]: https://github.com/subquery/subql-cosmos/tags/node-cosmos/0.0.5
