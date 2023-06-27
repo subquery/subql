@@ -8,9 +8,14 @@ import {getLogger} from '../logger';
 
 const RETRY_DELAY = 60 * 1000;
 const MAX_FAILURES = 5;
-const LOG_INTERVAL_MS = 60 * 1000; // Log every 60 seconds
 const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
+const errorTypeToScoreAdjustment = {
+  [ApiErrorType.Timeout]: -10,
+  [ApiErrorType.Connection]: -20,
+  [ApiErrorType.RateLimit]: -10,
+  [ApiErrorType.Default]: -5,
+};
 
 export interface ConnectionPoolItem<T> {
   endpoint: string;
@@ -26,14 +31,28 @@ export interface ConnectionPoolItem<T> {
 
 const logger = getLogger('connection-pool-state');
 
+export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
+  addToConnections(endpoint: string, index: number): Promise<void>;
+  getNextConnectedApiIndex(): Promise<number | undefined>;
+  numConnections: number;
+  getFieldValue<K extends keyof ConnectionPoolItem<T>>(apiIndex: number, field: K): Promise<ConnectionPoolItem<T>[K]>;
+  setFieldValue<K extends keyof ConnectionPoolItem<T>>(
+    apiIndex: number,
+    field: K,
+    value: ConnectionPoolItem<T>[K]
+  ): Promise<void>;
+  getSuspendedIndices(): Promise<number[]>;
+  setTimeout(apiIndex: number, delay: number): Promise<void>;
+  clearTimeout(apiIndex: number): Promise<void>;
+  deleteFromPool(apiIndex: number): Promise<void>;
+  shutdown(): Promise<void>;
+  handleApiError(apiIndex: number, errorType: number): Promise<void>;
+  handleApiSuccess(apiIndex: number, responseTime: number): Promise<void>;
+  getDisconnectedIndices(): Promise<number[]>;
+}
+
 export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
   private pool: Record<number, ConnectionPoolItem<T>> = {};
-  private errorTypeToScoreAdjustment = {
-    [ApiErrorType.Timeout]: -10,
-    [ApiErrorType.Connection]: -20,
-    [ApiErrorType.RateLimit]: -10,
-    [ApiErrorType.Default]: -5,
-  };
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async addToConnections(endpoint: string, index: number): Promise<void> {
@@ -169,7 +188,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       //if this api was used again then it must be in the same batch of blocks
       return;
     }
-    const adjustment = this.errorTypeToScoreAdjustment[errorType] || this.errorTypeToScoreAdjustment.default;
+    const adjustment = errorTypeToScoreAdjustment[errorType] || errorTypeToScoreAdjustment.default;
     this.pool[apiIndex].performanceScore += adjustment;
     this.pool[apiIndex].failureCount++;
 
