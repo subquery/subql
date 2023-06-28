@@ -248,6 +248,18 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
     this.pool[apiIndex].performanceScore = updatedScore;
   }
 
+  async handleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void> {
+    for (const result of successResults) {
+      await this.handleApiSuccess(result.apiIndex, result.responseTime);
+    }
+  }
+
+  async handleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void> {
+    for (const result of errorResults) {
+      await this.handleApiError(result.apiIndex, result.errorType);
+    }
+  }
+
   //eslint-disable-next-line @typescript-eslint/require-await
   async getDisconnectedIndices(): Promise<number[]> {
     return Object.keys(this.pool)

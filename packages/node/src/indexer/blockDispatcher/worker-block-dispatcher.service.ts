@@ -98,6 +98,10 @@ async function createIndexerWorker(
         connectionPoolState.handleApiError.bind(connectionPoolState),
       hostHandleApiSuccess:
         connectionPoolState.handleApiSuccess.bind(connectionPoolState),
+      hostHandleBatchApiError:
+        connectionPoolState.handleBatchApiError.bind(connectionPoolState),
+      hostHandleBatchApiSuccess:
+        connectionPoolState.handleBatchApiSuccess.bind(connectionPoolState),
       hostGetDisconnectedIndices:
         connectionPoolState.getDisconnectedIndices.bind(connectionPoolState),
       hostShutdownPoolState:

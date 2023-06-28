@@ -15,6 +15,8 @@ export type HostConnectionPoolState<T> = {
   hostDeleteFromPool: (index: number) => Promise<void>;
   hostHandleApiError: (index: number, errorType: string) => Promise<void>;
   hostHandleApiSuccess: (index: number, responseTime: number) => Promise<void>;
+  hostHandleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void>;
+  hostHandleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void>;
   hostGetDisconnectedIndices: () => Promise<number[]>;
   hostShutdownPoolState: () => Promise<void>;
 };
@@ -30,6 +32,8 @@ export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[]
   'hostDeleteFromPool',
   'hostHandleApiError',
   'hostHandleApiSuccess',
+  'hostHandleBatchApiError',
+  'hostHandleBatchApiSuccess',
   'hostGetDisconnectedIndices',
   'hostShutdownPoolState',
 ];
@@ -76,6 +80,14 @@ export class WorkerConnectionPoolStateManager<T> {
 
   async handleApiSuccess(index: number, responseTime: number): Promise<void> {
     return this.host.hostHandleApiSuccess(index, responseTime);
+  }
+
+  async handleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void> {
+    return this.host.hostHandleBatchApiSuccess(successResults);
+  }
+
+  async handleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void> {
+    return this.host.hostHandleBatchApiError(errorResults);
   }
 
   async getDisconnectedIndices(): Promise<number[]> {

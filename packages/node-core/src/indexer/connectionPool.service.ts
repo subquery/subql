@@ -10,11 +10,7 @@ import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 const logger = getLogger('connection-pool');
 
-const MAX_FAILURES = 5;
 const LOG_INTERVAL_MS = 60 * 1000; // Log every 60 seconds
-const RESPONSE_TIME_WEIGHT = 0.7;
-const FAILURE_WEIGHT = 0.3;
-const RETRY_DELAY = 60 * 1000;
 
 export enum ApiErrorType {
   Timeout = 'timeout',
@@ -55,7 +51,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private resultCache: Array<ResultCacheEntry<number | ApiConnectionError['errorType']>> = [];
   private lastCacheFlushTime: number = Date.now();
   private cacheSizeThreshold = 10;
-  private cacheFlushInterval = 5000;
+  private cacheFlushInterval = 60 * 100;
 
   constructor(
     private poolStateManager: ConnectionPoolStateManager<T>,
@@ -211,13 +207,13 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   async handleApiSuccess(apiIndex: number, responseTime: number): Promise<void> {
     this.addToResultCache(apiIndex, 'success', responseTime);
     await this.flushResultCacheIfNeeded();
-    await this.updateNextConnectedApiIndex();
+    await this.handleConnectionStateChange();
   }
 
   async handleApiError(apiIndex: number, error: ApiConnectionError): Promise<void> {
     this.addToResultCache(apiIndex, 'error', error.errorType);
     await this.flushResultCacheIfNeeded();
-    await this.updateNextConnectedApiIndex();
+    await this.handleConnectionStateChange();
   }
 
   async handleConnectionStateChange(): Promise<void> {
@@ -256,13 +252,19 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   private async flushResultCache(): Promise<void> {
+    const successResults: Array<{apiIndex: number; responseTime: number}> = [];
+    const errorResults: Array<{apiIndex: number; errorType: ApiErrorType}> = [];
+
     for (const result of this.resultCache) {
       if (result.type === 'success') {
-        await this.poolStateManager.handleApiSuccess(result.apiIndex, result.data as number);
+        successResults.push({apiIndex: result.apiIndex, responseTime: result.data as number});
       } else {
-        await this.poolStateManager.handleApiError(result.apiIndex, result.data as ApiErrorType);
+        errorResults.push({apiIndex: result.apiIndex, errorType: result.data as ApiErrorType});
       }
     }
+
+    await this.poolStateManager.handleBatchApiSuccess(successResults);
+    await this.poolStateManager.handleBatchApiError(errorResults);
 
     this.resultCache = [];
     this.lastCacheFlushTime = Date.now();
