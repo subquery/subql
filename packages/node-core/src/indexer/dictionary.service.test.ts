@@ -1,10 +1,11 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {DictionaryQueryEntry, SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {range} from 'lodash';
 import {NodeConfig} from '../configure';
-import {DictionaryService} from './dictionary.service';
+import {DictionaryService, getGqlType} from './dictionary.service';
 
 const mockDS = [
   {
@@ -109,10 +110,32 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
 });
 
-describe('DictionaryService', () => {
-  it('return dictionary query result', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+describe('GraphqlTypes', () => {
+  it('Supports arrays of primitives', () => {
+    const stringType = getGqlType(['a', 'b', 'c']);
+    expect(stringType).toEqual(`[String!]`);
 
+    const number = getGqlType([1, 2, 3]);
+    expect(number).toEqual(`[BigFloat!]`);
+  });
+
+  it('Throws arrays of non-primitives', () => {
+    expect(() => getGqlType([{a: 1}])).toThrow('Object types not supported');
+  });
+
+  it('Throws with empty arrays', () => {
+    expect(() => getGqlType([])).toThrow('Unable to determine array type');
+  });
+});
+
+describe('DictionaryService', () => {
+  let dictionaryService: DictionaryService;
+
+  beforeEach(() => {
+    dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig, new EventEmitter2());
+  });
+
+  it('return dictionary query result', async () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
@@ -121,11 +144,36 @@ describe('DictionaryService', () => {
     expect(dic?.batchBlocks.length).toBeGreaterThan(1);
   }, 500000);
 
+  it('correctly runs initialValidation', async () => {
+    await expect(dictionaryService.initValidation()).resolves.toBe(true);
+
+    dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, 'INAVLID CHAIN ID', nodeConfig, new EventEmitter2());
+
+    await expect(dictionaryService.initValidation()).resolves.toBe(false);
+  });
+
+  it('works when `dictionaryResolver` is not defined', async () => {
+    dictionaryService = new DictionaryService(
+      DICTIONARY_ENDPOINT,
+      DICTIONARY_CHAINID,
+      {dictionaryTimeout: 10} as NodeConfig,
+      new EventEmitter2()
+    );
+
+    const batchSize = 30;
+    const startBlock = 1;
+    const endBlock = 10001;
+    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
+
+    expect(dic?.batchBlocks.length).toBeGreaterThan(1);
+  });
+
   it('return undefined when dictionary api failed', async () => {
-    const dictionaryService = new DictionaryService(
+    dictionaryService = new DictionaryService(
       'https://api.subquery.network/sq/subquery/dictionary-not-exist',
       '0x21121',
-      nodeConfig
+      nodeConfig,
+      new EventEmitter2()
     );
 
     const batchSize = 30;
@@ -135,19 +183,15 @@ describe('DictionaryService', () => {
     expect(dic).toBeUndefined();
   }, 500000);
 
-  it('should return meta even startblock height greater than dictionary last processed height', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
-
+  it('should return undefined startblock height greater than dictionary last processed height', async () => {
     const batchSize = 30;
     const startBlock = 400000000;
     const endBlock = 400010000;
     const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
-    expect(dic?._metadata).toBeDefined();
+    expect(dic).toBeUndefined();
   }, 500000);
 
   it('test query the correct range', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
-
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
@@ -164,8 +208,6 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('use minimum value of event/extrinsic returned block as batch end block', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
-
     const batchSize = 50;
     const startBlock = 333300;
     const endBlock = 340000;
@@ -212,8 +254,6 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('able to build queryEntryMap', () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
-
     dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
     const _map = (dictionaryService as any).mappedDictionaryQueryEntries;
 
@@ -221,8 +261,18 @@ describe('DictionaryService', () => {
     expect(_map.size).toEqual(mockDS.length);
   });
 
+  it('can use scoped dictionary query', async () => {
+    dictionaryService.buildDictionaryEntryMap(mockDS, (dss) => HAPPY_PATH_CONDITIONS.slice(0, dss.length));
+
+    // Out of range of scoped entries
+    const result = await dictionaryService.scopedDictionaryEntries(0, 99, 10);
+    expect(result?.batchBlocks.length).toEqual(0);
+
+    const result2 = await dictionaryService.scopedDictionaryEntries(1000, 10000, 10);
+    expect(result2?.batchBlocks.length).toBeGreaterThan(0);
+  });
+
   it('able to getDicitonaryQueryEntries', () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
     const dictionaryQueryMap = new Map();
 
     // Mocks a Map object that where key == dataSource.startBlock and mocked DictionaryQueryEntries[] values
@@ -261,8 +311,6 @@ describe('DictionaryService', () => {
   });
 
   it('sort map', () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
-
     const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
     dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
     expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual([100, 500, 1000]);

@@ -11,10 +11,20 @@ export async function delay(sec: number): Promise<void> {
 export async function timeout<T>(promise: Promise<T>, sec: number): Promise<T> {
   // so we can have a more comprehensive error stack
   const err = new Error('timeout');
+  let timeout: NodeJS.Timeout;
   return Promise.race([
-    promise,
+    promise.then(
+      (r) => {
+        clearTimeout(timeout);
+        return r;
+      },
+      (e) => {
+        clearTimeout(timeout);
+        throw e;
+      }
+    ),
     new Promise<never>((resolve, reject) => {
-      setTimeout(() => reject(err), sec * 1000);
+      timeout = setTimeout(() => reject(err), sec * 1000);
     }),
   ]);
 }

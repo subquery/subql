@@ -220,10 +220,6 @@ export class FetchService extends BaseFetchService<
     return Math.min(BLOCK_TIME_VARIANCE, chainInterval);
   }
 
-  protected async getChainId(): Promise<string> {
-    return Promise.resolve(this.api.genesisHash.toString());
-  }
-
   protected getModulos(): number[] {
     return getModulos(
       this.projectService.getAllDataSources(),
@@ -239,13 +235,10 @@ export class FetchService extends BaseFetchService<
     );
   }
 
-  protected async preLoopHook({ startHeight, valid }): Promise<void> {
-    this.runtimeService.init(
-      this.getUseDictionary.bind(this),
-      this.getLatestFinalizedHeight.bind(this),
-    );
+  protected async preLoopHook({ startHeight }): Promise<void> {
+    this.runtimeService.init(this.getLatestFinalizedHeight.bind(this));
 
-    if (valid) {
+    if (this.dictionaryService.useDictionary) {
       const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
       this.runtimeService.setSpecVersionMap(rawSpecVersions);
     } else {

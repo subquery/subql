@@ -427,7 +427,6 @@ function mockStoreCache(): StoreCacheService {
 async function createFetchService(
   apiService = mockApiService(),
   indexerManager: IndexerManager,
-  dictionaryService: DictionaryService,
   project: SubqueryProject,
   batchSize?: number,
   config?: NodeConfig,
@@ -450,6 +449,11 @@ async function createFetchService(
   );
   await unfinalizedBlocksService.init(() => Promise.resolve());
   const eventEmitter = new EventEmitter2();
+  const dictionaryService = new DictionaryService(
+    project,
+    nodeConfig,
+    eventEmitter,
+  );
 
   return new FetchService(
     apiService,
@@ -506,7 +510,6 @@ describe('FetchService', () => {
     fetchService = await createFetchService(
       apiService,
       mockIndexerManager(),
-      new DictionaryService(project, nodeConfig),
       project,
     );
     const pendingInit = fetchService.init(1);
@@ -521,7 +524,6 @@ describe('FetchService', () => {
     fetchService = await createFetchService(
       mockRejectedApiService(),
       mockIndexerManager(),
-      new DictionaryService(project, nodeConfig),
       project,
     );
     await fetchService.init(1);
@@ -529,12 +531,10 @@ describe('FetchService', () => {
 
   it('load batchSize of blocks with original method', async () => {
     const batchSize = 50;
-    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     fetchService = await createFetchService(
       apiService,
       mockIndexerManager(),
-      dictionaryService,
       project,
       batchSize,
     );
@@ -559,14 +559,12 @@ describe('FetchService', () => {
         block: { block: { header: { number: { toNumber: () => height } } } },
       })),
     );
-    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const indexerManager = mockIndexerManager();
 
     fetchService = await createFetchService(
       apiService,
       indexerManager,
-      dictionaryService,
       project,
       batchSize,
     );
@@ -906,7 +904,6 @@ describe('FetchService', () => {
     fetchService = await createFetchService(
       apiService,
       indexerManager,
-      new DictionaryService(project, nodeConfig),
       project,
       20,
       nodeConfig,
@@ -979,12 +976,16 @@ describe('FetchService', () => {
       batchSize,
     });
 
-    const dictionaryService = new DictionaryService(project, nodeConfig);
     const projectService = mockProjectService(project);
     const projectUpgradeService = mockProjectUpgradeService(project);
     const storeCache = mockStoreCache();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
+    const dictionaryService = new DictionaryService(
+      project,
+      nodeConfig,
+      eventEmitter,
+    );
     const dsProcessorService = new DsProcessorService(project, nodeConfig);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);

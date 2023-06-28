@@ -3,12 +3,14 @@
 
 import assert from 'assert';
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
-import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {dictHttpLink} from '@subql/apollo-links';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
 import fetch from 'cross-fetch';
 import {NodeConfig} from '../configure';
+import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {profiler} from '../profiler';
 import {timeout} from '../utils';
@@ -38,7 +40,7 @@ const logger = getLogger('dictionary');
 const distinctErrorEscaped = `Unknown argument \\"distinct\\"`;
 const startHeightEscaped = `Cannot query field \\"startHeight\\"`;
 
-function getGqlType(value: any): string {
+export function getGqlType(value: any): string {
   switch (typeof value) {
     case 'number':
       return 'BigFloat!';
@@ -149,37 +151,35 @@ function buildDictQueryFragment(
 }
 
 @Injectable()
-export class DictionaryService implements OnApplicationShutdown {
+export class DictionaryService {
   private _client?: ApolloClient<NormalizedCacheObject>;
-  private isShutdown = false;
   private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]> = new Map();
   private useDistinct = true;
   private useStartHeight = true;
   protected _startHeight?: number;
 
+  private metadataValid?: boolean;
+
   constructor(
     readonly dictionaryEndpoint: string | undefined,
-    readonly chainId: string,
+    protected chainId: string,
     protected readonly nodeConfig: NodeConfig,
+    private readonly eventEmitter: EventEmitter2,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
     protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
   ) {
-    this.init();
-  }
-
-  private init(): void {
     let link: ApolloLink;
 
     if (this.nodeConfig.dictionaryResolver) {
       link = dictHttpLink({
         authUrl: this.nodeConfig.dictionaryResolver,
-        chainId: this.chainId,
+        chainId,
         logger,
         httpOptions: {fetch},
-        fallbackServiceUrl: this.dictionaryEndpoint,
+        fallbackServiceUrl: dictionaryEndpoint,
       });
     } else {
-      link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
+      link = new HttpLink({uri: dictionaryEndpoint, fetch});
     }
 
     this._client = new ApolloClient({
@@ -194,6 +194,15 @@ export class DictionaryService implements OnApplicationShutdown {
         },
       },
     });
+  }
+
+  get useDictionary(): boolean {
+    return (!!this.dictionaryEndpoint || !!this.nodeConfig.dictionaryResolver) && !!this.metadataValid;
+  }
+
+  async initValidation(): Promise<boolean> {
+    const metadata = await this.getMetadata();
+    return this.dictionaryValidation(metadata);
   }
 
   private setDictionaryStartHeight(start: number | undefined): void {
@@ -216,10 +225,6 @@ export class DictionaryService implements OnApplicationShutdown {
       throw new Error('Dictionary service has not been initialized');
     }
     return this._client;
-  }
-
-  onApplicationShutdown(): void {
-    this.isShutdown = true;
   }
 
   /**
@@ -261,6 +266,11 @@ export class DictionaryService implements OnApplicationShutdown {
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
+
+      if (!this.dictionaryValidation(_metadata, startBlock)) {
+        return undefined;
+      }
+
       return {
         _metadata,
         batchBlocks,
@@ -363,7 +373,7 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery([], nodes);
   }
 
-  async getMetadata(): Promise<MetadataDictionary | undefined> {
+  private async getMetadata(): Promise<MetaData | undefined> {
     const {query} = this.metadataQuery();
     try {
       const resp = await timeout(
@@ -376,7 +386,7 @@ export class DictionaryService implements OnApplicationShutdown {
 
       this.setDictionaryStartHeight(_metadata.startHeight);
 
-      return {_metadata};
+      return _metadata;
     } catch (err: any) {
       if (JSON.stringify(err).includes(startHeightEscaped)) {
         this.useStartHeight = false;
@@ -387,5 +397,40 @@ export class DictionaryService implements OnApplicationShutdown {
       logger.error(err, `Failed to get dictionary metadata`);
       return undefined;
     }
+  }
+
+  protected validateChainId(metaData: MetaData) {
+    return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;
+  }
+
+  private dictionaryValidation(metaData?: MetaData, startBlockHeight?: number): boolean {
+    const validate = (): boolean => {
+      if (!metaData) {
+        return false;
+      }
+      // Some dictionaries rely on chain others rely on genesisHash
+      if (!this.validateChainId(metaData)) {
+        logger.error(
+          'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
+        );
+        return false;
+      }
+
+      if (startBlockHeight !== undefined && metaData.lastProcessedHeight < startBlockHeight) {
+        logger.warn(`Dictionary indexed block is behind current indexing block height`);
+        return false;
+      }
+      return true;
+    };
+
+    const valid = validate();
+
+    this.metadataValid = valid;
+    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+      value: Number(this.useDictionary),
+    });
+    this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+
+    return valid;
   }
 }

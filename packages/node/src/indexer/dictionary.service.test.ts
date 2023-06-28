@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -30,7 +31,11 @@ const nodeConfig = new NodeConfig({
 describe('DictionaryService', () => {
   it('should return all specVersion', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project, nodeConfig);
+    const dictionaryService = new DictionaryService(
+      project,
+      nodeConfig,
+      new EventEmitter2(),
+    );
 
     const specVersions = await dictionaryService.getSpecVersions();
 

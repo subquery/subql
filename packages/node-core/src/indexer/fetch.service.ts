@@ -7,18 +7,17 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval, SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource} from '@subql/common';
 import {DictionaryQueryEntry} from '@subql/types';
-import {MetaData} from '@subql/utils';
 import {range, uniq, without} from 'lodash';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {checkMemoryUsage, cleanedBatchBlocks, delay, hasValue, transformBypassBlocks, waitForBatchSize} from '../utils';
+import {checkMemoryUsage, cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {DictionaryService} from './dictionary.service';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
+import {IProjectNetworkConfig, IProjectService} from './types';
 
 const logger = getLogger('FetchService');
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
@@ -35,7 +34,6 @@ export abstract class BaseFetchService<
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
   private batchSizeScale = 1;
-  private dictionaryMetaValid = false;
   private bypassBlocks: number[] = [];
 
   protected abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryQueryEntry[];
@@ -46,14 +44,13 @@ export abstract class BaseFetchService<
 
   // The rough interval at which new blocks are produced
   protected abstract getChainInterval(): Promise<number>;
-  protected abstract getChainId(): Promise<string>;
   protected abstract getModulos(): number[];
 
   protected abstract initBlockDispatcher(): Promise<void>;
 
   // Gets called just before the loop is started
   // Used by substrate to init runtime service and get runtime version data from the dictionary
-  protected abstract preLoopHook(data: {valid: boolean; startHeight: number}): Promise<void>;
+  protected abstract preLoopHook(data: {startHeight: number}): Promise<void>;
 
   constructor(
     protected apiService: API,
@@ -97,8 +94,7 @@ export abstract class BaseFetchService<
 
   private get useDictionary(): boolean {
     return (
-      (!!this.networkConfig.dictionary || !!this.nodeConfig.dictionaryResolver) &&
-      this.dictionaryMetaValid &&
+      this.dictionaryService.useDictionary &&
       !!this.dictionaryService.getDictionaryQueryEntries(
         this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
       ).length
@@ -122,24 +118,17 @@ export abstract class BaseFetchService<
       setInterval(() => void this.getBestBlockHead(), interval)
     );
 
-    let dictionaryValid = false;
-
     if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
       this.updateDictionary();
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
-      const metadata = await this.dictionaryService.getMetadata();
-      dictionaryValid = await this.dictionaryValidation(metadata);
+      await this.dictionaryService.initValidation();
     }
 
-    await this.preLoopHook({valid: dictionaryValid, startHeight});
+    await this.preLoopHook({startHeight});
     await this.initBlockDispatcher();
 
     void this.startLoop(startHeight);
-  }
-
-  getUseDictionary(): boolean {
-    return this.useDictionary;
   }
 
   getLatestFinalizedHeight(): number {
@@ -265,7 +254,7 @@ export abstract class BaseFetchService<
             continue;
           }
 
-          if (dictionary && (await this.dictionaryValidation(dictionary, startBlockHeight))) {
+          if (dictionary) {
             let {batchBlocks} = dictionary;
 
             const moduloBlocks = this.getModuloBlocks(
@@ -355,43 +344,5 @@ export abstract class BaseFetchService<
   resetForIncorrectBestBlock(blockHeight: number): void {
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
-  }
-
-  protected async validatateDictionaryMeta(metaData: MetaData): Promise<boolean> {
-    const chainId = await this.getChainId();
-    return metaData.chain !== chainId && metaData.genesisHash !== chainId;
-  }
-
-  private async dictionaryValidation(dictionary?: {_metadata: MetaData}, startBlockHeight?: number): Promise<boolean> {
-    const validate = async (): Promise<boolean> => {
-      if (dictionary !== undefined) {
-        const {_metadata: metaData} = dictionary;
-
-        // Some dictionaries rely on chain others rely on genesisHash
-        if (await this.validatateDictionaryMeta(metaData)) {
-          logger.error(
-            'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
-          );
-          return false;
-        }
-
-        if (startBlockHeight !== undefined && metaData.lastProcessedHeight < startBlockHeight) {
-          logger.warn(`Dictionary indexed block is behind current indexing block height`);
-          return false;
-        }
-        return true;
-      }
-      return false;
-    };
-
-    const valid = await validate();
-
-    this.dictionaryMetaValid = valid;
-    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-      value: Number(this.useDictionary),
-    });
-    this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-
-    return valid;
   }
 }
