@@ -3,19 +3,14 @@
 
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
-import {ApiConnectionError, ApiErrorType, IApiConnectionSpecific} from '..';
+import {IApiConnectionSpecific, errorTypeToScoreAdjustment} from '..';
 import {getLogger} from '../logger';
+import {ApiErrorType} from './connectionPool.service';
 
 const RETRY_DELAY = 60 * 1000;
 const MAX_FAILURES = 5;
 const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
-const errorTypeToScoreAdjustment = {
-  [ApiErrorType.Timeout]: -10,
-  [ApiErrorType.Connection]: -20,
-  [ApiErrorType.RateLimit]: -10,
-  [ApiErrorType.Default]: -5,
-};
 
 export interface ConnectionPoolItem<T> {
   endpoint: string;

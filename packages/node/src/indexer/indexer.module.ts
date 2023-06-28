@@ -43,7 +43,19 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         return new WorkerConnectionPoolStateManager((global as any).host);
       },
     },
-    ConnectionPoolService,
+    {
+      provide: ConnectionPoolService,
+      useFactory: (
+        nodeConfig: NodeConfig,
+        poolStateManager: ConnectionPoolStateManager<ApiPromiseConnection>,
+      ) => {
+        return new ConnectionPoolService(
+          poolStateManager,
+          nodeConfig.batchSize,
+        );
+      },
+      inject: [NodeConfig, ConnectionPoolStateManager],
+    },
     {
       provide: ApiService,
       useFactory: async (

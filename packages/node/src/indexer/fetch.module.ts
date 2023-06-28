@@ -39,7 +39,19 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     ApiService,
     IndexerManager,
     ConnectionPoolStateManager,
-    ConnectionPoolService,
+    {
+      provide: ConnectionPoolService,
+      useFactory: (
+        nodeConfig: NodeConfig,
+        poolStateManager: ConnectionPoolStateManager<ApiPromiseConnection>,
+      ) => {
+        return new ConnectionPoolService(
+          poolStateManager,
+          nodeConfig.batchSize,
+        );
+      },
+      inject: [NodeConfig, ConnectionPoolStateManager],
+    },
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {
