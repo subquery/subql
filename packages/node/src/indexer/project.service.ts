@@ -10,6 +10,7 @@ import {
   StoreService,
   NodeConfig,
   MmrQueryService,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
@@ -39,6 +40,8 @@ export class ProjectService extends BaseProjectService<
     mmrQueryService: MmrQueryService,
     sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
+    @Inject('IProjectUpgradeService')
+    protected readonly projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
     storeService: StoreService,
     nodeConfig: NodeConfig,
     dynamicDsService: DynamicDsService,
@@ -53,6 +56,7 @@ export class ProjectService extends BaseProjectService<
       mmrQueryService,
       sequelize,
       project,
+      projectUpgradeService,
       storeService,
       nodeConfig,
       dynamicDsService,

@@ -3,12 +3,11 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {BaseDataSource} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
-import {NodeConfig} from '../configure';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {MmrQueryService} from '../meta/mmrQuery.service';
@@ -49,7 +48,8 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     protected readonly mmrService: MmrService,
     protected readonly mmrQueryService: MmrQueryService,
     protected readonly sequelize: Sequelize,
-    @Inject('ISubqueryProject') protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    protected readonly projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
     protected readonly storeService: StoreService,
     protected readonly nodeConfig: NodeConfig,
     protected readonly dynamicDsService: DynamicDsService<DS>,
@@ -80,8 +80,11 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   }
 
   async init(): Promise<void> {
+    for await (const [, project] of this.projectUpgradeService.projects) {
+      await project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
+    }
+
     // Do extra work on main thread to setup stuff
-    await this.project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
     if (isMainThread) {
       this._schema = await this.ensureProject();
       await this.initDbSchema();

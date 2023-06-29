@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import {ISubqueryProject} from '../indexer/types';
+import {getLogger} from '../logger';
 import {getStartHeight} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
@@ -18,6 +19,8 @@ const serviceKeys: Array<keyof IProjectUpgradeService> = ['getProject', 'current
 function assertEqual<T>(valueA: T, valueB: T, name: string) {
   assert(valueA === valueB, `Expected ${name} to be equal. expected="${valueA}" parent has="${valueB}"`);
 }
+
+const logger = getLogger('ProjectUpgradeSevice');
 
 /*
   We setup a proxy here so that we can have a class that matches ISubquery project but will change when we set the current height to the correct project
@@ -59,7 +62,17 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   #currentProject: P;
 
   private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
-    console.log('PROJECTS', [..._projects.getAll().keys()]);
+    // TODO change to debug
+    logger.info(
+      `Projects: ${JSON.stringify(
+        [..._projects.getAll().entries()].reduce((acc, curr) => {
+          acc[curr[0]] = curr[1].id;
+          return acc;
+        }, {} as Record<number, string>),
+        undefined,
+        2
+      )}`
+    );
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.currentHeight);
   }
@@ -81,7 +94,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     const newProject = this.getProject(this.#currentHeight);
 
     if (this.#currentProject !== newProject) {
-      console.log('Project upgraded');
+      logger.info(`Project upgraded: ${newProject.id}`);
     }
     this.#currentProject = newProject;
   }

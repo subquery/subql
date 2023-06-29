@@ -6,9 +6,7 @@ import path from 'path';
 import {Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/common';
 import {SubqlTest} from '@subql/testing/interfaces';
-import {DynamicDatasourceCreator, Store} from '@subql/types';
 import chalk from 'chalk';
-import Pino from 'pino';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -17,16 +15,6 @@ import {TestRunner} from './test.runner';
 import {IIndexerManager, ISubqueryProject} from './types';
 
 const logger = getLogger('subql-testing');
-
-declare global {
-  //const api: ApiAt;
-  // @ts-ignore
-  const logger: Pino.Logger;
-  // @ts-ignore
-  const store: Store;
-  // @ts-ignore
-  const createDynamicDatasource: DynamicDatasourceCreator;
-}
 
 @Injectable()
 export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
