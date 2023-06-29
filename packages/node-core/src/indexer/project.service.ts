@@ -12,6 +12,7 @@ import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {MmrQueryService} from '../meta/mmrQuery.service';
 import {getExistingProjectSchema, getStartHeight, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {MetadataKeys} from './entities';
@@ -37,9 +38,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   protected abstract packageVersion: string;
   protected abstract getBlockTimestamp(height: number): Promise<Date>;
-
-  // Used in the substrate SDK to do extra filtering for spec version
-  protected abstract getStartBlockDatasources(): DS[];
 
   constructor(
     private readonly dsProcessorService: BaseDsProcessorService,
@@ -273,7 +271,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   getStartBlockFromDataSources(): number {
     try {
-      return getStartHeight(this.getStartBlockDatasources());
+      return getStartHeight(this.project.dataSources);
     } catch (e: any) {
       logger.error(e);
       process.exit(1);
@@ -285,7 +283,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     if (!isMainThread) {
       throw new Error('This method is only avaiable on the main thread');
     }
-    const dataSources = this.getStartBlockDatasources();
+    const dataSources = this.project.dataSources;
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
 
     return [...dataSources, ...dynamicDs];
@@ -293,11 +291,16 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
   async getDataSources(blockHeight: number): Promise<DS[]> {
-    const dataSources = this.getStartBlockDatasources();
+    const dataSources = this.project.dataSources;
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
 
     return [...dataSources, ...dynamicDs].filter((ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight);
   }
+
+  // async getDataSourcesMap(): BlockHeightMap<DS[]> {
+  //   const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+
+  // }
 
   private async initUnfinalized(): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {

@@ -16,6 +16,7 @@ import {
   StoreCacheService,
   ConnectionPoolStateManager,
   MmrQueryService,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -131,6 +132,20 @@ function testSubqueryProject_2(): SubqueryProject {
   );
 }
 
+function mockProjectUpgradeService(
+  project: SubqueryProject,
+): IProjectUpgradeService<SubqueryProject> {
+  const startBlock = Math.min(
+    ...project.dataSources.map((ds) => ds.startBlock),
+  );
+  return {
+    currentHeight: startBlock,
+    currentProject: project,
+    projects: new Map([[startBlock, project]]),
+    getProject: () => project,
+  };
+}
+
 function createIndexerManager(
   project: SubqueryProject,
   connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
@@ -178,6 +193,8 @@ function createIndexerManager(
     nodeConfig,
     project,
   );
+
+  const projectUpgradeService = mockProjectUpgradeService(project);
   const projectService = new ProjectService(
     dsProcessorService,
     apiService,
@@ -186,6 +203,7 @@ function createIndexerManager(
     mmrQueryService,
     sequilize,
     project,
+    projectUpgradeService,
     storeService,
     nodeConfig,
     dynamicDsService,

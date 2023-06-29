@@ -112,12 +112,3 @@ export function loadChainTypesFromJs(
   }
   return rawContent;
 }
-
-export function filterDataSourcesBySpecName(
-  dataSources: SubstrateDatasource[],
-  specName: string,
-): SubstrateDatasource[] {
-  return dataSources.filter(
-    (ds) => !ds.filter?.specName || ds.filter.specName === specName,
-  );
-}
