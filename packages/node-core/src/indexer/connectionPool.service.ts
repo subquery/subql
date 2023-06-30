@@ -5,6 +5,7 @@ import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
 import {IApiConnectionSpecific} from '..';
+import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
@@ -53,17 +54,8 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private cacheSizeThreshold = 10;
   private cacheFlushInterval = 60 * 100;
 
-  constructor(
-    private poolStateManager: ConnectionPoolStateManager<T>,
-    cacheSizeThreshold?: number,
-    cacheFlushInterval?: number
-  ) {
-    if (cacheFlushInterval !== undefined) {
-      this.cacheFlushInterval = cacheFlushInterval;
-    }
-    if (cacheSizeThreshold !== undefined) {
-      this.cacheSizeThreshold = cacheSizeThreshold;
-    }
+  constructor(nodeConfig: NodeConfig, private poolStateManager: ConnectionPoolStateManager<T>) {
+    this.cacheSizeThreshold = nodeConfig.batchSize;
   }
 
   async onApplicationShutdown(): Promise<void> {

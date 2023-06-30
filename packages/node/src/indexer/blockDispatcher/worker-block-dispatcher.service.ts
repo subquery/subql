@@ -19,6 +19,7 @@ import {
   IUnfinalizedBlocksService,
   HostConnectionPoolState,
   ConnectionPoolStateManager,
+  connectionPoolStateHostFunctions,
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -78,34 +79,7 @@ async function createIndexerWorker(
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
-      hostAddToConnections:
-        connectionPoolState.addToConnections.bind(connectionPoolState),
-      hostGetNextConnectedApiIndex:
-        connectionPoolState.getNextConnectedApiIndex.bind(connectionPoolState),
-      hostGetFieldFromConnectionPoolItem:
-        connectionPoolState.getFieldValue.bind(connectionPoolState),
-      hostSetFieldInConnectionPoolItem:
-        connectionPoolState.setFieldValue.bind(connectionPoolState),
-      hostSetTimeoutIdInConnectionPoolItem:
-        connectionPoolState.setTimeout.bind(connectionPoolState),
-      hostClearTimeoutIdInConnectionPoolItem:
-        connectionPoolState.clearTimeout.bind(connectionPoolState),
-      hostGetSuspendedIndices:
-        connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
-      hostDeleteFromPool:
-        connectionPoolState.deleteFromPool.bind(connectionPoolState),
-      hostHandleApiError:
-        connectionPoolState.handleApiError.bind(connectionPoolState),
-      hostHandleApiSuccess:
-        connectionPoolState.handleApiSuccess.bind(connectionPoolState),
-      hostHandleBatchApiError:
-        connectionPoolState.handleBatchApiError.bind(connectionPoolState),
-      hostHandleBatchApiSuccess:
-        connectionPoolState.handleBatchApiSuccess.bind(connectionPoolState),
-      hostGetDisconnectedIndices:
-        connectionPoolState.getDisconnectedIndices.bind(connectionPoolState),
-      hostShutdownPoolState:
-        connectionPoolState.shutdown.bind(connectionPoolState),
+      ...connectionPoolStateHostFunctions(connectionPoolState),
     },
     root,
   );

@@ -2,18 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
-import {ApiConnectionError, ApiErrorType} from '../connectionPool.service';
+import {ConnectionPoolItem, IApiConnectionSpecific} from '@subql/node-core';
+import {ApiErrorType} from '../connectionPool.service';
+import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 
 export type HostConnectionPoolState<T> = {
   hostGetNextConnectedApiIndex: () => Promise<number | undefined>;
   hostAddToConnections: (endpoint: string, index: number) => Promise<void>;
-  hostGetFieldFromConnectionPoolItem: <K extends keyof T>(index: number, field: K) => Promise<T[K]>;
-  hostSetFieldInConnectionPoolItem: <K extends keyof T>(index: number, field: K, value: T[K]) => Promise<void>;
+  hostGetFieldFromConnectionPoolItem: <K extends keyof ConnectionPoolItem<T>>(
+    index: number,
+    field: K
+  ) => Promise<ConnectionPoolItem<T>[K]>;
+  hostSetFieldInConnectionPoolItem: <K extends keyof ConnectionPoolItem<T>>(
+    index: number,
+    field: K,
+    value: ConnectionPoolItem<T>[K]
+  ) => Promise<void>;
   hostSetTimeoutIdInConnectionPoolItem: (index: number, delay: number) => Promise<void>;
   hostClearTimeoutIdInConnectionPoolItem: (index: number) => Promise<void>;
   hostGetSuspendedIndices: () => Promise<number[]>;
   hostDeleteFromPool: (index: number) => Promise<void>;
-  hostHandleApiError: (index: number, errorType: string) => Promise<void>;
+  hostHandleApiError: (index: number, errorType: ApiErrorType) => Promise<void>;
   hostHandleApiSuccess: (index: number, responseTime: number) => Promise<void>;
   hostHandleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void>;
   hostHandleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void>;
@@ -38,6 +47,27 @@ export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[]
   'hostShutdownPoolState',
 ];
 
+export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecific>(
+  connectionPoolState: ConnectionPoolStateManager<T>
+): HostConnectionPoolState<T> {
+  return {
+    hostAddToConnections: connectionPoolState.addToConnections.bind(connectionPoolState),
+    hostGetNextConnectedApiIndex: connectionPoolState.getNextConnectedApiIndex.bind(connectionPoolState),
+    hostGetFieldFromConnectionPoolItem: connectionPoolState.getFieldValue.bind(connectionPoolState),
+    hostSetFieldInConnectionPoolItem: connectionPoolState.setFieldValue.bind(connectionPoolState),
+    hostSetTimeoutIdInConnectionPoolItem: connectionPoolState.setTimeout.bind(connectionPoolState),
+    hostClearTimeoutIdInConnectionPoolItem: connectionPoolState.clearTimeout.bind(connectionPoolState),
+    hostGetSuspendedIndices: connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
+    hostDeleteFromPool: connectionPoolState.deleteFromPool.bind(connectionPoolState),
+    hostHandleApiError: connectionPoolState.handleApiError.bind(connectionPoolState),
+    hostHandleApiSuccess: connectionPoolState.handleApiSuccess.bind(connectionPoolState),
+    hostHandleBatchApiError: connectionPoolState.handleBatchApiError.bind(connectionPoolState),
+    hostHandleBatchApiSuccess: connectionPoolState.handleBatchApiSuccess.bind(connectionPoolState),
+    hostGetDisconnectedIndices: connectionPoolState.getDisconnectedIndices.bind(connectionPoolState),
+    hostShutdownPoolState: connectionPoolState.shutdown.bind(connectionPoolState),
+  };
+}
+
 @Injectable()
 export class WorkerConnectionPoolStateManager<T> {
   constructor(private host: HostConnectionPoolState<any>) {}
@@ -50,11 +80,18 @@ export class WorkerConnectionPoolStateManager<T> {
     return this.host.hostAddToConnections(endpoint, index);
   }
 
-  async getFieldValue<K extends keyof T>(index: number, field: K): Promise<T[K]> {
+  async getFieldValue<K extends keyof ConnectionPoolItem<T>>(
+    index: number,
+    field: K
+  ): Promise<ConnectionPoolItem<T>[K]> {
     return this.host.hostGetFieldFromConnectionPoolItem(index, field);
   }
 
-  async setFieldValue<K extends keyof T>(index: number, field: K, value: T[K]): Promise<void> {
+  async setFieldValue<K extends keyof ConnectionPoolItem<T>>(
+    index: number,
+    field: K,
+    value: ConnectionPoolItem<T>[K]
+  ): Promise<void> {
     return this.host.hostSetFieldInConnectionPoolItem(index, field, value);
   }
 

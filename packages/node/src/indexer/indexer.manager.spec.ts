@@ -210,6 +210,7 @@ describe('IndexerManager', () => {
     indexerManager = createIndexerManager(
       testSubqueryProject_1(),
       new ConnectionPoolService<ApiPromiseConnection>(
+        nodeConfig,
         new ConnectionPoolStateManager(),
       ),
       nodeConfig,
@@ -223,6 +224,7 @@ describe('IndexerManager', () => {
     indexerManager = createIndexerManager(
       testSubqueryProject_2(),
       new ConnectionPoolService<ApiPromiseConnection>(
+        nodeConfig,
         new ConnectionPoolStateManager(),
       ),
       nodeConfig,

@@ -40,19 +40,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     IndexerManager,
     ConnectionPoolStateManager,
     {
-      provide: ConnectionPoolService,
-      useFactory: (
-        nodeConfig: NodeConfig,
-        poolStateManager: ConnectionPoolStateManager<ApiPromiseConnection>,
-      ) => {
-        return new ConnectionPoolService(
-          poolStateManager,
-          nodeConfig.batchSize,
-        );
-      },
-      inject: [NodeConfig, ConnectionPoolStateManager],
-    },
-    {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {
         return new SmartBatchService(nodeConfig.batchSize);
@@ -120,6 +107,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ],
     },
     FetchService,
+    ConnectionPoolService,
     BenchmarkService,
     DictionaryService,
     SandboxService,
