@@ -4,13 +4,14 @@
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
+import {PgBasedMMRDB} from '@subql/node-core/indexer';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db/db.module';
 import {profiler} from '../../profiler';
 import {getExistingProjectSchema} from '../../utils/project';
 import {BaseCacheService} from './baseCache.service';
-import {CachePgMmrDb} from './cacheMmr';
+import {CachePgMmrDb, PlainPgMmrDb} from './cacheMmr';
 
 const INTERVAL_NAME = 'mmrCacheFlushInterval';
 
@@ -19,6 +20,7 @@ const MMR_FLUSH_INTERVAL = 2;
 @Injectable()
 export class PgMmrCacheService extends BaseCacheService {
   private _mmrRepo?: CachePgMmrDb;
+  private _mmrPlainRepo?: PlainPgMmrDb;
   private _sequelize?: Sequelize;
 
   constructor(schedulerRegistry: SchedulerRegistry) {
@@ -39,29 +41,35 @@ export class PgMmrCacheService extends BaseCacheService {
     return this._mmrRepo;
   }
 
-  async ensurePostgresBasedDb(nodeConfig: NodeConfig): Promise<CachePgMmrDb> {
-    // Only create sequelize connection when required, and ensure only created once
-    if (!this._mmrRepo) {
-      if (this._sequelize) {
-        throw new Error('pgMmrCache sequelize has been init more than once');
-      }
-      try {
-        this._sequelize = await establishNewSequelize(nodeConfig);
-        this.logger.info(`Mmr service using independent db connection`);
-      } catch (e) {
-        this.logger.error(`having problem initialise independent db connection for mmr service, ${e}`);
-        throw e;
-      }
-      const schema = await getExistingProjectSchema(nodeConfig, this._sequelize);
-      assert(schema, 'Unable to check for MMR table, schema is undefined');
-      const db = await CachePgMmrDb.create(this.sequelize, schema);
-      this.setMmrRepo(db);
+  get mmrPlainRepo(): PlainPgMmrDb {
+    if (this._mmrPlainRepo === undefined) {
+      throw new Error(`PgMmrCacheService _mmrPlainRepo is not defined`);
     }
-    return this.mmrRepo;
+    return this._mmrPlainRepo;
   }
 
-  setMmrRepo(mmrRepo: CachePgMmrDb): void {
-    this._mmrRepo = mmrRepo;
+  private async initSequelize(nodeConfig: NodeConfig): Promise<void> {
+    // Only create sequelize connection when required, and ensure only created once
+    if (this._sequelize) {
+      throw new Error('pgMmrCache sequelize has been init more than once');
+    }
+    try {
+      this._sequelize = await establishNewSequelize(nodeConfig);
+      this.logger.info(`Mmr service using independent db connection`);
+    } catch (e) {
+      this.logger.error(`having problem initialise independent db connection for mmr service, ${e}`);
+      throw e;
+    }
+  }
+
+  // This should only been called once from mmr service
+  async init(nodeConfig: NodeConfig): Promise<void> {
+    await this.initSequelize(nodeConfig);
+    const schema = await getExistingProjectSchema(nodeConfig, this.sequelize);
+    assert(schema, 'Unable to check for MMR table, schema is undefined');
+    const db = await PgBasedMMRDB.create(this.sequelize, schema);
+    this._mmrRepo = CachePgMmrDb.create(db);
+    this._mmrPlainRepo = PlainPgMmrDb.create(db);
     this.setupInterval(INTERVAL_NAME, MMR_FLUSH_INTERVAL);
   }
 

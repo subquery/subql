@@ -52,7 +52,7 @@ export class MmrRegenerateService {
       throw new Error(`Store service POI not initialized`);
     }
     this._poi = new PlainPoiModel(this.storeService.poiRepo);
-    await this.mmrService.init(this.blockOffset, this.poi);
+    await this.mmrService.prepareRegen(this.blockOffset, this.poi);
     await this.probeStatus();
   }
 
@@ -92,7 +92,7 @@ export class MmrRegenerateService {
   }
 
   private async probeStatus(): Promise<void> {
-    this._dbMmrLatestHeight = await this.mmrService.getLatestMmrHeight();
+    this._dbMmrLatestHeight = await this.mmrService.getLatestMmrHeight(false);
     logger.info(`In ${this.nodeConfig.mmrStoreType} DB, latest MMR block height is ${this._dbMmrLatestHeight}`);
     this._poiMmrLatestHeight = (await this.mmrService.poi.getLatestPoiWithMmr())?.id ?? this.blockOffset;
     logger.info(`In POI table, latest MMR block height is ${this._poiMmrLatestHeight}`);

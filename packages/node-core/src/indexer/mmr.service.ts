@@ -28,6 +28,7 @@ export class MmrService implements OnApplicationShutdown {
   private isShutdown = false;
   private isSyncing = false;
   private _mmrDb?: MMR;
+  private _mmrPlainDb?: MMR;
   // This is the next block height that suppose to calculate its mmr value
   private _nextMmrBlockHeight?: number;
   private _blockOffset?: number;
@@ -61,6 +62,16 @@ export class MmrService implements OnApplicationShutdown {
     return this._mmrDb;
   }
 
+  private get mmrPlainDb(): MMR {
+    if (!this._mmrPlainDb) {
+      if (this.nodeConfig.mmrStoreType !== MmrStoreType.Postgres && this._mmrDb) {
+        return this._mmrDb;
+      }
+      throw new Error('MMR Service sync has not been called');
+    }
+    return this._mmrPlainDb;
+  }
+
   private get nextMmrBlockHeight(): number {
     if (!this._nextMmrBlockHeight) {
       throw new Error('MMR Service sync has not been called');
@@ -75,7 +86,7 @@ export class MmrService implements OnApplicationShutdown {
     return this._blockOffset;
   }
 
-  async init(blockOffset: number, poi: PlainPoiModel): Promise<void> {
+  async prepareRegen(blockOffset: number, poi: PlainPoiModel): Promise<void> {
     this._blockOffset = blockOffset;
     await this.ensureMmr();
     this._poi = poi;
@@ -88,7 +99,7 @@ export class MmrService implements OnApplicationShutdown {
     await this.ensureMmr();
     this._blockOffset = blockOffset;
     // The mmr database last recorded height
-    const dbMmrLatestHeight = await this.getLatestMmrHeight();
+    const dbMmrLatestHeight = await this.getLatestMmrHeight(true);
     // However, when initialization we pick the previous block for file db and poi mmr validation
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
     this._nextMmrBlockHeight = dbMmrLatestHeight + 1;
@@ -256,14 +267,19 @@ export class MmrService implements OnApplicationShutdown {
     return poiBlock;
   }
 
-  private async ensureMmr(): Promise<void> {
-    if (this._mmrDb) {
+  async ensureMmr(): Promise<void> {
+    // plain db should be existed with mmrDb all the time
+    if (this._mmrDb && this.mmrPlainDb) {
       return;
     }
-    this._mmrDb =
-      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
-        ? await this.ensurePostgresBasedMmr()
-        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres) {
+      await this.pgMmrCacheService.init(this.nodeConfig);
+      this._mmrDb = new MMR(keccak256Hash, this.pgMmrCacheService.mmrRepo);
+      this._mmrPlainDb = new MMR(keccak256Hash, this.pgMmrCacheService.mmrPlainRepo);
+    } else {
+      // if not postgres db, we are safely use mmrDb as plainDb
+      this._mmrDb = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    }
   }
 
   private async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
@@ -276,17 +292,15 @@ export class MmrService implements OnApplicationShutdown {
     return new MMR(keccak256Hash, fileBasedDb);
   }
 
-  private async ensurePostgresBasedMmr(): Promise<MMR> {
-    const db = await this.pgMmrCacheService.ensurePostgresBasedDb(this.nodeConfig);
-    return new MMR(keccak256Hash, db);
-  }
-
-  async getMmr(blockHeight: number): Promise<MmrPayload> {
+  async getMmr(blockHeight: number, allowCache: boolean): Promise<MmrPayload> {
     const leafIndex = blockHeight - this.blockOffset - 1;
     if (leafIndex < 0) {
       throw new Error(`Parameter blockHeight must greater equal to ${this.blockOffset + 1} `);
     }
-    const [mmrResponse, node] = await Promise.all([this.mmrDb.getRoot(leafIndex), this.mmrDb.get(leafIndex)]);
+    const [mmrResponse, node] = await Promise.all([
+      this.safeMmr(allowCache).getRoot(leafIndex),
+      this.safeMmr(allowCache).get(leafIndex),
+    ]);
     return {
       offset: this.blockOffset,
       height: blockHeight,
@@ -295,26 +309,22 @@ export class MmrService implements OnApplicationShutdown {
     };
   }
 
-  async getLatestMmr(): Promise<MmrPayload> {
+  // Select mmr db to use depend on query allow cache
+  private safeMmr(allowCache: boolean): MMR {
+    return allowCache ? this.mmrDb : this.mmrPlainDb;
+  }
+
+  async getLatestMmrHeight(allowCache: boolean): Promise<number> {
     // latest leaf index need fetch from .db, as original method will use cache
-    return this.getMmr(await this.getLatestMmrHeight());
+    return (await this.safeMmr(allowCache).db.getLeafLength()) + this.blockOffset;
   }
 
-  async getLatestMmrProof(): Promise<MmrProof> {
-    return this.getMmrProof(await this.getLatestMmrHeight());
-  }
-
-  async getLatestMmrHeight(): Promise<number> {
-    // latest leaf index need fetch from .db, as original method will use cache
-    return (await this.mmrDb.db.getLeafLength()) + this.blockOffset;
-  }
-
-  async getMmrProof(blockHeight: number): Promise<MmrProof> {
+  async getMmrProof(blockHeight: number, allowCache: boolean): Promise<MmrProof> {
     const leafIndex = blockHeight - this.blockOffset - 1;
     if (leafIndex < 0) {
       throw new Error(`Parameter blockHeight must greater equal to ${this.blockOffset + 1} `);
     }
-    const mmrProof = await this.mmrDb.getProof([leafIndex]);
+    const mmrProof = await this.safeMmr(allowCache).getProof([leafIndex]);
     const nodes = Object.entries(mmrProof.db.nodes).map(([key, data]) => {
       return {
         node: key,
