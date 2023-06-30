@@ -22,6 +22,7 @@ import { getLogger } from '@subql/node-core';
 const logger = getLogger('safe.api.ethereum');
 
 export default class SafeEthProvider extends Provider {
+  private network?: Network;
   constructor(
     private baseApi: Provider,
     private blockHeight: BlockTag | Promise<BlockTag>,
@@ -71,6 +72,13 @@ export default class SafeEthProvider extends Provider {
     return this.baseApi.call(transaction, this.blockHeight);
   }
 
+  async getNetwork(): Promise<Network> {
+    if (!this.network) {
+      this.network = await this.baseApi.getNetwork();
+    }
+    return this.network;
+  }
+
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   getBlockWithTransactions(
     blockHashOrBlockTag: BlockTag | Promise<BlockTag>,
@@ -97,10 +105,6 @@ export default class SafeEthProvider extends Provider {
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   getBlockNumber(): Promise<number> {
     throw new Error('Method `getBlockNumber` not supported.');
-  }
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  getNetwork(): Promise<Network> {
-    throw new Error('Method `getNetwork` not supported.');
   }
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   getGasPrice(): Promise<BigNumber> {
