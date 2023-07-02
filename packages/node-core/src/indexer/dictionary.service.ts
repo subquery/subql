@@ -6,6 +6,7 @@ import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {dictHttpLink} from '@subql/apollo-links';
+import {BaseDataSource} from '@subql/common';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
 import fetch from 'cross-fetch';
@@ -14,6 +15,7 @@ import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {profiler} from '../profiler';
 import {timeout} from '../utils';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 
 export type SpecVersion = {
   id: string;
@@ -153,7 +155,8 @@ function buildDictQueryFragment(
 @Injectable()
 export class DictionaryService {
   private _client?: ApolloClient<NormalizedCacheObject>;
-  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]> = new Map();
+
+  queriesMap?: BlockHeightMap<DictionaryQueryEntry[]>;
   private useDistinct = true;
   private useStartHeight = true;
   protected _startHeight?: number;
@@ -240,8 +243,12 @@ export class DictionaryService {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    conditions: DictionaryQueryEntry[]
+    conditions?: DictionaryQueryEntry[]
   ): Promise<Dictionary | undefined> {
+    if (!conditions) {
+      return undefined;
+    }
+
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
     try {
       const resp = await timeout(
@@ -322,32 +329,11 @@ export class DictionaryService {
     }
     return buildQuery(vars, nodes);
   }
-  buildDictionaryEntryMap<DS extends {startBlock?: number}>(
-    dataSources: Array<DS>,
+  buildDictionaryEntryMap<DS extends BaseDataSource>(
+    dataSources: BlockHeightMap<DS[]>,
     buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
   ): void {
-    const dsWithStartBlock = (dataSources.filter((ds) => !!ds.startBlock) as (DS & {startBlock: number})[]).sort(
-      (a, b) => a.startBlock - b.startBlock
-    );
-
-    for (let i = 0; i < dsWithStartBlock.length; i++) {
-      this.mappedDictionaryQueryEntries.set(
-        dsWithStartBlock[i].startBlock,
-        // Subset of DS up to the current height
-        buildDictionaryQueryEntries(dsWithStartBlock.slice(0, i + 1))
-      );
-    }
-  }
-
-  getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
-    let dictionaryQueryEntries: DictionaryQueryEntry[] = [];
-    for (const [key, value] of this.mappedDictionaryQueryEntries) {
-      if (queryEndBlock >= key) {
-        dictionaryQueryEntries = value;
-        // Do not return from here, we want loop util we find the LAST mappedDictionaryQueryEntry with startBlock that close to queryEndBlock
-      }
-    }
-    return dictionaryQueryEntries;
+    this.queriesMap = dataSources.map((dataSources) => buildDictionaryQueryEntries(dataSources));
   }
 
   async scopedDictionaryEntries(
@@ -355,12 +341,9 @@ export class DictionaryService {
     queryEndBlock: number,
     scaledBatchSize: number
   ): Promise<Dictionary | undefined> {
-    return this.getDictionary(
-      startBlockHeight,
-      queryEndBlock,
-      scaledBatchSize,
-      this.getDictionaryQueryEntries(queryEndBlock)
-    );
+    const queryEntry = this.queriesMap?.getSafe(queryEndBlock) ?? [];
+
+    return this.getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize, queryEntry);
   }
 
   private metadataQuery(): GqlQuery {
@@ -399,7 +382,7 @@ export class DictionaryService {
     }
   }
 
-  protected validateChainId(metaData: MetaData) {
+  protected validateChainId(metaData: MetaData): boolean {
     return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;
   }
 

@@ -280,9 +280,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   // This is used everywhere but within indexing blocks, see comment on getDataSources for more info
   getAllDataSources(): DS[] {
-    if (!isMainThread) {
-      throw new Error('This method is only avaiable on the main thread');
-    }
+    assert(isMainThread, 'This method is only avaiable on the main thread');
     const dataSources = this.project.dataSources;
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
 
@@ -297,10 +295,25 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return [...dataSources, ...dynamicDs].filter((ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight);
   }
 
-  // async getDataSourcesMap(): BlockHeightMap<DS[]> {
-  //   const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+  getDataSourcesMap(): BlockHeightMap<DS[]> {
+    assert(isMainThread, 'This method is only avaiable on the main thread');
+    const dynamicDs = this.dynamicDsService.dynamicDatasources;
 
-  // }
+    const dsMap = new Map<number, DS[]>();
+
+    // Loop through all projects
+    for (const [height, project] of this.projectUpgradeService.projects) {
+      // Iterate all the DS at the project height
+      [...project.dataSources, ...dynamicDs]
+        .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+        .sort((a, b) => a.startBlock - b.startBlock)
+        .forEach((ds, index, dataSources) => {
+          dsMap.set(Math.max(height, ds.startBlock), dataSources.slice(0, index + 1));
+        });
+    }
+
+    return new BlockHeightMap(dsMap);
+  }
 
   private async initUnfinalized(): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {

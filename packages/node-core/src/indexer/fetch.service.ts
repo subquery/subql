@@ -87,7 +87,7 @@ export abstract class BaseFetchService<
 
   private updateDictionary(): void {
     return this.dictionaryService.buildDictionaryEntryMap<DS>(
-      this.projectService.getAllDataSources(),
+      this.projectService.getDataSourcesMap(),
       this.buildDictionaryQueryEntries.bind(this)
     );
   }
@@ -95,9 +95,10 @@ export abstract class BaseFetchService<
   private get useDictionary(): boolean {
     return (
       this.dictionaryService.useDictionary &&
-      !!this.dictionaryService.getDictionaryQueryEntries(
+      // TODO when we query we get via query end height, why is it start heigth here?
+      !!this.dictionaryService.queriesMap?.get(
         this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
-      ).length
+      )?.length
     );
   }
 

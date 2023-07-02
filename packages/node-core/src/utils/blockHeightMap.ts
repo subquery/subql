@@ -37,6 +37,15 @@ export class BlockHeightMap<T> {
     return result;
   }
 
+  // Same as get but wont throw when there is nothing in the block range
+  getSafe(height: number): T | undefined {
+    try {
+      return this.get(height);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   getAllWithRange(): {value: T; startHeight: number; endHeight?: number}[] {
     return [...this.#map.entries()].map(([key, value], index, entries) => {
       return {
@@ -45,5 +54,15 @@ export class BlockHeightMap<T> {
         endHeight: entries[index + 1]?.[0], // Start height of the nex item
       };
     });
+  }
+
+  map<T2>(fn: (value: T) => T2): BlockHeightMap<T2> {
+    const newMap = new Map<number, T2>();
+
+    for (const [key, value] of this.#map) {
+      newMap.set(key, fn(value));
+    }
+
+    return new BlockHeightMap(newMap);
   }
 }

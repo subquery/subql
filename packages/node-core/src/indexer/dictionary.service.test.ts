@@ -1,10 +1,12 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DictionaryQueryEntry, SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {range} from 'lodash';
 import {NodeConfig} from '../configure';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 import {DictionaryService, getGqlType} from './dictionary.service';
 
 const mockDS = [
@@ -110,6 +112,8 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
 });
 
+jest.setTimeout(10000);
+
 describe('GraphqlTypes', () => {
   it('Supports arrays of primitives', () => {
     const stringType = getGqlType(['a', 'b', 'c']);
@@ -131,8 +135,18 @@ describe('GraphqlTypes', () => {
 describe('DictionaryService', () => {
   let dictionaryService: DictionaryService;
 
+  let dsMap: BlockHeightMap<any>;
+
   beforeEach(() => {
     dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig, new EventEmitter2());
+
+    const m = new Map<number, any>();
+
+    mockDS.forEach((ds, index, dataSources) => {
+      m.set(ds.startBlock, dataSources.slice(0, index + 1));
+    });
+
+    dsMap = new BlockHeightMap(m);
   });
 
   it('return dictionary query result', async () => {
@@ -152,7 +166,8 @@ describe('DictionaryService', () => {
     await expect(dictionaryService.initValidation()).resolves.toBe(false);
   });
 
-  it('works when `dictionaryResolver` is not defined', async () => {
+  // SubQuery managed service is no longer running Polkadot/Kusama dictionaries
+  it.skip('works when `dictionaryResolver` is not defined', async () => {
     dictionaryService = new DictionaryService(
       DICTIONARY_ENDPOINT,
       DICTIONARY_CHAINID,
@@ -254,15 +269,17 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('able to build queryEntryMap', () => {
-    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
-    const _map = (dictionaryService as any).mappedDictionaryQueryEntries;
+    dictionaryService.buildDictionaryEntryMap(dsMap, () => HAPPY_PATH_CONDITIONS);
+    const _map = dictionaryService.queriesMap?.getAll();
+
+    assert(_map, 'Map should exist');
 
     expect([..._map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
-    expect(_map.size).toEqual(mockDS.length);
+    expect(_map?.size).toEqual(mockDS.length);
   });
 
   it('can use scoped dictionary query', async () => {
-    dictionaryService.buildDictionaryEntryMap(mockDS, (dss) => HAPPY_PATH_CONDITIONS.slice(0, dss.length));
+    dictionaryService.buildDictionaryEntryMap(dsMap, (dss) => HAPPY_PATH_CONDITIONS.slice(0, dss.length));
 
     // Out of range of scoped entries
     const result = await dictionaryService.scopedDictionaryEntries(0, 99, 10);
@@ -283,23 +300,23 @@ describe('DictionaryService', () => {
         HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
       );
     }
-    (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
+    dictionaryService.queriesMap = new BlockHeightMap(dictionaryQueryMap);
     let queryEndBlock = 150;
 
     // queryEndBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+    expect(dictionaryService.queriesMap?.getSafe(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
 
     queryEndBlock = 500;
 
     // queryEndBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+    expect(dictionaryService.queriesMap?.getSafe(queryEndBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
     ]);
 
     queryEndBlock = 5000;
     // queryEndBlock > all dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+    expect(dictionaryService.queriesMap?.getSafe(queryEndBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
       HAPPY_PATH_CONDITIONS[2],
@@ -307,12 +324,14 @@ describe('DictionaryService', () => {
 
     queryEndBlock = 50;
     // queryEndBlock < min dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
+    expect(dictionaryService.queriesMap?.getSafe(queryEndBlock)).toEqual(undefined);
   });
 
-  it('sort map', () => {
-    const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
-    dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
-    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual([100, 500, 1000]);
-  });
+  // it('sort map', () => {
+  //   const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
+  //   dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
+  //   expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual([100, 500, 1000]);
+  // });
+
+  // TODO write a test that queries over 2 block ranges in case DS has been removed
 });

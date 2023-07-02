@@ -4,6 +4,7 @@
 import {BaseDataSource, ParentProject, ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
 import {Entity} from '@subql/types';
 import {GraphQLSchema} from 'graphql';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 import {ProcessBlockResponse} from './blockDispatcher';
 
 export enum OperationType {
@@ -52,6 +53,7 @@ export interface IProjectService<DS> {
   getAllDataSources(): DS[];
   getDataSources(blockHeight?: number): Promise<DS[]>;
   getStartBlockFromDataSources(): number;
+  getDataSourcesMap(): BlockHeightMap<DS[]>;
 }
 
 // Equivalent to SubstrateDatasourceProcessor
