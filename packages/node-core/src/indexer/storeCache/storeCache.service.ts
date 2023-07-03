@@ -5,7 +5,7 @@ import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
+import {DatabaseError, Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
@@ -150,7 +150,10 @@ export class StoreCacheService extends BaseCacheService {
       }
       await tx.commit();
     } catch (e: any) {
-      this.logger.error(e, 'Database transaction failed');
+      if (e instanceof DatabaseError) {
+        this.logger.info(`Error: ${e}, Name: ${e.name}, Parent: ${e.parent}, Original: ${e.original}`);
+      }
+      this.logger.error(e, 'Database transaction failed, rolling back');
       await tx.rollback();
       throw e;
     }
