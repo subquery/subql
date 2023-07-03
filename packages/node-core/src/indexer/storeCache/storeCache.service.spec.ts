@@ -400,6 +400,6 @@ describe('Store cache upper threshold', () => {
     const end = new Date().getTime();
 
     // Should be more than 1s, we set the db tx.commit to take 1s
-    expect(end - start).toBeGreaterThan(1000);
+    expect(end - start).toBeGreaterThanOrEqual(1000);
   });
 });
