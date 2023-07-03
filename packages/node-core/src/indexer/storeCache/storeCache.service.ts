@@ -9,6 +9,7 @@ import {Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
+import {getLogger} from '../../logger';
 import {profiler} from '../../profiler';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {BaseCacheService} from './baseCache.service';
@@ -19,12 +20,15 @@ import {ICachedModel, ICachedModelControl} from './types';
 
 const INTERVAL_NAME = 'cacheFlushInterval';
 
+const logger = getLogger('StoreCacheService');
+
 @Injectable()
 export class StoreCacheService extends BaseCacheService {
   private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo?: MetadataRepo;
   private poiRepo?: PoiRepo;
   private readonly storeCacheThreshold: number;
+  private readonly cacheUpperLimit: number;
   private _historical = true;
   private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
@@ -38,6 +42,12 @@ export class StoreCacheService extends BaseCacheService {
   ) {
     super(schedulerRegistry, INTERVAL_NAME, 'StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
+    this.cacheUpperLimit = config.storeCacheUpperLimit;
+
+    if (this.storeCacheThreshold > this.cacheUpperLimit) {
+      logger.error('Store cache threshold must be less than the store cache upper limit');
+      process.exit(1);
+    }
   }
 
   init(historical: boolean, useCockroachDb: boolean): void {
@@ -143,6 +153,16 @@ export class StoreCacheService extends BaseCacheService {
       this.logger.error(e, 'Database transaction failed');
       await tx.rollback();
       throw e;
+    }
+  }
+
+  async flushAndWaitForCapacity(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
+    const flushableRecords = this.flushableRecords;
+
+    const pendingFlush = this.flushCache(forceFlush, flushAll);
+
+    if (flushableRecords >= this.cacheUpperLimit) {
+      await pendingFlush;
     }
   }
 
