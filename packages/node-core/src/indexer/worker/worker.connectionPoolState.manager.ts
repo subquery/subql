@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
-import {ConnectionPoolItem, IApiConnectionSpecific} from '@subql/node-core';
+import {ConnectionPoolItem, IApiConnectionSpecific, IConnectionPoolStateManager} from '@subql/node-core';
 import {ApiErrorType} from '../connectionPool.service';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 
@@ -69,7 +69,9 @@ export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecifi
 }
 
 @Injectable()
-export class WorkerConnectionPoolStateManager<T> {
+export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
+  implements IConnectionPoolStateManager<T>
+{
   constructor(private host: HostConnectionPoolState<any>) {}
 
   async getNextConnectedApiIndex(): Promise<number | undefined> {

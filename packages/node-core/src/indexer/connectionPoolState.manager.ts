@@ -29,7 +29,6 @@ const logger = getLogger('connection-pool-state');
 export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
   addToConnections(endpoint: string, index: number): Promise<void>;
   getNextConnectedApiIndex(): Promise<number | undefined>;
-  numConnections: number;
   getFieldValue<K extends keyof ConnectionPoolItem<T>>(apiIndex: number, field: K): Promise<ConnectionPoolItem<T>[K]>;
   setFieldValue<K extends keyof ConnectionPoolItem<T>>(
     apiIndex: number,
@@ -41,7 +40,7 @@ export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<an
   clearTimeout(apiIndex: number): Promise<void>;
   deleteFromPool(apiIndex: number): Promise<void>;
   shutdown(): Promise<void>;
-  handleApiError(apiIndex: number, errorType: number): Promise<void>;
+  handleApiError(apiIndex: number, errorType: ApiErrorType): Promise<void>;
   handleApiSuccess(apiIndex: number, responseTime: number): Promise<void>;
   getDisconnectedIndices(): Promise<number[]>;
 }
