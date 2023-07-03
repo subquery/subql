@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Configurable limit to the store cache size, this will cause indexing to wait for the cache to be flushed. This resolves an issue where OOM errors happen. (#1859)
 
 ## [3.0.0] - 2023-06-26
 ### Changed

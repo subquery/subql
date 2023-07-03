@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `store-cache-upper-limit` flag to control limiting the max size of the store cache (#1859)
 
 ## [2.8.0] - 2023-06-26
 ### Added
