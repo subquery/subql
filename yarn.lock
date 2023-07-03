@@ -4249,7 +4249,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": "workspace:*"
     "@subql/utils": "workspace:*"
-    "@subql/x-graphile-build-pg": 4.13.0-0.2.4
+    "@subql/x-graphile-build-pg": 4.13.0-0.2.5
     "@subql/x-postgraphile-core": 4.13.0-0.2.0
     "@types/express": ^4.17.13
     "@types/express-pino-logger": ^4.0.3
@@ -4403,9 +4403,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/x-graphile-build-pg@npm:4.13.0-0.2.4":
-  version: 4.13.0-0.2.4
-  resolution: "@subql/x-graphile-build-pg@npm:4.13.0-0.2.4"
+"@subql/x-graphile-build-pg@npm:4.13.0-0.2.5":
+  version: 4.13.0-0.2.5
+  resolution: "@subql/x-graphile-build-pg@npm:4.13.0-0.2.5"
   dependencies:
     "@graphile/lru": 4.11.0
     chalk: ^2.4.2
@@ -4417,7 +4417,7 @@ __metadata:
     pg-sql2: 4.13.0
   peerDependencies:
     pg: ">=6.1.0 <9"
-  checksum: fed8b4b849b0d52a775f5d352a8efe8ce798c12be20754cf6a72e8f564766d60bb332b3f16c4e330b0a5d68c2c56047d9359e69fa1e764a15bbb2b1602021675
+  checksum: e62222fdcca52be3623851b2d56287ee3b799c540f55becc3d6cc1bedb56320485838e8731eeb1e4828c70b01f9c10715922079f6b164e482271faaccde285ca
   languageName: node
   linkType: hard
 
