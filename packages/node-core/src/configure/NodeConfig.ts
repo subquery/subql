@@ -51,6 +51,7 @@ export interface IConfig {
   readonly pgKey?: string;
   readonly pgCert?: string;
   readonly storeCacheThreshold: number;
+  readonly storeCacheUpperLimit: number;
   readonly storeGetCacheSize: number;
   readonly storeCacheAsync: boolean;
   readonly scaleBatchSize?: boolean;
@@ -80,6 +81,7 @@ const DEFAULT_CONFIG = {
   multiChain: false,
   unfinalizedBlocks: false,
   storeCacheThreshold: 1000,
+  storeCacheUpperLimit: 10000,
   storeGetCacheSize: 500,
   storeCacheAsync: true,
   storeFlushInterval: 5,
@@ -145,6 +147,10 @@ export class NodeConfig implements IConfig {
 
   get storeCacheThreshold(): number {
     return this._config.storeCacheThreshold;
+  }
+
+  get storeCacheUpperLimit(): number {
+    return this._config.storeCacheUpperLimit;
   }
 
   get storeGetCacheSize(): number {

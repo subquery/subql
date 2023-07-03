@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Update x-graphile-build-pg to improve query service init speed (#1855)
+
 ## [2.2.0] - 2023-06-26
 ### Changed
 - Update apollo server with security fixes (#1834)

@@ -5,6 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
+import {delay} from '../../utils';
 import {StoreCacheService} from './storeCache.service';
 
 const eventEmitter = new EventEmitter2();
@@ -37,7 +38,7 @@ jest.mock('@subql/x-sequelize', () => {
     }),
     sync: jest.fn(),
     transaction: () => ({
-      commit: jest.fn(),
+      commit: jest.fn(() => delay(1)), // Delay of 1s is used to test whether we wait for cache to flush
       rollback: jest.fn(),
       afterCommit: jest.fn(),
     }),
@@ -48,6 +49,7 @@ jest.mock('@subql/x-sequelize', () => {
     Sequelize: jest.fn(() => mSequelize),
     DataTypes: actualSequelize.DataTypes,
     QueryTypes: actualSequelize.QueryTypes,
+    Deferrable: actualSequelize.Deferrable,
   };
 });
 
@@ -340,5 +342,64 @@ describe('Store Cache flush with non-historical', () => {
     });
     // remove id 2 only
     expect(spyModel1Destroy).toHaveBeenCalledWith({transaction: undefined, where: {id: ['entity1_id_0x02']}});
+  });
+});
+
+describe('Store cache upper threshold', () => {
+  let storeService: StoreCacheService;
+
+  const sequilize = new Sequelize();
+  const nodeConfig = {
+    storeCacheThreshold: 2,
+    storeCacheUpperLimit: 10,
+  } as NodeConfig;
+
+  beforeEach(() => {
+    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService.init(false, false);
+  });
+
+  it('doesnt wait for flushing cache when threshold not met', async () => {
+    const entity1Model = storeService.getModel('entity1');
+
+    for (let i = 0; i < 5; i++) {
+      entity1Model.set(
+        `entity1_id_0x0${i}`,
+        {
+          id: `entity1_id_0x0${i}`,
+          field1: 'set at block 1',
+        },
+        1
+      );
+    }
+
+    const start = new Date().getTime();
+    await storeService.flushAndWaitForCapacity(true, true);
+    const end = new Date().getTime();
+
+    // Should be less than 1s, we're not waiting
+    expect(end - start).toBeLessThan(1000);
+  });
+
+  it('waits for flushing when threshold is met', async () => {
+    const entity1Model = storeService.getModel('entity1');
+
+    for (let i = 0; i < 15; i++) {
+      entity1Model.set(
+        `entity1_id_0x0${i}`,
+        {
+          id: `entity1_id_0x0${i}`,
+          field1: 'set at block 1',
+        },
+        1
+      );
+    }
+
+    const start = new Date().getTime();
+    await storeService.flushAndWaitForCapacity(true, true);
+    const end = new Date().getTime();
+
+    // Should be more than 1s, we set the db tx.commit to take 1s
+    expect(end - start).toBeGreaterThanOrEqual(1000);
   });
 });
