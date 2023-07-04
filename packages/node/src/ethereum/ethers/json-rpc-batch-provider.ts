@@ -29,11 +29,17 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
     reject: (error: Error) => void;
   }>;
 
+  _chainIdCache: string | null = null;
+
   constructor(url: string | ConnectionInfo, network?: Networkish) {
     super(url, network);
   }
 
   send(method: string, params: Array<any>): Promise<any> {
+    if (method === 'eth_chainId' && this._chainIdCache !== null) {
+      return Promise.resolve(this._chainIdCache);
+    }
+
     const request = {
       method: method,
       params: params,
@@ -129,6 +135,9 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
             (<any>error).data = payload.error.data;
             inflightRequest.reject(error);
           } else {
+            if (inflightRequest.request.method === 'eth_chainId') {
+              this._chainIdCache = payload.result;
+            }
             inflightRequest.resolve(payload.result);
           }
         });
