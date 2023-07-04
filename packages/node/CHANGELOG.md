@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.9.0] - 2023-07-04
 ### Added
 - `store-cache-upper-limit` flag to control limiting the max size of the store cache (#1859)
 
@@ -904,7 +906,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/2.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/2.9.0...HEAD
+[2.9.0]: https://github.com/subquery/subql/compare/node/2.8.0...node/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/node/2.7.0...node/2.8.0
 [2.7.0]: https://github.com/subquery/subql/compare/node/2.6.1...node/2.7.0
 [2.6.1]: https://github.com/subquery/subql/compare/node/2.6.0...node/2.6.1
