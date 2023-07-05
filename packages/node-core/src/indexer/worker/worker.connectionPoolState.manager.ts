@@ -21,13 +21,10 @@ export type HostConnectionPoolState<T> = {
   hostSetTimeoutIdInConnectionPoolItem: (index: number, delay: number) => Promise<void>;
   hostClearTimeoutIdInConnectionPoolItem: (index: number) => Promise<void>;
   hostGetSuspendedIndices: () => Promise<number[]>;
-  hostDeleteFromPool: (index: number) => Promise<void>;
-  hostHandleApiError: (index: number, errorType: ApiErrorType) => Promise<void>;
-  hostHandleApiSuccess: (index: number, responseTime: number) => Promise<void>;
+  hostRemoveFromConnections: (index: number) => Promise<void>;
   hostHandleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void>;
   hostHandleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void>;
   hostGetDisconnectedIndices: () => Promise<number[]>;
-  hostShutdownPoolState: () => Promise<void>;
 };
 
 export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[] = [
@@ -38,13 +35,10 @@ export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[]
   'hostSetTimeoutIdInConnectionPoolItem',
   'hostClearTimeoutIdInConnectionPoolItem',
   'hostGetSuspendedIndices',
-  'hostDeleteFromPool',
-  'hostHandleApiError',
-  'hostHandleApiSuccess',
+  'hostRemoveFromConnections',
   'hostHandleBatchApiError',
   'hostHandleBatchApiSuccess',
   'hostGetDisconnectedIndices',
-  'hostShutdownPoolState',
 ];
 
 export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecific>(
@@ -58,13 +52,10 @@ export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecifi
     hostSetTimeoutIdInConnectionPoolItem: connectionPoolState.setTimeout.bind(connectionPoolState),
     hostClearTimeoutIdInConnectionPoolItem: connectionPoolState.clearTimeout.bind(connectionPoolState),
     hostGetSuspendedIndices: connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
-    hostDeleteFromPool: connectionPoolState.deleteFromPool.bind(connectionPoolState),
-    hostHandleApiError: connectionPoolState.handleApiError.bind(connectionPoolState),
-    hostHandleApiSuccess: connectionPoolState.handleApiSuccess.bind(connectionPoolState),
+    hostRemoveFromConnections: connectionPoolState.removeFromConnections.bind(connectionPoolState),
     hostHandleBatchApiError: connectionPoolState.handleBatchApiError.bind(connectionPoolState),
     hostHandleBatchApiSuccess: connectionPoolState.handleBatchApiSuccess.bind(connectionPoolState),
     hostGetDisconnectedIndices: connectionPoolState.getDisconnectedIndices.bind(connectionPoolState),
-    hostShutdownPoolState: connectionPoolState.shutdown.bind(connectionPoolState),
   };
 }
 
@@ -109,16 +100,18 @@ export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
     return this.host.hostGetSuspendedIndices();
   }
 
-  async deleteFromPool(index: number): Promise<void> {
-    return this.host.hostDeleteFromPool(index);
+  async removeFromConnections(index: number): Promise<void> {
+    return this.host.hostRemoveFromConnections(index);
   }
 
+  //eslint-disable-next-line @typescript-eslint/require-await
   async handleApiError(index: number, errorType: ApiErrorType): Promise<void> {
-    return this.host.hostHandleApiError(index, errorType);
+    throw new Error(`Not Implemented`); // workers use handleBatchApiError
   }
 
+  //eslint-disable-next-line @typescript-eslint/require-await
   async handleApiSuccess(index: number, responseTime: number): Promise<void> {
-    return this.host.hostHandleApiSuccess(index, responseTime);
+    throw new Error(`Not Implemented`); // workers use handleBatchApiSuccess
   }
 
   async handleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void> {
@@ -131,9 +124,5 @@ export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
 
   async getDisconnectedIndices(): Promise<number[]> {
     return this.host.hostGetDisconnectedIndices();
-  }
-
-  async shutdown(): Promise<void> {
-    return this.host.hostShutdownPoolState();
   }
 }

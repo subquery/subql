@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {OnApplicationShutdown} from '@nestjs/common';
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
 import {IApiConnectionSpecific, errorTypeToScoreAdjustment} from '..';
@@ -38,14 +39,15 @@ export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<an
   getSuspendedIndices(): Promise<number[]>;
   setTimeout(apiIndex: number, delay: number): Promise<void>;
   clearTimeout(apiIndex: number): Promise<void>;
-  deleteFromPool(apiIndex: number): Promise<void>;
-  shutdown(): Promise<void>;
+  removeFromConnections(apiIndex: number): Promise<void>;
   handleApiError(apiIndex: number, errorType: ApiErrorType): Promise<void>;
   handleApiSuccess(apiIndex: number, responseTime: number): Promise<void>;
   getDisconnectedIndices(): Promise<number[]>;
 }
 
-export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
+export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>>
+  implements OnApplicationShutdown
+{
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   //eslint-disable-next-line @typescript-eslint/require-await
@@ -163,16 +165,14 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async deleteFromPool(apiIndex: number): Promise<void> {
+  async removeFromConnections(apiIndex: number): Promise<void> {
     delete this.pool[apiIndex];
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async shutdown(): Promise<void> {
-    Object.values(this.pool).forEach((poolItem) => {
-      if (poolItem.timeoutId) {
-        clearTimeout(poolItem.timeoutId);
-      }
+  async onApplicationShutdown(): Promise<void> {
+    Object.values(this.pool).forEach((_, index) => {
+      this.clearTimeout(index);
     });
   }
 

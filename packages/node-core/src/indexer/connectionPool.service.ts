@@ -59,7 +59,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   async onApplicationShutdown(): Promise<void> {
-    this.poolStateManager.shutdown();
     await Promise.all(this.allApi.map((api) => api.apiDisconnect()));
   }
 
@@ -158,7 +157,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
           }, delay);
         } else {
           logger.error(`Reached max reconnection attempts. Removing connection ${endpoint} from pool.`);
-          await this.poolStateManager.deleteFromPool(apiIndex);
+          await this.poolStateManager.removeFromConnections(apiIndex);
         }
       }
     };
