@@ -13,6 +13,7 @@ import Pino from 'pino';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
+import {initDbSchema} from '../utils';
 import {SandboxOption, TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
 import {IIndexerManager, ISubqueryProject} from './types';
@@ -133,6 +134,8 @@ export abstract class TestingService<A, SA, B, DS> {
       if (!(schemas as unknown as string[]).includes(schema)) {
         await this.sequelize.createSchema(`"${schema}"`, {});
       }
+
+      await initDbSchema(this.project, schema, this.storeService);
 
       this.storeService.setBlockHeight(test.blockHeight);
       const store = this.storeService.getStore();
