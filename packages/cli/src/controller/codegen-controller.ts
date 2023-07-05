@@ -221,27 +221,26 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
   }
 }
 
-function processAbis(sortedAssets: Map<string, string>, projectPath: string): abiRenderProps[] {
+export function processAbis(sortedAssets: Map<string, string>, projectPath: string): abiRenderProps[] {
   const renderInterfaceJobs: abiRenderProps[] = [];
   sortedAssets.forEach((value, key) => {
     const renderProps: abiRenderProps = {name: key, events: [], functions: []};
-    let readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
+    const readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[] | {abi: abiInterface[]};
     // We need to use for loop instead of map, due to events/function name could be duplicate,
     // because they have different input, and following ether typegen rules, name also changed
     // we need to find duplicates, and update its name rather than just unify them.
 
-    if (!Array.isArray(readAbi)) {
-      readAbi = [readAbi];
-    }
-    const duplicateEventNames = readAbi
+    const abiArray = !Array.isArray(readAbi) && readAbi.abi ? readAbi.abi : (readAbi as unknown as abiInterface[]);
+
+    const duplicateEventNames = abiArray
       .filter((abiObject) => abiObject.type === 'event')
       .map((obj) => obj.name)
       .filter((name, index, arr) => arr.indexOf(name) !== index);
-    const duplicateFunctionNames = readAbi
+    const duplicateFunctionNames = abiArray
       .filter((abiObject) => abiObject.type === 'function')
       .map((obj) => obj.name)
       .filter((name, index, arr) => arr.indexOf(name) !== index);
-    readAbi.map((abiObject) => {
+    abiArray.map((abiObject) => {
       if (abiObject.type === 'function') {
         let typeName = abiObject.name;
         let functionName = abiObject.name;
