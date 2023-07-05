@@ -5,9 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## Fixed
-- Limit the number of calls to eth_chainId (#123)
 
+## [2.9.0] - 2023-07-05
+### Fixed
+- Limit the number of calls to eth_chainId (#123)
 ### Added
 - `store-cache-upper-limit` flag to limit the max size of the store cache. (#124)
 
@@ -160,7 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry request when encouraging timeout/rate limit behaviours (#9)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/v2.9.0...HEAD
+[2.9.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/v2.8.0...node-ethereum/v2.9.0
 [2.8.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.6.1...node-ethereum/2.8.0
 [2.6.1]: https://github.com/subquery/subql-ethereum/compare/node/2.6.0...node-ethereum/2.6.1
 [2.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.3...node-ethereum/2.6.0

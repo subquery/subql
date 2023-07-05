@@ -3017,9 +3017,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:dev":
-  version: 3.0.1-0
-  resolution: "@subql/node-core@npm:3.0.1-0"
+"@subql/node-core@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@subql/node-core@npm:3.1.0"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
@@ -3045,7 +3045,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 563a21f0ae7b72dd2ec95d8caa51e2832859a1a78827845edcc7f0304b1eace08d15585cc88e61618cc9aa11461b4ae844602d8b43f57392084294f86998d080
+  checksum: 68081ded371cbf1f291009e7db4278e0ce23eb6a3d1935004a0a138d993531d02431d24c95b26f077a4783f76c9acd74c962e54f8e099b03417b9d99b0a1295f
   languageName: node
   linkType: hard
 
@@ -3063,7 +3063,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^2.3.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": dev
+    "@subql/node-core": ^3.1.0
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.1.2
     "@subql/types-ethereum": "workspace:*"
