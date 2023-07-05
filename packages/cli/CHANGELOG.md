@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `codegen` supports artifact json 
+
 ## [3.3.0] - 2023-06-26
 ### Removed
 - Support for Terra and Avalanche SDKs. Note: Avalanche is still supported through the Ethereum SDK. (#1841)
