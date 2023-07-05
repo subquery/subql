@@ -3,7 +3,7 @@
 
 import {DEFAULT_FETCH_RANGE, RESET_MMR_BLOCK_BATCH} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
-import {Op, Transaction} from '@subql/x-sequelize';
+import {Op} from '@subql/x-sequelize';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
 const logger = getLogger('PoiCache');

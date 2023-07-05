@@ -4,9 +4,10 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {Sequelize} from '@subql/x-sequelize';
+import {Op, Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
+import {PgMmrCacheService} from '../indexer/storeCache/pgMmrCache.service';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema} from '../utils/project';
 import {MmrService} from './mmr.service';
@@ -22,7 +23,7 @@ const targetHeightHelpMsg = (suggestHeight: number, storeType: string) =>
 
 @Injectable()
 export class MmrRegenerateService {
-  private metadataRepo?: CacheMetadataModel;
+  private _metadataRepo?: CacheMetadataModel;
   private _schema?: string;
   private _dbMmrLatestHeight?: number;
   private _poiMmrLatestHeight?: number;
@@ -36,6 +37,7 @@ export class MmrRegenerateService {
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
     private eventEmitter: EventEmitter2,
+    private pgMmrCacheService: PgMmrCacheService,
     @Inject('ISubqueryProject') protected project: ISubqueryProject<any, any>
   ) {}
 
@@ -45,7 +47,7 @@ export class MmrRegenerateService {
     this.eventEmitter.emit(IndexerEvent.Ready, {
       value: true,
     });
-    this.metadataRepo = this.storeService.storeCache.metadata;
+    this._metadataRepo = this.storeService.storeCache.metadata;
     this._blockOffset = await this.getMetadataBlockOffset();
     this._lastPoiHeight = await this.getMetadataLastPoiHeight();
     if (!this.storeService.poiRepo) {
@@ -54,6 +56,13 @@ export class MmrRegenerateService {
     this._poi = new PlainPoiModel(this.storeService.poiRepo);
     await this.mmrService.prepareRegen(this.blockOffset, this.poi);
     await this.probeStatus();
+  }
+
+  get metadataRepo() {
+    if (!this._metadataRepo) {
+      throw new Error(`Mmr-regen service haven't init, could not find metadataRepo`);
+    }
+    return this._metadataRepo;
   }
 
   get dbMmrLatestHeight(): number {
@@ -94,7 +103,7 @@ export class MmrRegenerateService {
   private async probeStatus(): Promise<void> {
     this._dbMmrLatestHeight = await this.mmrService.getLatestMmrHeight(false);
     logger.info(`In ${this.nodeConfig.mmrStoreType} DB, latest MMR block height is ${this._dbMmrLatestHeight}`);
-    this._poiMmrLatestHeight = (await this.mmrService.poi.getLatestPoiWithMmr())?.id ?? this.blockOffset;
+    this._poiMmrLatestHeight = (await this.mmrService.getLatestPoiWithMmr())?.id ?? this.blockOffset;
     logger.info(`In POI table, latest MMR block height is ${this._poiMmrLatestHeight}`);
   }
 
@@ -103,6 +112,9 @@ export class MmrRegenerateService {
     await this.mmrService.deleteMmrNode(regenStartHeight, this._blockOffset);
     // set null for mmr in POI table
     await this.poi.resetPoiMmr(this.poiMmrLatestHeight, regenStartHeight);
+    // It is safe only update metadata recorded latestPoiWithMmr in the end
+    // if resetPoiMmr been interrupted, it will always go find the latest one in poi table
+    await this.mmrService.syncMetadataLatestPoiWithMmr();
     logger.info(`Reset mmr on POI AND ${this.nodeConfig.mmrStoreType} DB both completed!`);
   }
 
@@ -184,6 +196,7 @@ export class MmrRegenerateService {
     }
     // Force flush mmr cache before completed
     await this.storeService.storeCache.flushCache(true, true);
+    await this.pgMmrCacheService.flushCache(true, true);
     logger.warn(`-------- Final status -------- `);
     await this.probeStatus();
   }
@@ -197,10 +210,10 @@ export class MmrRegenerateService {
   }
 
   private async getMetadataBlockOffset(): Promise<number | undefined> {
-    return this.metadataRepo?.find('blockOffset');
+    return this.metadataRepo.find('blockOffset');
   }
 
   private async getMetadataLastPoiHeight(): Promise<number | undefined> {
-    return this.metadataRepo?.find('lastPoiHeight');
+    return this.metadataRepo.find('lastPoiHeight');
   }
 }

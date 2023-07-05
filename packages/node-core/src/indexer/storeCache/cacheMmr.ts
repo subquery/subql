@@ -56,7 +56,8 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    if (this.leafLength) {
+    // avoid leafLength could be 0, and it never flushes the cache
+    if (this.leafLength !== undefined) {
       const release = await this.mutex.acquire();
       try {
         tx.afterCommit(() => {

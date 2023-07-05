@@ -3,13 +3,14 @@
 
 import fs from 'fs';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME, RESET_MMR_BLOCK_BATCH} from '@subql/common';
-import {u8aToHex, u8aEq} from '@subql/utils';
+import {u8aToHex, u8aEq, bufferToU8a} from '@subql/utils';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {Op} from '@subql/x-sequelize';
 import {keccak256} from 'js-sha3';
 import {MmrStoreType, NodeConfig} from '../configure';
-import {MmrPayload, MmrProof} from '../events';
+import {MmrPayload, MmrProof, PoiEvent} from '../events';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
 import {delay} from '../utils';
@@ -17,6 +18,7 @@ import {ProofOfIndex} from './entities';
 import {StoreCacheService, PgMmrCacheService} from './storeCache';
 const logger = getLogger('mmr');
 const MMR_FLUSH_THRESHOLD = 100;
+const LATEST_POI_MMR_NULL_VALUE = '0';
 
 const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
@@ -37,7 +39,8 @@ export class MmrService implements OnApplicationShutdown {
   constructor(
     private readonly nodeConfig: NodeConfig,
     private readonly storeCacheService: StoreCacheService,
-    private readonly pgMmrCacheService: PgMmrCacheService
+    private readonly pgMmrCacheService: PgMmrCacheService,
+    protected eventEmitter: EventEmitter2
   ) {}
 
   onApplicationShutdown(): void {
@@ -121,18 +124,26 @@ export class MmrService implements OnApplicationShutdown {
         if (logging) {
           syncingMsg(poiBlocks[0].id, poiBlocks[poiBlocks.length - 1].id, poiBlocks.length);
         }
-        const appendedBlocks = [];
+        const appendedBlocks: ProofOfIndex[] = [];
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
             await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, block.id);
           }
           // it is a single mmr node, safe to append without flush here
           appendedBlocks.push(await this.appendMmrNode(block));
+          this.eventEmitter.emit(PoiEvent.LastPoiWithMmr, {
+            height: block.id,
+            timestamp: Date.now(),
+          });
           this._nextMmrBlockHeight = block.id + 1;
         }
         // This should be safe, even poi bulkUpsert faild, filebased/postgres db node should already been written and accurate.
         if (appendedBlocks.length) {
           await this.poi.bulkUpsert(appendedBlocks);
+          this.storeCacheService.metadata.set(
+            'latestPoiWithMmr',
+            JSON.stringify(appendedBlocks[appendedBlocks.length - 1])
+          );
         }
       } else {
         const {lastPoiHeight, lastProcessedHeight} = await this.storeCacheService.metadata.findMany([
@@ -159,14 +170,56 @@ export class MmrService implements OnApplicationShutdown {
     this.isSyncing = false;
   }
 
+  async syncMetadataLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
+    const poiResult = await this.poi.getLatestPoiWithMmr();
+    if (poiResult !== null) {
+      this.storeCacheService.metadata.set('latestPoiWithMmr', JSON.stringify(poiResult));
+    } else {
+      // if it is null, means all poi mmr has been reset, we can set this to LATEST_POI_MMR_NULL_VALUE.
+      // And it should skip from getLatestPoiWithMmr
+      this.storeCacheService.metadata.set('latestPoiWithMmr', LATEST_POI_MMR_NULL_VALUE);
+    }
+    return poiResult;
+  }
+
+  async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
+    let result: ProofOfIndex | null;
+    const latestPoiWithMmr = await this.storeCacheService.metadata.find('latestPoiWithMmr');
+    if (latestPoiWithMmr !== undefined && latestPoiWithMmr !== null && latestPoiWithMmr !== LATEST_POI_MMR_NULL_VALUE) {
+      const data = JSON.parse(latestPoiWithMmr);
+      try {
+        // verify this in poi table, should not be too much cost
+        // if cost increased, we can use data directly from metadata, but downside is we unable to verify its accuracy
+        const poiData = await this.poi.model.findOne({where: {id: data.id} as any});
+        if (poiData === null || poiData === undefined) {
+          throw new Error(`Metadata recorded latestPoiWithMmr height ${data.id} not found in Poi table`);
+        }
+        // assertion for mmr field
+        if (poiData.mmrRoot === undefined || poiData.mmrRoot === null) {
+          throw new Error('Metadata recorded latestPoiWithMmr mmr value got undefined');
+        }
+        result = poiData.toJSON();
+      } catch (e) {
+        logger.warn(
+          `Convert metadata recorded latestPoiWithMmr mmr having issue, ${e}. Will attempt to get from poi table.`
+        );
+        result = await this.syncMetadataLatestPoiWithMmr();
+      }
+    } else {
+      result = await this.syncMetadataLatestPoiWithMmr();
+    }
+    return result;
+  }
+
   // Ensure start height of the latest poi and mmr value is correct
   private async ensureLatestPoi(dbMmrLatestHeight: number, blockOffset: number): Promise<ProofOfIndex | null> {
     // The latest poi record in database with mmr value
-    const latestPoiWithMmr = await this.poi.getLatestPoiWithMmr();
+    const latestPoiWithMmr = await this.getLatestPoiWithMmr();
     if (latestPoiWithMmr) {
       // ensure poi mmr not beyond of db mmr, if so reset poi mmr to null
       if (latestPoiWithMmr.id > dbMmrLatestHeight) {
         await this.poi.resetPoiMmr(latestPoiWithMmr.id, dbMmrLatestHeight);
+        await this.syncMetadataLatestPoiWithMmr();
         await this.storeCacheService.flushCache(true);
         return this.ensureLatestPoi(dbMmrLatestHeight, blockOffset);
       }
@@ -180,6 +233,10 @@ export class MmrService implements OnApplicationShutdown {
   private async addDefaultLeafWithRange(start: number, end: number): Promise<void> {
     for (let i = start; i < end; i++) {
       await this.mmrDb.append(DEFAULT_LEAF);
+      this.eventEmitter.emit(PoiEvent.LastPoiWithMmr, {
+        height: i,
+        timestamp: Date.now(),
+      });
       this._nextMmrBlockHeight = i + 1;
       // force flush mmr cache here, avoid too much mmr node created in once
       if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres && i % MMR_FLUSH_THRESHOLD === 0) {
@@ -316,6 +373,8 @@ export class MmrService implements OnApplicationShutdown {
 
   async getLatestMmrHeight(allowCache: boolean): Promise<number> {
     // latest leaf index need fetch from .db, as original method will use cache
+    // TODO, this is incorrect
+    // Will fix by https://github.com/subquery/subql/issues/1868
     return (await this.safeMmr(allowCache).db.getLeafLength()) + this.blockOffset;
   }
 

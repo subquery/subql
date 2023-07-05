@@ -17,7 +17,7 @@ import {
   StoreService,
 } from '..';
 import {NodeConfig} from '../../configure';
-import {IndexerEvent} from '../../events';
+import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue} from '../../utils';
 import {CachePoiModel} from '../storeCache/cachePoi';
@@ -212,6 +212,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       );
       // This is the first creation of POI
       this.poi.bulkUpsert([poiBlock]);
+      this.eventEmitter.emit(PoiEvent.PoiTarget, {
+        height,
+        timestamp: Date.now(),
+      });
       this.poiService.setLatestPoiBlockHash(poiBlock.hash);
       this.storeCacheService.metadata.set('lastPoiHeight', height);
     }
