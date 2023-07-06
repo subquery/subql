@@ -302,7 +302,7 @@ describe('Store Cache flush with non-historical', () => {
     storeService.init(false, false);
   });
 
-  it('Same Id with multiple operations, when flush it should always pick up the latest operation', () => {
+  it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
     const entity1Model = storeService.getModel('entity1');
 
     //create Id 1
@@ -329,7 +329,8 @@ describe('Store Cache flush with non-historical', () => {
     );
 
     //simulate flush here
-    (entity1Model as any).flush(undefined, 5);
+    const tx = await sequilize.transaction();
+    (entity1Model as any).flush(tx, 5);
 
     const sequelizeModel1 = (entity1Model as any).model;
     const spyModel1Create = jest.spyOn(sequelizeModel1, 'bulkCreate');
@@ -337,11 +338,11 @@ describe('Store Cache flush with non-historical', () => {
 
     // Only last set record with block 5 is created
     expect(spyModel1Create).toHaveBeenCalledWith([{field1: 'set at block 5', id: 'entity1_id_0x01'}], {
-      transaction: undefined,
+      transaction: tx,
       updateOnDuplicate: ['id', 'field1'],
     });
     // remove id 2 only
-    expect(spyModel1Destroy).toHaveBeenCalledWith({transaction: undefined, where: {id: ['entity1_id_0x02']}});
+    expect(spyModel1Destroy).toHaveBeenCalledWith({transaction: tx, where: {id: ['entity1_id_0x02']}});
   });
 });
 
