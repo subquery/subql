@@ -5,10 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Finalization check with BSC and improved rate limit handling (#126)
 
 ## [2.9.0] - 2023-07-05
 ### Fixed
 - Limit the number of calls to eth_chainId (#123)
+
 ### Added
 - `store-cache-upper-limit` flag to limit the max size of the store cache. (#124)
 

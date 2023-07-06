@@ -6,6 +6,7 @@ import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
 import {
+  BlockTag,
   Provider,
   Block,
   TransactionReceipt,
@@ -128,25 +129,28 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   async init(): Promise<void> {
     this.injectClient();
-    const [genesisBlock, network, supportsFinalization] = await Promise.all([
-      this.client.getBlock('earliest'),
-      this.client.getNetwork(),
-      this.getSupportsFinalization(),
-    ]);
+    const [genesisBlock, network, supportsFinalization, supportsSafe] =
+      await Promise.all([
+        this.client.getBlock('earliest'),
+        this.client.getNetwork(),
+        this.getSupportsTag('finalized'),
+        this.getSupportsTag('safe'),
+      ]);
     this.genesisBlock = genesisBlock;
-    this.supportsFinalization = supportsFinalization;
+    this.supportsFinalization = supportsFinalization && supportsSafe;
     this.chainId = network.chainId;
     this.name = network.name;
   }
 
-  private async getSupportsFinalization(): Promise<boolean> {
+  private async getSupportsTag(tag: BlockTag): Promise<boolean> {
     try {
       // We set the timeout here because theres a bug in ethers where it will never resolve
       // It was happening with arbitrum on a syncing node
-      await timeout(this.client.getBlock('finalized'), 2);
+      const result = await timeout(this.client.getBlock(tag), 2);
+
       return true;
     } catch (e) {
-      logger.info('Chain doesnt support finalized tag');
+      logger.info(`Chain doesnt support ${tag} tag`);
       return false;
     }
   }

@@ -120,6 +120,27 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
           });
           return;
         }
+
+        // BSC returns a 200 response with this when being rate limited, we need a special case for it
+        /*
+           [
+              {
+                jsonrpc: '2.0',
+                id: null,
+                error: {
+                  code: -32005,
+                  message: 'method eth_getLogs in batch triggered rate limit'
+                }
+              }
+            ]
+        */
+        if (result.length === 1 && result[0].id === null) {
+          batch.forEach((inflightRequest) => {
+            inflightRequest.reject(new Error(result[0].error?.message));
+          });
+          return;
+        }
+
         const resultMap = result.reduce((resultMap, payload) => {
           resultMap[payload.id] = payload;
           return resultMap;
@@ -129,7 +150,13 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
         // on whether it was a success or error
         batch.forEach((inflightRequest) => {
           const payload = resultMap[inflightRequest.request.id];
-          if (payload.error) {
+          if (!payload) {
+            inflightRequest.reject(
+              new Error(
+                `Missing payload in response for request ${inflightRequest.request.id}`,
+              ),
+            );
+          } else if (payload.error) {
             const error = new Error(payload.error.message);
             (<any>error).code = payload.error.code;
             (<any>error).data = payload.error.data;

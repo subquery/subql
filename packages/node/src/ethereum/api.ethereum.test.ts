@@ -38,7 +38,7 @@ describe('Api.ethereum', () => {
   let ethApi: EthereumApi;
   const eventEmitter = new EventEmitter2();
   let blockData: EthereumBlockWrapped;
-  beforeAll(async () => {
+  beforeEach(async () => {
     ethApi = new EthereumApi(HTTP_ENDPOINT, eventEmitter);
     await ethApi.init();
     blockData = await ethApi.fetchBlock(16258633, true);
@@ -165,5 +165,31 @@ describe('Api.ethereum', () => {
       }
     });
     expect(result.length).toBe(2);
+  });
+
+  it('Resolves the correct tags for finalization', async () => {
+    // Ethereum
+    expect((ethApi as any).supportsFinalization).toBeTruthy();
+
+    // Moonbeam
+    ethApi = new EthereumApi('https://rpc.api.moonbeam.network', eventEmitter);
+    await ethApi.init();
+
+    expect((ethApi as any).supportsFinalization).toBeTruthy();
+
+    // BSC
+    ethApi = new EthereumApi('https://bsc-dataseed.binance.org', eventEmitter);
+    await ethApi.init();
+
+    expect((ethApi as any).supportsFinalized).toBeFalsy();
+
+    // Polygon
+    ethApi = new EthereumApi(
+      'https://polygon.api.onfinality.io/public',
+      eventEmitter,
+    );
+    await ethApi.init();
+
+    expect((ethApi as any).supportsFinalized).toBeFalsy();
   });
 });
