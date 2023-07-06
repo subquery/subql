@@ -910,8 +910,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/v2.10.0...HEAD
-[2.10.0]: https://github.com/subquery/subql/compare/node/v2.9.0...node/v2.10.0
+[Unreleased]: https://github.com/subquery/subql/compare/node/2.10.0...HEAD
+[2.10.0]: https://github.com/subquery/subql/compare/node/2.9.0...node/v2.10.0
 [2.9.0]: https://github.com/subquery/subql/compare/node/2.8.0...node/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/node/2.7.0...node/2.8.0
 [2.7.0]: https://github.com/subquery/subql/compare/node/2.6.1...node/2.7.0
