@@ -1,7 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {u8aToBuffer} from '@subql/utils';
+import {DEFAULT_FETCH_RANGE} from '@subql/common';
+import {u8aToBuffer, u8aToHex} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
 import {Mutex} from 'async-mutex';
 import {getLogger} from '../../logger';
@@ -26,9 +27,9 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
       proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);
       proof.hash = u8aToBuffer(proof.hash);
       proof.parentHash = u8aToBuffer(proof.parentHash);
-
-      if (this.setCache[proof.id] === undefined) {
-        this.flushableRecordCounter += 1;
+      // guard to ensure poi creation will not replace updated mmr
+      if (this.setCache[proof.id] && this.setCache[proof.id].mmrRoot !== undefined) {
+        return;
       }
       this.setCache[proof.id] = proof;
     }
@@ -71,13 +72,14 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
     await this.mutex.waitForUnlock();
-    const resultData = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
-    const poiBlocks = this.mergeResultsWithCache(resultData).filter((poiBlock) => poiBlock.id >= startHeight);
-    if (poiBlocks.length !== 0) {
-      return poiBlocks.sort((v) => v.id);
-    } else {
-      return [];
+    let poiBlocks = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
+    if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
+      // means less than DEFAULT_FETCH_RANGE size blocks in database, it has reach the end of poi in db,
+      // we can safely merge with cached data.
+      poiBlocks = this.mergeResultsWithCache(poiBlocks).filter((poiBlock) => poiBlock.id >= startHeight);
+      poiBlocks.sort((v) => v.id);
     }
+    return poiBlocks.length !== 0 ? poiBlocks : [];
   }
 
   async getLatestPoi(): Promise<ProofOfIndex | null | undefined> {
