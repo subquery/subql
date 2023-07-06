@@ -4,12 +4,12 @@
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {PgBasedMMRDB} from '@subql/node-core/indexer';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db/db.module';
 import {profiler} from '../../profiler';
 import {getExistingProjectSchema} from '../../utils/project';
+import {PgBasedMMRDB} from '../entities/Mmr.entitiy';
 import {BaseCacheService} from './baseCache.service';
 import {CachePgMmrDb, PlainPgMmrDb} from './cacheMmr';
 

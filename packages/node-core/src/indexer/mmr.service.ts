@@ -354,15 +354,25 @@ export class MmrService implements OnApplicationShutdown {
     if (leafIndex < 0) {
       throw new Error(`Parameter blockHeight must greater equal to ${this.blockOffset + 1} `);
     }
-    const [mmrResponse, node] = await Promise.all([
+    const [mmrResponse, nodeResponse] = await Promise.allSettled([
       this.safeMmr(allowCache).getRoot(leafIndex),
       this.safeMmr(allowCache).get(leafIndex),
     ]);
+
+    const mmrRoot =
+      mmrResponse.status === 'fulfilled' ? u8aToHex(mmrResponse.value) : `mmrRoot error, ${mmrResponse.reason}`;
+    const hash =
+      nodeResponse.status === 'fulfilled'
+        ? u8aToHex(nodeResponse.value)
+        : nodeResponse.reason.message.match('Leaf not in tree')
+        ? `MMR is completing,please try again later`
+        : `Error: ${nodeResponse.reason.message}`;
+
     return {
       offset: this.blockOffset,
       height: blockHeight,
-      mmrRoot: u8aToHex(mmrResponse),
-      hash: u8aToHex(node),
+      mmrRoot,
+      hash,
     };
   }
 

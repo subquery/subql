@@ -58,14 +58,14 @@ export class MmrRegenerateService {
     await this.probeStatus();
   }
 
-  get metadataRepo() {
+  private get metadataRepo() {
     if (!this._metadataRepo) {
       throw new Error(`Mmr-regen service haven't init, could not find metadataRepo`);
     }
     return this._metadataRepo;
   }
 
-  get dbMmrLatestHeight(): number {
+  private get dbMmrLatestHeight(): number {
     if (this._dbMmrLatestHeight === undefined) {
       logger.warn(`Database latest MMR block height is not found, use default value ${this.blockOffset + 1}`);
       return this.blockOffset + 1;
