@@ -4,7 +4,8 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  BenchmarkService,
+  PoiBenchmarkService,
+  IndexingBenchmarkService,
   MmrService,
   StoreService,
   PoiService,
@@ -102,7 +103,17 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ],
     },
     FetchService,
-    BenchmarkService,
+    IndexingBenchmarkService,
+    {
+      provide: PoiBenchmarkService,
+      useFactory: (nodeConfig: NodeConfig) => {
+        if (nodeConfig.proofOfIndex) {
+          return new PoiBenchmarkService(nodeConfig);
+        }
+        return;
+      },
+      inject: [NodeConfig],
+    },
     DictionaryService,
     SandboxService,
     DsProcessorService,
