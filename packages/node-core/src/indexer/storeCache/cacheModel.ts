@@ -32,6 +32,7 @@ export class CachedModel<
   private removeCache: Record<string, RemoveValue> = {};
   private _getNextStoreOperationIndex?: () => number;
   readonly hasAssociations: boolean = false;
+  private transaction?: Transaction;
 
   flushableRecordCounter = 0;
 
@@ -82,6 +83,7 @@ export class CachedModel<
           await this.model.findOne({
             // https://github.com/sequelize/sequelize/issues/15179
             where: {id} as any,
+            transaction: this.transaction,
           })
         )?.toJSON();
         if (record) {
@@ -123,6 +125,7 @@ export class CachedModel<
       where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
       limit: options?.limit, //limit should pass from store
       offset: options?.offset,
+      transaction: this.transaction,
     });
 
     // Update getCache value here
@@ -145,6 +148,7 @@ export class CachedModel<
         const record = (
           await this.model.findOne({
             where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
+            transaction: this.transaction,
           })
         )?.toJSON<T>();
 
@@ -260,6 +264,9 @@ export class CachedModel<
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
+    this.transaction = tx;
+
+    tx.afterCommit(() => (this.transaction = undefined));
 
     // Don't await DB operations to complete before clearing.
     // This allows new data to be cached while flushing

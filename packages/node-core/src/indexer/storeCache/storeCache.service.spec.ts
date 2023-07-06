@@ -295,7 +295,7 @@ describe('Store Cache flush with non-historical', () => {
   let storeService: StoreCacheService;
 
   const sequilize = new Sequelize();
-  const nodeConfig: NodeConfig = {disableHistorical: false} as any;
+  const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
