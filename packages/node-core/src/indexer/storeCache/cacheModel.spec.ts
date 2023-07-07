@@ -10,6 +10,7 @@ jest.mock('@subql/x-sequelize', () => {
   let data: Record<string, any> = {};
 
   let pendingData: typeof data = {};
+  let afterCommitHooks: Array<() => void> = [];
 
   const mSequelize = {
     authenticate: jest.fn(),
@@ -47,9 +48,11 @@ jest.mock('@subql/x-sequelize', () => {
         await delay(1);
         data = {...data, ...pendingData};
         pendingData = {};
+        afterCommitHooks.map((fn) => fn());
+        afterCommitHooks = [];
       }), // Delay of 1s is used to test whether we wait for cache to flush
       rollback: jest.fn(),
-      afterCommit: jest.fn(),
+      afterCommit: jest.fn((fn) => afterCommitHooks.push(fn)),
     }),
     // createSchema: jest.fn(),
   };
@@ -124,7 +127,7 @@ describe('cacheModel', () => {
           id: 'entity1_id_0x01',
           field1: (entity2?.field1 ?? 0) + 1,
         },
-        1
+        3
       );
 
       await pendingFlush;

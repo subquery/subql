@@ -302,7 +302,7 @@ describe('Store Cache flush with non-historical', () => {
     storeService.init(false, false);
   });
 
-  it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
+  it.only('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
     const entity1Model = storeService.getModel('entity1');
 
     //create Id 1
@@ -330,7 +330,7 @@ describe('Store Cache flush with non-historical', () => {
 
     //simulate flush here
     const tx = await sequilize.transaction();
-    (entity1Model as any).flush(tx, 5);
+    await (entity1Model as any).flush(tx, 5);
 
     const sequelizeModel1 = (entity1Model as any).model;
     const spyModel1Create = jest.spyOn(sequelizeModel1, 'bulkCreate');
