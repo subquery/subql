@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {isMainThread} from 'node:worker_threads';
 import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
@@ -172,6 +173,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
   @Interval(LOG_INTERVAL_MS)
   async logEndpointStatus(): Promise<void> {
+    if (!isMainThread) {
+      return;
+    }
     const suspendedIndices = await this.poolStateManager.getSuspendedIndices();
 
     if (suspendedIndices.length === 0) {
