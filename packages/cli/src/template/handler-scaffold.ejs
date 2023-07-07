@@ -2,10 +2,11 @@
 
 // Auto-generated
 import { Approval, Transaction } from "../types";
+
 import {
 <% props.
 %>
-} from "../types/abi-interfaces/Erc20Abi";
+} from "../types/abi-interfaces/<% props.abiName%>";
 import assert from "assert";
 
 export async function handleLog(log: TransferLog): Promise<void> {
