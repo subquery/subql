@@ -123,6 +123,8 @@ export class ApiPromiseConnection
       formatted_error = ApiPromiseConnection.handleDisconnectionError(e);
     } else if (e.message.startsWith(`-32029: Too Many Requests`)) {
       formatted_error = ApiPromiseConnection.handleRateLimitError(e);
+    } else if (e.message.includes(`Exceeded max limit of`)) {
+      formatted_error = ApiPromiseConnection.handleLargeResponseError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,
@@ -158,5 +160,15 @@ export class ApiPromiseConnection
       ApiErrorType.Connection,
     );
     return formatted_error;
+  }
+
+  static handleLargeResponseError(e: Error): ApiConnectionError {
+    const newMessage = `Oversized RPC node response. This issue is related to the network's RPC nodes configuration, not your application. You may report it to the network's maintainers or try a different RPC node.\n\n${e.message}`;
+
+    return new ApiConnectionError(
+      'RpcInternalError',
+      newMessage,
+      ApiErrorType.Default,
+    );
   }
 }
