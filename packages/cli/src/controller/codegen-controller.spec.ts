@@ -52,19 +52,22 @@ describe('Codegen can generate schema (mocked)', () => {
     };
     const sortAssets_abis = new Map<string, string>();
     const sortAssets_artifact = new Map<string, string>();
+
     sortAssets_abis.set(abisAssetObj.key, abisAssetObj.value);
     sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
     const a = path.join(projectPath, './abis.json');
     const b = path.join(projectPath, './artifact.json');
-    const arrayAbi = require(a);
-    const objAbi = require(b);
+    // to mock the values for processAbi function
+
+    // mock loadFromJsonOrYaml, in Jest environment it would return undefined.
     const mockLoadFromJsonOrYaml: jest.Mock<abiInterface[] | {abi: abiInterface[]}> = jest.fn();
 
+    // Conditional for which json should be implemented depending on the given path
     mockLoadFromJsonOrYaml.mockImplementation((filePath: string) => {
       if (filePath === a) {
-        return arrayAbi;
+        return require(a);
       } else if (filePath === b) {
-        return objAbi;
+        return require(b);
       }
       return [];
     });
@@ -78,7 +81,7 @@ describe('Codegen can generate schema (mocked)', () => {
     });
     expect(abisRendered).toStrictEqual(expect.objectContaining(artifactRendered));
   });
-  it('json is object with abi field, should return empty', () => {
+  it('json is object without abi field, should throw', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest2');
     const artifactAssetObj = {
       key: 'artifact',
@@ -90,11 +93,13 @@ describe('Codegen can generate schema (mocked)', () => {
 
     const mockLoadFromJsonOrYaml: jest.Mock<abiInterface[] | {abi: abiInterface[]}> = jest.fn();
 
+    // mock loadFromJsonOrYaml, in Jest environment it would return undefined.
     mockLoadFromJsonOrYaml.mockImplementation((filePath: string) => {
       return require(path.join(projectPath, artifactAssetObj.value));
     });
 
-    const noAbiJsonRender = processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml);
-    expect(noAbiJsonRender).toStrictEqual([{name: 'artifact', events: [], functions: []}]);
+    expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
+      'Invalid abi is provided at asset: artifact'
+    );
   });
 });

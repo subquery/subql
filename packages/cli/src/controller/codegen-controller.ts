@@ -248,6 +248,10 @@ export function processAbis(
       abiArray = readAbi;
     }
 
+    if (!abiArray.length) {
+      throw new Error(`Invalid abi is provided at asset: ${key}`);
+    }
+
     const duplicateEventNames = abiArray
       .filter((abiObject) => abiObject.type === 'event')
       .map((obj) => obj.name)
