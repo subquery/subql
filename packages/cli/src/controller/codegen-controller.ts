@@ -241,9 +241,10 @@ export function processAbis(
     let abiArray: abiInterface[] = [];
 
     if (!Array.isArray(readAbi)) {
-      if (readAbi.abi) {
-        abiArray = readAbi.abi;
+      if (!readAbi.abi) {
+        throw new Error(`Missing abi key on provided JSON object at asset: ${key}`);
       }
+      abiArray = readAbi.abi;
     } else {
       abiArray = readAbi;
     }

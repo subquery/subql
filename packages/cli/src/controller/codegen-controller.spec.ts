@@ -81,6 +81,27 @@ describe('Codegen can generate schema (mocked)', () => {
     });
     expect(abisRendered).toStrictEqual(expect.objectContaining(artifactRendered));
   });
+  it('Empty abi json, should throw', () => {
+    const projectPath = path.join(__dirname, '../../test/abiTest2');
+    const artifactAssetObj = {
+      key: 'artifact',
+      value: './artifact.json',
+    };
+    const sortAssets_artifact = new Map<string, string>();
+
+    sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
+
+    const mockLoadFromJsonOrYaml: jest.Mock<abiInterface[] | {abi: abiInterface[]}> = jest.fn();
+
+    // mock loadFromJsonOrYaml, in Jest environment it would return undefined.
+    mockLoadFromJsonOrYaml.mockImplementation((filePath: string) => {
+      return [];
+    });
+
+    expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
+      'Invalid abi is provided at asset: artifact'
+    );
+  });
   it('json is object without abi field, should throw', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest2');
     const artifactAssetObj = {
@@ -99,7 +120,7 @@ describe('Codegen can generate schema (mocked)', () => {
     });
 
     expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
-      'Invalid abi is provided at asset: artifact'
+      'Missing abi key on provided JSON object at asset: artifact'
     );
   });
 });
