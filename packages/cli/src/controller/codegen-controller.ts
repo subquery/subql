@@ -157,7 +157,7 @@ interface abiRenderProps {
   events: string[];
   functions: {typeName: string; functionName: string}[];
 }
-interface abiInterface {
+export interface abiInterface {
   name: string;
   type: 'event' | 'function';
   inputs: {
@@ -202,7 +202,7 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
     });
     // Iterate here as we have to make sure type chain generated successful,
     // also avoid duplicate generate same abi interfaces
-    const renderAbiJobs = processAbis(sortedAssets, projectPath);
+    const renderAbiJobs = processAbis(sortedAssets, projectPath, loadFromJsonOrYamlWrapper);
     await Promise.all(
       renderAbiJobs.map((renderProps) => {
         console.log(`* Abi Interface ${renderProps.name} generated`);
@@ -221,16 +221,32 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
   }
 }
 
-export function processAbis(sortedAssets: Map<string, string>, projectPath: string): abiRenderProps[] {
+function loadFromJsonOrYamlWrapper(filePath: string): abiInterface[] | {abi: abiInterface[]} {
+  return loadFromJsonOrYaml(filePath) as abiInterface[] | {abi: abiInterface[]};
+}
+
+export function processAbis(
+  sortedAssets: Map<string, string>,
+  projectPath: string,
+  loadReadAbi: (filePath: string) => abiInterface[] | {abi: abiInterface[]}
+): abiRenderProps[] {
   const renderInterfaceJobs: abiRenderProps[] = [];
   sortedAssets.forEach((value, key) => {
     const renderProps: abiRenderProps = {name: key, events: [], functions: []};
-    const readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[] | {abi: abiInterface[]};
+    const readAbi = loadReadAbi(path.join(projectPath, value));
     // We need to use for loop instead of map, due to events/function name could be duplicate,
     // because they have different input, and following ether typegen rules, name also changed
     // we need to find duplicates, and update its name rather than just unify them.
 
-    const abiArray = !Array.isArray(readAbi) && readAbi.abi ? readAbi.abi : (readAbi as unknown as abiInterface[]);
+    let abiArray: abiInterface[] = [];
+
+    if (!Array.isArray(readAbi)) {
+      if (readAbi.abi) {
+        abiArray = readAbi.abi;
+      }
+    } else {
+      abiArray = readAbi;
+    }
 
     const duplicateEventNames = abiArray
       .filter((abiObject) => abiObject.type === 'event')
