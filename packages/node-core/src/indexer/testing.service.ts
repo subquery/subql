@@ -5,15 +5,16 @@ import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Inject, Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing/interfaces';
-import {DynamicDatasourceCreator, Store} from '@subql/types';
-import {Sequelize} from '@subql/x-sequelize';
+import {DynamicDatasourceCreator, Entity, Store} from '@subql/types';
+import {getAllEntitiesRelations} from '@subql/utils';
+import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
-import {initDbSchema} from '../utils';
+import {enumNameToHash, getEnumDeprecated, initDbSchema} from '../utils';
 import {SandboxOption, TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
 import {IIndexerManager, ISubqueryProject} from './types';
@@ -166,6 +167,7 @@ export abstract class TestingService<A, SA, B, DS> {
       logger.debug('Checking expected entities');
       let passedTests = 0;
       let failedTests = 0;
+      const entitiesCreated: Entity[] = [];
       for (let i = 0; i < test.expectedEntities.length; i++) {
         const expectedEntity = test.expectedEntities[i];
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -186,6 +188,8 @@ export abstract class TestingService<A, SA, B, DS> {
               );
             }
           });
+
+          entitiesCreated.push(actualEntity);
         }
 
         if (!failedAttributes.length) {
@@ -204,6 +208,17 @@ export abstract class TestingService<A, SA, B, DS> {
         }
       }
 
+      //remove tested entities from DB
+
+      await Promise.all(
+        entitiesCreated.map(async (entity) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          await store.remove(entity._name!, entity.id);
+        })
+      );
+
+      await this.storeService.storeCache.flushCache(true, true);
+
       this.totalPassedTests += passedTests;
       this.totalFailedTests += failedTests;
 
@@ -216,10 +231,54 @@ export abstract class TestingService<A, SA, B, DS> {
       this.totalFailedTests += test.expectedEntities.length;
       logger.warn(e, `Test ${test.name} failed to run`);
     } finally {
+      await this.dropSchema(schema);
+    }
+  }
+
+  private async dropSchema(schema: string) {
+    const modelsRelation = getAllEntitiesRelations(this.project.schema);
+
+    try {
+      // drop existing project schema and metadata table
       await this.sequelize.dropSchema(`"${schema}"`, {
         logging: false,
         benchmark: false,
       });
+
+      // TODO, remove this soon, once original enum are cleaned
+      // Deprecate, now enums are moved under schema, drop schema will remove project enums
+      await Promise.all(
+        modelsRelation.enums.map(async (e) => {
+          const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
+          const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
+          if (resultsDeprecated.length !== 0) {
+            await this.sequelize.query(`
+            DROP TYPE "${enumTypeNameDeprecated}";
+          `);
+          }
+        })
+      );
+
+      // remove schema from subquery table (might not exist)
+      const checker = await this.sequelize.query(
+        `
+              SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'public' AND  TABLE_NAME = 'subqueries'`
+      );
+
+      if ((checker[1] as any).rowCount > 0) {
+        await this.sequelize.query(
+          ` DELETE
+                  FROM public.subqueries
+                  WHERE name = :name`,
+          {
+            replacements: {name: this.nodeConfig.subqueryName},
+            type: QueryTypes.DELETE,
+          }
+        );
+      }
+    } catch (err: any) {
+      logger.error(err, 'failed to delete schema and tables');
+      throw err;
     }
   }
 
