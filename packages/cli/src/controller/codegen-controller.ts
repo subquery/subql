@@ -242,7 +242,7 @@ export function processAbis(
 
     if (!Array.isArray(readAbi)) {
       if (!readAbi.abi) {
-        throw new Error(`Missing abi key on provided JSON object at asset: ${key}`);
+        throw new Error(`Provided ABI is not a valid ABI or Artifact`);
       }
       abiArray = readAbi.abi;
     } else {

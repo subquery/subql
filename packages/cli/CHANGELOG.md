@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- `codegen` supports artifact json 
+- `codegen` not working with artifact format files (#1867)
 
 ## [3.3.0] - 2023-06-26
 ### Removed
