@@ -27,7 +27,9 @@ export class SetValueModel<T> {
       if (this.historicalValues[latestIndex].startHeight === blockHeight) {
         this.historicalValues[latestIndex].data = data;
       } else if (this.historicalValues[latestIndex].startHeight > blockHeight) {
-        throw new Error(`Can not set record with block height ${blockHeight}`);
+        throw new Error(
+          `Can not set record with block height ${blockHeight} as data for future block heights has been set`
+        );
       } else {
         this.historicalValues[latestIndex].endHeight = blockHeight;
         this.create(data, blockHeight, operationIndex);
