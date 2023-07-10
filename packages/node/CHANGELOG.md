@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Sync with @node/core, various improvements for POI feature (#1869)
+
 ## [2.8.0] - 2023-06-26
 ### Added
 - import `PgMmrCacheService` into indexer module (#1828)

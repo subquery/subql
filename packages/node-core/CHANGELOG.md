@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Various improvements for POI feature: (#1869)
+  - Benchmarking mmr processing
+  - Improve performance when initialize mmr service, find the latest mmr height in Poi table by record it in `_metadata` table
+  - Correct mmr query directly from Db rather than cache 
+
 ## [3.0.0] - 2023-06-26
 ### Changed
 - Added `pgMmrCacheService` to use independent Db connection, now mmr cache flush by itself. (#1828)
