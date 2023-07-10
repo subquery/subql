@@ -3,6 +3,7 @@
 
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
+import {Mutex} from 'async-mutex';
 import {flatten, includes, isEqual, uniq} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {SetValueModel} from './setValueModel';
@@ -32,6 +33,7 @@ export class CachedModel<
   private removeCache: Record<string, RemoveValue> = {};
   private _getNextStoreOperationIndex?: () => number;
   readonly hasAssociations: boolean = false;
+  private mutex = new Mutex();
 
   flushableRecordCounter = 0;
 
@@ -78,6 +80,7 @@ export class CachedModel<
       // Then we try look from setCache
       let record = this.setCache[id]?.getLatest()?.data;
       if (!record) {
+        await this.mutex.waitForUnlock();
         record = (
           await this.model.findOne({
             // https://github.com/sequelize/sequelize/issues/15179
@@ -119,6 +122,7 @@ export class CachedModel<
       options.limit = options.limit - (cachedData.length - options.offset);
     }
 
+    await this.mutex.waitForUnlock();
     const records = await this.model.findAll({
       where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
       limit: options?.limit, //limit should pass from store
@@ -142,6 +146,7 @@ export class CachedModel<
       if (oneFromCached) {
         return oneFromCached;
       } else {
+        await this.mutex.waitForUnlock();
         const record = (
           await this.model.findOne({
             where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
@@ -211,61 +216,69 @@ export class CachedModel<
   }
 
   async flush(tx: Transaction, blockHeight?: number): Promise<void> {
-    // Get records relevant to the block height
-    const {removeRecords, setRecords} = blockHeight
-      ? this.filterRecordsWithHeight(blockHeight)
-      : {removeRecords: this.removeCache, setRecords: this.setCache};
-    // Filter non-historical could return undefined due to it been removed
-    let records = this.applyBlockRange(setRecords).filter((r) => !!r);
-    let dbOperation: Promise<unknown>;
-    if (this.historical) {
-      dbOperation = Promise.all([
-        // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx, setRecords, removeRecords),
-        // bulkCreate all new records for this entity,
-        // include(set, bulkCreate, bulkUpdate)
-        this.model.bulkCreate(records, {
-          transaction: tx,
-        }),
-      ]);
-    } else {
-      // We need to check within the same model if there is multiple operations (set/remove) to the same id
-      // we don't have to consider the order in setCache, as we are using getLatest()?.data;
-      // also in removeCache only store last remove operation too.
+    const release = await this.mutex.acquire();
 
-      // If same Id exist in both set and remove records, we only need to pick the last operation for this ID,
-      // As both cache in final status, so we can compare their operation index
-      for (const v of Object.values(setRecords)) {
-        const latestSet = v.getLatest();
-        if (latestSet !== undefined && removeRecords[latestSet.data.id]) {
-          if (removeRecords[latestSet.data.id].operationIndex > latestSet.operationIndex) {
-            records = records.filter((r) => r.id !== latestSet.data.id);
-          } else if (removeRecords[latestSet.data.id].operationIndex < latestSet.operationIndex) {
-            delete removeRecords[latestSet.data.id];
-          } else {
-            throw new Error(
-              `Cache entity ${this.model.name} Id ${latestSet.data.id} has same Operation Indexes in remove and set cache `
-            );
-          }
-        }
-      }
-
-      dbOperation = Promise.all([
-        records.length &&
+    try {
+      tx.afterCommit(() => release());
+      // Get records relevant to the block height
+      const {removeRecords, setRecords} = blockHeight
+        ? this.filterRecordsWithHeight(blockHeight)
+        : {removeRecords: this.removeCache, setRecords: this.setCache};
+      // Filter non-historical could return undefined due to it been removed
+      let records = this.applyBlockRange(setRecords).filter((r) => !!r);
+      let dbOperation: Promise<unknown>;
+      if (this.historical) {
+        dbOperation = Promise.all([
+          // set, bulkCreate, bulkUpdate & remove close previous records
+          this.historicalMarkPreviousHeightRecordsBatch(tx, setRecords, removeRecords),
+          // bulkCreate all new records for this entity,
+          // include(set, bulkCreate, bulkUpdate)
           this.model.bulkCreate(records, {
             transaction: tx,
-            updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
           }),
-        Object.keys(removeRecords).length &&
-          this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
-      ]);
+        ]);
+      } else {
+        // We need to check within the same model if there is multiple operations (set/remove) to the same id
+        // we don't have to consider the order in setCache, as we are using getLatest()?.data;
+        // also in removeCache only store last remove operation too.
+
+        // If same Id exist in both set and remove records, we only need to pick the last operation for this ID,
+        // As both cache in final status, so we can compare their operation index
+        for (const v of Object.values(setRecords)) {
+          const latestSet = v.getLatest();
+          if (latestSet !== undefined && removeRecords[latestSet.data.id]) {
+            if (removeRecords[latestSet.data.id].operationIndex > latestSet.operationIndex) {
+              records = records.filter((r) => r.id !== latestSet.data.id);
+            } else if (removeRecords[latestSet.data.id].operationIndex < latestSet.operationIndex) {
+              delete removeRecords[latestSet.data.id];
+            } else {
+              throw new Error(
+                `Cache entity ${this.model.name} Id ${latestSet.data.id} has same Operation Indexes in remove and set cache `
+              );
+            }
+          }
+        }
+
+        dbOperation = Promise.all([
+          records.length &&
+            this.model.bulkCreate(records, {
+              transaction: tx,
+              updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+            }),
+          Object.keys(removeRecords).length &&
+            this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
+        ]);
+      }
+
+      // Don't await DB operations to complete before clearing.
+      // This allows new data to be cached while flushing
+      this.clear(blockHeight);
+
+      await dbOperation;
+    } catch (e) {
+      release();
+      throw e;
     }
-
-    // Don't await DB operations to complete before clearing.
-    // This allows new data to be cached while flushing
-    this.clear(blockHeight);
-
-    await dbOperation;
   }
 
   // Flush relation model in operationIndex order with non-historical db

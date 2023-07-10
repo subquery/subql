@@ -8,7 +8,7 @@ import {Interval, SchedulerRegistry} from '@nestjs/schedule';
 import {DictionaryQueryEntry} from '@subql/types';
 import {MetaData} from '@subql/utils';
 import {range, without} from 'lodash';
-import {ApiService, IApi} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
@@ -137,8 +137,6 @@ export abstract class BaseFetchService<
       const metadata = await this.dictionaryService.getMetadata();
       dictionaryValid = await this.dictionaryValidation(metadata);
     }
-
-    await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
     await this.preLoopHook({valid: dictionaryValid, startHeight});
     await this.initBlockDispatcher();

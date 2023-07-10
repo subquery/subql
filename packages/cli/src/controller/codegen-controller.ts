@@ -157,7 +157,7 @@ interface abiRenderProps {
   events: string[];
   functions: {typeName: string; functionName: string}[];
 }
-interface abiInterface {
+export interface abiInterface {
   name: string;
   type: 'event' | 'function';
   inputs: {
@@ -202,7 +202,7 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
     });
     // Iterate here as we have to make sure type chain generated successful,
     // also avoid duplicate generate same abi interfaces
-    const renderAbiJobs = processAbis(sortedAssets, projectPath);
+    const renderAbiJobs = processAbis(sortedAssets, projectPath, loadFromJsonOrYamlWrapper);
     await Promise.all(
       renderAbiJobs.map((renderProps) => {
         console.log(`* Abi Interface ${renderProps.name} generated`);
@@ -221,27 +221,47 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
   }
 }
 
-function processAbis(sortedAssets: Map<string, string>, projectPath: string): abiRenderProps[] {
+function loadFromJsonOrYamlWrapper(filePath: string): abiInterface[] | {abi: abiInterface[]} {
+  return loadFromJsonOrYaml(filePath) as abiInterface[] | {abi: abiInterface[]};
+}
+
+export function processAbis(
+  sortedAssets: Map<string, string>,
+  projectPath: string,
+  loadReadAbi: (filePath: string) => abiInterface[] | {abi: abiInterface[]}
+): abiRenderProps[] {
   const renderInterfaceJobs: abiRenderProps[] = [];
   sortedAssets.forEach((value, key) => {
     const renderProps: abiRenderProps = {name: key, events: [], functions: []};
-    let readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
+    const readAbi = loadReadAbi(path.join(projectPath, value));
     // We need to use for loop instead of map, due to events/function name could be duplicate,
     // because they have different input, and following ether typegen rules, name also changed
     // we need to find duplicates, and update its name rather than just unify them.
 
+    let abiArray: abiInterface[] = [];
+
     if (!Array.isArray(readAbi)) {
-      readAbi = [readAbi];
+      if (!readAbi.abi) {
+        throw new Error(`Provided ABI is not a valid ABI or Artifact`);
+      }
+      abiArray = readAbi.abi;
+    } else {
+      abiArray = readAbi;
     }
-    const duplicateEventNames = readAbi
+
+    if (!abiArray.length) {
+      throw new Error(`Invalid abi is provided at asset: ${key}`);
+    }
+
+    const duplicateEventNames = abiArray
       .filter((abiObject) => abiObject.type === 'event')
       .map((obj) => obj.name)
       .filter((name, index, arr) => arr.indexOf(name) !== index);
-    const duplicateFunctionNames = readAbi
+    const duplicateFunctionNames = abiArray
       .filter((abiObject) => abiObject.type === 'function')
       .map((obj) => obj.name)
       .filter((name, index, arr) => arr.indexOf(name) !== index);
-    readAbi.map((abiObject) => {
+    abiArray.map((abiObject) => {
       if (abiObject.type === 'function') {
         let typeName = abiObject.name;
         let functionName = abiObject.name;
