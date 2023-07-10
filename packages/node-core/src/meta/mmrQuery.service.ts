@@ -42,7 +42,7 @@ export class MmrQueryService extends baseMmrService {
 
   private async ensurePostgresQueryMmr(): Promise<MMR<PgMmrQueryDb>> {
     const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
-    assert(schema, 'Unable to check for MMR table, schema is undefined');
+    assert(schema, 'Unable to find postges based MMR table. Do you need to migrate from file based MMR?');
     const db = await PgMmrQueryDb.create(this.sequelize, schema);
     return new MMR(keccak256Hash, db);
   }
