@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2023-07-04
 ### Changed
 - Update x-graphile-build-pg to improve query service init speed (#1855)
 
@@ -249,36 +250,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.3.0...HEAD
+[2.3.0]: https://github.com/subquery/subql/compare/query/2.2.0...query/2.3.0
 [2.2.0]: https://github.com/subquery/subql/compare/query/2.1.0...query/2.2.0
-[2.1.0]: https://github.com/subquery/subql/compare/query/v2.0.1..query/.v2.1.0
-[2.0.1]: https://github.com/subquery/subql/compare/query/v2.0.0...query/v2.0.1
-[2.0.0]: https://github.com/subquery/subql/compare/query/v.1.11.2..query/v2.0.0
-[1.11.2]: https://github.com/subquery/subql/compare/query/v1.11.1...query/v1.11.2
-[1.11.1]: https://github.com/subquery/subql/compare/query/v1.11.0...query/v1.11.1
-[1.11.0]: https://github.com/subquery/subql/compare/query/v1.10.2...query/v1.11.0
-[1.10.2]: https://github.com/subquery/subql/compare/query/v1.10.1...query/v1.10.2
-[1.10.1]: https://github.com/subquery/subql/compare/query/v1.10.0...query/v1.10.1
-[1.10.0]: https://github.com/subquery/subql/compare/query/v1.9.0...query/v1.10.0
-[1.9.0]: https://github.com/subquery/subql/compare/query/v1.8.0...query/v1.9.0
-[1.8.0]: https://github.com/subquery/subql/compare/query/v1.7.0...query/v1.8.0
-[1.7.0]: https://github.com/subquery/subql/compare/query/v1.6.1...query/v1.7.0
-[1.6.1]: https://github.com/subquery/subql/compare/query/v1.6.0...query/v1.6.1
-[1.6.0]: https://github.com/subquery/subql/compare/query/v1.5.0...query/v1.6.0
-[1.5.0]: https://github.com/subquery/subql/compare/query/v1.4.0...query/v1.5.0
-[1.4.0]: https://github.com/subquery/subql/compare/query/v1.3.0...query/v1.4.0
-[1.3.0]: https://github.com/subquery/subql/compare/query/v1.2.1...query/v1.3.0
-[1.2.1]: https://github.com/subquery/subql/compare/query/v1.2.0...query/v1.2.1
-[1.2.0]: https://github.com/subquery/subql/compare/query/v1.1.1...query/v1.2.0
-[1.1.1]: https://github.com/subquery/subql/compare/query/v1.1.0...query/v1.1.1
-[1.1.0]: https://github.com/subquery/subql/compare/query/v1.0.0...query/v1.1.0
-[1.0.0]: https://github.com/subquery/subql/compare/query/v0.16.1...query/v1.0.0
-[0.16.1]: https://github.com/subquery/subql/compare/query/v0.16.0...query/v0.16.1
-[0.16.0]: https://github.com/subquery/subql/compare/query/v0.15.0...query/v0.16.0
-[0.15.0]: https://github.com/subquery/subql/compare/query/v0.14.1...query/v0.15.0
-[0.14.1]: https://github.com/subquery/subql/compare/query/v0.14.0...query/v0.14.1
-[0.14.0]: https://github.com/subquery/subql/compare/query/v0.13.0...query/v0.14.0
-[0.13.0]: https://github.com/subquery/subql/compare/query/v0.12.0...query/v0.13.0
+[2.1.0]: https://github.com/subquery/subql/compare/query/2.0.1..query/2.1.0
+[2.0.1]: https://github.com/subquery/subql/compare/query/2.0.0...query/2.0.1
+[2.0.0]: https://github.com/subquery/subql/compare/query/.1.11.2..query/2.0.0
+[1.11.2]: https://github.com/subquery/subql/compare/query/1.11.1...query/1.11.2
+[1.11.1]: https://github.com/subquery/subql/compare/query/1.11.0...query/1.11.1
+[1.11.0]: https://github.com/subquery/subql/compare/query/1.10.2...query/1.11.0
+[1.10.2]: https://github.com/subquery/subql/compare/query/1.10.1...query/1.10.2
+[1.10.1]: https://github.com/subquery/subql/compare/query/1.10.0...query/1.10.1
+[1.10.0]: https://github.com/subquery/subql/compare/query/1.9.0...query/1.10.0
+[1.9.0]: https://github.com/subquery/subql/compare/query/1.8.0...query/1.9.0
+[1.8.0]: https://github.com/subquery/subql/compare/query/1.7.0...query/1.8.0
+[1.7.0]: https://github.com/subquery/subql/compare/query/1.6.1...query/1.7.0
+[1.6.1]: https://github.com/subquery/subql/compare/query/1.6.0...query/1.6.1
+[1.6.0]: https://github.com/subquery/subql/compare/query/1.5.0...query/1.6.0
+[1.5.0]: https://github.com/subquery/subql/compare/query/1.4.0...query/1.5.0
+[1.4.0]: https://github.com/subquery/subql/compare/query/1.3.0...query/1.4.0
+[1.3.0]: https://github.com/subquery/subql/compare/query/1.2.1...query/1.3.0
+[1.2.1]: https://github.com/subquery/subql/compare/query/1.2.0...query/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/query/1.1.1...query/1.2.0
+[1.1.1]: https://github.com/subquery/subql/compare/query/1.1.0...query/1.1.1
+[1.1.0]: https://github.com/subquery/subql/compare/query/1.0.0...query/1.1.0
+[1.0.0]: https://github.com/subquery/subql/compare/query/0.16.1...query/1.0.0
+[0.16.1]: https://github.com/subquery/subql/compare/query/0.16.0...query/0.16.1
+[0.16.0]: https://github.com/subquery/subql/compare/query/0.15.0...query/0.16.0
+[0.15.0]: https://github.com/subquery/subql/compare/query/0.14.1...query/0.15.0
+[0.14.1]: https://github.com/subquery/subql/compare/query/0.14.0...query/0.14.1
+[0.14.0]: https://github.com/subquery/subql/compare/query/0.13.0...query/0.14.0
+[0.13.0]: https://github.com/subquery/subql/compare/query/0.12.0...query/0.13.0
 [0.12.0]: https://github.com/subquery/subql/compare/query/0.11.0...query/0.12.0
 [0.11.0]: https://github.com/subquery/subql/compare/query/0.10.0...query/0.11.0
 [0.10.0]: https://github.com/subquery/subql/compare/query/0.9.0...query/0.10.0
