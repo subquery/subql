@@ -74,7 +74,7 @@ export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   receipt: () => Promise<EthereumReceipt>;
   logs?: EthereumLog[];
   accessList?: string[];
-  chainId?: string;
+  chainId?: string; // Hex string , example: "0x1"
   maxFeePerGas?: bigint;
   maxPriorityFeePerGas?: bigint;
   args?: T;

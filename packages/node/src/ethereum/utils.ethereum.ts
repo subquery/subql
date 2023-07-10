@@ -70,9 +70,13 @@ export function formatLog(
     logIndex: handleNumber(log.logIndex).toNumber(),
     block,
     get transaction() {
-      return block.transactions?.find((tx) => tx.hash === log.transactionHash);
+      const rawTransaction = block.transactions?.find(
+        (tx) => tx.hash === log.transactionHash,
+      );
+      return rawTransaction
+        ? formatTransaction(rawTransaction, block)
+        : undefined;
     },
-
     toJSON(): string {
       return JSON.stringify(omit(this, ['transaction', 'block', 'toJSON']));
     },
