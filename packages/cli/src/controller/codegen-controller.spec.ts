@@ -120,7 +120,7 @@ describe('Codegen can generate schema (mocked)', () => {
     });
 
     expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
-      'Missing abi key on provided JSON object at asset: artifact'
+      'Provided ABI is not a valid ABI or Artifact'
     );
   });
 });
