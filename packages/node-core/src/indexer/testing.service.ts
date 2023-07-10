@@ -3,18 +3,17 @@
 
 import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
-import {Inject, Injectable} from '@nestjs/common';
+import {INestApplication, Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing/interfaces';
-import {DynamicDatasourceCreator, Entity, Store} from '@subql/types';
-import {getAllEntitiesRelations} from '@subql/utils';
-import {QueryTypes, Sequelize} from '@subql/x-sequelize';
+import {DynamicDatasourceCreator, Store} from '@subql/types';
+import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
-import {IApi} from '../api.service';
+import {ApiService, IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
-import {enumNameToHash, getEnumDeprecated, initDbSchema} from '../utils';
+import {initDbSchema} from '../utils';
 import {SandboxOption, TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
 import {IIndexerManager, ISubqueryProject} from './types';
@@ -46,14 +45,13 @@ export abstract class TestingService<A, SA, B, DS> {
   private totalPassedTests = 0;
   private totalFailedTests = 0;
 
-  constructor(
-    protected readonly sequelize: Sequelize,
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly storeService: StoreService,
-    @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
-    protected readonly apiService: IApi<A, SA, B>,
-    protected readonly indexerManager: IIndexerManager<B, DS>
-  ) {
+  protected apiService: IApi<A, SA, B> | undefined;
+  protected sequelize: Sequelize | undefined;
+  protected storeService: StoreService | undefined;
+  protected indexerManager: IIndexerManager<B, DS> | undefined;
+  protected app: INestApplication | undefined;
+
+  constructor(protected nodeConfig: NodeConfig, protected project: ISubqueryProject) {
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist'));
@@ -68,8 +66,11 @@ export abstract class TestingService<A, SA, B, DS> {
 
       return new TestSandbox(option, this.nodeConfig);
     });
+
+    this.apiService;
   }
 
+  abstract createApp(): Promise<void>; // function to create new instance of app service on each test run
   abstract indexBlock(block: B, handler: string): Promise<void>;
 
   async init() {
@@ -121,25 +122,28 @@ export abstract class TestingService<A, SA, B, DS> {
     return files;
   }
 
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
+
+    await this.createApp();
     const schema = this.nodeConfig.dbSchema;
 
     try {
       // Fetch block
       logger.debug('Fetching block');
-      const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
+      const [block] = await this.apiService!.fetchBlocks([test.blockHeight]);
 
       // Init db
-      const schemas = await this.sequelize.showAllSchemas({});
+      const schemas = await this.sequelize!.showAllSchemas({});
       if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, {});
+        await this.sequelize!.createSchema(`"${schema}"`, {});
       }
 
-      await initDbSchema(this.project, schema, this.storeService);
+      await initDbSchema(this.project, schema, this.storeService!);
 
-      this.storeService.setBlockHeight(test.blockHeight);
-      const store = this.storeService.getStore();
+      this.storeService!.setBlockHeight(test.blockHeight);
+      const store = this.storeService!.getStore();
       sandbox.freeze(store, 'store');
 
       // Init entities
@@ -150,7 +154,7 @@ export abstract class TestingService<A, SA, B, DS> {
 
       try {
         await this.indexBlock(block, test.handler);
-        await this.storeService.storeCache.flushCache(true, true);
+        await this.storeService!.storeCache.flushCache(true, true);
       } catch (e: any) {
         this.totalFailedTests += test.expectedEntities.length;
         logger.warn(`Test: ${test.name} field due to runtime error`, e);
@@ -167,10 +171,8 @@ export abstract class TestingService<A, SA, B, DS> {
       logger.debug('Checking expected entities');
       let passedTests = 0;
       let failedTests = 0;
-      const entitiesCreated: Entity[] = [];
       for (let i = 0; i < test.expectedEntities.length; i++) {
         const expectedEntity = test.expectedEntities[i];
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const actualEntity = await store.get(expectedEntity._name!, expectedEntity.id);
 
         const failedAttributes: string[] = [];
@@ -188,8 +190,6 @@ export abstract class TestingService<A, SA, B, DS> {
               );
             }
           });
-
-          entitiesCreated.push(actualEntity);
         }
 
         if (!failedAttributes.length) {
@@ -208,16 +208,7 @@ export abstract class TestingService<A, SA, B, DS> {
         }
       }
 
-      //remove tested entities from DB
-
-      await Promise.all(
-        entitiesCreated.map(async (entity) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          await store.remove(entity._name!, entity.id);
-        })
-      );
-
-      await this.storeService.storeCache.flushCache(true, true);
+      await this.storeService!.storeCache.flushCache(true, true);
 
       this.totalPassedTests += passedTests;
       this.totalFailedTests += failedTests;
@@ -231,12 +222,17 @@ export abstract class TestingService<A, SA, B, DS> {
       this.totalFailedTests += test.expectedEntities.length;
       logger.warn(e, `Test ${test.name} failed to run`);
     } finally {
+      /*
       await this.sequelize.dropSchema(`"${schema}"`, {
         logging: false,
         benchmark: false,
       });
+      */
+      await this.sequelize!.drop();
+      await this.app?.close();
     }
   }
+  /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
   protected getDsWithHandler(handler: string): DS[] {
     for (const ds of this.project.dataSources) {

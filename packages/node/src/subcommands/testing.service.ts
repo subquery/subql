@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { TestingModule } from '@nestjs/testing';
 import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
@@ -12,6 +14,7 @@ import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
+import { ProjectService } from '../indexer/project.service';
 import { ApiAt, BlockContent } from '../indexer/types';
 
 @Injectable()
@@ -22,21 +25,30 @@ export class TestingService extends BaseTestingService<
   SubqlProjectDs
 > {
   constructor(
-    sequelize: Sequelize,
     nodeConfig: NodeConfig,
-    storeService: StoreService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    apiService: ApiService,
-    indexerManager: IndexerManager,
   ) {
-    super(
-      sequelize,
-      nodeConfig,
-      storeService,
-      project,
-      apiService,
-      indexerManager,
-    );
+    super(nodeConfig, project);
+  }
+
+  async createApp(): Promise<void> {
+    this.app = await NestFactory.create(TestingModule, {
+      //logger: new NestLogger(),
+    });
+
+    await this.app.init();
+
+    const projectService: ProjectService = this.app.get('IProjectService');
+    this.apiService = this.app.get(ApiService);
+
+    await (this.apiService as ApiService).init();
+    await projectService.init();
+
+    this.storeService = this.app.get(StoreService);
+    this.sequelize = this.app.get(Sequelize);
+    this.indexerManager = this.app.get(IndexerManager);
+    this.nodeConfig = this.app.get(NodeConfig);
+    this.project = this.app.get('ISubqueryProject');
   }
 
   async indexBlock(block: BlockContent, handler: string): Promise<void> {

@@ -35,7 +35,6 @@ import { TestingService } from './testing.service';
     DsProcessorService,
     DynamicDsService,
     UnfinalizedBlocksService,
-    ProjectService,
     ConnectionPoolService,
     {
       provide: 'IProjectService',
