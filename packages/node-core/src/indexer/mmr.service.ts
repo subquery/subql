@@ -198,8 +198,8 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     let result: ProofOfIndex | null;
     const latestPoiWithMmr = await this.storeCacheService.metadata.find('latestPoiWithMmr');
     if (latestPoiWithMmr !== undefined && latestPoiWithMmr !== null && latestPoiWithMmr !== LATEST_POI_MMR_NULL_VALUE) {
-      const data = JSON.parse(latestPoiWithMmr);
       try {
+        const data = JSON.parse(latestPoiWithMmr);
         // verify this in poi table, should not be too much cost
         // if cost increased, we can use data directly from metadata, but downside is we unable to verify its accuracy
         const poiData = await this.poi.model.findOne({where: {id: data.id} as any});

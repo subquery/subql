@@ -105,16 +105,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     },
     FetchService,
     IndexingBenchmarkService,
-    {
-      provide: PoiBenchmarkService,
-      useFactory: (nodeConfig: NodeConfig) => {
-        if (nodeConfig.proofOfIndex) {
-          return new PoiBenchmarkService(nodeConfig);
-        }
-        return;
-      },
-      inject: [NodeConfig],
-    },
+    PoiBenchmarkService,
     DictionaryService,
     SandboxService,
     DsProcessorService,

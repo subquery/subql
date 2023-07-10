@@ -3,7 +3,7 @@
 
 import {Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
-import {Interval} from '@nestjs/schedule';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import {NodeConfig} from '../configure';
@@ -26,7 +26,26 @@ abstract class BaseBenchmarkService {
   private blockPerSecond?: number;
   private lastProcessedBlockAmount?: number;
 
-  constructor(private nodeConfig: NodeConfig, private eventName: string, private unitName: string) {}
+  protected constructor(
+    private nodeConfig: NodeConfig,
+    readonly schedulerRegistry: SchedulerRegistry,
+    private eventName: string,
+    private unitName: string
+  ) {}
+
+  setupInterval(intervalName: string) {
+    if (this.schedulerRegistry.doesExist('interval', intervalName)) {
+      return;
+    }
+    this.schedulerRegistry.addInterval(
+      intervalName,
+      setInterval(
+        () => void this.benchMarking(),
+        SAMPLING_TIME_VARIANCE * 1000 // Convert to miliseconds
+      )
+    );
+  }
+
   private async benchMarking(): Promise<void> {
     if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
       await delay(10);
@@ -74,21 +93,15 @@ abstract class BaseBenchmarkService {
       this.lastProcessedBlockAmount = this.currentProcessedBlockAmount;
     }
   }
-
-  @Interval(SAMPLING_TIME_VARIANCE * 1000)
-  async benchmark(): Promise<void> {
-    try {
-      await this.benchMarking();
-    } catch (e: any) {
-      logger.warn(e, 'Failed to measure benchmark');
-    }
-  }
 }
 
 @Injectable()
 export class PoiBenchmarkService extends BaseBenchmarkService {
-  constructor(nodeConfig: NodeConfig) {
-    super(nodeConfig, 'POI', 'poi blocks');
+  constructor(nodeConfig: NodeConfig, schedulerRegistry: SchedulerRegistry) {
+    super(nodeConfig, schedulerRegistry, 'POI', 'poi blocks');
+    if (nodeConfig.proofOfIndex) {
+      this.setupInterval('poiBenchmarking');
+    }
   }
 
   @OnEvent(PoiEvent.LastPoiWithMmr)
@@ -106,8 +119,9 @@ export class PoiBenchmarkService extends BaseBenchmarkService {
 
 @Injectable()
 export class IndexingBenchmarkService extends BaseBenchmarkService {
-  constructor(nodeConfig: NodeConfig) {
-    super(nodeConfig, 'INDEXING', 'blocks');
+  constructor(nodeConfig: NodeConfig, schedulerRegistry: SchedulerRegistry) {
+    super(nodeConfig, schedulerRegistry, 'INDEXING', 'blocks');
+    this.setupInterval('indexBenchmarking');
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
