@@ -101,7 +101,7 @@ export class MmrRegenerateService {
   }
 
   private async probeStatus(): Promise<void> {
-    this._dbMmrLatestHeight = await this.mmrService.getLatestMmrHeight(false);
+    this._dbMmrLatestHeight = await this.mmrService.getLatestMmrHeight();
     logger.info(`In ${this.nodeConfig.mmrStoreType} DB, latest MMR block height is ${this._dbMmrLatestHeight}`);
     this._poiMmrLatestHeight = (await this.mmrService.getLatestPoiWithMmr())?.id ?? this.blockOffset;
     logger.info(`In POI table, latest MMR block height is ${this._poiMmrLatestHeight}`);

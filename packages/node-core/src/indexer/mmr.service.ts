@@ -5,12 +5,12 @@ import fs from 'fs';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME, RESET_MMR_BLOCK_BATCH} from '@subql/common';
-import {u8aToHex, u8aEq, bufferToU8a} from '@subql/utils';
+import {u8aToHex, u8aEq} from '@subql/utils';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {Op} from '@subql/x-sequelize';
 import {keccak256} from 'js-sha3';
 import {MmrStoreType, NodeConfig} from '../configure';
-import {MmrPayload, MmrProof, PoiEvent} from '../events';
+import {PoiEvent} from '../events';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../indexer/poi';
 import {getLogger} from '../logger';
 import {delay} from '../utils';
@@ -20,28 +20,64 @@ const logger = getLogger('mmr');
 const MMR_FLUSH_THRESHOLD = 100;
 const LATEST_POI_MMR_NULL_VALUE = '0';
 
-const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
+export const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
 const syncingMsg = (start: number, end: number, size: number) =>
   logger.info(`Syncing block [${start} - ${end}] mmr, total ${size} blocks `);
 
+export abstract class baseMmrService {
+  protected constructor(protected readonly nodeConfig: NodeConfig) {}
+  protected _mmrDb?: MMR;
+  protected _blockOffset?: number;
+
+  abstract ensureMmr(): Promise<void>;
+
+  protected get mmrDb(): MMR {
+    if (!this._mmrDb) {
+      throw new Error('MMR Service sync has not been called');
+    }
+    return this._mmrDb;
+  }
+
+  protected get blockOffset(): number {
+    if (this._blockOffset === undefined) {
+      throw new Error('MMR Service sync has not been called');
+    }
+    return this._blockOffset;
+  }
+
+  protected async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
+    let fileBasedDb: FileBasedDb;
+    if (fs.existsSync(projectMmrPath)) {
+      fileBasedDb = await FileBasedDb.open(projectMmrPath);
+    } else {
+      fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
+    }
+    return new MMR(keccak256Hash, fileBasedDb);
+  }
+
+  async getLatestMmrHeight(): Promise<number> {
+    // latest leaf index need fetch from .db, as original method will use cache
+    return (await this.mmrDb.db.getLeafLength()) + this.blockOffset;
+  }
+}
+
 @Injectable()
-export class MmrService implements OnApplicationShutdown {
+export class MmrService extends baseMmrService implements OnApplicationShutdown {
   private isShutdown = false;
   private isSyncing = false;
-  private _mmrDb?: MMR;
-  private _mmrPlainDb?: MMR;
   // This is the next block height that suppose to calculate its mmr value
   private _nextMmrBlockHeight?: number;
-  private _blockOffset?: number;
   private _poi?: PlainPoiModel;
 
   constructor(
-    private readonly nodeConfig: NodeConfig,
+    nodeConfig: NodeConfig,
     private readonly storeCacheService: StoreCacheService,
     private readonly pgMmrCacheService: PgMmrCacheService,
     protected eventEmitter: EventEmitter2
-  ) {}
+  ) {
+    super(nodeConfig);
+  }
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
@@ -58,35 +94,11 @@ export class MmrService implements OnApplicationShutdown {
     return poi;
   }
 
-  private get mmrDb(): MMR {
-    if (!this._mmrDb) {
-      throw new Error('MMR Service sync has not been called');
-    }
-    return this._mmrDb;
-  }
-
-  private get mmrPlainDb(): MMR {
-    if (!this._mmrPlainDb) {
-      if (this.nodeConfig.mmrStoreType !== MmrStoreType.Postgres && this._mmrDb) {
-        return this._mmrDb;
-      }
-      throw new Error('MMR Service sync has not been called');
-    }
-    return this._mmrPlainDb;
-  }
-
   private get nextMmrBlockHeight(): number {
     if (!this._nextMmrBlockHeight) {
       throw new Error('MMR Service sync has not been called');
     }
     return this._nextMmrBlockHeight;
-  }
-
-  private get blockOffset(): number {
-    if (this._blockOffset === undefined) {
-      throw new Error('MMR Service sync has not been called');
-    }
-    return this._blockOffset;
   }
 
   async prepareRegen(blockOffset: number, poi: PlainPoiModel): Promise<void> {
@@ -102,7 +114,7 @@ export class MmrService implements OnApplicationShutdown {
     await this.ensureMmr();
     this._blockOffset = blockOffset;
     // The mmr database last recorded height
-    const dbMmrLatestHeight = await this.getLatestMmrHeight(true);
+    const dbMmrLatestHeight = await this.getLatestMmrHeight();
     // However, when initialization we pick the previous block for file db and poi mmr validation
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
     this._nextMmrBlockHeight = dbMmrLatestHeight + 1;
@@ -325,86 +337,19 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   async ensureMmr(): Promise<void> {
-    // plain db should be existed with mmrDb all the time
-    if (this._mmrDb && this.mmrPlainDb) {
+    if (this._mmrDb) {
       return;
     }
-    if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres) {
-      await this.pgMmrCacheService.init(this.nodeConfig);
-      this._mmrDb = new MMR(keccak256Hash, this.pgMmrCacheService.mmrRepo);
-      this._mmrPlainDb = new MMR(keccak256Hash, this.pgMmrCacheService.mmrPlainRepo);
-    } else {
-      // if not postgres db, we are safely use mmrDb as plainDb
-      this._mmrDb = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
-    }
+    this._mmrDb =
+      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
+        ? await this.ensurePostgresBasedMmr()
+        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
   }
 
-  private async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
-    let fileBasedDb: FileBasedDb;
-    if (fs.existsSync(projectMmrPath)) {
-      fileBasedDb = await FileBasedDb.open(projectMmrPath);
-    } else {
-      fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
-    }
-    return new MMR(keccak256Hash, fileBasedDb);
-  }
-
-  async getMmr(blockHeight: number, allowCache: boolean): Promise<MmrPayload> {
-    const leafIndex = blockHeight - this.blockOffset - 1;
-    if (leafIndex < 0) {
-      throw new Error(`Parameter blockHeight must greater equal to ${this.blockOffset + 1} `);
-    }
-    const [mmrResponse, nodeResponse] = await Promise.allSettled([
-      this.safeMmr(allowCache).getRoot(leafIndex),
-      this.safeMmr(allowCache).get(leafIndex),
-    ]);
-
-    const mmrRoot =
-      mmrResponse.status === 'fulfilled' ? u8aToHex(mmrResponse.value) : `mmrRoot error, ${mmrResponse.reason}`;
-    const hash =
-      nodeResponse.status === 'fulfilled'
-        ? u8aToHex(nodeResponse.value)
-        : nodeResponse.reason.message.match('Leaf not in tree')
-        ? `MMR is completing,please try again later`
-        : `Error: ${nodeResponse.reason.message}`;
-
-    return {
-      offset: this.blockOffset,
-      height: blockHeight,
-      mmrRoot,
-      hash,
-    };
-  }
-
-  // Select mmr db to use depend on query allow cache
-  private safeMmr(allowCache: boolean): MMR {
-    return allowCache ? this.mmrDb : this.mmrPlainDb;
-  }
-
-  async getLatestMmrHeight(allowCache: boolean): Promise<number> {
-    // latest leaf index need fetch from .db, as original method will use cache
-    // TODO, this is incorrect
-    // Will fix by https://github.com/subquery/subql/issues/1868
-    return (await this.safeMmr(allowCache).db.getLeafLength()) + this.blockOffset;
-  }
-
-  async getMmrProof(blockHeight: number, allowCache: boolean): Promise<MmrProof> {
-    const leafIndex = blockHeight - this.blockOffset - 1;
-    if (leafIndex < 0) {
-      throw new Error(`Parameter blockHeight must greater equal to ${this.blockOffset + 1} `);
-    }
-    const mmrProof = await this.safeMmr(allowCache).getProof([leafIndex]);
-    const nodes = Object.entries(mmrProof.db.nodes).map(([key, data]) => {
-      return {
-        node: key,
-        hash: u8aToHex(data as Uint8Array),
-      };
-    });
-    return {
-      digest: mmrProof.digest.name,
-      leafLength: mmrProof.db.leafLength,
-      nodes,
-    };
+  private async ensurePostgresBasedMmr(): Promise<MMR> {
+    await this.pgMmrCacheService.init(this.nodeConfig);
+    const db = this.pgMmrCacheService.mmrRepo;
+    return new MMR(keccak256Hash, db);
   }
 
   async deleteMmrNode(blockHeight: number, blockOffset?: number): Promise<void> {

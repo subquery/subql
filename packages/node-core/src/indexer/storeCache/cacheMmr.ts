@@ -14,29 +14,6 @@ const cacheOptions = {
   updateAgeOnGet: true, // we want to keep most used record in cache longer
 };
 
-// Currently only serve MMR query
-export class PlainPgMmrDb implements Db {
-  constructor(private db: PgBasedMMRDB) {}
-
-  static create(db: PgBasedMMRDB): PlainPgMmrDb {
-    return new PlainPgMmrDb(db);
-  }
-  async get(key: number): Promise<Uint8Array | null> {
-    return this.db.get(key);
-  }
-  async getLeafLength(): Promise<number> {
-    return this.db.getLeafLength();
-  }
-  async getNodes(): Promise<Record<number, Uint8Array>> {
-    return this.db.getNodes();
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async setLeafLength(length: number): Promise<number> {
-    throw new Error('setLeafLength in PlainPgMmrDb should never been called');
-  }
-}
-
 export class CachePgMmrDb implements ICachedModelControl, Db {
   private leafLength?: number;
   flushableRecordCounter = 0;

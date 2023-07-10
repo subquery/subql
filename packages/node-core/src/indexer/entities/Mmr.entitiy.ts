@@ -16,11 +16,10 @@ interface MMRIndexValueStoreAttributes {
 }
 
 export interface MmrModel extends Model<MMRIndexValueStoreAttributes>, MMRIndexValueStoreAttributes {}
-
 export class PgBasedMMRDB implements Db {
   private mmrIndexValueStore: ModelStatic<MmrModel>;
 
-  private constructor(sequelize: Sequelize, schema: string) {
+  constructor(sequelize: Sequelize, schema: string) {
     this.mmrIndexValueStore = sequelize.define(
       '_mmr',
       {

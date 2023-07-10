@@ -14,6 +14,7 @@ import {
   NodeConfig,
   ConnectionPoolService,
   StoreCacheService,
+  MmrQueryService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -164,6 +165,7 @@ function createIndexerManager(
     undefined,
     undefined,
   );
+  const mmrQueryService = new MmrQueryService(nodeConfig, sequilize);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
@@ -180,6 +182,7 @@ function createIndexerManager(
     apiService,
     poiService,
     mmrService,
+    mmrQueryService,
     sequilize,
     project,
     storeService,

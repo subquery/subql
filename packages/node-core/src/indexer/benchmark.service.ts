@@ -16,16 +16,15 @@ const logger = getLogger('benchmark');
 dayjs.extend(duration);
 
 @Injectable()
-class BaseBenchmarkService {
+abstract class BaseBenchmarkService {
   protected currentProcessingHeight?: number;
   protected currentProcessingTimestamp?: number;
   protected targetHeight?: number;
-  protected lastRegisteredHeight?: number;
-  protected lastRegisteredTimestamp?: number;
-  protected blockPerSecond?: number;
-
   protected currentProcessedBlockAmount?: number;
-  protected lastProcessedBlockAmount?: number;
+  private lastRegisteredHeight?: number;
+  private lastRegisteredTimestamp?: number;
+  private blockPerSecond?: number;
+  private lastProcessedBlockAmount?: number;
 
   constructor(private nodeConfig: NodeConfig, private eventName: string, private unitName: string) {}
   private async benchMarking(): Promise<void> {

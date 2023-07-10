@@ -11,7 +11,7 @@ import {profiler} from '../../profiler';
 import {getExistingProjectSchema} from '../../utils/project';
 import {PgBasedMMRDB} from '../entities/Mmr.entitiy';
 import {BaseCacheService} from './baseCache.service';
-import {CachePgMmrDb, PlainPgMmrDb} from './cacheMmr';
+import {CachePgMmrDb} from './cacheMmr';
 
 const INTERVAL_NAME = 'mmrCacheFlushInterval';
 
@@ -20,7 +20,6 @@ const MMR_FLUSH_INTERVAL = 2;
 @Injectable()
 export class PgMmrCacheService extends BaseCacheService {
   private _mmrRepo?: CachePgMmrDb;
-  private _mmrPlainRepo?: PlainPgMmrDb;
   private _sequelize?: Sequelize;
 
   constructor(schedulerRegistry: SchedulerRegistry) {
@@ -39,13 +38,6 @@ export class PgMmrCacheService extends BaseCacheService {
       throw new Error(`PgMmrCacheService _mmrRepo is not defined`);
     }
     return this._mmrRepo;
-  }
-
-  get mmrPlainRepo(): PlainPgMmrDb {
-    if (this._mmrPlainRepo === undefined) {
-      throw new Error(`PgMmrCacheService _mmrPlainRepo is not defined`);
-    }
-    return this._mmrPlainRepo;
   }
 
   private async initSequelize(nodeConfig: NodeConfig): Promise<void> {
@@ -69,7 +61,6 @@ export class PgMmrCacheService extends BaseCacheService {
     assert(schema, 'Unable to check for MMR table, schema is undefined');
     const db = await PgBasedMMRDB.create(this.sequelize, schema);
     this._mmrRepo = CachePgMmrDb.create(db);
-    this._mmrPlainRepo = PlainPgMmrDb.create(db);
     this.setupInterval(INTERVAL_NAME, MMR_FLUSH_INTERVAL);
   }
 

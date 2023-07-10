@@ -3,13 +3,13 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise } from '@polkadot/api';
 import {
   PoiService,
   MmrService,
   BaseProjectService,
   StoreService,
   NodeConfig,
+  MmrQueryService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
@@ -21,7 +21,6 @@ import {
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { ApiAt, BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -39,6 +38,7 @@ export class ProjectService extends BaseProjectService<
     apiService: ApiService,
     poiService: PoiService,
     mmrService: MmrService,
+    mmrQueryService: MmrQueryService,
     sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
     storeService: StoreService,
@@ -52,6 +52,7 @@ export class ProjectService extends BaseProjectService<
       apiService,
       poiService,
       mmrService,
+      mmrQueryService,
       sequelize,
       project,
       storeService,

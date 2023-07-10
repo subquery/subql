@@ -2,51 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Controller, Get, Param, UseFilters} from '@nestjs/common';
-import {MmrService} from '../indexer';
 import {MmrExceptionsFilter} from '../utils/mmr-exception.filter';
+import {MmrQueryService} from './mmrQuery.service';
 
 const mmrExceptionsFilter = new MmrExceptionsFilter();
 
 @Controller('mmrs')
 export class MmrQueryController {
-  private _mmrEnsured = false;
-  constructor(private mmrService: MmrService) {}
-
-  async ensureMmrService(): Promise<void> {
-    if (!this._mmrEnsured) {
-      await this.mmrService.ensureMmr();
-      this._mmrEnsured = true;
-    }
-    return;
-  }
+  constructor(private mmrQueryService: MmrQueryService) {}
 
   @Get('latest')
   @UseFilters(mmrExceptionsFilter)
   async getLatestMmr(@Param() params: any) {
     // eslint-disable-next-line no-return-await
-    await this.ensureMmrService();
-    return this.mmrService.getMmr(await this.mmrService.getLatestMmrHeight(false), false);
+    return this.mmrQueryService.getMmr(await this.mmrQueryService.getLatestMmrHeight());
   }
 
   @Get('latest/proof')
   @UseFilters(mmrExceptionsFilter)
   async getLatestMmrProof(@Param() params: any) {
-    await this.ensureMmrService();
-    return this.mmrService.getMmrProof(await this.mmrService.getLatestMmrHeight(false), false);
+    return this.mmrQueryService.getMmrProof(await this.mmrQueryService.getLatestMmrHeight());
   }
 
   @Get(':blockHeight')
   @UseFilters(mmrExceptionsFilter)
   async getMmr(@Param() params: {blockHeight: number}) {
     // eslint-disable-next-line no-return-await
-    await this.ensureMmrService();
-    return this.mmrService.getMmr(params.blockHeight, false);
+    return this.mmrQueryService.getMmr(params.blockHeight);
   }
 
   @Get(':blockHeight/proof')
   @UseFilters(mmrExceptionsFilter)
   async getMmrProof(@Param() params: {blockHeight: number}) {
-    await this.ensureMmrService();
-    return this.mmrService.getMmrProof(params.blockHeight, false);
+    return this.mmrQueryService.getMmrProof(params.blockHeight);
   }
 }
