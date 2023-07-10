@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Handle RPC error for oversized block responses (#1876)
+
+## [2.9.1] - 2023-07-06
+### Fixed
+- Sync with @subql/node-core, fixed Poi table missing mmr issue (#1871)
 
 ## [2.9.0] - 2023-07-04
 ### Added
@@ -906,7 +912,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/2.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/2.9.1...HEAD
+[2.9.1]: https://github.com/subquery/subql/compare/node/2.9.0...node/v2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/node/2.8.0...node/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/node/2.7.0...node/2.8.0
 [2.7.0]: https://github.com/subquery/subql/compare/node/2.6.1...node/2.7.0
