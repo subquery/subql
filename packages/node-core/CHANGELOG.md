@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Configurable limit to the store cache size, this will cause indexing to wait for the cache to be flushed. This resolves an issue where OOM errors happen. (#1859)
 
+### Fixed
+- Various improvements for POI feature: (#1869)
+  - Benchmarking mmr processing
+  - Improve performance when initialize mmr service, find the latest mmr height in Poi table by record it in `_metadata` table
+  - Correct mmr query directly from Db rather than cache 
+
 ## [3.0.0] - 2023-06-26
 ### Changed
 - Added `pgMmrCacheService` to use independent Db connection, now mmr cache flush by itself. (#1828)

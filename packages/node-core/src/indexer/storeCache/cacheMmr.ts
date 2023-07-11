@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Db} from '@subql/x-merkle-mountain-range';
-import {Sequelize, Transaction} from '@subql/x-sequelize';
+import {Transaction} from '@subql/x-sequelize';
 import {Mutex} from 'async-mutex';
 import LRUCache from 'lru-cache';
 import {PgBasedMMRDB} from '../entities/Mmr.entitiy';
@@ -33,7 +33,8 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    if (this.leafLength) {
+    // avoid leafLength could be 0, and it never flushes the cache
+    if (this.leafLength !== undefined) {
       const release = await this.mutex.acquire();
       try {
         tx.afterCommit(() => {
@@ -51,8 +52,7 @@ export class CachePgMmrDb implements ICachedModelControl, Db {
     }
   }
 
-  static async create(sequelize: Sequelize, schema: string): Promise<CachePgMmrDb> {
-    const db = await PgBasedMMRDB.create(sequelize, schema);
+  static create(db: PgBasedMMRDB): CachePgMmrDb {
     return new CachePgMmrDb(db);
   }
 

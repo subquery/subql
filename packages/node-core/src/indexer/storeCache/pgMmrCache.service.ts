@@ -9,6 +9,7 @@ import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db/db.module';
 import {profiler} from '../../profiler';
 import {getExistingProjectSchema} from '../../utils/project';
+import {PgBasedMMRDB} from '../entities/Mmr.entitiy';
 import {BaseCacheService} from './baseCache.service';
 import {CachePgMmrDb} from './cacheMmr';
 
@@ -39,29 +40,27 @@ export class PgMmrCacheService extends BaseCacheService {
     return this._mmrRepo;
   }
 
-  async ensurePostgresBasedDb(nodeConfig: NodeConfig): Promise<CachePgMmrDb> {
+  private async initSequelize(nodeConfig: NodeConfig): Promise<void> {
     // Only create sequelize connection when required, and ensure only created once
-    if (!this._mmrRepo) {
-      if (this._sequelize) {
-        throw new Error('pgMmrCache sequelize has been init more than once');
-      }
-      try {
-        this._sequelize = await establishNewSequelize(nodeConfig);
-        this.logger.info(`Mmr service using independent db connection`);
-      } catch (e) {
-        this.logger.error(`having problem initialise independent db connection for mmr service, ${e}`);
-        throw e;
-      }
-      const schema = await getExistingProjectSchema(nodeConfig, this._sequelize);
-      assert(schema, 'Unable to check for MMR table, schema is undefined');
-      const db = await CachePgMmrDb.create(this.sequelize, schema);
-      this.setMmrRepo(db);
+    if (this._sequelize) {
+      throw new Error('pgMmrCache sequelize has been init more than once');
     }
-    return this.mmrRepo;
+    try {
+      this._sequelize = await establishNewSequelize(nodeConfig);
+      this.logger.info(`Mmr service using independent db connection`);
+    } catch (e) {
+      this.logger.error(`having problem initialise independent db connection for mmr service, ${e}`);
+      throw e;
+    }
   }
 
-  setMmrRepo(mmrRepo: CachePgMmrDb): void {
-    this._mmrRepo = mmrRepo;
+  // This should only been called once from mmr service
+  async init(nodeConfig: NodeConfig): Promise<void> {
+    await this.initSequelize(nodeConfig);
+    const schema = await getExistingProjectSchema(nodeConfig, this.sequelize);
+    assert(schema, 'Unable to check for MMR table, schema is undefined');
+    const db = await PgBasedMMRDB.create(this.sequelize, schema);
+    this._mmrRepo = CachePgMmrDb.create(db);
     this.setupInterval(INTERVAL_NAME, MMR_FLUSH_INTERVAL);
   }
 

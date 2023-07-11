@@ -3,11 +3,11 @@
 
 import {Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
-import {Interval} from '@nestjs/schedule';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import {NodeConfig} from '../configure';
-import {IndexerEvent, ProcessBlockPayload, ProcessedBlockCountPayload, TargetBlockPayload} from '../events';
+import {IndexerEvent, PoiEvent, ProcessBlockPayload, ProcessedBlockCountPayload, TargetBlockPayload} from '../events';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
 
@@ -16,67 +16,112 @@ const logger = getLogger('benchmark');
 dayjs.extend(duration);
 
 @Injectable()
-export class BenchmarkService {
-  private currentProcessingHeight?: number;
-  private currentProcessingTimestamp?: number;
-  private targetHeight?: number;
+abstract class BaseBenchmarkService {
+  protected currentProcessingHeight?: number;
+  protected currentProcessingTimestamp?: number;
+  protected targetHeight?: number;
+  protected currentProcessedBlockAmount?: number;
   private lastRegisteredHeight?: number;
   private lastRegisteredTimestamp?: number;
   private blockPerSecond?: number;
-
-  private currentProcessedBlockAmount?: number;
   private lastProcessedBlockAmount?: number;
 
-  constructor(private nodeConfig: NodeConfig) {}
+  protected constructor(
+    private nodeConfig: NodeConfig,
+    readonly schedulerRegistry: SchedulerRegistry,
+    private eventName: string,
+    private unitName: string
+  ) {}
 
-  @Interval(SAMPLING_TIME_VARIANCE * 1000)
-  async benchmark(): Promise<void> {
-    try {
-      if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
-        await delay(10);
-      } else {
-        if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
-          const heightDiff = this.currentProcessingHeight - this.lastRegisteredHeight;
-          const timeDiff = this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
-          this.blockPerSecond = heightDiff === 0 || timeDiff === 0 ? 0 : heightDiff / (timeDiff / 1000);
+  setupInterval(intervalName: string) {
+    if (this.schedulerRegistry.doesExist('interval', intervalName)) {
+      return;
+    }
+    this.schedulerRegistry.addInterval(
+      intervalName,
+      setInterval(
+        () => void this.benchMarking(),
+        SAMPLING_TIME_VARIANCE * 1000 // Convert to miliseconds
+      )
+    );
+  }
 
-          if (!this.targetHeight) {
-            logger.debug('Target height is not defined, not logging benchmark');
-          } else {
-            const blockDuration = dayjs.duration(
-              (this.targetHeight - this.currentProcessingHeight) / this.blockPerSecond,
-              'seconds'
-            );
-            const hoursMinsStr = blockDuration.format('HH [hours] mm [mins]');
-            const days = Math.floor(blockDuration.asDays());
-            const durationStr = `${days} days ${hoursMinsStr}`;
+  private async benchMarking(): Promise<void> {
+    if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
+      await delay(10);
+    } else {
+      if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
+        const heightDiff = this.currentProcessingHeight - this.lastRegisteredHeight;
+        const timeDiff = this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
+        this.blockPerSecond = heightDiff === 0 || timeDiff === 0 ? 0 : heightDiff / (timeDiff / 1000);
 
-            if (this.nodeConfig.profiler && this.currentProcessedBlockAmount && this.lastProcessedBlockAmount) {
-              logger.info(
-                `Processed ${
-                  this.currentProcessedBlockAmount - this.lastProcessedBlockAmount
-                } blocks in the last ${SAMPLING_TIME_VARIANCE}secs `
-              );
-            }
+        if (!this.targetHeight) {
+          logger.debug(`${this.eventName}: Target height is not defined, not logging benchmark`);
+        } else {
+          const blockDuration = dayjs.duration(
+            (this.targetHeight - this.currentProcessingHeight) / this.blockPerSecond,
+            'seconds'
+          );
+          const hoursMinsStr = blockDuration.format('HH [hours] mm [mins]');
+          const days = Math.floor(blockDuration.asDays());
+          const durationStr = `${days} days ${hoursMinsStr}`;
 
+          // Poi will ignore this by default, as poi doesn't record processedCount
+          if (this.nodeConfig.profiler && this.currentProcessedBlockAmount && this.lastProcessedBlockAmount) {
             logger.info(
-              this.targetHeight === this.lastRegisteredHeight && this.blockPerSecond === 0
-                ? 'Fully synced, waiting for new blocks'
-                : `${this.blockPerSecond.toFixed(
-                    2
-                  )} blocks/s. Target height: ${this.targetHeight.toLocaleString()}. Current height: ${this.currentProcessingHeight.toLocaleString()}. Estimated time remaining: ${
-                    this.blockPerSecond === 0 ? 'unknown' : durationStr
-                  }`
+              `${this.eventName}: Processed ${this.currentProcessedBlockAmount - this.lastProcessedBlockAmount} ${
+                this.unitName
+              } in the last ${SAMPLING_TIME_VARIANCE}secs `
             );
           }
+
+          logger.info(
+            `${this.eventName}: ${
+              this.targetHeight === this.lastRegisteredHeight && this.blockPerSecond === 0
+                ? `Fully synced, waiting for new ${this.unitName}`
+                : `${this.blockPerSecond.toFixed(2)} ${
+                    this.unitName
+                  }/s. Target height: ${this.targetHeight.toLocaleString()}. Current height: ${this.currentProcessingHeight.toLocaleString()}. Estimated time remaining: ${
+                    this.blockPerSecond === 0 ? 'unknown' : durationStr
+                  }`
+            }`
+          );
         }
-        this.lastRegisteredHeight = this.currentProcessingHeight;
-        this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
-        this.lastProcessedBlockAmount = this.currentProcessedBlockAmount;
       }
-    } catch (e: any) {
-      logger.warn(e, 'Failed to measure benchmark');
+      this.lastRegisteredHeight = this.currentProcessingHeight;
+      this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
+      this.lastProcessedBlockAmount = this.currentProcessedBlockAmount;
     }
+  }
+}
+
+@Injectable()
+export class PoiBenchmarkService extends BaseBenchmarkService {
+  constructor(nodeConfig: NodeConfig, schedulerRegistry: SchedulerRegistry) {
+    super(nodeConfig, schedulerRegistry, 'POI', 'poi blocks');
+    if (nodeConfig.proofOfIndex) {
+      this.setupInterval('poiBenchmarking');
+    }
+  }
+
+  @OnEvent(PoiEvent.LastPoiWithMmr)
+  handleLastPoiWithMmr(blockPayload: ProcessBlockPayload): void {
+    this.currentProcessingHeight = blockPayload.height;
+    this.currentProcessingTimestamp = blockPayload.timestamp;
+  }
+
+  @OnEvent(PoiEvent.PoiTarget)
+  handlePoiTarget(blockPayload: ProcessBlockPayload): void {
+    this.targetHeight = blockPayload.height;
+    this.currentProcessingTimestamp = blockPayload.timestamp;
+  }
+}
+
+@Injectable()
+export class IndexingBenchmarkService extends BaseBenchmarkService {
+  constructor(nodeConfig: NodeConfig, schedulerRegistry: SchedulerRegistry) {
+    super(nodeConfig, schedulerRegistry, 'INDEXING', 'blocks');
+    this.setupInterval('indexBenchmarking');
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
