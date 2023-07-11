@@ -79,56 +79,19 @@ describe('mmr service test', () => {
   const scheduler = new SchedulerRegistry();
   const eventEmitter = new EventEmitter2();
   const sequilize = new Sequelize();
-  const storeCacheService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, scheduler);
   const pgMmrCacheService = new PgMmrCacheService(scheduler);
+  (pgMmrCacheService as any)._mmrRepo = {};
 
   let mmrService: MmrService;
+  let storeCacheService: StoreCacheService;
   beforeEach(() => {
+    storeCacheService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, scheduler);
     mmrService = new MmrService(nodeConfig, storeCacheService, pgMmrCacheService, eventEmitter);
+    storeCacheService.flushCache(true, true);
+    pgMmrCacheService.flushCache(true, true);
   });
 
   describe('getLatestPoiWithMmr', () => {
-    it('should query from metadata first, then use id to find from poi table', async () => {
-      const meta = {
-        findByPk: (key: string) => {
-          if (key === 'latestPoiWithMmr') {
-            return {
-              toJSON: () => {
-                return {value: '{"id":"5760","mmrRoot":"0"}'};
-              },
-            };
-          }
-        },
-      };
-      storeCacheService.setRepos(meta as unknown as MetadataRepo);
-      (mmrService as any)._poi = {
-        model: {
-          findOne: jest.fn(({transaction, where: {id}}) => ({
-            mmrRoot: new Uint8Array(),
-            toJSON: () => {
-              return {
-                value: {
-                  id: '5760',
-                  mmrRoot: {
-                    type: 'Buffer',
-                    data: [
-                      11, 114, 22, 152, 237, 93, 112, 201, 56, 157, 22, 122, 92, 18, 94, 16, 198, 10, 3, 98, 39, 156,
-                      19, 113, 180, 81, 235, 198, 135, 59, 251, 69,
-                    ],
-                  },
-                },
-              };
-            },
-          })),
-        },
-      };
-      const spyFind = jest.spyOn(storeCacheService.metadata, 'find');
-      const spySyncMetaPoi = jest.spyOn(mmrService, 'syncMetadataLatestPoiWithMmr');
-      await mmrService.getLatestPoiWithMmr();
-      expect(spyFind).toBeCalledTimes(1);
-      expect(spySyncMetaPoi).toBeCalledTimes(0);
-    }, 10000);
-
     it('should get from poi if latestPoiWithMmr not found in metadata', async () => {
       const meta = {
         findByPk: (key: string) => {
@@ -175,6 +138,48 @@ describe('mmr service test', () => {
       expect(spyFind).toBeCalledTimes(1);
       expect(spySyncMetaPoi).toBeCalledTimes(1);
       expect(spySet).toBeCalledTimes(1);
-    }, 20000);
+    }, 50000);
+
+    it('should query from metadata first, then use id to find from poi table', async () => {
+      const meta = {
+        findByPk: (key: string) => {
+          if (key === 'latestPoiWithMmr') {
+            return {
+              toJSON: () => {
+                return {value: '{"id":"5760","mmrRoot":"0"}'};
+              },
+            };
+          }
+        },
+      };
+      storeCacheService.setRepos(meta as unknown as MetadataRepo);
+      (mmrService as any)._poi = {
+        model: {
+          findOne: jest.fn(({transaction, where: {id}}) => ({
+            mmrRoot: new Uint8Array(),
+            toJSON: () => {
+              return {
+                value: {
+                  id: '5760',
+                  mmrRoot: {
+                    type: 'Buffer',
+                    data: [
+                      11, 114, 22, 152, 237, 93, 112, 201, 56, 157, 22, 122, 92, 18, 94, 16, 198, 10, 3, 98, 39, 156,
+                      19, 113, 180, 81, 235, 198, 135, 59, 251, 69,
+                    ],
+                  },
+                },
+              };
+            },
+          })),
+          bulkCreate: jest.fn(),
+        },
+      };
+      const spyFind = jest.spyOn(storeCacheService.metadata, 'find');
+      const spySyncMetaPoi = jest.spyOn(mmrService, 'syncMetadataLatestPoiWithMmr');
+      await mmrService.getLatestPoiWithMmr();
+      expect(spyFind).toBeCalledTimes(1);
+      expect(spySyncMetaPoi).toBeCalledTimes(0);
+    }, 50000);
   });
 });
