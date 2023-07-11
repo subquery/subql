@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { NestFactory } from '@nestjs/core';
 import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
-  StoreService,
   TestingService as BaseTestingService,
+  NestLogger,
 } from '@subql/node-core';
-import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
 import { ApiAt, BlockContent } from '../indexer/types';
+import { TestRunner } from './test.runner';
 import { TestingModule } from './testing.module';
 
 @Injectable()
@@ -31,31 +31,38 @@ export class TestingService extends BaseTestingService<
     super(nodeConfig, project);
   }
 
-  async createApp(): Promise<void> {
-    this.app = await Test.createTestingModule(TestingModule).compile();
+  async getTestRunner(): Promise<TestRunner> {
+    const testContext = await NestFactory.createApplicationContext(
+      TestingModule,
+      {
+        logger: new NestLogger(),
+      },
+    );
 
-    await this.app.init();
+    await testContext.init();
 
-    const projectService: ProjectService = this.app.get(ProjectService);
-    this.apiService = this.app.get(ApiService);
+    const projectService: ProjectService = testContext.get(ProjectService);
+    const apiService = testContext.get(ApiService);
 
-    await (this.apiService as ApiService).init();
+    // Initialise async services, we do this here rather than in factories, so we can capture one off events
+    await apiService.init();
     await projectService.init();
 
-    this.storeService = this.app.get(StoreService);
-    this.sequelize = this.app.get(Sequelize);
-    this.indexerManager = this.app.get(IndexerManager);
-    this.nodeConfig = this.app.get(NodeConfig);
-    this.project = this.app.get('ISubqueryProject');
+    return testContext.get(TestRunner);
   }
 
-  async indexBlock(block: BlockContent, handler: string): Promise<void> {
+  async indexBlock(
+    block: BlockContent,
+    handler: string,
+    indexerManager: IndexerManager,
+    apiService: ApiService,
+  ): Promise<void> {
     const runtimeVersion =
-      await this.apiService.unsafeApi.rpc.state.getRuntimeVersion(
+      await apiService.unsafeApi.rpc.state.getRuntimeVersion(
         block.block.block.header.hash,
       );
 
-    await this.indexerManager.indexBlock(
+    await indexerManager.indexBlock(
       block,
       this.getDsWithHandler(handler),
       runtimeVersion,

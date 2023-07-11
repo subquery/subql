@@ -8,7 +8,6 @@ import {
   ConnectionPoolService,
   DbModule,
   NodeConfig,
-  PgMmrCacheService,
   PoiService,
   StoreService,
 } from '@subql/node-core';
@@ -24,7 +23,7 @@ import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { MetaModule } from '../meta/meta.module';
-import { TestingService } from './testing.service';
+import { TestRunner } from './test.runner';
 
 @Module({
   providers: [
@@ -67,14 +66,16 @@ import { TestingService } from './testing.service';
     },
     IndexerManager,
     SchedulerRegistry,
+    TestRunner,
   ],
 
   imports: [MetaModule, FetchModule],
   controllers: [],
+  exports: [TestRunner],
 })
 export class TestingFeatureModule {}
 
-export const TestingModule: ModuleMetadata = {
+@Module({
   imports: [
     DbModule.forRoot(),
     ConfigureModule.register(),
@@ -83,4 +84,5 @@ export const TestingModule: ModuleMetadata = {
     TestingFeatureModule,
   ],
   controllers: [],
-};
+})
+export class TestingModule {}
