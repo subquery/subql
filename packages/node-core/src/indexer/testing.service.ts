@@ -3,14 +3,15 @@
 
 import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
-import {INestApplication, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
+import {TestingModule} from '@nestjs/testing';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
 import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
-import {ApiService, IApi} from '../api.service';
+import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {initDbSchema} from '../utils';
@@ -49,7 +50,7 @@ export abstract class TestingService<A, SA, B, DS> {
   protected sequelize: Sequelize | undefined;
   protected storeService: StoreService | undefined;
   protected indexerManager: IIndexerManager<B, DS> | undefined;
-  protected app: INestApplication | undefined;
+  protected app: TestingModule | undefined;
 
   constructor(protected nodeConfig: NodeConfig, protected project: ISubqueryProject) {
     const projectPath = this.project.root;
@@ -222,14 +223,10 @@ export abstract class TestingService<A, SA, B, DS> {
       this.totalFailedTests += test.expectedEntities.length;
       logger.warn(e, `Test ${test.name} failed to run`);
     } finally {
-      /*
-      await this.sequelize.dropSchema(`"${schema}"`, {
+      await this.sequelize!.dropSchema(`"${schema}"`, {
         logging: false,
         benchmark: false,
       });
-      */
-      await this.sequelize!.drop();
-      await this.app?.close();
     }
   }
   /* eslint-enable @typescript-eslint/no-non-null-assertion */

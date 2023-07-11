@@ -3,19 +3,24 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { TestingModule } from '@nestjs/testing';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
+import { Test } from '@nestjs/testing';
 import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
   StoreService,
   TestingService as BaseTestingService,
+  DbModule,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
+import { ConfigureModule } from '../configure/configure.module';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
 import { ApiAt, BlockContent } from '../indexer/types';
+import { TestingFeatureModule, TestingModule } from './testing.module';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
@@ -32,13 +37,11 @@ export class TestingService extends BaseTestingService<
   }
 
   async createApp(): Promise<void> {
-    this.app = await NestFactory.create(TestingModule, {
-      //logger: new NestLogger(),
-    });
+    this.app = await Test.createTestingModule(TestingModule).compile();
 
     await this.app.init();
 
-    const projectService: ProjectService = this.app.get('IProjectService');
+    const projectService: ProjectService = this.app.get(ProjectService);
     this.apiService = this.app.get(ApiService);
 
     await (this.apiService as ApiService).init();

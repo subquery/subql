@@ -1,13 +1,14 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Module } from '@nestjs/common';
+import { Module, ModuleMetadata } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import {
   ConnectionPoolService,
   DbModule,
   NodeConfig,
+  PgMmrCacheService,
   PoiService,
   StoreService,
 } from '@subql/node-core';
@@ -28,12 +29,12 @@ import { TestingService } from './testing.service';
 @Module({
   providers: [
     StoreService,
-    TestingService,
     EventEmitter2,
     PoiService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
+    ProjectService,
     UnfinalizedBlocksService,
     ConnectionPoolService,
     {
@@ -73,7 +74,7 @@ import { TestingService } from './testing.service';
 })
 export class TestingFeatureModule {}
 
-@Module({
+export const TestingModule: ModuleMetadata = {
   imports: [
     DbModule.forRoot(),
     ConfigureModule.register(),
@@ -82,5 +83,4 @@ export class TestingFeatureModule {}
     TestingFeatureModule,
   ],
   controllers: [],
-})
-export class TestingModule {}
+};
