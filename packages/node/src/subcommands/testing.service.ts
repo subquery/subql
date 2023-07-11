@@ -2,25 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
   StoreService,
   TestingService as BaseTestingService,
-  DbModule,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
-import { ConfigureModule } from '../configure/configure.module';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
 import { ApiAt, BlockContent } from '../indexer/types';
-import { TestingFeatureModule, TestingModule } from './testing.module';
+import { TestingModule } from './testing.module';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
