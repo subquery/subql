@@ -135,14 +135,6 @@ export abstract class TestingService<A, SA, B, DS> {
       logger.debug('Fetching block');
       const [block] = await this.apiService!.fetchBlocks([test.blockHeight]);
 
-      // Init db
-      const schemas = await this.sequelize!.showAllSchemas({});
-      if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize!.createSchema(`"${schema}"`, {});
-      }
-
-      await initDbSchema(this.project, schema, this.storeService!);
-
       this.storeService!.setBlockHeight(test.blockHeight);
       const store = this.storeService!.getStore();
       sandbox.freeze(store, 'store');
