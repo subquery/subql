@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.2] - 2023-07-11
 ### Fixed
 - Cache race condition when flushing cache and getting data (#1873)
+- Various improvements for POI feature: (#1869)
+  - Benchmarking mmr processing
+  - Improve performance when initialize mmr service, find the latest mmr height in Poi table by record it in `_metadata` table
+  - Correct mmr query directly from Db rather than cache
 
 ## [3.1.1] - 2023-07-06
 ### Fixed
@@ -15,12 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.1.0] - 2023-07-04
 ### Added
 - Configurable limit to the store cache size, this will cause indexing to wait for the cache to be flushed. This resolves an issue where OOM errors happen. (#1859)
-
-### Fixed
-- Various improvements for POI feature: (#1869)
-  - Benchmarking mmr processing
-  - Improve performance when initialize mmr service, find the latest mmr height in Poi table by record it in `_metadata` table
-  - Correct mmr query directly from Db rather than cache 
 
 ## [3.0.0] - 2023-06-26
 ### Changed
@@ -334,7 +334,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/3.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/3.1.2...HEAD
+[3.1.2]: https://github.com/subquery/subql/compare/node-core/3.1.1...node-core/3.1.2
 [3.1.1]: https://github.com/subquery/subql/compare/node-core/3.1.0...node-core/3.1.1
 [3.1.0]: https://github.com/subquery/subql/compare/node-core/3.0.0...node-core/3.1.0
 [3.0.0]: https://github.com/subquery/subql/compare/node-core/2.6.0...node-core/3.0.0
