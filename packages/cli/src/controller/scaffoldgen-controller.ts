@@ -23,7 +23,11 @@ export interface handlerPropType {
   arg: string;
   argType: string;
 }
-export async function generateScaffold(handlerProps: handlerPropType[], projectPath: string): Promise<void> {
+export async function generateScaffold(
+  handlerProps: handlerPropType[],
+  abiInterfaces: string[],
+  projectPath: string
+): Promise<void> {
   try {
     await renderTemplate(
       SCAFFOLD_HANDLER_TEMPLATE_PATH,
@@ -31,6 +35,7 @@ export async function generateScaffold(handlerProps: handlerPropType[], projectP
       {
         props: {
           handlers: handlerProps,
+          abis: abiInterfaces,
         },
         // helper: {},
       }

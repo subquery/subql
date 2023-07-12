@@ -2,11 +2,13 @@
 
 // Auto-generated
 
-import {<% props.handlers.forEach(function (handler) { %><%= handler.argType %>,<% })%>} from "../types/abi-interfaces/ERC20Abi";
+<% props.abis.forEach(function (abi) { %>
+import {<% props.handlers.forEach(function (handler) { %><%= handler.argType %>,<% })%>} from "../types/abi-interfaces/<%= abi%>";
+<% })%>
 import assert from "assert";
-
 <% props.handlers.forEach(function (handler) { %>
-export async function <%=handler.name %> (<%=handler.arg%>: <%=handler.argType %> ): Promise<void> {
+<% props.abis.forEach(function (abi) { %>
+export async function <%=handler.name %>_<%=abi %> (data: <%=handler.argType %> ): Promise<void> {
 // Place your code logic here
 }
-<% })%>
+<% })%><% })%>

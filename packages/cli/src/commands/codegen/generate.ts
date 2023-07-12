@@ -54,7 +54,7 @@ export default class Generate extends Command {
       },
     ];
     try {
-      await generateScaffold(handlerProps, root);
+      await generateScaffold(handlerProps, ['Erc20Abi', 'Erc721Abi'], root);
     } catch (e) {
       throw new Error('Failing to generate scaffold');
     }
