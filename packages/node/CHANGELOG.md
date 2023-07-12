@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.2] - 2023-07-12
 ### Fixed
-- Handle RPC error for oversized block responses
-- Sync with @subql/node-core@3.1.2, various improvements for POI feature (#1869)
+- Sync with @subql/node-core@3.1.2 (#130)
+  - Various improvements for POI feature
+  - Handle RPC error for oversize block responses
+- Missing format transaction in log (#128)
 
 ## [2.9.1] - 2023-07-07
 ### Fixed
@@ -171,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry request when encouraging timeout/rate limit behaviours (#9)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.2...HEAD
+[2.9.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.1...node-ethereum/2.9.2
 [2.9.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.0...node-ethereum/2.9.1
 [2.9.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.8.0...node-ethereum/2.9.0
 [2.8.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.6.1...node-ethereum/2.8.0
