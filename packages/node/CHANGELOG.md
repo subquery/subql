@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Handle RPC error for oversized block responses
+- Sync with @subql/node-core@3.1.2, various improvements for POI feature (#1869)
+
 ## [2.9.1] - 2023-07-07
 ### Fixed
 - Sync with @subql/node-core@3.1.1, fixed Poi table missing mmr issue
