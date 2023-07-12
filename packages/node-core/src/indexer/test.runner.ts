@@ -70,7 +70,6 @@ export class TestRunner<A, SA, B, DS> {
         await indexBlock(block, test.handler, this.indexerManager, this.apiService);
         await this.storeService.storeCache.flushCache(true, true);
       } catch (e: any) {
-        //this.totalFailedTests += test.expectedEntities.length;
         logger.warn(`Test: ${test.name} field due to runtime error`, e);
         this.failedTestSummary = {
           testName: test.name,
