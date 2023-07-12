@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed missing mmrQueryService in indexer module
+
 ## [2.9.2] - 2023-07-12
 ### Fixed
 - Sync with @subql/node-core@3.1.2 (#130)

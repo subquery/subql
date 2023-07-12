@@ -13,6 +13,7 @@ import {
   StoreCacheService,
   WorkerDynamicDsService,
   PgMmrCacheService,
+  MmrQueryService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
@@ -63,6 +64,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     PoiService,
     MmrService,
     PgMmrCacheService,
+    MmrQueryService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
@@ -78,6 +80,6 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
       },
     },
   ],
-  exports: [StoreService],
+  exports: [StoreService, MmrService, MmrQueryService],
 })
 export class IndexerModule {}
