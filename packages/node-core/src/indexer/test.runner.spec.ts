@@ -88,7 +88,7 @@ describe('TestRunner', () => {
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect(testRunner.passedTests).toBe(1);
+    expect((testRunner as any).passedTests).toBe(1);
   });
 
   it('increments failedTests when expected and actual entity attributes do not match', async () => {
@@ -123,7 +123,7 @@ describe('TestRunner', () => {
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect(testRunner.failedTests).toBe(1);
+    expect((testRunner as any).failedTests).toBe(1);
   });
 
   it('increments failedTests when indexBlock throws an error', async () => {
@@ -139,9 +139,9 @@ describe('TestRunner', () => {
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect(testRunner.failedTests).toBe(testMock.expectedEntities.length);
+    expect((testRunner as any).failedTests).toBe(testMock.expectedEntities.length);
 
-    const summary = testRunner.failedTestSummary;
+    const summary = (testRunner as any).failedTestSummary;
     expect(summary?.testName).toEqual(testMock.name);
     expect(summary?.entityId).toBeUndefined();
     expect(summary?.entityName).toBeUndefined();
