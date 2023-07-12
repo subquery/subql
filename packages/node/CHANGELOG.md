@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed missing mmrQueryService in indexer module (#1885)
+
 ## [2.9.2] - 2023-07-11
 ### Fixed
 - Handle RPC error for oversized block responses (#1876)
