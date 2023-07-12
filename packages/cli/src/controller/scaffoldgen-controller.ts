@@ -20,22 +20,22 @@ export async function renderTemplate(templatePath: string, outputPath: string, t
 
 export interface handlerPropType {
   name: string;
-  arg: string;
+  argName: string;
   argType: string;
 }
-export async function generateScaffold(
-  handlerProps: handlerPropType[],
-  abiInterfaces: string[],
-  projectPath: string
-): Promise<void> {
+
+export interface abiPropType {
+  name: string;
+  handlers: handlerPropType[];
+}
+export async function generateScaffold(abiProps: abiPropType[], projectPath: string): Promise<void> {
   try {
     await renderTemplate(
       SCAFFOLD_HANDLER_TEMPLATE_PATH,
       path.join(projectPath, ROOT_MAPPING_DIR, 'mappingHandlers.ts'),
       {
         props: {
-          handlers: handlerProps,
-          abis: abiInterfaces,
+          abis: abiProps,
         },
         // helper: {},
       }

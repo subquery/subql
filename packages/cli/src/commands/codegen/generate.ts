@@ -6,7 +6,7 @@ import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
 import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
 import {createProject} from '../../controller/project-controller';
-import {generateScaffold, handlerPropType} from '../../controller/scaffoldgen-controller';
+import {abiPropType, generateScaffold, handlerPropType} from '../../controller/scaffoldgen-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 import Codegen from './index';
 
@@ -44,17 +44,35 @@ export default class Generate extends Command {
     const handlerProps: handlerPropType[] = [
       {
         name: 'handleLog',
-        arg: 'log',
+        argName: 'log',
         argType: 'TransferLog',
       },
       {
         name: 'handleTransaction',
-        arg: 'tx',
+        argName: 'tx',
         argType: 'ApproveTransaction',
       },
     ];
+
+    const abisProps: abiPropType[] = [
+      {
+        name: 'Erc20Abi',
+        handlers: handlerProps,
+      },
+      {
+        name: 'Erc721Abi',
+        handlers: [
+          {
+            name: 'handleTotalSupply',
+            argName: 'log',
+            argType: 'TotalSupplyTransaction',
+          },
+        ],
+      },
+    ];
+
     try {
-      await generateScaffold(handlerProps, ['Erc20Abi', 'Erc721Abi'], root);
+      await generateScaffold(abisProps, root);
     } catch (e) {
       throw new Error('Failing to generate scaffold');
     }

@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Auto-generated
-
 <% props.abis.forEach(function (abi) { %>
-import {<% props.handlers.forEach(function (handler) { %><%= handler.argType %>,<% })%>} from "../types/abi-interfaces/<%= abi%>";
+import {<% abi.handlers.forEach(function (handler) { %><%= handler.argType %>,<% })%>} from "../types/abi-interfaces/<%= abi.name %>";
 <% })%>
 import assert from "assert";
-<% props.handlers.forEach(function (handler) { %>
-<% props.abis.forEach(function (abi) { %>
-export async function <%=handler.name %>_<%=abi %> (data: <%=handler.argType %> ): Promise<void> {
+<% props.abis.forEach(function (abi) { %><% abi.handlers.forEach(function (handler) { %>
+export async function <%=handler.name %>_<%=abi.name %> (<%=handler.argName%>: <%=handler.argType %> ): Promise<void> {
 // Place your code logic here
 }
 <% })%><% })%>
