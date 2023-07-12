@@ -6,6 +6,7 @@ import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
 import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
 import {createProject} from '../../controller/project-controller';
+import {generateScaffold, handlerPropType} from '../../controller/scaffoldgen-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 import Codegen from './index';
 
@@ -23,21 +24,40 @@ export default class Generate extends Command {
   };
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(Codegen);
+    const {flags} = await this.parse(Generate);
     const {file, location} = flags;
     const projectPath = path.resolve(file ?? location ?? process.cwd());
 
     const {manifests, root} = getProjectRootAndManifest(projectPath);
 
     // li st all codegen generated
-    try {
-      // for now just hard code stuff
-      // but in future will update
-      await Codegen.run(['--location', root, '-f', manifests[0]]);
-    } catch (e) {
-      throw new Error(e);
-    }
+    // try {
+    //   // for now just hard code stuff
+    //   // but in future will update
+    //   await Codegen.run(['-f', projectPath]);
+    //
+    //   // ensure codegen
+    // } catch (e) {
+    //   throw new Error(e);
+    // }
 
+    const handlerProps: handlerPropType[] = [
+      {
+        name: 'handleLog',
+        arg: 'log',
+        argType: 'TransferLog',
+      },
+      {
+        name: 'handleTransaction',
+        arg: 'tx',
+        argType: 'ApproveTransaction',
+      },
+    ];
+    try {
+      await generateScaffold(handlerProps, root);
+    } catch (e) {
+      throw new Error('Failing to generate scaffold');
+    }
     // after a list of types is generated
     // under <root>/src/types/abi-interfaces
 

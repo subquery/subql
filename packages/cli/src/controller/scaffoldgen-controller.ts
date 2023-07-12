@@ -17,41 +17,29 @@ export async function renderTemplate(templatePath: string, outputPath: string, t
   await fs.promises.writeFile(outputPath, data);
 }
 // after selecting a type, this should generate a handler in accordance
-export async function generateScaffold(handlerName: string, argType: any, projectPath: string): Promise<void> {
-  // input type
-  const entities = [
-    {
-      name: 'Approval',
-      constructors: [
-        // Will loop through the entity and all the required fields
-        {id: 'hash'},
-        {owner: 'from'},
-        {spender: 'await tx.args[0]'}, // if Promise then should add await
-        {value: 'BigInt(await tx.args[1].toString())'}, // Should ensure types are correct
-        {contractAddress: 'to'},
-      ],
-    },
-    {
-      name: 'Transaction',
-      constructors: [],
-    },
-  ];
 
-  await renderTemplate(SCAFFOLD_HANDLER_TEMPLATE_PATH, path.join(projectPath, ROOT_MAPPING_DIR, handlerName), {
-    props: {
-      abis: ['Erc20Abi'],
-      args: ['log', 'tx'],
-      argType: [
-        // these are from ABI generated
-        'TransferLog',
-        'ApproveTransaction',
-      ],
-      handlerName: 'handleLog',
-      entities: [],
-      // how would i know what entity to generate
-    },
-    helper: {},
-  });
+export interface handlerPropType {
+  name: string;
+  arg: string;
+  argType: string;
+}
+export async function generateScaffold(handlerProps: handlerPropType[], projectPath: string): Promise<void> {
+  try {
+    await renderTemplate(
+      SCAFFOLD_HANDLER_TEMPLATE_PATH,
+      path.join(projectPath, ROOT_MAPPING_DIR, 'mappingHandlers.ts'),
+      {
+        props: {
+          handlers: handlerProps,
+        },
+        // helper: {},
+      }
+    );
+  } catch (e) {
+    console.error(`unable to generate scaffold. ${e.message}`);
+  }
+
+  await fs.promises.writeFile(path.join(projectPath, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
 }
 
 // template out the handler
