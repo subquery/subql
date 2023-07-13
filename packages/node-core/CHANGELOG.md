@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- Fix schema and its entities not being recreated between test runs in `TestingService` (#1870)
+- Fix `TestingService` to run tests in seperate application contexts (#1870)
 - Cache race condition when flushing cache and getting data (#1873)
 
 ## [3.1.1] - 2023-07-06

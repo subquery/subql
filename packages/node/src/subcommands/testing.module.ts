@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Module, ModuleMetadata } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import {
@@ -10,6 +10,7 @@ import {
   NodeConfig,
   PoiService,
   StoreService,
+  TestRunner,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -23,7 +24,6 @@ import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { MetaModule } from '../meta/meta.module';
-import { TestRunner } from './test.runner';
 
 @Module({
   providers: [
@@ -64,9 +64,16 @@ import { TestRunner } from './test.runner';
         NodeConfig,
       ],
     },
-    IndexerManager,
     SchedulerRegistry,
     TestRunner,
+    {
+      provide: 'IApi',
+      useClass: ApiService,
+    },
+    {
+      provide: 'IIndexerManager',
+      useClass: IndexerManager,
+    },
   ],
 
   imports: [MetaModule, FetchModule],

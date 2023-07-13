@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing';
 import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
@@ -28,11 +28,11 @@ export class TestRunner<A, SA, B, DS> {
   private passedTests = 0;
   private failedTests = 0;
   constructor(
-    protected readonly apiService: IApi<A, SA, B>,
+    @Inject('IApi') protected readonly apiService: IApi<A, SA, B>,
     protected readonly storeService: StoreService,
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,
-    protected readonly indexerManager: IIndexerManager<B, DS>
+    @Inject('IIndexerManager') protected readonly indexerManager: IIndexerManager<B, DS>
   ) {}
 
   async runTest(

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Handle RPC error for oversized block responses (#1876)
+- Modidy `TestingService` to use `TestRunner` from node-core (#1870)
 
 ## [2.9.1] - 2023-07-06
 ### Fixed
