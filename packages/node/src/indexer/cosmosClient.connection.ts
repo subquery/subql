@@ -121,6 +121,8 @@ export class CosmosClientConnection
       formatted_error = CosmosClientConnection.handleDisconnectionError(e);
     } else if (e.message.startsWith(`Request failed with status code 429`)) {
       formatted_error = CosmosClientConnection.handleRateLimitError(e);
+    } else if (e.message.includes(`Exceeded max limit of`)) {
+      formatted_error = CosmosClientConnection.handleLargeResponseError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,
@@ -152,6 +154,16 @@ export class CosmosClientConnection
       'ConnectionError',
       e.message,
       ApiErrorType.Connection,
+    );
+  }
+
+  static handleLargeResponseError(e: Error): ApiConnectionError {
+    const newMessage = `Oversized RPC node response. This issue is related to the network's RPC nodes configuration, not your application. You may report it to the network's maintainers or try a different RPC node.\n\n${e.message}`;
+
+    return new ApiConnectionError(
+      'RpcInternalError',
+      newMessage,
+      ApiErrorType.Default,
     );
   }
 }

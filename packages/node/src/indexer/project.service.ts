@@ -8,6 +8,7 @@ import {
   StoreService,
   PoiService,
   MmrService,
+  MmrQueryService,
   BaseProjectService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
@@ -36,6 +37,7 @@ export class ProjectService extends BaseProjectService<
     apiService: ApiService,
     poiService: PoiService,
     mmrService: MmrService,
+    mmrQueryService: MmrQueryService,
     sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
     storeService: StoreService,
@@ -49,6 +51,7 @@ export class ProjectService extends BaseProjectService<
       apiService,
       poiService,
       mmrService,
+      mmrQueryService,
       sequelize,
       project,
       storeService,
