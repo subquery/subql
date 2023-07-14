@@ -111,20 +111,6 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   async init(): Promise<void> {
     const network = await this.client.getNetwork();
     this.chainId = network.passphrase;
-    //this.injectClient();
-    /*
-    const [genesisBlock, network, supportsFinalization, supportsSafe] =
-      await Promise.all([
-        this.client.getBlock('earliest'),
-        this.client.getNetwork(),
-        this.getSupportsTag('finalized'),
-        this.getSupportsTag('safe'),
-      ]);
-    this.genesisBlock = genesisBlock;
-    this.supportsFinalization = supportsFinalization && supportsSafe;
-    this.chainId = network.chainId;
-    this.name = network.name;
-    */
   }
 
   async getFinalizedBlock(): Promise<SorobanRpc.GetLatestLedgerResponse> {
@@ -174,7 +160,6 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
         hash: blockNumber.toString(),
       } as SorobanBlock);
 
-      logger.info(JSON.stringify(ret));
       this.eventEmitter.emit('fetchBlock');
       return ret;
     } catch (e) {

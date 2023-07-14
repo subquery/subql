@@ -26,12 +26,7 @@ export interface Store {
   bulkRemove(entity: string, ids: string[]): Promise<void>;
 }
 
-export interface BlockWrapper<
-  B extends SorobanBlock = SorobanBlock,
-  E extends SorobanEvent = SorobanEvent,
-  EF extends SorobanEventFilter = SorobanEventFilter
-> {
-  //events?: (filters?: EF | EF[], ds?: any) => E[];
+export interface BlockWrapper<B extends SorobanBlock = SorobanBlock, E extends SorobanEvent = SorobanEvent> {
   events?: E[];
   block: B;
 }

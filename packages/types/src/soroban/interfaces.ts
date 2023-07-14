@@ -17,4 +17,4 @@ export interface SorobanEventFilter {
   topics?: string[];
 }
 
-export type SorobanBlockWrapper = BlockWrapper<SorobanBlock, SorobanEvent, SorobanEventFilter>;
+export type SorobanBlockWrapper = BlockWrapper<SorobanBlock, SorobanEvent>;

@@ -35,6 +35,10 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
 
     if (!filter) return true;
 
+    if (filter.contractId && filter.contractId !== event.contractId) {
+      return false;
+    }
+
     if (filter.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
         const topic = filter.topics[i];
@@ -50,6 +54,7 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
         }
       }
     }
+
     return true;
   }
 }

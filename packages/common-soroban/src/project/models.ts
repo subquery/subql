@@ -32,6 +32,9 @@ import {SubqlSorobanProcessorOptions} from './types';
 
 export class EventFilter implements SorobanEventFilter {
   @IsOptional()
+  @IsString()
+  contractId?: string;
+  @IsOptional()
   @IsArray()
   topics?: string[];
 }
@@ -62,7 +65,7 @@ export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOp
 }
 
 export class EventHandler implements SubqlEventHandler {
-  @forbidNonWhitelisted({topics: ''})
+  @forbidNonWhitelisted({topics: '', contractId: ''})
   @IsOptional()
   @ValidateNested()
   @Type(() => EventFilter)
