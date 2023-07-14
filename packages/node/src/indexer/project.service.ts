@@ -66,7 +66,8 @@ export class ProjectService extends BaseProjectService<
   protected async generateTimestampReferenceForBlockFilters(
     ds: SubqlProjectDs[],
   ): Promise<SubqlProjectDs[]> {
-    throw new Error('Block filters not implemented yet');
+    //throw new Error('Block filters not implemented yet');
+    return Promise.resolve(ds);
     //return generateTimestampReferenceForBlockFilters(ds, this.apiService.api);
   }
 

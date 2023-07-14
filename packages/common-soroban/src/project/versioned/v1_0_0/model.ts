@@ -30,7 +30,6 @@ import {SubqlSorobanDataSource, SubqlRuntimeHandler} from '../../types';
 import {CustomDatasourceTemplate, SorobanProjectManifestV1_0_0, RuntimeDatasourceTemplate} from './types';
 
 const Soroban_NODE_NAME = `@subql/node-soroban`;
-const Flare_NODE_NAME = `@subql/node-flare`;
 
 export class SorobanProjectMapping extends SorobanMapping {
   @IsString()
@@ -38,7 +37,7 @@ export class SorobanProjectMapping extends SorobanMapping {
 }
 
 export class SorobanRunnerNodeImpl extends RunnerNodeImpl {
-  @IsIn([Soroban_NODE_NAME, Flare_NODE_NAME], {
+  @IsIn([Soroban_NODE_NAME], {
     message: `Runner Substrate node name incorrect, suppose be '${Soroban_NODE_NAME}'`,
   })
   name: string;

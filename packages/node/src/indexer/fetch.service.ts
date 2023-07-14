@@ -203,10 +203,7 @@ export class FetchService extends BaseFetchService<
   protected async getFinalizedHeight(): Promise<number> {
     const block = await this.api.getFinalizedBlock();
 
-    const header = blockToHeader({
-      height: block.sequence,
-      hash: block.sequence.toString(),
-    } as SorobanBlock);
+    const header = blockToHeader(block.sequence);
 
     this.unfinalizedBlocksService.registerFinalizedBlock(header);
     return header.blockHeight;
@@ -269,6 +266,7 @@ export class FetchService extends BaseFetchService<
   }
 
   protected getModulos(): number[] {
-    throw new Error('Block handlers not implemented yet');
+    //block handler not implemented yet
+    return [];
   }
 }

@@ -173,6 +173,8 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
         height: blockNumber,
         hash: blockNumber.toString(),
       } as SorobanBlock);
+
+      logger.info(JSON.stringify(ret));
       this.eventEmitter.emit('fetchBlock');
       return ret;
     } catch (e) {

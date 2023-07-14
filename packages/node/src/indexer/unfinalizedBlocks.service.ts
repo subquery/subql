@@ -8,14 +8,17 @@ import {
   Header,
   NodeConfig,
   StoreCacheService,
+  getLogger,
 } from '@subql/node-core';
 import { BlockWrapper, SorobanBlock } from '@subql/types-soroban';
 
-export function blockToHeader(block: SorobanBlock): Header {
+const logger = getLogger('unfinalized');
+
+export function blockToHeader(blockHeight: number): Header {
   return {
-    blockHeight: block.height,
-    blockHash: block.height.toString(),
-    parentHash: (block.height - 1).toString(),
+    blockHeight: blockHeight,
+    blockHash: blockHeight.toString(),
+    parentHash: (blockHeight - 1).toString(),
   };
 }
 
@@ -30,21 +33,20 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   }
 
   protected blockToHeader(block: BlockWrapper): Header {
-    return blockToHeader(block.block);
+    return blockToHeader(block.block.height);
   }
 
   protected async getFinalizedHead(): Promise<Header> {
     const finalizedBlock = await this.apiService.api.getFinalizedBlock();
-    return blockToHeader(finalizedBlock);
+    logger.info(JSON.stringify(finalizedBlock));
+    return blockToHeader(finalizedBlock.sequence);
   }
 
   protected async getHeaderForHash(hash: string): Promise<Header> {
-    const block = await this.apiService.api.getBlockByHeightOrHash(hash);
-    return blockToHeader(block);
+    return this.getHeaderForHeight(parseInt(hash, 10));
   }
 
   protected async getHeaderForHeight(height: number): Promise<Header> {
-    const block = await this.apiService.api.getBlockByHeightOrHash(height);
-    return blockToHeader(block);
+    return Promise.resolve(blockToHeader(height));
   }
 }
