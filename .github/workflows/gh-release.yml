@@ -1,0 +1,36 @@
+name: "Github Release"
+on:
+  workflow_dispatch:
+
+jobs:
+  github-release:
+    name: github-release
+    runs-on: ubuntu-latest
+    steps:
+      #Check out
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - run: yarn install
+
+      #Create github releases
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-ethereum
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}

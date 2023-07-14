@@ -1,0 +1,127 @@
+specVersion: '1.0.0'
+
+name: 'uniswap-v3'
+version: '0.0.1'
+runner:
+  node:
+    name: '@subql/node-ethereum'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: 'This project can be use as a starting point for developing your new Ethereum SubQuery project'
+repository: 'https://github.com/subquery/ethereum-subql-starter'
+
+schema:
+  file: './schema.graphql'
+
+network:
+  #  endpoint: "fill it in"
+  chainId: '1'
+  dictionary: 'https://eth-dict.api.onfinality.io/'
+  endpoint: 'wss://eth.api.onfinality.io/ws?apikey='
+
+dataSources:
+  - kind: ethereum/Runtime
+    startBlock: 12369621
+    options:
+      # Must be a key of assets
+      abi: Factory
+      address: '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+    assets:
+      Factory:
+        file: './abis/Factory.json'
+      ERC20:
+        file: './abis/ERC20.json'
+      ERC20SymbolBytes:
+        file: './abis/ERC20SymbolBytes.json'
+      ERC20NameBytes:
+        file: './abis/ERC20NameBytes.json'
+      Pool:
+        file: './abis/pool.json'
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handlePoolCreated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)
+    # ethereum/contract
+  - kind: ethereum/Runtime
+    startBlock: 12369651
+    options:
+      abi: NonfungiblePositionManager
+      address: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88'
+    assets:
+      NonfungiblePositionManager:
+        file: ./abis/NonfungiblePositionManager.json
+      Pool:
+        file: ./abis/pool.json
+      Factory:
+        file: ./abis/factory.json
+      ERC20:
+        file: ./abis/ERC20.json
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleIncreaseLiquidity
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - IncreaseLiquidity (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)
+        - handler: handleDecreaseLiquidity
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - DecreaseLiquidity (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)
+        - handler: handleCollect
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Collect (uint256 tokenId, address recipient, uint256 amount0, uint256 amount1)
+        - handler: handleTransfer
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer (address from, address to, uint256 tokenId)
+templates:
+  - name: Pool
+    kind: ethereum/Runtime
+    options:
+      abi: Pool
+    assets:
+      Pool:
+        file: './abis/pool.json'
+      Factory:
+        file: './abis/factory.json'
+      ERC20:
+        file: './abis/ERC20.json'
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleInitialize
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Initialize (uint160,int24)
+        - handler: handleSwap
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Swap (address sender, address recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)
+        - handler: handleMint
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Mint(address sender, address owner, int24 tickLower, int24 tickUpper, uint128 amount, uint256 amount0, uint256 amount1)
+        - handler: handleBurn
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Burn(indexed address,indexed int24,indexed int24,uint128,uint256,uint256)
+        - handler: handleFlash
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Flash(indexed address,indexed address,uint256,uint256,uint256,uint256)
