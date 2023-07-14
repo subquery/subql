@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - If enabled `--store-cache-async` writing data to the store is asynchronous with regard to block processing (default is enabled)
 - Testing Framework, allow users to test their projects filters and handler functions without having to index the project
   - Create test files with the naming convention `*.test.ts` and place them in the `src/tests` or `src/test` folder. Each test file should contain test cases for specific mapping handlers.
-  - Run the testing service using the command: `subql-node-ethereum test`.
+  - Run the testing service using the command: `subql-node-soroban test`.
 
 ## [1.0.2] - 2023-04-12
 ### Fixed
@@ -177,31 +177,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry request when encouraging timeout/rate limit behaviours (#9)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.2...HEAD
-[2.9.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.1...node-ethereum/2.9.2
-[2.9.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.0...node-ethereum/2.9.1
-[2.9.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.8.0...node-ethereum/2.9.0
-[2.8.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.6.1...node-ethereum/2.8.0
-[2.6.1]: https://github.com/subquery/subql-ethereum/compare/node/2.6.0...node-ethereum/2.6.1
-[2.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.3...node-ethereum/2.6.0
-[2.5.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.2...node-ethereum/2.5.3
-[2.5.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.1...node-ethereum/2.5.2
-[2.5.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.0...node-ethereum/2.5.1
-[2.5.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.2.2...node-ethereum/2.5.0
-[2.2.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.2.0.../node-ethereum/2.2.2
-[2.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.1.2.../node-ethereum/2.2.0
-[2.1.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.1.0.../node-ethereum/2.1.2
-[2.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.0.1.../node-ethereum/2.1.0
-[2.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.0.0.../node-ethereum/2.0.1
-[2.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/1.0.2.../node-ethereum/2.0.0
-[1.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/1.0.1.../node-ethereum/1.0.2
-[1.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/1.0.0.../node-ethereum/1.0.1
-[1.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.4.0.../node-ethereum/1.0.0
-[0.4.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.3.0.../node-ethereum/0.4.0
-[0.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.2.3.../node-ethereum/0.3.0
-[0.2.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.2.2.../node-ethereum/0.2.3
-[0.2.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.2.1.../node-ethereum/0.2.2
-[0.2.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.2.0.../node-ethereum/0.2.1
-[0.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.1.1.../node-ethereum/0.2.0
-[0.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/0.1.0.../node-ethereum/0.1.1
-[0.1.0]: https://github.com/subquery/subql-ethereum/tags/node-ethereum/0.1.0
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.9.2...HEAD
+[2.9.2]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.9.1...node-soroban/2.9.2
+[2.9.1]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.9.0...node-soroban/2.9.1
+[2.9.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.8.0...node-soroban/2.9.0
+[2.8.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.6.1...node-soroban/2.8.0
+[2.6.1]: https://github.com/subquery/subql-ethereum/compare/node/2.6.0...node-soroban/2.6.1
+[2.6.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.5.3...node-soroban/2.6.0
+[2.5.3]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.5.2...node-soroban/2.5.3
+[2.5.2]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.5.1...node-soroban/2.5.2
+[2.5.1]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.5.0...node-soroban/2.5.1
+[2.5.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.2.2...node-soroban/2.5.0
+[2.2.2]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.2.0.../node-soroban/2.2.2
+[2.2.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.1.2.../node-soroban/2.2.0
+[2.1.2]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.1.0.../node-soroban/2.1.2
+[2.1.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.0.1.../node-soroban/2.1.0
+[2.0.1]: https://github.com/subquery/subql-ethereum/compare/node-soroban/2.0.0.../node-soroban/2.0.1
+[2.0.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/1.0.2.../node-soroban/2.0.0
+[1.0.2]: https://github.com/subquery/subql-ethereum/compare/node-soroban/1.0.1.../node-soroban/1.0.2
+[1.0.1]: https://github.com/subquery/subql-ethereum/compare/node-soroban/1.0.0.../node-soroban/1.0.1
+[1.0.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.4.0.../node-soroban/1.0.0
+[0.4.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.3.0.../node-soroban/0.4.0
+[0.3.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.2.3.../node-soroban/0.3.0
+[0.2.3]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.2.2.../node-soroban/0.2.3
+[0.2.2]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.2.1.../node-soroban/0.2.2
+[0.2.1]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.2.0.../node-soroban/0.2.1
+[0.2.0]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.1.1.../node-soroban/0.2.0
+[0.1.1]: https://github.com/subquery/subql-ethereum/compare/node-soroban/0.1.0.../node-soroban/0.1.1
+[0.1.0]: https://github.com/subquery/subql-ethereum/tags/node-soroban/0.1.0

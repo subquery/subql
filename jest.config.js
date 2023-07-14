@@ -21,7 +21,7 @@ module.exports = {
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
-    'packages/common-ethereum/src/**/*.ts',
+    'packages/common-soroban/src/**/*.ts',
     'packages/node/src/**/*.ts',
   ],
 
@@ -80,8 +80,8 @@ module.exports = {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
   moduleNameMapper: {
-    '@subql/common-ethereum': '<rootDir>/packages/common-ethereum/src',
-    '@subql/types-ethereum': '<rootDir>/packages/types/src',
+    '@subql/common-soroban': '<rootDir>/packages/common-soroban/src',
+    '@subql/types-soroban': '<rootDir>/packages/types/src',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

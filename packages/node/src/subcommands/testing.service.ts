@@ -8,18 +8,18 @@ import {
   TestingService as BaseTestingService,
   ApiService,
 } from '@subql/node-core';
-import { EthereumBlockWrapper } from '@subql/types-ethereum';
+import { SorobanBlockWrapper } from '@subql/types-soroban';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApi } from '../ethereum';
-import SafeEthProvider from '../ethereum/safe-api';
 import { IndexerManager } from '../indexer/indexer.manager';
+import { SorobanApi } from '../soroban';
+import SafeEthProvider from '../soroban/safe-api';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
-  EthereumApi,
+  SorobanApi,
   SafeEthProvider,
-  EthereumBlockWrapper,
+  SorobanBlockWrapper,
   SubqlProjectDs
 > {
   constructor(
@@ -40,10 +40,7 @@ export class TestingService extends BaseTestingService<
     );
   }
 
-  async indexBlock(
-    block: EthereumBlockWrapper,
-    handler: string,
-  ): Promise<void> {
+  async indexBlock(block: SorobanBlockWrapper, handler: string): Promise<void> {
     await this.indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }
 }

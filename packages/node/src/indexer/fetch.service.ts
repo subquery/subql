@@ -7,11 +7,10 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 
 import {
   isCustomDs,
-  EthereumHandlerKind,
-  EthereumLogFilter,
-  SubqlEthereumProcessorOptions,
-  EthereumTransactionFilter,
-} from '@subql/common-ethereum';
+  SorobanHandlerKind,
+  SorobanEventFilter,
+  SubqlSorobanProcessorOptions,
+} from '@subql/common-soroban';
 import {
   NodeConfig,
   BaseFetchService,
@@ -19,16 +18,15 @@ import {
   getLogger,
 } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
-import { SubqlDatasource } from '@subql/types-ethereum';
+import { SorobanBlock, SubqlDatasource } from '@subql/types-soroban';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApi, EthereumApiService } from '../ethereum';
-import SafeEthProvider from '../ethereum/safe-api';
-import { calcInterval } from '../ethereum/utils.ethereum';
-import { eventToTopic, functionToSighash } from '../utils/string';
+import { SorobanApi, SorobanApiService } from '../soroban';
+import SafeEthProvider from '../soroban/safe-api';
+import { calcInterval } from '../soroban/utils.soroban';
 import { yargsOptions } from '../yargs';
-import { IEthereumBlockDispatcher } from './blockDispatcher';
+import { ISorobanBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -44,8 +42,8 @@ const BLOCK_TIME_VARIANCE = 5000;
 const INTERVAL_PERCENT = 0.9;
 
 function eventFilterToQueryEntry(
-  filter: EthereumLogFilter,
-  dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
+  filter: SorobanEventFilter,
+  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
 ): DictionaryQueryEntry {
   const queryAddressLimit = yargsOptions.argv['query-address-limit'];
 
@@ -85,7 +83,7 @@ function eventFilterToQueryEntry(
       const field = `topics${i}`;
       conditions.push({
         field,
-        value: eventToTopic(topic),
+        value: topic,
         matcher: 'equalTo',
       });
     }
@@ -96,45 +94,8 @@ function eventFilterToQueryEntry(
   };
 }
 
-function callFilterToQueryEntry(
-  filter: EthereumTransactionFilter,
-): DictionaryQueryEntry {
-  const conditions: DictionaryQueryCondition[] = [];
-  if (filter.from) {
-    conditions.push({
-      field: 'from',
-      value: filter.from.toLowerCase(),
-      matcher: 'equalTo',
-    });
-  }
-  if (filter.to) {
-    conditions.push({
-      field: 'to',
-      value: filter.to.toLowerCase(),
-      matcher: 'equalTo',
-    });
-  } else if (filter.to === null) {
-    conditions.push({
-      field: 'to',
-      value: true as any, // TODO update types to allow boolean
-      matcher: 'isNull',
-    });
-  }
-  if (filter.function) {
-    conditions.push({
-      field: 'func',
-      value: functionToSighash(filter.function),
-      matcher: 'equalTo',
-    });
-  }
-  return {
-    entity: 'evmTransactions',
-    conditions,
-  };
-}
-
 type GroupedSubqlProjectDs = SubqlDatasource & {
-  groupedOptions?: SubqlEthereumProcessorOptions[];
+  groupedOptions?: SubqlSorobanProcessorOptions[];
 };
 export function buildDictionaryQueryEntries(
   dataSources: GroupedSubqlProjectDs[],
@@ -154,23 +115,8 @@ export function buildDictionaryQueryEntries(
       if (!handler.filter) return [];
 
       switch (handler.kind) {
-        case EthereumHandlerKind.Block:
-          return [];
-        case EthereumHandlerKind.Call: {
-          const filter = handler.filter as EthereumTransactionFilter;
-          if (
-            filter.from !== undefined ||
-            filter.to !== undefined ||
-            filter.function
-          ) {
-            queryEntries.push(callFilterToQueryEntry(filter));
-          } else {
-            return [];
-          }
-          break;
-        }
-        case EthereumHandlerKind.Event: {
-          const filter = handler.filter as EthereumLogFilter;
+        case SorobanHandlerKind.Event: {
+          const filter = handler.filter as SorobanEventFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
               eventFilterToQueryEntry(filter, ds.groupedOptions),
@@ -200,7 +146,7 @@ export function buildDictionaryQueryEntries(
 export class FetchService extends BaseFetchService<
   ApiService,
   SubqlDatasource,
-  IEthereumBlockDispatcher,
+  ISorobanBlockDispatcher,
   DictionaryService
 > {
   constructor(
@@ -208,7 +154,7 @@ export class FetchService extends BaseFetchService<
     nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
-    blockDispatcher: IEthereumBlockDispatcher,
+    blockDispatcher: ISorobanBlockDispatcher,
     dictionaryService: DictionaryService,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
@@ -229,7 +175,7 @@ export class FetchService extends BaseFetchService<
     );
   }
 
-  get api(): EthereumApi {
+  get api(): SorobanApi {
     return this.apiService.unsafeApi;
   }
 
@@ -257,7 +203,10 @@ export class FetchService extends BaseFetchService<
   protected async getFinalizedHeight(): Promise<number> {
     const block = await this.api.getFinalizedBlock();
 
-    const header = blockToHeader(block);
+    const header = blockToHeader({
+      height: block.sequence,
+      hash: block.sequence.toString(),
+    } as SorobanBlock);
 
     this.unfinalizedBlocksService.registerFinalizedBlock(header);
     return header.blockHeight;
@@ -278,6 +227,7 @@ export class FetchService extends BaseFetchService<
     return Promise.resolve(this.api.getChainId().toString());
   }
 
+  /*
   protected getModulos(): number[] {
     const modulos: number[] = [];
     for (const ds of this.project.dataSources) {
@@ -286,7 +236,7 @@ export class FetchService extends BaseFetchService<
       }
       for (const handler of ds.mapping.handlers) {
         if (
-          handler.kind === EthereumHandlerKind.Block &&
+          handler.kind === SorobanHandlerKind.Block &&
           handler.filter &&
           handler.filter.modulo
         ) {
@@ -296,6 +246,7 @@ export class FetchService extends BaseFetchService<
     }
     return modulos;
   }
+  */
 
   protected async initBlockDispatcher(): Promise<void> {
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
@@ -313,7 +264,11 @@ export class FetchService extends BaseFetchService<
   }
 
   protected async preLoopHook(): Promise<void> {
-    // Ethereum doesn't need to do anything here
+    // Soroban doesn't need to do anything here
     return Promise.resolve();
+  }
+
+  protected getModulos(): number[] {
+    throw new Error('Block handlers not implemented yet');
   }
 }

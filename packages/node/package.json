@@ -1,5 +1,5 @@
 {
-  "name": "@subql/node-ethereum",
+  "name": "@subql/node-soroban",
   "version": "2.9.3-0",
   "description": "",
   "author": "Ian He",
@@ -15,7 +15,7 @@
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
   "bin": {
-    "subql-node-ethereum": "./bin/run"
+    "subql-node-soroban": "./bin/run"
   },
   "dependencies": {
     "@apollo/client": "3.5.8",
@@ -25,11 +25,11 @@
     "@nestjs/platform-express": "^9.4.0",
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^2.3.0",
-    "@subql/common-ethereum": "workspace:*",
+    "@subql/common-soroban": "workspace:*",
     "@subql/node-core": "^3.1.2",
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.2",
-    "@subql/types-ethereum": "workspace:*",
+    "@subql/types-soroban": "workspace:*",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cacheable-lookup": "6",
     "cron-converter": "^1.0.2",

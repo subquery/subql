@@ -12,7 +12,7 @@ import {
   ProcessBlockResponse,
   ApiService,
 } from '@subql/node-core';
-import { BlockWrapper, EthereumBlockWrapper } from '@subql/types-ethereum';
+import { BlockWrapper, SorobanBlockWrapper } from '@subql/types-soroban';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
 
@@ -72,7 +72,7 @@ export class WorkerService {
   async processBlock(height: number): Promise<ProcessBlockResponse> {
     try {
       this._isIndexing = true;
-      const block = this.fetchedBlocks[height] as EthereumBlockWrapper;
+      const block = this.fetchedBlocks[height] as SorobanBlockWrapper;
 
       if (!block) {
         throw new Error(`Block ${height} has not been fetched`);

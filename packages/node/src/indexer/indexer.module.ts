@@ -16,8 +16,8 @@ import {
   MmrQueryService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApiService } from '../ethereum';
-import { EthereumApiConnection } from '../ethereum/api.connection';
+import { SorobanApiService } from '../soroban';
+import { SorobanApiConnection } from '../soroban/api.connection';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
@@ -37,10 +37,10 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
+        connectionPoolService: ConnectionPoolService<SorobanApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new EthereumApiService(
+        const apiService = new SorobanApiService(
           project,
           connectionPoolService,
           eventEmitter,

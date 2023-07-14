@@ -3,8 +3,8 @@
 
 import { NestFactory } from '@nestjs/core';
 import { ApiService, getLogger, NestLogger } from '@subql/node-core';
-import { EthereumApiService } from '../ethereum';
 import { ProjectService } from '../indexer/project.service';
+import { SorobanApiService } from '../soroban';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
 

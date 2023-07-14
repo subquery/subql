@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Block } from '@ethersproject/abstract-provider';
 import { Injectable } from '@nestjs/common';
 import {
   ApiService,
@@ -10,13 +9,13 @@ import {
   NodeConfig,
   StoreCacheService,
 } from '@subql/node-core';
-import { BlockWrapper, EthereumBlock } from '@subql/types-ethereum';
+import { BlockWrapper, SorobanBlock } from '@subql/types-soroban';
 
-export function blockToHeader(block: EthereumBlock | Block): Header {
+export function blockToHeader(block: SorobanBlock): Header {
   return {
-    blockHeight: block.number,
-    blockHash: block.hash,
-    parentHash: block.parentHash,
+    blockHeight: block.height,
+    blockHash: block.height.toString(),
+    parentHash: (block.height - 1).toString(),
   };
 }
 

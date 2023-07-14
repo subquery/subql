@@ -1,36 +1,23 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  EthereumBlock,
-  EthereumBlockFilter,
-  EthereumLog,
-  EthereumLogFilter,
-  EthereumTransaction,
-  EthereumTransactionFilter,
-} from './ethereum';
 import {ApiWrapper} from './interfaces';
+import {SorobanEvent, SorobanEventFilter} from './soroban';
 
-export enum EthereumDatasourceKind {
-  Runtime = 'ethereum/Runtime',
+export enum SorobanDatasourceKind {
+  Runtime = 'soroban/Runtime',
 }
 
-export enum EthereumHandlerKind {
-  Block = 'ethereum/BlockHandler',
-  Call = 'ethereum/TransactionHandler',
-  Event = 'ethereum/LogHandler',
+export enum SorobanHandlerKind {
+  Event = 'soroban/EventHandler',
 }
 
-export type EthereumRuntimeHandlerInputMap = {
-  [EthereumHandlerKind.Block]: EthereumBlock;
-  [EthereumHandlerKind.Call]: EthereumTransaction;
-  [EthereumHandlerKind.Event]: EthereumLog;
+export type SorobanRuntimeHandlerInputMap = {
+  [SorobanHandlerKind.Event]: SorobanEvent;
 };
 
-type EthereumRuntimeFilterMap = {
-  [EthereumHandlerKind.Block]: EthereumBlockFilter;
-  [EthereumHandlerKind.Event]: EthereumLogFilter;
-  [EthereumHandlerKind.Call]: EthereumTransactionFilter;
+type SorobanRuntimeFilterMap = {
+  [SorobanHandlerKind.Event]: SorobanEventFilter;
 };
 
 export interface ProjectManifest {
@@ -48,22 +35,10 @@ export interface ProjectManifest {
   bypassBlocks?: number[];
 }
 
-export interface SubqlBlockHandler {
-  handler: string;
-  kind: EthereumHandlerKind.Block;
-  filter?: EthereumBlockFilter;
-}
-
-export interface SubqlCallHandler {
-  handler: string;
-  kind: EthereumHandlerKind.Call;
-  filter?: EthereumTransactionFilter;
-}
-
 export interface SubqlEventHandler {
   handler: string;
-  kind: EthereumHandlerKind.Event;
-  filter?: EthereumLogFilter;
+  kind: SorobanHandlerKind.Event;
+  filter?: SorobanEventFilter;
 }
 
 export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
@@ -72,11 +47,11 @@ export interface SubqlCustomHandler<K extends string = string, F = Record<string
   filter?: F;
 }
 
-export type SubqlRuntimeHandler = SubqlBlockHandler | SubqlCallHandler | SubqlEventHandler;
+export type SubqlRuntimeHandler = SubqlEventHandler;
 
 export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
 
-export type SubqlHandlerFilter = EthereumBlockFilter | EthereumTransactionFilter | EthereumLogFilter;
+export type SubqlHandlerFilter = SorobanEventFilter;
 
 export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> {
   file: string;
@@ -90,15 +65,15 @@ interface ISubqlDatasource<M extends SubqlMapping> {
   mapping: M;
 }
 
-export interface SubqlEthereumProcessorOptions {
+export interface SubqlSorobanProcessorOptions {
   abi?: string;
   address?: string;
 }
 
 export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandler> = SubqlMapping<SubqlRuntimeHandler>>
   extends ISubqlDatasource<M> {
-  kind: EthereumDatasourceKind.Runtime;
-  options?: SubqlEthereumProcessorOptions;
+  kind: SorobanDatasourceKind.Runtime;
+  options?: SubqlSorobanProcessorOptions;
   assets?: Map<string, {file: string}>;
 }
 
@@ -123,26 +98,26 @@ export interface SubqlCustomDatasource<
 > extends ISubqlDatasource<M> {
   kind: K;
   assets: Map<string, CustomDataSourceAsset>;
-  options?: SubqlEthereumProcessorOptions;
+  options?: SubqlSorobanProcessorOptions;
   processor: Processor<O>;
 }
 
 export interface HandlerInputTransformer_0_0_0<
-  T extends EthereumHandlerKind,
+  T extends SorobanHandlerKind,
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > {
-  (input: EthereumRuntimeHandlerInputMap[T], ds: DS, api: ApiWrapper, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
+  (input: SorobanRuntimeHandlerInputMap[T], ds: DS, api: ApiWrapper, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
 }
 
 export interface HandlerInputTransformer_1_0_0<
-  T extends EthereumHandlerKind,
+  T extends SorobanHandlerKind,
   F,
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > {
   (params: {
-    input: EthereumRuntimeHandlerInputMap[T];
+    input: SorobanRuntimeHandlerInputMap[T];
     ds: DS;
     filter?: F;
     api: ApiWrapper;
@@ -166,10 +141,7 @@ export type SecondLayerHandlerProcessorArray<
   F,
   T,
   DS extends SubqlCustomDatasource<K> = SubqlCustomDatasource<K>
-> =
-  | SecondLayerHandlerProcessor<EthereumHandlerKind.Block, F, T, DS>
-  | SecondLayerHandlerProcessor<EthereumHandlerKind.Call, F, T, DS>
-  | SecondLayerHandlerProcessor<EthereumHandlerKind.Event, F, T, DS>;
+> = SecondLayerHandlerProcessor<SorobanHandlerKind.Event, F, T, DS>;
 
 export interface SubqlDatasourceProcessor<
   K extends string,
@@ -187,40 +159,40 @@ export interface SubqlDatasourceProcessor<
 }
 
 interface SecondLayerHandlerProcessorBase<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > {
   baseHandlerKind: K;
-  baseFilter: EthereumRuntimeFilterMap[K] | EthereumRuntimeFilterMap[K][];
+  baseFilter: SorobanRuntimeFilterMap[K] | SorobanRuntimeFilterMap[K][];
   filterValidator: (filter?: F) => void;
   dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
 }
 
 export interface SecondLayerHandlerProcessor_0_0_0<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: undefined;
   transformer: HandlerInputTransformer_0_0_0<K, E, DS>;
-  filterProcessor: (filter: F | undefined, input: EthereumRuntimeHandlerInputMap[K], ds: DS) => boolean;
+  filterProcessor: (filter: F | undefined, input: SorobanRuntimeHandlerInputMap[K], ds: DS) => boolean;
 }
 
 export interface SecondLayerHandlerProcessor_1_0_0<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
   transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: EthereumRuntimeHandlerInputMap[K]; ds: DS}) => boolean;
+  filterProcessor: (params: {filter: F | undefined; input: SorobanRuntimeHandlerInputMap[K]; ds: DS}) => boolean;
 }
 
 export type SecondLayerHandlerProcessor<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource

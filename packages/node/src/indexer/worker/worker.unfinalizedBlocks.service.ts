@@ -3,7 +3,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { Header, IUnfinalizedBlocksService } from '@subql/node-core';
-import { BlockWrapper, EthereumBlock } from '@subql/types-ethereum';
+import { BlockWrapper } from '@subql/types-soroban';
+import { blockToHeader } from '../unfinalizedBlocks.service';
 
 export type HostUnfinalizedBlocks = {
   unfinalizedBlocksProcess: (header: Header) => Promise<number | null>;
@@ -24,14 +25,9 @@ export class WorkerUnfinalizedBlocksService
   }
 
   async processUnfinalizedBlocks({
-    block: { hash: blockHash, parentHash },
-    blockHeight,
+    block,
   }: BlockWrapper): Promise<number | null> {
-    return this.host.unfinalizedBlocksProcess({
-      blockHash,
-      blockHeight,
-      parentHash,
-    });
+    return this.host.unfinalizedBlocksProcess(blockToHeader(block));
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async

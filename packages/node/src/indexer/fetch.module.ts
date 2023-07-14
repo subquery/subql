@@ -18,8 +18,8 @@ import {
   MmrQueryService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApiConnection } from '../ethereum/api.connection';
-import { EthereumApiService } from '../ethereum/api.service.ethereum';
+import { SorobanApiConnection } from '../soroban/api.connection';
+import { SorobanApiService } from '../soroban/api.service.soroban';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
@@ -41,10 +41,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
+        connectionPoolService: ConnectionPoolService<SorobanApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new EthereumApiService(
+        const apiService = new SorobanApiService(
           project,
           connectionPoolService,
           eventEmitter,
@@ -76,7 +76,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
-        apiService: EthereumApiService,
+        apiService: SorobanApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
         storeService: StoreService,

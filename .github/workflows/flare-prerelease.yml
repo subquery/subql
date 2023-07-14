@@ -41,7 +41,7 @@ jobs:
       - uses: marceloprado/has-changed-path@v1
         id: changed-common-flare
         with:
-          paths: packages/common-ethereum
+          paths: packages/common-soroban
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -52,7 +52,7 @@ jobs:
       - name: Change common ethereum to flare
         uses: jaywcjlove/github-action-package@main
         with:
-          path: packages/common-ethereum/package.json
+          path: packages/common-soroban/package.json
           rename: '@subql/common-flare'
 
       - name: Change types ethereum to flare
@@ -91,7 +91,7 @@ jobs:
         if: steps.changed-common-flare.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
-          package-path: packages/common-ethereum
+          package-path: packages/common-soroban
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy

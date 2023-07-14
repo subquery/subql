@@ -3,10 +3,10 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  EthereumRuntimeDataSourceImpl,
+  SorobanRuntimeDataSourceImpl,
   isCustomDs,
   isRuntimeDs,
-} from '@subql/common-ethereum';
+} from '@subql/common-soroban';
 import {
   DatasourceParams,
   DynamicDsService as BaseDynamicDsService,
@@ -56,7 +56,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
           ...params.args,
         };
 
-        const parsedDs = plainToClass(EthereumRuntimeDataSourceImpl, dsObj);
+        const parsedDs = plainToClass(SorobanRuntimeDataSourceImpl, dsObj);
 
         const errors = validateSync(parsedDs, {
           whitelist: true,

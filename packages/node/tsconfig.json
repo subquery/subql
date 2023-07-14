@@ -7,6 +7,6 @@
     "rootDir": "src",
     "outDir": "./dist"
   },
-  "references": [{ "path": "../common-ethereum" }, { "path": "../types" }],
+  "references": [{ "path": "../common-soroban" }, { "path": "../types" }],
   "include": ["src/**/*"]
 }

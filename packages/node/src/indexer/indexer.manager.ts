@@ -3,16 +3,15 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  isBlockHandlerProcessor,
-  isCallHandlerProcessor,
   isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
-  SubqlEthereumCustomDataSource,
-  EthereumHandlerKind,
-  EthereumRuntimeHandlerInputMap,
-  SubqlEthereumDataSource,
-} from '@subql/common-ethereum';
+  SubqlSorobanCustomDataSource,
+  SorobanHandlerKind,
+  SorobanRuntimeHandlerInputMap,
+  SubqlSorobanDataSource,
+  SubqlSorobanHandlerKind,
+} from '@subql/common-soroban';
 import {
   NodeConfig,
   getLogger,
@@ -23,19 +22,17 @@ import {
   ApiService,
 } from '@subql/node-core';
 import {
-  EthereumTransaction,
-  EthereumLog,
-  EthereumBlockWrapper,
-  EthereumBlock,
+  SorobanEvent,
+  SorobanEventFilter,
+  SorobanBlockWrapper,
+  SorobanBlock,
   SubqlRuntimeDatasource,
-  EthereumBlockFilter,
-  EthereumLogFilter,
-  EthereumTransactionFilter,
-} from '@subql/types-ethereum';
+  SubqlDatasource,
+} from '@subql/types-soroban';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
-import { EthereumApi, EthereumApiService } from '../ethereum';
-import { EthereumBlockWrapped } from '../ethereum/block.ethereum';
-import SafeEthProvider from '../ethereum/safe-api';
+import { SorobanApi, SorobanApiService } from '../soroban';
+import { SorobanBlockWrapped } from '../soroban/block.soroban';
+import SafeEthProvider from '../soroban/safe-api';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -50,14 +47,14 @@ const logger = getLogger('indexer');
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
   SafeEthProvider,
-  EthereumApi,
-  EthereumBlockWrapper,
+  SorobanApi,
+  SorobanBlockWrapper,
   ApiService,
-  SubqlEthereumDataSource,
-  SubqlEthereumCustomDataSource,
+  SubqlSorobanDataSource,
+  SubqlSorobanCustomDataSource,
   typeof FilterTypeMap,
   typeof ProcessorTypeMap,
-  EthereumRuntimeHandlerInputMap
+  SorobanRuntimeHandlerInputMap
 > {
   protected isRuntimeDs = isRuntimeDs;
   protected isCustomDs = isCustomDs;
@@ -91,131 +88,69 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: EthereumBlockWrapper,
-    dataSources: SubqlEthereumDataSource[],
+    block: SorobanBlockWrapper,
+    dataSources: SubqlSorobanDataSource[],
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
       this.getApi(block),
     );
   }
 
-  getBlockHeight(block: EthereumBlockWrapper): number {
-    return block.blockHeight;
+  getBlockHeight(block: SorobanBlockWrapper): number {
+    return block.block.height;
   }
 
-  getBlockHash(block: EthereumBlockWrapper): string {
+  getBlockHash(block: SorobanBlockWrapper): string {
     return block.block.hash;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  private async getApi(block: EthereumBlockWrapper): Promise<SafeEthProvider> {
+  private async getApi(block: SorobanBlockWrapper): Promise<SafeEthProvider> {
     return this.apiService.safeApi(this.getBlockHeight(block));
   }
 
   protected async indexBlockData(
-    { block, transactions }: EthereumBlockWrapper,
+    { events }: SorobanBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
-    await this.indexBlockContent(block, dataSources, getVM);
-
-    for (const tx of transactions) {
-      await this.indexTransaction(tx, dataSources, getVM);
-
-      for (const log of tx.logs ?? []) {
-        await this.indexEvent(log, dataSources, getVM);
-      }
-    }
-  }
-
-  private async indexBlockContent(
-    block: EthereumBlock,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    for (const ds of dataSources) {
-      await this.indexData(EthereumHandlerKind.Block, block, ds, getVM);
-    }
-  }
-
-  private async indexTransaction(
-    tx: EthereumTransaction,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    for (const ds of dataSources) {
-      await this.indexData(EthereumHandlerKind.Call, tx, ds, getVM);
+    for (const event of events) {
+      await this.indexEvent(event, dataSources, getVM);
     }
   }
 
   private async indexEvent(
-    log: EthereumLog,
+    event: SorobanEvent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(EthereumHandlerKind.Event, log, ds, getVM);
+      await this.indexData(SorobanHandlerKind.Event, event, ds, getVM);
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  protected async prepareFilteredData(
-    kind: EthereumHandlerKind,
-    data: any,
-    ds: SubqlRuntimeDatasource,
-  ): Promise<any> {
-    return DataAbiParser[kind](this.apiService.api)(data, ds);
+  protected async prepareFilteredData<T = any>(
+    kind: SorobanHandlerKind,
+    data: T,
+    ds: SubqlDatasource,
+  ): Promise<T> {
+    return Promise.resolve(data);
   }
 }
 
 type ProcessorTypeMap = {
-  [EthereumHandlerKind.Block]: typeof isBlockHandlerProcessor;
-  [EthereumHandlerKind.Event]: typeof isEventHandlerProcessor;
-  [EthereumHandlerKind.Call]: typeof isCallHandlerProcessor;
+  [SorobanHandlerKind.Event]: typeof isEventHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
-  [EthereumHandlerKind.Block]: isBlockHandlerProcessor,
-  [EthereumHandlerKind.Event]: isEventHandlerProcessor,
-  [EthereumHandlerKind.Call]: isCallHandlerProcessor,
+  [SorobanHandlerKind.Event]: isEventHandlerProcessor,
 };
 
 const FilterTypeMap = {
-  [EthereumHandlerKind.Block]: (
-    data: EthereumBlock,
-    filter: EthereumBlockFilter,
-    ds: SubqlEthereumDataSource,
+  [SorobanHandlerKind.Event]: (
+    data: SorobanEvent,
+    filter: SorobanEventFilter,
+    ds: SubqlSorobanDataSource,
   ) =>
-    EthereumBlockWrapped.filterBlocksProcessor(
-      data,
-      filter,
-      ds.options?.address,
-    ),
-  [EthereumHandlerKind.Event]: (
-    data: EthereumLog,
-    filter: EthereumLogFilter,
-    ds: SubqlEthereumDataSource,
-  ) =>
-    EthereumBlockWrapped.filterLogsProcessor(data, filter, ds.options?.address),
-  [EthereumHandlerKind.Call]: (
-    data: EthereumTransaction,
-    filter: EthereumTransactionFilter,
-    ds: SubqlEthereumDataSource,
-  ) =>
-    EthereumBlockWrapped.filterTransactionsProcessor(
-      data,
-      filter,
-      ds.options?.address,
-    ),
-};
-
-const DataAbiParser = {
-  [EthereumHandlerKind.Block]: () => (data: EthereumBlock) => data,
-  [EthereumHandlerKind.Event]:
-    (api: EthereumApi) => (data: EthereumLog, ds: SubqlRuntimeDatasource) =>
-      api.parseLog(data, ds),
-  [EthereumHandlerKind.Call]:
-    (api: EthereumApi) =>
-    (data: EthereumTransaction, ds: SubqlRuntimeDatasource) =>
-      api.parseTransaction(data, ds),
+    SorobanBlockWrapped.filterEventProcessor(data, filter, ds.options?.address),
 };

@@ -14,7 +14,7 @@ import {
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import {
-  generateTimestampReferenceForBlockFilters,
+  //  generateTimestampReferenceForBlockFilters,
   SubqlProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
@@ -62,10 +62,12 @@ export class ProjectService extends BaseProjectService<
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   protected async generateTimestampReferenceForBlockFilters(
     ds: SubqlProjectDs[],
   ): Promise<SubqlProjectDs[]> {
-    return generateTimestampReferenceForBlockFilters(ds, this.apiService.api);
+    throw new Error('Block filters not implemented yet');
+    //return generateTimestampReferenceForBlockFilters(ds, this.apiService.api);
   }
 
   protected getStartBlockDatasources(): SubqlProjectDs[] {

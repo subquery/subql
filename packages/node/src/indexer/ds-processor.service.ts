@@ -3,24 +3,24 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  EthereumHandlerKind,
+  SorobanHandlerKind,
   isCustomDs,
-  SubqlEthereumCustomDataSource,
-  SubqlEthereumDataSource,
+  SubqlSorobanCustomDataSource,
+  SubqlSorobanDataSource,
   SubqlDatasourceProcessor,
-} from '@subql/common-ethereum';
+} from '@subql/common-soroban';
 import { BaseDsProcessorService } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
   SubqlCustomDatasource,
-} from '@subql/types-ethereum';
+} from '@subql/types-soroban';
 
 export function isSecondLayerHandlerProcessor_0_0_0<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   E,
-  DS extends SubqlCustomDatasource = SubqlEthereumCustomDataSource,
+  DS extends SubqlCustomDatasource = SubqlSorobanCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -31,10 +31,10 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 }
 
 export function isSecondLayerHandlerProcessor_1_0_0<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   E,
-  DS extends SubqlEthereumCustomDataSource = SubqlEthereumCustomDataSource,
+  DS extends SubqlSorobanCustomDataSource = SubqlSorobanCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -44,10 +44,10 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 }
 
 export function asSecondLayerHandlerProcessor_1_0_0<
-  K extends EthereumHandlerKind,
+  K extends SorobanHandlerKind,
   F,
   E,
-  DS extends SubqlEthereumCustomDataSource = SubqlEthereumCustomDataSource,
+  DS extends SubqlSorobanCustomDataSource = SubqlSorobanCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -75,8 +75,8 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 
 @Injectable()
 export class DsProcessorService extends BaseDsProcessorService<
-  SubqlEthereumDataSource,
-  SubqlEthereumCustomDataSource<string>,
+  SubqlSorobanDataSource,
+  SubqlSorobanCustomDataSource<string>,
   SubqlDatasourceProcessor<string, unknown>
 > {
   protected isCustomDs = isCustomDs;

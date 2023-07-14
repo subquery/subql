@@ -3,10 +3,10 @@
 
 import { NodeConfig } from '@subql/node-core';
 import {
-  EthereumDatasourceKind,
-  EthereumHandlerKind,
+  SorobanDatasourceKind,
+  SorobanHandlerKind,
   SubqlRuntimeDatasource,
-} from '@subql/types-ethereum';
+} from '@subql/types-soroban';
 import { GraphQLSchema } from 'graphql';
 import {
   SubqlProjectDsTemplate,
@@ -20,7 +20,7 @@ const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
 const mockTempDs: SubqlProjectDsTemplate[] = [
   {
     name: 'ERC721',
-    kind: EthereumDatasourceKind.Runtime,
+    kind: SorobanDatasourceKind.Runtime,
     assets: new Map(),
     mapping: {
       entryScript: '',
@@ -28,7 +28,7 @@ const mockTempDs: SubqlProjectDsTemplate[] = [
       handlers: [
         {
           handler: 'handleERC721',
-          kind: EthereumHandlerKind.Event,
+          kind: SorobanHandlerKind.Event,
           filter: {
             topics: ['Transfer(address, address, uint256)'],
           },
@@ -38,7 +38,7 @@ const mockTempDs: SubqlProjectDsTemplate[] = [
   },
   {
     name: 'ERC1155',
-    kind: EthereumDatasourceKind.Runtime,
+    kind: SorobanDatasourceKind.Runtime,
     assets: new Map(),
     mapping: {
       entryScript: '',
@@ -46,7 +46,7 @@ const mockTempDs: SubqlProjectDsTemplate[] = [
       handlers: [
         {
           handler: 'handleERC1155',
-          kind: EthereumHandlerKind.Event,
+          kind: SorobanHandlerKind.Event,
           filter: {
             topics: [
               'TransferSingle(address, address, address, uint256, uint256)',
@@ -77,40 +77,10 @@ function testSubqueryProject(
 }
 
 describe('Dictioanry queries', () => {
-  describe('Transaction filters', () => {
-    it('Build a filter for contract creation transactions', () => {
-      const ds: SubqlRuntimeDatasource = {
-        kind: EthereumDatasourceKind.Runtime,
-        assets: new Map(),
-        startBlock: 1,
-        mapping: {
-          file: '',
-          handlers: [
-            {
-              handler: 'handleTransaction',
-              kind: EthereumHandlerKind.Call,
-              filter: {
-                to: null,
-              },
-            },
-          ],
-        },
-      };
-
-      const result = buildDictionaryQueryEntries([ds], 1);
-
-      expect(result).toEqual([
-        {
-          entity: 'evmTransactions',
-          conditions: [{ field: 'to', matcher: 'isNull', value: true }],
-        },
-      ]);
-    });
-  });
   describe('Correct dictionary query with dynamic ds', () => {
     it('Build correct erc1155 transfer single query', () => {
       const ds: SubqlRuntimeDatasource = {
-        kind: EthereumDatasourceKind.Runtime,
+        kind: SorobanDatasourceKind.Runtime,
         assets: new Map(),
         startBlock: 1,
         mapping: {
@@ -118,7 +88,7 @@ describe('Dictioanry queries', () => {
           handlers: [
             {
               handler: 'handleDyanmicDs',
-              kind: EthereumHandlerKind.Event,
+              kind: SorobanHandlerKind.Event,
               filter: {
                 topics: [
                   'TransferSingle(address, address, address, uint256, uint256)',
@@ -150,7 +120,7 @@ describe('Dictioanry queries', () => {
         subqueryName: '',
       });
       const ds: SubqlRuntimeDatasource = {
-        kind: EthereumDatasourceKind.Runtime,
+        kind: SorobanDatasourceKind.Runtime,
         assets: new Map(),
         startBlock: 1,
         mapping: {
@@ -158,7 +128,7 @@ describe('Dictioanry queries', () => {
           handlers: [
             {
               handler: 'handleDyanmicDs',
-              kind: EthereumHandlerKind.Event,
+              kind: SorobanHandlerKind.Event,
               filter: {
                 topics: [
                   'TransferSingle(address, address, address, uint256, uint256)',

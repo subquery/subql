@@ -19,13 +19,13 @@ import {
   WorkerBlockDispatcher,
   IUnfinalizedBlocksService,
 } from '@subql/node-core';
-import { Store } from '@subql/types-ethereum';
+import { Store } from '@subql/types-soroban';
 import chalk from 'chalk';
 import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
-import { EthereumBlockWrapped } from '../../ethereum/block.ethereum';
+import { SorobanBlockWrapped } from '../../soroban/block.soroban';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
@@ -40,7 +40,7 @@ type IndexerWorker = IIndexerWorker & {
 async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService<EthereumBlockWrapped>,
+  unfinalizedBlocksService: IUnfinalizedBlocksService<SorobanBlockWrapped>,
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<

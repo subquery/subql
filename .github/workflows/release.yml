@@ -37,14 +37,14 @@ jobs:
 
     #Identify changes
       - uses: marceloprado/has-changed-path@v1
-        id: changed-types-ethereum
+        id: changed-types-soroban
         with:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-common-ethereum
+        id: changed-common-soroban
         with:
-          paths: packages/common-ethereum
+          paths: packages/common-soroban
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -58,7 +58,7 @@ jobs:
 
       #Publish to npm and github releases
       - name: Publish Types ethereum
-        if: steps.changed-types-ethereum.outputs.changed == 'true'
+        if: steps.changed-types-soroban.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/types
@@ -66,10 +66,10 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Common ethereum
-        if: steps.changed-common-ethereum.outputs.changed == 'true'
+        if: steps.changed-common-soroban.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/common-ethereum
+          package-path: packages/common-soroban
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
@@ -106,7 +106,7 @@ jobs:
       - uses: marceloprado/has-changed-path@v1
         id: changed-common-flare
         with:
-          paths: packages/common-ethereum
+          paths: packages/common-soroban
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -117,7 +117,7 @@ jobs:
       - name: Change common ethereum to flare
         uses: jaywcjlove/github-action-package@main
         with:
-          path: packages/common-ethereum/package.json
+          path: packages/common-soroban/package.json
           rename: '@subql/common-flare'
 
       - name: Change types ethereum to flare
@@ -155,7 +155,7 @@ jobs:
         if: steps.changed-common-flare.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/common-ethereum
+          package-path: packages/common-soroban
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

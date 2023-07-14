@@ -8,7 +8,7 @@ import {
   Reader,
   ReaderFactory,
 } from '@subql/common';
-import { EthereumProjectNetworkConfig } from '@subql/common-ethereum';
+import { SorobanProjectNetworkConfig } from '@subql/common-soroban';
 import {
   IConfig,
   NodeConfig,
@@ -26,7 +26,7 @@ const logger = getLogger('configure');
 
 const YargsNameMapping: Record<string, string> = {};
 
-type Args = typeof yargsOptions.argv['argv'];
+type Args = (typeof yargsOptions.argv)['argv'];
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
@@ -115,7 +115,7 @@ export class ConfigureModule {
         argv.subquery,
         rawManifest,
         reader,
-        omitBy<EthereumProjectNetworkConfig>(
+        omitBy<SorobanProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
             dictionary: config.networkDictionary,

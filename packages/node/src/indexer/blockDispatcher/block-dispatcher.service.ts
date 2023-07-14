@@ -14,7 +14,7 @@ import {
   ProcessBlockResponse,
   ApiService,
 } from '@subql/node-core';
-import { EthereumBlockWrapper } from '@subql/types-ethereum';
+import { SorobanBlockWrapper } from '@subql/types-soroban';
 import {
   SubqlProjectDs,
   SubqueryProject,
@@ -27,7 +27,7 @@ import { IndexerManager } from '../indexer.manager';
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<EthereumBlockWrapper, SubqlProjectDs>
+  extends BlockDispatcher<SorobanBlockWrapper, SubqlProjectDs>
   implements OnApplicationShutdown
 {
   constructor(
@@ -57,12 +57,12 @@ export class BlockDispatcherService
     );
   }
 
-  protected getBlockHeight(block: EthereumBlockWrapper): number {
-    return block.blockHeight;
+  protected getBlockHeight(block: SorobanBlockWrapper): number {
+    return block.block.height;
   }
 
   protected async indexBlock(
-    block: EthereumBlockWrapper,
+    block: SorobanBlockWrapper,
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,
