@@ -28,7 +28,7 @@ export class SorobanApiConnection
     private fetchBlocksBatches: FetchFunc,
   ) {
     this.networkMeta = {
-      chain: unsafeApi.getChainId().toString(),
+      chain: unsafeApi.getChainId(),
       specName: unsafeApi.getSpecName(),
       genesisHash: unsafeApi.getGenesisHash(),
     };

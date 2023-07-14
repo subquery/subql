@@ -6,7 +6,6 @@ import {
   SubqlCustomHandler,
   SubqlHandler,
   SorobanHandlerKind,
-  SubqlSorobanHandlerKind,
   isCustomDs,
 } from '@subql/common-soroban';
 import { retryOnFail } from '@subql/node-core';
@@ -38,7 +37,7 @@ export function onlyHasEventDataSources(
 ): boolean {
   for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
-      if (handler.kind !== SubqlSorobanHandlerKind.SorobanEvent) {
+      if (handler.kind !== SorobanHandlerKind.Event) {
         return false;
       }
     }

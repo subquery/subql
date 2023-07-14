@@ -142,10 +142,7 @@ export class DeploymentV1_0_0 {
   @Type(() => SorobanCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: SorobanRuntimeDataSourceImpl, name: 'flare/Runtime'},
-        {value: SorobanRuntimeDataSourceImpl, name: 'Soroban/Runtime'},
-      ],
+      subTypes: [{value: SorobanRuntimeDataSourceImpl, name: 'soroban/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -156,10 +153,7 @@ export class DeploymentV1_0_0 {
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: RuntimeDatasourceTemplateImpl, name: 'flare/Runtime'},
-        {value: RuntimeDatasourceTemplateImpl, name: 'Soroban/Runtime'},
-      ],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'soroban/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -175,10 +169,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @Type(() => SorobanCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: SorobanRuntimeDataSourceImpl, name: 'flare/Runtime'},
-        {value: SorobanRuntimeDataSourceImpl, name: 'Soroban/Runtime'},
-      ],
+      subTypes: [{value: SorobanRuntimeDataSourceImpl, name: 'soroban/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -198,10 +189,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: RuntimeDatasourceTemplateImpl, name: 'flare/Runtime'},
-        {value: RuntimeDatasourceTemplateImpl, name: 'Soroban/Runtime'},
-      ],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'soroban/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

@@ -73,7 +73,7 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   //private nonBatchClient?: JsonRpcProvider;
   private genesisBlock: Record<string, any>;
   //private contractInterfaces: Record<string, Interface> = {};
-  private chainId: number;
+  private chainId: string;
   private name: string;
 
   // Soroban POS
@@ -109,6 +109,8 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   }
 
   async init(): Promise<void> {
+    const network = await this.client.getNetwork();
+    this.chainId = network.passphrase;
     //this.injectClient();
     /*
     const [genesisBlock, network, supportsFinalization, supportsSafe] =
@@ -141,12 +143,12 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
     return this.name;
   }
 
-  getChainId(): number {
+  getChainId(): string {
     return this.chainId;
   }
 
   getGenesisHash(): string {
-    return this.genesisBlock.hash;
+    return this.getChainId();
   }
 
   getSpecName(): string {

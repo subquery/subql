@@ -10,7 +10,6 @@ import {
   SorobanHandlerKind,
   SorobanRuntimeHandlerInputMap,
   SubqlSorobanDataSource,
-  SubqlSorobanHandlerKind,
 } from '@subql/common-soroban';
 import {
   NodeConfig,

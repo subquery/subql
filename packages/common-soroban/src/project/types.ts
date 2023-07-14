@@ -26,11 +26,3 @@ export interface SorobanProjectNetworkConfig extends ProjectNetworkConfig {
   genesisHash?: string;
   chainId?: string;
 }
-
-export enum SubqlSorobanHandlerKind {
-  SorobanEvent = 'soroban/EventHandler',
-}
-
-export enum SubqlSorobanDatasourceKind {
-  SorobanRuntime = 'Soroban/Runtime',
-}

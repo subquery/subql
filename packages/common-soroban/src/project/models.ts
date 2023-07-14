@@ -28,7 +28,7 @@ import {
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
-import {SubqlSorobanDatasourceKind, SubqlSorobanHandlerKind, SubqlSorobanProcessorOptions} from './types';
+import {SubqlSorobanProcessorOptions} from './types';
 
 export class EventFilter implements SorobanEventFilter {
   @IsOptional()
@@ -67,7 +67,7 @@ export class EventHandler implements SubqlEventHandler {
   @ValidateNested()
   @Type(() => EventFilter)
   filter?: SorobanEventFilter;
-  @IsEnum(SubqlSorobanHandlerKind, {groups: [SubqlSorobanHandlerKind.SorobanEvent]})
+  @IsEnum(SorobanHandlerKind, {groups: [SorobanHandlerKind.Event]})
   kind: SorobanHandlerKind.Event;
   @IsString()
   handler: string;
@@ -88,7 +88,7 @@ export class SorobanMapping implements SubqlMapping {
     const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubqlSorobanHandlerKind.SorobanEvent:
+        case SorobanHandlerKind.Event:
           return plainToClass(EventHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
@@ -121,8 +121,8 @@ export class SorobanProcessorOptions implements SubqlSorobanProcessorOptions {
 }
 
 export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
-  @IsEnum(SubqlSorobanDatasourceKind, {
-    groups: [SubqlSorobanDatasourceKind.SorobanRuntime],
+  @IsEnum(SorobanDatasourceKind, {
+    groups: [SorobanDatasourceKind.Runtime],
   })
   kind: SorobanDatasourceKind.Runtime;
   @Type(() => SorobanMapping)
