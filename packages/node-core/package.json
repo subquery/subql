@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "3.1.3-1",
+  "version": "3.1.3",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -22,7 +22,7 @@
     "@nestjs/common": "^9.4.0",
     "@nestjs/event-emitter": "^2.0.0",
     "@nestjs/schedule": "^3.0.1",
-    "@subql/apollo-links": "^0.5.1",
+    "@subql/apollo-links": "^0.5.3",
     "@subql/common": "workspace:*",
     "@subql/testing": "workspace:*",
     "@subql/types": "workspace:*",
@@ -45,6 +45,5 @@
   },
   "devDependencies": {
     "@types/async-lock": "^1"
-  },
-  "stableVersion": "3.1.3-0"
+  }
 }
