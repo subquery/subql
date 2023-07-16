@@ -2,38 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Controller, Get, Param, UseFilters} from '@nestjs/common';
-import {MmrService} from '../indexer';
 import {MmrExceptionsFilter} from '../utils/mmr-exception.filter';
+import {MmrQueryService} from './mmrQuery.service';
 
 const mmrExceptionsFilter = new MmrExceptionsFilter();
 
 @Controller('mmrs')
 export class MmrQueryController {
-  constructor(private mmrService: MmrService) {}
+  constructor(private mmrQueryService: MmrQueryService) {}
 
   @Get('latest')
   @UseFilters(mmrExceptionsFilter)
   async getLatestMmr(@Param() params: any) {
     // eslint-disable-next-line no-return-await
-    return this.mmrService.getLatestMmr();
+    return this.mmrQueryService.getMmr(await this.mmrQueryService.getLatestMmrHeight());
   }
 
   @Get('latest/proof')
   @UseFilters(mmrExceptionsFilter)
   async getLatestMmrProof(@Param() params: any) {
-    return this.mmrService.getLatestMmrProof();
+    return this.mmrQueryService.getMmrProof(await this.mmrQueryService.getLatestMmrHeight());
   }
 
   @Get(':blockHeight')
   @UseFilters(mmrExceptionsFilter)
   async getMmr(@Param() params: {blockHeight: number}) {
     // eslint-disable-next-line no-return-await
-    return this.mmrService.getMmr(params.blockHeight);
+    return this.mmrQueryService.getMmr(params.blockHeight);
   }
 
   @Get(':blockHeight/proof')
   @UseFilters(mmrExceptionsFilter)
   async getMmrProof(@Param() params: {blockHeight: number}) {
-    return this.mmrService.getMmrProof(params.blockHeight);
+    return this.mmrQueryService.getMmrProof(params.blockHeight);
   }
 }

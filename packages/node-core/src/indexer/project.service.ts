@@ -10,6 +10,7 @@ import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
+import {MmrQueryService} from '../meta/mmrQuery.service';
 import {getExistingProjectSchema, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
@@ -47,6 +48,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     protected readonly apiService: API,
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
+    protected readonly mmrQueryService: MmrQueryService,
     protected readonly sequelize: Sequelize,
     @Inject('ISubqueryProject') protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected readonly storeService: StoreService,
@@ -270,6 +272,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
+    await this.mmrQueryService.init(offset);
     return this.mmrService.syncFileBaseFromPoi(offset, undefined, true).catch((err) => {
       logger.error(err, 'failed to sync poi to mmr');
       process.exit(1);
