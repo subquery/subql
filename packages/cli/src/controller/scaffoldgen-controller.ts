@@ -8,7 +8,9 @@ import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import {generateAbis} from './codegen-controller';
 
-const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/handler-scaffold.ts.ejs');
+const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-handlers.ts.ejs');
+const SCAFFOLD_MANIFEST_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-manifest.yaml.ejs');
+
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
 const ROOT_MAPPING_DIR = 'src/mappings';
 
@@ -28,7 +30,24 @@ export interface abiPropType {
   name: string;
   handlers: handlerPropType[];
 }
-export async function generateScaffold(abiProps: abiPropType[], projectPath: string): Promise<void> {
+
+export function getAllAbis(projectPath: string): string[] {
+  const handlerNames: string[] = [];
+  fs.readdirSync(path.join(projectPath, ABI_INTERFACES_ROOT_DIR)).map((file) => {
+    handlerNames.push(file.replace(/\.ts$/, ''));
+  });
+  return handlerNames;
+}
+
+export async function generateManifest(projectPath: string): Promise<void> {
+  try {
+    await renderTemplate(SCAFFOLD_MANIFEST_TEMPLATE_PATH, projectPath, {});
+  } catch (e) {
+    console.error(`unable to generate scaffold manifest. ${e.message}`);
+  }
+}
+
+export async function generateScaffoldHandlers(abiProps: abiPropType[], projectPath: string): Promise<void> {
   try {
     await renderTemplate(
       SCAFFOLD_HANDLER_TEMPLATE_PATH,

@@ -4,11 +4,12 @@
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
-import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
-import {createProject} from '../../controller/project-controller';
-import {abiPropType, generateScaffold, handlerPropType} from '../../controller/scaffoldgen-controller';
-import {checkToken, valueOrPrompt} from '../../utils';
-import Codegen from './index';
+import {
+  abiPropType,
+  generateScaffoldHandlers,
+  getAllAbis,
+  handlerPropType,
+} from '../../controller/scaffoldgen-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -54,7 +55,7 @@ export default class Generate extends Command {
       },
     ];
 
-    const abisProps: abiPropType[] = [
+    const abisPropsMock: abiPropType[] = [
       {
         name: 'Erc20Abi',
         handlers: handlerProps,
@@ -71,8 +72,16 @@ export default class Generate extends Command {
       },
     ];
 
+    const abiNames = getAllAbis(projectPath);
+    const abisProps: abiPropType[] = abiNames.map((name) => {
+      return {
+        name,
+        handlers: [...handlerProps],
+      };
+    });
+
     try {
-      await generateScaffold(abisProps, root);
+      await generateScaffoldHandlers(abisProps, root);
     } catch (e) {
       throw new Error('Failing to generate scaffold');
     }
