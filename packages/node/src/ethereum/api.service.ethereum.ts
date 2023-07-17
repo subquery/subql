@@ -113,6 +113,16 @@ export class EthereumApiService extends ApiService<
   safeApi(height: number): SafeEthProvider {
     const maxRetries = 5;
 
+    const retryErrorCodes = [
+      'UNKNOWN_ERROR',
+      'NOT_IMPLEMENTED',
+      'NETWORK_ERROR',
+      'SERVER_ERROR',
+      'TIMEOUT',
+      'BAD_DATA',
+      'CANCELLED',
+    ];
+
     const handler: ProxyHandler<SafeEthProvider> = {
       get: (target, prop, receiver) => {
         const originalMethod = target[prop as keyof SafeEthProvider];
@@ -125,7 +135,12 @@ export class EthereumApiService extends ApiService<
             while (retries < maxRetries) {
               try {
                 return await originalMethod.apply(currentApi, args);
-              } catch (error) {
+              } catch (error: any) {
+                // other than retryErrorCodes, other errors does not have anything to do with network request, retrying would not change its outcome
+                if (!retryErrorCodes.includes(error?.code)) {
+                  throw error;
+                }
+
                 logger.warn(
                   `Request failed with api at height ${height} (retry ${retries}): ${error.message}`,
                 );

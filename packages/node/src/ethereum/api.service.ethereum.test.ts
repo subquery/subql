@@ -91,4 +91,13 @@ describe('ApiService', () => {
       .getCode('0x75F0398549C9fDEa03BbDde388361827cb376D5')
       .catch((e) => expect(e.code).toBe('INVALID_ARGUMENT'));
   });
+  it('should not retry on any errors not in the retry list', async () => {
+    const callSpy = jest.spyOn(apiService.unsafeApi, 'getSafeApi');
+    await apiService
+      .safeApi(17520376)
+      .getCode('0x75F0398549C9fDEa03BbDde388361827cb376D5')
+      .catch((e) => expect(e.code).toBe('INVALID_ARGUMENT'));
+
+    expect(callSpy).toHaveBeenCalledTimes(1);
+  });
 });
