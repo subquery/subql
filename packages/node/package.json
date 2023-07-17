@@ -60,6 +60,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "2.9.2"
+  ]
 }
