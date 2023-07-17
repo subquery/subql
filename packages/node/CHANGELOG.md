@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [2.9.3] - 2023-07-17
+### Changed
+- Inti DB schema manually during test run (#1870)
 ### Fixed
 - Fixed missing mmrQueryService in indexer module (#1885)
-- Sync `@subql/node` for `@subql/apollo-links` update 
+- Sync `@subql/node` 
+  - for `@subql/apollo-links` update (#1886)
+  - fix retry logic for workers in connection pool (#1829)
 
 ## [2.9.2] - 2023-07-11
 ### Fixed
