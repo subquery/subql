@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {delay} from '@subql/common';
-import {ApiErrorType, IApiConnectionSpecific} from '..';
+import {ApiErrorType, ConnectionPoolStateManager, IApiConnectionSpecific, NodeConfig} from '..';
 import {ConnectionPoolService} from './connectionPool.service';
 
 async function waitFor(conditionFn: () => boolean, timeout = 30000, interval = 100): Promise<void> {
@@ -37,9 +37,16 @@ const mockApiConnection: IApiConnectionSpecific = {
 
 describe('ConnectionPoolService', () => {
   let connectionPoolService: ConnectionPoolService<typeof mockApiConnection>;
+  const nodeConfig: NodeConfig = new NodeConfig({
+    batchSize: 1,
+    subquery: 'example',
+  });
 
   beforeEach(() => {
-    connectionPoolService = new ConnectionPoolService<typeof mockApiConnection>();
+    connectionPoolService = new ConnectionPoolService<typeof mockApiConnection>(
+      nodeConfig,
+      new ConnectionPoolStateManager()
+    );
     connectionPoolService.addToConnections(mockApiConnection, 'https://example.com/api');
   });
 

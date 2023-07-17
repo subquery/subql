@@ -8,10 +8,12 @@ import {
   StoreService,
   PoiService,
   MmrService,
-  NodeConfig,
   ConnectionPoolService,
   StoreCacheService,
   WorkerDynamicDsService,
+  WorkerConnectionPoolStateManager,
+  ConnectionPoolStateManager,
+  NodeConfig,
   PgMmrCacheService,
   MmrQueryService,
 } from '@subql/node-core';
@@ -33,6 +35,15 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     IndexerManager,
     StoreCacheService,
     StoreService,
+    {
+      provide: ConnectionPoolStateManager,
+      useFactory: () => {
+        if (isMainThread) {
+          throw new Error('Expected to be worker thread');
+        }
+        return new WorkerConnectionPoolStateManager((global as any).host);
+      },
+    },
     ConnectionPoolService,
     {
       provide: ApiService,

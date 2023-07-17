@@ -13,11 +13,13 @@ import {
   ConnectionPoolService,
   SmartBatchService,
   StoreCacheService,
+  ConnectionPoolStateManager,
   PgMmrCacheService,
   MmrQueryService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
@@ -38,7 +40,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     StoreCacheService,
     ApiService,
     IndexerManager,
-    ConnectionPoolService,
+    ConnectionPoolStateManager,
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {
@@ -61,6 +63,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
         unfinalizedBlocks: UnfinalizedBlocksService,
+        connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -74,6 +77,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               project,
               dynamicDsService,
               unfinalizedBlocks,
+              connectionPoolState,
             )
           : new BlockDispatcherService(
               apiService,
@@ -101,9 +105,11 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         'ISubqueryProject',
         DynamicDsService,
         UnfinalizedBlocksService,
+        ConnectionPoolStateManager,
       ],
     },
     FetchService,
+    ConnectionPoolService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
     DictionaryService,

@@ -5,7 +5,12 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
-import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
+import {
+  ConnectionPoolService,
+  ConnectionPoolStateManager,
+  delay,
+  NodeConfig,
+} from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -53,6 +58,7 @@ describe('ApiService', () => {
   ): Promise<ApiService> => {
     const module = await Test.createTestingModule({
       providers: [
+        ConnectionPoolStateManager,
         ConnectionPoolService,
         {
           provide: 'ISubqueryProject',

@@ -17,9 +17,13 @@ import {
   HostDynamicDS,
   WorkerBlockDispatcher,
   IUnfinalizedBlocksService,
+  HostConnectionPoolState,
+  ConnectionPoolStateManager,
+  connectionPoolStateHostFunctions,
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
+import { ApiPromiseConnection } from '../apiPromise.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
@@ -35,11 +39,15 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubstrateDatasource>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
+  connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubstrateDatasource> & HostStore & HostUnfinalizedBlocks
+    HostDynamicDS<SubstrateDatasource> &
+      HostStore &
+      HostUnfinalizedBlocks &
+      HostConnectionPoolState<ApiPromiseConnection>
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -71,6 +79,7 @@ async function createIndexerWorker(
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
+      ...connectionPoolStateHostFunctions(connectionPoolState),
     },
     root,
   );
@@ -99,6 +108,7 @@ export class WorkerBlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
+    connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
   ) {
     super(
       nodeConfig,
@@ -115,6 +125,7 @@ export class WorkerBlockDispatcherService
           storeService.getStore(),
           dynamicDsService,
           unfinalizedBlocksSevice,
+          connectionPoolState,
           project.root,
         ),
     );
@@ -150,6 +161,7 @@ export class WorkerBlockDispatcherService
     if (syncedDictionary) {
       this.syncWorkerRuntimes();
     }
+
     // const start = new Date();
     await worker.fetchBlock(height, blockSpecVersion);
     // const end = new Date();

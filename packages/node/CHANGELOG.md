@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.2] - 2023-07-11
 ### Fixed
+- Use `ConnectionPoolStateManager` from host when workers are turned on (#1829)
 - Handle RPC error for oversized block responses (#1876)
 - Modidy `TestingService` to use `TestRunner` from node-core (#1870)
 - Sync with @node/core, various improvements for POI feature (#1869)

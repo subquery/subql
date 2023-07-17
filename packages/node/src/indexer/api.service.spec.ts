@@ -3,7 +3,11 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
+import {
+  ConnectionPoolService,
+  ConnectionPoolStateManager,
+  NodeConfig,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -81,9 +85,13 @@ function testSubqueryProject(): SubqueryProject {
 describe('ApiService', () => {
   it('read custom types from project manifest', async () => {
     const project = testSubqueryProject();
+
     const apiService = new ApiService(
       project,
-      new ConnectionPoolService<ApiPromiseConnection>(),
+      new ConnectionPoolService<ApiPromiseConnection>(
+        nodeConfig,
+        new ConnectionPoolStateManager(),
+      ),
       new EventEmitter2(),
       nodeConfig,
     );
@@ -106,9 +114,17 @@ describe('ApiService', () => {
     // Now after manifest 1.0.0, will use chainId instead of genesisHash
     (project.network as any).chainId = '0x';
 
+    const nodeConfig: NodeConfig = new NodeConfig({
+      batchSize: 1,
+      subquery: 'example',
+    });
+
     const apiService = new ApiService(
       project,
-      new ConnectionPoolService<ApiPromiseConnection>(),
+      new ConnectionPoolService<ApiPromiseConnection>(
+        nodeConfig,
+        new ConnectionPoolStateManager(),
+      ),
       new EventEmitter2(),
       nodeConfig,
     );

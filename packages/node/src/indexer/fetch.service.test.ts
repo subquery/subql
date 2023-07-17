@@ -21,6 +21,7 @@ import {
   SmartBatchService,
   StoreCacheService,
   ConnectionPoolService,
+  ConnectionPoolStateManager,
   MmrQueryService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
@@ -119,6 +120,7 @@ async function createApp(
 ): Promise<INestApplication> {
   const nestModule = await Test.createTestingModule({
     providers: [
+      ConnectionPoolStateManager,
       ConnectionPoolService,
       {
         provide: 'ISubqueryProject',
