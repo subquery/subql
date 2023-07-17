@@ -17,6 +17,11 @@ export enum IndexerEvent {
   Ready = 'ready',
 }
 
+export enum PoiEvent {
+  LastPoiWithMmr = 'last_poi_with_mmr',
+  PoiTarget = 'poi_target',
+}
+
 export interface ProcessBlockPayload {
   height: number;
   timestamp: number;

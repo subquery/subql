@@ -10,7 +10,7 @@ function testSubqueryProject(): SubqueryProject {
   return {
     network: {
       endpoint: '',
-      dictionary: `https://api.subquery.network/sq/subquery/polkadot-dictionary`,
+      dictionary: `https://api.subquery.network/sq/subquery/moonbeam-dictionary`,
       chainId: '',
     },
     dataSources: [],
@@ -23,7 +23,7 @@ function testSubqueryProject(): SubqueryProject {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
+  networkEndpoint: ['wss://moonbeam.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
 });
 

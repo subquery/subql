@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.1] - 2023-07-11
 ### Fixed
 - `codegen` not working with artifact format files (#1867)
 
@@ -351,12 +352,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.9.0] - 2021-04-19
 ### Added
 - `@index` annotation is now supported in `graphql.schema` (#255):
-  - Can be added on any field of any entity except primary or foreign keys
-  - `@subql/node` will recognise it and create table with additional indexes to speed querying
-  - Allow query by indexed field via `global.store` (#271)
+    - Can be added on any field of any entity except primary or foreign keys
+    - `@subql/node` will recognise it and create table with additional indexes to speed querying
+    - Allow query by indexed field via `global.store` (#271)
 - `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
-  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+    - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+    - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.8.0] - 2021-03-11
 ### Added
@@ -395,7 +396,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/3.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.3.1...HEAD
+[3.3.1]: https://github.com/subquery/subql/compare/cli/3.3.0...cli/3.3.1
 [3.3.0]: https://github.com/subquery/subql/compare/cli/3.2.0...cli/3.3.0
 [3.2.0]: https://github.com/subquery/subql/compare/cli/v3.1.1...cli/v3.2.0
 [3.1.1]: https://github.com/subquery/subql/compare/cli/3.1.0...cli/3.1.1

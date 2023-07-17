@@ -60,7 +60,10 @@ function warnDeprecations() {
 @Global()
 @Module({})
 export class ConfigureModule {
-  static async register(): Promise<DynamicModule> {
+  static async getInstance(): Promise<{
+    config: NodeConfig;
+    project: () => Promise<SubqueryProject>;
+  }> {
     const { argv } = yargsOptions;
     let config: NodeConfig;
     let rawManifest: unknown;
@@ -131,6 +134,11 @@ export class ConfigureModule {
       });
       return p;
     };
+
+    return { config, project };
+  }
+  static async register(): Promise<DynamicModule> {
+    const { config, project } = await ConfigureModule.getInstance();
 
     return {
       module: ConfigureModule,

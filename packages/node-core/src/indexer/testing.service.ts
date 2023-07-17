@@ -3,18 +3,16 @@
 
 import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
-import {Inject, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing/interfaces';
 import {DynamicDatasourceCreator, Store} from '@subql/types';
-import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
-import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {SandboxOption, TestSandbox} from './sandbox';
-import {StoreService} from './store.service';
+import {TestRunner} from './test.runner';
 import {IIndexerManager, ISubqueryProject} from './types';
 
 const logger = getLogger('subql-testing');
@@ -44,14 +42,7 @@ export abstract class TestingService<A, SA, B, DS> {
   private totalPassedTests = 0;
   private totalFailedTests = 0;
 
-  constructor(
-    protected readonly sequelize: Sequelize,
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly storeService: StoreService,
-    @Inject('ISubqueryProject') protected project: ISubqueryProject<any, DS>,
-    protected readonly apiService: IApi<A, SA, B>,
-    protected readonly indexerManager: IIndexerManager<B, DS>
-  ) {
+  constructor(protected nodeConfig: NodeConfig, protected project: ISubqueryProject) {
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist'));
@@ -68,7 +59,13 @@ export abstract class TestingService<A, SA, B, DS> {
     });
   }
 
-  abstract indexBlock(block: B, handler: string): Promise<void>;
+  abstract getTestRunner(): Promise<TestRunner<A, SA, B, DS>>; // TestRunner will be create with a new app instance
+  abstract indexBlock(
+    block: B,
+    handler: string,
+    indexerManager: IIndexerManager<B, DS>,
+    apiService?: IApi<A, SA, B>
+  ): Promise<void>;
 
   async init() {
     logger.info(`Found ${this.testSandboxes.length} test files`);
@@ -121,102 +118,19 @@ export abstract class TestingService<A, SA, B, DS> {
 
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
-    const schema = this.nodeConfig.dbSchema;
 
-    try {
-      // Fetch block
-      logger.debug('Fetching block');
-      const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
+    const testRunner = await this.getTestRunner();
 
-      // Init db
-      const schemas = await this.sequelize.showAllSchemas({});
-      if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, {});
-      }
+    const {failedTestSummary, failedTests, passedTests} = await testRunner.runTest(
+      test,
+      sandbox,
+      this.indexBlock.bind(this)
+    );
 
-      this.storeService.setBlockHeight(test.blockHeight);
-      const store = this.storeService.getStore();
-      sandbox.freeze(store, 'store');
-
-      // Init entities
-      logger.debug('Initializing entities');
-      await Promise.all(test.dependentEntities.map((entity) => entity.save?.()));
-
-      logger.debug('Running handler');
-
-      try {
-        await this.indexBlock(block, test.handler);
-        await this.storeService.storeCache.flushCache(true, true);
-      } catch (e: any) {
-        this.totalFailedTests += test.expectedEntities.length;
-        logger.warn(`Test: ${test.name} field due to runtime error`, e);
-        this.failedTestsSummary.push({
-          testName: test.name,
-          entityId: undefined,
-          entityName: undefined,
-          failedAttributes: [`Runtime Error:\n${e.stack}`],
-        });
-        throw e;
-      }
-
-      // Check expected entities
-      logger.debug('Checking expected entities');
-      let passedTests = 0;
-      let failedTests = 0;
-      for (let i = 0; i < test.expectedEntities.length; i++) {
-        const expectedEntity = test.expectedEntities[i];
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const actualEntity = await store.get(expectedEntity._name!, expectedEntity.id);
-
-        const failedAttributes: string[] = [];
-        if (!actualEntity) {
-          failedAttributes.push(`\t\tExpected entity was not found`);
-        } else {
-          const attributes = actualEntity;
-          Object.keys(attributes).map((attr) => {
-            const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
-            const actualAttr = (actualEntity as Record<string, any>)[attr] ?? null;
-
-            if (!isEqual(expectedAttr, actualAttr)) {
-              failedAttributes.push(
-                `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`
-              );
-            }
-          });
-        }
-
-        if (!failedAttributes.length) {
-          logger.info(`Entity check PASSED (Entity ID: ${expectedEntity.id})`);
-          passedTests++;
-        } else {
-          logger.warn(`Entity check FAILED (Entity ID: ${expectedEntity.id})`);
-          this.failedTestsSummary.push({
-            testName: test.name,
-            entityId: expectedEntity.id,
-            entityName: expectedEntity._name,
-            failedAttributes: failedAttributes,
-          });
-
-          failedTests++;
-        }
-      }
-
-      this.totalPassedTests += passedTests;
-      this.totalFailedTests += failedTests;
-
-      logger.info(
-        `Test: ${test.name} completed with ${chalk.green(`${passedTests} passed`)} and ${chalk.red(
-          `${failedTests} failed`
-        )} checks`
-      );
-    } catch (e: any) {
-      this.totalFailedTests += test.expectedEntities.length;
-      logger.warn(e, `Test ${test.name} failed to run`);
-    } finally {
-      await this.sequelize.dropSchema(`"${schema}"`, {
-        logging: false,
-        benchmark: false,
-      });
+    this.totalPassedTests += passedTests;
+    this.totalFailedTests += failedTests;
+    if (failedTestSummary) {
+      this.failedTestsSummary.push(failedTestSummary);
     }
   }
 

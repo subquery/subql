@@ -18,6 +18,7 @@ export * from './smartBatch.service';
 export * from './blockDispatcher';
 export * from './dynamic-ds.service';
 export * from './testing.service';
+export * from './test.runner';
 export * from './project.service';
 export * from './fetch.service';
 export * from './indexer.manager';

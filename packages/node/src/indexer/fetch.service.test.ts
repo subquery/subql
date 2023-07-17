@@ -22,6 +22,7 @@ import {
   StoreCacheService,
   ConnectionPoolService,
   ConnectionPoolStateManager,
+  MmrQueryService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -41,14 +42,14 @@ import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { createCachedProvider } from './x-provider/cachedProvider';
 
-const WS_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
-const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';
+const WS_ENDPOINT = 'wss://moonbeam.api.onfinality.io/public-ws';
+const WS_POLKADOT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
 
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
       chainId:
-        '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+        '0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d',
       endpoint: [WS_ENDPOINT],
     },
     chainTypes: {
@@ -139,6 +140,10 @@ async function createApp(
       },
       {
         provide: MmrService,
+        useFactory: jest.fn(),
+      },
+      {
+        provide: MmrQueryService,
         useFactory: jest.fn(),
       },
       {
@@ -295,6 +300,9 @@ describe('FetchService', () => {
 
   it('fetch metadata two times when spec version changed in range', async () => {
     const project = testSubqueryProject();
+    project.network.chainId =
+      '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+    project.network.endpoint = [WS_POLKADOT_ENDPOINT];
     const indexerManager = mockIndexerManager();
 
     app = await createApp(project, indexerManager);
@@ -306,7 +314,7 @@ describe('FetchService', () => {
     const firstApiConnection = (connectionPoolService as any).allApi[0];
     (connectionPoolService as any).allApi[0] = firstApiConnection;
 
-    const provider = new WsProvider(WS_ENDPOINT);
+    const provider = new WsProvider(WS_POLKADOT_ENDPOINT);
     const cachedProvider = createCachedProvider(provider);
     const apiOptions = (firstApiConnection as any).unsafeApi
       ._options as ApiOptions;
@@ -633,7 +641,7 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+      'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
 
     project.dataSources = [
       {
@@ -660,7 +668,7 @@ describe('FetchService', () => {
 
     await fetchService.init(1);
     const getSpecFromMapSpy = jest.spyOn(runtimeService, 'getSpecFromMap');
-    await runtimeService.getSpecVersion(8638105);
+    await runtimeService.getSpecVersion(838105);
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
   }, 500000);
 
@@ -669,7 +677,7 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+      'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
 
     project.dataSources = [
       {
@@ -701,7 +709,7 @@ describe('FetchService', () => {
 
     // current last specVersion 9200, we should always use api for check next spec
 
-    await expect(runtimeService.getSpecVersion(90156860)).rejects.toThrow();
+    await expect(runtimeService.getSpecVersion(5960180)).rejects.toThrow();
     // It checked with dictionary specVersionMap once, and fall back to use api method
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
     // this large blockHeight should be thrown
@@ -713,7 +721,7 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+      'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
     // make sure use dictionary is true
     project.dataSources = [
       {
@@ -747,8 +755,8 @@ describe('FetchService', () => {
     await fetchService.init(1);
     fetchService.onApplicationShutdown();
 
-    await runtimeService.getSpecVersion(8638105);
-    await runtimeService.getSpecVersion(8638200);
+    await runtimeService.getSpecVersion(2965180);
+    await runtimeService.getSpecVersion(2965080);
 
     expect(getSpecVersionRawSpy).toBeCalledTimes(1);
   }, 500000);
@@ -758,7 +766,7 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+      'https://api.subquery.network/sq/subquery/moonbeam-dictionary';
     project.dataSources = [
       {
         name: 'runtime',
@@ -789,12 +797,8 @@ describe('FetchService', () => {
     await fetchService.init(1);
     fetchService.onApplicationShutdown();
 
-    (fetchService as any)._latestFinalizedHeight = 10437859;
-    //mock specVersion map
-    // (runtimeService as any).specVersionMap = [
-    //   { id: '9180', start: 9738718, end: 10156856 },
-    // ];
-    await runtimeService.getSpecVersion(10337859);
+    (fetchService as any)._latestFinalizedHeight = 3967204;
+    await runtimeService.getSpecVersion(3957204);
     const specVersionMap = (runtimeService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
     const latestSpecVersion =

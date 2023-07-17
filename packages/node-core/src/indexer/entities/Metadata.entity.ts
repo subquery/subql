@@ -27,6 +27,7 @@ export interface MetadataKeys {
   unfinalizedBlocks: string;
   schemaMigrationCount: number;
   deployments: string;
+  latestPoiWithMmr: string;
 }
 
 export interface Metadata {

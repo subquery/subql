@@ -10,6 +10,7 @@ import {ReadyController} from './ready.controller';
 import {ReadyService} from './ready.service';
 
 export * from './meta.service';
+export * from './mmrQuery.service';
 
 export const metaControllers = [HealthController, ReadyController, MmrQueryController];
 
