@@ -6,8 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.3] - 2023-07-17
+### Changed
+- Inti DB schema manually during test run (#1870)
 ### Fixed
 - Fixed missing mmrQueryService in indexer module (#1885)
+- Sync `@subql/node` 
+  - for `@subql/apollo-links` update (#1886)
+  - fix retry logic for workers in connection pool (#1829)
 
 ## [2.9.2] - 2023-07-11
 ### Fixed
@@ -920,7 +926,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/2.9.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/2.9.3...HEAD
+[2.9.3]: https://github.com/subquery/subql/compare/node/2.9.2...node/2.9.3
 [2.9.2]: https://github.com/subquery/subql/compare/node/2.9.1...node/2.9.2
 [2.9.1]: https://github.com/subquery/subql/compare/node/2.9.0...node/v2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/node/2.8.0...node/2.9.0
