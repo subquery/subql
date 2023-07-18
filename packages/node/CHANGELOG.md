@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Add 
+- Added `!null` filter for logs (#135)
+
 ### Updated
 - Updated retry logic for eth requests (#134)
 
