@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import {ProjectManifestV0_2_1, TemplateBase} from '@subql/common';
 import {CustomDatasourceV0_2_0, RuntimeDataSourceV0_2_0} from '../v0_2_0';

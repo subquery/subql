@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import {SubstrateDatasource} from '@subql/types';
 import {plainToClass} from 'class-transformer';
@@ -22,7 +22,7 @@ const SUBSTRATE_SUPPORTED_VERSIONS = {
 
 type Versions = keyof typeof SUBSTRATE_SUPPORTED_VERSIONS;
 
-type ProjectManifestImpls = InstanceType<typeof SUBSTRATE_SUPPORTED_VERSIONS[Versions]>;
+type ProjectManifestImpls = InstanceType<(typeof SUBSTRATE_SUPPORTED_VERSIONS)[Versions]>;
 
 export function manifestIsV0_0_1(manifest: ISubstrateProjectManifest): manifest is ProjectManifestV0_0_1Impl {
   return manifest.specVersion === '0.0.1';

@@ -10,7 +10,7 @@
   "repository": "github:subquery/subql",
   "author": "SubQuery Pty. Limited",
   "main": "dist/index.js",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "dependencies": {
     "@polkadot/util": "^12.2.1",
     "@polkadot/util-crypto": "^12.2.1",

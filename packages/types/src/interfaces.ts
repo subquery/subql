@@ -1,10 +1,10 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
-import {AnyTuple, Codec} from '@polkadot/types-codec/types';
 import {GenericExtrinsic} from '@polkadot/types/extrinsic';
 import {EventRecord, SignedBlock} from '@polkadot/types/interfaces';
 import {IEvent} from '@polkadot/types/types';
+import {AnyTuple, Codec} from '@polkadot/types-codec/types';
 
 export interface Entity {
   id: string;

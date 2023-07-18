@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import {existsSync, readFileSync} from 'fs';
 import path from 'path';
@@ -109,12 +109,13 @@ export class Sandbox extends NodeVM {
     return json;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async findLineInfo(
     sourcemap: any,
     compiledLineNumber: number,
     compiledColumnNumber: number
   ): Promise<NullableMappedPosition> {
-    const consumer = await new SourceMapConsumer(sourcemap);
+    const consumer = new SourceMapConsumer(sourcemap);
     const lineInfo = consumer.originalPositionFor({line: compiledLineNumber, column: compiledColumnNumber});
 
     return lineInfo;

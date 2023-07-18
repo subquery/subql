@@ -68,7 +68,7 @@
   "keywords": [
     "oclif"
   ],
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",

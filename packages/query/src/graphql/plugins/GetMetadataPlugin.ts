@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import {URL} from 'url';
 import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX, TableEstimate} from '@subql/utils';
@@ -219,8 +219,10 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
       extend type Query {
         _metadata(chainId: String): _Metadata
 
-        _metadatas(after: Cursor, before: Cursor): # distinct: [_mmr_distinct_enum] = null
-        # filter: _MetadataFilter
+        _metadatas(
+          after: Cursor
+          before: Cursor # distinct: [_mmr_distinct_enum] = null
+        ): # filter: _MetadataFilter
         # first: Int
         # last: Int
         # offset: Int

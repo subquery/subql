@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 // overwrite the official plugin: https://github.com/graphile/graphile-engine/blob/v4/packages/graphile-build-pg/src/plugins/PgBackwardRelationPlugin.js
 // fix the one to one relationship unique key check
