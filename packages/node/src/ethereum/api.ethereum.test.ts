@@ -6,6 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   EthereumDatasourceKind,
   EthereumHandlerKind,
+  EthereumLogFilter,
   SubqlRuntimeDatasource,
 } from '@subql/types-ethereum';
 import { EthereumApi } from './api.ethereum';
@@ -99,6 +100,47 @@ describe('Api.ethereum', () => {
     );
     expect(result.length).toBe(1);
   });
+
+  it('!null filter support for logs, expect to filter out', async () => {
+    const beamEndpoint = 'https://rpc.api.moonbeam.network';
+    ethApi = new EthereumApi(beamEndpoint, eventEmitter);
+    await ethApi.init();
+    const filter_1: EthereumLogFilter = {
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+        undefined,
+        undefined,
+        '!null',
+      ],
+    };
+
+    const filter_2: EthereumLogFilter = {
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+      ],
+    };
+
+    blockData = await ethApi.fetchBlock(4015990, true);
+    const transaction = blockData.transactions.find(
+      (tx) =>
+        tx.hash ===
+        '0xeb2e443f2d4e784193fa13bbbae2b85e6ee459e7b7b53f8ca098ffae9b25b059',
+    );
+    const erc20Transfers = transaction.logs.filter((log) => {
+      if (EthereumBlockWrapped.filterLogsProcessor(log, filter_2)) {
+        return log;
+      }
+    });
+    const erc721Transfers = transaction.logs.filter((log) => {
+      if (EthereumBlockWrapped.filterLogsProcessor(log, filter_1)) {
+        return log;
+      }
+    });
+
+    expect(erc20Transfers.length).toBe(7);
+    expect(erc721Transfers.length).toBe(2);
+  });
+
   it('Null filter support, for undefined transaction.to', async () => {
     const beamEndpoint = 'https://rpc.api.moonbeam.network';
     ethApi = new EthereumApi(beamEndpoint, eventEmitter);
