@@ -16,7 +16,7 @@
     "/dist"
   ],
   "dependencies": {
-    "@ethersproject/abstract-provider": "^5.6.1"
+    "soroban-client": "0.9.2"
   },
   "stableVersion": "2.2.3-0"
 }

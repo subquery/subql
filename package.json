@@ -54,11 +54,5 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.1.1",
-  "dependencies": {
-    "ethers": "^5.7.1",
-    "soroban-client": "^0.9.1",
-    "web3-providers-http": "^1.7.5",
-    "web3-providers-ws": "^1.7.5"
-  }
+  "packageManager": "yarn@3.1.1"
 }

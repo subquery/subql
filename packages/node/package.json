@@ -41,8 +41,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "web3-providers-http": "^1.8.0",
-    "web3-providers-ws": "^1.8.0",
+    "soroban-client": "^0.9.1",
     "yargs": "^16.2.0"
   },
   "peerDependencies": {
