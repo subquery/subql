@@ -76,7 +76,54 @@ function testSubqueryProject(
   };
 }
 
-describe('Dictioanry queries', () => {
+describe('Dictionary queries', () => {
+  describe('Log filters', () => {
+    it('Build filter for !null', () => {
+      const ds: SubqlRuntimeDatasource = {
+        kind: EthereumDatasourceKind.Runtime,
+        assets: new Map(),
+        startBlock: 1,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              handler: 'handleLog',
+              kind: EthereumHandlerKind.Event,
+              filter: {
+                topics: [
+                  'Transfer(address, address, uint256)',
+                  undefined,
+                  undefined,
+                  '!null',
+                ],
+              },
+            },
+          ],
+        },
+      };
+      const result = buildDictionaryQueryEntries([ds], 1);
+
+      expect(result).toEqual([
+        {
+          entity: 'evmLogs',
+          conditions: [
+            {
+              field: 'topics0',
+              value:
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+              matcher: 'equalTo',
+            },
+            {
+              field: 'topics3',
+              value: false,
+              matcher: 'isNull',
+            },
+          ],
+        },
+      ]);
+    });
+  });
+
   describe('Transaction filters', () => {
     it('Build a filter for contract creation transactions', () => {
       const ds: SubqlRuntimeDatasource = {

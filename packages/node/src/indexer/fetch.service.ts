@@ -83,11 +83,20 @@ function eventFilterToQueryEntry(
         continue;
       }
       const field = `topics${i}`;
-      conditions.push({
-        field,
-        value: eventToTopic(topic),
-        matcher: 'equalTo',
-      });
+
+      if (topic === '!null') {
+        conditions.push({
+          field,
+          value: false as any, // TODO update types to allow boolean
+          matcher: 'isNull',
+        });
+      } else {
+        conditions.push({
+          field,
+          value: eventToTopic(topic),
+          matcher: 'equalTo',
+        });
+      }
     }
   }
   return {

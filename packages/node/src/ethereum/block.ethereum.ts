@@ -123,6 +123,11 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
         if (!log.topics[i]) {
           return false;
         }
+
+        if (topic === '!null') {
+          return true;
+        }
+
         if (!hexStringEq(eventToTopic(topic), log.topics[i])) {
           return false;
         }
