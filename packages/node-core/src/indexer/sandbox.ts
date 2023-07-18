@@ -115,7 +115,8 @@ export class Sandbox extends NodeVM {
     compiledLineNumber: number,
     compiledColumnNumber: number
   ): Promise<NullableMappedPosition> {
-    const consumer = new SourceMapConsumer(sourcemap);
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    const consumer = await new SourceMapConsumer(sourcemap);
     const lineInfo = consumer.originalPositionFor({line: compiledLineNumber, column: compiledColumnNumber});
 
     return lineInfo;
