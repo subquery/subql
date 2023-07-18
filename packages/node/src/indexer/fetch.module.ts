@@ -130,17 +130,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     FetchService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
-    {
-      provide: DictionaryService,
-      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
-        const dictionaryService = await DictionaryService.create(
-          project,
-          nodeConfig,
-        );
-        return dictionaryService;
-      },
-      inject: ['ISubqueryProject', NodeConfig],
-    },
+    DictionaryService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
