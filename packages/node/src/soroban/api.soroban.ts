@@ -19,6 +19,7 @@ import { retryOnFailEth } from '../utils/project';
 import { yargsOptions } from '../yargs';
 import { SorobanBlockWrapped } from './block.soroban';
 import SafeSorobanProvider from './safe-api';
+import { SorobanServer } from './soroban.server';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -100,9 +101,9 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
       //searchParams.forEach((value, name, searchParams) => {
       //  (connection.headers as any)[name] = value;
       //});
-      this.client = new Server(endpoint, options);
+      this.client = new SorobanServer(endpoint, options);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
-      this.client = new Server(this.endpoint);
+      this.client = new SorobanServer(this.endpoint);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);
     }
@@ -142,10 +143,7 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   }
 
   async getEvents(height: number): Promise<SorobanRpc.GetEventsResponse> {
-    return this.client.getEvents({
-      startLedger: height,
-      filters: [],
-    });
+    return this.client.getEvents({ startLedger: height, filters: [] });
   }
 
   async fetchBlock(
