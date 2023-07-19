@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 - Updated retry logic for eth requests (#134)
+- Adjust batch size for `JsonRpcBatchProvider` dynamically (#121)
 
 ### Fixed
 - Fixed missing mmrQueryService in indexer module

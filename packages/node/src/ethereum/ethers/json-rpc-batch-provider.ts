@@ -22,6 +22,11 @@ interface RpcResult {
 // Experimental
 
 export class JsonRpcBatchProvider extends JsonRpcProvider {
+  private batchSize = 1;
+  private successfulBatchCount = 0;
+  private failedBatchCount = 0;
+  private batchSizeAdjustmentInterval = 10; // Adjust batch size after every 10 batches
+
   _pendingBatchAggregator: NodeJS.Timer;
   _pendingBatch: Array<{
     request: { method: string; params: Array<any>; id: number; jsonrpc: '2.0' };
@@ -33,6 +38,10 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
 
   constructor(url: string | ConnectionInfo, network?: Networkish) {
     super(url, network);
+  }
+
+  setBatchSize(batchSize: number) {
+    this.batchSize = batchSize;
   }
 
   send(method: string, params: Array<any>): Promise<any> {
@@ -67,7 +76,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
       }, 1);
     }
 
-    if (this._pendingBatch.length > 10) {
+    if (this._pendingBatch.length > this.batchSize) {
       this.flush();
     }
 
@@ -118,6 +127,11 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
           batch.forEach((inflightRequest) => {
             inflightRequest.reject(error);
           });
+          if (
+            (result as RpcResult).error?.message === 'Batch size is too large'
+          ) {
+            this.adjustBatchSize(false);
+          }
           return;
         }
 
@@ -138,6 +152,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
           batch.forEach((inflightRequest) => {
             inflightRequest.reject(new Error(result[0].error?.message));
           });
+          this.adjustBatchSize(false);
           return;
         }
 
@@ -160,6 +175,17 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
             const error = new Error(payload.error.message);
             (<any>error).code = payload.error.code;
             (<any>error).data = payload.error.data;
+            if (
+              payload.error.message === 'Batch size limit exceeded' || // onfinality
+              payload.error.message === 'exceeded project rate limit' || // infura
+              payload.error.message.includes(
+                'Failed to buffer the request body',
+              ) ||
+              payload.error.message.includes('Too Many Requests') ||
+              payload.error.message.includes('Request Entity Too Large')
+            ) {
+              this.adjustBatchSize(false);
+            }
             inflightRequest.reject(error);
           } else {
             if (inflightRequest.request.method === 'eth_chainId') {
@@ -168,6 +194,8 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
             inflightRequest.resolve(payload.result);
           }
         });
+
+        this.adjustBatchSize(true);
       })
       .catch((error) => {
         this.emit('debug', {
@@ -182,6 +210,28 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
         batch.forEach((inflightRequest) => {
           inflightRequest.reject(error);
         });
+
+        //this.adjustBatchSize(false);
       });
+  }
+
+  private adjustBatchSize(success: boolean) {
+    success ? this.successfulBatchCount++ : this.failedBatchCount++;
+    const totalBatches = this.successfulBatchCount + this.failedBatchCount;
+
+    if (totalBatches % this.batchSizeAdjustmentInterval === 0) {
+      const successRate = this.successfulBatchCount / totalBatches;
+
+      // Adjust the batch size based on the success rate.
+      if (successRate < 0.9 && this.batchSize > 1) {
+        this.batchSize--;
+      } else if (successRate > 0.95 && this.batchSize < 10) {
+        this.batchSize++;
+      }
+
+      // Reset the counters
+      this.successfulBatchCount = 0;
+      this.failedBatchCount = 0;
+    }
   }
 }
