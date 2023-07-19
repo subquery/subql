@@ -6,6 +6,7 @@ import { Server, SorobanRpc } from 'soroban-client';
 import { GetEventsRequest } from 'soroban-client/lib/server';
 
 const logger = getLogger('soroban-server');
+const DEFAULT_PAGE_SIZE = 100;
 
 export class SorobanServer extends Server {
   private eventsCache: { [key: number]: SorobanRpc.GetEventsResponse } = {};
@@ -16,7 +17,6 @@ export class SorobanServer extends Server {
     if (this.eventsCache[request.startLedger]) {
       const cachedEvents = this.eventsCache[request.startLedger];
       delete this.eventsCache[request.startLedger];
-
       return new Promise((resolve) => {
         //resolving immediately will make performance score go to NaN
         setTimeout(() => resolve(cachedEvents), 2);
@@ -31,14 +31,17 @@ export class SorobanServer extends Server {
         : request.startLedger;
 
     for (let h = request.startLedger; h <= maxEventHeight; h++) {
-      this.eventsCache[h] =
-        this.eventsCache[h] || ({ events: [] } as SorobanRpc.GetEventsResponse);
+      this.eventsCache[h] = { events: [] } as SorobanRpc.GetEventsResponse;
     }
 
-    //exclude maxEventHeight as some of the events in it might be paginated out
     response.events.forEach((event) =>
       this.eventsCache[parseInt(event.ledger)].events.push(event),
     );
+
+    //exclude maxEventHeight as some of the events in it might be paginated out
+    if (response.events.length === DEFAULT_PAGE_SIZE) {
+      delete this.eventsCache[maxEventHeight];
+    }
 
     return this.eventsCache[request.startLedger];
   }

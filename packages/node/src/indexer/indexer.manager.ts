@@ -24,14 +24,12 @@ import {
   SorobanEvent,
   SorobanEventFilter,
   SorobanBlockWrapper,
-  SorobanBlock,
-  SubqlRuntimeDatasource,
   SubqlDatasource,
 } from '@subql/types-soroban';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
-import { SorobanApi, SorobanApiService } from '../soroban';
+import { SorobanApi } from '../soroban';
 import { SorobanBlockWrapped } from '../soroban/block.soroban';
-import SafeEthProvider from '../soroban/safe-api';
+import SafeSorobanProvider from '../soroban/safe-api';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -45,7 +43,7 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  SafeEthProvider,
+  SafeSorobanProvider,
   SorobanApi,
   SorobanBlockWrapper,
   ApiService,
@@ -104,7 +102,9 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  private async getApi(block: SorobanBlockWrapper): Promise<SafeEthProvider> {
+  private async getApi(
+    block: SorobanBlockWrapper,
+  ): Promise<SafeSorobanProvider> {
     return this.apiService.safeApi(this.getBlockHeight(block));
   }
 
