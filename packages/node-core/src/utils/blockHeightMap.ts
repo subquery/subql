@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+type GetRange<T> = {value: T; startHeight: number; endHeight?: number};
+
 export class BlockHeightMap<T> {
   #map: Map<number, T>;
 
@@ -14,27 +16,13 @@ export class BlockHeightMap<T> {
   }
 
   get(height: number): T {
-    let result: T | undefined;
+    const details = this.getDetails(height);
 
-    for (const [currentHeight, value] of this.#map) {
-      if (currentHeight === height) {
-        result = value;
-        break;
-      }
-      if (currentHeight <= height) {
-        result = value;
-      }
-
-      if (currentHeight > height) {
-        break;
-      }
-    }
-
-    if (result === undefined) {
+    if (details === undefined) {
       throw new Error(`Value at height ${height} was undefined`);
     }
 
-    return result;
+    return details.value;
   }
 
   // Same as get but wont throw when there is nothing in the block range
@@ -46,12 +34,41 @@ export class BlockHeightMap<T> {
     }
   }
 
-  getAllWithRange(): {value: T; startHeight: number; endHeight?: number}[] {
+  getDetails(height: number): GetRange<T> | undefined {
+    let result: GetRange<T> | undefined;
+
+    const arr = [...this.#map.entries()];
+
+    for (let i = 0; i < arr.length; i++) {
+      const [currentHeight, value] = arr[i];
+      const r = {
+        value,
+        startHeight: currentHeight,
+        endHeight: arr[i + 1]?.[0] - 1,
+      };
+
+      if (currentHeight === height) {
+        result = r;
+        break;
+      }
+      if (currentHeight <= height) {
+        result = r;
+      }
+
+      if (currentHeight > height) {
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  getAllWithRange(): GetRange<T>[] {
     return [...this.#map.entries()].map(([key, value], index, entries) => {
       return {
         value,
         startHeight: key,
-        endHeight: entries[index + 1]?.[0], // Start height of the nex item
+        endHeight: entries[index + 1]?.[0] - 1, // Start height of the nex item
       };
     });
   }

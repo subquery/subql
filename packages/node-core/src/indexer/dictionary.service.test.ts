@@ -327,6 +327,28 @@ describe('DictionaryService', () => {
     expect(dictionaryService.queriesMap?.getSafe(queryEndBlock)).toEqual(undefined);
   });
 
+  it('limits the dictionary query to that block range', async () => {
+    // Only have 1 condition for each range. This is to simulate each "project upgrade" having no overlapping ds
+    dictionaryService.buildDictionaryEntryMap(dsMap, (ds) => [HAPPY_PATH_CONDITIONS[ds.length - 1]]);
+
+    const getDictionarySpy = jest.spyOn(dictionaryService, 'getDictionary');
+
+    const results = await dictionaryService.scopedDictionaryEntries(200, 600, 10);
+
+    expect(getDictionarySpy).toHaveBeenCalledWith(200, 499, 10, [
+      {
+        entity: 'events',
+        conditions: [
+          {field: 'module', value: 'staking'},
+          {field: 'event', value: 'Bonded'},
+        ],
+      },
+    ]);
+
+    // Then end block of the selected queries map item
+    expect(results?.queryEndBlock).toEqual(499);
+  });
+
   // it('sort map', () => {
   //   const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
   //   dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);

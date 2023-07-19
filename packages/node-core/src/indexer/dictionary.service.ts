@@ -340,10 +340,25 @@ export class DictionaryService {
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number
-  ): Promise<Dictionary | undefined> {
-    const queryEntry = this.queriesMap?.getSafe(queryEndBlock) ?? [];
+  ): Promise<(Dictionary & {queryEndBlock: number}) | undefined> {
+    const queryDetails = this.queriesMap?.getDetails(startBlockHeight);
+    const queryEntry: DictionaryQueryEntry[] = queryDetails?.value ?? [];
 
-    return this.getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize, queryEntry);
+    // Update end block if query changes
+    if (queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock) {
+      queryEndBlock = queryDetails?.endHeight;
+    }
+
+    const dict = await this.getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize, queryEntry);
+
+    // Check undefined
+    if (!dict) return undefined;
+
+    // Reutrn the queryEndBlock to know if the scoped entry changed it.
+    return {
+      ...dict,
+      queryEndBlock,
+    };
   }
 
   private metadataQuery(): GqlQuery {

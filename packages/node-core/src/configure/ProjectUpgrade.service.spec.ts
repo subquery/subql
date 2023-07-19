@@ -98,7 +98,7 @@ describe('Project Upgrades', () => {
         1
       );
 
-      expect(Object.keys(upgradeService.projects)).toEqual(['1']);
+      expect([...upgradeService.projects.keys()]).toEqual([1]);
     });
 
     it('can load all parent projects', async () => {
@@ -108,7 +108,7 @@ describe('Project Upgrades', () => {
         1
       );
 
-      expect(Object.keys(upgradeService.projects)).toEqual(['1', '10', '20', '30', '40', '50']);
+      expect([...upgradeService.projects.keys()]).toEqual([1, 10, 20, 30, 40, 50]);
     });
 
     it('can handle projects that somehow refer to each other', async () => {
@@ -125,7 +125,7 @@ describe('Project Upgrades', () => {
         21
       );
 
-      expect(Object.keys(upgradeService.projects)).toEqual(['20', '30', '40', '50']);
+      expect([...upgradeService.projects.keys()]).toEqual([20, 30, 40, 50]);
     });
 
     it('can load all parent projects upto and including startHeight', async () => {
@@ -136,7 +136,7 @@ describe('Project Upgrades', () => {
         20
       );
 
-      expect(Object.keys(upgradeService.projects)).toEqual(['20', '30', '40', '50']);
+      expect([...upgradeService.projects.keys()]).toEqual([20, 30, 40, 50]);
     });
 
     it('will throw if parent projects are not at an earlier height', async () => {

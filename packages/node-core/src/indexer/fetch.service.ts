@@ -268,7 +268,7 @@ export abstract class BaseFetchService<
               // There we're no blocks in this query range, we can set a new height we're up to
               await this.blockDispatcher.enqueueBlocks(
                 [],
-                Math.min(queryEndBlock - 1, dictionary._metadata.lastProcessedHeight)
+                Math.min(dictionary.queryEndBlock, dictionary._metadata.lastProcessedHeight)
               );
             } else {
               const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
