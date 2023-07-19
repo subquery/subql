@@ -49,7 +49,14 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
         if (!event.topic[i]) {
           return false;
         }
-        if (!stringNormalizedEq(topic, event.topic[i])) {
+
+        //decode gives control chars around the string, remove them
+        /* eslint-disable no-control-regex */
+        const decodedTopic = Buffer.from(event.topic[i], 'base64')
+          .toString()
+          .replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+        /* eslint-enable no-control-regex */
+        if (topic !== decodedTopic) {
           return false;
         }
       }
