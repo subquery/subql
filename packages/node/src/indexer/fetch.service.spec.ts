@@ -16,7 +16,7 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { buildDictionaryQueryEntries, FetchService } from './fetch.service';
 
-const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
+const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
 const mockTempDs: SubqlProjectDsTemplate[] = [
   {
     name: 'ERC721',

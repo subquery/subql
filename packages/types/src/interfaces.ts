@@ -1,8 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Block} from '@ethersproject/abstract-provider';
-import {SorobanBlock, SorobanBlockWrapper, SorobanEvent, SorobanEventFilter} from './soroban';
+import {SorobanBlock, SorobanBlockWrapper, SorobanEvent} from './soroban';
 
 export interface Entity {
   id: string;

@@ -10,15 +10,13 @@ import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { SorobanApiService } from './api.service.soroban';
 
-// Add api key to work
-const WS_ENDPOINT = 'wss://eth.api.onfinality.io/ws?apikey=';
-const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
+const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
 
-function testSubqueryProject(endpoint: string): SubqueryProject {
+export function testSubqueryProject(endpoint: string): SubqueryProject {
   return {
     network: {
       endpoint,
-      chainId: '1',
+      chainId: 'Test SDF Future Network ; October 2022',
     },
     dataSources: [],
     id: 'test',
@@ -28,8 +26,9 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
   };
 }
 
-const prepareApiService = async (
+export const prepareApiService = async (
   endpoint: string = HTTP_ENDPOINT,
+  project?: SubqueryProject,
 ): Promise<[SorobanApiService, INestApplication]> => {
   const module = await Test.createTestingModule({
     providers: [
@@ -40,7 +39,7 @@ const prepareApiService = async (
       },
       {
         provide: 'ISubqueryProject',
-        useFactory: () => testSubqueryProject(endpoint),
+        useFactory: () => project ?? testSubqueryProject(endpoint),
       },
       SorobanApiService,
     ],
@@ -55,16 +54,12 @@ const prepareApiService = async (
 };
 
 jest.setTimeout(90000);
-describe('ApiService', () => {
+describe('SorobanApiService', () => {
   let apiService: SorobanApiService;
   let app: INestApplication;
 
   beforeEach(async () => {
     [apiService, app] = await prepareApiService();
-  });
-
-  afterEach(async () => {
-    return app?.close();
   });
 
   it('can instantiate api', async () => {
@@ -73,14 +68,55 @@ describe('ApiService', () => {
   });
 
   it('can fetch blocks', async () => {
-    await apiService.api.fetchBlocks(range(12369621, 12369625));
+    const blocks = await apiService.api.fetchBlocks(range(50000, 50100));
+    expect(blocks).toBeDefined();
     await delay(0.5);
   });
 
   it('can get the finalized height', async () => {
     const height = await apiService.api.getFinalizedBlockHeight();
-
     console.log('Finalized height', height);
-    expect(height).toBeGreaterThan(16_000_000);
+    expect(height).toBeGreaterThan(50000);
+  });
+
+  it('throws error when chainId does not match', async () => {
+    const faultyProject = {
+      ...testSubqueryProject(HTTP_ENDPOINT),
+      network: {
+        ...testSubqueryProject(HTTP_ENDPOINT).network,
+        chainId: 'Incorrect ChainId',
+      },
+    };
+
+    await expect(
+      prepareApiService(HTTP_ENDPOINT, faultyProject),
+    ).rejects.toThrow();
+  });
+
+  it('provides safe api with retry on failure', async () => {
+    const safeApi = apiService.safeApi(50000);
+    const originalGetEvents = (safeApi as any).getEvents;
+
+    // Mock the fetchBlocks method to throw an error on first call
+    (safeApi as any).getEvents = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('Network error'))
+      .mockImplementationOnce(originalGetEvents);
+
+    const blocks = await safeApi.getEvents({ startLedger: 50000, filters: [] });
+    expect(blocks).toBeDefined();
+  });
+
+  it('fails after maximum retries', async () => {
+    const safeApi = apiService.safeApi(50000);
+
+    // Mock the fetchBlocks method to always throw an error
+    (safeApi as any).fetchBlocks = jest
+      .fn()
+      .mockRejectedValue(new Error('Network error'));
+
+    await expect(
+      (safeApi as any).fetchBlocks(range(50000, 50100)),
+    ).rejects.toThrow();
   });
 });

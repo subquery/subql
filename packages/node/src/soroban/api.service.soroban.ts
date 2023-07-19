@@ -90,7 +90,7 @@ export class SorobanApiService extends ApiService<
       return this;
     } catch (e) {
       logger.error(e, 'Failed to init api service');
-      process.exit(1);
+      throw e;
     }
   }
 

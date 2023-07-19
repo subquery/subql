@@ -10,7 +10,7 @@ import {
 } from '@subql/node-core';
 import { SorobanBlockWrapper } from '@subql/types-soroban';
 import { SorobanApi } from './api.soroban';
-import SafeEthProvider from './safe-api';
+import SafeSorobanProvider from './safe-api';
 
 type FetchFunc = (
   api: SorobanApi,
@@ -19,7 +19,11 @@ type FetchFunc = (
 
 export class SorobanApiConnection
   implements
-    IApiConnectionSpecific<SorobanApi, SafeEthProvider, SorobanBlockWrapper>
+    IApiConnectionSpecific<
+      SorobanApi,
+      SafeSorobanProvider,
+      SorobanBlockWrapper
+    >
 {
   readonly networkMeta: NetworkMetadataPayload;
 
@@ -46,8 +50,8 @@ export class SorobanApiConnection
     return new SorobanApiConnection(api, fetchBlockBatches);
   }
 
-  safeApi(height: number): SafeEthProvider {
-    throw new Error(`Not Implemented`);
+  safeApi(height: number): SafeSorobanProvider {
+    return new SafeSorobanProvider(this.unsafeApi.api, height);
   }
 
   async apiConnect(): Promise<void> {

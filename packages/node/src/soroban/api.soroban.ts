@@ -26,47 +26,6 @@ const { version: packageVersion } = require('../../package.json');
 
 const logger = getLogger('api.Soroban');
 
-async function loadAssets(
-  ds: SubqlRuntimeDatasource,
-): Promise<Record<string, string>> {
-  if (!ds.assets) {
-    return {};
-  }
-  const res: Record<string, string> = {};
-
-  for (const [name, { file }] of Object.entries(ds.assets)) {
-    try {
-      res[name] = await fs.promises.readFile(file, { encoding: 'utf8' });
-    } catch (e) {
-      throw new Error(`Failed to load datasource asset ${file}`);
-    }
-  }
-
-  return res;
-}
-
-function getHttpAgents() {
-  // By default Nodejs doesn't cache DNS lookups
-  // https://httptoolkit.com/blog/configuring-nodejs-dns/
-  const lookup = new CacheableLookup();
-
-  const options: http.AgentOptions = {
-    keepAlive: true,
-    /*, maxSockets: 100*/
-  };
-
-  const httpAgent = new http.Agent(options);
-  const httpsAgent = new https.Agent(options);
-
-  lookup.install(httpAgent);
-  lookup.install(httpsAgent);
-
-  return {
-    http: httpAgent,
-    https: httpsAgent,
-  };
-}
-
 export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   private client: Server;
 
