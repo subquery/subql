@@ -89,7 +89,7 @@ function eventFilterToQueryEntry(
     }
   }
   return {
-    entity: 'evmLogs',
+    entity: 'events',
     conditions,
   };
 }

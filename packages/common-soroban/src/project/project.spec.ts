@@ -9,20 +9,6 @@ import {loadSorobanProjectManifest} from './load';
 
 const projectsDir = path.join(__dirname, '../../test');
 
-describe('test eth project.yaml', () => {
-  it('could get eth project template name from its deployment ', () => {
-    const manifest = loadSorobanProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
-    const deployment = manifest.toDeployment();
-    expect(deployment).toContain('name: Pool');
-  });
-
-  it('could get options in template from its deployment ', () => {
-    const manifest = loadSorobanProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
-    const deployment = manifest.toDeployment();
-    expect(deployment).toContain('abi: Pool');
-  });
-});
-
 describe('project.yaml', () => {
   it('can validate project.yaml', () => {
     expect(() => loadSorobanProjectManifest(path.join(projectsDir, 'project_falsy.yaml'))).toThrow();
@@ -44,7 +30,7 @@ describe('project.yaml', () => {
     const filter = deployment.dataSources[0].mapping.handlers[0].filter;
     const deploymentString = manifestVersioned.toDeployment();
     expect(filter).not.toBeNull();
-    expect(deploymentString).toContain('Transfer (address from, address to, uint256 tokenId)');
+    expect(deploymentString).toContain('COUNTER');
   });
 
   it('can convert genesis hash in v1.0.0 to chainId in deployment', () => {
