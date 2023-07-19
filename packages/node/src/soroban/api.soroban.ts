@@ -1,21 +1,14 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getLogger, timeout } from '@subql/node-core';
+import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
   SorobanBlock,
   SorobanBlockWrapper,
-  SorobanEvent,
-  SubqlRuntimeDatasource,
 } from '@subql/types-soroban';
-import CacheableLookup from 'cacheable-lookup';
 import { Server, SorobanRpc } from 'soroban-client';
-import { retryOnFailEth } from '../utils/project';
 import { yargsOptions } from '../yargs';
 import { SorobanBlockWrapped } from './block.soroban';
 import SafeSorobanProvider from './safe-api';
@@ -29,16 +22,8 @@ const logger = getLogger('api.Soroban');
 export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   private client: Server;
 
-  // This is used within the sandbox when HTTP is used
-  //private nonBatchClient?: JsonRpcProvider;
-  private genesisBlock: Record<string, any>;
-  //private contractInterfaces: Record<string, Interface> = {};
   private chainId: string;
   private name: string;
-
-  // Soroban POS
-  private supportsFinalization = true;
-  private blockConfirmations = yargsOptions.argv['block-confirmations'];
 
   constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
     const { hostname, protocol, searchParams } = new URL(endpoint);
@@ -51,10 +36,6 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
         //headers: {
         //  'User-Agent': `Subquery-Node ${packageVersion}`,
         //},
-        //allowGzip: true,
-        //throttleLimit: 5,
-        //throttleSlotInterval: 1,
-        //agents: getHttpAgents(),
         allowHttp: protocolStr === 'http',
       };
       //searchParams.forEach((value, name, searchParams) => {
