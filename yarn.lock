@@ -4506,7 +4506,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@^2.2.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@npm:^2.2.1":
+  version: 2.3.0
+  resolution: "@subql/common@npm:2.3.0"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: ^52.0.3
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+  checksum: 1c578956c4ec48d3d7d88670a73f47ef25d78ed59f12d8f121d7a5c1cbaf7f43c1799af9769969b4cb5d12289882669cc0022e072cbde6cdacd5142b149784df
+  languageName: node
+  linkType: hard
+
+"@subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
