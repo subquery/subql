@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 // overwrite the method plugin: https://github.com/graphile/postgraphile/blob/263ba7477bc2133eebdf89d29acd0460e58501ec/src/postgraphile/withPostGraphileContext.ts#L473
 // Allow log SQL queries without resolve result

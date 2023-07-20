@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import {GraphQLJsonFieldType, u8aToHex} from '@subql/utils';
 import {StoreOperations} from './StoreOperations';
@@ -9,7 +9,7 @@ type StarterEntity = {
   id: string;
   field1: number;
   field2?: string;
-  field3?: BigInt;
+  field3?: bigint;
   field4?: Date;
   field5?: boolean;
   field6?: any;

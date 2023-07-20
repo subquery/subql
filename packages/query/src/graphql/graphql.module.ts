@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
@@ -81,6 +81,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleDestroy(): Promise<void> {
     return this.apolloServer?.stop();
   }
