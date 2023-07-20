@@ -63,7 +63,7 @@ type TemplateKind =
   | StellarDsTemplate
   | StellarCustomDsTemplate;
 
-type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
+export type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
 
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
@@ -160,7 +160,7 @@ export async function generateEnums(projectPath: string, schema: string): Promis
   }
 }
 
-interface abiRenderProps {
+export interface abiRenderProps {
   name: string;
   events: string[];
   functions: {typeName: string; functionName: string}[];

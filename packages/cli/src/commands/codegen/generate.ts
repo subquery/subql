@@ -3,15 +3,26 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getProjectRootAndManifest} from '@subql/common';
 import {
-  abiPropType,
-  generateScaffoldHandlers,
-  getAllAbis,
-  handlerPropType,
+  generateHandlers,
+  generateManifest,
+  getAbiInterface,
+  getAvailableEvents,
+  getAvailableFunctions,
 } from '../../controller/scaffoldgen-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
+export interface SelectedMethod {
+  name: string;
+  method: string;
+}
+export interface UserInput {
+  startBlock: number;
+  functions: SelectedMethod[];
+  events: SelectedMethod[];
+  abiPath: string;
+  address?: string;
+}
 
 export default class Generate extends Command {
   static description = 'Create Project on Hosted Service';
@@ -28,73 +39,47 @@ export default class Generate extends Command {
     const {flags} = await this.parse(Generate);
     const {file, location} = flags;
     const projectPath = path.resolve(file ?? location ?? process.cwd());
+    // const {manifests, root} = getProjectRootAndManifest(projectPath);
 
-    const {manifests, root} = getProjectRootAndManifest(projectPath);
+    const abiInterface = getAbiInterface(projectPath, './abis/erc20.abi.json');
 
-    // li st all codegen generated
-    // try {
-    //   // for now just hard code stuff
-    //   // but in future will update
-    //   await Codegen.run(['-f', projectPath]);
-    //
-    //   // ensure codegen
-    // } catch (e) {
-    //   throw new Error(e);
-    // }
+    const eventsFragments = getAvailableEvents(abiInterface);
+    const functionFragments = getAvailableFunctions(abiInterface);
 
-    const handlerProps: handlerPropType[] = [
-      {
-        name: 'handleLog',
-        argName: 'log',
-        argType: 'TransferLog',
-      },
-      {
-        name: 'handleTransaction',
-        argName: 'tx',
-        argType: 'ApproveTransaction',
-      },
-    ];
+    const eventList = Object.keys(eventsFragments);
+    const functionList = Object.keys(functionFragments);
 
-    const abisPropsMock: abiPropType[] = [
-      {
-        name: 'Erc20Abi',
-        handlers: handlerProps,
-      },
-      {
-        name: 'Erc721Abi',
-        handlers: [
-          {
-            name: 'handleTotalSupply',
-            argName: 'log',
-            argType: 'TotalSupplyTransaction',
-          },
-        ],
-      },
-    ];
+    const mockSelectedEvents = ['Transfer(address,address,uint256)'];
+    const mockSelectedFunctions = ['approve(address,uint256)'];
 
-    const abiNames = getAllAbis(projectPath);
-    const abisProps: abiPropType[] = abiNames.map((name) => {
+    const constructedEvents: SelectedMethod[] = mockSelectedEvents.map((event) => {
       return {
-        name,
-        handlers: [...handlerProps],
+        name: eventsFragments[event].name,
+        method: event,
+      };
+    });
+
+    const constructedFunctions: SelectedMethod[] = mockSelectedFunctions.map((fn) => {
+      return {
+        name: functionFragments[fn].name,
+        method: fn,
       };
     });
 
     try {
-      await generateScaffoldHandlers(abisProps, root);
+      const mockUserInput: UserInput = {
+        startBlock: 1,
+        functions: constructedFunctions,
+        events: constructedEvents,
+        abiPath: './abis/erc20.abi.json',
+        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      };
+
+      await generateManifest(projectPath, 'project.yaml', mockUserInput);
+
+      await generateHandlers([constructedEvents, constructedFunctions], projectPath, '/abis/erc20.abi.json');
     } catch (e) {
-      throw new Error('Failing to generate scaffold');
+      throw new Error(e.message);
     }
-    // after a list of types is generated
-    // under <root>/src/types/abi-interfaces
-
-    // prompt a list based on the handlers set in the manifest file
-    // for the amount of datasources
-
-    // handleTransactions
-    // filter approve()
-
-    // handleLog
-    // filter topics transfer()
   }
 }
