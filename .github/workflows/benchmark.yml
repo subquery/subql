@@ -1,4 +1,4 @@
-name: BENCHMARK-SUBSTRATE
+name: BENCHMARK
 on:
   workflow_dispatch:
     inputs:
@@ -39,7 +39,6 @@ jobs:
   container-job:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
-    continue-on-error: true
     # Docker Hub image that `container-job` executes in
     container: node:18
 
@@ -82,9 +81,11 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: npm i @subql/node@${{ github.event.inputs.indexerVersion }} -g
 
+      - name: Install dependencies
+        run: |
+          chmod +x .github/workflows/scripts/benchmark/dependency.sh
+          .github/workflows/scripts/benchmark/dependency.sh ${{github.event.inputs.indexerVersion}} 
 
       - name: Ensure reports path exists
         run: |
@@ -96,11 +97,12 @@ jobs:
             echo "Benchmark report directory already exists: $output_dir"
           fi
 
+
       - name: Benchmarking
         id: app
         run: |
-          chmod +x .github/workflows/scripts/substrate.sh
-          .github/workflows/scripts/substrate.sh ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
+          chmod +x .github/workflows/scripts/benchmark/benchmarking.sh
+          .github/workflows/scripts/benchmark/benchmarking.sh ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
         env:
           # The hostname used to communicate with the PostgreSQL service container
           DB_USER: postgres
@@ -109,37 +111,19 @@ jobs:
           DB_HOST: postgres
           DB_PORT: 5432
 
-
-      - name: Extract actual sdk version
-        id: extract_version
-        run: |
-          version_line=$(grep -oE 'Current @subql/node version is.*' output/benchmark/indexing.log)
-          # Use cut to extract the version from the line
-          version=$(echo "$version_line" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-          echo "::set-output name=version::$version"    
-
-
       - name: Query metadata get processed height
         id: query_meta
         env:
           PGPASSWORD: postgres
         run: |
-          # Query the database and store the result in variables
-          start_height=$(psql -h postgres -d postgres -U postgres -c "SELECT value::integer FROM app._metadata WHERE key = 'startHeight';" | awk 'NR == 3 {print $1}')
-          last_processed_height=$(psql -h postgres -d postgres -U postgres -c "SELECT value::integer FROM app._metadata WHERE key = 'lastProcessedHeight';" | awk 'NR == 3 {print $1}')
-          total_height=$((last_processed_height-start_height))
-          echo "Start Height: $start_height"
-          echo "Last Processed Height: $last_processed_height"
-          # Set outputs for subsequent steps
-          echo "::set-output name=start_height::$start_height"
-          echo "::set-output name=last_processed_height::$last_processed_height"
-          echo "::set-output name=total_height::$total_height"
-
+          chmod +x .github/workflows/scripts/benchmark/queryMeta.sh
+          .github/workflows/scripts/benchmark/queryMeta.sh 
 
       - name: Pre-save running specs
         run: |
           echo "benchmark-time=${{github.event.inputs.benchmark-time}}" > output/benchmark/benchmark.log
-          echo "indexerVersion=${{steps.extract_version.outputs.version}}" >> output/benchmark/benchmark.log
+          echo "indexer=${{steps.query_meta.outputs.runner_node}}" >> output/benchmark/benchmark.log
+          echo "indexerVersion=${{steps.query_meta.outputs.indexer_version}}" >> output/benchmark/benchmark.log
           echo "deployment=${{github.event.inputs.deployment}}" >> output/benchmark/benchmark.log
           echo "network-endpoint=${{github.event.inputs.network-endpoint}}" >> output/benchmark/benchmark.log
           echo "disableHistorical=${{github.event.inputs.disableHistorical}}" >> output/benchmark/benchmark.log
@@ -171,7 +155,7 @@ jobs:
       - name: Upload reports
         uses: actions/upload-artifact@v3
         with:
-          name: benchmark-report-${{steps.current-time.outputs.formattedTime}}-v${{steps.extract_version.outputs.version}}
+          name: benchmark-${{steps.current-time.outputs.formattedTime}}-${{steps.query_meta.outputs.indexer_version}}
           path: output/benchmark/
 
 
@@ -185,13 +169,13 @@ jobs:
           # For posting a rich message using Block Kit
           payload: |
             {
-              "text": "Benchmark result ${{steps.current-time.outputs.formattedTime}}-v${{steps.extract_version.outputs.version}}",
+              "text": "Benchmark result ${{steps.current-time.outputs.formattedTime}}",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Results: ${{ job.status }}\n Indexer:@subql/node@${{steps.extract_version.outputs.version}}\n workers:${{github.event.inputs.workers}}\n batch-size:${{github.event.inputs.batch-size}}\n block ${{steps.query_meta.outputs.start_height}} to ${{steps.query_meta.outputs.last_processed_height}}, total ${{steps.query_meta.outputs.total_height}} in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    "text": "Results: ${{ job.status }}\n Indexer:${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n deployment:${{github.event.inputs.deployment}}\n workers:${{github.event.inputs.workers}}\n batch-size:${{github.event.inputs.batch-size}}\n block ${{steps.query_meta.outputs.start_height}} to ${{steps.query_meta.outputs.last_processed_height}}, total ${{steps.query_meta.outputs.total_height}} in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
                 }
               ]
