@@ -165,7 +165,7 @@ jobs:
         uses: josStorer/get-current-time@v2
         id: current-time
         with:
-          format: YYYYMMDD-HHMM
+          format: YYYYMMDD-HHmm
           utcOffset: "+12:00"
 
       - name: Upload reports
