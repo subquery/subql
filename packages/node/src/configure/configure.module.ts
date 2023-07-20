@@ -16,14 +16,12 @@ export class ConfigureModule {
     project: SubqueryProject;
   }> {
     const { argv } = yargsOptions;
-    const { nodeConfig, project } = await registerApp<SubqueryProject>(
+    return registerApp<SubqueryProject>(
       argv,
       SubqueryProject.create.bind(SubqueryProject),
       yargsOptions.showHelp.bind(yargsOptions),
       pjson,
     );
-
-    return { nodeConfig, project };
   }
   static async register(): Promise<DynamicModule> {
     const { nodeConfig, project } = await ConfigureModule.getInstance();

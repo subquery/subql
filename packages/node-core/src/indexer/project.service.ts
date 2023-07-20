@@ -11,15 +11,13 @@ import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {MmrQueryService} from '../meta/mmrQuery.service';
-import {getExistingProjectSchema, getStartHeight, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {MetadataKeys} from './entities';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {CacheMetadataModel} from './storeCache';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
@@ -91,13 +89,17 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
       await this.initHotSchemaReload();
 
-      this._startHeight = this.getStartBlockFromDataSources();
+      this._startHeight = await this.getStartHeight();
 
-      const reindexedTo = await this.initUnfinalized();
+      const reindexedUpgrade = await this.initUpgradeService();
+      const reindexedUnfinalized = await this.initUnfinalized();
 
-      if (reindexedTo !== undefined) {
-        this._startHeight = reindexedTo;
-      }
+      // Find the new start height based on some rewinding
+      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
+
+      // Set the start height so the right project is used
+      this.projectUpgradeService.currentHeight = this._startHeight;
+
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true);
 
@@ -172,7 +174,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
-      'deployments',
+      // 'deployments',
     ] as const;
 
     const existing = await metadata.findMany(keys);
@@ -221,7 +223,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
 
-    await this.syncDeployments(existing, metadata);
+    // await this.syncDeployments(existing, metadata);
   }
 
   protected async getMetadataBlockOffset(): Promise<number | undefined> {
@@ -230,30 +232,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   protected async getLastProcessedHeight(): Promise<number | undefined> {
     return this.storeService.storeCache.metadata.find('lastProcessedHeight');
-  }
-
-  private async syncDeployments(existing: Partial<MetadataKeys>, metadata: CacheMetadataModel): Promise<void> {
-    if (!existing.deployments) {
-      const deployments: Record<number, string> = {};
-      //If metadata never record deployment, we are safe to use start height
-      deployments[existing.startHeight ?? this.getStartBlockFromDataSources()] = this.project.id;
-      metadata.set('deployments', JSON.stringify(deployments));
-    } else {
-      const deployments = JSON.parse(existing.deployments) as Record<number, string>;
-      const values = Object.values(deployments);
-      const lastDeployment = values[values.length - 1];
-      // avoid 0
-      if (lastDeployment !== this.project.id) {
-        const newDeploymentStart = await this.getLastProcessedHeight();
-        if (newDeploymentStart === undefined) {
-          throw new Error(`Try to record new deployment failed, unable to find last processed height from metadata`);
-        }
-        logger.warn(`Project deployment upgrade found, start height: ${newDeploymentStart}, ID: ${this.project.id}`);
-        deployments[newDeploymentStart] = this.project.id;
-        metadata.set('deployments', JSON.stringify(deployments));
-      }
-      // if we found this deployment, all good.
-    }
   }
 
   async setBlockOffset(offset: number): Promise<void> {
@@ -267,6 +245,18 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       logger.error(err, 'failed to sync poi to mmr');
       process.exit(1);
     });
+  }
+
+  private async getStartHeight(): Promise<number> {
+    let startHeight: number;
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    if (hasValue(lastProcessedHeight)) {
+      startHeight = Number(lastProcessedHeight) + 1;
+    } else {
+      startHeight = this.getStartBlockFromDataSources();
+    }
+    return startHeight;
   }
 
   getStartBlockFromDataSources(): number {
@@ -324,6 +314,34 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     }
 
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
+  }
+
+  private async initUpgradeService(): Promise<number | undefined> {
+    const metadata = this.storeService.storeCache.metadata;
+
+    const upgradePoint = await this.projectUpgradeService.init(metadata);
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    // New project or not using upgrades feature
+    if (upgradePoint === undefined) {
+      await this.projectUpgradeService.updateIndexedDeployments(
+        this.project.id,
+        lastProcessedHeight ?? this.getStartBlockFromDataSources()
+      );
+    } else {
+      if (lastProcessedHeight && upgradePoint < lastProcessedHeight) {
+        if (!this.isHistorical) {
+          logger.error(
+            `Unable to upgrade project. Cannot rewind to block ${upgradePoint} without historical indexing enabled.`
+          );
+          process.exit(1);
+        }
+        logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
+        await this.reindex(upgradePoint);
+        return upgradePoint;
+      }
+    }
+    return undefined;
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {

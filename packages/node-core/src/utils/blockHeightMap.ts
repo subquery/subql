@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 type GetRange<T> = {value: T; startHeight: number; endHeight?: number};
 
@@ -41,10 +41,11 @@ export class BlockHeightMap<T> {
 
     for (let i = 0; i < arr.length; i++) {
       const [currentHeight, value] = arr[i];
+      const nextStart = arr[i + 1]?.[0];
       const r = {
         value,
         startHeight: currentHeight,
-        endHeight: arr[i + 1]?.[0] - 1,
+        endHeight: nextStart ? nextStart - 1 : undefined,
       };
 
       if (currentHeight === height) {

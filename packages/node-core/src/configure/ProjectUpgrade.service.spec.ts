@@ -1,7 +1,7 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
-import {ISubqueryProject} from '../indexer';
+import {CacheMetadataModel, ISubqueryProject} from '../indexer';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
 const templateProject = {
@@ -89,6 +89,15 @@ const futureProjects = [
   },
 ] as ISubqueryProject[];
 
+const mockMetadata = () => {
+  let deployments = {};
+
+  return {
+    find: jest.fn(() => JSON.stringify(deployments)),
+    set: jest.fn((_, value) => (deployments = JSON.parse(value))),
+  } as any as CacheMetadataModel;
+};
+
 describe('Project Upgrades', () => {
   describe('Loading projects', () => {
     it('can load a project with no parents', async () => {
@@ -113,7 +122,7 @@ describe('Project Upgrades', () => {
 
     it('can handle projects that somehow refer to each other', async () => {
       await expect(
-        ProjectUpgradeSevice.create(loopProjects[1], (id) => Promise.resolve(loopProjects[parseInt(id, 10)]), 1, 1)
+        ProjectUpgradeSevice.create(loopProjects[1], (id) => Promise.resolve(loopProjects[parseInt(id, 10)]), 1)
       ).rejects.toThrow();
     });
 
@@ -121,7 +130,6 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        20,
         21
       );
 
@@ -132,7 +140,6 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        20,
         20
       );
 
@@ -141,7 +148,7 @@ describe('Project Upgrades', () => {
 
     it('will throw if parent projects are not at an earlier height', async () => {
       await expect(
-        ProjectUpgradeSevice.create(futureProjects[2], (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1, 1)
+        ProjectUpgradeSevice.create(futureProjects[2], (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1)
       ).rejects.toThrow();
     });
 
@@ -150,7 +157,7 @@ describe('Project Upgrades', () => {
         dataSources: [{startBlock: 20}],
       } as ISubqueryProject;
       await expect(
-        ProjectUpgradeSevice.create(project, (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1, 1)
+        ProjectUpgradeSevice.create(project, (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1)
       ).rejects.toThrow();
     });
 
@@ -170,7 +177,7 @@ describe('Project Upgrades', () => {
       ] as ISubqueryProject[];
 
       await expect(
-        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1, 1)
+        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1)
       ).rejects.toThrow();
     });
 
@@ -194,7 +201,7 @@ describe('Project Upgrades', () => {
       ] as ISubqueryProject[];
 
       await expect(
-        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1, 1)
+        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1)
       ).rejects.toThrow();
     });
   });
@@ -234,18 +241,13 @@ describe('Project Upgrades', () => {
         1
       );
 
+      await upgradeService.init(mockMetadata());
+
       project = upgradableSubqueryProject(upgradeService);
     });
 
     it('cant set values other than `currentHeight`', () => {
       expect(() => ((project as any).id = 'not possible')).toThrow();
-    });
-
-    it('will default the currentHeight if not provided', async () => {
-      upgradeService = await ProjectUpgradeSevice.create(demoProjects[5], (id) =>
-        Promise.resolve(demoProjects[parseInt(id, 10)])
-      );
-      expect(upgradeService.currentHeight).toEqual(50);
     });
 
     it('can set the current height on the service', () => {
@@ -266,6 +268,92 @@ describe('Project Upgrades', () => {
       project.currentHeight = 25;
 
       expect(project.parent?.block).toEqual(20);
+    });
+
+    it('can update the indexed deployments', async () => {
+      await upgradeService.updateIndexedDeployments('A', 1);
+
+      expect(await (upgradeService as any).getDeploymentsMetadata()).toEqual({1: 'A'});
+
+      // Only update if the deployment changes
+      await upgradeService.updateIndexedDeployments('B', 2);
+      await upgradeService.updateIndexedDeployments('B', 3);
+
+      expect(await (upgradeService as any).getDeploymentsMetadata()).toEqual({1: 'A', 2: 'B'});
+
+      // Handle fork
+      await upgradeService.updateIndexedDeployments('C', 10);
+      await upgradeService.updateIndexedDeployments('D', 7);
+
+      expect(await (upgradeService as any).getDeploymentsMetadata()).toEqual({1: 'A', 2: 'B', 7: 'D'});
+    });
+  });
+
+  describe('Upgrade metadata validation', () => {
+    let upgradeService: ProjectUpgradeSevice<ISubqueryProject>;
+
+    beforeEach(async () => {
+      upgradeService = await ProjectUpgradeSevice.create(
+        {...demoProjects[5], id: '5'},
+        (id) => Promise.resolve({...demoProjects[parseInt(id, 10)], id}),
+        1
+      );
+    });
+
+    it('succeds with an exact match', () => {
+      const indexedData = {1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: '5'};
+
+      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(50);
+      expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
+    });
+
+    it('succeds with a partial match', () => {
+      const indexedData = {1: '0', 10: '1', 20: '2'};
+
+      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(20);
+      expect(upgradeService.validateIndexedData(indexedData)).toEqual(29);
+    });
+
+    it('succeeds with no indexed data', () => {
+      expect(upgradeService.validateIndexedData({})).toEqual(1);
+    });
+
+    it('succeeds with upgraded projects before the upgraded feature', () => {
+      // Negative values wouldn't be possible in use, but its here for test simplification
+      const indexedData = {[-20]: '-2', [-10]: '-1', 1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: '5'};
+
+      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(50);
+      expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
+    });
+
+    it('it can rewind if an upgrade needs replacing', () => {
+      // indexed a -> b -> c -> d
+      // upgrade to a -> b -> c -> e
+
+      const indexedData = {1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: 'Z'};
+
+      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(40);
+      expect(upgradeService.validateIndexedData(indexedData)).toEqual(49);
+    });
+
+    it('throws if there are no matching projects', () => {
+      // indexed a -> b -> c -> d
+      // upgrade to x -> y -> z
+      const indexedData = {1: 'A', 11: 'B', 21: 'C'};
+
+      expect(() => upgradeService.validateIndexedData(indexedData)).toThrow();
+    });
+
+    it('validates if project doesnt have upgrades', async () => {
+      const upgradeService = await ProjectUpgradeSevice.create(
+        demoProjects[0],
+        (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        1
+      );
+
+      const indexedData = {1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: '5'};
+
+      expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
     });
   });
 });

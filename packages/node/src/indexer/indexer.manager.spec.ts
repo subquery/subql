@@ -139,6 +139,8 @@ function mockProjectUpgradeService(
     ...project.dataSources.map((ds) => ds.startBlock),
   );
   return {
+    init: jest.fn(),
+    updateIndexedDeployments: jest.fn(),
     currentHeight: startBlock,
     currentProject: project,
     projects: new Map([[startBlock, project]]),
