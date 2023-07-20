@@ -63,33 +63,34 @@ export default class Generate extends Command {
         const chosenEvent = await inquirer.prompt({
           name: 'events',
           message: 'Select events',
-          type: 'list',
+          type: 'checkbox',
           choices: availableEventList,
         });
-        eventArray.push(chosenEvent.events);
+        eventArray.push(...chosenEvent.events);
       } catch (e) {
         throw new Error(e);
       }
+    } else {
+      eventArray.concat(...availableEventList);
     }
 
     if (functions !== '*') {
       try {
         const chosenFn = await inquirer.prompt({
           name: 'functions',
-          message: 'Select events',
-          type: 'list',
+          message: 'Select Functions',
+          type: 'checkbox',
           choices: availableFunctionList,
         });
-        functionArray.push(chosenFn.functions);
+        functionArray.push(...chosenFn.functions);
       } catch (e) {
         throw new Error(e);
       }
+    } else {
+      functionArray.concat(...availableFunctionList);
     }
 
-    console.log(eventArray);
-    console.log(functionArray);
     const constructedEvents = eventArray.map((event) => {
-      console.log(eventsFragments[event]);
       return {
         name: eventsFragments[event].name,
         method: event,
@@ -97,7 +98,6 @@ export default class Generate extends Command {
     });
 
     const constructedFunctions: SelectedMethod[] = functionArray.map((fn) => {
-      console.log(functionFragments[fn]);
       return {
         name: functionFragments[fn].name,
         method: fn,
@@ -114,6 +114,10 @@ export default class Generate extends Command {
       };
       await generateManifest(root, manifests[0], userInput);
       await generateHandlers([constructedEvents, constructedFunctions], root, abiPath);
+
+      this.log('===============================');
+      this.log('----------Generated------------');
+      this.log('===============================');
     } catch (e) {
       throw new Error(e.message);
     }
