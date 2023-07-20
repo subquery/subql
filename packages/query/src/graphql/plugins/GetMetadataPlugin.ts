@@ -124,6 +124,9 @@ async function fetchMetadataFromTable(
   return metadata;
 }
 
+// Store default metadata name in table avoid query system table
+let defaultMetadataName: string;
+
 async function fetchFromTable(
   pgClient: Client,
   schemaName: string,
@@ -134,11 +137,14 @@ async function fetchFromTable(
 
   if (!chainId) {
     // return first metadata entry you find.
-    const {rows} = await pgClient.query(
-      `SELECT table_name FROM information_schema.tables where table_schema='${schemaName}'`
-    );
-    const {table_name} = rows.find((obj: {table_name: string}) => matchMetadataTableName(obj.table_name));
-    metadataTableName = table_name;
+    if (defaultMetadataName === undefined) {
+      const {rows} = await pgClient.query(
+        `SELECT table_name FROM information_schema.tables where table_schema='${schemaName}'`
+      );
+      const {table_name} = rows.find((obj: {table_name: string}) => matchMetadataTableName(obj.table_name));
+      defaultMetadataName = table_name;
+    }
+    metadataTableName = defaultMetadataName;
   } else {
     metadataTableName = getMetadataTableName(chainId);
   }
@@ -219,8 +225,10 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
       extend type Query {
         _metadata(chainId: String): _Metadata
 
-        _metadatas(after: Cursor, before: Cursor): # distinct: [_mmr_distinct_enum] = null
-        # filter: _MetadataFilter
+        _metadatas(
+          after: Cursor
+          before: Cursor # distinct: [_mmr_distinct_enum] = null
+        ): # filter: _MetadataFilter
         # first: Int
         # last: Int
         # offset: Int
