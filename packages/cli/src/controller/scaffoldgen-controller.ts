@@ -12,10 +12,8 @@ import {upperFirst} from 'lodash';
 import {parseContractPath} from 'typechain';
 import {parseDocument} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {abiRenderProps, DatasourceKind, processAbis} from './codegen-controller';
 
 const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-handlers.ts.ejs');
-const SCAFFOLD_MANIFEST_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-manifest.yaml.ejs');
 const ROOT_ABIS_DIR = './abis';
 
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
@@ -40,41 +38,6 @@ export function getAvailableEvents(abiInterface: Interface): {[p: string]: Event
 // Available functions Objects
 export function getAvailableFunctions(abiInterface: Interface): {[p: string]: FunctionFragment} {
   return abiInterface.functions;
-}
-
-// Filter out the exisitng ones
-function filterAbiMethods(
-  projectPath: string,
-  manifestPath: string,
-  avaliableAbiMethods: abiRenderProps[]
-): abiRenderProps[] {
-  // Should filter out implemented functions
-  const existingManifest = loadFromJsonOrYaml(path.join(projectPath, manifestPath)) as any;
-
-  // get manifest Abi methods
-  existingManifest.dataSources.map((ds: any) => {
-    ds.mapping.handlers.map((handler: any) => {
-      switch (handler.filter) {
-        case 'function' in handler.filter:
-          console.log('tx handler');
-          break;
-        case 'topics' in handler.filter:
-          console.log('log handler');
-          break;
-        default:
-          console.log('Invalid filter');
-          break;
-      }
-    });
-  });
-
-  return avaliableAbiMethods;
-}
-
-function prepareAbiRenderJobs(projectPath: string, abiPath: string): Map<string, string> {
-  const jobs = new Map<string, string>();
-  jobs.set(parseContractPath(abiPath).name, abiPath);
-  return jobs;
 }
 
 interface TopicsFilter {
@@ -230,7 +193,6 @@ export async function generateHandlers(
         props: {
           abis: [abiProps],
         },
-        // helper: {},
       }
     );
   } catch (e) {
@@ -239,5 +201,3 @@ export async function generateHandlers(
 
   await fs.promises.writeFile(path.join(projectPath, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
 }
-
-// template out the handler

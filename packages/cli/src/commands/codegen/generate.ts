@@ -3,6 +3,8 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {getProjectRootAndManifest} from '@subql/common';
+import * as inquirer from 'inquirer';
 import {
   generateHandlers,
   generateManifest,
@@ -11,7 +13,6 @@ import {
   getAvailableFunctions,
 } from '../../controller/scaffoldgen-controller';
 
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 export interface SelectedMethod {
   name: string;
   method: string;
@@ -33,33 +34,70 @@ export default class Generate extends Command {
       description: '[deprecated] local folder to run codegen in. please use file flag instead',
     }),
     file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
+    events: Flags.string({description: 'abi events', required: false}),
+    functions: Flags.string({description: 'abi functions', required: false}),
+    abiPath: Flags.string({description: 'path to abi from root', required: true}),
+    startBlock: Flags.integer({description: 'startBlock'}),
+    address: Flags.string({description: 'contract address'}),
   };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
-    const {file, location} = flags;
+    const {abiPath, address, events, file, functions, location, startBlock} = flags;
     const projectPath = path.resolve(file ?? location ?? process.cwd());
-    // const {manifests, root} = getProjectRootAndManifest(projectPath);
+    const {manifests, root} = getProjectRootAndManifest(projectPath);
 
-    const abiInterface = getAbiInterface(projectPath, './abis/erc20.abi.json');
+    const abiInterface = getAbiInterface(projectPath, abiPath);
 
     const eventsFragments = getAvailableEvents(abiInterface);
     const functionFragments = getAvailableFunctions(abiInterface);
 
-    const eventList = Object.keys(eventsFragments);
-    const functionList = Object.keys(functionFragments);
+    const availableEventList = Object.keys(eventsFragments);
+    const availableFunctionList = Object.keys(functionFragments);
 
-    const mockSelectedEvents = ['Transfer(address,address,uint256)'];
-    const mockSelectedFunctions = ['approve(address,uint256)'];
+    const eventArray: string[] = [];
+    const functionArray: string[] = [];
 
-    const constructedEvents: SelectedMethod[] = mockSelectedEvents.map((event) => {
+    if (events !== '*') {
+      try {
+        const chosenEvent = await inquirer.prompt({
+          name: 'events',
+          message: 'Select events',
+          type: 'list',
+          choices: availableEventList,
+        });
+        eventArray.push(chosenEvent.events);
+      } catch (e) {
+        throw new Error(e);
+      }
+    }
+
+    if (functions !== '*') {
+      try {
+        const chosenFn = await inquirer.prompt({
+          name: 'functions',
+          message: 'Select events',
+          type: 'list',
+          choices: availableFunctionList,
+        });
+        functionArray.push(chosenFn.functions);
+      } catch (e) {
+        throw new Error(e);
+      }
+    }
+
+    console.log(eventArray);
+    console.log(functionArray);
+    const constructedEvents = eventArray.map((event) => {
+      console.log(eventsFragments[event]);
       return {
         name: eventsFragments[event].name,
         method: event,
       };
     });
 
-    const constructedFunctions: SelectedMethod[] = mockSelectedFunctions.map((fn) => {
+    const constructedFunctions: SelectedMethod[] = functionArray.map((fn) => {
+      console.log(functionFragments[fn]);
       return {
         name: functionFragments[fn].name,
         method: fn,
@@ -67,17 +105,15 @@ export default class Generate extends Command {
     });
 
     try {
-      const mockUserInput: UserInput = {
+      const userInput: UserInput = {
         startBlock: 1,
         functions: constructedFunctions,
         events: constructedEvents,
-        abiPath: './abis/erc20.abi.json',
-        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+        abiPath: abiPath,
+        address: address,
       };
-
-      await generateManifest(projectPath, 'project.yaml', mockUserInput);
-
-      await generateHandlers([constructedEvents, constructedFunctions], projectPath, '/abis/erc20.abi.json');
+      await generateManifest(root, manifests[0], userInput);
+      await generateHandlers([constructedEvents, constructedFunctions], root, abiPath);
     } catch (e) {
       throw new Error(e.message);
     }
