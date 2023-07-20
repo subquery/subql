@@ -1,0 +1,199 @@
+name: BENCHMARK-SUBSTRATE
+on:
+  workflow_dispatch:
+    inputs:
+      benchmark-time:
+        description: 'Benchmark time(h/m/s)'
+        default: 30m
+        require: true
+      indexerVersion:
+        description: 'indexer version'
+        default: 'latest'
+        require: true
+      deployment:
+        description: 'Deployment'
+        default: 'QmakYyTWzTxaDU842CczyDWV51Ay9E55k7kbRRXTB3f395'
+        require: false
+      network-endpoint:
+        description: 'Network endpoint'
+        default: 'wss://rpc-polkadot.luckyfriday.io'
+        require: true
+      disableHistorical:
+        description: 'Disable historical'
+        default: 'true'
+        require: false
+      batch-size:
+        description: 'batch-size'
+        default: 30
+        require: false
+      workers:
+        description: 'workers'
+        default: 4
+        require: false
+      others:
+        description: 'Other flags'
+        require: false
+
+jobs:
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    # Docker Hub image that `container-job` executes in
+    container: node:18
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:12-alpine
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      #Check out
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Install PostgreSQL client
+        run: |
+          apt-get update
+          apt-get install --yes postgresql-client
+
+      # queries database with postgres client
+      - name: Setup historical database
+        run: psql -h postgres -d postgres -U postgres -c 'CREATE EXTENSION IF NOT EXISTS btree_gist;'
+        env:
+          PGPASSWORD: postgres
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm i @subql/node@${{ github.event.inputs.indexerVersion }} -g
+
+
+      - name: Ensure reports path exists
+        run: |
+          output_dir="output/benchmark/"
+          if [ ! -d "$output_dir" ]; then
+            mkdir -p "$output_dir"
+            echo "Created directory: $output_dir"
+          else
+            echo "Benchmark report directory already exists: $output_dir"
+          fi
+
+      - name: Benchmarking
+        id: app
+        run: |
+          chmod +x .github/workflows/scripts/substrate.sh
+          .github/workflows/scripts/substrate.sh ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
+        env:
+          # The hostname used to communicate with the PostgreSQL service container
+          DB_USER: postgres
+          DB_PASS: postgres
+          DB_DATABASE: postgres
+          DB_HOST: postgres
+          DB_PORT: 5432
+
+
+      - name: Extract actual sdk version
+        id: extract_version
+        run: |
+          version_line=$(grep -oE 'Current @subql/node version is.*' output/benchmark/indexing.log)
+          # Use cut to extract the version from the line
+          version=$(echo "$version_line" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "::set-output name=version::$version"    
+      
+
+      - name: Query metadata get processed height
+        id: query_meta
+        env:
+          PGPASSWORD: postgres
+        run: |
+          # Query the database and store the result in variables
+          start_height=$(psql -h postgres -d postgres -U postgres -c "SELECT value::integer FROM app._metadata WHERE key = 'startHeight';" | awk 'NR == 3 {print $1}')
+          last_processed_height=$(psql -h postgres -d postgres -U postgres -c "SELECT value::integer FROM app._metadata WHERE key = 'lastProcessedHeight';" | awk 'NR == 3 {print $1}')
+          total_height=$((last_processed_height - start_height))
+          echo "Start Height: $start_height"
+          echo "Last Processed Height: $last_processed_height"
+          # Set outputs for subsequent steps
+          echo "::set-output name=start_height::$start_height"
+          echo "::set-output name=last_processed_height::$last_processed_height"
+
+
+      - name: Pre-save running specs
+        run: |
+          echo "benchmark-time=${{github.event.inputs.benchmark-time}}" > output/benchmark/benchmark.log
+          echo "indexerVersion=${{steps.extract_version.outputs.version}}" >> output/benchmark/benchmark.log
+          echo "deployment=${{github.event.inputs.deployment}}" >> output/benchmark/benchmark.log
+          echo "network-endpoint=${{github.event.inputs.network-endpoint}}" >> output/benchmark/benchmark.log
+          echo "disableHistorical=${{github.event.inputs.disableHistorical}}" >> output/benchmark/benchmark.log
+          echo "batch-size=${{github.event.inputs.batch-size}}" >> output/benchmark/benchmark.log
+          echo "workers=${{github.event.inputs.workers}}" >> output/benchmark/benchmark.log
+          if [ -n "${{github.event.inputs.others}}" ]; then
+            echo "others=${{github.event.inputs.others}}" >> output/benchmark/benchmark.log
+          fi 
+          echo "Start Height: ${{steps.query_meta.outputs.start_height}}" >> output/benchmark/benchmark.log
+          echo "Last Processed Height: ${{steps.query_meta.outputs.last_processed_height}}" >> output/benchmark/benchmark.log
+          echo "------------------------------------" >> output/benchmark/benchmark.log
+
+      - name: Prepare benchmark log
+        run: |
+          if grep -qi "benchmark" output/benchmark/indexing.log; then
+            grep -i "benchmark" output/benchmark/indexing.log >> output/benchmark/benchmark.log
+            cat output/benchmark/benchmark.log
+          else
+            echo "No lines containing 'benchmark' found in output/benchmark/indexing.log" >> output/benchmark/benchmark.log
+          fi
+
+      - name: Get current time
+        uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYYMMDD-HHMM
+          utcOffset: "+12:00"
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-report-${{steps.current-time.outputs.formattedTime}}-v${{steps.extract_version.outputs.version}}
+          path: output/benchmark/
+
+
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          channel-id: 'C02156BV42V'
+          # For posting a rich message using Block Kit
+          payload: |
+            {
+              "text": "Benchmark result ${{steps.current-time.outputs.formattedTime}}-v${{steps.extract_version.outputs.version}}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Results: ${{ job.status }}\n Indexer:@subql/node@${{steps.extract_version.outputs.version}}\n workers:${{github.event.inputs.workers}}\n batch-size:${{github.event.inputs.batch-size}}\n block ${{steps.query_meta.outputs.start_height}} to ${{steps.query_meta.outputs.last_processed_height}}, total $total_height in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
