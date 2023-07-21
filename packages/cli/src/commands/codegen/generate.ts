@@ -34,10 +34,10 @@ export default class Generate extends Command {
       description: '[deprecated] local folder to run codegen in. please use file flag instead',
     }),
     file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
-    events: Flags.string({description: 'abi events', required: false}),
-    functions: Flags.string({description: 'abi functions', required: false}),
+    events: Flags.string({description: 'abi events', required: true}),
+    functions: Flags.string({description: 'abi functions', required: true}),
     abiPath: Flags.string({description: 'path to abi from root', required: true}),
-    startBlock: Flags.integer({description: 'startBlock'}),
+    startBlock: Flags.integer({description: 'startBlock', required: true}),
     address: Flags.string({description: 'contract address'}),
   };
 
@@ -71,7 +71,7 @@ export default class Generate extends Command {
         throw new Error(e);
       }
     } else {
-      eventArray.concat(...availableEventList);
+      eventArray.push(...availableEventList);
     }
 
     if (functions !== '*') {
@@ -87,7 +87,7 @@ export default class Generate extends Command {
         throw new Error(e);
       }
     } else {
-      functionArray.concat(...availableFunctionList);
+      functionArray.push(...availableFunctionList);
     }
 
     const constructedEvents = eventArray.map((event) => {
@@ -106,7 +106,7 @@ export default class Generate extends Command {
 
     try {
       const userInput: UserInput = {
-        startBlock: 1,
+        startBlock: startBlock,
         functions: constructedFunctions,
         events: constructedEvents,
         abiPath: abiPath,
@@ -115,9 +115,14 @@ export default class Generate extends Command {
       await generateManifest(root, manifests[0], userInput);
       await generateHandlers([constructedEvents, constructedFunctions], root, abiPath);
 
-      this.log('===============================');
-      this.log('----------Generated------------');
-      this.log('===============================');
+      this.log('-----------Generated-----------');
+      functionArray.map((fn) => {
+        this.log(`Function: ${fn} successfully generated`);
+      });
+      eventArray.map((event) => {
+        this.log(`Event: ${event} successfully generated`);
+      });
+      this.log('-------------------------------');
     } catch (e) {
       throw new Error(e.message);
     }
