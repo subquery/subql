@@ -1,5 +1,5 @@
-// Copyright 2020-2021 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -58,7 +58,7 @@ export class BlockDispatcherService
   }
 
   protected getBlockHeight(block: SorobanBlockWrapper): number {
-    return block.block.height;
+    return block.block.ledger;
   }
 
   protected async indexBlock(

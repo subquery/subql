@@ -17,12 +17,12 @@ describe('SorobanApiConnection', () => {
   let unsafeApi: SorobanApi;
   const mockBlocks: SorobanBlock[] = [
     {
-      height: 1,
+      ledger: 1,
       hash: 'hash1',
       events: [],
     },
     {
-      height: 2,
+      ledger: 2,
       hash: 'hash2',
       events: [],
     },

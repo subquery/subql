@@ -6,7 +6,7 @@ import { Server, SorobanRpc } from 'soroban-client';
 import { GetEventsRequest } from 'soroban-client/lib/server';
 
 const logger = getLogger('soroban-server');
-const DEFAULT_PAGE_SIZE = 100;
+const MAX_PAGE_SIZE = 10000;
 
 export class SorobanServer extends Server {
   private eventsCache: { [key: number]: SorobanRpc.GetEventsResponse } = {};
@@ -23,6 +23,7 @@ export class SorobanServer extends Server {
       });
     }
 
+    request.limit = MAX_PAGE_SIZE;
     const response = await super.getEvents(request);
 
     const maxEventHeight =
@@ -39,7 +40,13 @@ export class SorobanServer extends Server {
     );
 
     //exclude maxEventHeight as some of the events in it might be paginated out
-    if (response.events.length === DEFAULT_PAGE_SIZE) {
+    if (response.events.length === MAX_PAGE_SIZE) {
+      if (maxEventHeight === request.startLedger) {
+        throw new Error(
+          `EventLimitError: block ${request.startLedger} contains more than ${MAX_PAGE_SIZE} events`,
+        );
+      }
+
       delete this.eventsCache[maxEventHeight];
     }
 

@@ -94,7 +94,7 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   getBlockHeight(block: SorobanBlockWrapper): number {
-    return block.block.height;
+    return block.block.ledger;
   }
 
   getBlockHash(block: SorobanBlockWrapper): string {

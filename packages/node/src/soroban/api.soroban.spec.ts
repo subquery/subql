@@ -37,7 +37,7 @@ describe('SorobanApi', function () {
   it('should fetch block', async function () {
     const latestHeight = await sorobanApi.getFinalizedBlockHeight();
     const block = (await sorobanApi.fetchBlocks([latestHeight]))[0];
-    expect(block.block.height).toEqual(latestHeight);
+    expect(block.block.ledger).toEqual(latestHeight);
   });
 
   it('throws error if getEvents throws error', async function () {

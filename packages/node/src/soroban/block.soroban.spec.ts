@@ -23,7 +23,7 @@ describe('SorobanBlockWrapped', function () {
     value: null,
   };
   const mockBlock: SorobanBlock = {
-    height: 2000,
+    ledger: 2000,
     hash: '2000',
     events: [mockEvent],
   };
