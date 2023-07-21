@@ -71,13 +71,16 @@ export class SorobanApiConnection
 
   static handleError(e: Error): ApiConnectionError {
     let formatted_error: ApiConnectionError;
-    if (e.message.startsWith(`No response received from RPC endpoint in`)) {
+    if (e.message.includes(`Timeout`)) {
       formatted_error = SorobanApiConnection.handleTimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
       formatted_error = SorobanApiConnection.handleDisconnectionError(e);
-    } else if (e.message.startsWith(`Rate Limited at endpoint`)) {
+    } else if (
+      e.message.includes(`Rate Limit Exceeded`) ||
+      e.message.includes('Too Many Requests')
+    ) {
       formatted_error = SorobanApiConnection.handleRateLimitError(e);
-    } else if (e.message.includes(`Exceeded max limit of`)) {
+    } else if (e.message.includes(`limit must not exceed`)) {
       formatted_error = SorobanApiConnection.handleLargeResponseError(e);
     } else {
       formatted_error = new ApiConnectionError(
