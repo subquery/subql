@@ -1,17 +1,12 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
 } from '@subql/node-core';
-import JSON5 from 'json5';
-import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
-
-const CHAIN_ALIASES_URL =
-  'https://raw.githubusercontent.com/subquery/templates/main/chainAliases.json5';
 
 @Injectable()
 export class DictionaryService

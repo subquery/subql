@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getLogger } from '@subql/node-core';
@@ -94,7 +94,7 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
       const events = await this.getEvents(blockNumber);
 
       const ret = new SorobanBlockWrapped(events.events ?? [], {
-        height: blockNumber,
+        ledger: blockNumber,
         hash: blockNumber.toString(),
       } as SorobanBlock);
 
