@@ -233,7 +233,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
-    const responseTimeScore = 1 / responseTime;
+    const responseTimeScore = 1 / (1 + Math.log(1 + responseTime));
     const failureScore = 1 - failureCount / MAX_FAILURES;
     return RESPONSE_TIME_WEIGHT * responseTimeScore + FAILURE_WEIGHT * failureScore;
   }
