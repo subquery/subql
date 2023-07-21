@@ -8,9 +8,13 @@ import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ApiConnectionError,
   ApiErrorType,
+  DisconnectionError,
+  LargeResponseError,
   NetworkMetadataPayload,
+  RateLimitError,
+  TimeoutError,
+  IApiConnectionSpecific,
 } from '@subql/node-core';
-import { ApiConnectionSpecific } from '@subql/node-core/api.connection';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent } from './types';
 import { createCachedProvider } from './x-provider/cachedProvider';
@@ -23,11 +27,9 @@ const RETRY_DELAY = 2_500;
 
 type FetchFunc = typeof SubstrateUtil.fetchBlocksBatches;
 
-export class ApiPromiseConnection extends ApiConnectionSpecific<
-  ApiPromise,
-  ApiAt,
-  BlockContent
-> {
+export class ApiPromiseConnection
+  implements IApiConnectionSpecific<ApiPromise, ApiAt, BlockContent>
+{
   readonly networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -36,8 +38,6 @@ export class ApiPromiseConnection extends ApiConnectionSpecific<
     private endpoint: string,
     private fetchBlocksBatches: FetchFunc,
   ) {
-    super();
-
     this.networkMeta = {
       chain: unsafeApi.runtimeChain.toString(),
       specName: unsafeApi.runtimeVersion.specName.toString(),
@@ -122,13 +122,13 @@ export class ApiPromiseConnection extends ApiConnectionSpecific<
   static handleError(e: Error): ApiConnectionError {
     let formatted_error: ApiConnectionError;
     if (e.message.startsWith(`No response received from RPC endpoint in`)) {
-      formatted_error = ApiConnectionSpecific.handleTimeoutError(e);
+      formatted_error = new TimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
-      formatted_error = ApiConnectionSpecific.handleDisconnectionError(e);
+      formatted_error = new DisconnectionError(e);
     } else if (e.message.startsWith(`-32029: Too Many Requests`)) {
-      formatted_error = ApiConnectionSpecific.handleRateLimitError(e);
+      formatted_error = new RateLimitError(e);
     } else if (e.message.includes(`Exceeded max limit of`)) {
-      formatted_error = ApiConnectionSpecific.handleLargeResponseError(e);
+      formatted_error = new LargeResponseError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,

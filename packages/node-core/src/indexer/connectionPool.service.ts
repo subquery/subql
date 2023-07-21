@@ -5,7 +5,8 @@ import {isMainThread} from 'node:worker_threads';
 import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
-import {IApiConnectionSpecific} from '..';
+import {ApiConnectionError, ApiErrorType} from '../api.connection.error';
+import {IApiConnectionSpecific} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
@@ -14,29 +15,12 @@ const logger = getLogger('connection-pool');
 
 const LOG_INTERVAL_MS = 60 * 1000; // Log every 60 seconds
 
-export enum ApiErrorType {
-  Timeout = 'timeout',
-  Connection = 'connection',
-  RateLimit = 'ratelimit',
-  Default = 'default',
-}
-
 export const errorTypeToScoreAdjustment = {
   [ApiErrorType.Timeout]: -10,
   [ApiErrorType.Connection]: -20,
   [ApiErrorType.RateLimit]: -10,
   [ApiErrorType.Default]: -5,
 };
-
-export class ApiConnectionError extends Error {
-  errorType: ApiErrorType;
-
-  constructor(name: string, message: string, errorType: ApiErrorType) {
-    super(message);
-    this.name = name;
-    this.errorType = errorType;
-  }
-}
 
 type ResultCacheEntry<T> = {
   apiIndex: number;

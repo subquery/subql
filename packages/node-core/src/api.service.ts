@@ -1,9 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IApiConnectionSpecific} from './api.connection';
+import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {NetworkMetadataPayload} from './events';
-import {ApiConnectionError, ApiErrorType, ConnectionPoolService} from './indexer';
+import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
 
 const logger = getLogger('api');
@@ -15,6 +15,12 @@ export interface IApi<A = any, SA = any, B = any> {
   safeApi(height: number): SA;
   unsafeApi: A;
   networkMeta: NetworkMetadataPayload;
+}
+
+export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi<A, SA, B> {
+  handleError(error: Error): ApiConnectionError;
+  apiConnect(): Promise<void>;
+  apiDisconnect(): Promise<void>;
 }
 
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
