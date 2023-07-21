@@ -199,9 +199,9 @@ export class FetchService extends BaseFetchService<
   }
 
   protected async getFinalizedHeight(): Promise<number> {
-    const block = await this.api.getFinalizedBlock();
+    const sequence = await this.api.getFinalizedBlockHeight();
 
-    const header = blockToHeader(block.sequence);
+    const header = blockToHeader(sequence);
 
     this.unfinalizedBlocksService.registerFinalizedBlock(header);
     return header.blockHeight;
