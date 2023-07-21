@@ -8,9 +8,9 @@ import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ApiConnectionError,
   ApiErrorType,
-  IApiConnectionSpecific,
   NetworkMetadataPayload,
 } from '@subql/node-core';
+import { ApiConnectionSpecific } from '@subql/node-core/api.connection';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent } from './types';
 import { createCachedProvider } from './x-provider/cachedProvider';
@@ -23,9 +23,11 @@ const RETRY_DELAY = 2_500;
 
 type FetchFunc = typeof SubstrateUtil.fetchBlocksBatches;
 
-export class ApiPromiseConnection
-  implements IApiConnectionSpecific<ApiPromise, ApiAt, BlockContent>
-{
+export class ApiPromiseConnection extends ApiConnectionSpecific<
+  ApiPromise,
+  ApiAt,
+  BlockContent
+> {
   readonly networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -34,6 +36,8 @@ export class ApiPromiseConnection
     private endpoint: string,
     private fetchBlocksBatches: FetchFunc,
   ) {
+    super();
+
     this.networkMeta = {
       chain: unsafeApi.runtimeChain.toString(),
       specName: unsafeApi.runtimeVersion.specName.toString(),
@@ -118,13 +122,13 @@ export class ApiPromiseConnection
   static handleError(e: Error): ApiConnectionError {
     let formatted_error: ApiConnectionError;
     if (e.message.startsWith(`No response received from RPC endpoint in`)) {
-      formatted_error = ApiPromiseConnection.handleTimeoutError(e);
+      formatted_error = ApiConnectionSpecific.handleTimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
-      formatted_error = ApiPromiseConnection.handleDisconnectionError(e);
+      formatted_error = ApiConnectionSpecific.handleDisconnectionError(e);
     } else if (e.message.startsWith(`-32029: Too Many Requests`)) {
-      formatted_error = ApiPromiseConnection.handleRateLimitError(e);
+      formatted_error = ApiConnectionSpecific.handleRateLimitError(e);
     } else if (e.message.includes(`Exceeded max limit of`)) {
-      formatted_error = ApiPromiseConnection.handleLargeResponseError(e);
+      formatted_error = ApiConnectionSpecific.handleLargeResponseError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,
@@ -133,42 +137,5 @@ export class ApiPromiseConnection
       );
     }
     return formatted_error;
-  }
-
-  static handleRateLimitError(e: Error): ApiConnectionError {
-    const formatted_error = new ApiConnectionError(
-      'RateLimit',
-      e.message,
-      ApiErrorType.RateLimit,
-    );
-    return formatted_error;
-  }
-
-  static handleTimeoutError(e: Error): ApiConnectionError {
-    const formatted_error = new ApiConnectionError(
-      'TimeoutError',
-      e.message,
-      ApiErrorType.Timeout,
-    );
-    return formatted_error;
-  }
-
-  static handleDisconnectionError(e: Error): ApiConnectionError {
-    const formatted_error = new ApiConnectionError(
-      'ConnectionError',
-      e.message,
-      ApiErrorType.Connection,
-    );
-    return formatted_error;
-  }
-
-  static handleLargeResponseError(e: Error): ApiConnectionError {
-    const newMessage = `Oversized RPC node response. This issue is related to the network's RPC nodes configuration, not your application. You may report it to the network's maintainers or try a different RPC node.\n\n${e.message}`;
-
-    return new ApiConnectionError(
-      'RpcInternalError',
-      newMessage,
-      ApiErrorType.Default,
-    );
   }
 }

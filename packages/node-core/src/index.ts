@@ -4,6 +4,7 @@
 import './utils/bigint';
 
 export * from './api.service';
+export * from './api.connection';
 export * from './logger';
 export * from './profiler';
 export * from './events';

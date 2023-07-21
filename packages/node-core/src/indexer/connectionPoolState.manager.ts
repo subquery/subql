@@ -4,9 +4,9 @@
 import {OnApplicationShutdown} from '@nestjs/common';
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
-import {IApiConnectionSpecific, errorTypeToScoreAdjustment} from '..';
+import {IApiConnectionSpecific} from '../api.connection';
 import {getLogger} from '../logger';
-import {ApiErrorType} from './connectionPool.service';
+import {errorTypeToScoreAdjustment, ApiErrorType} from './connectionPool.service';
 
 const RETRY_DELAY = 60 * 1000;
 const MAX_FAILURES = 5;
