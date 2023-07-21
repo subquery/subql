@@ -22,7 +22,7 @@ jobs:
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-ethereum'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-soroban'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -56,14 +56,14 @@ jobs:
         run: yarn build
 
       #Add remove-stable-version
-      - name: Bump types ethereum & deploy
+      - name: Bump types soroban & deploy
         if: steps.changed-types-soroban.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump common ethereum & deploy
+      - name: Bump common soroban & deploy
         if: steps.changed-common-soroban.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:

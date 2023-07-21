@@ -6,7 +6,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 import {
-  isCustomDs,
   SorobanHandlerKind,
   SorobanEventFilter,
   SubqlSorobanProcessorOptions,
@@ -22,8 +21,7 @@ import { SorobanBlock, SubqlDatasource } from '@subql/types-soroban';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SorobanApi, SorobanApiService } from '../soroban';
-import SafeEthProvider from '../soroban/safe-api';
+import { SorobanApi } from '../soroban';
 import { calcInterval } from '../soroban/utils.soroban';
 import { yargsOptions } from '../yargs';
 import { ISorobanBlockDispatcher } from './blockDispatcher';

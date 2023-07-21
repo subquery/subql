@@ -9,8 +9,8 @@ runner:
   query:
     name: '@subql/query'
     version: '*'
-description: 'This project can be use as a starting point for developing your new Ethereum SubQuery project'
-repository: 'https://github.com/subquery/ethereum-subql-starter'
+description: 'This project can be use as a starting point for developing your new Soroban SubQuery project'
+repository: 'https://github.com/subquery/soroban-subql-starter'
 
 schema:
   file: './schema.graphql'

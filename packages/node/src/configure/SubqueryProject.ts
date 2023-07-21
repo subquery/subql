@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Block } from '@ethersproject/abstract-provider';
 import { Injectable } from '@nestjs/common';
 import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
@@ -9,13 +8,10 @@ import {
   parseSorobanProjectManifest,
   SubqlSorobanDataSource,
   ProjectManifestV1_0_0Impl,
-  isRuntimeDs,
-  SorobanHandlerKind,
   isCustomDs,
 } from '@subql/common-soroban';
 import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
 import { buildSchemaFromString } from '@subql/utils';
-import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 
 export type SubqlProjectDs = SubqlSorobanDataSource & {

@@ -13,12 +13,12 @@ import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { SorobanApi } from '../soroban';
-import SafeEthProvider from '../soroban/safe-api';
+import SafeSorobanProvider from '../soroban/safe-api';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
   SorobanApi,
-  SafeEthProvider,
+  SafeSorobanProvider,
   SorobanBlockWrapper,
   SubqlProjectDs
 > {
