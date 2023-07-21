@@ -3,7 +3,7 @@
 
 import {Injectable} from '@nestjs/common';
 import {ConnectionPoolItem, IApiConnectionSpecific, IConnectionPoolStateManager} from '@subql/node-core';
-import {ApiErrorType} from '../connectionPool.service';
+import {ApiErrorType} from '../../api.connection.error';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 
 export type HostConnectionPoolState<T> = {
