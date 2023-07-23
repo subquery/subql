@@ -1,8 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {NetworkMetadataPayload} from './events';
-import {ApiConnectionError, ApiErrorType, ConnectionPoolService, ISubqueryProject} from './indexer';
+import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
 
 const logger = getLogger('api');

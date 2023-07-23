@@ -4,9 +4,10 @@
 import {OnApplicationShutdown} from '@nestjs/common';
 import chalk from 'chalk';
 import {toNumber} from 'lodash';
-import {IApiConnectionSpecific, errorTypeToScoreAdjustment} from '..';
+import {ApiErrorType} from '../api.connection.error';
+import {IApiConnectionSpecific} from '../api.service';
 import {getLogger} from '../logger';
-import {ApiErrorType} from './connectionPool.service';
+import {errorTypeToScoreAdjustment} from './connectionPool.service';
 
 const RETRY_DELAY = 60 * 1000;
 const MAX_FAILURES = 5;
@@ -233,7 +234,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
-    const responseTimeScore = 1 / responseTime;
+    const responseTimeScore = 1 / (1 + Math.log(1 + responseTime));
     const failureScore = 1 - failureCount / MAX_FAILURES;
     return RESPONSE_TIME_WEIGHT * responseTimeScore + FAILURE_WEIGHT * failureScore;
   }
