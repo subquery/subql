@@ -1,4 +1,4 @@
-name: BENCHMARK-DOCKER
+name: BENCHMARK
 on:
   workflow_dispatch:
     inputs:
