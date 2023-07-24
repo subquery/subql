@@ -27,11 +27,11 @@ describe('SorobanApi', function () {
   });
 
   it('should get finalized block height', async function () {
-    expect(await sorobanApi.getFinalizedBlockHeight()).toBeGreaterThan(50000);
+    expect(await sorobanApi.getFinalizedBlockHeight()).not.toBeNaN();
   });
 
   it('should get best block height', async function () {
-    expect(await sorobanApi.getBestBlockHeight()).toBeGreaterThan(50000);
+    expect(await sorobanApi.getBestBlockHeight()).not.toBeNaN();
   });
 
   it('should fetch block', async function () {

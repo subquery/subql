@@ -63,7 +63,7 @@ describe('SorobanApiConnection', () => {
 
   describe('Error handling', () => {
     it('should handle timeout errors', () => {
-      const error = new Error('No response received from RPC endpoint in');
+      const error = new Error('Timeout');
       const handledError = SorobanApiConnection.handleError(error);
       expect(handledError).toBeInstanceOf(ApiConnectionError);
       expect(handledError.errorType).toEqual(ApiErrorType.Timeout);
@@ -77,14 +77,14 @@ describe('SorobanApiConnection', () => {
     });
 
     it('should handle rate limit errors', () => {
-      const error = new Error('Rate Limited at endpoint');
+      const error = new Error('Rate Limit Exceeded');
       const handledError = SorobanApiConnection.handleError(error);
       expect(handledError).toBeInstanceOf(ApiConnectionError);
       expect(handledError.errorType).toEqual(ApiErrorType.RateLimit);
     });
 
     it('should handle large response errors', () => {
-      const error = new Error('Exceeded max limit of');
+      const error = new Error('limit must not exceed');
       const handledError = SorobanApiConnection.handleError(error);
       expect(handledError).toBeInstanceOf(ApiConnectionError);
       expect(handledError.errorType).toEqual(ApiErrorType.Default);

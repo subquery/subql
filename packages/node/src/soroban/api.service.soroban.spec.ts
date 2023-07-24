@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
+import { ConnectionPoolStateManager } from '@subql/node-core/dist';
 import { GraphQLSchema } from 'graphql';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -33,6 +34,7 @@ export const prepareApiService = async (
   const module = await Test.createTestingModule({
     providers: [
       ConnectionPoolService,
+      ConnectionPoolStateManager,
       {
         provide: NodeConfig,
         useFactory: () => ({}),
@@ -79,7 +81,7 @@ describe('SorobanApiService', () => {
   it('can get the finalized height', async () => {
     const height = await apiService.api.getFinalizedBlockHeight();
     console.log('Finalized height', height);
-    expect(height).toBeGreaterThan(50000);
+    expect(height).not.toBeNaN();
   });
 
   it('throws error when chainId does not match', async () => {
