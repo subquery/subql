@@ -21,7 +21,6 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Validate,
   ValidateNested,
   validateSync,
 } from 'class-validator';
