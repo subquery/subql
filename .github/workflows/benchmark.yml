@@ -99,12 +99,12 @@ jobs:
           docker rm -f $CONTAINER_NAME || true
           VOLUME_NAME="${CONTAINER_NAME}_data"
           docker volume rm $VOLUME_NAME || true
-          docker build -t my_indexer --build-arg input_indexer_version=${{github.event.inputs.indexerVersion}} --build-arg input_cpus=${{github.event.inputs.cpus}} --build-arg input_memory=${{github.event.inputs.memory}} .github/workflows/scripts/benchmark/
+          docker build -t my_indexer --build-arg input_indexer_version=${{github.event.inputs.indexerVersion}} .github/workflows/scripts/benchmark/
 
       - name: Benchmarking
         id: app
         run: |
-          docker run --network ${{ job.container.network }} --name my_container -v "${PWD}/output/benchmark:/app/output/benchmark" my_indexer ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
+          docker run --cpus=${{github.event.inputs.cpus}} --memory=${{github.event.inputs.memory}} --network ${{ job.container.network }} --name my_container -v "${PWD}/output/benchmark:/app/output/benchmark" my_indexer ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
           docker cp my_container:/app/output/benchmark/indexing.log output/benchmark/
 
       - name: Stop and remove the benchmark container
@@ -174,7 +174,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Results: ${{ job.status }}\n CPUs: ${{github.event.inputs.cpus}}\n Memory: ${{github.event.inputs.memory}}\n  Indexer: ${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n Deployment: ${{github.event.inputs.deployment}}\n Workers: ${{github.event.inputs.workers}}\n Batch-size: ${{github.event.inputs.batch-size}}\n Performance: block [${{steps.query_meta.outputs.start_height}}-${{steps.query_meta.outputs.last_processed_height}}], total ${{steps.query_meta.outputs.total_height}} blocks in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    "text": "Results: ${{ job.status }}\n CPUs: ${{github.event.inputs.cpus}}\n Memory: ${{github.event.inputs.memory}}\n Indexer: ${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n Deployment: ${{github.event.inputs.deployment}}\n Workers: ${{github.event.inputs.workers}}\n Batch-size: ${{github.event.inputs.batch-size}}\n Performance: block [${{steps.query_meta.outputs.start_height}}-${{steps.query_meta.outputs.last_processed_height}}], total ${{steps.query_meta.outputs.total_height}} blocks in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
                 }
               ]

@@ -1,23 +1,15 @@
 FROM node:18
 
 # Define build-time arguments
-ARG input_cpus
-ARG input_memory
-ARG input_indexer_version
 
+ARG input_indexer_version
 ENV INDEXER_VERSION=${input_indexer_version}
-ENV CPUS=${input_cpus}
-ENV MEMORY=${input_memory}
 
 ENV DB_USER=postgres
 ENV DB_PASS=postgres
 ENV DB_DATABASE=postgres
 ENV DB_HOST=postgres
 ENV DB_PORT=5432
-
-
-# Set CPU shares and memory limit based on build arguments
-CMD ["--cpus=$CPUS", "--memory=$MEMORY"]
 
 # Set the working directory in the container
 WORKDIR /app
