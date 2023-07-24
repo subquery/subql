@@ -41,8 +41,6 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
       //  (connection.headers as any)[name] = value;
       //});
       this.client = new SorobanServer(endpoint, options);
-    } else if (protocolStr === 'ws' || protocolStr === 'wss') {
-      this.client = new SorobanServer(this.endpoint);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);
     }
