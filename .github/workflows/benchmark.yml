@@ -164,7 +164,8 @@ jobs:
         with:
           # Slack channel id, channel name, or user id to post message.
           # See also: https://api.slack.com/methods/chat.postMessage#channels
-          channel-id: 'C02156BV42V'
+          # channel for sq-benchmark
+          channel-id: 'C05JF51F1MJ'
           # For posting a rich message using Block Kit
           payload: |
             {
