@@ -10,7 +10,7 @@ import {
   StoreCacheService,
   getLogger,
 } from '@subql/node-core';
-import { BlockWrapper, SorobanBlock } from '@subql/types-soroban';
+import { BlockWrapper } from '@subql/types-soroban';
 
 const logger = getLogger('unfinalized');
 
@@ -37,9 +37,8 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   }
 
   protected async getFinalizedHead(): Promise<Header> {
-    const finalizedBlock = await this.apiService.api.getFinalizedBlock();
-    logger.info(JSON.stringify(finalizedBlock));
-    return blockToHeader(finalizedBlock.sequence);
+    const finalizedHeight = await this.apiService.api.getFinalizedBlockHeight();
+    return blockToHeader(finalizedHeight);
   }
 
   protected async getHeaderForHash(hash: string): Promise<Header> {

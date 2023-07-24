@@ -54,12 +54,16 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
     this.chainId = network.passphrase;
   }
 
+  async getFinalizedBlock(): Promise<SorobanRpc.GetLatestLedgerResponse> {
+    return this.client.getLatestLedger();
+  }
+
   async getFinalizedBlockHeight(): Promise<number> {
-    return (await this.getBestBlockHeight()) - 1;
+    return (await this.getFinalizedBlock()).sequence;
   }
 
   async getBestBlockHeight(): Promise<number> {
-    return (await this.client.getLatestLedger()).sequence;
+    return (await this.getFinalizedBlockHeight()) + 1;
   }
 
   getRuntimeChain(): string {

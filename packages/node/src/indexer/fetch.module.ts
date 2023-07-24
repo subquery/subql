@@ -16,6 +16,7 @@ import {
   StoreCacheService,
   PgMmrCacheService,
   MmrQueryService,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { SorobanApiConnection } from '../soroban/api.connection';
@@ -56,6 +57,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     },
     IndexerManager,
     ConnectionPoolService,
+    ConnectionPoolStateManager,
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {

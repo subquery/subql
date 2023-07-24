@@ -17,10 +17,7 @@ export class SorobanServer extends Server {
     if (this.eventsCache[request.startLedger]) {
       const cachedEvents = this.eventsCache[request.startLedger];
       delete this.eventsCache[request.startLedger];
-      return new Promise((resolve) => {
-        //resolving immediately will make performance score go to NaN
-        setTimeout(() => resolve(cachedEvents), 2);
-      });
+      return cachedEvents;
     }
 
     request.limit = MAX_PAGE_SIZE;

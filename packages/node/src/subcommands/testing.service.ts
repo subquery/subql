@@ -2,18 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import {
   NodeConfig,
-  StoreService,
   TestingService as BaseTestingService,
+  TestRunner,
+  NestLogger,
   ApiService,
 } from '@subql/node-core';
 import { SorobanBlockWrapper } from '@subql/types-soroban';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { SorobanApi } from '../soroban';
+import { ProjectService } from '../indexer/project.service';
+import { SorobanApi, SorobanApiService } from '../soroban';
 import SafeSorobanProvider from '../soroban/safe-api';
+import { TestingModule } from './testing.module';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
@@ -23,24 +27,43 @@ export class TestingService extends BaseTestingService<
   SubqlProjectDs
 > {
   constructor(
-    sequelize: Sequelize,
     nodeConfig: NodeConfig,
-    storeService: StoreService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    apiService: ApiService,
-    indexerManager: IndexerManager,
   ) {
-    super(
-      sequelize,
-      nodeConfig,
-      storeService,
-      project,
-      apiService,
-      indexerManager,
-    );
+    super(nodeConfig, project);
   }
 
-  async indexBlock(block: SorobanBlockWrapper, handler: string): Promise<void> {
-    await this.indexerManager.indexBlock(block, this.getDsWithHandler(handler));
+  async getTestRunner(): Promise<
+    TestRunner<
+      SorobanApi,
+      SafeSorobanProvider,
+      SorobanBlockWrapper,
+      SubqlProjectDs
+    >
+  > {
+    const testContext = await NestFactory.createApplicationContext(
+      TestingModule,
+      {
+        logger: new NestLogger(),
+      },
+    );
+
+    await testContext.init();
+
+    const projectService: ProjectService = testContext.get(ProjectService);
+    const apiService = testContext.get(ApiService);
+
+    // Initialise async services, we do this here rather than in factories, so we can capture one off events
+    await (apiService as SorobanApiService).init();
+
+    return testContext.get(TestRunner);
+  }
+
+  async indexBlock(
+    block: SorobanBlockWrapper,
+    handler: string,
+    indexerManager: IndexerManager,
+  ): Promise<void> {
+    await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }
 }
