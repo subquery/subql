@@ -5,7 +5,6 @@ import { ApiConnectionError, ApiErrorType } from '@subql/node-core';
 import { SorobanBlock, SorobanBlockWrapper } from '@subql/types-soroban';
 import EventEmitter2 from 'eventemitter2';
 import { SorobanApiConnection } from './api.connection';
-import { prepareApiService } from './api.service.soroban.spec';
 import { SorobanApi } from './api.soroban';
 import SafeSorobanProvider from './safe-api';
 
@@ -13,7 +12,6 @@ const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
 
 describe('SorobanApiConnection', () => {
   let apiConnection: SorobanApiConnection;
-  const apiService = prepareApiService(HTTP_ENDPOINT);
   let unsafeApi: SorobanApi;
   const mockBlocks: SorobanBlock[] = [
     {

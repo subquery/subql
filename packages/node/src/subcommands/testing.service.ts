@@ -11,7 +11,6 @@ import {
   ApiService,
 } from '@subql/node-core';
 import { SorobanBlockWrapper } from '@subql/types-soroban';
-import { Sequelize } from '@subql/x-sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
@@ -50,7 +49,6 @@ export class TestingService extends BaseTestingService<
 
     await testContext.init();
 
-    const projectService: ProjectService = testContext.get(ProjectService);
     const apiService = testContext.get(ApiService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events

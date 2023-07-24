@@ -9,7 +9,6 @@ import {
   SorobanBlockWrapper,
 } from '@subql/types-soroban';
 import { Server, SorobanRpc } from 'soroban-client';
-import { yargsOptions } from '../yargs';
 import { SorobanBlockWrapped } from './block.soroban';
 import SafeSorobanProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
