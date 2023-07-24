@@ -11,11 +11,14 @@ input_disableHistorical=$6
 input_others=$7
 
 # Start the Node.js app in the background and save its PID
-subql-node -f ipfs://$input_deployment --network-endpoint=$input_endpoint --batch-size=$input_batch_size --workers=$input_workers --disable-historical=$input_disableHistorical $input_others --ipfs='https://unauthipfs.subquery.network/ipfs/api/v0' --output-fmt=json --db-schema=app > output/benchmark/indexing.log 2>&1 &
+subql-node -f ipfs://$input_deployment --network-endpoint=$input_endpoint --batch-size=$input_batch_size --workers=$input_workers --disable-historical=$input_disableHistorical $input_others --ipfs='https://unauthipfs.subquery.network/ipfs/api/v0' --db-schema=app > output/benchmark/indexing.log 2>&1 &
+
 APP_PID=$!
 
+#echo "Path from Benchmarking"
+#ls "${PWD}/${output_dir}"
 
-echo "Benchmarking timeout: $input_duration "
+echo "Benchmarking, please wait $input_duration."
 # Wait for timeout
 sleep $input_duration
 

@@ -1,7 +1,15 @@
-name: BENCHMARK
+name: BENCHMARK-DOCKER
 on:
   workflow_dispatch:
     inputs:
+      cpus:
+        description: 'docker cpus '
+        default: 2
+        require: true
+      memory:
+        description: 'docker memory'
+        default: '4g'
+        require: true
       benchmark-time:
         description: 'Benchmark time(h/m/s)'
         default: 30m
@@ -41,8 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     # Docker Hub image that `container-job` executes in
     container: node:18
-
-    # Service containers to run with `container-job`
     services:
       # Label used to access the service container
       postgres:
@@ -50,24 +56,27 @@ jobs:
         image: postgres:12-alpine
         # Provide the password for postgres
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       #Check out
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 100
           token: ${{ secrets.REPO_TOKEN }}
 
-      - name: Install PostgreSQL client
+      - name: Install Docker inside the container
         run: |
           apt-get update
+          apt-get install -y docker.io  
+
+      - name: Install PostgreSQL client
+        run: |
           apt-get install --yes postgresql-client
 
       # queries database with postgres client
@@ -76,40 +85,30 @@ jobs:
         env:
           PGPASSWORD: postgres
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-
-
-      - name: Install dependencies
-        run: |
-          chmod +x .github/workflows/scripts/benchmark/dependency.sh
-          .github/workflows/scripts/benchmark/dependency.sh ${{github.event.inputs.indexerVersion}} 
-
-      - name: Ensure reports path exists
+      - name: Ensure clean reports directory
         run: |
           output_dir="output/benchmark/"
-          if [ ! -d "$output_dir" ]; then
-            mkdir -p "$output_dir"
-            echo "Created directory: $output_dir"
-          else
-            echo "Benchmark report directory already exists: $output_dir"
-          fi
+          chmod +x .github/workflows/scripts/benchmark/cleanHistory.sh
+          .github/workflows/scripts/benchmark/cleanHistory.sh $output_dir
 
+      - name: Clean container && rebuild indexer
+        run: |
+          docker rmi my_indexer:latest || true
+          CONTAINER_NAME="my_container"
+          docker stop $CONTAINER_NAME || true
+          docker rm -f $CONTAINER_NAME || true
+          VOLUME_NAME="${CONTAINER_NAME}_data"
+          docker volume rm $VOLUME_NAME || true
+          docker build -t my_indexer --build-arg input_indexer_version=${{github.event.inputs.indexerVersion}} --build-arg input_cpus=${{github.event.inputs.cpus}} --build-arg input_memory=${{github.event.inputs.memory}} .github/workflows/scripts/benchmark/
 
       - name: Benchmarking
         id: app
         run: |
-          chmod +x .github/workflows/scripts/benchmark/benchmarking.sh
-          .github/workflows/scripts/benchmark/benchmarking.sh ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
-        env:
-          # The hostname used to communicate with the PostgreSQL service container
-          DB_USER: postgres
-          DB_PASS: postgres
-          DB_DATABASE: postgres
-          DB_HOST: postgres
-          DB_PORT: 5432
+          docker run --network ${{ job.container.network }} --name my_container -v "${PWD}/output/benchmark:/app/output/benchmark" my_indexer ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
+          docker cp my_container:/app/output/benchmark/indexing.log output/benchmark/
+
+      - name: Stop and remove the benchmark container
+        run: docker stop my_container && docker rm my_container
 
       - name: Query metadata get processed height
         id: query_meta
@@ -117,7 +116,7 @@ jobs:
           PGPASSWORD: postgres
         run: |
           chmod +x .github/workflows/scripts/benchmark/queryMeta.sh
-          .github/workflows/scripts/benchmark/queryMeta.sh 
+          .github/workflows/scripts/benchmark/queryMeta.sh
 
       - name: Pre-save running specs
         run: |
@@ -131,7 +130,7 @@ jobs:
           echo "workers=${{github.event.inputs.workers}}" >> output/benchmark/benchmark.log
           if [ -n "${{github.event.inputs.others}}" ]; then
             echo "others=${{github.event.inputs.others}}" >> output/benchmark/benchmark.log
-          fi 
+          fi
           echo "Start Height: ${{steps.query_meta.outputs.start_height}}" >> output/benchmark/benchmark.log
           echo "Last Processed Height: ${{steps.query_meta.outputs.last_processed_height}}" >> output/benchmark/benchmark.log
           echo "------------------------------------" >> output/benchmark/benchmark.log
@@ -175,10 +174,11 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Results: ${{ job.status }}\n Indexer:${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n deployment:${{github.event.inputs.deployment}}\n workers:${{github.event.inputs.workers}}\n batch-size:${{github.event.inputs.batch-size}}\n block ${{steps.query_meta.outputs.start_height}} to ${{steps.query_meta.outputs.last_processed_height}}, total ${{steps.query_meta.outputs.total_height}} in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    "text": "Results: ${{ job.status }}\n CPUs: ${{github.event.inputs.cpus}}\n Memory: ${{github.event.inputs.memory}}\n  Indexer: ${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n Deployment: ${{github.event.inputs.deployment}}\n Workers: ${{github.event.inputs.workers}}\n Batch-size: ${{github.event.inputs.batch-size}}\n Performance: block [${{steps.query_meta.outputs.start_height}}-${{steps.query_meta.outputs.last_processed_height}}], total ${{steps.query_meta.outputs.total_height}} blocks in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
                 }
               ]
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
