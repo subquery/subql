@@ -15,9 +15,6 @@ subql-node -f ipfs://$input_deployment --network-endpoint=$input_endpoint --batc
 
 APP_PID=$!
 
-#echo "Path from Benchmarking"
-#ls "${PWD}/${output_dir}"
-
 echo "Benchmarking, please wait $input_duration."
 # Wait for timeout
 sleep $input_duration
