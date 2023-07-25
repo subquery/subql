@@ -21,6 +21,7 @@ export class PgMmrQueryDb extends PgBasedMMRDB {
 
 @Controller('mmrs')
 export class MmrQueryService extends baseMmrService {
+  private _db?: PgBasedMMRDB;
   constructor(nodeConfig: NodeConfig, private sequelize: Sequelize) {
     super(nodeConfig);
   }
@@ -30,21 +31,43 @@ export class MmrQueryService extends baseMmrService {
     await this.ensureMmr();
   }
 
+  get db(): PgBasedMMRDB {
+    if (!this._db) {
+      throw new Error('MMR Service PgBasedMMRDB has not been init');
+    }
+    return this._db;
+  }
+
   async ensureMmr(): Promise<void> {
     if (this._mmrDb) {
       return;
     }
-    this._mmrDb =
-      this.nodeConfig.mmrStoreType === MmrStoreType.Postgres
-        ? await this.ensurePostgresQueryMmr()
-        : await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres) {
+      await this.ensurePostgresDb();
+    } else {
+      this._mmrDb = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    }
   }
 
-  private async ensurePostgresQueryMmr(): Promise<MMR<PgMmrQueryDb>> {
+  get mmrDb(): MMR {
+    if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres) {
+      // We need to reconstruct mmr from postgresDb
+      // Due to leafLength in mmr only updated when append happens (in another mmr instance)
+      // Which means it never get update in current mmr instance
+      // Therefore, we need to get clean leafLength from db each time
+      return new MMR(keccak256Hash, this.db);
+    } else {
+      if (!this._mmrDb) {
+        throw new Error('MMR Service sync has not been called');
+      }
+      return this._mmrDb;
+    }
+  }
+
+  private async ensurePostgresDb(): Promise<void> {
     const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
     assert(schema, 'Unable to find postges based MMR table. Do you need to migrate from file based MMR?');
-    const db = await PgMmrQueryDb.create(this.sequelize, schema);
-    return new MMR(keccak256Hash, db);
+    this._db = await PgMmrQueryDb.create(this.sequelize, schema);
   }
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {
@@ -60,11 +83,7 @@ export class MmrQueryService extends baseMmrService {
     const mmrRoot =
       mmrResponse.status === 'fulfilled' ? u8aToHex(mmrResponse.value) : `mmrRoot error, ${mmrResponse.reason}`;
     const hash =
-      nodeResponse.status === 'fulfilled'
-        ? u8aToHex(nodeResponse.value)
-        : nodeResponse.reason.message.match('Leaf not in tree')
-        ? `MMR is completing,please try again later`
-        : `Error: ${nodeResponse.reason.message}`;
+      nodeResponse.status === 'fulfilled' ? u8aToHex(nodeResponse.value) : `Error: ${nodeResponse.reason.message}`;
 
     return {
       offset: this.blockOffset,
