@@ -98,7 +98,7 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
       this.eventEmitter.emit('fetchBlock');
       return ret;
     } catch (e) {
-      throw this.handleError(e);
+      throw this.handleError(e, blockNumber);
     }
   }
 
@@ -128,10 +128,13 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
     throw new Error('Not implemented');
   }
 
-  handleError(e: Error): Error {
-    if ((e as any)?.status === 429) {
-      const { hostname } = new URL(this.endpoint);
-      return new Error(`Rate Limited at endpoint: ${hostname}`);
+  handleError(e: Error, height: number): Error {
+    if (e.message === 'start is before oldest ledger') {
+      return new Error(`The requested ledger number ${height} is not available on the current blockchain node. 
+      This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
+      To resolve this issue, you can either:
+      1. Increase the start ledger to a more recent one, or
+      2. Connect to a different node that might have a longer history of ledgers.`);
     }
 
     return e;

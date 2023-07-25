@@ -61,16 +61,17 @@ describe('SorobanApi', function () {
     await expect(sorobanApi.disconnect()).rejects.toThrow('Not implemented');
   });
 
-  it('handleError - 429 errors should ratelimit message', function () {
-    const error = new Error('Rate limit error');
-    (error as any).status = 429;
-    const handled = sorobanApi.handleError(error);
-    expect(handled.message).toContain('Rate Limited at endpoint');
+  it('handleError - pruned node errors', function () {
+    const error = new Error('start is before oldest ledger');
+    const handled = sorobanApi.handleError(error, 1000);
+    expect(handled.message).toContain(
+      'The requested ledger number 1000 is not available on the current blockchain node',
+    );
   });
 
-  it('handleError - non 429 errors should return the same error', function () {
+  it('handleError - non pruned node errors should return the same error', function () {
     const error = new Error('Generic error');
-    const handled = sorobanApi.handleError(error);
+    const handled = sorobanApi.handleError(error, 1000);
     expect(handled).toBe(error);
   });
 

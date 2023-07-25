@@ -3001,23 +3001,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.3.1-0":
-  version: 2.3.1-0
-  resolution: "@subql/common@npm:2.3.1-0"
-  dependencies:
-    axios: ^0.27.2
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: ^52.0.3
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-  checksum: 9fef39698d186c0dfbe58ca82f4e617e88678b0221b5f4b84acb811445de06af8074e20e6ab213a8e5f46dda9fd1f4f4cf6e41ef3aff95ecaf785cca5eac3608
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:^2.3.1-1":
+"@subql/common@npm:2.3.1-1":
   version: 2.3.1-1
   resolution: "@subql/common@npm:2.3.1-1"
   dependencies:
