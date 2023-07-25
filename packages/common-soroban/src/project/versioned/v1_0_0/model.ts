@@ -10,6 +10,7 @@ import {
   RunnerNodeImpl,
   RunnerQueryBaseModel,
   RunnerSpecs,
+  validateObject,
 } from '@subql/common';
 import {SubqlCustomDatasource, SubqlMapping, SubqlRuntimeDatasource} from '@subql/types-soroban';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
@@ -40,14 +41,6 @@ export class SorobanRunnerNodeImpl extends RunnerNodeImpl {
     message: `Runner Substrate node name incorrect, suppose be '${Soroban_NODE_NAME}'`,
   })
   name: string;
-}
-
-function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
-  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
-  if (errors?.length) {
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
-    throw new Error(`${errorMessage}\n${errorMsgs}`);
-  }
 }
 
 export class SorobanRuntimeDataSourceImpl

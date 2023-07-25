@@ -105,7 +105,8 @@ export class IndexerManager extends BaseIndexerManager<
   private async getApi(
     block: SorobanBlockWrapper,
   ): Promise<SafeSorobanProvider> {
-    return this.apiService.safeApi(this.getBlockHeight(block));
+    // return this.apiService.safeApi(this.getBlockHeight(block));
+    return null;
   }
 
   protected async indexBlockData(

@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {forbidNonWhitelisted} from '@subql/common';
 import {
   SorobanHandlerKind,
   SorobanDatasourceKind,
@@ -16,18 +17,7 @@ import {
   SubqlEventHandler,
 } from '@subql/types-soroban';
 import {plainToClass, Transform, Type} from 'class-transformer';
-import {
-  IsArray,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsObject,
-  ValidateNested,
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
+import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
 import {SubqlSorobanProcessorOptions} from './types';
 
 export class EventFilter implements SorobanEventFilter {
@@ -37,31 +27,6 @@ export class EventFilter implements SorobanEventFilter {
   @IsOptional()
   @IsArray()
   topics?: string[];
-}
-
-export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      name: 'forbidNonWhitelisted',
-      target: object.constructor,
-      propertyName: propertyName,
-      constraints: [],
-      options: validationOptions,
-      validator: {
-        validate(value: any, args: ValidationArguments) {
-          const isValid = !Object.keys(value).some((key) => !(key in keys));
-          if (!isValid) {
-            throw new Error(
-              `Invalid keys present in value: ${JSON.stringify(value)}. Whitelisted keys: ${JSON.stringify(
-                Object.keys(keys)
-              )}`
-            );
-          }
-          return isValid;
-        },
-      },
-    });
-  };
 }
 
 export class EventHandler implements SubqlEventHandler {
