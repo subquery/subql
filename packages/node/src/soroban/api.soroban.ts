@@ -8,7 +8,7 @@ import {
   SorobanBlock,
   SorobanBlockWrapper,
 } from '@subql/types-soroban';
-import { Server, SorobanRpc } from 'soroban-client';
+import { Server, SorobanRpc, scValToNative, xdr } from 'soroban-client';
 import { SorobanBlockWrapped } from './block.soroban';
 import SafeSorobanProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
@@ -88,9 +88,22 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
     includeTx?: boolean,
   ): Promise<SorobanBlockWrapped> {
     try {
-      const events = await this.getEvents(blockNumber);
+      const rawEvents = (await this.getEvents(blockNumber)).events;
 
-      const ret = new SorobanBlockWrapped(events.events ?? [], {
+      const events = rawEvents.map((event) => ({
+        ...event,
+        value: {
+          ...event.value,
+          get decoded() {
+            return scValToNative(xdr.ScVal.fromXDR(event.value.xdr, 'base64'));
+          },
+        },
+        topic: event.topic.map((topic) =>
+          SorobanBlockWrapped.decodeScVals(xdr.ScVal.fromXDR(topic, 'base64')),
+        ),
+      }));
+
+      const ret = new SorobanBlockWrapped(events, {
         ledger: blockNumber,
         hash: blockNumber.toString(),
       } as SorobanBlock);

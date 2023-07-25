@@ -10,8 +10,12 @@ export interface SorobanBlock {
   events: SorobanEvent[];
 }
 
-export type SorobanEvent = SorobanRpc.EventResponse;
-
+export type SorobanEvent = SorobanRpc.EventResponse & {
+  value: {
+    xdr: string;
+    decoded?: string;
+  };
+};
 export interface SorobanEventFilter {
   contractId?: string;
   topics?: string[];
