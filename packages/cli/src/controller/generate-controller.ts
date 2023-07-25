@@ -5,13 +5,18 @@ import fs from 'fs';
 import path from 'path';
 import {FunctionFragment, EventFragment} from '@ethersproject/abi/src.ts/fragments';
 import {loadFromJsonOrYaml} from '@subql/common';
-import {EthereumDatasourceKind, EthereumHandlerKind, SubqlRuntimeHandler} from '@subql/common-ethereum';
-import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
+import {
+  EthereumDatasourceKind,
+  EthereumHandlerKind,
+  EthereumTransactionFilter,
+  SubqlRuntimeHandler,
+} from '@subql/common-ethereum';
+import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import chalk from 'chalk';
 import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst} from 'lodash';
+import {upperFirst, difference} from 'lodash';
 import {parseContractPath} from 'typechain';
 import {parseDocument} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
@@ -37,6 +42,7 @@ export async function promptSelectables(
   input: string | undefined,
   abiName: string
 ): Promise<string[]> {
+  console.log(method, ': ', Object.keys(availableMethods));
   const memArr: string[] = [];
   if (input === '*') {
     return Object.keys(availableMethods);
@@ -137,6 +143,40 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
   };
 }
 
+export function filterExistingMethods(
+  userInput: UserInput,
+  datasource: EthereumDs[]
+): [SelectedMethod[], SelectedMethod[]] {
+  const existingEvents: string[] = [];
+  const existingFunctions: string[] = [];
+
+  datasource.map((ds: EthereumDs) => {
+    ds.mapping.handlers.map((handler) => {
+      if (Object.keys(handler.filter).includes('topics')) {
+        const topic = (handler.filter as EthereumLogFilter).topics[0];
+        if (!existingEvents.includes(topic)) {
+          existingEvents.push(topic);
+        }
+      }
+      if (Object.keys(handler.filter).includes('function')) {
+        const fn = (handler.filter as EthereumTransactionFilter).function;
+        if (!existingFunctions.includes(fn)) {
+          existingFunctions.push(fn);
+        }
+      }
+    });
+  });
+  const cleanedEvents = userInput.events.filter((e) => {
+    if (!existingEvents.includes(e.method)) {
+      return e;
+    }
+  });
+  const cleanedFunctions = userInput.functions.filter((fn) => {
+    if (!existingFunctions.includes(fn.method.toLowerCase())) return fn;
+  });
+  return [cleanedEvents, cleanedFunctions];
+}
+
 export async function generateManifest(projectPath: string, manifestPath: string, userInput: UserInput): Promise<void> {
   try {
     const existingManifest = (await fs.promises.readFile(path.join(projectPath, manifestPath), 'utf8')) as any;
@@ -144,6 +184,11 @@ export async function generateManifest(projectPath: string, manifestPath: string
     const clonedExistingManifestData = existingManifestData.clone();
 
     const existingDatasource = existingManifestData.get('dataSources') as any;
+
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(userInput, existingDatasource.toJSON() as EthereumDs[]);
+
+    userInput.events = cleanEvents;
+    userInput.functions = cleanFunctions;
 
     const newDataSourcesData = existingDatasource.toJSON().concat(...[constructDatasources(userInput)]);
     clonedExistingManifestData.set('dataSources', newDataSourcesData);

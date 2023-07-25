@@ -4,11 +4,13 @@
 import path from 'path';
 import {FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/common-ethereum';
+import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {
   constructDatasources,
   constructHandlerProps,
+  filterExistingMethods,
   filterObjectsByStateMutability,
   generateHandlerName,
   getAbiInterface,
@@ -26,6 +28,39 @@ const mockConstructedEvents: SelectedMethod[] = [
   {
     name: 'Approval',
     method: 'Approval(address,address,uint256)',
+  },
+];
+
+const mockDsFn = (): EthereumDs[] => [
+  {
+    kind: EthereumDatasourceKind.Runtime,
+    startBlock: 1,
+    options: {
+      abi: 'Erc721',
+      address: '',
+    },
+    assets: {
+      erc721: {file: 'erc721.json'},
+    } as unknown as Map<string, {file: string}>,
+    mapping: {
+      file: '',
+      handlers: [
+        {
+          handler: 'handleTransaction',
+          kind: EthereumHandlerKind.Call,
+          filter: {
+            function: 'approve(address,uint256)',
+          },
+        },
+        {
+          handler: 'handleLog',
+          kind: EthereumHandlerKind.Event,
+          filter: {
+            topics: ['Transfer(address,address,uint256)'],
+          },
+        },
+      ],
+    },
   },
 ];
 
@@ -172,5 +207,57 @@ describe('CLI codegen:generate', () => {
         _isFragment: true,
       },
     } as any);
+  });
+  it('filter existing filters on datasources', () => {
+    const ds = mockDsFn();
+    const mockUserEvents = [
+      {
+        name: 'Approval',
+        method: 'Approval(address,address,uint256)',
+      },
+      {
+        name: 'Transfer', // should be ignored
+        method: 'Transfer(address,address,uint256)',
+      },
+    ];
+    const mockUserFunctions = [
+      {
+        name: 'transferFrom',
+        method: 'transferFrom(address,address,uint256)',
+      },
+      {
+        name: 'approve', // should be ignored
+        method: 'approve(address,uint256)',
+      },
+    ];
+    const mockUserInput: UserInput = {
+      startBlock: 1,
+      functions: mockUserFunctions,
+      events: mockUserEvents,
+      abiPath: './abis/erc721.json',
+      address: 'aaa',
+    };
+
+    const result = filterExistingMethods(mockUserInput, ds);
+
+    expect(result).toStrictEqual([
+      [
+        {
+          name: 'Approval',
+          method: 'Approval(address,address,uint256)',
+        },
+      ],
+      [
+        {
+          name: 'transferFrom',
+          method: 'transferFrom(address,address,uint256)',
+        },
+      ],
+    ]);
+  });
+  it('filter out different formatted filters', () => {
+    const ds = mockDsFn();
+    const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
+    logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 amount)'];
   });
 });

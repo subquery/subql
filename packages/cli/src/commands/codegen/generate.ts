@@ -44,7 +44,7 @@ export default class Generate extends Command {
     const projectPath = path.resolve(file ?? process.cwd());
     const {manifests, root} = getProjectRootAndManifest(projectPath);
 
-    const abiInterface = getAbiInterface(manifests[0], abiPath);
+    const abiInterface = getAbiInterface(root, abiPath);
 
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
