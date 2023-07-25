@@ -4,7 +4,14 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {validateSync, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
+import {
+  registerDecorator,
+  validateSync,
+  ValidationArguments,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 import detectPort from 'detect-port';
 import * as yaml from 'js-yaml';
 import Pino from 'pino';
@@ -191,4 +198,29 @@ export function validateObject(object: any, errorMessage = 'failed to validate o
 
 export function extensionIsYamlOrJSON(ext: string): boolean {
   return ext === '.yaml' || ext === '.yml' || ext === '.json';
+}
+
+export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'forbidNonWhitelisted',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const isValid = !Object.keys(value).some((key) => !(key in keys));
+          if (!isValid) {
+            throw new Error(
+              `Invalid keys present in value: ${JSON.stringify(value)}. Whitelisted keys: ${JSON.stringify(
+                Object.keys(keys)
+              )}`
+            );
+          }
+          return isValid;
+        },
+      },
+    });
+  };
 }
