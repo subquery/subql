@@ -6,6 +6,7 @@ import {
   SorobanEvent,
   SorobanEventFilter,
 } from '@subql/types-soroban';
+import { xdr } from 'soroban-client';
 import { SorobanBlockWrapped } from './block.soroban';
 
 describe('SorobanBlockWrapped', function () {
@@ -16,10 +17,7 @@ describe('SorobanBlockWrapped', function () {
     id: null,
     pagingToken: null,
     inSuccessfulContractCall: null,
-    topic: [
-      Buffer.from('topic1').toString('base64'),
-      Buffer.from('topic2').toString('base64'),
-    ],
+    topic: ['topic1', 'topic2'],
     value: null,
   };
   const mockBlock: SorobanBlock = {
