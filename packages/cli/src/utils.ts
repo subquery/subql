@@ -1,9 +1,10 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {existsSync, readFileSync} from 'fs';
+import fs, {existsSync, readFileSync} from 'fs';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
+import ejs from 'ejs';
 import inquirer, {Inquirer} from 'inquirer';
 
 export async function delay(sec: number): Promise<void> {
@@ -74,4 +75,9 @@ export function errorHandle(e: any, msg: string): string {
 
 export function buildProjectKey(org: string, projectName: string): string {
   return encodeURIComponent(`${org}/${projectName}`);
+}
+
+export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
+  const data = await ejs.renderFile(templatePath, templateData);
+  await fs.promises.writeFile(outputPath, data);
 }

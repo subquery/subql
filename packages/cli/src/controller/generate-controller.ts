@@ -3,8 +3,11 @@
 
 import fs from 'fs';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {FunctionFragment, EventFragment} from '@ethersproject/abi/src.ts/fragments';
 import {loadFromJsonOrYaml} from '@subql/common';
+import {EthereumDatasourceKind, EthereumHandlerKind, SubqlRuntimeHandler} from '@subql/common-ethereum';
+import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
+import chalk from 'chalk';
 import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
@@ -13,63 +16,53 @@ import {parseContractPath} from 'typechain';
 import {parseDocument} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 
+interface HandlerPropType {
+  name: string;
+  argName: string;
+  argType: string;
+}
+
+interface AbiPropType {
+  name: string;
+  handlers: HandlerPropType[];
+}
+
 const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-handlers.ts.ejs');
 const ROOT_MAPPING_DIR = 'src/mappings';
 const DEFAULT_HANDLER_BUILD_PATH = './dist/index.js';
 
-interface TopicsFilter {
-  topics: string[];
-}
-interface FunctionFilter {
-  function: string;
-}
-type Filter = TopicsFilter | FunctionFilter;
-
-interface HandlerType {
-  handler: string;
-  kind: string;
-  filter: Filter;
-}
-
-interface DatasourceProp {
-  kind: string;
-  startBlock: number;
-  options: {
-    abi: string;
-    address?: string;
-  };
-  assets: {
-    [key: string]: {
-      file: string;
-    };
-  };
-  mapping: {
-    file: string;
-    handlers: HandlerType[];
-  };
-}
-
 export async function promptSelectables(
-  input: string,
-  availableMethods: string[],
-  memArr: string[]
+  method: 'event' | 'function',
+  availableMethods: Record<string, FunctionFragment | EventFragment>,
+  input: string | undefined,
+  abiName: string
 ): Promise<string[]> {
+  const memArr: string[] = [];
   if (input === '*') {
-    return availableMethods;
-  }
+    return Object.keys(availableMethods);
+  } else if (!input) {
+    const chosenFn = await inquirer.prompt({
+      name: method,
+      message: `Select ${method}`,
+      type: 'checkbox',
+      choices: Object.keys(availableMethods),
+    });
+    memArr.push(...chosenFn[method]);
+  } else {
+    const inputs = input.split(',').map((input) => input.trim().toLowerCase());
+    const methodKeys = Object.keys(availableMethods);
+    const lowerCasedMethodNames = methodKeys.map((key) => availableMethods[key].name.toLowerCase());
 
-  if (input) {
-    try {
-      const chosenFn = await inquirer.prompt({
-        name: 'functions',
-        message: 'Select Functions',
-        type: 'checkbox',
-        choices: availableMethods,
-      });
-      memArr.push(...chosenFn.functions);
-    } catch (e) {
-      throw new Error(e);
-    }
+    return inputs
+      .map((userInput) => {
+        const i = lowerCasedMethodNames.indexOf(userInput);
+        if (i !== -1) {
+          return methodKeys[i];
+        } else {
+          throw new Error(chalk.red(`"${userInput}" is not a valid ${method} on ABI: ${abiName}`));
+        }
+      })
+      .filter(Boolean);
   }
   return memArr;
 }
@@ -84,12 +77,10 @@ export function getAbiInterface(projectPath: string, abiPath: string): Interface
   return new Interface(abi);
 }
 
-export function getAvailableEvents(abiInterface: Interface): {[p: string]: EventFragment} {
-  return abiInterface.events;
-}
-
-export function filterObjectsByStateMutability(obj: {[p: string]: FunctionFragment}): {[p: string]: FunctionFragment} {
-  const filteredObject: {[p: string]: FunctionFragment} = {};
+export function filterObjectsByStateMutability(
+  obj: Record<string, FunctionFragment>
+): Record<string, FunctionFragment> {
+  const filteredObject: Record<string, FunctionFragment> = {};
   for (const key in obj) {
     if (obj[key].stateMutability !== 'view') {
       filteredObject[key] = obj[key];
@@ -98,18 +89,18 @@ export function filterObjectsByStateMutability(obj: {[p: string]: FunctionFragme
   return filteredObject;
 }
 
-export function getAvailableFunctions(abiInterface: Interface): {[p: string]: FunctionFragment} {
-  return filterObjectsByStateMutability(abiInterface.functions);
+export function generateHandlerName(name: string, abiName: string, type: 'tx' | 'log'): string {
+  return `handle${upperFirst(name)}${upperFirst(abiName)}${upperFirst(type)}`;
 }
 
-function constructDatasources(userInput: UserInput): DatasourceProp {
+export function constructDatasources(userInput: UserInput): EthereumDs {
   const abiName = parseContractPath(userInput.abiPath).name;
-  const formattedHandlers: HandlerType[] = [];
+  const formattedHandlers: SubqlRuntimeHandler[] = [];
 
   userInput.functions.map((fn) => {
-    const handler: HandlerType = {
-      handler: `handle${upperFirst(fn.name)}_${abiName}Tx`,
-      kind: 'ethereum/TransactionHandler',
+    const handler: SubqlRuntimeHandler = {
+      handler: generateHandlerName(fn.name, abiName, 'tx'),
+      kind: EthereumHandlerKind.Call,
       filter: {
         function: fn.method,
       },
@@ -118,9 +109,9 @@ function constructDatasources(userInput: UserInput): DatasourceProp {
   });
 
   userInput.events.map((event) => {
-    const handler: HandlerType = {
-      handler: `handle${upperFirst(event.name)}_${abiName}Log`,
-      kind: 'ethereum/LogHandler',
+    const handler: SubqlRuntimeHandler = {
+      handler: generateHandlerName(event.name, abiName, 'log'),
+      kind: EthereumHandlerKind.Event,
       filter: {
         topics: [event.method],
       },
@@ -128,18 +119,17 @@ function constructDatasources(userInput: UserInput): DatasourceProp {
     formattedHandlers.push(handler);
   });
 
+  const assets = new Map<string, {file: string}>();
+  assets.set(abiName, {file: userInput.abiPath});
+
   return {
-    kind: 'ethereum/Runtime',
+    kind: EthereumDatasourceKind.Runtime,
     startBlock: userInput.startBlock,
     options: {
       abi: abiName,
       address: userInput.address,
     },
-    assets: {
-      [abiName]: {
-        file: userInput.abiPath,
-      },
-    },
+    assets: assets,
     mapping: {
       file: DEFAULT_HANDLER_BUILD_PATH,
       handlers: formattedHandlers,
@@ -155,35 +145,21 @@ export async function generateManifest(projectPath: string, manifestPath: string
 
     const existingDatasource = existingManifestData.get('dataSources') as any;
 
-    // Should be for every ABI
-
     const newDataSourcesData = existingDatasource.toJSON().concat(...[constructDatasources(userInput)]);
     clonedExistingManifestData.set('dataSources', newDataSourcesData);
 
-    // load yaml
     await fs.promises.writeFile(path.join(projectPath, manifestPath), clonedExistingManifestData.toString(), 'utf8');
   } catch (e) {
     throw new Error(e);
   }
 }
 
-export interface handlerPropType {
-  name: string;
-  argName: string;
-  argType: string;
-}
-
-export interface abiPropType {
-  name: string;
-  handlers: handlerPropType[];
-}
-
-export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod[]], abiName: string): abiPropType {
-  const handlers: handlerPropType[] = [];
+export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod[]], abiName: string): AbiPropType {
+  const handlers: HandlerPropType[] = [];
   const [events, functions] = methods;
 
   functions.map((fn) => {
-    const fnProp: handlerPropType = {
+    const fnProp: HandlerPropType = {
       name: `handle${upperFirst(fn.name)}`,
       argName: 'tx',
       argType: `${upperFirst(fn.name)}Transaction`,
@@ -192,7 +168,7 @@ export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod
   });
 
   events.map((event) => {
-    const fnProp: handlerPropType = {
+    const fnProp: HandlerPropType = {
       name: `handle${upperFirst(event.name)}`,
       argName: 'log',
       argType: `${upperFirst(event.name)}Log`,
@@ -211,12 +187,13 @@ export async function generateHandlers(
   projectPath: string,
   abiPath: string
 ): Promise<void> {
-  const abiProps = constructHandlerProps(selectedMethods, parseContractPath(abiPath).name);
+  const abiName = parseContractPath(abiPath).name;
+  const abiProps = constructHandlerProps(selectedMethods, abiName);
 
   try {
     await renderTemplate(
       SCAFFOLD_HANDLER_TEMPLATE_PATH,
-      path.join(projectPath, ROOT_MAPPING_DIR, 'mappingHandlers.ts'),
+      path.join(projectPath, ROOT_MAPPING_DIR, `${abiName}Handlers.ts`),
       {
         props: {
           abis: [abiProps],
@@ -228,5 +205,5 @@ export async function generateHandlers(
     console.error(`unable to generate scaffold. ${e.message}`);
   }
 
-  await fs.promises.writeFile(path.join(projectPath, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
+  fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${abiName}Handlers"`);
 }

@@ -4,14 +4,14 @@
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
-import * as inquirer from 'inquirer';
+import {parseContractPath} from 'typechain';
 import {
+  filterObjectsByStateMutability,
   generateHandlers,
   generateManifest,
   getAbiInterface,
-  getAvailableEvents,
-  getAvailableFunctions,
-} from '../../controller/scaffoldgen-controller';
+  promptSelectables,
+} from '../../controller/generate-controller';
 
 export interface SelectedMethod {
   name: string;
@@ -26,16 +26,12 @@ export interface UserInput {
 }
 
 export default class Generate extends Command {
-  static description = 'Create Project on Hosted Service';
+  static description = 'Generate Project.yaml and mapping functions based on provided ABI';
 
   static flags = {
-    location: Flags.string({
-      char: 'l',
-      description: '[deprecated] local folder to run codegen in. please use file flag instead',
-    }),
-    file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
-    events: Flags.string({description: 'abi events', required: true}),
-    functions: Flags.string({description: 'abi functions', required: true}),
+    file: Flags.string({char: 'f', description: 'specify manifest file path'}),
+    events: Flags.string({description: 'abi events, --events="approval, transfer"'}),
+    functions: Flags.string({description: 'abi functions,  --functions="approval, transfer"'}),
     abiPath: Flags.string({description: 'path to abi from root', required: true}),
     startBlock: Flags.integer({description: 'startBlock', required: true}),
     address: Flags.string({description: 'contract address'}),
@@ -43,52 +39,25 @@ export default class Generate extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
-    const {abiPath, address, events, file, functions, location, startBlock} = flags;
-    const projectPath = path.resolve(file ?? location ?? process.cwd());
+    const {abiPath, address, events, file, functions, startBlock} = flags;
+
+    const projectPath = path.resolve(file ?? process.cwd());
     const {manifests, root} = getProjectRootAndManifest(projectPath);
 
-    const abiInterface = getAbiInterface(projectPath, abiPath);
+    const abiInterface = getAbiInterface(manifests[0], abiPath);
 
-    const eventsFragments = getAvailableEvents(abiInterface);
-    const functionFragments = getAvailableFunctions(abiInterface);
+    const eventsFragments = abiInterface.events;
+    const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-    const availableEventList = Object.keys(eventsFragments);
-    const availableFunctionList = Object.keys(functionFragments);
+    // const availableEventList = Object.keys(eventsFragments);
+    // const availableFunctionList = Object.keys(functionFragments);
 
     const eventArray: string[] = [];
     const functionArray: string[] = [];
 
-    if (events !== '*') {
-      try {
-        const chosenEvent = await inquirer.prompt({
-          name: 'events',
-          message: 'Select events',
-          type: 'checkbox',
-          choices: availableEventList,
-        });
-        eventArray.push(...chosenEvent.events);
-      } catch (e) {
-        throw new Error(e);
-      }
-    } else {
-      eventArray.push(...availableEventList);
-    }
-
-    if (functions !== '*') {
-      try {
-        const chosenFn = await inquirer.prompt({
-          name: 'functions',
-          message: 'Select Functions',
-          type: 'checkbox',
-          choices: availableFunctionList,
-        });
-        functionArray.push(...chosenFn.functions);
-      } catch (e) {
-        throw new Error(e);
-      }
-    } else {
-      functionArray.push(...availableFunctionList);
-    }
+    const abiName = parseContractPath(abiPath).name;
+    eventArray.push(...(await promptSelectables('event', eventsFragments, events, abiName)));
+    functionArray.push(...(await promptSelectables('function', functionFragments, functions, abiName)));
 
     const constructedEvents = eventArray.map((event) => {
       return {

@@ -6,7 +6,7 @@ import {<% abi.handlers.forEach(function (handler) { %><%= handler.argType %>,<%
 <% })%>
 import assert from "assert";
 <% props.abis.forEach(function (abi) { %><% abi.handlers.forEach(function (handler) { %>
-export async function <%=handler.name %>_<%=abi.name %><%=helper.upperFirst(handler.argName) %> (<%=handler.argName%>: <%=handler.argType %> ): Promise<void> {
+export async function <%=handler.name %><%=helper.upperFirst(abi.name) %><%=helper.upperFirst(handler.argName) %> (<%=handler.argName%>: <%=handler.argType %> ): Promise<void> {
 // Place your code logic here
 }
 <% })%><% })%>

@@ -46,10 +46,10 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/utils';
-import ejs from 'ejs';
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import rimraf from 'rimraf';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
+import {renderTemplate} from '../utils';
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -88,10 +88,6 @@ const exportTypes = {
 };
 
 // 4. Render entity data in ejs template and write it
-export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
-  const data = await ejs.renderFile(templatePath, templateData);
-  await fs.promises.writeFile(outputPath, data);
-}
 
 // 3. Re-format the field of the entity
 export interface ProcessedField {
