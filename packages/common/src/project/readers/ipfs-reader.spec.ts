@@ -16,4 +16,11 @@ describe('IPFSReader', () => {
 
     expect(data.network.chainId).toBe('43114');
   });
+
+  it('ipfs should only fetch once when cache found', async () => {
+    reader = new IPFSReader('QmNbkA1fJpV2gCAWCBjgUQ8xBTwkLZHuzx4EkUoKx7VYaD', IPFSGateway);
+    const spyIpfsCat = jest.spyOn((reader as any).ipfs, 'cat');
+    await Promise.all([reader.getProjectSchema(), reader.getProjectSchema(), reader.getProjectSchema()]);
+    expect(spyIpfsCat).toBeCalledTimes(1);
+  });
 });
