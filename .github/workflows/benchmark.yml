@@ -79,6 +79,10 @@ jobs:
         run: |
           apt-get install --yes postgresql-client
 
+      # Install bc used in convert time in seconds
+      - name: Install bc
+        run: apt-get install -y bc
+
       # queries database with postgres client
       - name: Setup historical database
         run: psql -h postgres -d postgres -U postgres -c 'CREATE EXTENSION IF NOT EXISTS btree_gist;'
@@ -116,7 +120,7 @@ jobs:
           PGPASSWORD: postgres
         run: |
           chmod +x .github/workflows/scripts/benchmark/queryMeta.sh
-          .github/workflows/scripts/benchmark/queryMeta.sh
+          .github/workflows/scripts/benchmark/queryMeta.sh ${{github.event.inputs.benchmark-time}}
 
       - name: Pre-save running specs
         run: |
@@ -175,7 +179,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Results: ${{ job.status }}\n CPUs: ${{github.event.inputs.cpus}}\n Memory: ${{github.event.inputs.memory}}\n Indexer: ${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n Deployment: ${{github.event.inputs.deployment}}\n Workers: ${{github.event.inputs.workers}}\n Batch-size: ${{github.event.inputs.batch-size}}\n Performance: block [${{steps.query_meta.outputs.start_height}}-${{steps.query_meta.outputs.last_processed_height}}], total ${{steps.query_meta.outputs.total_height}} blocks in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    "text": "Results: ${{ job.status }} with ${{steps.query_meta.outputs.bps}} bps\n Performance: Block [${{steps.query_meta.outputs.start_height}}-${{steps.query_meta.outputs.last_processed_height}}], total ${{steps.query_meta.outputs.total_height}} blocks in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n Indexer: ${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n Deployment: ${{github.event.inputs.deployment}}\n CPUs: ${{github.event.inputs.cpus}}\n Memory: ${{github.event.inputs.memory}}\n Workers: ${{github.event.inputs.workers}}\n Batch-size: ${{github.event.inputs.batch-size}}"
                   }
                 }
               ]
