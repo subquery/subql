@@ -66,13 +66,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       inject: [NodeConfig],
     },
     {
-      provide: SmartBatchService,
-      useFactory: (nodeConfig: NodeConfig) => {
-        return new SmartBatchService(nodeConfig.batchSize);
-      },
-      inject: [NodeConfig],
-    },
-    {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,

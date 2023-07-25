@@ -52,7 +52,7 @@ describe('project.yaml', () => {
     deployment.specVersion = '1.0.0';
     deployment.runner = new SorobanRunnerSpecsImpl();
 
-    nodeImp.name = '@subql/node';
+    nodeImp.name = '@subql/node-soroban';
     nodeImp.version = '0.29.1';
     deployment.runner.node = nodeImp;
 

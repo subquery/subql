@@ -3,7 +3,7 @@
   "version": "2.9.3-0",
   "description": "",
   "author": "Ian He",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rm -rf dist && tsc -b",
@@ -12,8 +12,8 @@
     "start:dev": "nodemon",
     "start:prod": "node dist/main"
   },
-  "homepage": "https://github.com/subquery/subql",
-  "repository": "github:subquery/subql",
+  "homepage": "https://github.com/subquery/subql-soroban",
+  "repository": "github:subquery/subql-soroban",
   "bin": {
     "subql-node-soroban": "./bin/run"
   },

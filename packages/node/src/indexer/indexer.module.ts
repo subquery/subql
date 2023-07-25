@@ -14,6 +14,7 @@ import {
   WorkerDynamicDsService,
   PgMmrCacheService,
   MmrQueryService,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { SorobanApiService } from '../soroban';
@@ -33,6 +34,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     StoreCacheService,
     StoreService,
     ConnectionPoolService,
+    ConnectionPoolStateManager,
     {
       provide: ApiService,
       useFactory: async (
