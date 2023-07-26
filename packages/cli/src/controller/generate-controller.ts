@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {FunctionFragment, EventFragment} from '@ethersproject/abi/src.ts/fragments';
+import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {
   EthereumDatasourceKind,
@@ -16,7 +16,7 @@ import chalk from 'chalk';
 import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst, difference} from 'lodash';
+import {upperFirst, difference, intersection} from 'lodash';
 import {parseContractPath} from 'typechain';
 import {parseDocument} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
@@ -36,41 +36,42 @@ const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaf
 const ROOT_MAPPING_DIR = 'src/mappings';
 const DEFAULT_HANDLER_BUILD_PATH = './dist/index.js';
 
-export async function promptSelectables(
-  method: 'event' | 'function',
-  availableMethods: Record<string, FunctionFragment | EventFragment>,
-  input: string | undefined,
-  abiName: string
-): Promise<string[]> {
-  console.log(method, ': ', Object.keys(availableMethods));
-  const memArr: string[] = [];
-  if (input === '*') {
-    return Object.keys(availableMethods);
-  } else if (!input) {
-    const chosenFn = await inquirer.prompt({
-      name: method,
-      message: `Select ${method}`,
-      type: 'checkbox',
-      choices: Object.keys(availableMethods),
-    });
-    memArr.push(...chosenFn[method]);
-  } else {
-    const inputs = input.split(',').map((input) => input.trim().toLowerCase());
-    const methodKeys = Object.keys(availableMethods);
-    const lowerCasedMethodNames = methodKeys.map((key) => availableMethods[key].name.toLowerCase());
-
-    return inputs
-      .map((userInput) => {
-        const i = lowerCasedMethodNames.indexOf(userInput);
-        if (i !== -1) {
-          return methodKeys[i];
-        } else {
-          throw new Error(chalk.red(`"${userInput}" is not a valid ${method} on ABI: ${abiName}`));
-        }
-      })
-      .filter(Boolean);
+export function removeKeyword(inputString: string): string {
+  const removeString = inputString.startsWith('event ') ? 'event ' : 'function ';
+  if (inputString.startsWith(removeString)) {
+    return inputString.slice(removeString.length);
   }
-  return memArr;
+  return inputString;
+}
+
+export function constructMethod<T extends ConstructorFragment | Fragment>(
+  cleanedFragment: Record<string, T>
+): SelectedMethod[] {
+  return Object.keys(cleanedFragment).map((f) => {
+    return {
+      name: cleanedFragment[f].name,
+      method: f,
+    };
+  });
+}
+
+export async function promptSelectables<T extends ConstructorFragment | Fragment>(
+  method: 'event' | 'function',
+  availableMethods: Record<string, T>
+): Promise<Record<string, T>> {
+  const selectedMethods: Record<string, T> = {};
+  const chosenFn = await inquirer.prompt({
+    name: method,
+    message: `Select ${method}`,
+    type: 'checkbox',
+    choices: Object.keys(availableMethods),
+  });
+  const choseArray = chosenFn[method] as string[];
+  choseArray.map((choice: string) => {
+    selectedMethods[choice] = availableMethods[choice];
+  });
+
+  return selectedMethods;
 }
 
 export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
@@ -93,6 +94,13 @@ export function filterObjectsByStateMutability(
     }
   }
   return filteredObject;
+}
+
+export function getFragmentFormats<T extends ConstructorFragment | Fragment>(fragment: T): {full: string; min: string} {
+  return {
+    full: removeKeyword(fragment.format('full')),
+    min: removeKeyword(fragment.format('minimal')),
+  };
 }
 
 export function generateHandlerName(name: string, abiName: string, type: 'tx' | 'log'): string {
@@ -143,52 +151,130 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
   };
 }
 
+// Selected fragments
+export async function prepareInputFragments<T extends ConstructorFragment | Fragment>(
+  type: 'event' | 'function',
+  input: string | undefined,
+  availableFragments: Record<string, T>,
+  abiName: string
+): Promise<Record<string, T>> {
+  // input = '' or undefined
+  if (input === undefined || input === '') {
+    return promptSelectables<T>(type, availableFragments);
+  }
+
+  // input = '*' (all Events/Functions)
+  if (input === '*') {
+    return availableFragments;
+  }
+
+  // input = 'transfer,approval'
+  const selectedFragments: Record<string, T> = {};
+  const inputs = input.split(',').map((input) => input.trim().toLowerCase());
+
+  // all formats of each fragment
+  for (const key in availableFragments) {
+    const fragmentFormats = Object.values(getFragmentFormats<T>(availableFragments[key])).map((f) => f.toLowerCase());
+    console.log(key, inputs, fragmentFormats);
+    // console.log('f', fragmentFormats)
+
+    inputs.map((_input: string) => {
+      fragmentFormats.map((f) => {
+        if (f.slice(_input.length).length) {
+          selectedFragments[key] = availableFragments[key];
+        }
+      });
+
+      // const matchingInputs = intersection(fragmentFormats.map(), inputs)
+      // console.log(matchingInputs)
+      // if(matchingInputs.length) {
+      //
+      // }
+      // if (matchingInputs.length > 1) {
+      //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
+      // }
+    });
+  }
+
+  // inputs.map(userInput => {
+  //   const i = allFragmentKeys.indexOf(userInput)
+  //   if (i !== -1) {
+  //     selectedFragments[methodKeys[i]] = availableFragments[methodKeys[i]]
+  //   } else {
+  //     throw new Error(chalk.red(`"${userInput}" is not a valid ${type} on ABI: ${abiName}`))
+  //   }
+  // })
+
+  // if (Object.keys(selectedFragments).length) {
+  //   throw new Error(chalk.red(`"${userInput}" is not a valid ${type} on ABI: ${abiName}`))
+  // }
+
+  return selectedFragments;
+}
+
 export function filterExistingMethods(
-  userInput: UserInput,
-  datasource: EthereumDs[]
-): [SelectedMethod[], SelectedMethod[]] {
+  eventFragments: Record<string, EventFragment>,
+  functionFragments: Record<string, FunctionFragment>,
+  dataSources: EthereumDs[]
+): [Record<string, EventFragment>, Record<string, FunctionFragment>] {
+  // find all existing functions and events
   const existingEvents: string[] = [];
   const existingFunctions: string[] = [];
 
-  datasource.map((ds: EthereumDs) => {
+  const cleanEventsFragments: Record<string, EventFragment> = {};
+  const cleanFunctionsFragments: Record<string, FunctionFragment> = {};
+
+  dataSources.map((ds) => {
     ds.mapping.handlers.map((handler) => {
       if (Object.keys(handler.filter).includes('topics')) {
-        const topic = (handler.filter as EthereumLogFilter).topics[0];
-        if (!existingEvents.includes(topic)) {
-          existingEvents.push(topic);
-        }
+        // topic[0] is the method
+        existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
       }
       if (Object.keys(handler.filter).includes('function')) {
-        const fn = (handler.filter as EthereumTransactionFilter).function;
-        if (!existingFunctions.includes(fn)) {
-          existingFunctions.push(fn);
-        }
+        existingFunctions.push((handler.filter as EthereumTransactionFilter).function);
       }
     });
   });
-  const cleanedEvents = userInput.events.filter((e) => {
-    if (!existingEvents.includes(e.method)) {
-      return e;
+
+  for (const key in eventFragments) {
+    const fragmentFormats = Object.values(getFragmentFormats<EventFragment>(eventFragments[key])).concat(key);
+    const diff = difference(fragmentFormats, existingEvents);
+    if (diff.length === fragmentFormats.length) {
+      diff.map((fragKey) => {
+        if (eventFragments[fragKey]) {
+          cleanEventsFragments[fragKey] = eventFragments[fragKey];
+        }
+      });
     }
-  });
-  const cleanedFunctions = userInput.functions.filter((fn) => {
-    if (!existingFunctions.includes(fn.method.toLowerCase())) return fn;
-  });
-  return [cleanedEvents, cleanedFunctions];
+  }
+  for (const key in functionFragments) {
+    const fragmentFormats = Object.values(getFragmentFormats<FunctionFragment>(functionFragments[key])).concat(key);
+    const diff = difference(fragmentFormats, existingFunctions);
+    if (diff.length !== 0) {
+      diff.map((fragKey) => {
+        if (functionFragments[fragKey]) {
+          cleanFunctionsFragments[fragKey] = functionFragments[fragKey];
+        }
+      });
+    }
+  }
+  return [cleanEventsFragments, cleanFunctionsFragments];
 }
 
-export async function generateManifest(projectPath: string, manifestPath: string, userInput: UserInput): Promise<void> {
+export async function getManifestData(projectPath: string, manifestPath: string): Promise<any> {
+  const existingManifest = (await fs.promises.readFile(path.join(projectPath, manifestPath), 'utf8')) as any;
+  return parseDocument(existingManifest);
+}
+
+export async function generateManifest(
+  projectPath: string,
+  manifestPath: string,
+  userInput: UserInput,
+  existingManifestData: any
+): Promise<void> {
   try {
-    const existingManifest = (await fs.promises.readFile(path.join(projectPath, manifestPath), 'utf8')) as any;
-    const existingManifestData = parseDocument(existingManifest);
     const clonedExistingManifestData = existingManifestData.clone();
-
     const existingDatasource = existingManifestData.get('dataSources') as any;
-
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(userInput, existingDatasource.toJSON() as EthereumDs[]);
-
-    userInput.events = cleanEvents;
-    userInput.functions = cleanFunctions;
 
     const newDataSourcesData = existingDatasource.toJSON().concat(...[constructDatasources(userInput)]);
     clonedExistingManifestData.set('dataSources', newDataSourcesData);

@@ -9,7 +9,7 @@ import rimraf from 'rimraf';
 import {parseContractPath} from 'typechain';
 import {stringify} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {generateHandlerName, generateHandlers, generateManifest} from './generate-controller';
+import {generateHandlerName, generateHandlers, generateManifest, getManifestData} from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
 const PROJECT_PATH = path.join(__dirname, '../../test/schemaTest6');
@@ -195,7 +195,8 @@ describe('CLI codegen:generate, Can write to file', () => {
   });
 
   it('Can generate manifest', async () => {
-    await generateManifest(PROJECT_PATH, MANIFEST_PATH, mockUserInput);
+    const existingManifestData = await getManifestData(PROJECT_PATH, MANIFEST_PATH);
+    await generateManifest(PROJECT_PATH, MANIFEST_PATH, mockUserInput, existingManifestData);
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, MANIFEST_PATH)) as any).dataSources;
 
     expect(updatedManifestDs[1]).toStrictEqual({
@@ -234,7 +235,8 @@ describe('CLI codegen:generate, Can write to file', () => {
   it('Should not overwrite existing datasource, if handler filter already exist', async () => {
     mockUserInput.functions = mockConstructedFunctionsDuplicates;
     mockUserInput.events = mockConstructedEventsDuplicates;
-    await generateManifest(PROJECT_PATH, './generate-project-2.yaml', mockUserInput);
+    const existingManifestData = await getManifestData(PROJECT_PATH, './generate-project-2.yaml');
+    await generateManifest(PROJECT_PATH, './generate-project-2.yaml', mockUserInput, existingManifestData);
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, './generate-project-2.yaml')) as any)
       .dataSources;
 

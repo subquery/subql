@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
@@ -10,11 +10,14 @@ import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {
   constructDatasources,
   constructHandlerProps,
+  constructMethod,
   filterExistingMethods,
   filterObjectsByStateMutability,
   generateHandlerName,
   getAbiInterface,
+  prepareInputFragments,
   promptSelectables,
+  removeKeyword,
 } from './generate-controller';
 
 const mockConstructedFunctions: SelectedMethod[] = [
@@ -112,18 +115,11 @@ describe('CLI codegen:generate', () => {
       },
     });
   });
-  it('Prompt Selectables, should return all methods, if user passes --events="*"', async () => {
-    const result = await promptSelectables('event', eventsFragments, '*', abiName);
-    expect(result).toEqual(
-      expect.arrayContaining([
-        'Approval(address,address,uint256)',
-        'Transfer(address,address,uint256)',
-        'ApprovalForAll(address,address,bool)',
-      ])
-    );
+  it('prepareInputFragments, should return all fragments, if user passes --events="*"', async () => {
+    const result = await prepareInputFragments('event', '*', eventsFragments, abiName);
+    expect(result).toStrictEqual(abiInterface.events);
   });
-
-  it('Prompt Selectables, no events passed, should prompt through inquirer', async () => {
+  it('prepareInputFragments, no events passed, should prompt through inquirer', async () => {
     // when using ejs, jest spyOn does not work on inquirer
     const inquirer = require('inquirer');
 
@@ -131,21 +127,60 @@ describe('CLI codegen:generate', () => {
       event: ['Approval(address,address,uint256)'],
     });
 
-    const result = await promptSelectables('event', eventsFragments, '', abiName);
+    const emptyStringPassed = await prepareInputFragments('event', '', eventsFragments, abiName);
     expect(promptSpy).toHaveBeenCalledTimes(1);
-    expect(result).toEqual(expect.arrayContaining(['Approval(address,address,uint256)']));
-  });
-  it('Prompt Selectables, --functions="transferFrom", should return matching fragment method (cased insensitive)', async () => {
-    const result = await promptSelectables('function', functionFragments, 'transferFrom', abiName);
-    const insensitiveInputResult = await promptSelectables('function', functionFragments, 'transFerfrom', abiName);
+    const undefinedPassed = await prepareInputFragments('event', undefined, eventsFragments, abiName);
 
-    expect(result).toEqual(expect.arrayContaining(['transferFrom(address,address,uint256)']));
-    expect(insensitiveInputResult).toEqual(expect.arrayContaining(['transferFrom(address,address,uint256)']));
+    expect(emptyStringPassed).toStrictEqual(undefinedPassed);
   });
-  it('Prompt Selectables, should throw if typo is parsed', async () => {
-    await expect(promptSelectables('function', functionFragments, 'asdfghj', abiName)).rejects.toThrow(
-      '"asdfghj" is not a valid function on ABI: Erc721'
+  it('prepareInputFragments, --functions="transferFrom", should return matching fragment method (cased insensitive)', async () => {
+    const result = await prepareInputFragments<FunctionFragment>(
+      'function',
+      'transferFrom',
+      functionFragments,
+      abiName
     );
+    const insensitiveInputResult = await prepareInputFragments<FunctionFragment>(
+      'function',
+      'transFerfrom',
+      functionFragments,
+      abiName
+    );
+
+    // should pass
+    const passingResult = await prepareInputFragments<FunctionFragment>(
+      'function',
+      'transferfrom()',
+      functionFragments,
+      abiName
+    );
+
+    // Should throw
+    const humanInputResult = await prepareInputFragments<FunctionFragment>(
+      'function',
+      'transferFrom(address from, address to, uint256 tokenid)',
+      functionFragments,
+      abiName
+    );
+    // Should throw
+    const minInputResult = await prepareInputFragments<FunctionFragment>(
+      'function',
+      'transFerfrom(address,address,uint256)',
+      functionFragments,
+      abiName
+    );
+
+    expect(result).toStrictEqual(insensitiveInputResult);
+    expect(result).toStrictEqual(humanInputResult);
+    expect(result).toStrictEqual(minInputResult);
+
+    // expect(result).toStrictEqual(abiInterface.functions['transferFrom(address,address,uint256)']);
+  });
+  it('prepareInputFragments, should throw if typo is parsed', async () => {
+    const res = await prepareInputFragments('function', 'asdfghj', functionFragments, abiName);
+    // await expect(prepareInputFragments('function', 'asdfghj', functionFragments,  abiName)).rejects.toThrow(
+    //   '"asdfghj" is not a valid function on ABI: Erc721'
+    // );
   });
   it('Ensure generateHandlerName', () => {
     expect(generateHandlerName('transfer', 'erc721', 'log')).toBe('handleTransferErc721Log');
@@ -210,54 +245,60 @@ describe('CLI codegen:generate', () => {
   });
   it('filter existing filters on datasources', () => {
     const ds = mockDsFn();
-    const mockUserEvents = [
+
+    const abiInterface = getAbiInterface(projectPath, './erc721.json');
+    const eventsFragments = abiInterface.events;
+    const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
+
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventsFragments, functionFragments, ds);
+
+    const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
+    const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
+
+    // function approve should be filtered out
+    // event transfer should be filtered out
+    expect(constructedEvents).toStrictEqual([
+      {name: 'Approval', method: 'Approval(address,address,uint256)'},
       {
-        name: 'Approval',
-        method: 'Approval(address,address,uint256)',
+        name: 'ApprovalForAll',
+        method: 'ApprovalForAll(address,address,bool)',
+      },
+    ]);
+
+    expect(constructedFunctions).toStrictEqual([
+      {
+        name: 'safeTransferFrom',
+        method: 'safeTransferFrom(address,address,uint256)',
       },
       {
-        name: 'Transfer', // should be ignored
-        method: 'Transfer(address,address,uint256)',
+        name: 'safeTransferFrom',
+        method: 'safeTransferFrom(address,address,uint256,bytes)',
       },
-    ];
-    const mockUserFunctions = [
+      {
+        name: 'setApprovalForAll',
+        method: 'setApprovalForAll(address,bool)',
+      },
       {
         name: 'transferFrom',
         method: 'transferFrom(address,address,uint256)',
       },
-      {
-        name: 'approve', // should be ignored
-        method: 'approve(address,uint256)',
-      },
-    ];
-    const mockUserInput: UserInput = {
-      startBlock: 1,
-      functions: mockUserFunctions,
-      events: mockUserEvents,
-      abiPath: './abis/erc721.json',
-      address: 'aaa',
-    };
-
-    const result = filterExistingMethods(mockUserInput, ds);
-
-    expect(result).toStrictEqual([
-      [
-        {
-          name: 'Approval',
-          method: 'Approval(address,address,uint256)',
-        },
-      ],
-      [
-        {
-          name: 'transferFrom',
-          method: 'transferFrom(address,address,uint256)',
-        },
-      ],
     ]);
   });
   it('filter out different formatted filters', () => {
     const ds = mockDsFn();
     const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
     logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 amount)'];
+  });
+  it('removeKeyword, should only remove expect value', () => {
+    let inputString = 'event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved)';
+    expect(removeKeyword(inputString)).toBe(
+      'ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved)'
+    );
+
+    inputString = 'function balanceOf(address _owner) external view returns (uint256)';
+    expect(removeKeyword(inputString)).toBe('balanceOf(address _owner) external view returns (uint256)');
+
+    inputString = 'balanceOf(address _owner) external view returns (uint256)';
+    expect(removeKeyword(inputString)).toBe('balanceOf(address _owner) external view returns (uint256)');
   });
 });

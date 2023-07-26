@@ -20,6 +20,26 @@ dataSources:
     startBlock: 4719568
     options:
       abi: erc721
+      address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' # bored apes
+    assets:
+      erc721: # nft token abi
+        file: ./erc721.json
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/TransactionHandler
+          filter:
+            function: approve(address,uint256)
+        - handler: handleLog
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address,address,uint256)
+  - kind: ethereum/Runtime
+    startBlock: 4719568
+    options:
+      abi: erc721
       address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
     assets:
       erc721:
@@ -35,4 +55,4 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - Transfer(address,address,uint256)
+              - Transfer(address,address,uint256

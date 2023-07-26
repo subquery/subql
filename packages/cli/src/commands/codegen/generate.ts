@@ -2,14 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
+import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {
+  constructMethod,
+  filterExistingMethods,
   filterObjectsByStateMutability,
   generateHandlers,
   generateManifest,
   getAbiInterface,
+  getManifestData,
+  prepareInputFragments,
   promptSelectables,
 } from '../../controller/generate-controller';
 
@@ -49,29 +55,17 @@ export default class Generate extends Command {
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-    // const availableEventList = Object.keys(eventsFragments);
-    // const availableFunctionList = Object.keys(functionFragments);
-
-    const eventArray: string[] = [];
-    const functionArray: string[] = [];
-
+    const existingManifest = await getManifestData(projectPath, manifests[0]);
+    const existingDs = existingManifest.get('dataSources') as EthereumDs[];
     const abiName = parseContractPath(abiPath).name;
-    eventArray.push(...(await promptSelectables('event', eventsFragments, events, abiName)));
-    functionArray.push(...(await promptSelectables('function', functionFragments, functions, abiName)));
 
-    const constructedEvents = eventArray.map((event) => {
-      return {
-        name: eventsFragments[event].name,
-        method: event,
-      };
-    });
+    const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
+    const selectedFunctions = await prepareInputFragments('function', functions, functionFragments, abiName);
 
-    const constructedFunctions: SelectedMethod[] = functionArray.map((fn) => {
-      return {
-        name: functionFragments[fn].name,
-        method: fn,
-      };
-    });
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(selectedEvents, selectedFunctions, existingDs);
+
+    const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
+    const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
 
     try {
       const userInput: UserInput = {
@@ -81,14 +75,14 @@ export default class Generate extends Command {
         abiPath: abiPath,
         address: address,
       };
-      await generateManifest(root, manifests[0], userInput);
+      await generateManifest(root, manifests[0], userInput, existingManifest);
       await generateHandlers([constructedEvents, constructedFunctions], root, abiPath);
 
       this.log('-----------Generated-----------');
-      functionArray.map((fn) => {
+      Object.keys(cleanFunctions).map((fn) => {
         this.log(`Function: ${fn} successfully generated`);
       });
-      eventArray.map((event) => {
+      Object.keys(cleanEvents).map((event) => {
         this.log(`Event: ${event} successfully generated`);
       });
       this.log('-------------------------------');
