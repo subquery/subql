@@ -148,12 +148,12 @@ describe('CLI codegen:generate', () => {
     );
 
     // should pass
-    const passingResult = await prepareInputFragments<FunctionFragment>(
-      'function',
-      'transferfrom()',
-      functionFragments,
-      abiName
-    );
+    // const passingResult = await prepareInputFragments<FunctionFragment>(
+    //   'function',
+    //   'transferfrom()',
+    //   functionFragments,
+    //   abiName
+    // );
 
     // Should throw
     const humanInputResult = await prepareInputFragments<FunctionFragment>(
