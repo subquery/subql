@@ -16,7 +16,7 @@ import chalk from 'chalk';
 import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst, difference, intersection} from 'lodash';
+import {upperFirst, difference, intersection, flatten} from 'lodash';
 import {parseContractPath} from 'typechain';
 import {parseDocument} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
@@ -175,40 +175,17 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
   // all formats of each fragment
   for (const key in availableFragments) {
     const fragmentFormats = Object.values(getFragmentFormats<T>(availableFragments[key])).map((f) => f.toLowerCase());
-    console.log(key, inputs, fragmentFormats);
-    // console.log('f', fragmentFormats)
 
     inputs.map((_input: string) => {
       fragmentFormats.map((f) => {
-        if (f.slice(_input.length).length) {
+        if (f.slice(0, _input.length) === _input) {
           selectedFragments[key] = availableFragments[key];
         }
       });
 
-      // const matchingInputs = intersection(fragmentFormats.map(), inputs)
-      // console.log(matchingInputs)
-      // if(matchingInputs.length) {
-      //
-      // }
-      // if (matchingInputs.length > 1) {
       //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
-      // }
     });
   }
-
-  // inputs.map(userInput => {
-  //   const i = allFragmentKeys.indexOf(userInput)
-  //   if (i !== -1) {
-  //     selectedFragments[methodKeys[i]] = availableFragments[methodKeys[i]]
-  //   } else {
-  //     throw new Error(chalk.red(`"${userInput}" is not a valid ${type} on ABI: ${abiName}`))
-  //   }
-  // })
-
-  // if (Object.keys(selectedFragments).length) {
-  //   throw new Error(chalk.red(`"${userInput}" is not a valid ${type} on ABI: ${abiName}`))
-  // }
-
   return selectedFragments;
 }
 

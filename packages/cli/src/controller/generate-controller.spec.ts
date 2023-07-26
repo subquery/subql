@@ -174,7 +174,9 @@ describe('CLI codegen:generate', () => {
     expect(result).toStrictEqual(humanInputResult);
     expect(result).toStrictEqual(minInputResult);
 
-    // expect(result).toStrictEqual(abiInterface.functions['transferFrom(address,address,uint256)']);
+    expect(result).toStrictEqual({
+      'transferFrom(address,address,uint256)': abiInterface.functions['transferFrom(address,address,uint256)'],
+    });
   });
   it('prepareInputFragments, should throw if typo is parsed', async () => {
     const res = await prepareInputFragments('function', 'asdfghj', functionFragments, abiName);
