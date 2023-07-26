@@ -171,8 +171,8 @@ describe('CLI codegen:generate', () => {
     );
 
     expect(result).toStrictEqual(insensitiveInputResult);
-    expect(result).toStrictEqual(humanInputResult);
-    expect(result).toStrictEqual(minInputResult);
+    expect(result).not.toStrictEqual(minInputResult);
+    expect(result).not.toStrictEqual(humanInputResult);
 
     expect(result).toStrictEqual({
       'transferFrom(address,address,uint256)': abiInterface.functions['transferFrom(address,address,uint256)'],

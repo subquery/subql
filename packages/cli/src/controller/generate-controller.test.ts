@@ -4,12 +4,24 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {loadFromJsonOrYaml} from '@subql/common';
+import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum/dist/project';
 import rimraf from 'rimraf';
 import {parseContractPath} from 'typechain';
 import {stringify} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {generateHandlerName, generateHandlers, generateManifest, getManifestData} from './generate-controller';
+import {
+  constructMethod,
+  filterExistingMethods,
+  filterObjectsByStateMutability,
+  generateHandlerName,
+  generateHandlers,
+  generateManifest,
+  getAbiInterface,
+  getManifestData,
+  prepareInputFragments,
+} from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
 const PROJECT_PATH = path.join(__dirname, '../../test/schemaTest6');
@@ -233,10 +245,28 @@ describe('CLI codegen:generate, Can write to file', () => {
     });
   });
   it('Should not overwrite existing datasource, if handler filter already exist', async () => {
-    mockUserInput.functions = mockConstructedFunctionsDuplicates;
-    mockUserInput.events = mockConstructedEventsDuplicates;
     const existingManifestData = await getManifestData(PROJECT_PATH, './generate-project-2.yaml');
+    const abiInterface = getAbiInterface(PROJECT_PATH, './erc721.json');
+    const existingDs = existingManifestData.get('dataSources').toJSON() as EthereumDs[];
+
+    const rawEventFragments = abiInterface.events;
+    const rawFunctionFragments = filterObjectsByStateMutability(abiInterface.functions);
+
+    const selectedEvents = await prepareInputFragments('event', 'approval, transfer', rawEventFragments, abiName);
+    const selectedFunctions = await prepareInputFragments(
+      'function',
+      'approve, transferFrom',
+      rawFunctionFragments,
+      abiName
+    );
+
+    const [eventFrags, functionFrags] = filterExistingMethods(selectedEvents, selectedFunctions, existingDs);
+
+    mockUserInput.events = constructMethod<EventFragment>(eventFrags);
+    mockUserInput.functions = constructMethod<FunctionFragment>(functionFrags);
+
     await generateManifest(PROJECT_PATH, './generate-project-2.yaml', mockUserInput, existingManifestData);
+
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, './generate-project-2.yaml')) as any)
       .dataSources;
 

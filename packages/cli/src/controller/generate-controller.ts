@@ -174,17 +174,10 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
 
   // all formats of each fragment
   for (const key in availableFragments) {
-    const fragmentFormats = Object.values(getFragmentFormats<T>(availableFragments[key])).map((f) => f.toLowerCase());
-
-    inputs.map((_input: string) => {
-      fragmentFormats.map((f) => {
-        if (f.slice(0, _input.length) === _input) {
-          selectedFragments[key] = availableFragments[key];
-        }
-      });
-
-      //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
-    });
+    if (inputs.includes(availableFragments[key].name.toLowerCase())) {
+      selectedFragments[key] = availableFragments[key];
+    }
+    //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
   }
   return selectedFragments;
 }

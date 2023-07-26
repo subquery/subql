@@ -56,7 +56,7 @@ export default class Generate extends Command {
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
     const existingManifest = await getManifestData(projectPath, manifests[0]);
-    const existingDs = existingManifest.get('dataSources') as EthereumDs[];
+    const existingDs = existingManifest.get('dataSources').toJSON() as EthereumDs[];
     const abiName = parseContractPath(abiPath).name;
 
     const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
