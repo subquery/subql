@@ -7,7 +7,7 @@ import {
   SorobanEvent,
   SorobanEventFilter,
 } from '@subql/types-soroban';
-import { Address, xdr } from 'soroban-client';
+import { Address, scValToNative, xdr } from 'soroban-client';
 import { stringNormalizedEq } from '../utils/string';
 
 export class SorobanBlockWrapped implements SorobanBlockWrapper {
@@ -91,9 +91,7 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
           }),
         );
       default:
-        throw new Error(
-          `Unable to decode event: Unknown ScValType ${scVal.switch().name}`,
-        );
+        return scValToNative(scVal);
     }
   }
 }
