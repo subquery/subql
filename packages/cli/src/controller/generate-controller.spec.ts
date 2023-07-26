@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
-import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/common-ethereum';
+import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
@@ -169,6 +169,7 @@ describe('CLI codegen:generate', () => {
       functionFragments,
       abiName
     );
+    expect(result).toStrictEqual(passingResult);
 
     expect(result).toStrictEqual(insensitiveInputResult);
     expect(result).not.toStrictEqual(minInputResult);
@@ -289,7 +290,47 @@ describe('CLI codegen:generate', () => {
   it('filter out different formatted filters', () => {
     const ds = mockDsFn();
     const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
-    logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 amount)'];
+    const txHandler = ds[0].mapping.handlers[0].filter as EthereumTransactionFilter;
+    txHandler.function = 'approve(address to, uint256 tokenId)';
+    logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'];
+
+    const abiInterface = getAbiInterface(projectPath, './erc721.json');
+    const eventsFragments = abiInterface.events;
+    const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
+
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventsFragments, functionFragments, ds);
+
+    const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
+    const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
+
+    // function approve should be filtered out
+    // event transfer should be filtered out
+    expect(constructedEvents).toStrictEqual([
+      {name: 'Approval', method: 'Approval(address,address,uint256)'},
+      {
+        name: 'ApprovalForAll',
+        method: 'ApprovalForAll(address,address,bool)',
+      },
+    ]);
+
+    expect(constructedFunctions).toStrictEqual([
+      {
+        name: 'safeTransferFrom',
+        method: 'safeTransferFrom(address,address,uint256)',
+      },
+      {
+        name: 'safeTransferFrom',
+        method: 'safeTransferFrom(address,address,uint256,bytes)',
+      },
+      {
+        name: 'setApprovalForAll',
+        method: 'setApprovalForAll(address,bool)',
+      },
+      {
+        name: 'transferFrom',
+        method: 'transferFrom(address,address,uint256)',
+      },
+    ]);
   });
   it('removeKeyword, should only remove expect value', () => {
     let inputString = 'event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved)';

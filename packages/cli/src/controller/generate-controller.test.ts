@@ -41,28 +41,6 @@ const mockConstructedEvents: SelectedMethod[] = [
   },
 ];
 
-const mockConstructedFunctionsDuplicates: SelectedMethod[] = [
-  {
-    name: 'transferFrom',
-    method: 'transferFrom(address,address,uint256)',
-  },
-  {
-    name: 'approve',
-    method: 'approve(address,uint256)',
-  },
-];
-
-const mockConstructedEventsDuplicates: SelectedMethod[] = [
-  {
-    name: 'Approval',
-    method: 'Approval(address,address,uint256)',
-  },
-  {
-    name: 'Transfer',
-    method: 'Transfer(address,address,uint256)',
-  },
-];
-
 const originalManifestData = {
   specVersion: '1.0.0',
   name: 'generate-test',

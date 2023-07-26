@@ -170,15 +170,21 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
 
   // input = 'transfer,approval'
   const selectedFragments: Record<string, T> = {};
-  const inputs = input.split(',').map((input) => input.trim().toLowerCase());
+  input.split(',').map((input) => {
+    const casedInput = input.trim().toLowerCase();
+    Object.keys(availableFragments).map((key) => {
+      if (casedInput === availableFragments[key].name.toLowerCase()) {
+        selectedFragments[key] = availableFragments[key];
+      }
+    });
+  });
 
-  // all formats of each fragment
-  for (const key in availableFragments) {
-    if (inputs.includes(availableFragments[key].name.toLowerCase())) {
-      selectedFragments[key] = availableFragments[key];
-    }
-    //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
-  }
+  // for (const key in availableFragments) {
+  //   if (inputs.includes(availableFragments[key].name.toLowerCase())) {
+  //     selectedFragments[key] = availableFragments[key];
+  //   }
+  //   //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
+  // }
   return selectedFragments;
 }
 
@@ -209,6 +215,7 @@ export function filterExistingMethods(
   for (const key in eventFragments) {
     const fragmentFormats = Object.values(getFragmentFormats<EventFragment>(eventFragments[key])).concat(key);
     const diff = difference(fragmentFormats, existingEvents);
+    // console.log(fragmentFormats, existingEvents)
     if (diff.length === fragmentFormats.length) {
       diff.map((fragKey) => {
         if (eventFragments[fragKey]) {
@@ -220,7 +227,7 @@ export function filterExistingMethods(
   for (const key in functionFragments) {
     const fragmentFormats = Object.values(getFragmentFormats<FunctionFragment>(functionFragments[key])).concat(key);
     const diff = difference(fragmentFormats, existingFunctions);
-    if (diff.length !== 0) {
+    if (diff.length === fragmentFormats.length) {
       diff.map((fragKey) => {
         if (functionFragments[fragKey]) {
           cleanFunctionsFragments[fragKey] = functionFragments[fragKey];
