@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {PgClass, SQL} from '@subql/x-graphile-build-pg';
+import {PgClass} from '@subql/x-graphile-build-pg';
 import {Plugin} from 'graphile-build';
 import {GraphQLEnumType} from 'graphql';
 import isString from 'lodash/isString';
@@ -150,7 +150,7 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
                   queryBuilder.orderBy(expr, ascending, nullsFirst);
                 });
 
-                if (argv('dictionary-optimisation')) {
+                if (argv('dictionary-optimisation') || unique) {
                   queryBuilder.setOrderIsUnique();
                 }
               });
