@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
 import { DynamicModule, Global, Module } from '@nestjs/common';
@@ -26,7 +26,7 @@ const logger = getLogger('configure');
 
 const YargsNameMapping: Record<string, string> = {};
 
-type Args = typeof yargsOptions.argv['argv'];
+type Args = (typeof yargsOptions.argv)['argv'];
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {

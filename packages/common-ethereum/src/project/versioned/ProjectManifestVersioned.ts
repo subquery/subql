@@ -1,5 +1,5 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
 
 import {plainToClass} from 'class-transformer';
 import {IEthereumProjectManifest, SubqlEthereumDataSource} from '../types';
@@ -12,7 +12,7 @@ const Ethereum_SUPPORTED_VERSIONS = {
 
 type Versions = keyof typeof Ethereum_SUPPORTED_VERSIONS;
 
-type ProjectManifestImpls = InstanceType<typeof Ethereum_SUPPORTED_VERSIONS[Versions]>;
+type ProjectManifestImpls = InstanceType<(typeof Ethereum_SUPPORTED_VERSIONS)[Versions]>;
 
 export function manifestIsV1_0_0(manifest: IEthereumProjectManifest): manifest is ProjectManifestV1_0_0Impl {
   return manifest.specVersion === '1.0.0';

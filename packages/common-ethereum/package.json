@@ -11,7 +11,7 @@
   "repository": "github:subquery/subql",
   "author": "Ian He",
   "main": "dist/index.js",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "dependencies": {
     "@subql/common": "^2.3.0",
     "@subql/types-ethereum": "workspace:*",

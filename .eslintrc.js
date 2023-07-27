@@ -84,9 +84,10 @@ module.exports = {
       2,
       'line',
       [
-        //Copyright 2020-2022 OnFinality Limited authors & contributors
-        {pattern: ' Copyright \\d{4}(-\\d{4})? OnFinality Limited authors & contributors'},
-        ' SPDX-License-Identifier: Apache-2.0',
+        // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+        // SPDX-License-Identifier: GPL-3.0
+        {pattern: ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors'},
+        ' SPDX-License-Identifier: GPL-3.0',
       ],
       2,
     ],

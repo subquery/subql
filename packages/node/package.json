@@ -3,7 +3,7 @@
   "version": "2.9.3-3",
   "description": "",
   "author": "Ian He",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rm -rf dist && tsc -b",
