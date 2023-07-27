@@ -15,6 +15,7 @@ const CIDv1 = new RegExp(
 
 export class IPFSReader implements Reader {
   private ipfs: IPFS.IPFSHTTPClient;
+  private cache: Record<string, Promise<string>> = {};
 
   constructor(private readonly cid: string, gateway?: string) {
     if (!CIDv0.test(cid) && !CIDv1.test(cid)) {
@@ -41,16 +42,22 @@ export class IPFSReader implements Reader {
 
   async getFile(fileName: string): Promise<string | undefined> {
     try {
-      const resolvedFileName = fileName.replace('ipfs://', '');
-      const req = this.ipfs.cat(resolvedFileName);
-      const scriptBufferArray: Uint8Array[] = [];
-      for await (const res of req) {
-        scriptBufferArray.push(res);
+      if (this.cache[fileName] === undefined) {
+        const resolvedFileName = fileName.replace('ipfs://', '');
+        this.cache[fileName] = this.resultToBuffer(this.ipfs.cat(resolvedFileName));
       }
-      return Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
+      return this.cache[fileName];
     } catch (e) {
       console.error(`Reader get file failed`, e);
       return undefined;
     }
+  }
+
+  private async resultToBuffer(req: AsyncIterable<Uint8Array>): Promise<string> {
+    const scriptBufferArray: Uint8Array[] = [];
+    for await (const res of req) {
+      scriptBufferArray.push(res);
+    }
+    return Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
   }
 }
