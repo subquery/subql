@@ -18,7 +18,6 @@ import PgBasicsPlugin from '@subql/x-graphile-build-pg/node8plus/plugins/PgBasic
 import PgIntrospectionPlugin from '@subql/x-graphile-build-pg/node8plus/plugins/PgIntrospectionPlugin';
 import PgTypesPlugin from '@subql/x-graphile-build-pg/node8plus/plugins/PgTypesPlugin';
 import PgTablesPlugin from '@subql/x-graphile-build-pg/node8plus/plugins/PgTablesPlugin';
-import PgConnectionArgOrderBy from '@subql/x-graphile-build-pg/node8plus/plugins/PgConnectionArgOrderBy';
 import PgConnectionArgOrderByDefaultValue from '@subql/x-graphile-build-pg/node8plus/plugins/PgConnectionArgOrderByDefaultValue';
 import PgConditionComputedColumnPlugin from '@subql/x-graphile-build-pg/node8plus/plugins/PgConditionComputedColumnPlugin';
 import PgAllRows from '@subql/x-graphile-build-pg/node8plus/plugins/PgAllRows';
@@ -53,6 +52,8 @@ import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 import {PgDistinctPlugin} from './PgDistinctPlugin';
+import {makeAddPgTableOrderByPlugin, orderByAscDesc} from 'postgraphile';
+import PgConnectionArgOrderBy from './PgOrderByUnique';
 
 /* eslint-enable */
 
@@ -76,7 +77,6 @@ export const pgDefaultPlugins = [
   // PgJWTPlugin,
   PgTablesPlugin,
   PgConnectionArgFirstLastBeforeAfter,
-  PgConnectionArgOrderBy,
   PgConnectionArgOrderByDefaultValue,
   PgConditionComputedColumnPlugin,
   PgAllRows,
@@ -102,6 +102,7 @@ export const pgDefaultPlugins = [
 const plugins = [
   ...defaultPlugins,
   ...pgDefaultPlugins,
+  PgConnectionArgOrderBy,
   PgSimplifyInflectorPlugin,
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
