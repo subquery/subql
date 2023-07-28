@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix mmrQuery should always read mmr leaf length from Db. 
+
 ## [4.0.0] - 2023-07-17
 ### Changed
 - **Breaking**: Inti DB schema manually during test run (#1870)
