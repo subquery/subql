@@ -3,13 +3,16 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
   SubqlSorobanCustomDataSource,
   SorobanHandlerKind,
   SorobanRuntimeHandlerInputMap,
   SubqlSorobanDataSource,
+  isBlockHandlerProcessor,
+  isTransactionHandlerProcessor,
+  isOperationHandlerProcessor,
+  isEffectHandlerProcessor,
 } from '@subql/common-soroban';
 import {
   NodeConfig,
@@ -21,10 +24,16 @@ import {
   ApiService,
 } from '@subql/node-core';
 import {
-  SorobanEvent,
-  SorobanEventFilter,
   SorobanBlockWrapper,
   SubqlDatasource,
+  SorobanTransaction,
+  SorobanOperation,
+  SorobanEffect,
+  SorobanBlock,
+  SorobanBlockFilter,
+  SorobanTransactionFilter,
+  SorobanOperationFilter,
+  SorobanEffectFilter,
 } from '@subql/types-soroban';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { SorobanApi } from '../soroban';
@@ -94,7 +103,7 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   getBlockHeight(block: SorobanBlockWrapper): number {
-    return block.block.ledger;
+    return block.block.sequence;
   }
 
   getBlockHash(block: SorobanBlockWrapper): string {
@@ -110,15 +119,71 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   protected async indexBlockData(
-    { events }: SorobanBlockWrapper,
+    { block, effects, operations, transactions }: SorobanBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
-    for (const event of events) {
-      await this.indexEvent(event, dataSources, getVM);
+    await this.indexBlockContent(block, dataSources, getVM);
+
+    for (const tx of transactions) {
+      await this.indexTransaction(tx, dataSources, getVM);
+
+      for (const operation of tx.operations) {
+        await this.indexOperation(operation, dataSources, getVM);
+
+        for (const effect of operation.effects) {
+          await this.indexEffect(effect, dataSources, getVM);
+        }
+      }
     }
   }
 
+  private async indexBlockContent(
+    block: SorobanBlock,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(SorobanHandlerKind.Block, block, ds, getVM);
+    }
+  }
+
+  private async indexTransaction(
+    transaction: SorobanTransaction,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(
+        SorobanHandlerKind.Transaction,
+        transaction,
+        ds,
+        getVM,
+      );
+    }
+  }
+
+  private async indexOperation(
+    operation: SorobanOperation,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(SorobanHandlerKind.Operation, operation, ds, getVM);
+    }
+  }
+
+  private async indexEffect(
+    effect: SorobanEffect,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(SorobanHandlerKind.Effects, effect, ds, getVM);
+    }
+  }
+
+  /*
   private async indexEvent(
     event: SorobanEvent,
     dataSources: SubqlProjectDs[],
@@ -128,6 +193,7 @@ export class IndexerManager extends BaseIndexerManager<
       await this.indexData(SorobanHandlerKind.Event, event, ds, getVM);
     }
   }
+  */
 
   protected async prepareFilteredData<T = any>(
     kind: SorobanHandlerKind,
@@ -139,18 +205,63 @@ export class IndexerManager extends BaseIndexerManager<
 }
 
 type ProcessorTypeMap = {
-  [SorobanHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [SorobanHandlerKind.Block]: typeof isBlockHandlerProcessor;
+  [SorobanHandlerKind.Transaction]: typeof isTransactionHandlerProcessor;
+  [SorobanHandlerKind.Operation]: typeof isOperationHandlerProcessor;
+  [SorobanHandlerKind.Effects]: typeof isEffectHandlerProcessor;
+  //[SorobanHandlerKind.Event]: typeof isEventHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
-  [SorobanHandlerKind.Event]: isEventHandlerProcessor,
+  [SorobanHandlerKind.Block]: isBlockHandlerProcessor,
+  [SorobanHandlerKind.Transaction]: isTransactionHandlerProcessor,
+  [SorobanHandlerKind.Operation]: isOperationHandlerProcessor,
+  [SorobanHandlerKind.Effects]: isEffectHandlerProcessor,
+  //[SorobanHandlerKind.Event]: isEventHandlerProcessor,
 };
 
 const FilterTypeMap = {
-  [SorobanHandlerKind.Event]: (
-    data: SorobanEvent,
-    filter: SorobanEventFilter,
+  [SorobanHandlerKind.Block]: (
+    data: SorobanBlock,
+    filter: SorobanBlockFilter,
     ds: SubqlSorobanDataSource,
   ) =>
-    SorobanBlockWrapped.filterEventProcessor(data, filter, ds.options?.address),
+    SorobanBlockWrapped.filterBlocksProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [SorobanHandlerKind.Transaction]: (
+    data: SorobanTransaction,
+    filter: SorobanTransactionFilter,
+    ds: SubqlSorobanDataSource,
+  ) =>
+    SorobanBlockWrapped.filterTransactionProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [SorobanHandlerKind.Operation]: (
+    data: SorobanOperation,
+    filter: SorobanOperationFilter,
+    ds: SubqlSorobanDataSource,
+  ) =>
+    SorobanBlockWrapped.filterOperationProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [SorobanHandlerKind.Effects]: (
+    data: SorobanEffect,
+    filter: SorobanEffectFilter,
+    ds: SubqlSorobanDataSource,
+  ) =>
+    SorobanBlockWrapped.filterEffectProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
 };

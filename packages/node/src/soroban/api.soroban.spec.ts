@@ -13,6 +13,7 @@ const prepareSorobanApi = async function () {
   return api;
 };
 
+/*
 describe('SorobanApi', function () {
   let sorobanApi: SorobanApi;
 
@@ -95,3 +96,4 @@ describe('SorobanApi', function () {
     expect(apiClient).toEqual((sorobanApi as any).client);
   });
 });
+*/

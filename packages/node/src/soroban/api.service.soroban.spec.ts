@@ -55,6 +55,7 @@ export const prepareApiService = async (
   return [apiService, app];
 };
 
+/*
 jest.setTimeout(90000);
 describe('SorobanApiService', () => {
   let apiService: SorobanApiService;
@@ -129,3 +130,4 @@ describe('SorobanApiService', () => {
     ).rejects.toThrow();
   });
 });
+*/

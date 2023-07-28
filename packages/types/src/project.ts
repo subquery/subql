@@ -2,22 +2,45 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ApiWrapper} from './interfaces';
-import {SorobanEvent, SorobanEventFilter} from './soroban';
+import {
+  SorobanBlock,
+  SorobanBlockFilter,
+  SorobanEffect,
+  SorobanEffectFilter,
+  SorobanEvent,
+  SorobanEventFilter,
+  SorobanOperation,
+  SorobanOperationFilter,
+  SorobanTransaction,
+  SorobanTransactionFilter,
+} from './soroban';
 
 export enum SorobanDatasourceKind {
   Runtime = 'soroban/Runtime',
 }
 
 export enum SorobanHandlerKind {
-  Event = 'soroban/EventHandler',
+  Block = 'soroban/BlockHandler',
+  Transaction = 'soroban/TransactionHandler',
+  Operation = 'soroban/OperationHandler',
+  Effects = 'soroban/EffectHandler',
+  //Event = 'soroban/EventHandler',
 }
 
 export type SorobanRuntimeHandlerInputMap = {
-  [SorobanHandlerKind.Event]: SorobanEvent;
+  [SorobanHandlerKind.Block]: SorobanBlock;
+  [SorobanHandlerKind.Transaction]: SorobanTransaction;
+  [SorobanHandlerKind.Operation]: SorobanOperation;
+  [SorobanHandlerKind.Effects]: SorobanEffect;
+  //[SorobanHandlerKind.Event]: SorobanEvent;
 };
 
 type SorobanRuntimeFilterMap = {
-  [SorobanHandlerKind.Event]: SorobanEventFilter;
+  [SorobanHandlerKind.Block]: SorobanBlockFilter;
+  [SorobanHandlerKind.Transaction]: SorobanTransactionFilter;
+  [SorobanHandlerKind.Operation]: SorobanOperationFilter;
+  [SorobanHandlerKind.Effects]: SorobanEffectFilter;
+  //[SorobanHandlerKind.Event]: SorobanEventFilter;
 };
 
 export interface ProjectManifest {
@@ -35,11 +58,37 @@ export interface ProjectManifest {
   bypassBlocks?: number[];
 }
 
+export interface SubqlBlockHandler {
+  handler: string;
+  kind: SorobanHandlerKind.Block;
+  filter?: SorobanBlockFilter;
+}
+
+export interface SubqlTransactionHandler {
+  handler: string;
+  kind: SorobanHandlerKind.Transaction;
+  filter?: SorobanTransactionFilter;
+}
+
+export interface SubqlOperationHandler {
+  handler: string;
+  kind: SorobanHandlerKind.Operation;
+  filter?: SorobanOperationFilter;
+}
+
+export interface SubqlEffectHandler {
+  handler: string;
+  kind: SorobanHandlerKind.Effects;
+  filter?: SorobanEffectFilter;
+}
+
+/*
 export interface SubqlEventHandler {
   handler: string;
   kind: SorobanHandlerKind.Event;
   filter?: SorobanEventFilter;
 }
+*/
 
 export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
@@ -47,7 +96,11 @@ export interface SubqlCustomHandler<K extends string = string, F = Record<string
   filter?: F;
 }
 
-export type SubqlRuntimeHandler = SubqlEventHandler;
+export type SubqlRuntimeHandler =
+  | SubqlBlockHandler
+  | SubqlTransactionHandler
+  | SubqlOperationHandler
+  | SubqlEffectHandler;
 
 export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
 
@@ -141,7 +194,11 @@ export type SecondLayerHandlerProcessorArray<
   F,
   T,
   DS extends SubqlCustomDatasource<K> = SubqlCustomDatasource<K>
-> = SecondLayerHandlerProcessor<SorobanHandlerKind.Event, F, T, DS>;
+> =
+  | SecondLayerHandlerProcessor<SorobanHandlerKind.Block, F, T, DS>
+  | SecondLayerHandlerProcessor<SorobanHandlerKind.Transaction, F, T, DS>
+  | SecondLayerHandlerProcessor<SorobanHandlerKind.Operation, F, T, DS>
+  | SecondLayerHandlerProcessor<SorobanHandlerKind.Effects, F, T, DS>;
 
 export interface SubqlDatasourceProcessor<
   K extends string,

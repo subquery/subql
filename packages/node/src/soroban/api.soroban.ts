@@ -3,15 +3,11 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getLogger } from '@subql/node-core';
-import {
-  ApiWrapper,
-  SorobanBlock,
-  SorobanBlockWrapper,
-} from '@subql/types-soroban';
-import { Server, SorobanRpc, scValToNative, xdr } from 'soroban-client';
-import { SorobanBlockWrapped } from './block.soroban';
+import { ApiWrapper, SorobanBlockWrapper } from '@subql/types-soroban';
+import { ServerApi, Server } from 'stellar-sdk';
+import * as StellarUtils from '../utils/stellar';
 import SafeSorobanProvider from './safe-api';
-import { SorobanServer } from './soroban.server';
+import { StellarServer } from './stellar.server';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -19,9 +15,11 @@ const { version: packageVersion } = require('../../package.json');
 const logger = getLogger('api.Soroban');
 
 export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
-  private client: Server;
+  //private client: Server;
+  private stellarClient: StellarServer;
 
   private chainId: string;
+  private genesisHash: string;
   private name: string;
 
   constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
@@ -40,19 +38,24 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
       //searchParams.forEach((value, name, searchParams) => {
       //  (connection.headers as any)[name] = value;
       //});
-      this.client = new SorobanServer(endpoint, options);
+      this.stellarClient = new StellarServer(endpoint, options);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);
     }
   }
 
   async init(): Promise<void> {
-    const network = await this.client.getNetwork();
-    this.chainId = network.passphrase;
+    //need archive node for genesis hash
+    //const genesisLedger = (await this.stellarClient.ledgers().ledger(1).call()).records[0];
+    this.chainId = (await this.stellarClient.getNetwork()).network_passphrase;
+    //this.genesisHash = genesisLedger.hash;
   }
 
-  async getFinalizedBlock(): Promise<SorobanRpc.GetLatestLedgerResponse> {
-    return this.client.getLatestLedger();
+  async getFinalizedBlock(): Promise<ServerApi.LedgerRecord> {
+    const latestLedger = (await this.stellarClient.getNetwork())
+      .history_latest_ledger;
+    return (await this.stellarClient.ledgers().ledger(latestLedger).call())
+      .records[0];
   }
 
   async getFinalizedBlockHeight(): Promise<number> {
@@ -72,61 +75,30 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   }
 
   getGenesisHash(): string {
-    return this.getChainId();
+    return this.chainId;
   }
 
   getSpecName(): string {
     return 'Soroban';
   }
 
+  /*
   async getEvents(height: number): Promise<SorobanRpc.GetEventsResponse> {
     return this.client.getEvents({ startLedger: height, filters: [] });
   }
-
-  async fetchBlock(
-    blockNumber: number,
-    includeTx?: boolean,
-  ): Promise<SorobanBlockWrapped> {
-    try {
-      const rawEvents = (await this.getEvents(blockNumber)).events;
-
-      const events = rawEvents.map((event) => ({
-        ...event,
-        value: {
-          ...event.value,
-          get decoded() {
-            return scValToNative(xdr.ScVal.fromXDR(event.value.xdr, 'base64'));
-          },
-        },
-        topic: event.topic.map((topic) =>
-          SorobanBlockWrapped.decodeScVals(xdr.ScVal.fromXDR(topic, 'base64')),
-        ),
-      }));
-
-      const ret = new SorobanBlockWrapped(events, {
-        ledger: blockNumber,
-        hash: blockNumber.toString(),
-      } as SorobanBlock);
-
-      this.eventEmitter.emit('fetchBlock');
-      return ret;
-    } catch (e) {
-      throw this.handleError(e, blockNumber);
-    }
-  }
+  */
 
   async fetchBlocks(bufferBlocks: number[]): Promise<SorobanBlockWrapper[]> {
-    return Promise.all(
-      bufferBlocks.map(async (num) => this.fetchBlock(num, true)),
-    );
+    return StellarUtils.fetchBlockBatches(bufferBlocks, this.stellarClient);
   }
 
   get api(): Server {
-    return this.client;
+    return this.stellarClient;
   }
 
   getSafeApi(blockHeight: number): SafeSorobanProvider {
-    return new SafeSorobanProvider(this.client, blockHeight);
+    //safe api not implemented yet
+    return new SafeSorobanProvider(null, blockHeight);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

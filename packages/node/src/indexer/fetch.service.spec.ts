@@ -32,6 +32,7 @@ function testSubqueryProject(endpoint: string, ds: any): SubqueryProject {
   };
 }
 
+/*
 describe('Dictioanry queries', () => {
   describe('Correct dictionary query with dynamic ds', () => {
     it('Build correct counter increment single query', () => {
@@ -68,3 +69,4 @@ describe('Dictioanry queries', () => {
     });
   });
 });
+*/

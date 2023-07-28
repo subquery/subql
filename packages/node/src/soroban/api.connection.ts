@@ -55,7 +55,8 @@ export class SorobanApiConnection
   }
 
   safeApi(height: number): SafeSorobanProvider {
-    return new SafeSorobanProvider(this.unsafeApi.api, height);
+    //safe api not implemented
+    return new SafeSorobanProvider(null, height);
   }
 
   async apiConnect(): Promise<void> {

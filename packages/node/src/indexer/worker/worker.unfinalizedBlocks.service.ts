@@ -27,7 +27,7 @@ export class WorkerUnfinalizedBlocksService
   async processUnfinalizedBlocks({
     block,
   }: BlockWrapper): Promise<number | null> {
-    return this.host.unfinalizedBlocksProcess(blockToHeader(block.ledger));
+    return this.host.unfinalizedBlocksProcess(blockToHeader(block.sequence));
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async

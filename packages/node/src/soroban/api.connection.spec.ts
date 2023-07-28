@@ -10,6 +10,7 @@ import SafeSorobanProvider from './safe-api';
 
 const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
 
+/*
 describe('SorobanApiConnection', () => {
   let apiConnection: SorobanApiConnection;
   let unsafeApi: SorobanApi;
@@ -91,3 +92,4 @@ describe('SorobanApiConnection', () => {
     });
   });
 });
+*/

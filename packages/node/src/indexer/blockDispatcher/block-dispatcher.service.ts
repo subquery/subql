@@ -58,7 +58,7 @@ export class BlockDispatcherService
   }
 
   protected getBlockHeight(block: SorobanBlockWrapper): number {
-    return block.block.ledger;
+    return block.block.sequence;
   }
 
   protected async indexBlock(

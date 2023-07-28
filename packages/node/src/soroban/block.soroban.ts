@@ -3,24 +3,100 @@
 
 import {
   SorobanBlock,
+  SorobanBlockFilter,
   SorobanBlockWrapper,
+  SorobanEffect,
+  SorobanEffectFilter,
   SorobanEvent,
   SorobanEventFilter,
+  SorobanOperation,
+  SorobanOperationFilter,
+  SorobanTransaction,
+  SorobanTransactionFilter,
 } from '@subql/types-soroban';
 import { Address, scValToNative, xdr } from 'soroban-client';
 import { stringNormalizedEq } from '../utils/string';
 
 export class SorobanBlockWrapped implements SorobanBlockWrapper {
-  constructor(private _events: SorobanEvent[], private _block: SorobanBlock) {}
+  constructor(
+    private _block: SorobanBlock,
+    private _transactions: SorobanTransaction[],
+    private _operations: SorobanOperation[],
+    private _effects: SorobanEffect[],
+  ) {}
 
   get block(): SorobanBlock {
     return this._block;
   }
 
-  get events(): SorobanEvent[] {
-    return this._events;
+  get transactions(): SorobanTransaction[] {
+    return this._transactions;
   }
 
+  get operations(): SorobanOperation[] {
+    return this._operations;
+  }
+
+  get effects(): SorobanEffect[] {
+    return this._effects;
+  }
+
+  static filterBlocksProcessor(
+    block: SorobanBlock,
+    filter: SorobanBlockFilter,
+    address?: string,
+  ): boolean {
+    if (filter?.modulo && block.sequence % filter.modulo !== 0) {
+      return false;
+    }
+    return true;
+  }
+
+  static filterTransactionProcessor(
+    tx: SorobanTransaction,
+    filter: SorobanTransactionFilter,
+    address?: string,
+  ): boolean {
+    if (!filter) return true;
+    if (filter.account && filter.account !== tx.account.account_id) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static filterOperationProcessor(
+    op: SorobanOperation,
+    filter: SorobanOperationFilter,
+    address?: string,
+  ): boolean {
+    if (!filter) return true;
+    if (filter.source_account && filter.source_account !== op.source_account) {
+      return false;
+    }
+    if (filter.type && filter.type !== op.type) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static filterEffectProcessor(
+    effect: SorobanEffect,
+    filter: SorobanEffectFilter,
+    address?: string,
+  ): boolean {
+    if (!filter) return true;
+    if (filter.account && filter.account !== effect.account) {
+      return false;
+    }
+    if (filter.type && filter.type !== effect.type) {
+      return false;
+    }
+
+    return true;
+  }
+  /*
   static filterEventProcessor(
     event: SorobanEvent,
     filter: SorobanEventFilter,
@@ -33,7 +109,7 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
     if (!filter) return true;
 
     if (filter.contractId && filter.contractId !== event.contractId) {
-      return false;
+      return false; 
     }
 
     if (filter.topics) {
@@ -94,4 +170,5 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
         return scValToNative(scVal);
     }
   }
+  */
 }

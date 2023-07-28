@@ -1,7 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SorobanBlock, SorobanBlockWrapper, SorobanEvent} from './soroban';
+import {
+  SorobanBlock,
+  SorobanBlockWrapper,
+  SorobanEffect,
+  SorobanEvent,
+  SorobanOperation,
+  SorobanTransaction,
+} from './soroban';
 
 export interface Entity {
   id: string;
@@ -25,9 +32,18 @@ export interface Store {
   bulkRemove(entity: string, ids: string[]): Promise<void>;
 }
 
-export interface BlockWrapper<B extends SorobanBlock = SorobanBlock, E extends SorobanEvent = SorobanEvent> {
-  events?: E[];
+export interface BlockWrapper<
+  B extends SorobanBlock = SorobanBlock,
+  T extends SorobanTransaction = SorobanTransaction,
+  O extends SorobanOperation = SorobanOperation,
+  EF extends SorobanEffect = SorobanEffect,
+  E extends SorobanEvent = SorobanEvent
+> {
   block: B;
+  transactions: T[];
+  operations: O[];
+  effects: EF[];
+  events?: E[];
 }
 
 export interface ApiWrapper<BW extends BlockWrapper = SorobanBlockWrapper> {

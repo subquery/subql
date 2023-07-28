@@ -31,17 +31,3 @@ export async function retryOnFailEth<T>(
 ): Promise<T> {
   return retryOnFail(request, (e) => !!errors.find((t) => t === e?.reason));
 }
-
-export function onlyHasEventDataSources(
-  dataSources: SubqlProjectDs[],
-): boolean {
-  for (const ds of dataSources) {
-    for (const handler of ds.mapping.handlers) {
-      if (handler.kind !== SorobanHandlerKind.Event) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}

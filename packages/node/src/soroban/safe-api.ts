@@ -22,7 +22,7 @@ export default class SafeSorobanProvider extends SorobanServer {
   private baseApi: Server;
 
   constructor(baseApi: Server, blockHeight: number) {
-    super(baseApi.serverURL);
+    super(baseApi.serverURL.toString());
     this.blockHeight = blockHeight;
     this.baseApi = baseApi;
   }

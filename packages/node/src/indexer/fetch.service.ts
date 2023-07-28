@@ -7,7 +7,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 
 import {
   SorobanHandlerKind,
-  SorobanEventFilter,
   SubqlSorobanProcessorOptions,
 } from '@subql/common-soroban';
 import {
@@ -17,7 +16,13 @@ import {
   getLogger,
 } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
-import { SorobanBlock, SubqlDatasource } from '@subql/types-soroban';
+import {
+  SorobanBlock,
+  SorobanEffectFilter,
+  SorobanOperationFilter,
+  SorobanTransactionFilter,
+  SubqlDatasource,
+} from '@subql/types-soroban';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -39,55 +44,73 @@ const BLOCK_TIME_VARIANCE = 5000;
 
 const INTERVAL_PERCENT = 0.9;
 
-function eventFilterToQueryEntry(
-  filter: SorobanEventFilter,
+function transactionFilterToQueryEntry(
+  filter: SorobanTransactionFilter,
   dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
 ): DictionaryQueryEntry {
-  const queryAddressLimit = yargsOptions.argv['query-address-limit'];
-
   const conditions: DictionaryQueryCondition[] = [];
 
-  if (Array.isArray(dsOptions)) {
-    const addresses = dsOptions.map((option) => option.address).filter(Boolean);
-
-    if (addresses.length > queryAddressLimit) {
-      logger.warn(
-        `Addresses length: ${addresses.length} is exceeding limit: ${queryAddressLimit}. Consider increasing this value with the flag --query-address-limit  `,
-      );
-    }
-
-    if (addresses.length !== 0 && addresses.length <= queryAddressLimit) {
-      conditions.push({
-        field: 'address',
-        value: addresses,
-        matcher: 'in',
-      });
-    }
-  } else {
-    if (dsOptions?.address) {
-      conditions.push({
-        field: 'address',
-        value: dsOptions.address.toLowerCase(),
-        matcher: 'equalTo',
-      });
-    }
-  }
-  if (filter.topics) {
-    for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
-      const topic = filter.topics[i];
-      if (!topic) {
-        continue;
-      }
-      const field = `topics${i}`;
-      conditions.push({
-        field,
-        value: topic,
-        matcher: 'equalTo',
-      });
-    }
+  if (filter.account) {
+    conditions.push({
+      field: 'account',
+      value: filter.account.toLowerCase(),
+      matcher: 'equalTo',
+    });
   }
   return {
-    entity: 'events',
+    entity: 'transactions',
+    conditions,
+  };
+}
+
+function operationFilterToQueryEntry(
+  filter: SorobanOperationFilter,
+  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
+): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+
+  if (filter.type) {
+    conditions.push({
+      field: 'type',
+      value: filter.type.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  if (filter.source_account) {
+    conditions.push({
+      field: 'sourceAccount',
+      value: filter.source_account.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  return {
+    entity: 'operations',
+    conditions,
+  };
+}
+
+function effectFilterToQueryEntry(
+  filter: SorobanEffectFilter,
+  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
+): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+
+  if (filter.type) {
+    conditions.push({
+      field: 'type',
+      value: filter.type.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  if (filter.account) {
+    conditions.push({
+      field: 'account',
+      value: filter.account.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  return {
+    entity: 'effects',
     conditions,
   };
 }
@@ -113,14 +136,42 @@ export function buildDictionaryQueryEntries(
       if (!handler.filter) return [];
 
       switch (handler.kind) {
-        case SorobanHandlerKind.Event: {
-          const filter = handler.filter as SorobanEventFilter;
+        case SorobanHandlerKind.Transaction: {
+          const filter = handler.filter as SorobanTransactionFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
-              eventFilterToQueryEntry(filter, ds.groupedOptions),
+              transactionFilterToQueryEntry(filter, ds.groupedOptions),
             );
-          } else if (ds.options?.address || filter.topics) {
-            queryEntries.push(eventFilterToQueryEntry(filter, ds.options));
+          } else if (filter.account) {
+            queryEntries.push(
+              transactionFilterToQueryEntry(filter, ds.options),
+            );
+          } else {
+            return [];
+          }
+          break;
+        }
+        case SorobanHandlerKind.Operation: {
+          const filter = handler.filter as SorobanOperationFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              operationFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (filter.source_account || filter.type) {
+            queryEntries.push(operationFilterToQueryEntry(filter, ds.options));
+          } else {
+            return [];
+          }
+          break;
+        }
+        case SorobanHandlerKind.Effects: {
+          const filter = handler.filter as SorobanEffectFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              effectFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (filter.account || filter.type) {
+            queryEntries.push(effectFilterToQueryEntry(filter, ds.options));
           } else {
             return [];
           }
