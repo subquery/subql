@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import fs from 'fs';
 import {Controller} from '@nestjs/common';
+import {DEFAULT_WORD_SIZE} from '@subql/common';
 import {u8aToHex} from '@subql/utils';
-import {MMR} from '@subql/x-merkle-mountain-range';
+import {Db, FileBasedDb, MMR} from '@subql/x-merkle-mountain-range';
 import {Sequelize} from '@subql/x-sequelize';
 import {MmrStoreType, NodeConfig} from '../configure/NodeConfig';
 import {MmrProof, MmrPayload} from '../events';
@@ -21,7 +23,7 @@ export class PgMmrQueryDb extends PgBasedMMRDB {
 
 @Controller('mmrs')
 export class MmrQueryService extends baseMmrService {
-  private _db?: PgBasedMMRDB;
+  private _db?: Db;
   constructor(nodeConfig: NodeConfig, private sequelize: Sequelize) {
     super(nodeConfig);
   }
@@ -31,43 +33,37 @@ export class MmrQueryService extends baseMmrService {
     await this.ensureMmr();
   }
 
-  get db(): PgBasedMMRDB {
-    if (!this._db) {
-      throw new Error('MMR Service PgBasedMMRDB has not been init');
-    }
-    return this._db;
-  }
-
   async ensureMmr(): Promise<void> {
-    if (this._mmrDb) {
-      return;
-    }
     if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres) {
       await this.ensurePostgresDb();
     } else {
-      this._mmrDb = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+      await this.ensureFileBaseDb(this.nodeConfig.mmrPath);
     }
   }
 
   get mmrDb(): MMR {
-    if (this.nodeConfig.mmrStoreType === MmrStoreType.Postgres) {
-      // We need to reconstruct mmr from postgresDb
-      // Due to leafLength in mmr only updated when append happens (in another mmr instance)
-      // Which means it never get update in current mmr instance
-      // Therefore, we need to get clean leafLength from db each time
-      return new MMR(keccak256Hash, this.db);
-    } else {
-      if (!this._mmrDb) {
-        throw new Error('MMR Service sync has not been called');
-      }
-      return this._mmrDb;
+    if (!this._db) {
+      throw new Error('MMR Service database has not been init');
     }
+    // We need to reconstruct mmr from db
+    // Due to leafLength in mmr only updated when append happens (in another mmr instance)
+    // Which means it never get update in current mmr instance
+    // Therefore, we need to get clean leafLength from db each time
+    return new MMR(keccak256Hash, this._db);
   }
 
   private async ensurePostgresDb(): Promise<void> {
     const schema = await getExistingProjectSchema(this.nodeConfig, this.sequelize);
     assert(schema, 'Unable to find postges based MMR table. Do you need to migrate from file based MMR?');
     this._db = await PgMmrQueryDb.create(this.sequelize, schema);
+  }
+
+  private async ensureFileBaseDb(projectMmrPath: string): Promise<void> {
+    if (fs.existsSync(projectMmrPath)) {
+      this._db = await FileBasedDb.open(projectMmrPath);
+    } else {
+      this._db = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
+    }
   }
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {

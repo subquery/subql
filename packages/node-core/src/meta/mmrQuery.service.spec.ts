@@ -55,7 +55,7 @@ describe('mmrQuery', () => {
   const sequilize = new Sequelize();
   const nodeConfig: NodeConfig = {mmrStoreType: 'postgres', dbSchema: 'testSchema'} as any;
 
-  it('mmrQuery with postgresDb, should always read leafLength from db', async () => {
+  it('mmrQuery should always read leafLength from db', async () => {
     const mmrQuery = new MmrQueryService(nodeConfig, sequilize);
     (mmrQuery as any)._db = await PgMmrQueryDb.create(sequilize, 'testSchema');
     await mmrQuery.init(0);
