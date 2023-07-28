@@ -5,8 +5,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ApiConnectionError,
   ApiErrorType,
-  IApiConnectionSpecific,
+  DisconnectionError,
+  LargeResponseError,
   NetworkMetadataPayload,
+  RateLimitError,
+  TimeoutError,
+  IApiConnectionSpecific,
 } from '@subql/node-core';
 import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import { EthereumApi } from './api.ethereum';
@@ -68,13 +72,13 @@ export class EthereumApiConnection
   static handleError(e: Error): ApiConnectionError {
     let formatted_error: ApiConnectionError;
     if (e.message.startsWith(`No response received from RPC endpoint in`)) {
-      formatted_error = EthereumApiConnection.handleTimeoutError(e);
+      formatted_error = new TimeoutError(e);
     } else if (e.message.startsWith(`disconnected from `)) {
-      formatted_error = EthereumApiConnection.handleDisconnectionError(e);
+      formatted_error = new DisconnectionError(e);
     } else if (e.message.startsWith(`Rate Limited at endpoint`)) {
-      formatted_error = EthereumApiConnection.handleRateLimitError(e);
+      formatted_error = new RateLimitError(e);
     } else if (e.message.includes(`Exceeded max limit of`)) {
-      formatted_error = EthereumApiConnection.handleLargeResponseError(e);
+      formatted_error = new LargeResponseError(e);
     } else {
       formatted_error = new ApiConnectionError(
         e.name,
@@ -83,39 +87,5 @@ export class EthereumApiConnection
       );
     }
     return formatted_error;
-  }
-
-  static handleLargeResponseError(e: Error): ApiConnectionError {
-    const newMessage = `Oversized RPC node response. This issue is related to the network's RPC nodes configuration, not your application. You may report it to the network's maintainers or try a different RPC node.\n\n${e.message}`;
-
-    return new ApiConnectionError(
-      'RpcInternalError',
-      newMessage,
-      ApiErrorType.Default,
-    );
-  }
-
-  static handleRateLimitError(e: Error): ApiConnectionError {
-    return new ApiConnectionError(
-      'RateLimit',
-      e.message,
-      ApiErrorType.RateLimit,
-    );
-  }
-
-  static handleTimeoutError(e: Error): ApiConnectionError {
-    return new ApiConnectionError(
-      'TimeoutError',
-      e.message,
-      ApiErrorType.Timeout,
-    );
-  }
-
-  static handleDisconnectionError(e: Error): ApiConnectionError {
-    return new ApiConnectionError(
-      'ConnectionError',
-      e.message,
-      ApiErrorType.Connection,
-    );
   }
 }

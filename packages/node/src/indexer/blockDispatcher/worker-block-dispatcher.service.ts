@@ -18,13 +18,17 @@ import {
   HostDynamicDS,
   WorkerBlockDispatcher,
   IUnfinalizedBlocksService,
+  HostConnectionPoolState,
+  ConnectionPoolStateManager,
+  connectionPoolStateHostFunctions,
 } from '@subql/node-core';
 import { Store } from '@subql/types-ethereum';
-import chalk from 'chalk';
 import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
+import { EthereumApiConnection } from '../../ethereum/api.connection';
+
 import { EthereumBlockWrapped } from '../../ethereum/block.ethereum';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
@@ -41,6 +45,8 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<EthereumBlockWrapped>,
+  connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
+
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
@@ -75,6 +81,7 @@ async function createIndexerWorker(
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
+      ...connectionPoolStateHostFunctions(connectionPoolState),
     },
     root,
   );
@@ -100,6 +107,7 @@ export class WorkerBlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
+    connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
   ) {
     super(
       nodeConfig,
@@ -116,6 +124,7 @@ export class WorkerBlockDispatcherService
           storeService.getStore(),
           dynamicDsService,
           unfinalizedBlocksSevice,
+          connectionPoolState,
           project.root,
         ),
     );

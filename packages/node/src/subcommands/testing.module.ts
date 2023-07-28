@@ -8,9 +8,9 @@ import {
   ApiService,
   ConnectionPoolService,
   DbModule,
-  NodeConfig,
   PoiService,
   StoreService,
+  TestRunner,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -37,6 +37,7 @@ import { TestingService } from './testing.service';
     DynamicDsService,
     UnfinalizedBlocksService,
     ProjectService,
+    UnfinalizedBlocksService,
     ConnectionPoolService,
     {
       provide: 'IProjectService',
@@ -59,12 +60,21 @@ import { TestingService } from './testing.service';
       },
       inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
     },
-    IndexerManager,
     SchedulerRegistry,
+    TestRunner,
+    {
+      provide: 'IApi',
+      useClass: EthereumApiService,
+    },
+    {
+      provide: 'IIndexerManager',
+      useClass: IndexerManager,
+    },
   ],
 
   imports: [MetaModule, FetchModule],
   controllers: [],
+  exports: [TestRunner],
 })
 export class TestingFeatureModule {}
 
