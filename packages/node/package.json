@@ -3,7 +3,7 @@
   "version": "2.8.1-1",
   "description": "",
   "author": "Naveen Veluswamy",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc -b",

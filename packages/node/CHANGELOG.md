@@ -5,11 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Fixed
 - Sync with @node/core, various improvements for POI feature
+
 ### Changed
 - Update node-core and add `store-cache-upper-limit` flag (#144)
+- Update license to GPL-3.0
 
 ## [2.8.0] - 2023-06-27
 ### Added
@@ -176,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2022-07-28
 ### Changed
-- Sync with the latest development from origin. See [@subql/node changelog](https://github.com/subquery/subql/blob/main/packages/node/CHANGELOG.md) from v1.2.1 to v1.6.0 (#44) (#45)
+- Sync with the latest development from origin. See 
   - Support for worker threads
   - Added `dictionary-timeout` flag
 
