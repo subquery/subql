@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2023-07-31
 ### Fixed
-- Fix mmrQuery should always read mmr leaf length from Db. 
+- Update license (#1891)
+- Performance scoring fix (#1895)
+- Fix mmrQuery should always read mmr leaf length from Db (#1900).
 
 ## [4.0.0] - 2023-07-17
 ### Changed
@@ -345,8 +348,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.0.0...HEAD
-[3.1.3]: https://github.com/subquery/subql/compare/node-core/3.1.2...node-core/4.0.0
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.0.1...HEAD
+[4.0.1]: https://github.com/subquery/subql/compare/node-core/4.0.0...node-core/4.0.1
+[4.0.0]: https://github.com/subquery/subql/compare/node-core/3.1.2...node-core/4.0.0
 [3.1.2]: https://github.com/subquery/subql/compare/node-core/3.1.1...node-core/3.1.2
 [3.1.1]: https://github.com/subquery/subql/compare/node-core/3.1.0...node-core/3.1.1
 [3.1.0]: https://github.com/subquery/subql/compare/node-core/3.0.0...node-core/3.1.0

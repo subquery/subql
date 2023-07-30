@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2023-07-31
+### Fixed
+- Update license (#1891)
+
 ## [2.1.0] - 2023-06-26
 ### Removed
 - Support for Terra and Avalanche SDKs. Note: Avalanche is still supported through the Ethereum SDK. (#1841)
@@ -130,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init release: support validation of subquery project
 
-[Unreleased]: https://github.com/subquery/subql/compare/validator/2.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/subquery/subql/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/subquery/subql/compare/validator/2.0.0...validator/2.1.0
 [2.0.0]: https://github.com/subquery/subql/compare/validator/1.8.1...validator/2.0.0
 [1.8.1]: https://github.com/subquery/subql/compare/validator/1.8.0...validator/1.8.1
