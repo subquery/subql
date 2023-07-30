@@ -1,20 +1,21 @@
 # Changelog
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All logs must start with the format: [x.y.z] - yyyy-mm-dd
-
 ## [Unreleased]
+
+## [2.1.3] - 2023-07-31
+### Fixed
+- Update license (#1891)
 
 ## [2.1.2] - 2023-05-11
 ### Added
 - Inject the chain id into sandboxes (#1684)
 
 ## [2.1.1] - 2023-05-11
-### Updated
+### Changed
 - `DictionaryQueryCondition` type (#1679)
 
 ## [2.1.0] - 2023-05-10
@@ -22,8 +23,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - `bulkRemove` method on the store. (#1666)
 
 ## [2.0.0] - 2023-04-20
-- Major release 2.0.0, align with other package versions
 ### Changed
+- Major release 2.0.0, align with other package versions
 - Update interfaces to support testing framework (#1584)
 - Removed `count` method from `Store`
 
@@ -36,6 +37,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Add `count` to `Store` interface (#1480)
 
 ## [1.7.0] - 2022-12-06
+### Added
 - Support for `bypassBlocks` (#1435)
 
 ## [1.6.0] - 2022-10-27
@@ -51,6 +53,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Change types to support wasm processor and update polkadot API to v9. (#1280)
 
 ## [1.4.0] - 2022-08-26
+### Changed
+- Minor release
 
 ### Changed
 - Updated store.getByField to have limit and offset options. `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;`. (#1259)
@@ -73,6 +77,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Update name for substrate types (#1012)
 
 ## [1.0.0] - 2022-05-11
+### Changed
 - Major release
 
 ## [0.15.0] - 2022-05-02
@@ -80,7 +85,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Update polkadot 8.2.1 (#910)
 
 ## [0.14.0] - 2022-02-09
-### Added 
+### Added
 - inject `createDynamicDatasource` in global (#773)
 
 ## [0.13.0] - 2022-01-13
@@ -88,7 +93,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Update Polkadot/api to 7.3.1 (#745)
 
 ## [0.12.0] - 2021-12-16
-### Added 
+### Added
 - Add `bulkCreate` in `Store` interface (#699)
 
 ## [0.11.0] - 2021-11-27
@@ -144,6 +149,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Store support querying by indexed field (#271)
 
 ## [0.6.1] - 2021-03-11
+### Fixed
+- patch release with other packages (#228)
 
 ## [0.6.0] - 2021-01-27
 ### Fixed
@@ -165,15 +172,41 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/0.14.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/2.1.3...HEAD
+[2.1.3]: https://github.com/subquery/subql/compare/types/2.1.2...types/2.1.3
+[2.1.2]: https://github.com/subquery/subql/compare/types/2.1.1...types/2.1.2
+[2.1.1]: https://github.com/subquery/subql/compare/types/2.1.1...types/2.1.1
+[2.1.0]: https://github.com/subquery/subql/compare/types/2.0.0...types/2.1.0
+[2.0.0]: https://github.com/subquery/subql/compare/types/1.7.2...types/2.0.0
+[1.7.2]: https://github.com/subquery/subql/compare/types/1.7.1...types/1.7.2
+[1.7.1]: https://github.com/subquery/subql/compare/types/1.7.0...types/1.7.1
+[1.7.0]: https://github.com/subquery/subql/compare/types/1.6.0...types/1.7.0
+[1.6.0]: https://github.com/subquery/subql/compare/types/1.5.1...types/1.6.0
+[1.5.1]: https://github.com/subquery/subql/compare/types/1.5.0...types/1.5.1
+[1.5.0]: https://github.com/subquery/subql/compare/types/1.4.0...types/1.5.0
+[1.4.0]: https://github.com/subquery/subql/compare/types/1.3.0...types/1.4.0
+[1.3.0]: https://github.com/subquery/subql/compare/types/1.2.1...types/1.3.0
+[1.2.1]: https://github.com/subquery/subql/compare/types/1.2.0...types/1.2.1
+[1.2.0]: https://github.com/subquery/subql/compare/types/1.1.0...types/1.2.0
+[1.1.0]: https://github.com/subquery/subql/compare/types/1.0.0...types/1.1.0
+[1.0.0]: https://github.com/subquery/subql/compare/types/0.15.0...types/1.0.0
+[0.15.0]: https://github.com/subquery/subql/compare/types/0.14.0...types/0.15.0
 [0.14.0]: https://github.com/subquery/subql/compare/types/0.13.0...types/0.14.0
 [0.13.0]: https://github.com/subquery/subql/compare/types/0.12.0...types/0.13.0
 [0.12.0]: https://github.com/subquery/subql/compare/types/0.11.0...types/0.12.0
 [0.11.0]: https://github.com/subquery/subql/compare/types/0.10.0...types/0.11.0
 [0.10.1]: https://github.com/subquery/subql/compare/types/0.10.0...types/0.10.1
 [0.10.0]: https://github.com/subquery/subql/compare/types/0.9.0...types/0.10.0
-[0.7.0]: https://github.com/subquery/subql/compare/v0.6.1...v0.7.0
-[0.6.1]: https://github.com/subquery/subql/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/OnFinality-io/subql/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/OnFinality-io/subql/compare/v0.3.0...v0.5.0
-[0.3.0]: https://github.com/OnFinality-io/subql/compare/v0.2.0...v0.3.0
+[0.9.0]: https://github.com/subquery/subql/compare/types/0.8.5...types/0.9.0
+[0.8.5]: https://github.com/subquery/subql/compare/types/0.8.4...types/0.8.5
+[0.8.4]: https://github.com/subquery/subql/compare/types/0.8.3...types/0.8.4
+[0.8.3]: https://github.com/subquery/subql/compare/types/0.8.2...types/0.8.3
+[0.8.2]: https://github.com/subquery/subql/compare/types/0.8.1...types/0.8.2
+[0.8.1]: https://github.com/subquery/subql/compare/types/0.8.0...types/0.8.1
+[0.8.0]: https://github.com/subquery/subql/compare/types/0.7.0...types/0.8.0
+[0.7.0]: https://github.com/subquery/subql/compare/types/0.6.1...types/0.7.0
+[0.6.1]: https://github.com/subquery/subql/compare/types/0.6.0...types/0.6.1
+[0.6.0]: https://github.com/subquery/subql/compare/types/0.5.0...types/0.6.0
+[0.5.0]: https://github.com/subquery/subql/compare/types/0.3.0...types/0.5.0
+[0.3.0]: https://github.com/subquery/subql/compare/types/0.2.0...types/0.3.0
+[0.2.0]: https://github.com/subquery/subql/tag/v0.2.0

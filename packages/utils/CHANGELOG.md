@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.3] - 2023-07-31
+### Fixed
+- Update license (#1891)
+
 ## [2.4.2] - 2023-06-26
 ### Fixed
 - Incorrect type for rowCountEstimate on metadata, remove terra metadata type (#1839)
@@ -80,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.4.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v2.4.3...HEAD
+[2.4.3]: https://github.com/subquery/subql/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/subquery/subql/compare/utils/2.4.1...utils/2.4.2
 [2.4.1]: https://github.com/subquery/subql/compare/utils/2.4.0...utils/2.4.1
 [2.4.0]: https://github.com/subquery/subql/compare/utils/2.3.0...utils/2.4.0
