@@ -6,5 +6,3 @@
 packages/**/dist/**
 packages/**/lib/**
 .eslintrc.js
-/packages/cli/test/schemaTest6/generate-project.yaml
-/packages/cli/test/schemaTest6/generate-project-2.yaml
