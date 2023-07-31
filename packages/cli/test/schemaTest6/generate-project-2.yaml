@@ -16,6 +16,7 @@ network:
     - https://eth.api.onfinality.io/public
   dictionary: https://gx.api.subquery.network/sq/subquery/eth-dictionary
 dataSources:
+  #datasource comment
   - kind: ethereum/Runtime
     startBlock: 4719568
     options:
@@ -36,3 +37,4 @@ dataSources:
           filter:
             topics:
               - Transfer(address,address,uint256)
+        #handler comment

@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {loadFromJsonOrYaml, ProjectManifestV1_0_0} from '@subql/common';
 import {
   EthereumDatasourceKind,
   EthereumHandlerKind,
@@ -16,9 +16,9 @@ import chalk from 'chalk';
 import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst, difference, intersection, flatten} from 'lodash';
+import {upperFirst, difference} from 'lodash';
 import {parseContractPath} from 'typechain';
-import {parseDocument} from 'yaml';
+import {Document, isNode, Node, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 
 interface HandlerPropType {
@@ -154,54 +154,71 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
 // Selected fragments
 export async function prepareInputFragments<T extends ConstructorFragment | Fragment>(
   type: 'event' | 'function',
-  input: string | undefined,
+  rawInput: string | undefined,
   availableFragments: Record<string, T>,
   abiName: string
 ): Promise<Record<string, T>> {
-  // input = '' or undefined
-  if (input === undefined || input === '') {
+  if (rawInput === undefined || rawInput === '') {
     return promptSelectables<T>(type, availableFragments);
   }
 
-  // input = '*' (all Events/Functions)
-  if (input === '*') {
+  if (rawInput === '*') {
     return availableFragments;
   }
 
-  // input = 'transfer,approval'
   const selectedFragments: Record<string, T> = {};
-  input.split(',').map((input) => {
+  rawInput.split(',').forEach((input) => {
     const casedInput = input.trim().toLowerCase();
-    Object.keys(availableFragments).map((key) => {
+    const matchFragment = Object.entries(availableFragments).find((entry) => {
+      const [key, value] = entry;
       if (casedInput === availableFragments[key].name.toLowerCase()) {
         selectedFragments[key] = availableFragments[key];
+        return value;
       }
     });
+
+    if (!matchFragment) {
+      throw new Error(chalk.red(`'${input}' is not a valid ${type} on ${abiName}`));
+    }
   });
 
-  // for (const key in availableFragments) {
-  //   if (inputs.includes(availableFragments[key].name.toLowerCase())) {
-  //     selectedFragments[key] = availableFragments[key];
-  //   }
-  //   //   console.log(chalk.red(`"${matchingInputs}" are duplicated on ABI: ${abiName}`));
-  // }
   return selectedFragments;
+}
+function filterExistingFragments<T extends Fragment | ConstructorFragment>(
+  fragments: Record<string, T>,
+  existingMethods: string[]
+): Record<string, T> {
+  const cleanFragments: Record<string, T> = {};
+  for (const key in fragments) {
+    const fragmentFormats = Object.values(getFragmentFormats<T>(fragments[key])).concat(key);
+    const diff = difference(fragmentFormats, existingMethods);
+    if (diff.length === 3) {
+      diff.forEach((fragKey) => {
+        if (fragments[fragKey]) {
+          cleanFragments[fragKey] = fragments[fragKey];
+        }
+      });
+    }
+  }
+
+  return cleanFragments;
 }
 
 export function filterExistingMethods(
   eventFragments: Record<string, EventFragment>,
   functionFragments: Record<string, FunctionFragment>,
-  dataSources: EthereumDs[]
+  dataSources: EthereumDs[],
+  address: string | undefined
 ): [Record<string, EventFragment>, Record<string, FunctionFragment>] {
-  // find all existing functions and events
   const existingEvents: string[] = [];
   const existingFunctions: string[] = [];
 
-  const cleanEventsFragments: Record<string, EventFragment> = {};
-  const cleanFunctionsFragments: Record<string, FunctionFragment> = {};
+  const casedInputAddress = address && address.toLowerCase();
 
-  dataSources.map((ds) => {
-    ds.mapping.handlers.map((handler) => {
+  dataSources.forEach((ds) => {
+    ds.mapping.handlers.forEach((handler) => {
+      const casedDsAddress = ds.options?.address && ds.options.address.toLowerCase();
+      if (casedDsAddress && casedInputAddress !== casedDsAddress) return;
       if (Object.keys(handler.filter).includes('topics')) {
         // topic[0] is the method
         existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
@@ -212,34 +229,14 @@ export function filterExistingMethods(
     });
   });
 
-  for (const key in eventFragments) {
-    const fragmentFormats = Object.values(getFragmentFormats<EventFragment>(eventFragments[key])).concat(key);
-    const diff = difference(fragmentFormats, existingEvents);
-    // console.log(fragmentFormats, existingEvents)
-    if (diff.length === fragmentFormats.length) {
-      diff.map((fragKey) => {
-        if (eventFragments[fragKey]) {
-          cleanEventsFragments[fragKey] = eventFragments[fragKey];
-        }
-      });
-    }
-  }
-  for (const key in functionFragments) {
-    const fragmentFormats = Object.values(getFragmentFormats<FunctionFragment>(functionFragments[key])).concat(key);
-    const diff = difference(fragmentFormats, existingFunctions);
-    if (diff.length === fragmentFormats.length) {
-      diff.map((fragKey) => {
-        if (functionFragments[fragKey]) {
-          cleanFunctionsFragments[fragKey] = functionFragments[fragKey];
-        }
-      });
-    }
-  }
-  return [cleanEventsFragments, cleanFunctionsFragments];
+  return [
+    filterExistingFragments<EventFragment>(eventFragments, existingEvents),
+    filterExistingFragments<FunctionFragment>(functionFragments, existingFunctions),
+  ];
 }
 
-export async function getManifestData(projectPath: string, manifestPath: string): Promise<any> {
-  const existingManifest = (await fs.promises.readFile(path.join(projectPath, manifestPath), 'utf8')) as any;
+export async function getManifestData(projectPath: string, manifestPath: string): Promise<Document> {
+  const existingManifest = (await fs.promises.readFile(path.join(projectPath, manifestPath), 'utf8')) as string;
   return parseDocument(existingManifest);
 }
 
@@ -247,19 +244,18 @@ export async function generateManifest(
   projectPath: string,
   manifestPath: string,
   userInput: UserInput,
-  existingManifestData: any
+  existingManifestData: Document
 ): Promise<void> {
-  try {
-    const clonedExistingManifestData = existingManifestData.clone();
-    const existingDatasource = existingManifestData.get('dataSources') as any;
+  const clonedExistingManifestData = existingManifestData.clone();
+  const existingDsNode = existingManifestData.get('dataSources') as YAMLSeq;
+  const dsNode = clonedExistingManifestData.get('dataSources') as YAMLSeq;
 
-    const newDataSourcesData = existingDatasource.toJSON().concat(...[constructDatasources(userInput)]);
-    clonedExistingManifestData.set('dataSources', newDataSourcesData);
+  // load any comments
+  dsNode.comment ??= existingDsNode.comment;
+  dsNode.commentBefore ??= existingDsNode.commentBefore;
 
-    await fs.promises.writeFile(path.join(projectPath, manifestPath), clonedExistingManifestData.toString(), 'utf8');
-  } catch (e) {
-    throw new Error(e);
-  }
+  dsNode.add(constructDatasources(userInput));
+  await fs.promises.writeFile(path.join(projectPath, manifestPath), clonedExistingManifestData.toString(), 'utf8');
 }
 
 export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod[]], abiName: string): AbiPropType {

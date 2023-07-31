@@ -50,19 +50,19 @@ export default class Generate extends Command {
     const projectPath = path.resolve(file ?? process.cwd());
     const {manifests, root} = getProjectRootAndManifest(projectPath);
 
+    // fragments from abi
     const abiInterface = getAbiInterface(root, abiPath);
-
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
-
-    const existingManifest = await getManifestData(projectPath, manifests[0]);
-    const existingDs = existingManifest.get('dataSources').toJSON() as EthereumDs[];
     const abiName = parseContractPath(abiPath).name;
+
+    const existingManifest = await getManifestData(root, manifests[0]);
+    const existingDs = (existingManifest.get('dataSources') as any).toJSON() as EthereumDs[];
 
     const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
     const selectedFunctions = await prepareInputFragments('function', functions, functionFragments, abiName);
 
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(selectedEvents, selectedFunctions, existingDs);
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(selectedEvents, selectedFunctions, existingDs, address);
 
     const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
     const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);

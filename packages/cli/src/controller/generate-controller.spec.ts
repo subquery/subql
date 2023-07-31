@@ -16,7 +16,6 @@ import {
   generateHandlerName,
   getAbiInterface,
   prepareInputFragments,
-  promptSelectables,
   removeKeyword,
 } from './generate-controller';
 
@@ -67,12 +66,11 @@ const mockDsFn = (): EthereumDs[] => [
   },
 ];
 
-const projectPath = path.join(__dirname, '../../test/schemaTest6');
-
 describe('CLI codegen:generate', () => {
+  const projectPath = path.join(__dirname, '../../test/schemaTest6');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
   const abiName = parseContractPath('./erc721.json').name;
-  const eventsFragments = abiInterface.events;
+  const eventFragments = abiInterface.events;
   const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
   it('Construct correct datasources', () => {
@@ -83,10 +81,10 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    const construcedDs = constructDatasources(mockUserInput);
+    const constructedDs = constructDatasources(mockUserInput);
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
-    expect(construcedDs).toStrictEqual({
+    expect(constructedDs).toStrictEqual({
       kind: EthereumDatasourceKind.Runtime,
       startBlock: 1,
       options: {
@@ -116,10 +114,10 @@ describe('CLI codegen:generate', () => {
     });
   });
   it('prepareInputFragments, should return all fragments, if user passes --events="*"', async () => {
-    const result = await prepareInputFragments('event', '*', eventsFragments, abiName);
+    const result = await prepareInputFragments('event', '*', eventFragments, abiName);
     expect(result).toStrictEqual(abiInterface.events);
   });
-  it('prepareInputFragments, no events passed, should prompt through inquirer', async () => {
+  it('prepareInputFragments, no method passed, should prompt through inquirer', async () => {
     // when using ejs, jest spyOn does not work on inquirer
     const inquirer = require('inquirer');
 
@@ -127,9 +125,9 @@ describe('CLI codegen:generate', () => {
       event: ['Approval(address,address,uint256)'],
     });
 
-    const emptyStringPassed = await prepareInputFragments('event', '', eventsFragments, abiName);
+    const emptyStringPassed = await prepareInputFragments('event', '', eventFragments, abiName);
     expect(promptSpy).toHaveBeenCalledTimes(1);
-    const undefinedPassed = await prepareInputFragments('event', undefined, eventsFragments, abiName);
+    const undefinedPassed = await prepareInputFragments('event', undefined, eventFragments, abiName);
 
     expect(emptyStringPassed).toStrictEqual(undefinedPassed);
   });
@@ -147,43 +145,32 @@ describe('CLI codegen:generate', () => {
       abiName
     );
 
-    // should pass
-    // const passingResult = await prepareInputFragments<FunctionFragment>(
-    //   'function',
-    //   'transferfrom()',
-    //   functionFragments,
-    //   abiName
-    // );
-
-    // Should throw
-    const humanInputResult = await prepareInputFragments<FunctionFragment>(
-      'function',
-      'transferFrom(address from, address to, uint256 tokenid)',
-      functionFragments,
-      abiName
-    );
-    // Should throw
-    const minInputResult = await prepareInputFragments<FunctionFragment>(
-      'function',
-      'transFerfrom(address,address,uint256)',
-      functionFragments,
-      abiName
-    );
-    // expect(result).toStrictEqual(passingResult);
-
     expect(result).toStrictEqual(insensitiveInputResult);
-    expect(result).not.toStrictEqual(minInputResult);
-    expect(result).not.toStrictEqual(humanInputResult);
-
     expect(result).toStrictEqual({
       'transferFrom(address,address,uint256)': abiInterface.functions['transferFrom(address,address,uint256)'],
     });
   });
-  it('prepareInputFragments, should throw if typo is parsed', async () => {
-    const res = await prepareInputFragments('function', 'asdfghj', functionFragments, abiName);
-    // await expect(prepareInputFragments('function', 'asdfghj', functionFragments,  abiName)).rejects.toThrow(
-    //   '"asdfghj" is not a valid function on ABI: Erc721'
-    // );
+  it('should throw when passing invalid methods', async () => {
+    await expect(
+      prepareInputFragments<FunctionFragment>(
+        'function',
+        'transFerfrom(address,address,uint256)',
+        functionFragments,
+        abiName
+      )
+    ).rejects.toThrow("'transFerfrom(address' is not a valid function on Erc721");
+    await expect(
+      prepareInputFragments<FunctionFragment>(
+        'function',
+        'transferFrom(address from, address to, uint256 tokenid)',
+        functionFragments,
+        abiName
+      )
+    ).rejects.toThrow("'transferFrom(address from' is not a valid function on Erc721");
+
+    await expect(prepareInputFragments('function', 'asdfghj', functionFragments, abiName)).rejects.toThrow(
+      "'asdfghj' is not a valid function on Erc721"
+    );
   });
   it('Ensure generateHandlerName', () => {
     expect(generateHandlerName('transfer', 'erc721', 'log')).toBe('handleTransferErc721Log');
@@ -246,14 +233,10 @@ describe('CLI codegen:generate', () => {
       },
     } as any);
   });
+
   it('filter existing filters on datasources', () => {
     const ds = mockDsFn();
-
-    const abiInterface = getAbiInterface(projectPath, './erc721.json');
-    const eventsFragments = abiInterface.events;
-    const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
-
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventsFragments, functionFragments, ds);
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);
 
     const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
     const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
@@ -287,6 +270,35 @@ describe('CLI codegen:generate', () => {
       },
     ]);
   });
+  it('filter out existing methods, only on matching address', () => {
+    const ds = mockDsFn();
+    ds[0].options.address = '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2';
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, 'zzz');
+    const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
+    const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
+
+    expect(constructedEvents.length).toBe(Object.keys(eventFragments).length);
+    expect(constructedFunctions.length).toBe(Object.keys(functionFragments).length);
+  });
+  it('filter out existing methods, only on matching address, if ds.address === "" and inputAddress === undefined', () => {
+    const ds = mockDsFn();
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);
+
+    expect(cleanEvents).toStrictEqual({
+      'Approval(address,address,uint256)': eventFragments['Approval(address,address,uint256)'],
+      'ApprovalForAll(address,address,bool)': eventFragments['ApprovalForAll(address,address,bool)'],
+    });
+    expect(cleanFunctions['approve(address,uint256)']).toBeFalsy();
+  });
+
+  it('filter out existing methods, if no address provided in ds, should just proceed filter as normal', () => {
+    const ds = mockDsFn();
+    ds[0].options.address = undefined;
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, 'asdad');
+
+    expect(cleanEvents['Transfer(address,address,uint256)']).toBeFalsy();
+    expect(cleanFunctions['approve(address,uint256)']).toBeFalsy();
+  });
   it('filter out different formatted filters', () => {
     const ds = mockDsFn();
     const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
@@ -294,17 +306,11 @@ describe('CLI codegen:generate', () => {
     txHandler.function = 'approve(address to, uint256 tokenId)';
     logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'];
 
-    const abiInterface = getAbiInterface(projectPath, './erc721.json');
-    const eventsFragments = abiInterface.events;
-    const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
-
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventsFragments, functionFragments, ds);
-
+    // should filter out approve and Transfer
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, '');
     const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
     const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
 
-    // function approve should be filtered out
-    // event transfer should be filtered out
     expect(constructedEvents).toStrictEqual([
       {name: 'Approval', method: 'Approval(address,address,uint256)'},
       {

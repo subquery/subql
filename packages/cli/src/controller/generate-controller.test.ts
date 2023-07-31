@@ -9,8 +9,8 @@ import {loadFromJsonOrYaml} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum/dist/project';
 import rimraf from 'rimraf';
 import {parseContractPath} from 'typechain';
-import {stringify} from 'yaml';
-import {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {Document, stringify} from 'yaml';
+import Generate, {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {
   constructMethod,
   filterExistingMethods,
@@ -174,14 +174,15 @@ describe('CLI codegen:generate, Can write to file', () => {
       encoding: 'utf8',
       flag: 'w',
     });
-    await fs.promises.writeFile(
-      path.join(PROJECT_PATH, './generate-project-2.yaml'),
-      stringify(originalManifestData2),
-      {
-        encoding: 'utf8',
-        flag: 'w',
-      }
-    );
+
+    const doc = new Document(originalManifestData2);
+    const ds = (doc.get('dataSources') as any).items[0];
+    ds.commentBefore = 'datasource comment';
+    ds.get('mapping').get('handlers').comment = 'handler comment';
+    await fs.promises.writeFile(path.join(PROJECT_PATH, './generate-project-2.yaml'), stringify(doc), {
+      encoding: 'utf8',
+      flag: 'w',
+    });
   });
 
   it('Can generate manifest', async () => {
@@ -222,10 +223,10 @@ describe('CLI codegen:generate, Can write to file', () => {
       },
     });
   });
-  it('Should not overwrite existing datasource, if handler filter already exist', async () => {
+  it('if handler filter already exist with matching address, should not add', async () => {
     const existingManifestData = await getManifestData(PROJECT_PATH, './generate-project-2.yaml');
     const abiInterface = getAbiInterface(PROJECT_PATH, './erc721.json');
-    const existingDs = existingManifestData.get('dataSources').toJSON() as EthereumDs[];
+    const existingDs = (existingManifestData.get('dataSources') as any).toJSON() as EthereumDs[];
 
     const rawEventFragments = abiInterface.events;
     const rawFunctionFragments = filterObjectsByStateMutability(abiInterface.functions);
@@ -238,7 +239,12 @@ describe('CLI codegen:generate, Can write to file', () => {
       abiName
     );
 
-    const [eventFrags, functionFrags] = filterExistingMethods(selectedEvents, selectedFunctions, existingDs);
+    const [eventFrags, functionFrags] = filterExistingMethods(
+      selectedEvents,
+      selectedFunctions,
+      existingDs,
+      '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    );
 
     mockUserInput.events = constructMethod<EventFragment>(eventFrags);
     mockUserInput.functions = constructMethod<FunctionFragment>(functionFrags);
@@ -267,6 +273,29 @@ describe('CLI codegen:generate, Can write to file', () => {
         },
       },
     ]);
+  });
+  it('should preserve any comments in existing datasources', async () => {
+    await fs.promises.mkdir(path.join(PROJECT_PATH, 'src/'));
+    await fs.promises.mkdir(path.join(PROJECT_PATH, ROOT_MAPPING_DIR));
+    await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
+
+    await Generate.run([
+      '-f',
+      path.join(PROJECT_PATH, './generate-project-2.yaml'),
+      '--events',
+      'approval, transfer',
+      '--functions',
+      'transferFrom, approve',
+      '--abiPath',
+      './erc721.json',
+      '--startBlock',
+      '1',
+    ]);
+
+    const manifest = await getManifestData(PROJECT_PATH, './generate-project-2.yaml');
+    const ds = manifest.get('dataSources') as any;
+    expect(ds.commentBefore).toBe('datasource comment');
+    expect(ds.items[0].get('mapping').get('handlers').comment).toBe('handler comment');
   });
   it('Can generate mapping handlers', async () => {
     // Prepare directory
