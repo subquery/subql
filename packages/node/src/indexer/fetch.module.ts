@@ -12,6 +12,7 @@ import {
   ApiService,
   NodeConfig,
   ConnectionPoolService,
+  ConnectionPoolStateManager,
   SmartBatchService,
   StoreCacheService,
   PgMmrCacheService,
@@ -55,6 +56,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
     },
     IndexerManager,
+    ConnectionPoolStateManager,
     ConnectionPoolService,
     {
       provide: SmartBatchService,
@@ -85,6 +87,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
         unfinalizedBlocks: UnfinalizedBlocksService,
+        connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -98,6 +101,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               project,
               dynamicDsService,
               unfinalizedBlocks,
+              connectionPoolState,
             )
           : new BlockDispatcherService(
               apiService,
@@ -125,9 +129,11 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         'ISubqueryProject',
         DynamicDsService,
         UnfinalizedBlocksService,
+        ConnectionPoolStateManager,
       ],
     },
     FetchService,
+    ConnectionPoolService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
     {

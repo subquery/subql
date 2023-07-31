@@ -31,8 +31,11 @@ import {
   hostDynamicDsKeys,
   HostDynamicDS,
   ProcessBlockResponse,
+  HostConnectionPoolState,
+  hostConnectionPoolStateKeys,
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
+import { EthereumApiConnection } from '../../ethereum/api.connection';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
@@ -119,10 +122,18 @@ async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
 
 // Register these functions to be exposed to worker host
 (global as any).host = WorkerHost.create<
-  HostStore & HostDynamicDS<SubqlProjectDs> & HostUnfinalizedBlocks,
+  HostStore &
+    HostDynamicDS<SubqlProjectDs> &
+    HostUnfinalizedBlocks &
+    HostConnectionPoolState<EthereumApiConnection>,
   IInitIndexerWorker
 >(
-  [...hostStoreKeys, ...hostDynamicDsKeys, ...hostUnfinalizedBlocksKeys],
+  [
+    ...hostStoreKeys,
+    ...hostDynamicDsKeys,
+    ...hostUnfinalizedBlocksKeys,
+    ...hostConnectionPoolStateKeys,
+  ],
   {
     initWorker,
     fetchBlock,

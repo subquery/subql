@@ -10,8 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `!null` filter for logs (#135)
 
 ### Updated
+- Update license to GPL-3.0 (#137)
 - Updated retry logic for eth requests (#134)
 - Adjust batch size for `JsonRpcBatchProvider` dynamically (#121)
+- Sync with node-core : 
+  - init db schema manually during test run 
+  - fix retry logic for workers in connection pool
+  - Performance scoring fix
 
 ### Fixed
 - Fixed missing mmrQueryService in indexer module

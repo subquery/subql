@@ -53,39 +53,39 @@ export class EthereumApiService extends ApiService<
 
       const endpointToApiIndex: Record<string, EthereumApiConnection> = {};
 
-      await Promise.all(
-        endpoints.map(async (endpoint, i) => {
-          const connection = await EthereumApiConnection.create(
-            endpoint,
-            this.fetchBlockBatches,
-            this.eventEmitter,
+      for await (const [i, endpoint] of endpoints.entries()) {
+        const connection = await EthereumApiConnection.create(
+          endpoint,
+          this.fetchBlockBatches,
+          this.eventEmitter,
+        );
+
+        const api = connection.unsafeApi;
+
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          value: 1,
+          apiIndex: i,
+          endpoint: endpoint,
+        });
+
+        if (!this.networkMeta) {
+          this.networkMeta = connection.networkMeta;
+        }
+
+        if (network.chainId !== api.getChainId().toString()) {
+          throw this.metadataMismatchError(
+            'ChainId',
+            network.chainId,
+            api.getChainId().toString(),
           );
+        }
 
-          const api = connection.unsafeApi;
+        endpointToApiIndex[endpoint] = connection;
+      }
 
-          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-            value: 1,
-            apiIndex: i,
-            endpoint: endpoint,
-          });
-
-          if (!this.networkMeta) {
-            this.networkMeta = connection.networkMeta;
-          }
-
-          if (network.chainId !== api.getChainId().toString()) {
-            throw this.metadataMismatchError(
-              'ChainId',
-              network.chainId,
-              api.getChainId().toString(),
-            );
-          }
-
-          endpointToApiIndex[endpoint] = connection;
-        }),
+      await this.connectionPoolService.addBatchToConnections(
+        endpointToApiIndex,
       );
-
-      this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
 
       return this;
     } catch (e) {
