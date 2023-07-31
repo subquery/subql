@@ -60,12 +60,15 @@ export abstract class TestingService<A, SA, B, DS> {
   }
 
   abstract getTestRunner(): Promise<TestRunner<A, SA, B, DS>>; // TestRunner will be create with a new app instance
-  abstract indexBlock(
+
+  async indexBlock(
     block: B,
     handler: string,
     indexerManager: IIndexerManager<B, DS>,
     apiService?: IApi<A, SA, B>
-  ): Promise<void>;
+  ): Promise<void> {
+    await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
+  }
 
   async init() {
     logger.info(`Found ${this.testSandboxes.length} test files`);
