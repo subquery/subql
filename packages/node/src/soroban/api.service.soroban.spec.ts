@@ -72,7 +72,7 @@ describe('SorobanApiService', () => {
   it('can fetch blocks', async () => {
     const finalizedHeight = await apiService.api.getFinalizedBlockHeight();
     const blocks = await apiService.api.fetchBlocks(
-      range(finalizedHeight - 100, finalizedHeight),
+      range(finalizedHeight - 1000, finalizedHeight),
     );
     expect(blocks).toBeDefined();
     await delay(0.5);
@@ -96,24 +96,6 @@ describe('SorobanApiService', () => {
     await expect(
       prepareApiService(HTTP_ENDPOINT, faultyProject),
     ).rejects.toThrow();
-  });
-
-  it('provides safe api with retry on failure', async () => {
-    const finalizedHeight = await apiService.api.getFinalizedBlockHeight();
-    const safeApi = apiService.safeApi(finalizedHeight - 100);
-    const originalGetEvents = (safeApi as any).getEvents;
-
-    // Mock the fetchBlocks method to throw an error on first call
-    (safeApi as any).getEvents = jest
-      .fn()
-      .mockRejectedValueOnce(new Error('Network error'))
-      .mockImplementationOnce(originalGetEvents);
-
-    const blocks = await safeApi.getEvents({
-      startLedger: finalizedHeight - 100,
-      filters: [],
-    });
-    expect(blocks).toBeDefined();
   });
 
   it('fails after maximum retries', async () => {

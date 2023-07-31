@@ -7,6 +7,8 @@ import SafeSorobanProvider from './safe-api';
 
 const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
 
+jest.setTimeout(60000);
+
 const prepareSorobanApi = async function () {
   const api = new SorobanApi(HTTP_ENDPOINT, new EventEmitter2());
   await api.init();

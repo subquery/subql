@@ -5,12 +5,12 @@ import { SorobanRpc } from 'soroban-client';
 import { GetEventsRequest, Server } from 'soroban-client/lib/server';
 import { SorobanServer } from './soroban.server';
 
-const MAX_PAGE_SIZE = 10000;
+const DEFAULT_PAGE_SIZE = 100;
 
 describe('SorobanServer', () => {
   let server: SorobanServer;
-  let spy: jest.SpyInstance;
   const url = 'https://example.com';
+  let spy: jest.SpyInstance;
 
   beforeEach(() => {
     server = new SorobanServer(url);
@@ -21,26 +21,141 @@ describe('SorobanServer', () => {
     spy.mockRestore();
   });
 
-  it('should throw EventLimitError when events length crosses max page limit', async () => {
-    const request: GetEventsRequest = { startLedger: 1, filters: [] };
+  test('should handle no events', async () => {
+    spy.mockResolvedValue({ events: [] });
 
-    const mockResponse: SorobanRpc.GetEventsResponse = {
-      events: Array.from({ length: MAX_PAGE_SIZE }, (_, i) => ({
-        ledger: request.startLedger.toString(),
-        ledgerClosedAt: null,
-        contractId: null,
-        id: null,
-        pagingToken: null,
-        inSuccessfulContractCall: null,
-        topic: null,
-        value: null,
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
+
+    expect(response).toEqual({ events: [] });
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle events from different ledgers', async () => {
+    spy.mockResolvedValue({
+      events: [
+        { id: '1', ledger: '1', pagingToken: '1' },
+        { id: '2', ledger: '2', pagingToken: '2' },
+      ],
+    });
+
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
+
+    expect(response).toEqual({
+      events: [{ id: '1', ledger: '1', pagingToken: '1' }],
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle response length less than DEFAULT_PAGE_SIZE', async () => {
+    spy.mockResolvedValue({
+      events: Array.from({ length: DEFAULT_PAGE_SIZE - 1 }, (_, i) => ({
+        id: `${i}`,
+        ledger: '1',
+        pagingToken: `${i}`,
       })),
+    });
+
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
+
+    expect(response.events.length).toBe(DEFAULT_PAGE_SIZE - 1);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test('should handle no matching ledger', async () => {
+    spy.mockResolvedValue({
+      events: [
+        { id: '1', ledger: '2', pagingToken: '1' },
+        { id: '1', ledger: '3', pagingToken: '2' },
+      ],
+    });
+
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
+
+    expect(response).toEqual({ events: [] });
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return cached events for given startLedger', async () => {
+    (server as any).eventsCache[1] = {
+      events: [{ ledger: '1', pagingToken: '1' }],
     };
 
-    spy.mockResolvedValue(mockResponse);
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
 
-    await expect(server.getEvents(request)).rejects.toThrow(
-      `EventLimitError: block ${request.startLedger} contains more than ${MAX_PAGE_SIZE} events`,
-    );
+    expect(response).toEqual({ events: [{ ledger: '1', pagingToken: '1' }] });
+    expect(spy).toHaveBeenCalledTimes(0);
+  });
+
+  test('should handle startLedger events greater than DEFAULT_PAGE_SIZE', async () => {
+    spy
+      .mockResolvedValueOnce({
+        events: Array.from({ length: DEFAULT_PAGE_SIZE }, (_, i) => ({
+          id: `${i}`,
+          ledger: '1',
+          pagingToken: `${i}`,
+        })),
+      })
+      .mockResolvedValueOnce({
+        events: Array.from({ length: 5 }, (_, i) => ({
+          id: `${i + DEFAULT_PAGE_SIZE}`,
+          ledger: '1',
+          pagingToken: `${i + DEFAULT_PAGE_SIZE}`,
+        })),
+      });
+
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
+
+    expect(response.events.length).toBe(DEFAULT_PAGE_SIZE + 5);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  test('should handle last block of otherEvents on next page', async () => {
+    spy
+      .mockResolvedValueOnce({
+        events: [
+          ...Array.from({ length: DEFAULT_PAGE_SIZE - 1 }, (_, i) => ({
+            id: `${i}`,
+            ledger: '1',
+            pagingToken: `${i}`,
+          })),
+          { id: '2-1', ledger: '2', pagingToken: '1' },
+        ],
+      })
+      .mockResolvedValueOnce({
+        events: [{ id: '2-2', ledger: '2', pagingToken: '2' }],
+      });
+
+    const response = await server.getEvents({
+      startLedger: 1,
+    } as GetEventsRequest);
+
+    expect(response).toEqual({
+      events: [
+        ...Array.from({ length: DEFAULT_PAGE_SIZE - 1 }, (_, i) => ({
+          id: `${i}`,
+          ledger: '1',
+          pagingToken: `${i}`,
+        })),
+      ],
+    });
+    expect((server as any).eventsCache[2]).toEqual({
+      events: [
+        { id: '2-1', ledger: '2', pagingToken: '1' },
+        { id: '2-2', ledger: '2', pagingToken: '2' },
+      ],
+    });
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });
