@@ -297,6 +297,27 @@ describe('CLI codegen:generate, Can write to file', () => {
     expect(ds.commentBefore).toBe('datasource comment');
     expect(ds.items[0].get('mapping').get('handlers').comment).toBe('handler comment');
   });
+
+  it('should throw, if handler file exists', async () => {
+    await fs.promises.mkdir(path.join(PROJECT_PATH, 'src/'));
+    await fs.promises.mkdir(path.join(PROJECT_PATH, ROOT_MAPPING_DIR));
+    await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/mappings/Erc721Handlers.ts'), 'zzzzzz');
+
+    await expect(
+      Generate.run([
+        '-f',
+        path.join(PROJECT_PATH, './generate-project-2.yaml'),
+        '--events',
+        'approval, transfer',
+        '--functions',
+        'transferFrom, approve',
+        '--abiPath',
+        './erc721.json',
+        '--startBlock',
+        '1',
+      ])
+    ).rejects.toThrow('file: Erc721Handlers.ts already exists');
+  });
   it('Can generate mapping handlers', async () => {
     // Prepare directory
     await fs.promises.mkdir(path.join(PROJECT_PATH, 'src/'));

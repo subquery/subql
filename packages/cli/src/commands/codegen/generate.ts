@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
@@ -49,12 +50,18 @@ export default class Generate extends Command {
 
     const projectPath = path.resolve(file ?? process.cwd());
     const {manifests, root} = getProjectRootAndManifest(projectPath);
+    const abiName = parseContractPath(abiPath).name;
+
+    if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {
+      throw new Error(`file: ${abiName}Handlers.ts already exists`);
+    }
 
     // fragments from abi
     const abiInterface = getAbiInterface(root, abiPath);
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
-    const abiName = parseContractPath(abiPath).name;
+
+    // if the handler file already exists, should throw
 
     const existingManifest = await getManifestData(root, manifests[0]);
     const existingDs = (existingManifest.get('dataSources') as any).toJSON() as EthereumDs[];
@@ -75,6 +82,7 @@ export default class Generate extends Command {
         abiPath: abiPath,
         address: address,
       };
+
       await generateManifest(root, manifests[0], userInput, existingManifest);
       await generateHandlers([constructedEvents, constructedFunctions], root, abiPath);
 
