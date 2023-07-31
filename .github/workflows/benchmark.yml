@@ -1,0 +1,189 @@
+name: BENCHMARK
+on:
+  workflow_dispatch:
+    inputs:
+      cpus:
+        description: 'docker cpus '
+        default: 2
+        require: true
+      memory:
+        description: 'docker memory'
+        default: '4g'
+        require: true
+      benchmark-time:
+        description: 'Benchmark time(h/m/s)'
+        default: 30m
+        require: true
+      indexerVersion:
+        description: 'indexer version'
+        default: 'latest'
+        require: true
+      deployment:
+        description: 'Deployment'
+        default: 'QmU4K4LKVLV7AxuQzXjwrUV77ZauwAky5P84PDaCrnn8sP' #ENS project
+        require: false
+      network-endpoint:
+        description: 'Network endpoint'
+        default: 'https://eth.api.onfinality.io/public'
+        require: true
+      disableHistorical:
+        description: 'Disable historical'
+        default: 'true'
+        require: false
+      batch-size:
+        description: 'batch-size'
+        default: 30
+        require: false
+      workers:
+        description: 'workers'
+        default: 4
+        require: false
+      others:
+        description: 'Other flags'
+        require: false
+
+jobs:
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: node:18
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:12-alpine
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      #Check out
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Install Docker inside the container
+        run: |
+          apt-get update
+          apt-get install -y docker.io  
+
+      - name: Install PostgreSQL client
+        run: |
+          apt-get install --yes postgresql-client
+
+      # Install bc used in convert time in seconds
+      - name: Install bc
+        run: apt-get install -y bc
+
+      # queries database with postgres client
+      - name: Setup historical database
+        run: psql -h postgres -d postgres -U postgres -c 'CREATE EXTENSION IF NOT EXISTS btree_gist;'
+        env:
+          PGPASSWORD: postgres
+
+      - name: Ensure clean reports directory
+        run: |
+          output_dir="output/benchmark/"
+          chmod +x .github/workflows/scripts/benchmark/cleanHistory.sh
+          .github/workflows/scripts/benchmark/cleanHistory.sh $output_dir
+
+      - name: Clean container && rebuild indexer
+        run: |
+          docker rmi my_indexer:latest || true
+          CONTAINER_NAME="my_container"
+          docker stop $CONTAINER_NAME || true
+          docker rm -f $CONTAINER_NAME || true
+          VOLUME_NAME="${CONTAINER_NAME}_data"
+          docker volume rm $VOLUME_NAME || true
+          docker build -t my_indexer --build-arg input_indexer_version=${{github.event.inputs.indexerVersion}} .github/workflows/scripts/benchmark/
+
+      - name: Benchmarking
+        id: app
+        run: |
+          docker run --cpus=${{github.event.inputs.cpus}} --memory=${{github.event.inputs.memory}} --network ${{ job.container.network }} --name my_container -v "${PWD}/output/benchmark:/app/output/benchmark" my_indexer ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
+          docker cp my_container:/app/output/benchmark/indexing.log output/benchmark/
+
+      - name: Stop and remove the benchmark container
+        run: docker stop my_container && docker rm my_container
+
+      - name: Query metadata get processed height
+        id: query_meta
+        env:
+          PGPASSWORD: postgres
+        run: |
+          chmod +x .github/workflows/scripts/benchmark/queryMeta.sh
+          .github/workflows/scripts/benchmark/queryMeta.sh ${{github.event.inputs.benchmark-time}}
+
+      - name: Pre-save running specs
+        run: |
+          echo "benchmark-time=${{github.event.inputs.benchmark-time}}" > output/benchmark/benchmark.log
+          echo "indexer=${{steps.query_meta.outputs.runner_node}}" >> output/benchmark/benchmark.log
+          echo "indexerVersion=${{steps.query_meta.outputs.indexer_version}}" >> output/benchmark/benchmark.log
+          echo "deployment=${{github.event.inputs.deployment}}" >> output/benchmark/benchmark.log
+          echo "network-endpoint=${{github.event.inputs.network-endpoint}}" >> output/benchmark/benchmark.log
+          echo "disableHistorical=${{github.event.inputs.disableHistorical}}" >> output/benchmark/benchmark.log
+          echo "batch-size=${{github.event.inputs.batch-size}}" >> output/benchmark/benchmark.log
+          echo "workers=${{github.event.inputs.workers}}" >> output/benchmark/benchmark.log
+          if [ -n "${{github.event.inputs.others}}" ]; then
+            echo "others=${{github.event.inputs.others}}" >> output/benchmark/benchmark.log
+          fi
+          echo "Start Height: ${{steps.query_meta.outputs.start_height}}" >> output/benchmark/benchmark.log
+          echo "Last Processed Height: ${{steps.query_meta.outputs.last_processed_height}}" >> output/benchmark/benchmark.log
+          echo "------------------------------------" >> output/benchmark/benchmark.log
+
+      - name: Prepare benchmark log
+        run: |
+          if grep -qi "benchmark" output/benchmark/indexing.log; then
+            grep -i "benchmark" output/benchmark/indexing.log >> output/benchmark/benchmark.log
+            cat output/benchmark/benchmark.log
+          else
+            echo "No lines containing 'benchmark' found in output/benchmark/indexing.log" >> output/benchmark/benchmark.log
+          fi
+
+      - name: Get current time
+        uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYYMMDD-HHmm
+          utcOffset: "+12:00"
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-${{steps.current-time.outputs.formattedTime}}-${{steps.query_meta.outputs.indexer_version}}
+          path: output/benchmark/
+
+
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # channel for sq-benchmark
+          channel-id: 'C05JF51F1MJ'
+          # For posting a rich message using Block Kit
+          payload: |
+            {
+              "text": "Benchmark result ${{steps.current-time.outputs.formattedTime}}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Results: ${{ job.status }} with ${{steps.query_meta.outputs.bps}} bps\n Performance: Block [${{steps.query_meta.outputs.start_height}}-${{steps.query_meta.outputs.last_processed_height}}], total ${{steps.query_meta.outputs.total_height}} blocks in ${{github.event.inputs.benchmark-time}}\n More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n Indexer: ${{steps.query_meta.outputs.runner_node}}@${{steps.query_meta.outputs.indexer_version}}\n Deployment: ${{github.event.inputs.deployment}}\n CPUs: ${{github.event.inputs.cpus}}\n Memory: ${{github.event.inputs.memory}}\n Workers: ${{github.event.inputs.workers}}\n Batch-size: ${{github.event.inputs.batch-size}}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
