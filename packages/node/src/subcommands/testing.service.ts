@@ -48,12 +48,6 @@ export class TestingService extends BaseTestingService<
     );
 
     await testContext.init();
-
-    const apiService = testContext.get(ApiService);
-
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await (apiService as SorobanApiService).init();
-
     return testContext.get(TestRunner);
   }
 
