@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
-import {loadFromJsonOrYaml, ProjectManifestV1_0_0} from '@subql/common';
+import {loadFromJsonOrYaml} from '@subql/common';
 import {
   EthereumDatasourceKind,
   EthereumHandlerKind,
@@ -18,7 +18,7 @@ import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
 import {upperFirst, difference} from 'lodash';
 import {parseContractPath} from 'typechain';
-import {Document, isNode, Node, parseDocument, YAMLSeq} from 'yaml';
+import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 
 interface HandlerPropType {
