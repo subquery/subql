@@ -5,12 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.0] - 2023-07-31
 ### Fixed
 - Sync with @node/core, various improvements for POI feature
-
+- Update license to GPL-3.0 (#152)
 ### Changed
-- Update node-core and add `store-cache-upper-limit` flag (#144)
-- Update license to GPL-3.0
+- Sync with node-core :
+  - Update node-core and add `store-cache-upper-limit` flag (#144)
+  - init db schema manually during test run
+  - fix retry logic for workers in connection pool
+  - Performance scoring fix
 
 ## [2.8.0] - 2023-06-27
 ### Added
@@ -177,7 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2022-07-28
 ### Changed
-- Sync with the latest development from origin. See 
+- Sync with the latest development from origin. See
   - Support for worker threads
   - Added `dictionary-timeout` flag
 
@@ -237,7 +242,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.0...HEAD
+[2.10.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.8.0...node-cosmos/2.10.0
 [2.8.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.3...node-cosmos/2.8.0
 [2.5.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.2...node-cosmos/2.5.3
 [2.5.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.1...node-cosmos/2.5.2
