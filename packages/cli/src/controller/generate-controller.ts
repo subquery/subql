@@ -67,7 +67,7 @@ export async function promptSelectables<T extends ConstructorFragment | Fragment
     choices: Object.keys(availableMethods),
   });
   const choseArray = chosenFn[method] as string[];
-  choseArray.map((choice: string) => {
+  choseArray.forEach((choice: string) => {
     selectedMethods[choice] = availableMethods[choice];
   });
 
@@ -111,7 +111,7 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
   const abiName = parseContractPath(userInput.abiPath).name;
   const formattedHandlers: SubqlRuntimeHandler[] = [];
 
-  userInput.functions.map((fn) => {
+  userInput.functions.forEach((fn) => {
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(fn.name, abiName, 'tx'),
       kind: EthereumHandlerKind.Call,
@@ -122,7 +122,7 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
     formattedHandlers.push(handler);
   });
 
-  userInput.events.map((event) => {
+  userInput.events.forEach((event) => {
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(event.name, abiName, 'log'),
       kind: EthereumHandlerKind.Event,
@@ -215,19 +215,20 @@ export function filterExistingMethods(
 
   const casedInputAddress = address && address.toLowerCase();
 
-  dataSources.forEach((ds) => {
-    ds.mapping.handlers.forEach((handler) => {
-      const casedDsAddress = ds.options?.address && ds.options.address.toLowerCase();
-      if (casedDsAddress && casedInputAddress !== casedDsAddress) return;
-      if (Object.keys(handler.filter).includes('topics')) {
-        // topic[0] is the method
-        existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
-      }
-      if (Object.keys(handler.filter).includes('function')) {
-        existingFunctions.push((handler.filter as EthereumTransactionFilter).function);
-      }
+  dataSources
+    .filter((d) => !!d.options.address)
+    .forEach((ds) => {
+      ds.mapping.handlers.forEach((handler) => {
+        if (casedInputAddress !== ds.options.address) return;
+        if ('topics' in handler.filter) {
+          // topic[0] is the method
+          existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
+        }
+        if ('function' in handler.filter) {
+          existingFunctions.push((handler.filter as EthereumTransactionFilter).function);
+        }
+      });
     });
-  });
 
   return [
     filterExistingFragments<EventFragment>(eventFragments, existingEvents),
@@ -246,23 +247,17 @@ export async function generateManifest(
   userInput: UserInput,
   existingManifestData: Document
 ): Promise<void> {
-  const clonedExistingManifestData = existingManifestData.clone();
-  const existingDsNode = existingManifestData.get('dataSources') as YAMLSeq;
-  const dsNode = clonedExistingManifestData.get('dataSources') as YAMLSeq;
-
-  // load any comments
-  dsNode.comment ??= existingDsNode.comment;
-  dsNode.commentBefore ??= existingDsNode.commentBefore;
+  const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
 
   dsNode.add(constructDatasources(userInput));
-  await fs.promises.writeFile(path.join(projectPath, manifestPath), clonedExistingManifestData.toString(), 'utf8');
+  await fs.promises.writeFile(path.join(projectPath, manifestPath), existingManifestData.toString(), 'utf8');
 }
 
 export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod[]], abiName: string): AbiPropType {
   const handlers: HandlerPropType[] = [];
   const [events, functions] = methods;
 
-  functions.map((fn) => {
+  functions.forEach((fn) => {
     const fnProp: HandlerPropType = {
       name: `handle${upperFirst(fn.name)}`,
       argName: 'tx',
@@ -271,7 +266,7 @@ export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod
     handlers.push(fnProp);
   });
 
-  events.map((event) => {
+  events.forEach((event) => {
     const fnProp: HandlerPropType = {
       name: `handle${upperFirst(event.name)}`,
       argName: 'log',
@@ -294,20 +289,18 @@ export async function generateHandlers(
   const abiName = parseContractPath(abiPath).name;
   const abiProps = constructHandlerProps(selectedMethods, abiName);
 
+  // check if file exists, if it does, then add to the name ?
+  const fileName = `${abiName}Handlers.ts`;
   try {
-    await renderTemplate(
-      SCAFFOLD_HANDLER_TEMPLATE_PATH,
-      path.join(projectPath, ROOT_MAPPING_DIR, `${abiName}Handlers.ts`),
-      {
-        props: {
-          abis: [abiProps],
-        },
-        helper: {upperFirst},
-      }
-    );
+    await renderTemplate(SCAFFOLD_HANDLER_TEMPLATE_PATH, path.join(projectPath, ROOT_MAPPING_DIR, fileName), {
+      props: {
+        abis: [abiProps],
+      },
+      helper: {upperFirst},
+    });
   } catch (e) {
     console.error(`unable to generate scaffold. ${e.message}`);
   }
 
-  fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${abiName}Handlers"`);
+  fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${fileName}"`);
 }

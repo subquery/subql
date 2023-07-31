@@ -3,15 +3,15 @@ name: generate-test
 version: 0.0.1
 runner:
   node:
-    name: '@subql/node-ethereum'
-    version: '*'
+    name: "@subql/node-ethereum"
+    version: "*"
   query:
-    name: '@subql/query'
-    version: '*'
+    name: "@subql/query"
+    version: "*"
 schema:
   file: ./schema.graphql
 network:
-  chainId: '1'
+  chainId: "1"
   endpoint:
     - https://eth.api.onfinality.io/public
   dictionary: https://gx.api.subquery.network/sq/subquery/eth-dictionary
@@ -20,7 +20,7 @@ dataSources:
     startBlock: 4719568
     options:
       abi: erc721
-      address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+      address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     assets:
       erc721:
         file: ./erc721.json
