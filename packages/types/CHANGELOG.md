@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.3] - 2023-07-31
+### Fixed
+- Update license (#137)
+
 ## [2.2.2] - 2023-06-01
 ### Added
 - add timestamp to ethTransaction (#93)
@@ -43,16 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Re-release 0.2.1
 
-## [0.2.0] - 2022-12-06
-### Added
-- Support for `bypassBlocks` (#1435)
-
 ## [0.2.0] - 2022-11-17
 ### Changed
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/2.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/2.2.3...HEAD
+[2.2.3]: https://github.com/subquery/subql-ethereum/compare/types/2.2.2...types/2.2.3
 [2.2.2]: https://github.com/subquery/subql-ethereum/compare/types/2.2.1...types/2.2.2
 [2.2.1]: https://github.com/subquery/subql-ethereum/compare/types/v2.2.0...types/v2.2.1
 [2.2.0]: https://github.com/subquery/subql-ethereum/compare/types/v2.1.0...types/v2.2.0

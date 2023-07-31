@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- Sync witb `@subql/common`, fix iPFS repeat cat same cid
+## [2.2.1] - 2023-07-31
+### Fixed
+- Update license (#137)
+- Sync with common `@subql/common`  fix iPFS repeat cat same cid
 
 ## [2.2.0] - 2023-06-27
 ### Changed
@@ -48,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.1...HEAD
+[2.2.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.0...common-ethereum/2.2.1
 [2.2.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.1.3...common-ethereum/2.2.0
 [2.1.3]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.1.2...common-ethereum/2.1.3
 [2.1.2]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.1.1...common-ethereum/2.1.2

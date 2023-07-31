@@ -6,15 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Add 
+## [2.10.0] - 2023-07-31
+### Added
 - Added `!null` filter for logs (#135)
-
-### Updated
+### Changed
 - Update license to GPL-3.0 (#137)
 - Updated retry logic for eth requests (#134)
 - Adjust batch size for `JsonRpcBatchProvider` dynamically (#121)
-- Sync with node-core : 
-  - init db schema manually during test run 
+- Sync with node-core :
+  - init db schema manually during test run
   - fix retry logic for workers in connection pool
   - Performance scoring fix
 
@@ -189,7 +189,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry request when encouraging timeout/rate limit behaviours (#9)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.2...HEAD
+### Added
+- Init release
+
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.10.0...HEAD
+[2.10.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.2...node-ethereum/2.10.0
 [2.9.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.1...node-ethereum/2.9.2
 [2.9.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.0...node-ethereum/2.9.1
 [2.9.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.8.0...node-ethereum/2.9.0
