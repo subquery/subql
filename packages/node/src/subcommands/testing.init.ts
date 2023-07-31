@@ -1,29 +1,17 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { NestFactory } from '@nestjs/core';
-import { getLogger, NestLogger } from '@subql/node-core';
-import { ApiService } from '../indexer/api.service';
-import { ProjectService } from '../indexer/project.service';
-import { TestingModule } from './testing.module';
+import { getLogger } from '@subql/node-core';
+import { ConfigureModule } from '../configure/configure.module';
 import { TestingService } from './testing.service';
 
 const logger = getLogger('Testing');
 export async function testingInit(): Promise<void> {
   try {
-    const app = await NestFactory.create(TestingModule, {
-      logger: new NestLogger(),
-    });
+    const { config, project } = await ConfigureModule.getInstance();
+    const subqueryProject = await project();
 
-    await app.init();
-    const projectService = app.get(ProjectService);
-    const apiService = app.get(ApiService);
-
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await apiService.init();
-    await projectService.init();
-
-    const testingService = app.get(TestingService);
+    const testingService = new TestingService(config, subqueryProject);
     await testingService.init();
     await testingService.run();
   } catch (e) {

@@ -13,7 +13,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/common": "^2.3.0",
+    "@subql/common": "^2.4.0",
     "@subql/types-cosmos": "workspace:*",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.13"

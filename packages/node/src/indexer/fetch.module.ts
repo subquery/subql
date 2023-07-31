@@ -15,6 +15,7 @@ import {
   StoreCacheService,
   PgMmrCacheService,
   MmrQueryService,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -22,6 +23,7 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './blockDispatcher';
+import { CosmosClientConnection } from './cosmosClient.connection';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -37,7 +39,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     StoreCacheService,
     ApiService,
     IndexerManager,
-    ConnectionPoolService,
+    ConnectionPoolStateManager,
     {
       provide: SmartBatchService,
       useFactory: (nodeConfig: NodeConfig) => {
@@ -60,6 +62,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
         unfinalizedBlocks: UnfinalizedBlocksService,
+        connectionPoolState: ConnectionPoolStateManager<CosmosClientConnection>,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -73,6 +76,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               project,
               dynamicDsService,
               unfinalizedBlocks,
+              connectionPoolState,
             )
           : new BlockDispatcherService(
               apiService,
@@ -100,9 +104,11 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         'ISubqueryProject',
         DynamicDsService,
         UnfinalizedBlocksService,
+        ConnectionPoolStateManager,
       ],
     },
     FetchService,
+    ConnectionPoolService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
     DictionaryService,

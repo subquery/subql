@@ -17,12 +17,16 @@ import {
   HostDynamicDS,
   WorkerBlockDispatcher,
   IUnfinalizedBlocksService,
+  HostConnectionPoolState,
+  connectionPoolStateHostFunctions,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
 import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
+import { CosmosClientConnection } from '../cosmosClient.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
@@ -37,11 +41,15 @@ async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
+  connectionPoolState: ConnectionPoolStateManager<CosmosClientConnection>,
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubqlProjectDs> & HostStore & HostUnfinalizedBlocks
+    HostDynamicDS<SubqlProjectDs> &
+      HostStore &
+      HostUnfinalizedBlocks &
+      HostConnectionPoolState<CosmosClientConnection>
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -71,6 +79,7 @@ async function createIndexerWorker(
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
         ),
+      ...connectionPoolStateHostFunctions(connectionPoolState),
     },
     root,
   );
@@ -96,6 +105,7 @@ export class WorkerBlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
+    connectionPoolState: ConnectionPoolStateManager<CosmosClientConnection>,
   ) {
     super(
       nodeConfig,
@@ -112,6 +122,7 @@ export class WorkerBlockDispatcherService
           storeService.getStore(),
           dynamicDsService,
           unfinalizedBlocksSevice,
+          connectionPoolState,
           project.root,
         ),
     );
