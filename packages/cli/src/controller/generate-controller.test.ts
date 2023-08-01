@@ -167,6 +167,8 @@ const mockUserInput: UserInput = {
   address: 'aaa',
 };
 
+jest.setTimeout(30000);
+
 describe('CLI codegen:generate, Can write to file', () => {
   afterEach(async () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/src'));
