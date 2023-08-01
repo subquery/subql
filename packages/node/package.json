@@ -26,7 +26,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^2.3.1-1",
     "@subql/common-soroban": "workspace:*",
-    "@subql/node-core": "4.0.1",
+    "@subql/node-core": "4.0.2-0",
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.2",
     "@subql/types-soroban": "workspace:*",

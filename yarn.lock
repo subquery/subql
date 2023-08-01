@@ -3017,9 +3017,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@subql/node-core@npm:4.0.1"
+"@subql/node-core@npm:4.0.2-0":
+  version: 4.0.2-0
+  resolution: "@subql/node-core@npm:4.0.2-0"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
@@ -3045,7 +3045,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: fc1f389b5f06dfde74acfcfa3f205c4be27742547c29dd74194c1fe96a0f63fd60546baa3c2f12c74d48d5958269cd22ced8b6bc45e9cd4db1feb677776b3327
+  checksum: a04ca17ec76acb3fac2b4eeba7d75cacd2950f91fdc04d48a03b4fd7d9391a41c7e272f7be424d7551f012485f663edc6cbd54974609f55a824d0feabb23e8f4
   languageName: node
   linkType: hard
 
@@ -3063,7 +3063,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^2.3.1-1
     "@subql/common-soroban": "workspace:*"
-    "@subql/node-core": 4.0.1
+    "@subql/node-core": 4.0.2-0
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.1.2
     "@subql/types-soroban": "workspace:*"
