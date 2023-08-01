@@ -50,12 +50,4 @@ export class TestingService extends BaseTestingService<
     await testContext.init();
     return testContext.get(TestRunner);
   }
-
-  async indexBlock(
-    block: SorobanBlockWrapper,
-    handler: string,
-    indexerManager: IndexerManager,
-  ): Promise<void> {
-    await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
-  }
 }
