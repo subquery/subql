@@ -258,21 +258,19 @@ export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod
   const [events, functions] = methods;
 
   functions.forEach((fn) => {
-    const fnProp: HandlerPropType = {
-      name: `handle${upperFirst(fn.name)}`,
+    handlers.push({
+      name: generateHandlerName(fn.name, abiName, 'tx'),
       argName: 'tx',
       argType: `${upperFirst(fn.name)}Transaction`,
-    };
-    handlers.push(fnProp);
+    });
   });
 
   events.forEach((event) => {
-    const fnProp: HandlerPropType = {
-      name: `handle${upperFirst(event.name)}`,
+    handlers.push({
+      name: generateHandlerName(event.name, abiName, 'log'),
       argName: 'log',
       argType: `${upperFirst(event.name)}Log`,
-    };
-    handlers.push(fnProp);
+    });
   });
 
   return {
