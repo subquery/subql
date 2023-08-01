@@ -184,11 +184,11 @@ describe('CLI codegen:generate', () => {
       name: 'Erc721',
       handlers: [
         {
-          name: 'handleTransfer',
+          name: 'handleTransferErc721Tx',
           argName: 'tx',
           argType: 'TransferTransaction',
         },
-        {name: 'handleApproval', argName: 'log', argType: 'ApprovalLog'},
+        {name: 'handleApprovalErc721Log', argName: 'log', argType: 'ApprovalLog'},
       ],
     });
   });
@@ -233,42 +233,18 @@ describe('CLI codegen:generate', () => {
       },
     } as any);
   });
-
-  it('filter existing filters on datasources', () => {
+  it('filter out existing methods, input address === undefined && ds address === "", should filter', () => {
     const ds = mockDsFn();
+    ds[0].options.address = '';
     const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);
-
-    const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
-    const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
-
     // function approve should be filtered out
     // event transfer should be filtered out
-    expect(constructedEvents).toStrictEqual([
-      {name: 'Approval', method: 'Approval(address,address,uint256)'},
-      {
-        name: 'ApprovalForAll',
-        method: 'ApprovalForAll(address,address,bool)',
-      },
-    ]);
-
-    expect(constructedFunctions).toStrictEqual([
-      {
-        name: 'safeTransferFrom',
-        method: 'safeTransferFrom(address,address,uint256)',
-      },
-      {
-        name: 'safeTransferFrom',
-        method: 'safeTransferFrom(address,address,uint256,bytes)',
-      },
-      {
-        name: 'setApprovalForAll',
-        method: 'setApprovalForAll(address,bool)',
-      },
-      {
-        name: 'transferFrom',
-        method: 'transferFrom(address,address,uint256)',
-      },
-    ]);
+    expect(cleanEvents).toStrictEqual({
+      'Approval(address,address,uint256)': eventFragments['Approval(address,address,uint256)'],
+      'ApprovalForAll(address,address,bool)': eventFragments['ApprovalForAll(address,address,bool)'],
+    });
+    expect(cleanEvents['Transfer(address,address,uint256)']).toBeFalsy();
+    expect(cleanFunctions['approve(address,uint256)']).toBeFalsy();
   });
   it('filter out existing methods, only on matching address', () => {
     const ds = mockDsFn();
@@ -280,34 +256,28 @@ describe('CLI codegen:generate', () => {
     expect(constructedEvents.length).toBe(Object.keys(eventFragments).length);
     expect(constructedFunctions.length).toBe(Object.keys(functionFragments).length);
   });
-  it('filter out existing methods, only on matching address, if ds.address === "" and inputAddress === undefined', () => {
+  it('filter out existing methods, inputAddress === undefined || "" should filter all ds that contains no address ', () => {
     const ds = mockDsFn();
+    ds[0].options.address = undefined;
     const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);
 
     expect(cleanEvents).toStrictEqual({
       'Approval(address,address,uint256)': eventFragments['Approval(address,address,uint256)'],
       'ApprovalForAll(address,address,bool)': eventFragments['ApprovalForAll(address,address,bool)'],
     });
-    expect(cleanFunctions['approve(address,uint256)']).toBeFalsy();
-  });
-
-  it('filter out existing methods, if no address provided in ds, should just proceed filter as normal', () => {
-    const ds = mockDsFn();
-    ds[0].options.address = undefined;
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, 'asdad');
-
     expect(cleanEvents['Transfer(address,address,uint256)']).toBeFalsy();
     expect(cleanFunctions['approve(address,uint256)']).toBeFalsy();
   });
   it('filter out different formatted filters', () => {
     const ds = mockDsFn();
+    ds[0].options.address = 'zzz';
     const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
     const txHandler = ds[0].mapping.handlers[0].filter as EthereumTransactionFilter;
     txHandler.function = 'approve(address to, uint256 tokenId)';
     logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'];
 
     // should filter out approve and Transfer
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, '');
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, 'zzz');
     const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
     const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
 

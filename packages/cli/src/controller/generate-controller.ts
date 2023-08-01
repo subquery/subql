@@ -216,10 +216,15 @@ export function filterExistingMethods(
   const casedInputAddress = address && address.toLowerCase();
 
   dataSources
-    .filter((d) => !!d.options.address)
+    .filter((d) => {
+      if (casedInputAddress && d.options.address) {
+        return casedInputAddress.toLowerCase() === d.options.address.toLowerCase();
+      }
+      return casedInputAddress === d.options.address || (!casedInputAddress && !d.options.address);
+    })
     .forEach((ds) => {
       ds.mapping.handlers.forEach((handler) => {
-        if (casedInputAddress !== ds.options.address) return;
+        // if (casedInputAddress !== ds.options.address) return;
         if ('topics' in handler.filter) {
           // topic[0] is the method
           existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
