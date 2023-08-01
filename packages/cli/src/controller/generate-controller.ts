@@ -293,9 +293,9 @@ export async function generateHandlers(
   const abiProps = constructHandlerProps(selectedMethods, abiName);
 
   // check if file exists, if it does, then add to the name ?
-  const fileName = `${abiName}Handlers.ts`;
+  const fileName = `${abiName}Handlers`;
   try {
-    await renderTemplate(SCAFFOLD_HANDLER_TEMPLATE_PATH, path.join(projectPath, ROOT_MAPPING_DIR, fileName), {
+    await renderTemplate(SCAFFOLD_HANDLER_TEMPLATE_PATH, path.join(projectPath, ROOT_MAPPING_DIR, `${fileName}.ts`), {
       props: {
         abis: [abiProps],
       },

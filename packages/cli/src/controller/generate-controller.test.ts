@@ -349,11 +349,11 @@ import {TransferFromTransaction,ApprovalLog,} from "../types/abi-interfaces/Erc7
 
 import assert from "assert";
 
-export async function ${expectedFnHandler} (tx: TransferFromTransaction ): Promise<void> {
+export async function ${expectedFnHandler}(tx: TransferFromTransaction ): Promise<void> {
 // Place your code logic here
 }
 
-export async function ${expectedEventHandler} (log: ApprovalLog ): Promise<void> {
+export async function ${expectedEventHandler}(log: ApprovalLog ): Promise<void> {
 // Place your code logic here
 }
 `;
