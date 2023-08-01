@@ -52,10 +52,7 @@ export class SorobanApi implements ApiWrapper<SorobanBlockWrapper> {
   }
 
   async getFinalizedBlock(): Promise<ServerApi.LedgerRecord> {
-    const latestLedger = (await this.stellarClient.getNetwork())
-      .history_latest_ledger;
-    return (await this.stellarClient.ledgers().ledger(latestLedger).call())
-      .records[0];
+    return (await this.stellarClient.ledgers().order('desc').call()).records[0];
   }
 
   async getFinalizedBlockHeight(): Promise<number> {

@@ -8,7 +8,7 @@ import {
   SorobanOperation,
   SorobanTransaction,
 } from '@subql/types-soroban';
-import { Server } from 'stellar-sdk';
+import { Server, ServerApi } from 'stellar-sdk';
 import { SorobanBlockWrapped } from '../soroban/block.soroban';
 
 export async function fetchEffectsForOperation(
@@ -40,6 +40,7 @@ export async function fetchOperationsForTransaction(
   const operations = (
     await api.operations().forTransaction(transactionId).call()
   ).records;
+
   return Promise.all(
     operations.map(async (op) => {
       const wrappedOp: SorobanOperation = {
@@ -65,7 +66,17 @@ export async function fetchTransactionsForLedger(
 
   return Promise.all(
     transactions.map(async (tx) => {
-      const account = await tx.account();
+      let account: ServerApi.AccountRecord;
+      try {
+        account = await tx.account();
+      } catch (e) {
+        if ((e as Error).name === 'NotFoundError') {
+          account = null;
+        } else {
+          throw e;
+        }
+      }
+
       const wrappedTx: SorobanTransaction = {
         ...tx,
         ledger: null,
@@ -89,7 +100,10 @@ export async function fetchAndWrapLedger(
   sequence: number,
   api: Server,
 ): Promise<SorobanBlock> {
-  const ledger = (await api.ledgers().ledger(sequence).call()).records[0];
+  const ledger = (await api
+    .ledgers()
+    .ledger(sequence)
+    .call()) as unknown as ServerApi.LedgerRecord;
 
   const wrappedLedger: SorobanBlock = {
     ...ledger,

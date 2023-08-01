@@ -58,7 +58,7 @@ export class SorobanBlockWrapped implements SorobanBlockWrapper {
     address?: string,
   ): boolean {
     if (!filter) return true;
-    if (filter.account && filter.account !== tx.account.account_id) {
+    if (filter.account && filter.account !== tx.source_account) {
       return false;
     }
 
