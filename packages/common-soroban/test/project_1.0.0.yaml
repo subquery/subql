@@ -26,9 +26,7 @@ dataSources:
       file: './dist/index.js'
       handlers:
         - handler: handleEvent
-          kind: soroban/EventHandler
+          kind: soroban/OperationHandler
           filter:
-            contractId: '34799b3411940249e73d21def8eb2c2b56b285ab8d1ca76d6780ec10a0e8f02e'
-            topics:
-              - 'COUNTER'
-              - 'increment'
+            source_account:: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
+            type: 'account_merge'

@@ -3,104 +3,169 @@
 
 import {
   SorobanBlock,
+  SorobanBlockFilter,
+  SorobanEffect,
+  SorobanEffectFilter,
   SorobanEvent,
   SorobanEventFilter,
+  SorobanOperation,
+  SorobanOperationFilter,
+  SorobanTransaction,
+  SorobanTransactionFilter,
 } from '@subql/types-soroban';
-import { xdr } from 'soroban-client';
+import { Horizon, ServerApi } from 'stellar-sdk';
 import { SorobanBlockWrapped } from './block.soroban';
 
-/*
-describe('SorobanBlockWrapped', function () {
-  const mockEvent: SorobanEvent = {
-    ledger: '2000',
-    ledgerClosedAt: null,
-    contractId: 'testaddress',
-    id: null,
-    pagingToken: null,
-    inSuccessfulContractCall: null,
-    topic: ['topic1', 'topic2'],
-    value: null,
-  };
-  const mockBlock: SorobanBlock = {
-    sequence: 2000,
-    hash: '2000',
-    events: [mockEvent],
-  };
+describe('SorobanBlockWrapped', () => {
+  describe('filterBlocksProcessor', () => {
+    it('should filter by modulo', () => {
+      const block: SorobanBlock = { sequence: 5 } as unknown as SorobanBlock;
+      const filter: SorobanBlockFilter = { modulo: 2 };
 
-  const mockEventFilterValid: SorobanEventFilter = {
-    topics: ['topic1', 'topic2'],
-  };
+      const result = SorobanBlockWrapped.filterBlocksProcessor(block, filter);
 
-  const mockEventFilterInvalid: SorobanEventFilter = {
-    topics: ['topics3'],
-  };
-
-  it('should pass filter - valid address and topics', function () {
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(
-        mockEvent,
-        mockEventFilterValid,
-        'testaddress',
-      ),
-    ).toEqual(true);
+      expect(result).toBe(false);
+    });
   });
 
-  it('should pass filter - no address and valid topics', function () {
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(mockEvent, mockEventFilterValid),
-    ).toEqual(true);
+  describe('filterTransactionProcessor', () => {
+    it('should filter by account', () => {
+      const transaction: SorobanTransaction = {
+        source_account: 'account1',
+      } as unknown as SorobanTransaction;
+      const filter: SorobanTransactionFilter = { account: 'account2' };
+
+      const result = SorobanBlockWrapped.filterTransactionProcessor(
+        transaction,
+        filter,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('should pass when account filter condition is fulfilled', () => {
+      const transaction: SorobanTransaction = {
+        source_account: 'account1',
+      } as unknown as SorobanTransaction;
+      const filter: SorobanTransactionFilter = { account: 'account1' };
+
+      const result = SorobanBlockWrapped.filterTransactionProcessor(
+        transaction,
+        filter,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should pass when there is no account filter', () => {
+      const transaction: SorobanTransaction = {
+        source_account: 'account1',
+      } as unknown as SorobanTransaction;
+      const filter: SorobanTransactionFilter = {};
+
+      const result = SorobanBlockWrapped.filterTransactionProcessor(
+        transaction,
+        filter,
+      );
+
+      expect(result).toBe(true);
+    });
   });
 
-  it('should fail filter - valid address and invalid topics', function () {
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(
-        mockEvent,
-        mockEventFilterInvalid,
-        'testaddress',
-      ),
-    ).toEqual(false);
+  describe('filterOperationProcessor', () => {
+    it('should filter by source_account and type', () => {
+      const operation: SorobanOperation = {
+        source_account: 'account1',
+        type: 'type1',
+      } as unknown as SorobanOperation;
+      const filter: SorobanOperationFilter = {
+        source_account: 'account2',
+        type: Horizon.OperationResponseType.createAccount,
+      };
+
+      const result = SorobanBlockWrapped.filterOperationProcessor(
+        operation,
+        filter,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('should pass when source_account and type filter conditions are fulfilled', () => {
+      const operation: SorobanOperation = {
+        source_account: 'account1',
+        type: Horizon.OperationResponseType.createAccount,
+      } as unknown as SorobanOperation;
+      const filter: SorobanOperationFilter = {
+        source_account: 'account1',
+        type: Horizon.OperationResponseType.createAccount,
+      };
+
+      const result = SorobanBlockWrapped.filterOperationProcessor(
+        operation,
+        filter,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should pass when there are no filter conditions', () => {
+      const operation: SorobanOperation = {
+        source_account: 'account1',
+        type: 'type1',
+      } as unknown as SorobanOperation;
+      const filter: SorobanOperationFilter = {};
+
+      const result = SorobanBlockWrapped.filterOperationProcessor(
+        operation,
+        filter,
+      );
+
+      expect(result).toBe(true);
+    });
   });
 
-  it('should fail filter - event not found', function () {
-    mockEventFilterInvalid.topics = ['topic1', 'topic2', 'topic3'];
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(
-        mockEvent,
-        mockEventFilterInvalid,
-      ),
-    ).toEqual(false);
-  });
+  describe('filterEffectProcessor', () => {
+    it('should filter by account and type', () => {
+      const effect: SorobanEffect = {
+        account: 'account1',
+        type: 'type1',
+      } as unknown as SorobanEffect;
+      const filter: SorobanEffectFilter = {
+        account: 'account2',
+        type: 'type2',
+      };
 
-  it('should pass filter - skip null topics', function () {
-    mockEventFilterValid.topics = [null, 'topic2'];
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(mockEvent, mockEventFilterValid),
-    ).toEqual(true);
-  });
+      const result = SorobanBlockWrapped.filterEffectProcessor(effect, filter);
 
-  it('should pass filer - valid contractId', function () {
-    mockEventFilterValid.contractId = 'testaddress';
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(mockEvent, mockEventFilterValid),
-    ).toEqual(true);
-  });
+      expect(result).toBe(false);
+    });
 
-  it('should fail filter - invalid contractId', function () {
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(mockEvent, {
-        contractId: 'invalidaddress',
-      }),
-    ).toEqual(false);
-  });
+    it('should pass when account and type filter conditions are fulfilled', () => {
+      const effect: SorobanEffect = {
+        account: 'account1',
+        type: 'type1',
+      } as unknown as SorobanEffect;
+      const filter: SorobanEffectFilter = {
+        account: 'account1',
+        type: 'type1',
+      };
 
-  it('should fail filter - invalid address', function () {
-    expect(
-      SorobanBlockWrapped.filterEventProcessor(
-        mockEvent,
-        mockEventFilterValid,
-        'invalidaddress',
-      ),
-    ).toEqual(false);
+      const result = SorobanBlockWrapped.filterEffectProcessor(effect, filter);
+
+      expect(result).toBe(true);
+    });
+
+    it('should pass when there are no filter conditions', () => {
+      const effect: SorobanEffect = {
+        account: 'account1',
+        type: 'type1',
+      } as unknown as SorobanEffect;
+      const filter: SorobanEffectFilter = {};
+
+      const result = SorobanBlockWrapped.filterEffectProcessor(effect, filter);
+
+      expect(result).toBe(true);
+    });
   });
 });
-*/

@@ -30,7 +30,7 @@ describe('project.yaml', () => {
     const filter = deployment.dataSources[0].mapping.handlers[0].filter;
     const deploymentString = manifestVersioned.toDeployment();
     expect(filter).not.toBeNull();
-    expect(deploymentString).toContain('COUNTER');
+    expect(deploymentString).toContain('account_merge');
   });
 
   it('can convert genesis hash in v1.0.0 to chainId in deployment', () => {

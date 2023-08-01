@@ -10,8 +10,10 @@ import { GraphQLSchema } from 'graphql';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { SorobanApiService } from './api.service.soroban';
+import { SorobanApi } from './api.soroban';
+import { SorobanBlockWrapped } from './block.soroban';
 
-const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
+const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
 
 export function testSubqueryProject(endpoint: string): SubqueryProject {
   return {
@@ -55,8 +57,8 @@ export const prepareApiService = async (
   return [apiService, app];
 };
 
-/*
 jest.setTimeout(90000);
+
 describe('SorobanApiService', () => {
   let apiService: SorobanApiService;
   let app: INestApplication;
@@ -65,27 +67,22 @@ describe('SorobanApiService', () => {
     [apiService, app] = await prepareApiService();
   });
 
-  it('can instantiate api', async () => {
-    console.log(apiService.api.getChainId());
-    await delay(0.5);
+  it('should instantiate api', () => {
+    expect(apiService.api).toBeInstanceOf(SorobanApi);
   });
 
-  it('can fetch blocks', async () => {
-    const finalizedHeight = await apiService.api.getFinalizedBlockHeight();
-    const blocks = await apiService.api.fetchBlocks(
-      range(finalizedHeight - 100, finalizedHeight),
+  it('should fetch blocks', async () => {
+    const latestHeight = await apiService.api.getFinalizedBlockHeight();
+    const blocks = await apiService.fetchBlocks(
+      range(latestHeight - 1, latestHeight),
     );
     expect(blocks).toBeDefined();
-    await delay(0.5);
+    expect(blocks).toEqual(
+      expect.arrayContaining([expect.any(SorobanBlockWrapped)]),
+    );
   });
 
-  it('can get the finalized height', async () => {
-    const height = await apiService.api.getFinalizedBlockHeight();
-    console.log('Finalized height', height);
-    expect(height).not.toBeNaN();
-  });
-
-  it('throws error when chainId does not match', async () => {
+  it('should throw error when chainId does not match', async () => {
     const faultyProject = {
       ...testSubqueryProject(HTTP_ENDPOINT),
       network: {
@@ -99,35 +96,16 @@ describe('SorobanApiService', () => {
     ).rejects.toThrow();
   });
 
-  it('provides safe api with retry on failure', async () => {
-    const finalizedHeight = await apiService.api.getFinalizedBlockHeight();
-    const safeApi = apiService.safeApi(finalizedHeight - 100);
-    const originalGetEvents = (safeApi as any).getEvents;
-
-    // Mock the fetchBlocks method to throw an error on first call
-    (safeApi as any).getEvents = jest
-      .fn()
-      .mockRejectedValueOnce(new Error('Network error'))
-      .mockImplementationOnce(originalGetEvents);
-
-    const blocks = await safeApi.getEvents({
-      startLedger: finalizedHeight - 100,
-      filters: [],
-    });
-    expect(blocks).toBeDefined();
-  });
-
   it('fails after maximum retries', async () => {
-    const safeApi = apiService.safeApi(50000);
+    const api = apiService.unsafeApi;
 
     // Mock the fetchBlocks method to always throw an error
-    (safeApi as any).fetchBlocks = jest
+    (api as any).fetchBlocks = jest
       .fn()
       .mockRejectedValue(new Error('Network error'));
 
     await expect(
-      (safeApi as any).fetchBlocks(range(50000, 50100)),
+      (api as any).fetchBlocks(range(50000, 50100)),
     ).rejects.toThrow();
   });
 });
-*/
