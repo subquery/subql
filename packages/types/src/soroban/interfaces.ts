@@ -27,9 +27,11 @@ export type SorobanOperation = Omit<
 > & {
   effects: SorobanEffect[];
   transaction: SorobanTransaction;
+  ledger: SorobanBlock;
 };
 
 export type SorobanEffect = ServerApi.EffectRecord & {
+  operation: SorobanOperation;
   transaction: SorobanTransaction;
   ledger: SorobanBlock;
 };

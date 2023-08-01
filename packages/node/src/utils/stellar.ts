@@ -45,11 +45,18 @@ export async function fetchOperationsForTransaction(
     operations.map(async (op) => {
       const wrappedOp: SorobanOperation = {
         ...op,
+        ledger: null,
         transaction: null,
         effects: [] as SorobanEffect[],
       };
 
-      const effects = await fetchEffectsForOperation(op.id, api);
+      const effects = (await fetchEffectsForOperation(op.id, api)).map(
+        (effect) => {
+          effect.operation = JSON.parse(JSON.stringify(wrappedOp));
+          return effect;
+        },
+      );
+
       wrappedOp.effects.push(...effects);
 
       return wrappedOp;
@@ -85,7 +92,17 @@ export async function fetchTransactionsForLedger(
         effects: [] as SorobanEffect[],
       };
 
-      const operations = await fetchOperationsForTransaction(tx.id, api);
+      const operations = (await fetchOperationsForTransaction(tx.id, api)).map(
+        (op) => {
+          op.transaction = JSON.parse(JSON.stringify(wrappedTx));
+          op.effects = op.effects.map((effect) => {
+            effect.transaction = JSON.parse(JSON.stringify(wrappedTx));
+            return effect;
+          });
+          return op;
+        },
+      );
+
       wrappedTx.operations.push(...operations);
       operations.forEach((op) => {
         wrappedTx.effects.push(...op.effects);
@@ -112,7 +129,20 @@ export async function fetchAndWrapLedger(
     effects: [] as SorobanEffect[],
   };
 
-  const transactions = await fetchTransactionsForLedger(sequence, api);
+  const transactions = (await fetchTransactionsForLedger(sequence, api)).map(
+    (tx) => {
+      tx.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+      tx.operations = tx.operations.map((op) => {
+        op.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+        op.effects = op.effects.map((effect) => {
+          effect.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+          return effect;
+        });
+        return op;
+      });
+      return tx;
+    },
+  );
 
   transactions.forEach((tx) => {
     wrappedLedger.transactions.push(tx);
