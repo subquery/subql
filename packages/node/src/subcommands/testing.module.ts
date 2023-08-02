@@ -6,10 +6,11 @@ import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import {
   ConnectionPoolService,
+  ConnectionPoolStateManager,
   DbModule,
-  NodeConfig,
   PoiService,
   StoreService,
+  TestRunner,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -23,19 +24,18 @@ import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { MetaModule } from '../meta/meta.module';
-import { TestingService } from './testing.service';
 
 @Module({
   providers: [
     StoreService,
-    TestingService,
     EventEmitter2,
     PoiService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
-    UnfinalizedBlocksService,
     ProjectService,
+    UnfinalizedBlocksService,
+    ConnectionPoolStateManager,
     ConnectionPoolService,
     {
       provide: 'IProjectService',
@@ -53,8 +53,16 @@ import { TestingService } from './testing.service';
       },
       inject: ['ISubqueryProject', ConnectionPoolService],
     },
-    IndexerManager,
     SchedulerRegistry,
+    TestRunner,
+    {
+      provide: 'IApi',
+      useClass: ApiService,
+    },
+    {
+      provide: 'IIndexerManager',
+      useClass: IndexerManager,
+    },
   ],
 
   imports: [MetaModule, FetchModule],

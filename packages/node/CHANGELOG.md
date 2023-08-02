@@ -5,11 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Test command not working because of dependency issue (#155)
 
 ## [2.10.0] - 2023-07-31
 ### Fixed
 - Sync with @node/core, various improvements for POI feature
 - Update license to GPL-3.0 (#152)
+
 ### Changed
 - Sync with node-core :
   - Update node-core and add `store-cache-upper-limit` flag (#144)
