@@ -287,7 +287,15 @@ export function wrapEvent(
       continue;
     }
     for (const log of logs) {
-      const msg = wrapCosmosMsg(block, tx, log.msg_index, api);
+      let msg: CosmosMessage;
+      try {
+        msg = wrapCosmosMsg(block, tx, log.msg_index, api);
+      } catch (e) {
+        // Example where this can happen https://sei.explorers.guru/transaction/8D4CA68E917E15652E10CB960DE604AEEB1B183D6E94A85E9CD98403F15550B7
+        logger.warn(
+          `Unable to find message for event. tx=${tx.hash} messageIdx=${log.msg_index}`,
+        );
+      }
       for (let i = 0; i < log.events.length; i++) {
         const event: CosmosEvent = {
           idx: idxOffset++,
