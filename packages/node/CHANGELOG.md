@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.1] - 2023-08-03
 ### Fixed
 - Logs with a missing message throwing an error (#156)
 - Test command not working because of dependency issue (#155)
@@ -246,7 +248,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.1...HEAD
+[2.10.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.0...node-cosmos/2.10.1
 [2.10.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.8.0...node-cosmos/2.10.0
 [2.8.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.3...node-cosmos/2.8.0
 [2.5.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.2...node-cosmos/2.5.3
