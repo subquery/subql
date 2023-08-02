@@ -151,6 +151,6 @@ describe('SorobanServer', () => {
       ],
     });
     expect((server as any).eventsCache[2]).toBeUndefined;
-    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

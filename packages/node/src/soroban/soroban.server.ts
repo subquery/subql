@@ -26,19 +26,11 @@ export class SorobanServer extends Server {
     const groupedEvents = groupBy(response.events, (event) =>
       parseInt(event.ledger) === sequence ? 'events' : 'eventsToCache',
     );
-    const events = groupedEvents.events;
-    let eventsToCache = groupedEvents.eventsToCache;
+    const events = compact(groupedEvents.events);
+    let eventsToCache = compact(groupedEvents.eventsToCache);
 
     // Update the accumulated events with the events from the current sequence
     const newEvents = accEvents.concat(events);
-
-    if (eventsToCache && response.events.length === DEFAULT_PAGE_SIZE) {
-      // remove last sequence from eventsToCache as some of them might be paginated out
-      const lastSequence = last(response.events).ledger;
-      eventsToCache = compact(
-        eventsToCache.filter((event) => event.ledger !== lastSequence),
-      );
-    }
 
     if (eventsToCache?.length) {
       if (response.events.length === DEFAULT_PAGE_SIZE) {
