@@ -16,7 +16,7 @@ import chalk from 'chalk';
 import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst, difference} from 'lodash';
+import {upperFirst, difference, pickBy} from 'lodash';
 import {parseContractPath} from 'typechain';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
@@ -37,11 +37,7 @@ const ROOT_MAPPING_DIR = 'src/mappings';
 const DEFAULT_HANDLER_BUILD_PATH = './dist/index.js';
 
 export function removeKeyword(inputString: string): string {
-  const removeString = inputString.startsWith('event ') ? 'event ' : 'function ';
-  if (inputString.startsWith(removeString)) {
-    return inputString.slice(removeString.length);
-  }
-  return inputString;
+  return inputString.replace(/^(event|function) /, '');
 }
 
 export function constructMethod<T extends ConstructorFragment | Fragment>(
@@ -87,13 +83,7 @@ export function getAbiInterface(projectPath: string, abiPath: string): Interface
 export function filterObjectsByStateMutability(
   obj: Record<string, FunctionFragment>
 ): Record<string, FunctionFragment> {
-  const filteredObject: Record<string, FunctionFragment> = {};
-  for (const key in obj) {
-    if (obj[key].stateMutability !== 'view') {
-      filteredObject[key] = obj[key];
-    }
-  }
-  return filteredObject;
+  return pickBy(obj, (e) => e.stateMutability !== 'view');
 }
 
 export function getFragmentFormats<T extends ConstructorFragment | Fragment>(fragment: T): {full: string; min: string} {
@@ -133,8 +123,7 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
     formattedHandlers.push(handler);
   });
 
-  const assets = new Map<string, {file: string}>();
-  assets.set(abiName, {file: userInput.abiPath});
+  const assets = new Map([[abiName, {file: userInput.abiPath}]]);
 
   return {
     kind: EthereumDatasourceKind.Runtime,
@@ -158,7 +147,7 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
   availableFragments: Record<string, T>,
   abiName: string
 ): Promise<Record<string, T>> {
-  if (rawInput === undefined || rawInput === '') {
+  if (!rawInput) {
     return promptSelectables<T>(type, availableFragments);
   }
 
@@ -292,7 +281,6 @@ export async function generateHandlers(
   const abiName = parseContractPath(abiPath).name;
   const abiProps = constructHandlerProps(selectedMethods, abiName);
 
-  // check if file exists, if it does, then add to the name ?
   const fileName = `${abiName}Handlers`;
   try {
     await renderTemplate(SCAFFOLD_HANDLER_TEMPLATE_PATH, path.join(projectPath, ROOT_MAPPING_DIR, `${fileName}.ts`), {
@@ -301,9 +289,8 @@ export async function generateHandlers(
       },
       helper: {upperFirst},
     });
+    fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${fileName}"`);
   } catch (e) {
-    console.error(`unable to generate scaffold. ${e.message}`);
+    throw new Error(`Unable to generate handler scaffolds. ${e.message}`);
   }
-
-  fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${fileName}"`);
 }

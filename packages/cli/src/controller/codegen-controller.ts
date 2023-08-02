@@ -87,8 +87,6 @@ const exportTypes = {
   datasources: false,
 };
 
-// 4. Render entity data in ejs template and write it
-
 // 3. Re-format the field of the entity
 export interface ProcessedField {
   name: string;

@@ -6,7 +6,7 @@ import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
-import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
+import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {
   constructMethod,
@@ -17,7 +17,6 @@ import {
   getAbiInterface,
   getManifestData,
   prepareInputFragments,
-  promptSelectables,
 } from '../../controller/generate-controller';
 
 export interface SelectedMethod {
