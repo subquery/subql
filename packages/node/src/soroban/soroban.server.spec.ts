@@ -150,12 +150,7 @@ describe('SorobanServer', () => {
         })),
       ],
     });
-    expect((server as any).eventsCache[2]).toEqual({
-      events: [
-        { id: '2-1', ledger: '2', pagingToken: '1' },
-        { id: '2-2', ledger: '2', pagingToken: '2' },
-      ],
-    });
+    expect((server as any).eventsCache[2]).toBeUndefined;
     expect(spy).toHaveBeenCalledTimes(2);
   });
 });

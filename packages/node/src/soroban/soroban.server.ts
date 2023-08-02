@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { getLogger } from '@subql/node-core';
+import { compact, groupBy, last } from 'lodash';
 import { Server, SorobanRpc } from 'soroban-client';
 import { GetEventsRequest } from 'soroban-client/lib/server';
 
@@ -11,104 +12,81 @@ const DEFAULT_PAGE_SIZE = 100;
 export class SorobanServer extends Server {
   private eventsCache: { [key: number]: SorobanRpc.GetEventsResponse } = {};
 
-  //add events without duplication since fetching happens parallely
-  private addEventWithoutDuplication(
-    eventArr: SorobanRpc.EventResponse[],
-    event: SorobanRpc.EventResponse,
-  ): void {
-    if (!eventArr.find((existingEvent) => existingEvent.id === event.id)) {
-      eventArr.push(event);
-    }
-  }
-
-  private async fetchEvents(
-    request: GetEventsRequest,
-  ): Promise<SorobanRpc.GetEventsResponse> {
-    request.limit = DEFAULT_PAGE_SIZE;
-    const response = await super.getEvents(request);
-    return response;
-  }
-
-  private splitEvents(
-    events: SorobanRpc.EventResponse[],
+  private async fetchEventsForSequence(
     sequence: number,
-  ): {
-    startLedgerEvents: SorobanRpc.EventResponse[];
-    otherEvents: SorobanRpc.EventResponse[];
-  } {
-    const startLedgerEvents = events.filter(
-      (event) => parseInt(event.ledger) === sequence,
+    request: GetEventsRequest,
+    accEvents: SorobanRpc.EventResponse[] = [],
+  ): Promise<{
+    events: SorobanRpc.GetEventsResponse;
+    eventsToCache: SorobanRpc.GetEventsResponse;
+  }> {
+    const response = await super.getEvents(request);
+
+    // Separate the events for the current sequence and the subsequent sequences
+    const groupedEvents = groupBy(response.events, (event) =>
+      parseInt(event.ledger) === sequence ? 'events' : 'eventsToCache',
     );
-    const otherEvents = events.filter(
-      (event) => parseInt(event.ledger) !== sequence,
-    );
-    return { startLedgerEvents, otherEvents };
+    const events = groupedEvents.events;
+    let eventsToCache = groupedEvents.eventsToCache;
+
+    // Update the accumulated events with the events from the current sequence
+    const newEvents = accEvents.concat(events);
+
+    if (eventsToCache && response.events.length === DEFAULT_PAGE_SIZE) {
+      // remove last sequence from eventsToCache as some of them might be paginated out
+      const lastSequence = last(response.events).ledger;
+      eventsToCache = compact(
+        eventsToCache.filter((event) => event.ledger !== lastSequence),
+      );
+    }
+
+    if (eventsToCache?.length) {
+      if (response.events.length === DEFAULT_PAGE_SIZE) {
+        const lastSequence = last(response.events).ledger;
+        eventsToCache = eventsToCache.filter(
+          (event) => event.ledger !== lastSequence,
+        );
+      }
+      return {
+        events: { events: newEvents },
+        eventsToCache: { events: eventsToCache },
+      };
+    }
+
+    if (response.events.length < DEFAULT_PAGE_SIZE) {
+      return { events: { events: newEvents }, eventsToCache: { events: [] } };
+    }
+
+    // Prepare the next request
+    const nextRequest = {
+      ...request,
+      cursor: response.events[response.events.length - 1]?.pagingToken,
+      startLedger: undefined,
+    };
+
+    // Continue fetching events for the sequence
+    return this.fetchEventsForSequence(sequence, nextRequest, newEvents);
   }
 
-  private updateEventCache(events: SorobanRpc.EventResponse[]): void {
-    events.forEach((event) => {
+  private updateEventCache(
+    response: SorobanRpc.GetEventsResponse,
+    ignoreHeight?: number,
+  ): void {
+    response.events.forEach((event) => {
+      if (ignoreHeight && ignoreHeight === parseInt(event.ledger)) return;
       const ledger = parseInt(event.ledger);
-      if (this.eventsCache[ledger]) {
-        this.addEventWithoutDuplication(this.eventsCache[ledger].events, event);
-      } else {
+      if (!this.eventsCache[ledger]) {
         this.eventsCache[ledger] = {
-          events: [event],
+          events: [],
         } as SorobanRpc.GetEventsResponse;
       }
-    });
-  }
-
-  //fetch events of a ledger from subsequent pages
-  private async fetchAdditionalEvents(
-    lastRequestLedger: number,
-    cursor: string,
-    existingEvents: SorobanRpc.EventResponse[],
-  ): Promise<SorobanRpc.EventResponse[]> {
-    const additionalEvents: SorobanRpc.EventResponse[] = [];
-    let innerCursor = cursor;
-
-    //eslint-disable-next-line no-constant-condition
-    while (true) {
-      const nextRequest: GetEventsRequest = {
-        filters: [],
-        limit: DEFAULT_PAGE_SIZE,
-        cursor: innerCursor,
-      };
-
-      const nextResponse = await super.getEvents(nextRequest);
-
-      for (let i = 0; i < nextResponse.events.length; i++) {
-        if (parseInt(nextResponse.events[i].ledger) <= lastRequestLedger) {
-          // Only add the event if it doesn't already exist in additionalEvents
-          if (
-            !additionalEvents.find(
-              (event) =>
-                event.pagingToken === nextResponse.events[i].pagingToken,
-            )
-          ) {
-            additionalEvents.push(nextResponse.events[i]);
-          }
-          innerCursor = nextResponse.events[i].pagingToken;
-        } else {
-          break;
-        }
+      const eventExists = this.eventsCache[ledger].events.some(
+        (existingEvent) => existingEvent.id === event.id,
+      );
+      if (!eventExists) {
+        this.eventsCache[ledger].events.push(event);
       }
-
-      if (
-        nextResponse.events.length < DEFAULT_PAGE_SIZE ||
-        parseInt(nextResponse.events[nextResponse.events.length - 1].ledger) >
-          lastRequestLedger
-      ) {
-        break;
-      }
-    }
-
-    // Only add the event to existingEvents if it doesn't already exist in the list
-    additionalEvents.forEach((event) => {
-      this.addEventWithoutDuplication(existingEvents, event);
     });
-
-    return existingEvents;
   }
 
   async getEvents(
@@ -122,52 +100,9 @@ export class SorobanServer extends Server {
       return cachedEvents;
     }
 
-    let mainCursor: string | undefined;
-    let startLedgerEvents: SorobanRpc.EventResponse[] = [];
-    let otherEvents: SorobanRpc.EventResponse[] = [];
-    let response: SorobanRpc.GetEventsResponse;
+    const response = await this.fetchEventsForSequence(sequence, request);
+    this.updateEventCache(response.eventsToCache, sequence);
 
-    //eslint-disable-next-line no-constant-condition
-    while (true) {
-      request.cursor = mainCursor;
-      if (request.cursor) request.startLedger = undefined; //startLedger and cursor cannot be both set
-
-      response = await this.fetchEvents(request);
-
-      const splitResult = this.splitEvents(response.events, sequence);
-      startLedgerEvents = [
-        ...startLedgerEvents,
-        ...splitResult.startLedgerEvents,
-      ];
-      otherEvents = [...otherEvents, ...splitResult.otherEvents];
-
-      if (
-        response.events.length < DEFAULT_PAGE_SIZE ||
-        splitResult.startLedgerEvents.length < DEFAULT_PAGE_SIZE
-      ) {
-        break;
-      }
-
-      mainCursor = response.events[response.events.length - 1].pagingToken;
-    }
-
-    if (
-      otherEvents.length > 0 &&
-      response.events.length === DEFAULT_PAGE_SIZE
-    ) {
-      mainCursor = response.events[response.events.length - 1].pagingToken;
-      const lastRequestLedger = parseInt(
-        otherEvents[otherEvents.length - 1].ledger,
-      );
-      otherEvents = await this.fetchAdditionalEvents(
-        lastRequestLedger,
-        mainCursor,
-        otherEvents,
-      );
-    }
-
-    this.updateEventCache(otherEvents);
-
-    return { events: startLedgerEvents } as SorobanRpc.GetEventsResponse;
+    return response.events;
   }
 }
