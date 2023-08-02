@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Add new command `codegen:generate` (#1896)
 - Support for update availability logs (#1930)
+
 ### Changed
 - change soroban packages to stellar (#1929)
 
