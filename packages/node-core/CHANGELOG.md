@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - moved `indexBlock` to base `TestingService` (#1913)
+- Simplify conneciton pool logic (#1915)
 
 ## [4.0.1] - 2023-07-31
 ### Fixed
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.0.0] - 2023-07-17
 ### Changed
 - **Breaking**: Inti DB schema manually during test run (#1870)
+
 ### Fixed
 - Updated `@subql/apollo-links` to 0.5.3 for bug fixes. (#1886)
 - Establish common connection pool state among workers using `ConnectionPoolStateManager` (#1829)

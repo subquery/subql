@@ -18,8 +18,6 @@ export type HostConnectionPoolState<T> = {
     field: K,
     value: ConnectionPoolItem<T>[K]
   ) => Promise<void>;
-  hostSetTimeoutIdInConnectionPoolItem: (index: number, delay: number) => Promise<void>;
-  hostClearTimeoutIdInConnectionPoolItem: (index: number) => Promise<void>;
   hostGetSuspendedIndices: () => Promise<number[]>;
   hostRemoveFromConnections: (index: number) => Promise<void>;
   hostHandleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void>;
@@ -32,8 +30,6 @@ export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[]
   'hostAddToConnections',
   'hostGetFieldFromConnectionPoolItem',
   'hostSetFieldInConnectionPoolItem',
-  'hostSetTimeoutIdInConnectionPoolItem',
-  'hostClearTimeoutIdInConnectionPoolItem',
   'hostGetSuspendedIndices',
   'hostRemoveFromConnections',
   'hostHandleBatchApiError',
@@ -49,8 +45,6 @@ export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecifi
     hostGetNextConnectedApiIndex: connectionPoolState.getNextConnectedApiIndex.bind(connectionPoolState),
     hostGetFieldFromConnectionPoolItem: connectionPoolState.getFieldValue.bind(connectionPoolState),
     hostSetFieldInConnectionPoolItem: connectionPoolState.setFieldValue.bind(connectionPoolState),
-    hostSetTimeoutIdInConnectionPoolItem: connectionPoolState.setTimeout.bind(connectionPoolState),
-    hostClearTimeoutIdInConnectionPoolItem: connectionPoolState.clearTimeout.bind(connectionPoolState),
     hostGetSuspendedIndices: connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
     hostRemoveFromConnections: connectionPoolState.removeFromConnections.bind(connectionPoolState),
     hostHandleBatchApiError: connectionPoolState.handleBatchApiError.bind(connectionPoolState),
@@ -86,14 +80,6 @@ export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
     value: ConnectionPoolItem<T>[K]
   ): Promise<void> {
     return this.host.hostSetFieldInConnectionPoolItem(index, field, value);
-  }
-
-  async setTimeout(index: number, delay: number): Promise<void> {
-    return this.host.hostSetTimeoutIdInConnectionPoolItem(index, delay);
-  }
-
-  async clearTimeout(index: number): Promise<void> {
-    return this.host.hostClearTimeoutIdInConnectionPoolItem(index);
   }
 
   async getSuspendedIndices(): Promise<number[]> {

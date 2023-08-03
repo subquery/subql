@@ -31,15 +31,15 @@ const logger = getLogger('connection-pool-state');
 export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
   addToConnections(endpoint: string, index: number): Promise<void>;
   getNextConnectedApiIndex(): Promise<number | undefined>;
+  // Async to be compatible with workers
   getFieldValue<K extends keyof ConnectionPoolItem<T>>(apiIndex: number, field: K): Promise<ConnectionPoolItem<T>[K]>;
+  // Async to be compatible with workers
   setFieldValue<K extends keyof ConnectionPoolItem<T>>(
     apiIndex: number,
     field: K,
     value: ConnectionPoolItem<T>[K]
   ): Promise<void>;
   getSuspendedIndices(): Promise<number[]>;
-  setTimeout(apiIndex: number, delay: number): Promise<void>;
-  clearTimeout(apiIndex: number): Promise<void>;
   removeFromConnections(apiIndex: number): Promise<void>;
   handleApiError(apiIndex: number, errorType: ApiErrorType): Promise<void>;
   handleApiSuccess(apiIndex: number, responseTime: number): Promise<void>;
@@ -84,8 +84,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       }
 
       // If there are rate-limited endpoints, return one of them at random
-      const randomRateLimitedIndex = rateLimitedIndices[Math.floor(Math.random() * rateLimitedIndices.length)];
-      return randomRateLimitedIndex;
+      return rateLimitedIndices[Math.floor(Math.random() * rateLimitedIndices.length)];
     }
 
     // Sort indices based on their performance scores in descending order
@@ -141,6 +140,9 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async setTimeout(apiIndex: number, delay: number): Promise<void> {
+    // Make sure there is no existing timeout
+    await this.clearTimeout(apiIndex);
+
     this.pool[apiIndex].timeoutId = setTimeout(() => {
       this.pool[apiIndex].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
       this.pool[apiIndex].rateLimited = false;
@@ -206,24 +208,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
         this.pool[apiIndex].failed = true;
       }
 
-      if (this.pool[apiIndex].timeoutId) {
-        clearTimeout(this.pool[apiIndex].timeoutId as NodeJS.Timeout);
-      }
-
-      this.pool[apiIndex].timeoutId = setTimeout(() => {
-        this.pool[apiIndex].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
-        this.pool[apiIndex].rateLimited = false;
-        this.pool[apiIndex].failed = false;
-        this.pool[apiIndex].timeoutId = undefined; // Clear the timeout ID
-
-        const suspendedIndices = Object.keys(this.pool)
-          .map(toNumber)
-          .filter((index) => this.pool[index].backoffDelay !== 0);
-
-        if (suspendedIndices.length === 0) {
-          logger.info(chalk.green('No suspended endpoints.'));
-        }
-      }, nextDelay);
+      await this.setTimeout(apiIndex, nextDelay);
 
       logger.warn(
         `Endpoint ${this.pool[apiIndex].endpoint} experienced an error (${errorType}). Suspending for ${

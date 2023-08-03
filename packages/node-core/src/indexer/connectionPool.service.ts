@@ -9,6 +9,7 @@ import {ApiConnectionError, ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
+import {delay} from '../utils';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 const logger = getLogger('connection-pool');
@@ -88,7 +89,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
               if (await this.poolStateManager.getFieldValue(index, 'rateLimited')) {
                 logger.info('throtling on ratelimited endpoint');
                 const backoffDelay = await this.poolStateManager.getFieldValue(index, 'backoffDelay');
-                await new Promise((resolve) => setTimeout(resolve, backoffDelay));
+                await delay(backoffDelay);
               }
 
               const start = Date.now();
