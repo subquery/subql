@@ -1,0 +1,22 @@
+{
+  "name": "@subql/types-soroban",
+  "version": "2.2.3-1",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql-soroban",
+  "repository": "github:subquery/subql-soroban",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "GPL-3.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "dependencies": {
+    "soroban-client": "0.9.2"
+  },
+  "stableVersion": "2.2.3-0"
+}

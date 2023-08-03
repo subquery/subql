@@ -1,0 +1,82 @@
+name: "Release"
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  pre-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: 'Block Concurrent Executions'
+        uses: softprops/turnstyle@v1
+        with:
+          poll-interval-seconds: 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+  Build-Publish:
+    name: Build-Publish
+    needs: pre-ci
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-soroban'"
+    runs-on: ubuntu-latest
+    steps:
+      #Check out
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+    #Identify changes
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types-soroban
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-soroban
+        with:
+          paths: packages/common-soroban
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node
+        with:
+          paths: packages/node
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      #Publish to npm and github releases
+      - name: Publish Types soroban
+        if: steps.changed-types-soroban.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Common soroban
+        if: steps.changed-common-soroban.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-soroban
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Node
+        if: steps.changed-node.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
