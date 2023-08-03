@@ -56,12 +56,27 @@ describe('Codegen can generate schema', () => {
   });
 
   it('Should clean out existing types directory', async () => {
-    const projectPath1 = path.join(__dirname, '../../test/schemaTest6');
-    const projectPath2 = path.join(__dirname, '../../test/schemaTest6');
-    await codegen(projectPath1);
-    await codegen(projectPath2, ['project-no-abi.yaml']);
+    const projectPath = path.join(__dirname, '../../test/schemaTest6');
+    await codegen(projectPath);
+    await codegen(projectPath, ['project-no-abi.yaml']);
 
     // should not contain abi directory
-    await expect(fs.promises.readFile(`${projectPath1}/src/types/abi-interfaces/Erc721.ts`, 'utf8')).rejects.toThrow();
+    await expect(fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')).rejects.toThrow();
+  });
+  it('should generate contracts on different glob paths', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest6');
+    await codegen(projectPath, ['typechain-test.yaml']);
+
+    await expect(
+      fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Erc721.ts`, 'utf8')
+    ).resolves.toBeTruthy();
+    await expect(
+      fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Artifact.ts`, 'utf8')
+    ).resolves.toBeTruthy();
+
+    await expect(fs.promises.readFile(`${projectPath}/src/types/contracts/Erc721.ts`, 'utf8')).resolves.toBeTruthy();
+    await expect(
+      fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Artifact.ts`, 'utf8')
+    ).resolves.toBeTruthy();
   });
 });
