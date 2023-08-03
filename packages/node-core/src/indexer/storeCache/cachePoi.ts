@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {DEFAULT_FETCH_RANGE} from '@subql/common';
-import {u8aToBuffer, u8aToHex} from '@subql/utils';
+import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
 import {Mutex} from 'async-mutex';
 import {getLogger} from '../../logger';
@@ -72,6 +72,12 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
     await this.mutex.waitForUnlock();
+    return this.plainPoiModel.getPoiBlocksByRange(startHeight);
+  }
+
+  // Deprecated, due to data merged from cache is missing, see test case
+  async getPoiBlocksByRangeWithCache(startHeight: number): Promise<ProofOfIndex[]> {
+    await this.mutex.waitForUnlock();
     let poiBlocks = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
     if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
       // means less than DEFAULT_FETCH_RANGE size blocks in database, it has reach the end of poi in db,
@@ -138,7 +144,6 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
     if (order === 'asc') {
       return ascending;
     }
-
     return ascending.reverse();
   }
 

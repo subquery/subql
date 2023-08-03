@@ -69,7 +69,6 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
   // This is the next block height that suppose to calculate its mmr value
   private _nextMmrBlockHeight?: number;
   private _poi?: PlainPoiModel;
-
   constructor(
     nodeConfig: NodeConfig,
     private readonly storeCacheService: StoreCacheService,
@@ -107,6 +106,36 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     this._poi = poi;
   }
 
+  private async syncPoiJob(logging?: boolean): Promise<void> {
+    const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
+    if (poiBlocks.length !== 0) {
+      if (logging) {
+        syncingMsg(poiBlocks[0].id, poiBlocks[poiBlocks.length - 1].id, poiBlocks.length);
+      }
+      const appendedBlocks: ProofOfIndex[] = [];
+      for (const block of poiBlocks) {
+        if (this.nextMmrBlockHeight < block.id) {
+          await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, block.id);
+        }
+        // it is a single mmr node, safe to append without flush here
+        appendedBlocks.push(await this.appendMmrNode(block));
+        this.eventEmitter.emit(PoiEvent.LastPoiWithMmr, {
+          height: block.id,
+          timestamp: Date.now(),
+        });
+        this._nextMmrBlockHeight = block.id + 1;
+      }
+      // This should be safe, even poi bulkUpsert faild, filebased/postgres db node should already been written and accurate.
+      if (appendedBlocks.length) {
+        await this.poi.bulkUpsert(appendedBlocks);
+        this.storeCacheService.metadata.set(
+          'latestPoiWithMmr',
+          JSON.stringify(appendedBlocks[appendedBlocks.length - 1])
+        );
+      }
+    }
+  }
+
   // Exit option allow exit when POI is fully sync
   async syncFileBaseFromPoi(blockOffset: number, exitHeight?: number, logging?: boolean): Promise<void> {
     if (this.isSyncing) return;
@@ -131,50 +160,7 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     }
     logger.info(`MMR database start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
-      const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
-      if (poiBlocks.length !== 0) {
-        if (logging) {
-          syncingMsg(poiBlocks[0].id, poiBlocks[poiBlocks.length - 1].id, poiBlocks.length);
-        }
-        const appendedBlocks: ProofOfIndex[] = [];
-        for (const block of poiBlocks) {
-          if (this.nextMmrBlockHeight < block.id) {
-            await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, block.id);
-          }
-          // it is a single mmr node, safe to append without flush here
-          appendedBlocks.push(await this.appendMmrNode(block));
-          this.eventEmitter.emit(PoiEvent.LastPoiWithMmr, {
-            height: block.id,
-            timestamp: Date.now(),
-          });
-          this._nextMmrBlockHeight = block.id + 1;
-        }
-        // This should be safe, even poi bulkUpsert faild, filebased/postgres db node should already been written and accurate.
-        if (appendedBlocks.length) {
-          await this.poi.bulkUpsert(appendedBlocks);
-          this.storeCacheService.metadata.set(
-            'latestPoiWithMmr',
-            JSON.stringify(appendedBlocks[appendedBlocks.length - 1])
-          );
-        }
-      } else {
-        const {lastPoiHeight, lastProcessedHeight} = await this.storeCacheService.metadata.findMany([
-          'lastPoiHeight',
-          'lastProcessedHeight',
-        ]);
-        // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
-        if (this.nextMmrBlockHeight > Number(lastPoiHeight) && this.nextMmrBlockHeight <= Number(lastProcessedHeight)) {
-          if (logging) {
-            syncingMsg(
-              this.nextMmrBlockHeight,
-              Number(lastProcessedHeight),
-              Math.max(1, Number(lastProcessedHeight) - this.nextMmrBlockHeight)
-            );
-          }
-          await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, Number(lastProcessedHeight) + 1);
-        }
-        await delay(MMR_AWAIT_TIME);
-      }
+      await this.syncPoiJob(logging);
       if (exitHeight !== undefined && this.nextMmrBlockHeight > exitHeight) {
         break;
       }
