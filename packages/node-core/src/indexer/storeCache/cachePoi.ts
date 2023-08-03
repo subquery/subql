@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {DEFAULT_FETCH_RANGE} from '@subql/common';
-import {u8aToBuffer, u8aToHex} from '@subql/utils';
+import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
 import {Mutex} from 'async-mutex';
 import {getLogger} from '../../logger';
@@ -72,8 +72,7 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
     await this.mutex.waitForUnlock();
-    const poiBlocks = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
-    return poiBlocks.length !== 0 ? poiBlocks : [];
+    return this.plainPoiModel.getPoiBlocksByRange(startHeight);
   }
 
   // Deprecated, due to data merged from cache is missing, see test case

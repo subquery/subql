@@ -69,8 +69,6 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
   // This is the next block height that suppose to calculate its mmr value
   private _nextMmrBlockHeight?: number;
   private _poi?: PlainPoiModel;
-  private _syncPoiJob?: Promise<void>;
-
   constructor(
     nodeConfig: NodeConfig,
     private readonly storeCacheService: StoreCacheService,
@@ -108,7 +106,7 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     this._poi = poi;
   }
 
-  async syncPoiJob(logging?: boolean): Promise<void> {
+  private async syncPoiJob(logging?: boolean): Promise<void> {
     const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
     if (poiBlocks.length !== 0) {
       if (logging) {
@@ -162,10 +160,7 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     }
     logger.info(`MMR database start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
-      if (this._syncPoiJob !== undefined) {
-        await this._syncPoiJob;
-      }
-      this._syncPoiJob = this.syncPoiJob(logging);
+      await this.syncPoiJob(logging);
       if (exitHeight !== undefined && this.nextMmrBlockHeight > exitHeight) {
         break;
       }
