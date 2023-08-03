@@ -72,6 +72,13 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
     await this.mutex.waitForUnlock();
+    const poiBlocks = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
+    return poiBlocks.length !== 0 ? poiBlocks : [];
+  }
+
+  // Deprecated, due to data merged from cache is missing, see test case
+  async getPoiBlocksByRangeWithCache(startHeight: number): Promise<ProofOfIndex[]> {
+    await this.mutex.waitForUnlock();
     let poiBlocks = await this.plainPoiModel.getPoiBlocksByRange(startHeight);
     if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
       // means less than DEFAULT_FETCH_RANGE size blocks in database, it has reach the end of poi in db,
@@ -138,7 +145,6 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
     if (order === 'asc') {
       return ascending;
     }
-
     return ascending.reverse();
   }
 

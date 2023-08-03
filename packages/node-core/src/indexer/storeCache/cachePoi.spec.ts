@@ -1,7 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Op} from '@subql/x-sequelize';
+import {delay} from '@subql/common';
+import {Op, Sequelize} from '@subql/x-sequelize';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {CachePoiModel} from './cachePoi';
 
@@ -59,16 +60,116 @@ const getEmptyPoi = (id: number, mmrRoot?: any): ProofOfIndex => {
   } as ProofOfIndex;
 };
 
+jest.mock('@subql/x-sequelize', () => {
+  let data: Record<string, any> = {};
+
+  let pendingData: typeof data = {};
+  let afterCommitHooks: Array<() => void> = [];
+
+  const mSequelize = {
+    authenticate: jest.fn(),
+    Op: {
+      in: jest.fn(),
+      notIn: jest.fn(),
+    },
+    define: () => ({
+      findOne: jest.fn(),
+      create: (input: any) => input,
+    }),
+    query: () => [{nextval: 1}],
+    showAllSchemas: () => ['subquery_1'],
+    model: (entity: string) => ({
+      getTableName: () => 'table1',
+      sequelize: {
+        escape: (key: any) => key,
+        query: (sql: string, option?: any) => jest.fn(),
+        fn: jest.fn().mockImplementation(() => {
+          return {fn: 'int8range', args: [41204769, null]};
+        }),
+      },
+      upsert: jest.fn(),
+      associations: [{}, {}],
+      count: 5,
+      findAll: jest.fn().mockImplementation(async () => {
+        await delay(5);
+      }),
+      findOne: jest.fn(({transaction, where: {id}}) => ({
+        toJSON: () => (transaction ? pendingData[id] ?? data[id] : data[id]),
+      })),
+      bulkCreate: jest.fn((records: {id: string}[]) => {
+        records.map((r) => (pendingData[r.id] = r));
+      }),
+      destroy: jest.fn(),
+    }),
+    sync: jest.fn(),
+    transaction: () => ({
+      commit: jest.fn(async () => {
+        await delay(1);
+        data = {...data, ...pendingData};
+        pendingData = {};
+        afterCommitHooks.map((fn) => fn());
+        afterCommitHooks = [];
+      }), // Delay of 1s is used to test whether we wait for cache to flush
+      rollback: jest.fn(),
+      afterCommit: jest.fn((fn) => afterCommitHooks.push(fn)),
+    }),
+    // createSchema: jest.fn(),
+  };
+  const actualSequelize = jest.requireActual('@subql/x-sequelize');
+  return {
+    Sequelize: jest.fn(() => mSequelize),
+    DataTypes: actualSequelize.DataTypes,
+    QueryTypes: actualSequelize.QueryTypes,
+    Deferrable: actualSequelize.Deferrable,
+  };
+});
+
 describe('CachePoi', () => {
   let poiRepo: PoiRepo;
   let cachePoi: CachePoiModel;
+  let sequelize: Sequelize;
 
   beforeEach(() => {
     poiRepo = mockPoiRepo();
+    sequelize = new Sequelize();
     cachePoi = new CachePoiModel(poiRepo);
   });
 
   describe('getPoiBlocksByRange', () => {
+    // We need to avoid this case.
+    // This is an example showing merge data from Db and cache, while flush happened and cache data could be missing
+    // Another lock can be implemented to race with flush
+    // However consider performance factor, we try to get data from db only.
+    it('missed data when fetch from db take long time, and set cache has been flushed', async () => {
+      await poiRepo.bulkCreate([{id: 99}, {id: 100}, {id: 101}] as any);
+
+      const tx = await sequelize.transaction();
+
+      // upsert
+      cachePoi.bulkUpsert([getEmptyPoi(200)]);
+      cachePoi.bulkUpsert([getEmptyPoi(202)]);
+      // Expect exist in setCache
+      expect((cachePoi as any).setCache['200']).toBeDefined();
+      expect((cachePoi as any).setCache['202']).toBeDefined();
+
+      // Mock db findAll take longer than usual
+      (cachePoi as any).plainPoiModel.getPoiBlocksByRange = jest.fn().mockImplementation(async () => {
+        await delay(5);
+        return [{id: 99}, {id: 100}, {id: 101}];
+      });
+
+      // while flush doesn't have to wait findAll completed, it could flush cache
+      const [blocks] = await Promise.all([
+        // mmrService
+        cachePoi.getPoiBlocksByRangeWithCache(90),
+        // StoreCache service
+        cachePoi.flush(tx),
+      ]);
+      // Expected missing data
+      expect(blocks.find((b) => b.id === 200)).toBeUndefined();
+      expect(blocks.find((b) => b.id === 202)).toBeUndefined();
+    }, 500000);
+
     it('with mix of cache and db data', async () => {
       await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
 

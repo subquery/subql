@@ -4,7 +4,7 @@
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
 import {Mutex} from 'async-mutex';
-import {flatten, includes, isEqual, uniq} from 'lodash';
+import {flatten, includes, isEqual, uniq, cloneDeep} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {SetValueModel} from './setValueModel';
 import {
@@ -322,12 +322,14 @@ export class CachedModel<
   }
 
   // Add blockRange to historical record
-  private applyBlockRange(setRecords: SetData<T>) {
+  private applyBlockRange(_setRecords: SetData<T>) {
+    const setRecords = cloneDeep(_setRecords);
     return flatten(
       Object.values(setRecords).map((v) => {
         if (!this.historical) {
           return v.getLatest()?.data;
         }
+
         // Historical
         return v.getValues().map((historicalValue) => {
           // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
