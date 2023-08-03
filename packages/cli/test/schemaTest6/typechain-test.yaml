@@ -1,0 +1,25 @@
+specVersion: '1.0.0'
+name: 'example'
+
+schema:
+  file: './schema.graphql'
+
+dataSources:
+  - kind: ethereum/Runtime
+    startBlock: 1
+    assets:
+      erc721:
+        file: ./erc721.json
+    mapping:
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler
+  - kind: ethereum/Runtime
+    startBlock: 2
+    assets:
+      artifact:
+        file: ../abiTest1/abis/artifact.sol/artifact.json
+    mapping:
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler

@@ -193,13 +193,19 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
   try {
     const allFiles = glob(projectPath, [...sortedAssets.values()]);
     // Typechain generate interfaces under CONTRACTS_DIR
-    await runTypeChain({
-      cwd: projectPath,
-      filesToProcess: allFiles,
-      allFiles,
-      outDir: CONTRACTS_DIR,
-      target: TYPECHAIN_TARGET,
-    });
+    // Run typechain for individual paths, if provided glob paths are the same,
+    // it will generate incorrect file structures, and fail to generate contracts for certain abis
+    await Promise.all(
+      allFiles.map((file) =>
+        runTypeChain({
+          cwd: projectPath,
+          filesToProcess: [file],
+          allFiles: [file],
+          outDir: CONTRACTS_DIR,
+          target: TYPECHAIN_TARGET,
+        })
+      )
+    );
     // Iterate here as we have to make sure type chain generated successful,
     // also avoid duplicate generate same abi interfaces
     const renderAbiJobs = processAbis(sortedAssets, projectPath, loadFromJsonOrYamlWrapper);

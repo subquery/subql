@@ -48,7 +48,7 @@ describe('Codegen can generate schema (mocked)', () => {
 
     const artifactAssetObj = {
       key: 'artifact',
-      value: './artifact.json',
+      value: './abis/artifact.sol/artifact.json',
     };
     const sortAssets_abis = new Map<string, string>();
     const sortAssets_artifact = new Map<string, string>();
@@ -56,7 +56,7 @@ describe('Codegen can generate schema (mocked)', () => {
     sortAssets_abis.set(abisAssetObj.key, abisAssetObj.value);
     sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
     const a = path.join(projectPath, './abis.json');
-    const b = path.join(projectPath, './artifact.json');
+    const b = path.join(projectPath, './abis/artifact.sol/artifact.json');
     // to mock the values for processAbi function
 
     // mock loadFromJsonOrYaml, in Jest environment it would return undefined.

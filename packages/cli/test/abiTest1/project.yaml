@@ -9,7 +9,7 @@ customDs:
     abis:
       file: ./abis.json
     artifact:
-      file: ./artifact.json
+      file: ./abis/artifact.sol/artifact.json
 dataSources:
   - kind: ethereum/Runtime
     startBlock: 1
