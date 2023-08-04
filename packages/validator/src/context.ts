@@ -7,6 +7,7 @@ import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {EthereumProjectManifestVersioned} from '@subql/common-ethereum';
 import {EthereumProjectManifestVersioned as FlareProjectManifestVersioned} from '@subql/common-flare';
 import {NearProjectManifestVersioned} from '@subql/common-near';
+import {SorobanProjectManifestVersioned} from '@subql/common-soroban';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {IPackageJson} from 'package-json-type';
 
@@ -19,7 +20,8 @@ export interface ContextData {
     | AlgorandProjectManifestVersioned
     | EthereumProjectManifestVersioned
     | FlareProjectManifestVersioned
-    | NearProjectManifestVersioned;
+    | NearProjectManifestVersioned
+    | SorobanProjectManifestVersioned;
 }
 
 export interface Context {

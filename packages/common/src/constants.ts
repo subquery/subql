@@ -27,6 +27,7 @@ export enum NETWORK_FAMILY {
   ethereum = 'Ethereum',
   flare = 'Flare',
   near = 'Near',
+  soroban = 'Soroban',
 }
 
 export const runnerMapping = {
@@ -37,6 +38,7 @@ export const runnerMapping = {
   '@subql/node-ethereum': NETWORK_FAMILY.ethereum,
   '@subql/node-flare': NETWORK_FAMILY.flare,
   '@subql/node-near': NETWORK_FAMILY.near,
+  '@subql/node-soroban': NETWORK_FAMILY.soroban,
 };
 
 // DATABASE TYPE

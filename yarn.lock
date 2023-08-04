@@ -4773,6 +4773,7 @@ __metadata:
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
+    "@subql/common-soroban": ^2.2.1-0
     "@subql/common-substrate": "workspace:*"
     "@types/js-yaml": ^4.0.5
     axios: ^0.24.0
