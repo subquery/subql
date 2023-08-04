@@ -4,6 +4,5 @@
 import { ApiWrapper } from '@subql/types-soroban';
 
 export function calcInterval(api: ApiWrapper): number {
-  // TODO find a way to get this from the blockchain
   return 6000;
 }

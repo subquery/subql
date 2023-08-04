@@ -3,6 +3,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { ApiService, getLogger, NestLogger } from '@subql/node-core';
+import { ConfigureModule } from '../configure/configure.module';
 import { ProjectService } from '../indexer/project.service';
 import { SorobanApiService } from '../soroban';
 import { TestingModule } from './testing.module';
@@ -11,17 +12,10 @@ import { TestingService } from './testing.service';
 const logger = getLogger('Testing');
 export async function testingInit(): Promise<void> {
   try {
-    const app = await NestFactory.create(TestingModule, {
-      logger: new NestLogger(),
-    });
+    const { config, project } = await ConfigureModule.getInstance();
+    const subqueryProject = await project();
 
-    await app.init();
-    const projectService = app.get(ProjectService);
-
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await projectService.init();
-
-    const testingService = app.get(TestingService);
+    const testingService = new TestingService(config, subqueryProject);
     await testingService.init();
     await testingService.run();
   } catch (e) {

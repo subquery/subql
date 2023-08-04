@@ -6,6 +6,8 @@ import { SorobanApi } from './api.soroban';
 
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
 
+jest.setTimeout(60000);
+
 const prepareSorobanApi = async function () {
   const api = new SorobanApi(HTTP_ENDPOINT, new EventEmitter2());
   await api.init();

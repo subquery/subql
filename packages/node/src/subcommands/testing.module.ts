@@ -11,6 +11,7 @@ import {
   NodeConfig,
   PoiService,
   StoreService,
+  TestRunner,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -59,12 +60,22 @@ import { TestingService } from './testing.service';
       },
       inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
     },
+    TestRunner,
+    {
+      provide: 'IApi',
+      useClass: SorobanApiService,
+    },
+    {
+      provide: 'IIndexerManager',
+      useClass: IndexerManager,
+    },
     IndexerManager,
     SchedulerRegistry,
   ],
 
   imports: [MetaModule, FetchModule],
   controllers: [],
+  exports: [TestRunner],
 })
 export class TestingFeatureModule {}
 

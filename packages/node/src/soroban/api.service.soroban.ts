@@ -53,37 +53,35 @@ export class SorobanApiService extends ApiService<
 
       const endpointToApiIndex: Record<string, SorobanApiConnection> = {};
 
-      await Promise.all(
-        endpoints.map(async (endpoint, i) => {
-          const connection = await SorobanApiConnection.create(
-            endpoint,
-            this.fetchBlockBatches,
-            this.eventEmitter,
+      for await (const [i, endpoint] of endpoints.entries()) {
+        const connection = await SorobanApiConnection.create(
+          endpoint,
+          this.fetchBlockBatches,
+          this.eventEmitter,
+        );
+
+        const api = connection.unsafeApi;
+
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          value: 1,
+          apiIndex: i,
+          endpoint: endpoint,
+        });
+
+        if (!this.networkMeta) {
+          this.networkMeta = connection.networkMeta;
+        }
+
+        if (network.chainId !== api.getChainId().toString()) {
+          throw this.metadataMismatchError(
+            'ChainId',
+            network.chainId,
+            api.getChainId().toString(),
           );
+        }
 
-          const api = connection.unsafeApi;
-
-          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-            value: 1,
-            apiIndex: i,
-            endpoint: endpoint,
-          });
-
-          if (!this.networkMeta) {
-            this.networkMeta = connection.networkMeta;
-          }
-
-          if (network.chainId !== api.getChainId().toString()) {
-            throw this.metadataMismatchError(
-              'ChainId',
-              network.chainId,
-              api.getChainId().toString(),
-            );
-          }
-
-          endpointToApiIndex[endpoint] = connection;
-        }),
-      );
+        endpointToApiIndex[endpoint] = connection;
+      }
 
       this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
 
