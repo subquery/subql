@@ -3,6 +3,7 @@
 
 import {SorobanRpc} from 'soroban-client';
 import {Horizon, ServerApi} from 'stellar-sdk';
+import {BaseEffectRecord} from 'stellar-sdk/lib/types/effects';
 import {BlockWrapper} from '../interfaces';
 
 export type SorobanBlock = Omit<ServerApi.LedgerRecord, 'effects' | 'operations' | 'self' | 'transactions'> & {
@@ -21,8 +22,8 @@ export type SorobanTransaction = Omit<
   operations: SorobanOperation[];
 };
 
-export type SorobanOperation = Omit<
-  ServerApi.OperationRecord,
+export type SorobanOperation<T extends Horizon.BaseOperationResponse = ServerApi.OperationRecord> = Omit<
+  T,
   'self' | 'succeeds' | 'precedes' | 'effects' | 'transaction'
 > & {
   effects: SorobanEffect[];
@@ -30,7 +31,7 @@ export type SorobanOperation = Omit<
   ledger: SorobanBlock;
 };
 
-export type SorobanEffect = ServerApi.EffectRecord & {
+export type SorobanEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> = T & {
   operation: SorobanOperation;
   transaction: SorobanTransaction;
   ledger: SorobanBlock;
