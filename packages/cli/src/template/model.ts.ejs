@@ -19,7 +19,7 @@ export class <%= props.className %> implements Entity {
 
     constructor(
         <% props.fields.forEach(function(field) { if (field.required) { %>
-            <%= field.name %>: <%= field.type %>,<% } %>
+            <%= field.name %>: <%= field.type %><%= field.isArray ? "[]" : "" %>,<% } %>
         <% }) %>
     ) {
         <% props.fields.filter(function(field) {return field.required === true;}).forEach(function(requiredField) { %>
