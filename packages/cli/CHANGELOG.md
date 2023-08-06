@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `subql codegen` with different pathing ABIs (#1916)
 
+### Added
+- Support building and publishing soroban projects (#1919)
+
 ## [3.3.2] - 2023-07-31
 ### Fixed
 - Update license in all packages (#1891)
