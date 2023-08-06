@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync @subql/apollo-links to 0.5.7, fix consuming cached token issue
 ### Changed
 - moved `indexBlock` to base `TestingService` (#1913)
-- Simplify conneciton pool logic (#1915)
+- Simplify connection pool logic (#1915)
 
 ## [4.0.1] - 2023-07-31
 ### Fixed
