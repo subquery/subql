@@ -85,81 +85,100 @@ export class ApiService
       );
     }
 
-    const endpointToApiIndex: Record<string, ApiPromiseConnection> = {};
-
     if (chainTypes) {
       logger.info('Using provided chain types');
     }
 
     for await (const [i, endpoint] of network.endpoint.entries()) {
-      const connection = await ApiPromiseConnection.create(
-        endpoint,
-        this.fetchBlocksBatches,
-        {
-          chainTypes,
-        },
-      );
-
-      const api = connection.unsafeApi;
-
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-        value: 1,
-        apiIndex: i,
-        endpoint: endpoint,
-      });
-
-      api.on('connected', () => {
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 1,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-      });
-      api.on('disconnected', () => {
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 0,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-      });
-
-      if (!this.networkMeta) {
-        this.networkMeta = connection.networkMeta;
-
-        if (
-          network.chainId &&
-          network.chainId !== this.networkMeta.genesisHash
-        ) {
-          const err = new Error(
-            `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
-              network.chainId ?? network.genesisHash
-            }", however the endpoint that you are connecting to is different("${
-              this.networkMeta.genesisHash
-            }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-          );
-          logger.error(err, err.message);
-          throw err;
-        }
-      } else {
-        const genesisHash = api.genesisHash.toString();
-        if (this.networkMeta.genesisHash !== genesisHash) {
-          throw this.metadataMismatchError(
-            'Genesis Hash',
-            this.networkMeta.genesisHash,
-            genesisHash,
-          );
-        }
-      }
-
-      endpointToApiIndex[endpoint] = connection;
+      const connection = await this.createAndValidateConnection(endpoint, i);
+      await this.connectionPoolService.addToConnections(connection, endpoint);
     }
 
-    await this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
+    if (this.nodeConfig.primaryNetworkEndpoint) {
+      const connection = await this.createAndValidateConnection(
+        this.nodeConfig.primaryNetworkEndpoint,
+        this.connectionPoolService.numConnections,
+      );
+
+      // add endpoint as primary;
+      await this.connectionPoolService.addToConnections(
+        connection,
+        this.nodeConfig.primaryNetworkEndpoint,
+        true,
+      );
+    }
+
     return this;
   }
 
   get api(): ApiPromise {
     return this.unsafeApi;
+  }
+
+  private async createAndValidateConnection(
+    endpoint: string,
+    index: number,
+  ): Promise<ApiPromiseConnection> {
+    const network = this.project.network;
+    const chainTypes = this.project.chainTypes;
+
+    const connection = await ApiPromiseConnection.create(
+      endpoint,
+      this.fetchBlocksBatches,
+      {
+        chainTypes,
+      },
+    );
+
+    const api = connection.unsafeApi;
+
+    this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+      value: 1,
+      apiIndex: index,
+      endpoint: endpoint,
+    });
+
+    api.on('connected', () => {
+      this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+        value: 1,
+        apiIndex: index,
+        endpoint: endpoint,
+      });
+    });
+    api.on('disconnected', () => {
+      this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+        value: 0,
+        apiIndex: index,
+        endpoint: endpoint,
+      });
+    });
+
+    if (!this.networkMeta) {
+      this.networkMeta = connection.networkMeta;
+
+      if (network.chainId && network.chainId !== this.networkMeta.genesisHash) {
+        const err = new Error(
+          `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
+            network.chainId ?? network.genesisHash
+          }", however the endpoint that you are connecting to is different("${
+            this.networkMeta.genesisHash
+          }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
+        );
+        logger.error(err, err.message);
+        throw err;
+      }
+    } else {
+      const genesisHash = api.genesisHash.toString();
+      if (this.networkMeta.genesisHash !== genesisHash) {
+        throw this.metadataMismatchError(
+          'Genesis Hash',
+          this.networkMeta.genesisHash,
+          genesisHash,
+        );
+      }
+    }
+
+    return connection;
   }
 
   async getPatchedApi(

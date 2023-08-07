@@ -16,6 +16,7 @@ const FAILURE_WEIGHT = 0.3;
 
 export interface ConnectionPoolItem<T> {
   endpoint: string;
+  primary: boolean;
   performanceScore: number;
   backoffDelay: number;
   failureCount: number;
@@ -52,8 +53,9 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async addToConnections(endpoint: string, index: number): Promise<void> {
+  async addToConnections(endpoint: string, index: number, primary = false): Promise<void> {
     const poolItem: ConnectionPoolItem<T> = {
+      primary: primary,
       performanceScore: 100,
       failureCount: 0,
       endpoint: endpoint,
@@ -64,10 +66,19 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       lastRequestTime: 0,
     };
     this.pool[index] = poolItem;
+
+    if (primary) {
+      logger.info(`Primary endpoint ${endpoint} added.`);
+    }
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async getNextConnectedApiIndex(): Promise<number | undefined> {
+    const primaryIndex = this.getPrimaryEndpointIndex();
+    if (primaryIndex !== undefined) {
+      return primaryIndex;
+    }
+
     const indices = Object.keys(this.pool)
       .map(Number)
       .filter((index) => !this.pool[index].backoffDelay && this.pool[index].connected);
@@ -108,6 +119,12 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
 
     // Return the corresponding index from the sorted indices
     return indices[selectedIndex];
+  }
+
+  private getPrimaryEndpointIndex(): number | undefined {
+    return Object.keys(this.pool)
+      .map(Number)
+      .find((index) => this.pool[index].primary && !this.pool[index].backoffDelay && this.pool[index].connected);
   }
 
   get numConnections(): number {
