@@ -46,9 +46,9 @@ export class ApiService
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
-    private nodeConfig: NodeConfig,
+    nodeConfig: NodeConfig,
   ) {
-    super(connectionPoolService);
+    super(connectionPoolService, nodeConfig);
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -94,19 +94,7 @@ export class ApiService
       await this.connectionPoolService.addToConnections(connection, endpoint);
     }
 
-    if (this.nodeConfig.primaryNetworkEndpoint) {
-      const connection = await this.createAndValidateConnection(
-        this.nodeConfig.primaryNetworkEndpoint,
-        this.connectionPoolService.numConnections,
-      );
-
-      // add endpoint as primary;
-      await this.connectionPoolService.addToConnections(
-        connection,
-        this.nodeConfig.primaryNetworkEndpoint,
-        true,
-      );
-    }
+    await this.addPrimaryConnectionIfExists();
 
     return this;
   }
@@ -115,13 +103,12 @@ export class ApiService
     return this.unsafeApi;
   }
 
-  private async createAndValidateConnection(
+  protected async createAndValidateConnection(
     endpoint: string,
     index: number,
   ): Promise<ApiPromiseConnection> {
     const network = this.project.network;
     const chainTypes = this.project.chainTypes;
-
     const connection = await ApiPromiseConnection.create(
       endpoint,
       this.fetchBlocksBatches,
