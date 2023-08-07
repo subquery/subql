@@ -139,9 +139,4 @@ describe('Cli can create project', () => {
     await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
   }, 5000000);
-  it('remove Existing datasources, mapping and abis', async () => {
-    const temp = '/Users/ben/subql-workspace/testers/mocks/oooo';
-
-    await prepareProjectScaffold(temp);
-  });
 });
