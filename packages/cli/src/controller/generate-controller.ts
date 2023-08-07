@@ -13,13 +13,13 @@ import {
 } from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import chalk from 'chalk';
-import ejs from 'ejs';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
 import {upperFirst, difference, pickBy} from 'lodash';
 import {parseContractPath} from 'typechain';
-import {Document, parse, parseDocument, YAMLSeq} from 'yaml';
+import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {renderTemplate} from '../utils';
 
 interface HandlerPropType {
   name: string;
@@ -92,11 +92,6 @@ export async function promptSelectables<T extends ConstructorFragment | Fragment
   });
 
   return selectedMethods;
-}
-
-export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
-  const data = await ejs.renderFile(templatePath, templateData);
-  await fs.promises.writeFile(outputPath, data);
 }
 
 export function getAbiInterface(projectPath: string, abiFileName: string): Interface {
