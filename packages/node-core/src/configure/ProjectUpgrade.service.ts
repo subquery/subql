@@ -90,7 +90,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
 
   private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
-    // TODO change to debug
     logger.info(
       `Projects: ${JSON.stringify(
         [..._projects.getAll().entries()].reduce((acc, curr) => {

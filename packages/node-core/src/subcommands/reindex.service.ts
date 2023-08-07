@@ -25,8 +25,8 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     private readonly mmrService: MmrService,
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
-    private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
-    private readonly dynamicDsService: DynamicDsService<DS>
+    @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
+    @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>
   ) {}
 
   private get metadataRepo(): CacheMetadataModel {

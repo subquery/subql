@@ -27,8 +27,14 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     MmrService,
     PgMmrCacheService,
     ForceCleanService,
-    UnfinalizedBlocksService,
-    DynamicDsService,
+    {
+      provide: 'UnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
+    },
+    {
+      provide: 'DynamicDsService',
+      useClass: DynamicDsService,
+    },
     DsProcessorService,
     {
       // Used to work with DI for unfinalizedBlocksService but not used with reindex
