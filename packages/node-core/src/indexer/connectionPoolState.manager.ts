@@ -30,7 +30,7 @@ export interface ConnectionPoolItem<T> {
 const logger = getLogger('connection-pool-state');
 
 export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
-  addToConnections(endpoint: string, index: number): Promise<void>;
+  addToConnections(endpoint: string, index: number, primary: boolean): Promise<void>;
   getNextConnectedApiIndex(): Promise<number | undefined>;
   // Async to be compatible with workers
   getFieldValue<K extends keyof ConnectionPoolItem<T>>(apiIndex: number, field: K): Promise<ConnectionPoolItem<T>[K]>;
@@ -53,7 +53,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async addToConnections(endpoint: string, index: number, primary = false): Promise<void> {
+  async addToConnections(endpoint: string, index: number, primary: boolean): Promise<void> {
     const poolItem: ConnectionPoolItem<T> = {
       primary: primary,
       performanceScore: 100,

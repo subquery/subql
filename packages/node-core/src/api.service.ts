@@ -25,27 +25,9 @@ export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi
 }
 
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
-  constructor(
-    protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>,
-    protected nodeConfig: NodeConfig
-  ) {}
+  constructor(protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>) {}
 
   abstract networkMeta: NetworkMetadataPayload;
-  protected abstract createAndValidateConnection(
-    endpoint: string,
-    index: number
-  ): Promise<IApiConnectionSpecific<A, SA, B>>;
-
-  protected async addPrimaryConnectionIfExists() {
-    if (this.nodeConfig.primaryNetworkEndpoint) {
-      const connection = await this.createAndValidateConnection(
-        this.nodeConfig.primaryNetworkEndpoint,
-        this.connectionPoolService.numConnections
-      );
-
-      this.connectionPoolService.addToConnections(connection, this.nodeConfig.primaryNetworkEndpoint, true);
-    }
-  }
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {
     let reconnectAttempts = 0;
