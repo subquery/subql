@@ -38,10 +38,12 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
 
   protected async addPrimaryConnectionIfExists() {
     if (this.nodeConfig.primaryNetworkEndpoint) {
-      await this.createAndValidateConnection(
+      const connection = await this.createAndValidateConnection(
         this.nodeConfig.primaryNetworkEndpoint,
         this.connectionPoolService.numConnections
       );
+
+      this.connectionPoolService.addToConnections(connection, this.nodeConfig.primaryNetworkEndpoint, true);
     }
   }
 
