@@ -321,12 +321,12 @@ describe('CLI codegen:generate', () => {
     expect(removeKeyword(inputString)).toBe('balanceOf(address _owner) external view returns (uint256)');
   });
   it('Able to read from artifacts and abis', () => {
-    let abiPath = path.join(__dirname, '../../test/abiTest1/abis.json');
-    expect(getAbiInterface(projectPath, abiPath)).toBeTruthy();
-    abiPath = path.join(__dirname, '../../test/abiTest1/artifact.json');
-    expect(getAbiInterface(projectPath, abiPath)).toBeTruthy();
+    const mockPath_1 = path.join(__dirname, '../../test/abiTest1/');
+    const mockPath_2 = path.join(__dirname, '../../test/abiTest2/');
 
-    abiPath = path.join(__dirname, '../../test/abiTest2/artifact.json');
-    expect(getAbiInterface(projectPath, abiPath)).toThrow('Provided ABI is not a valid ABI or Artifact');
+    expect(getAbiInterface(mockPath_1, 'abis.json')).toBeTruthy();
+    expect(getAbiInterface(mockPath_1, 'artifact.json')).toBeTruthy();
+
+    expect(() => getAbiInterface(mockPath_2, 'artifact.json')).toThrow('Provided ABI is not a valid ABI or Artifact');
   });
 });

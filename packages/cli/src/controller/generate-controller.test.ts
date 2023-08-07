@@ -372,13 +372,13 @@ export async function ${expectedEventHandler}(log: ApprovalLog ): Promise<void> 
     );
   });
   it('Should be able to parse relative path on abiPath', async () => {
-    const abiPath_relative = '../abiTest1/abis.json';
+    const abiPath_relative = '../abiTest1/abis/abis.json';
     await prepareAbiDirectory(abiPath_relative, PROJECT_PATH);
 
     expect(fs.existsSync(path.join(PROJECT_PATH, 'abis/abis.json'))).toBeTruthy();
   });
   it('Should be able to parse absolute path on abiPath', async () => {
-    const abiPath_absolute = path.join(__dirname, '../../test/abiTest1/abis.json');
+    const abiPath_absolute = path.join(__dirname, '../../test/abiTest1/abis/abis.json');
     await prepareAbiDirectory(abiPath_absolute, PROJECT_PATH);
 
     expect(fs.existsSync(path.join(PROJECT_PATH, 'abis/abis.json'))).toBeTruthy();

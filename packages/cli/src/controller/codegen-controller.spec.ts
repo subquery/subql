@@ -43,7 +43,7 @@ describe('Codegen can generate schema (mocked)', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest1');
     const abisAssetObj = {
       key: 'abis',
-      value: './abis.json',
+      value: './abis/abis.json',
     };
 
     const artifactAssetObj = {
@@ -55,7 +55,7 @@ describe('Codegen can generate schema (mocked)', () => {
 
     sortAssets_abis.set(abisAssetObj.key, abisAssetObj.value);
     sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
-    const a = path.join(projectPath, './abis.json');
+    const a = path.join(projectPath, './abis/abis.json');
     const b = path.join(projectPath, './abis/artifact.sol/artifact.json');
     // to mock the values for processAbi function
 
@@ -106,7 +106,7 @@ describe('Codegen can generate schema (mocked)', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest2');
     const artifactAssetObj = {
       key: 'artifact',
-      value: './artifact.json',
+      value: './abis/artifact.json',
     };
     const sortAssets_artifact = new Map<string, string>();
 
