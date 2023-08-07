@@ -174,7 +174,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
-      // 'deployments',
     ] as const;
 
     const existing = await metadata.findMany(keys);
@@ -222,8 +221,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     if (!existing.startHeight) {
       metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
-
-    // await this.syncDeployments(existing, metadata);
   }
 
   protected async getMetadataBlockOffset(): Promise<number | undefined> {

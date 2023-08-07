@@ -95,7 +95,6 @@ export abstract class BaseFetchService<
   private get useDictionary(): boolean {
     return (
       this.dictionaryService.useDictionary &&
-      // TODO when we query we get via query end height, why is it start heigth here?
       !!this.dictionaryService.queriesMap?.get(
         this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
       )?.length

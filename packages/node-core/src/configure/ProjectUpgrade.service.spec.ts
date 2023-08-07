@@ -302,15 +302,11 @@ describe('Project Upgrades', () => {
 
     it('succeds with an exact match', () => {
       const indexedData = {1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: '5'};
-
-      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(50);
       expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
     });
 
     it('succeds with a partial match', () => {
       const indexedData = {1: '0', 10: '1', 20: '2'};
-
-      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(20);
       expect(upgradeService.validateIndexedData(indexedData)).toEqual(29);
     });
 
@@ -321,8 +317,6 @@ describe('Project Upgrades', () => {
     it('succeeds with upgraded projects before the upgraded feature', () => {
       // Negative values wouldn't be possible in use, but its here for test simplification
       const indexedData = {[-20]: '-2', [-10]: '-1', 1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: '5'};
-
-      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(50);
       expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
     });
 
@@ -331,8 +325,6 @@ describe('Project Upgrades', () => {
       // upgrade to a -> b -> c -> e
 
       const indexedData = {1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: 'Z'};
-
-      // expect(upgradeService.validateIndexedData(indexedData)).toEqual(40);
       expect(upgradeService.validateIndexedData(indexedData)).toEqual(49);
     });
 
@@ -340,7 +332,6 @@ describe('Project Upgrades', () => {
       // indexed a -> b -> c -> d
       // upgrade to x -> y -> z
       const indexedData = {1: 'A', 11: 'B', 21: 'C'};
-
       expect(() => upgradeService.validateIndexedData(indexedData)).toThrow();
     });
 
@@ -352,7 +343,6 @@ describe('Project Upgrades', () => {
       );
 
       const indexedData = {1: '0', 10: '1', 20: '2', 30: '3', 40: '4', 50: '5'};
-
       expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
     });
   });

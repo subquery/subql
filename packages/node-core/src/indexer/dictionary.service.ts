@@ -329,6 +329,7 @@ export class DictionaryService {
     }
     return buildQuery(vars, nodes);
   }
+
   buildDictionaryEntryMap<DS extends BaseDataSource>(
     dataSources: BlockHeightMap<DS[]>,
     buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
