@@ -24,6 +24,12 @@ import {
   CustomDatasourceTemplate as NearCustomDsTemplate,
 } from '@subql/common-near';
 import {
+  isCustomDs as isCustomSorobanDs,
+  isRuntimeDs as isRuntimeSorobanDs,
+  RuntimeDatasourceTemplate as SorobanDsTemplate,
+  CustomDatasourceTemplate as SorobanCustomDsTemplate,
+} from '@subql/common-soroban';
+import {
   isCustomDs as isCustomSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
@@ -53,7 +59,9 @@ type TemplateKind =
   | EthereumDsTemplate
   | EthereumCustomDsTemplate
   | NearDsTemplate
-  | NearCustomDsTemplate;
+  | NearCustomDsTemplate
+  | SorobanDsTemplate
+  | SorobanCustomDsTemplate;
 
 type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
 
@@ -548,6 +556,8 @@ function hasParameters(t: TemplateKind): boolean {
     isCustomEthereumDs(t as EthereumDsTemplate) ||
     isCustomSubstrateDs(t as SubstrateDsTemplate) ||
     isRuntimeNearDs(t as NearDsTemplate) ||
-    isCustomNearDs(t as NearDsTemplate)
+    isCustomNearDs(t as NearDsTemplate) ||
+    isRuntimeSorobanDs(t as SorobanDsTemplate) ||
+    isCustomSorobanDs(t as SorobanDsTemplate)
   );
 }
