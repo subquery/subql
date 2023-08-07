@@ -19,7 +19,7 @@ export interface DatasourceParams {
 export interface IDynamicDsService<DS> {
   dynamicDatasources: DS[];
   createDynamicDatasource(params: DatasourceParams): Promise<DS>;
-  getDynamicDatasources(): Promise<DS[]>;
+  getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
 }
 
 export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
@@ -75,9 +75,9 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     }
   }
 
-  async getDynamicDatasources(): Promise<DS[]> {
+  async getDynamicDatasources(forceReload?: boolean): Promise<DS[]> {
     // Workers should not cache this result in order to keep in sync
-    if (!this._datasources) {
+    if (!this._datasources || forceReload) {
       this._datasources = await this.loadDynamicDatasources();
     }
 

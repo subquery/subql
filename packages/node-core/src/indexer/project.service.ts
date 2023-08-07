@@ -319,7 +319,11 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   private async initUpgradeService(): Promise<number | undefined> {
     const metadata = this.storeService.storeCache.metadata;
 
-    const upgradePoint = await this.projectUpgradeService.init(metadata);
+    const upgradePoint = await this.projectUpgradeService.init(metadata, () => {
+      // Reload the dynamic ds with new project
+      // TODO are we going to run into problems with this being non blocking
+      this.dynamicDsService.getDynamicDatasources(true);
+    });
     const lastProcessedHeight = await this.getLastProcessedHeight();
 
     // New project or not using upgrades feature

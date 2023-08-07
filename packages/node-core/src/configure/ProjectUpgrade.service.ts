@@ -9,8 +9,10 @@ import {getLogger} from '../logger';
 import {getStartHeight} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
+type OnProjectUpgradeCallback<P> = (height: number, project: P) => void;
+
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
-  init: (metadata: CacheMetadataModel) => Promise<number | undefined>;
+  init: (metadata: CacheMetadataModel, onProjectUpgrade: OnProjectUpgradeCallback<P>) => Promise<number | undefined>;
   updateIndexedDeployments: (id: string, blockHeight: number) => Promise<void>;
   currentHeight: number;
   currentProject: P;
@@ -85,6 +87,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   #metadata?: CacheMetadataModel;
 
+  private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
+
   private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
     // TODO change to debug
     logger.info(
@@ -103,8 +107,13 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#currentProject = this.getProject(this.#currentHeight);
   }
 
-  async init(metadata: CacheMetadataModel): Promise<number | undefined> {
+  async init(
+    metadata: CacheMetadataModel,
+    onProjectUpgrade?: OnProjectUpgradeCallback<P>
+  ): Promise<number | undefined> {
+    assert(!this.#metadata, `ProjectUpgradeService has already been initialized`);
     this.#metadata = metadata;
+    this.onProjectUpgrade = onProjectUpgrade;
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 
@@ -138,6 +147,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         logger.error(e, 'Failed to update deployment metadata');
         process.exit(1);
       });
+
+      this.onProjectUpgrade?.(startHeight, newProject);
     }
     this.#currentProject = newProject;
   }
