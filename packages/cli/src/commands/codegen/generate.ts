@@ -69,7 +69,9 @@ export default class Generate extends Command {
     // if the handler file already exists, should throw
 
     const existingManifest = await getManifestData(root, manifests[0]);
-    const existingDs = (existingManifest.get('dataSources') as any).toJSON() as EthereumDs[];
+    const existingDs = (existingManifest.get('dataSources') as any)
+      ? ((existingManifest.get('dataSources') as any).toJSON() as EthereumDs[])
+      : [];
 
     const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
     const selectedFunctions = await prepareInputFragments('function', functions, functionFragments, abiName);

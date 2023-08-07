@@ -18,7 +18,7 @@ import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
 import {upperFirst, difference, pickBy} from 'lodash';
 import {parseContractPath} from 'typechain';
-import {Document, parseDocument, YAMLSeq} from 'yaml';
+import {Document, parse, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 
 interface HandlerPropType {
@@ -273,8 +273,15 @@ export async function generateManifest(
   existingManifestData: Document
 ): Promise<void> {
   const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
+  if (!dsNode || !dsNode.items.length) {
+    // To ensure output is in yaml format
+    const cleanDs = new YAMLSeq();
+    cleanDs.add(constructDatasources(userInput));
+    existingManifestData.set('dataSources', cleanDs);
+  } else {
+    dsNode.add(constructDatasources(userInput));
+  }
 
-  dsNode.add(constructDatasources(userInput));
   await fs.promises.writeFile(path.join(projectPath, manifestPath), existingManifestData.toString(), 'utf8');
 }
 

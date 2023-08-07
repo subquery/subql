@@ -19,6 +19,7 @@ import {
   cloneProjectGit,
   readDefaults,
   prepare,
+  prepareProjectScaffold,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
 import Generate from './codegen/generate';
@@ -57,14 +58,6 @@ async function promptValidRemoteAndBranch(): Promise<string[]> {
     required: true,
   });
   return [remote, branch];
-}
-
-interface InitFlagType {
-  force: boolean;
-  location: string;
-  'install-dependencies': boolean;
-  npm: boolean;
-  abiPath: string;
 }
 
 export default class Init extends Command {
@@ -107,7 +100,7 @@ export default class Init extends Command {
     let selectedTemplate: Template;
 
     templates = await fetchTemplates();
-    await this.observeTemplates(templates, flags);
+    await this.observeTemplates(templates);
 
     //Family selection
     const families = uniq(templates.map(({family}) => family)).sort();
@@ -129,7 +122,7 @@ export default class Init extends Command {
 
     // if network family is of ethereum, then should prompt them an abiPath
     templates = templates.filter(({family}) => family === this.networkFamily);
-    await this.observeTemplates(templates, flags);
+    await this.observeTemplates(templates);
 
     // Network selection
     const networks = uniq(templates.map(({network}) => network)).sort();
@@ -149,7 +142,7 @@ export default class Init extends Command {
         this.network = networkResponse;
       });
     const candidateTemplates = templates.filter(({network}) => network === this.network);
-    await this.observeTemplates(candidateTemplates, flags);
+    await this.observeTemplates(candidateTemplates);
 
     // Templates selection
     const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
@@ -171,15 +164,16 @@ export default class Init extends Command {
       .then(async ({templateDisplay}) => {
         const templateName = (templateDisplay as string).split(' ')[0];
         if (templateName === 'Other') {
-          await this.observeTemplates([], flags);
+          await this.observeTemplates([]);
         } else {
           selectedTemplate = templates.find(({name}) => name === templateName);
-          await this.observeTemplates([selectedTemplate], flags);
+          await this.observeTemplates([selectedTemplate]);
         }
       });
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedTemplate);
     await this.setupProject(flags);
 
+    // This should be all evm chains ?
     if (this.networkFamily === 'Ethereum') {
       const {loadAbi} = await inquirer.prompt([
         {
@@ -190,74 +184,13 @@ export default class Init extends Command {
         },
       ]);
 
-      /*
-      -f project.name // from init
-      --events *
-      --functions *
-      --abiPath flags.abiPath // prompt them in init
-      --startBlock 1
-      --address ?
-       */
-      // prompt them these values
       if (loadAbi) {
-        // prompt them abiPath
-        const {abiFilePath} = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'abiFilePath',
-            message: 'Path to ABI',
-            validate(input: string): boolean | string | Promise<boolean | string> {
-              if (!path.isAbsolute(path.resolve(input))) {
-                return 'Please enter an absolute file path';
-              }
-              return true;
-            },
-          },
-        ]);
-
-        // if abiFilePath is given, then should remove existing abi in starter Project
-
-        const {contractAddress} = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'contractAddress',
-            message: 'Please provide an address (optional)',
-            default: '',
-          },
-        ]);
-
-        const {startBlock} = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'startBlock',
-            message: 'Please provide startBlock (optional)',
-            default: 1,
-          },
-        ]);
-
-        this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
-
-        await Generate.run([
-          '-f',
-          `${path.join(this.location, `${this.project.name}`)}`,
-          '--abiPath',
-          `${abiFilePath}`,
-          '--address',
-          `${contractAddress}`,
-          '--startBlock',
-          `${startBlock}`,
-        ]);
+        await this.createProjectScaffold();
       }
     }
   }
 
-  // add abi path ? yes/no ?
-
-  // observe templates, if no option left or manually select use custom templates
-
-  // remove starter abi if they have provided an abi
-
-  async observeTemplates(templates: Template[], flags: any): Promise<void> {
+  async observeTemplates(templates: Template[]): Promise<void> {
     if (templates.length === 0) {
       const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
@@ -308,6 +241,53 @@ export default class Init extends Command {
       cli.action.stop();
     }
     this.log(`${this.project.name} is ready`);
-    // process.exit(0);
+  }
+  async createProjectScaffold(): Promise<void> {
+    await prepareProjectScaffold(this.projectPath);
+
+    const {abiFilePath} = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'abiFilePath',
+        message: 'Path to ABI',
+        validate(input: string): boolean | string | Promise<boolean | string> {
+          if (!path.isAbsolute(path.resolve(input))) {
+            return 'Please enter an absolute file path';
+          }
+          return true;
+        },
+      },
+    ]);
+
+    const {contractAddress} = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'contractAddress',
+        message: 'Please provide an address (optional)',
+        default: '',
+      },
+    ]);
+
+    const {startBlock} = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'startBlock',
+        message: 'Please provide startBlock (optional)',
+        default: 1,
+      },
+    ]);
+
+    this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
+
+    await Generate.run([
+      '-f',
+      this.projectPath,
+      '--abiPath',
+      `${abiFilePath}`,
+      '--address',
+      `${contractAddress}`,
+      '--startBlock',
+      `${startBlock}`,
+    ]);
   }
 }

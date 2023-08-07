@@ -10,8 +10,9 @@ import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
-import {parseDocument} from 'yaml';
+import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
 import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
+import {prepareDirPath} from '../utils';
 const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
 
 export interface Template {
@@ -132,7 +133,7 @@ async function prepareManifest(projectPath: string, project: ProjectSpecBase): P
   clonedData.set('description', project.description ?? data.get('description'));
   clonedData.set('repository', project.repository ?? '');
 
-  const network: any = clonedData.get('network');
+  const network = clonedData.get('network') as YAMLMap;
   network.set('endpoint', project.endpoint);
   clonedData.set('version', project.version);
   clonedData.set('name', project.name);
@@ -162,4 +163,20 @@ function checkYarnExists(): boolean {
   } catch (e) {
     return false;
   }
+}
+
+export async function prepareProjectScaffold(projectPath: string): Promise<void> {
+  // remove all existing abis & handler files
+  await prepareDirPath(path.join(projectPath, 'abis/'), false);
+  await prepareDirPath(path.join(projectPath, 'src/mappings/'), true);
+
+  // clean datasource
+  const manifest = parseDocument(
+    (await fs.promises.readFile(path.join(projectPath, 'project.yaml'), 'utf8')) as string
+  );
+  manifest.set('dataSources', new YAMLSeq());
+  await fs.promises.writeFile(path.join(projectPath, 'project.yaml'), manifest.toString(), 'utf8');
+
+  // remove handler file from index.ts
+  fs.truncateSync(path.join(projectPath, 'src/index.ts'), 0);
 }
