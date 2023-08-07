@@ -4338,9 +4338,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:^0.5.3":
-  version: 0.5.3
-  resolution: "@subql/apollo-links@npm:0.5.3"
+"@subql/apollo-links@npm:^0.5.8":
+  version: 0.5.8
+  resolution: "@subql/apollo-links@npm:0.5.8"
   dependencies:
     "@metamask/eth-sig-util": 5.1.0
     apollo-link-error: ^1.1.13
@@ -4351,7 +4351,7 @@ __metadata:
   peerDependencies:
     "@apollo/client": "*"
     graphql: "*"
-  checksum: 4927973abdb412b9673a0670395b7612cd109dde8f8568411746c4e35a8ab74514421d65ca4239a3f660b4bc9634c3867047f657c3846beae97a3ccd1e67ff3d
+  checksum: 34366e720bfe5c5dece380b93ec61d754f0bc804d07ff43e46aaca792f26f202b112a47cc2729a43e55181190b322aa1665618162f94add5cb341fb553f22116
   languageName: node
   linkType: hard
 
@@ -4569,7 +4569,7 @@ __metadata:
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/apollo-links": ^0.5.3
+    "@subql/apollo-links": ^0.5.8
     "@subql/common": "workspace:*"
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"

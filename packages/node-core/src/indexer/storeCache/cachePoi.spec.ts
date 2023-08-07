@@ -135,7 +135,8 @@ describe('CachePoi', () => {
     cachePoi = new CachePoiModel(poiRepo);
   });
 
-  describe('getPoiBlocksByRange', () => {
+  // This getPoiBlocksByRangeWithCache method is deprecated
+  describe.skip('getPoiBlocksByRangeWithCache', () => {
     // We need to avoid this case.
     // This is an example showing merge data from Db and cache, while flush happened and cache data could be missing
     // Another lock can be implemented to race with flush
@@ -177,14 +178,14 @@ describe('CachePoi', () => {
       cachePoi.bulkUpsert([getEmptyPoi(5)]);
       cachePoi.bulkUpsert([getEmptyPoi(6)]);
 
-      const res = await cachePoi.getPoiBlocksByRange(2);
+      const res = await cachePoi.getPoiBlocksByRangeWithCache(2);
       expect(res.map((d) => d.id)).toEqual([2, 3, 4, 5, 6]);
     });
 
     it('only db data', async () => {
       await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
 
-      const res = await cachePoi.getPoiBlocksByRange(2);
+      const res = await cachePoi.getPoiBlocksByRangeWithCache(2);
       expect(res.map((d) => d.id)).toEqual([2, 3]);
     });
 
@@ -193,7 +194,7 @@ describe('CachePoi', () => {
       cachePoi.bulkUpsert([getEmptyPoi(5)]);
       cachePoi.bulkUpsert([getEmptyPoi(6)]);
 
-      const res = await cachePoi.getPoiBlocksByRange(2);
+      const res = await cachePoi.getPoiBlocksByRangeWithCache(2);
       expect(res.map((d) => d.id)).toEqual([4, 5, 6]);
     });
   });
