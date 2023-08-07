@@ -16,6 +16,7 @@ import {
   generateManifest,
   getAbiInterface,
   getManifestData,
+  prepareAbiDirectory,
   prepareInputFragments,
 } from '../../controller/generate-controller';
 
@@ -45,18 +46,23 @@ export default class Generate extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
+    // abiPath should be absolute ?
     const {abiPath, address, events, file, functions, startBlock} = flags;
 
     const projectPath = path.resolve(file ?? process.cwd());
     const {manifests, root} = getProjectRootAndManifest(projectPath);
+
     const abiName = parseContractPath(abiPath).name;
 
     if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {
       throw new Error(`file: ${abiName}Handlers.ts already exists`);
     }
 
+    await prepareAbiDirectory(abiPath, root);
+    const abiFileName = path.basename(abiPath);
+
     // fragments from abi
-    const abiInterface = getAbiInterface(root, abiPath);
+    const abiInterface = getAbiInterface(root, abiFileName);
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
@@ -78,12 +84,12 @@ export default class Generate extends Command {
         startBlock: startBlock,
         functions: constructedFunctions,
         events: constructedEvents,
-        abiPath: abiPath,
+        abiPath: `./abis/${abiFileName}`,
         address: address,
       };
 
       await generateManifest(root, manifests[0], userInput, existingManifest);
-      await generateHandlers([constructedEvents, constructedFunctions], root, abiPath);
+      await generateHandlers([constructedEvents, constructedFunctions], root, abiName);
 
       this.log('-----------Generated-----------');
       Object.keys(cleanFunctions).map((fn) => {

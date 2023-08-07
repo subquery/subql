@@ -20,6 +20,7 @@ import {
   generateManifest,
   getAbiInterface,
   getManifestData,
+  prepareAbiDirectory,
   prepareInputFragments,
 } from './generate-controller';
 
@@ -171,11 +172,14 @@ jest.setTimeout(30000);
 
 describe('CLI codegen:generate, Can write to file', () => {
   afterEach(async () => {
-    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/src'));
-    await fs.promises.writeFile(path.join(PROJECT_PATH, MANIFEST_PATH), stringify(originalManifestData), {
-      encoding: 'utf8',
-      flag: 'w',
-    });
+    await Promise.all([
+      promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/src')),
+      promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/abis/abis.json')),
+      fs.promises.writeFile(path.join(PROJECT_PATH, MANIFEST_PATH), stringify(originalManifestData), {
+        encoding: 'utf8',
+        flag: 'w',
+      }),
+    ]);
 
     const doc = new Document(originalManifestData2);
     const ds = (doc.get('dataSources') as any).items[0];
@@ -361,5 +365,22 @@ export async function ${expectedEventHandler}(log: ApprovalLog ): Promise<void> 
 `;
     expect(importFile.toString()).toBe(expectImportFile);
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
+  });
+  it('Throws if invalid abiPath is given', async () => {
+    await expect(prepareAbiDirectory('asd/asd.json', PROJECT_PATH)).rejects.toThrow(
+      'Unable to find abi at: asd/asd.json'
+    );
+  });
+  it('Should be able to parse relative path on abiPath', async () => {
+    const abiPath_relative = '../abiTest1/abis.json';
+    await prepareAbiDirectory(abiPath_relative, PROJECT_PATH);
+
+    expect(fs.existsSync(path.join(PROJECT_PATH, 'abis/abis.json'))).toBeTruthy();
+  });
+  it('Should be able to parse absolute path on abiPath', async () => {
+    const abiPath_absolute = path.join(__dirname, '../../test/abiTest1/abis.json');
+    await prepareAbiDirectory(abiPath_absolute, PROJECT_PATH);
+
+    expect(fs.existsSync(path.join(PROJECT_PATH, 'abis/abis.json'))).toBeTruthy();
   });
 });

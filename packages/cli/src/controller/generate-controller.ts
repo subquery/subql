@@ -35,9 +35,33 @@ interface AbiPropType {
 const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-handlers.ts.ejs');
 const ROOT_MAPPING_DIR = 'src/mappings';
 const DEFAULT_HANDLER_BUILD_PATH = './dist/index.js';
+const DEFAULT_ABI_DIR = '/abis';
 
 export function removeKeyword(inputString: string): string {
   return inputString.replace(/^(event|function) /, '');
+}
+
+export async function prepareAbiDirectory(abiPath: string, rootPath: string): Promise<void> {
+  const abiDirPath = path.join(rootPath, DEFAULT_ABI_DIR);
+
+  if (!fs.existsSync(abiDirPath)) {
+    await fs.promises.mkdir(abiDirPath, {recursive: true});
+  }
+
+  if (fs.existsSync(path.join(abiDirPath, abiPath))) {
+    return;
+  }
+
+  // Ensure abiPath is an absolute path
+  const ensuredAbiPath = path.isAbsolute(abiPath) ? abiPath : path.resolve(rootPath, abiPath);
+  try {
+    const abiFileContent = await fs.promises.readFile(ensuredAbiPath, 'utf8');
+    await fs.promises.writeFile(path.join(abiDirPath, path.basename(ensuredAbiPath)), abiFileContent);
+  } catch (e: any) {
+    if (e.code === 'ENOENT') {
+      throw new Error(`Unable to find abi at: ${abiPath}`);
+    }
+  }
 }
 
 export function constructMethod<T extends ConstructorFragment | Fragment>(
@@ -75,9 +99,16 @@ export async function renderTemplate(templatePath: string, outputPath: string, t
   await fs.promises.writeFile(outputPath, data);
 }
 
-export function getAbiInterface(projectPath: string, abiPath: string): Interface {
-  const abi = loadFromJsonOrYaml(path.join(projectPath, abiPath)) as any;
-  return new Interface(abi);
+export function getAbiInterface(projectPath: string, abiFileName: string): Interface {
+  const abi = loadFromJsonOrYaml(path.join(projectPath, DEFAULT_ABI_DIR, abiFileName)) as any;
+  if (!Array.isArray(abi)) {
+    if (!abi.abi) {
+      throw new Error(`Provided ABI is not a valid ABI or Artifact`);
+    }
+    return new Interface(abi.abi);
+  } else {
+    return new Interface(abi);
+  }
 }
 
 export function filterObjectsByStateMutability(
@@ -276,9 +307,8 @@ export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod
 export async function generateHandlers(
   selectedMethods: [SelectedMethod[], SelectedMethod[]],
   projectPath: string,
-  abiPath: string
+  abiName: string
 ): Promise<void> {
-  const abiName = parseContractPath(abiPath).name;
   const abiProps = constructHandlerProps(selectedMethods, abiName);
 
   const fileName = `${abiName}Handlers`;

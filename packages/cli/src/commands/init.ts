@@ -21,6 +21,7 @@ import {
   prepare,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
+import Generate from './codegen/generate';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 // Helper function for fuzzy search on prompt input
@@ -58,7 +59,13 @@ async function promptValidRemoteAndBranch(): Promise<string[]> {
   return [remote, branch];
 }
 
-//
+interface InitFlagType {
+  force: boolean;
+  location: string;
+  'install-dependencies': boolean;
+  npm: boolean;
+  abiPath: string;
+}
 
 export default class Init extends Command {
   static description = 'Initialize a scaffold subquery project';
@@ -68,6 +75,8 @@ export default class Init extends Command {
     location: Flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': Flags.boolean({description: 'Install dependencies as well', default: false}),
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
+    abiPath: Flags.string({description: 'path to abi file'}),
+    // multiple abi ?
   };
 
   static args = [
@@ -117,6 +126,8 @@ export default class Init extends Command {
       .then(({familyResponse}) => {
         this.networkFamily = familyResponse;
       });
+
+    // if network family is of ethereum, then should prompt them an abiPath
     templates = templates.filter(({family}) => family === this.networkFamily);
     await this.observeTemplates(templates, flags);
 
@@ -168,8 +179,84 @@ export default class Init extends Command {
       });
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedTemplate);
     await this.setupProject(flags);
+
+    if (this.networkFamily === 'Ethereum') {
+      const {loadAbi} = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'loadAbi',
+          message: 'Do you want to generate scaffolding with an existing abi contract?',
+          default: false,
+        },
+      ]);
+
+      /*
+      -f project.name // from init
+      --events *
+      --functions *
+      --abiPath flags.abiPath // prompt them in init
+      --startBlock 1
+      --address ?
+       */
+      // prompt them these values
+      if (loadAbi) {
+        // prompt them abiPath
+        const {abiFilePath} = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'abiFilePath',
+            message: 'Path to ABI',
+            validate(input: string): boolean | string | Promise<boolean | string> {
+              if (!path.isAbsolute(path.resolve(input))) {
+                return 'Please enter an absolute file path';
+              }
+              return true;
+            },
+          },
+        ]);
+
+        // if abiFilePath is given, then should remove existing abi in starter Project
+
+        const {contractAddress} = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'contractAddress',
+            message: 'Please provide an address (optional)',
+            default: '',
+          },
+        ]);
+
+        const {startBlock} = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'startBlock',
+            message: 'Please provide startBlock (optional)',
+            default: 1,
+          },
+        ]);
+
+        this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
+
+        await Generate.run([
+          '-f',
+          `${path.join(this.location, `${this.project.name}`)}`,
+          '--abiPath',
+          `${abiFilePath}`,
+          '--address',
+          `${contractAddress}`,
+          '--startBlock',
+          `${startBlock}`,
+        ]);
+      }
+    }
   }
+
+  // add abi path ? yes/no ?
+
   // observe templates, if no option left or manually select use custom templates
+
+  // remove starter abi if they have provided an abi
+
   async observeTemplates(templates: Template[], flags: any): Promise<void> {
     if (templates.length === 0) {
       const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
@@ -221,6 +308,6 @@ export default class Init extends Command {
       cli.action.stop();
     }
     this.log(`${this.project.name} is ready`);
-    process.exit(0);
+    // process.exit(0);
   }
 }
