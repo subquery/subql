@@ -156,7 +156,8 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
     startBlock: userInput.startBlock,
     options: {
       abi: abiName,
-      address: userInput.address,
+      // address: userInput.address,
+      ...(userInput.address && {address: userInput.address}),
     },
     assets: assets,
     mapping: {

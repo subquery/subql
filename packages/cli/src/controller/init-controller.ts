@@ -5,7 +5,8 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {makeTempDir, ProjectManifestV1_0_0} from '@subql/common';
+import {loadFromJsonOrYaml, makeTempDir, ProjectManifestV1_0_0} from '@subql/common';
+import {parseEthereumProjectManifest, loadEthereumProjectManifest} from '@subql/common-ethereum';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
@@ -179,4 +180,13 @@ export async function prepareProjectScaffold(projectPath: string): Promise<void>
 
   // remove handler file from index.ts
   fs.truncateSync(path.join(projectPath, 'src/index.ts'), 0);
+}
+
+export function validateEthereumProjectManifest(projectPath: string): boolean {
+  const doc = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
+  try {
+    return !!parseEthereumProjectManifest(doc);
+  } catch (e) {
+    return false;
+  }
 }

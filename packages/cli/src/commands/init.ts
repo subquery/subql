@@ -20,6 +20,7 @@ import {
   readDefaults,
   prepare,
   prepareProjectScaffold,
+  validateEthereumProjectManifest,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
 import Generate from './codegen/generate';
@@ -174,7 +175,7 @@ export default class Init extends Command {
     await this.setupProject(flags);
 
     // This should be all evm chains ?
-    if (this.networkFamily === 'Ethereum') {
+    if (validateEthereumProjectManifest(this.projectPath)) {
       const {loadAbi} = await inquirer.prompt([
         {
           type: 'confirm',
@@ -264,7 +265,6 @@ export default class Init extends Command {
         type: 'input',
         name: 'contractAddress',
         message: 'Please provide an address (optional)',
-        default: '',
       },
     ]);
 
@@ -272,7 +272,7 @@ export default class Init extends Command {
       {
         type: 'input',
         name: 'startBlock',
-        message: 'Please provide startBlock (optional)',
+        message: 'Please provide startBlock',
         default: 1,
       },
     ]);
