@@ -26,8 +26,8 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
-          username: onfinality
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: subquerynetwork
+          password: ${{ secrets.SQ_DOCKERHUB_TOKEN }}
 
       ## node
       - name: Get updated node version
@@ -42,7 +42,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node-stellar:v${{ steps.get-node-version.outputs.NODE_VERSION }}
+          tags: subquerynetwork/subql-node-stellar:v${{ steps.get-node-version.outputs.NODE_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
@@ -52,7 +52,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node-stellar:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node-stellar:latest
+          tags: subquerynetwork/subql-node-stellar:v${{ steps.get-node-version.outputs.NODE_VERSION }},subquerynetwork/subql-node-stellar:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Image digest
