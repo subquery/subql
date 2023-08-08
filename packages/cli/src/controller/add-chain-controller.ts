@@ -19,7 +19,7 @@ const nodeToDockerImage: Record<string, string> = {
   '@subql/node-cosmos': 'onfinality/subql-node-cosmos',
   '@subql/node-algorand': 'onfinality/subql-node-algorand',
   '@subql/node-near': 'onfinality/subql-node-near',
-  '@subql/node-soroban': 'onfinality/subql-node-soroban',
+  '@subql/node-stellar': 'subquerynetwork/subql-node-stellar',
 };
 
 type DockerComposeDependsOn = {

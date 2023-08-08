@@ -7,7 +7,7 @@ import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {EthereumProjectManifestVersioned} from '@subql/common-ethereum';
 import {EthereumProjectManifestVersioned as FlareProjectManifestVersioned} from '@subql/common-flare';
 import {NearProjectManifestVersioned} from '@subql/common-near';
-import {SorobanProjectManifestVersioned} from '@subql/common-soroban';
+import {StellarProjectManifestVersioned} from '@subql/common-stellar';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {IPackageJson} from 'package-json-type';
 
@@ -21,7 +21,7 @@ export interface ContextData {
     | EthereumProjectManifestVersioned
     | FlareProjectManifestVersioned
     | NearProjectManifestVersioned
-    | SorobanProjectManifestVersioned;
+    | StellarProjectManifestVersioned;
 }
 
 export interface Context {
