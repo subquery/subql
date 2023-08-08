@@ -40,8 +40,8 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private cacheSizeThreshold = 10;
   private cacheFlushInterval = 60 * 100;
 
-  constructor(nodeConfig: NodeConfig, private poolStateManager: ConnectionPoolStateManager<T>) {
-    this.cacheSizeThreshold = nodeConfig.batchSize;
+  constructor(private nodeConfig: NodeConfig, private poolStateManager: ConnectionPoolStateManager<T>) {
+    this.cacheSizeThreshold = this.nodeConfig.batchSize;
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -51,7 +51,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   async addToConnections(api: T, endpoint: string): Promise<void> {
     const index = this.allApi.length;
     this.allApi.push(api);
-    await this.poolStateManager.addToConnections(endpoint, index);
+    await this.poolStateManager.addToConnections(endpoint, index, endpoint === this.nodeConfig.primaryNetworkEndpoint);
     this.apiToIndexMap.set(api, index);
     await this.updateNextConnectedApiIndex();
   }

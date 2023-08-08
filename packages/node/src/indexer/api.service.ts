@@ -72,6 +72,10 @@ export class ApiService
     try {
       chainTypes = this.project.chainTypes;
       network = this.project.network;
+
+      if (this.nodeConfig.primaryNetworkEndpoint) {
+        network.endpoint.push(this.nodeConfig.primaryNetworkEndpoint);
+      }
     } catch (e) {
       logger.error(e);
       process.exit(1);

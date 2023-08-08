@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ApiConnectionError, ApiErrorType} from './api.connection.error';
+import {NodeConfig} from './configure';
 import {NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
@@ -25,6 +26,7 @@ export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi
 
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
   constructor(protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>) {}
+
   abstract networkMeta: NetworkMetadataPayload;
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {

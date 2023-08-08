@@ -27,6 +27,7 @@ export interface IConfig {
   readonly debug: boolean;
   readonly preferRange: boolean;
   readonly networkEndpoint?: string[];
+  readonly primaryNetworkEndpoint?: string;
   readonly networkDictionary?: string;
   readonly dictionaryResolver?: string | false;
   readonly outputFmt?: 'json';
@@ -139,6 +140,10 @@ export class NodeConfig implements IConfig {
     return typeof this._config.networkEndpoint === 'string'
       ? [this._config.networkEndpoint]
       : this._config.networkEndpoint;
+  }
+
+  get primaryNetworkEndpoint(): string | undefined {
+    return this._config.primaryNetworkEndpoint;
   }
 
   get networkDictionary(): string | undefined {
