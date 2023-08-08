@@ -12,7 +12,7 @@ import {
   ProcessBlockResponse,
   ApiService,
 } from '@subql/node-core';
-import { BlockWrapper, SorobanBlockWrapper } from '@subql/types-soroban';
+import { BlockWrapper, StellarBlockWrapper } from '@subql/types-stellar';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
 
@@ -72,7 +72,7 @@ export class WorkerService {
   async processBlock(height: number): Promise<ProcessBlockResponse> {
     try {
       this._isIndexing = true;
-      const block = this.fetchedBlocks[height] as SorobanBlockWrapper;
+      const block = this.fetchedBlocks[height] as StellarBlockWrapper;
 
       if (!block) {
         throw new Error(`Block ${height} has not been fetched`);

@@ -18,15 +18,15 @@
     "inlineSources": true,
     "composite": true,
     "paths": {
-      "@subql/common-soroban": ["packages/common-soroban/src"],
-      "@subql/common-soroban/*": ["packages/common-soroban/src/*"],
-      "@subql/types-soroban": ["packages/types/src"],
-      "@subql/types-soroban/*": ["packages/types/src/*"],
+      "@subql/common-stellar": ["packages/common-stellar/src"],
+      "@subql/common-stellar/*": ["packages/common-stellar/src/*"],
+      "@subql/types-stellar": ["packages/types/src"],
+      "@subql/types-stellar/*": ["packages/types/src/*"],
     },
     "skipLibCheck": true
   },
   "references": [
-    {"path": "packages/common-soroban"},
+    {"path": "packages/common-stellar"},
     {"path": "packages/node"},
     {"path": "packages/types"},
   ],

@@ -1,5 +1,5 @@
 {
-  "name": "@subql/node-soroban",
+  "name": "@subql/node-stellar",
   "version": "2.9.3-1",
   "description": "",
   "author": "Ian He",
@@ -12,10 +12,10 @@
     "start:dev": "nodemon",
     "start:prod": "node dist/main"
   },
-  "homepage": "https://github.com/subquery/subql-soroban",
-  "repository": "github:subquery/subql-soroban",
+  "homepage": "https://github.com/subquery/subql-stellar",
+  "repository": "github:subquery/subql-stellar",
   "bin": {
-    "subql-node-soroban": "./bin/run"
+    "subql-node-stellar": "./bin/run"
   },
   "dependencies": {
     "@apollo/client": "3.5.8",
@@ -25,11 +25,11 @@
     "@nestjs/platform-express": "^9.4.0",
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^2.3.1-1",
-    "@subql/common-soroban": "workspace:*",
+    "@subql/common-stellar": "workspace:*",
     "@subql/node-core": "4.0.2-0",
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.2",
-    "@subql/types-soroban": "workspace:*",
+    "@subql/types-stellar": "workspace:*",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cacheable-lookup": "6",
     "cron-converter": "^1.0.2",

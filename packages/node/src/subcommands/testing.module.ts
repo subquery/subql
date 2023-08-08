@@ -23,8 +23,8 @@ import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { MetaModule } from '../meta/meta.module';
-import { SorobanApiService } from '../soroban';
-import { SorobanApiConnection } from '../soroban/api.connection';
+import { StellarApiService } from '../stellar';
+import { StellarApiConnection } from '../stellar/api.connection';
 import { TestingService } from './testing.service';
 
 @Module({
@@ -47,10 +47,10 @@ import { TestingService } from './testing.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<SorobanApiConnection>,
+        connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new SorobanApiService(
+        const apiService = new StellarApiService(
           project,
           connectionPoolService,
           eventEmitter,
@@ -63,7 +63,7 @@ import { TestingService } from './testing.service';
     TestRunner,
     {
       provide: 'IApi',
-      useClass: SorobanApiService,
+      useClass: StellarApiService,
     },
     {
       provide: 'IIndexerManager',

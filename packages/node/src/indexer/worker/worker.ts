@@ -35,7 +35,7 @@ import {
   hostConnectionPoolStateKeys,
 } from '@subql/node-core';
 import { SubqlProjectDs } from '../../configure/SubqueryProject';
-import { SorobanApiConnection } from '../../soroban/api.connection';
+import { StellarApiConnection } from '../../stellar/api.connection';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
@@ -125,7 +125,7 @@ async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
   HostStore &
     HostDynamicDS<SubqlProjectDs> &
     HostUnfinalizedBlocks &
-    HostConnectionPoolState<SorobanApiConnection>,
+    HostConnectionPoolState<StellarApiConnection>,
   IInitIndexerWorker
 >(
   [

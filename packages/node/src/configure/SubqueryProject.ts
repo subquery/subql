@@ -4,18 +4,18 @@
 import { Injectable } from '@nestjs/common';
 import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
 import {
-  SorobanProjectNetworkConfig,
-  parseSorobanProjectManifest,
-  SubqlSorobanDataSource,
+  StellarProjectNetworkConfig,
+  parseStellarProjectManifest,
+  SubqlStellarDataSource,
   ProjectManifestV1_0_0Impl,
   isCustomDs,
-} from '@subql/common-soroban';
+} from '@subql/common-stellar';
 import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 
-export type SubqlProjectDs = SubqlSorobanDataSource & {
-  mapping: SubqlSorobanDataSource['mapping'] & { entryScript: string };
+export type SubqlProjectDs = SubqlStellarDataSource & {
+  mapping: SubqlStellarDataSource['mapping'] & { entryScript: string };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -27,7 +27,7 @@ const NOT_SUPPORT = (name: string) => {
 };
 
 // This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
-type NetworkConfig = SorobanProjectNetworkConfig & { chainId: string };
+type NetworkConfig = StellarProjectNetworkConfig & { chainId: string };
 
 @Injectable()
 export class SubqueryProject {
@@ -43,7 +43,7 @@ export class SubqueryProject {
     path: string,
     rawManifest: unknown,
     reader: Reader,
-    networkOverrides?: Partial<SorobanProjectNetworkConfig>,
+    networkOverrides?: Partial<StellarProjectNetworkConfig>,
     root?: string,
   ): Promise<SubqueryProject> {
     // rawManifest and reader can be reused here.
@@ -55,7 +55,7 @@ export class SubqueryProject {
     if (rawManifest === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
-    const manifest = parseSorobanProjectManifest(rawManifest);
+    const manifest = parseStellarProjectManifest(rawManifest);
 
     if (manifest.isV1_0_0) {
       return loadProjectFromManifest1_0_0(
@@ -87,7 +87,7 @@ async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SorobanProjectNetworkConfig>,
+  networkOverrides?: Partial<StellarProjectNetworkConfig>,
   root?: string,
 ): Promise<SubqueryProject> {
   root = root ?? (await getProjectRoot(reader));
@@ -142,7 +142,7 @@ async function loadProjectFromManifest1_0_0(
   projectManifest: ProjectManifestV1_0_0Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SorobanProjectNetworkConfig>,
+  networkOverrides?: Partial<StellarProjectNetworkConfig>,
   root?: string,
 ): Promise<SubqueryProject> {
   const project = await loadProjectFromManifestBase(
@@ -186,7 +186,7 @@ async function loadProjectTemplates(
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function generateTimestampReferenceForBlockFilters(
   dataSources: SubqlProjectDs[],
-  api: SorobanApi,
+  api: StellarApi,
 ): Promise<SubqlProjectDs[]> {
   const cron = new Cron();
 
@@ -199,7 +199,7 @@ export async function generateTimestampReferenceForBlockFilters(
 
         ds.mapping.handlers = await Promise.all(
           ds.mapping.handlers.map(async (handler) => {
-            if (handler.kind === SorobanHandlerKind.Block) {
+            if (handler.kind === StellarHandlerKind.Block) {
               if (handler.filter?.timestamp) {
                 if (!block) {
                   block = await api.getBlockByHeightOrHash(startBlock);

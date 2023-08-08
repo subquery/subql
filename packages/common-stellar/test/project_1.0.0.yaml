@@ -1,0 +1,34 @@
+specVersion: '1.0.0'
+
+name: 'stellar-subql-starter'
+version: '0.0.1'
+runner:
+  node:
+    name: '@subql/node-stellar'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: 'This project can be use as a starting point for developing your new Stellar SubQuery project'
+repository: 'https://github.com/subquery/stellar-subql-starter'
+
+schema:
+  file: './schema.graphql'
+
+network:
+  chainId: 'Test SDF Future Network ; October 2022'
+  endpoint: ['https://rpc-futurenet.stellar.org:443']
+
+dataSources:
+  - kind: stellar/Runtime
+    startBlock: 52400
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleEvent
+          kind: stellar/EventHandler
+          filter:
+            contractId: '34799b3411940249e73d21def8eb2c2b56b285ab8d1ca76d6780ec10a0e8f02e'
+            topics:
+              - 'COUNTER'
+              - 'increment'

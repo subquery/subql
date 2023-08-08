@@ -1,0 +1,31 @@
+{
+  "name": "@subql/common-stellar",
+  "version": "2.2.1-0",
+  "description": "",
+  "scripts": {
+    "build": "rm -rf dist && tsc -b",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "homepage": "https://github.com/subquery/subql-stellar",
+  "repository": "github:subquery/subql-stellar",
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@subql/common": "^2.3.1-1",
+    "@subql/types-stellar": "workspace:*",
+    "js-yaml": "^4.1.0",
+    "pino": "^6.13.3",
+    "reflect-metadata": "^0.1.13"
+  },
+  "peerDependencies": {
+    "class-transformer": "*",
+    "class-validator": "*"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.4",
+    "@types/pino": "^6.3.12"
+  },
+  "stableVersion": "2.2.0"
+}

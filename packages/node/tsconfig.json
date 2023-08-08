@@ -7,6 +7,6 @@
     "rootDir": "src",
     "outDir": "./dist"
   },
-  "references": [{ "path": "../common-soroban" }, { "path": "../types" }],
+  "references": [{ "path": "../common-stellar" }, { "path": "../types" }],
   "include": ["src/**/*"]
 }

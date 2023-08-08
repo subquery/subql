@@ -5,16 +5,16 @@ import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,
   SubqlHandler,
-  SorobanHandlerKind,
+  StellarHandlerKind,
   isCustomDs,
-} from '@subql/common-soroban';
+} from '@subql/common-stellar';
 import { retryOnFail } from '@subql/node-core';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export function isBaseHandler(
   handler: SubqlHandler,
 ): handler is SubqlRuntimeHandler {
-  return Object.values<string>(SorobanHandlerKind).includes(handler.kind);
+  return Object.values<string>(StellarHandlerKind).includes(handler.kind);
 }
 
 export function isCustomHandler(
@@ -37,7 +37,7 @@ export function onlyHasEventDataSources(
 ): boolean {
   for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
-      if (handler.kind !== SorobanHandlerKind.Event) {
+      if (handler.kind !== StellarHandlerKind.Event) {
         return false;
       }
     }
