@@ -20,7 +20,8 @@
     "ipfs-http-client": "^52.0.3",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.13",
-    "semver": "^7.5.2"
+    "semver": "^7.5.2",
+    "update-notifier": "5.1.0"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",
@@ -29,7 +30,8 @@
     "@types/js-yaml": "^4.0.5",
     "@types/pino": "^6.3.12",
     "@types/semver": "^7.3.9",
-    "@types/tar": "^6.1.1"
+    "@types/tar": "^6.1.1",
+    "@types/update-notifier": "^6"
   },
   "stableVersion": "2.4.1-0"
 }

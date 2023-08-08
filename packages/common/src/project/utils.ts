@@ -15,7 +15,8 @@ import {
 import detectPort from 'detect-port';
 import * as yaml from 'js-yaml';
 import Pino from 'pino';
-import {prerelease, satisfies, valid, validRange} from 'semver';
+import {lt, prerelease, satisfies, valid, validRange} from 'semver';
+import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
 import {MultichainProjectManifest} from '../multichain';
 
@@ -223,4 +224,16 @@ export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOp
       },
     });
   };
+}
+
+export function notifyUpdates(pjson: Package, logger: Pino.Logger): void {
+  const notifier = updateNotifier({pkg: pjson, updateCheckInterval: 0});
+
+  const latestVersion = notifier.update ? notifier.update.latest : pjson.version;
+
+  if (notifier.update && lt(pjson.version, latestVersion)) {
+    logger.info(`Update available: ${pjson.version} → ${latestVersion}`);
+  } else {
+    logger.info(`Current ${pjson.name} version is ${pjson.version}`);
+  }
 }

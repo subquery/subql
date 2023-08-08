@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NestFactory } from '@nestjs/core';
+import { notifyUpdates } from '@subql/common';
 import { getLogger, getValidPort, NestLogger } from '@subql/node-core';
-import { lt } from 'semver';
-import updateNotifier from 'update-notifier';
 import { AppModule } from './app.module';
 import { ApiService } from './indexer/api.service';
 import { FetchService } from './indexer/fetch.service';
@@ -16,16 +15,8 @@ const pjson = require('../package.json');
 const { argv } = yargsOptions;
 
 const logger = getLogger('subql-node');
-const notifier = updateNotifier({ pkg: pjson, updateCheckInterval: 0 });
 
-const currentVersion = pjson.version;
-const latestVersion = notifier.update ? notifier.update.latest : currentVersion;
-
-if (notifier.update && lt(currentVersion, latestVersion)) {
-  logger.info(`Update available: ${currentVersion} → ${latestVersion}`);
-} else {
-  logger.info(`Current ${pjson.name} version is ${currentVersion}`);
-}
+notifyUpdates(pjson, logger);
 
 export async function bootstrap(): Promise<void> {
   const debug = argv.debug;

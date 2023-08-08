@@ -4555,6 +4555,7 @@ __metadata:
     "@types/pino": ^6.3.12
     "@types/semver": ^7.3.9
     "@types/tar": ^6.1.1
+    "@types/update-notifier": ^6
     axios: ^0.27.2
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
@@ -4563,6 +4564,7 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
+    update-notifier: 5.1.0
   languageName: unknown
   linkType: soft
 
@@ -4621,9 +4623,7 @@ __metadata:
     "@types/jest": ^27.4.0
     "@types/lodash": ^4.14.178
     "@types/pino": ^6.3.12
-    "@types/semver": ^7
     "@types/tar": ^6.1.1
-    "@types/update-notifier": ^6
     "@types/yargs": ^16.0.4
     "@willsoto/nestjs-prometheus": ^4.4.0
     cron-converter: ^1.0.2
@@ -4636,8 +4636,6 @@ __metadata:
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^7.5.2
-    semver: ^7.5.4
-    update-notifier: 5.1.0
     yargs: ^16.2.0
   peerDependencies:
     "@apollo/client": ^3.7.16
