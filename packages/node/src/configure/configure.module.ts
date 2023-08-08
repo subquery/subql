@@ -8,7 +8,7 @@ import {
   Reader,
   ReaderFactory,
 } from '@subql/common';
-import { SorobanProjectNetworkConfig } from '@subql/common-soroban';
+import { StellarProjectNetworkConfig } from '@subql/common-stellar';
 import {
   IConfig,
   NodeConfig,
@@ -118,7 +118,7 @@ export class ConfigureModule {
         argv.subquery,
         rawManifest,
         reader,
-        omitBy<SorobanProjectNetworkConfig>(
+        omitBy<StellarProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
             dictionary: config.networkDictionary,

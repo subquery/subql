@@ -6,10 +6,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 import {
-  SorobanHandlerKind,
-  SorobanEventFilter,
-  SubqlSorobanProcessorOptions,
-} from '@subql/common-soroban';
+  StellarHandlerKind,
+  StellarEventFilter,
+  SubqlStellarProcessorOptions,
+} from '@subql/common-stellar';
 import {
   NodeConfig,
   BaseFetchService,
@@ -17,14 +17,14 @@ import {
   getLogger,
 } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
-import { SorobanBlock, SubqlDatasource } from '@subql/types-soroban';
+import { StellarBlock, SubqlDatasource } from '@subql/types-stellar';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SorobanApi } from '../soroban';
-import { calcInterval } from '../soroban/utils.soroban';
+import { StellarApi } from '../stellar';
+import { calcInterval } from '../stellar/utils.stellar';
 import { yargsOptions } from '../yargs';
-import { ISorobanBlockDispatcher } from './blockDispatcher';
+import { IStellarBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -40,8 +40,8 @@ const BLOCK_TIME_VARIANCE = 5000;
 const INTERVAL_PERCENT = 0.9;
 
 function eventFilterToQueryEntry(
-  filter: SorobanEventFilter,
-  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
+  filter: StellarEventFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
 ): DictionaryQueryEntry {
   const queryAddressLimit = yargsOptions.argv['query-address-limit'];
 
@@ -93,7 +93,7 @@ function eventFilterToQueryEntry(
 }
 
 type GroupedSubqlProjectDs = SubqlDatasource & {
-  groupedOptions?: SubqlSorobanProcessorOptions[];
+  groupedOptions?: SubqlStellarProcessorOptions[];
 };
 export function buildDictionaryQueryEntries(
   dataSources: GroupedSubqlProjectDs[],
@@ -113,8 +113,8 @@ export function buildDictionaryQueryEntries(
       if (!handler.filter) return [];
 
       switch (handler.kind) {
-        case SorobanHandlerKind.Event: {
-          const filter = handler.filter as SorobanEventFilter;
+        case StellarHandlerKind.Event: {
+          const filter = handler.filter as StellarEventFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
               eventFilterToQueryEntry(filter, ds.groupedOptions),
@@ -144,7 +144,7 @@ export function buildDictionaryQueryEntries(
 export class FetchService extends BaseFetchService<
   ApiService,
   SubqlDatasource,
-  ISorobanBlockDispatcher,
+  IStellarBlockDispatcher,
   DictionaryService
 > {
   constructor(
@@ -152,7 +152,7 @@ export class FetchService extends BaseFetchService<
     nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
-    blockDispatcher: ISorobanBlockDispatcher,
+    blockDispatcher: IStellarBlockDispatcher,
     dictionaryService: DictionaryService,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
@@ -173,7 +173,7 @@ export class FetchService extends BaseFetchService<
     );
   }
 
-  get api(): SorobanApi {
+  get api(): StellarApi {
     return this.apiService.unsafeApi;
   }
 
@@ -231,7 +231,7 @@ export class FetchService extends BaseFetchService<
       }
       for (const handler of ds.mapping.handlers) {
         if (
-          handler.kind === SorobanHandlerKind.Block &&
+          handler.kind === StellarHandlerKind.Block &&
           handler.filter &&
           handler.filter.modulo
         ) {
@@ -259,7 +259,7 @@ export class FetchService extends BaseFetchService<
   }
 
   protected async preLoopHook(): Promise<void> {
-    // Soroban doesn't need to do anything here
+    // Stellar doesn't need to do anything here
     return Promise.resolve();
   }
 

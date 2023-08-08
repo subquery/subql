@@ -3,24 +3,24 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  SorobanHandlerKind,
+  StellarHandlerKind,
   isCustomDs,
-  SubqlSorobanCustomDataSource,
-  SubqlSorobanDataSource,
+  SubqlStellarCustomDataSource,
+  SubqlStellarDataSource,
   SubqlDatasourceProcessor,
-} from '@subql/common-soroban';
+} from '@subql/common-stellar';
 import { BaseDsProcessorService } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
   SubqlCustomDatasource,
-} from '@subql/types-soroban';
+} from '@subql/types-stellar';
 
 export function isSecondLayerHandlerProcessor_0_0_0<
-  K extends SorobanHandlerKind,
+  K extends StellarHandlerKind,
   F,
   E,
-  DS extends SubqlCustomDatasource = SubqlSorobanCustomDataSource,
+  DS extends SubqlCustomDatasource = SubqlStellarCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -31,10 +31,10 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 }
 
 export function isSecondLayerHandlerProcessor_1_0_0<
-  K extends SorobanHandlerKind,
+  K extends StellarHandlerKind,
   F,
   E,
-  DS extends SubqlSorobanCustomDataSource = SubqlSorobanCustomDataSource,
+  DS extends SubqlStellarCustomDataSource = SubqlStellarCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -44,10 +44,10 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 }
 
 export function asSecondLayerHandlerProcessor_1_0_0<
-  K extends SorobanHandlerKind,
+  K extends StellarHandlerKind,
   F,
   E,
-  DS extends SubqlSorobanCustomDataSource = SubqlSorobanCustomDataSource,
+  DS extends SubqlStellarCustomDataSource = SubqlStellarCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -75,8 +75,8 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 
 @Injectable()
 export class DsProcessorService extends BaseDsProcessorService<
-  SubqlSorobanDataSource,
-  SubqlSorobanCustomDataSource<string>,
+  SubqlStellarDataSource,
+  SubqlStellarCustomDataSource<string>,
   SubqlDatasourceProcessor<string, unknown>
 > {
   protected isCustomDs = isCustomDs;

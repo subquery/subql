@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SorobanBlock, SorobanBlockWrapper, SorobanEvent} from './soroban';
+import {StellarBlock, StellarBlockWrapper, StellarEvent} from './stellar';
 
 export interface Entity {
   id: string;
@@ -25,12 +25,12 @@ export interface Store {
   bulkRemove(entity: string, ids: string[]): Promise<void>;
 }
 
-export interface BlockWrapper<B extends SorobanBlock = SorobanBlock, E extends SorobanEvent = SorobanEvent> {
+export interface BlockWrapper<B extends StellarBlock = StellarBlock, E extends StellarEvent = StellarEvent> {
   events?: E[];
   block: B;
 }
 
-export interface ApiWrapper<BW extends BlockWrapper = SorobanBlockWrapper> {
+export interface ApiWrapper<BW extends BlockWrapper = StellarBlockWrapper> {
   init: () => Promise<void>;
   getGenesisHash: () => string;
   getRuntimeChain: () => string;

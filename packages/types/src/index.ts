@@ -3,4 +3,4 @@
 
 export * from './interfaces';
 export * from './project';
-export * from './soroban';
+export * from './stellar';

@@ -1,9 +1,9 @@
 {
-  "name": "@subql/types-soroban",
+  "name": "@subql/types-stellar",
   "version": "2.2.3-2",
   "description": "",
-  "homepage": "https://github.com/subquery/subql-soroban",
-  "repository": "github:subquery/subql-soroban",
+  "homepage": "https://github.com/subquery/subql-stellar",
+  "repository": "github:subquery/subql-stellar",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc -b"

@@ -14,7 +14,7 @@ import {
   ProcessBlockResponse,
   ApiService,
 } from '@subql/node-core';
-import { SorobanBlockWrapper } from '@subql/types-soroban';
+import { StellarBlockWrapper } from '@subql/types-stellar';
 import {
   SubqlProjectDs,
   SubqueryProject,
@@ -27,7 +27,7 @@ import { IndexerManager } from '../indexer.manager';
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<SorobanBlockWrapper, SubqlProjectDs>
+  extends BlockDispatcher<StellarBlockWrapper, SubqlProjectDs>
   implements OnApplicationShutdown
 {
   constructor(
@@ -57,12 +57,12 @@ export class BlockDispatcherService
     );
   }
 
-  protected getBlockHeight(block: SorobanBlockWrapper): number {
+  protected getBlockHeight(block: StellarBlockWrapper): number {
     return block.block.ledger;
   }
 
   protected async indexBlock(
-    block: SorobanBlockWrapper,
+    block: StellarBlockWrapper,
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,

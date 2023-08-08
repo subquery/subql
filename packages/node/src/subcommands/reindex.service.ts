@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { SubqlSorobanDataSource } from '@subql/common-soroban';
+import { SubqlStellarDataSource } from '@subql/common-stellar';
 import {
   MmrService,
   NodeConfig,
@@ -10,7 +10,7 @@ import {
   ForceCleanService,
   BaseReindexService,
 } from '@subql/node-core';
-import { BlockWrapper } from '@subql/types-soroban';
+import { BlockWrapper } from '@subql/types-stellar';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
@@ -19,7 +19,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 @Injectable()
 export class ReindexService extends BaseReindexService<
   SubqueryProject,
-  SubqlSorobanDataSource,
+  SubqlStellarDataSource,
   BlockWrapper
 > {
   constructor(
@@ -46,7 +46,7 @@ export class ReindexService extends BaseReindexService<
 
   // eslint-disable-next-line @typescript-eslint/require-await
   protected async getStartBlockDatasources(): Promise<
-    SubqlSorobanDataSource[]
+    SubqlStellarDataSource[]
   > {
     return this.project.dataSources;
   }

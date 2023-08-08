@@ -12,7 +12,7 @@ import {
 } from '@subql/node-core';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: sorobanSdkVersion } = require('soroban-client/package.json');
+const { version: stellarSdkVersion } = require('soroban-client/package.json');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 const logger = getLogger('profiler');
@@ -38,7 +38,7 @@ export class MetaService extends BaseMetaService {
 
   protected packageVersion = packageVersion;
   protected sdkVersion(): { name: string; version: string } {
-    return { name: 'sorobanSdkVersion', version: sorobanSdkVersion };
+    return { name: 'stellarSdkVersion', version: stellarSdkVersion };
   }
 
   @OnEvent('enqueueBlocks')

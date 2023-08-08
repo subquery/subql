@@ -19,8 +19,8 @@ import {
   ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SorobanApiConnection } from '../soroban/api.connection';
-import { SorobanApiService } from '../soroban/api.service.soroban';
+import { StellarApiConnection } from '../stellar/api.connection';
+import { StellarApiService } from '../stellar/api.service.stellar';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
@@ -42,10 +42,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<SorobanApiConnection>,
+        connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new SorobanApiService(
+        const apiService = new StellarApiService(
           project,
           connectionPoolService,
           eventEmitter,
@@ -71,7 +71,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
-        apiService: SorobanApiService,
+        apiService: StellarApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
         storeService: StoreService,
@@ -80,7 +80,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
         unfinalizedBlocks: UnfinalizedBlocksService,
-        connectionPoolState: ConnectionPoolStateManager<SorobanApiConnection>,
+        connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(

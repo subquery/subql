@@ -6,11 +6,11 @@ import {
   isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
-  SubqlSorobanCustomDataSource,
-  SorobanHandlerKind,
-  SorobanRuntimeHandlerInputMap,
-  SubqlSorobanDataSource,
-} from '@subql/common-soroban';
+  SubqlStellarCustomDataSource,
+  StellarHandlerKind,
+  StellarRuntimeHandlerInputMap,
+  SubqlStellarDataSource,
+} from '@subql/common-stellar';
 import {
   NodeConfig,
   getLogger,
@@ -21,15 +21,15 @@ import {
   ApiService,
 } from '@subql/node-core';
 import {
-  SorobanEvent,
-  SorobanEventFilter,
-  SorobanBlockWrapper,
+  StellarEvent,
+  StellarEventFilter,
+  StellarBlockWrapper,
   SubqlDatasource,
-} from '@subql/types-soroban';
+} from '@subql/types-stellar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
-import { SorobanApi } from '../soroban';
-import { SorobanBlockWrapped } from '../soroban/block.soroban';
-import SafeSorobanProvider from '../soroban/safe-api';
+import { StellarApi } from '../stellar';
+import { StellarBlockWrapped } from '../stellar/block.stellar';
+import SafeStellarProvider from '../stellar/safe-api';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -43,15 +43,15 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  SafeSorobanProvider,
-  SorobanApi,
-  SorobanBlockWrapper,
+  SafeStellarProvider,
+  StellarApi,
+  StellarBlockWrapper,
   ApiService,
-  SubqlSorobanDataSource,
-  SubqlSorobanCustomDataSource,
+  SubqlStellarDataSource,
+  SubqlStellarCustomDataSource,
   typeof FilterTypeMap,
   typeof ProcessorTypeMap,
-  SorobanRuntimeHandlerInputMap
+  StellarRuntimeHandlerInputMap
 > {
   protected isRuntimeDs = isRuntimeDs;
   protected isCustomDs = isCustomDs;
@@ -85,32 +85,32 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: SorobanBlockWrapper,
-    dataSources: SubqlSorobanDataSource[],
+    block: StellarBlockWrapper,
+    dataSources: SubqlStellarDataSource[],
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
       this.getApi(block),
     );
   }
 
-  getBlockHeight(block: SorobanBlockWrapper): number {
+  getBlockHeight(block: StellarBlockWrapper): number {
     return block.block.ledger;
   }
 
-  getBlockHash(block: SorobanBlockWrapper): string {
+  getBlockHash(block: StellarBlockWrapper): string {
     return block.block.hash;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(
-    block: SorobanBlockWrapper,
-  ): Promise<SafeSorobanProvider> {
+    block: StellarBlockWrapper,
+  ): Promise<SafeStellarProvider> {
     // return this.apiService.safeApi(this.getBlockHeight(block));
     return null;
   }
 
   protected async indexBlockData(
-    { events }: SorobanBlockWrapper,
+    { events }: StellarBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -120,17 +120,17 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   private async indexEvent(
-    event: SorobanEvent,
+    event: StellarEvent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SorobanHandlerKind.Event, event, ds, getVM);
+      await this.indexData(StellarHandlerKind.Event, event, ds, getVM);
     }
   }
 
   protected async prepareFilteredData<T = any>(
-    kind: SorobanHandlerKind,
+    kind: StellarHandlerKind,
     data: T,
     ds: SubqlDatasource,
   ): Promise<T> {
@@ -139,18 +139,18 @@ export class IndexerManager extends BaseIndexerManager<
 }
 
 type ProcessorTypeMap = {
-  [SorobanHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [StellarHandlerKind.Event]: typeof isEventHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
-  [SorobanHandlerKind.Event]: isEventHandlerProcessor,
+  [StellarHandlerKind.Event]: isEventHandlerProcessor,
 };
 
 const FilterTypeMap = {
-  [SorobanHandlerKind.Event]: (
-    data: SorobanEvent,
-    filter: SorobanEventFilter,
-    ds: SubqlSorobanDataSource,
+  [StellarHandlerKind.Event]: (
+    data: StellarEvent,
+    filter: StellarEventFilter,
+    ds: SubqlStellarDataSource,
   ) =>
-    SorobanBlockWrapped.filterEventProcessor(data, filter, ds.options?.address),
+    StellarBlockWrapped.filterEventProcessor(data, filter, ds.options?.address),
 };

@@ -68,7 +68,7 @@ async function publishRelease(releaseInfo) {
         },
         owner: 'subquery',
         name: `[${version}] ${repoName}`,
-        repo: 'subql-soroban',
+        repo: 'subql-stellar',
         tag_name: `${packageName[1]}/${version}`,
         body: releaseInfo
     }).catch( err => {

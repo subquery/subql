@@ -3,10 +3,10 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  SorobanRuntimeDataSourceImpl,
+  StellarRuntimeDataSourceImpl,
   isCustomDs,
   isRuntimeDs,
-} from '@subql/common-soroban';
+} from '@subql/common-stellar';
 import {
   DatasourceParams,
   DynamicDsService as BaseDynamicDsService,
@@ -56,7 +56,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
           ...params.args,
         };
 
-        const parsedDs = plainToClass(SorobanRuntimeDataSourceImpl, dsObj);
+        const parsedDs = plainToClass(StellarRuntimeDataSourceImpl, dsObj);
 
         const errors = validateSync(parsedDs, {
           whitelist: true,

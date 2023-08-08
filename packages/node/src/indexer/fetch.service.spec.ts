@@ -3,10 +3,10 @@
 
 import { NodeConfig } from '@subql/node-core';
 import {
-  SorobanDatasourceKind,
-  SorobanHandlerKind,
+  StellarDatasourceKind,
+  StellarHandlerKind,
   SubqlRuntimeDatasource,
-} from '@subql/types-soroban';
+} from '@subql/types-stellar';
 import { GraphQLSchema } from 'graphql';
 import {
   SubqlProjectDsTemplate,
@@ -36,7 +36,7 @@ describe('Dictioanry queries', () => {
   describe('Correct dictionary query with dynamic ds', () => {
     it('Build correct counter increment single query', () => {
       const ds: SubqlRuntimeDatasource = {
-        kind: SorobanDatasourceKind.Runtime,
+        kind: StellarDatasourceKind.Runtime,
         assets: new Map(),
         startBlock: 1,
         mapping: {
@@ -44,7 +44,7 @@ describe('Dictioanry queries', () => {
           handlers: [
             {
               handler: 'handleDyanmicDs',
-              kind: SorobanHandlerKind.Event,
+              kind: StellarHandlerKind.Event,
               filter: {
                 topics: ['COUNTER'],
               },
