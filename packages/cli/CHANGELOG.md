@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- change soroban packages to stellar (#1929)
 
 ## [3.3.3] - 2023-08-04
 ### Fixed
@@ -12,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix codegen entity constructor missing array on field (#1922)
 
 ### Added
-- Support building and publishing stellar projects (#1919)
+- Support building and publishing soroban projects (#1919)
 
 ## [3.3.2] - 2023-07-31
 ### Fixed
