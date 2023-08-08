@@ -3,9 +3,16 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getLogger } from '@subql/node-core';
-import { ApiWrapper, StellarBlockWrapper } from '@subql/types-stellar';
-import { ServerApi, Server } from 'stellar-sdk';
-import * as StellarUtils from '../utils/stellar';
+import {
+  ApiWrapper,
+  StellarBlock,
+  StellarBlockWrapper,
+  StellarEffect,
+  StellarOperation,
+  StellarTransaction,
+} from '@subql/types-stellar';
+import { Server, ServerApi } from 'stellar-sdk';
+import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
 import { StellarServer } from './stellar.server';
 
@@ -85,8 +92,156 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   }
   */
 
+  private async fetchEffectsForOperation(
+    operationId: string,
+  ): Promise<StellarEffect[]> {
+    const effects = (await this.api.effects().forOperation(operationId).call())
+      .records;
+    const wrappedEffects: StellarEffect[] = [];
+
+    effects.forEach((effect) => {
+      const wrappedEffect: StellarEffect = {
+        ...effect,
+        ledger: null,
+        transaction: null,
+        operation: null,
+      };
+
+      wrappedEffects.push(wrappedEffect);
+    });
+
+    return wrappedEffects;
+  }
+
+  private async fetchOperationsForTransaction(
+    transactionId: string,
+  ): Promise<StellarOperation[]> {
+    const operations = (
+      await this.api.operations().forTransaction(transactionId).call()
+    ).records;
+
+    return Promise.all(
+      operations.map(async (op) => {
+        const wrappedOp: StellarOperation = {
+          ...op,
+          ledger: null,
+          transaction: null,
+          effects: [] as StellarEffect[],
+        };
+
+        const effects = (await this.fetchEffectsForOperation(op.id)).map(
+          (effect) => {
+            effect.operation = JSON.parse(JSON.stringify(wrappedOp));
+            return effect;
+          },
+        );
+
+        wrappedOp.effects.push(...effects);
+
+        return wrappedOp;
+      }),
+    );
+  }
+
+  private async fetchTransactionsForLedger(
+    sequence: number,
+  ): Promise<StellarTransaction[]> {
+    const transactions = (
+      await this.api.transactions().forLedger(sequence).call()
+    ).records;
+
+    return Promise.all(
+      transactions.map(async (tx) => {
+        let account: ServerApi.AccountRecord;
+        try {
+          account = await tx.account();
+        } catch (e) {
+          if ((e as Error).name === 'NotFoundError') {
+            account = null;
+          } else {
+            throw e;
+          }
+        }
+
+        const wrappedTx: StellarTransaction = {
+          ...tx,
+          ledger: null,
+          account: account,
+          operations: [] as StellarOperation[],
+          effects: [] as StellarEffect[],
+        };
+
+        const operations = (
+          await this.fetchOperationsForTransaction(tx.id)
+        ).map((op) => {
+          op.transaction = JSON.parse(JSON.stringify(wrappedTx));
+          op.effects = op.effects.map((effect) => {
+            effect.transaction = JSON.parse(JSON.stringify(wrappedTx));
+            return effect;
+          });
+          return op;
+        });
+
+        wrappedTx.operations.push(...operations);
+        operations.forEach((op) => {
+          wrappedTx.effects.push(...op.effects);
+        });
+
+        return wrappedTx;
+      }),
+    );
+  }
+
+  private async fetchAndWrapLedger(sequence: number): Promise<StellarBlock> {
+    const ledger = (await this.api
+      .ledgers()
+      .ledger(sequence)
+      .call()) as unknown as ServerApi.LedgerRecord;
+
+    const wrappedLedger: StellarBlock = {
+      ...ledger,
+      transactions: [] as StellarTransaction[],
+      operations: [] as StellarOperation[],
+      effects: [] as StellarEffect[],
+    };
+
+    const transactions = (await this.fetchTransactionsForLedger(sequence)).map(
+      (tx) => {
+        tx.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+        tx.operations = tx.operations.map((op) => {
+          op.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+          op.effects = op.effects.map((effect) => {
+            effect.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+            return effect;
+          });
+          return op;
+        });
+        return tx;
+      },
+    );
+
+    transactions.forEach((tx) => {
+      wrappedLedger.transactions.push(tx);
+      wrappedLedger.operations.push(...tx.operations);
+      tx.operations.forEach((op) => wrappedLedger.effects.push(...op.effects));
+    });
+
+    return wrappedLedger;
+  }
+
   async fetchBlocks(bufferBlocks: number[]): Promise<StellarBlockWrapper[]> {
-    return StellarUtils.fetchBlockBatches(bufferBlocks, this.stellarClient);
+    const ledgers = await Promise.all(
+      bufferBlocks.map((sequence) => this.fetchAndWrapLedger(sequence)),
+    );
+    return ledgers.map(
+      (ledger) =>
+        new StellarBlockWrapped(
+          ledger,
+          ledger.transactions,
+          ledger.operations,
+          ledger.effects,
+        ),
+    );
   }
 
   get api(): Server {
