@@ -13,7 +13,6 @@ import {
   cloneProjectTemplate,
   fetchTemplates,
   prepare,
-  prepareProjectScaffold,
   readDefaults,
   Template,
 } from './init-controller';

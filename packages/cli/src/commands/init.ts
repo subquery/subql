@@ -174,13 +174,12 @@ export default class Init extends Command {
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedTemplate);
     await this.setupProject(flags);
 
-    // This should be all evm chains ?
     if (validateEthereumProjectManifest(this.projectPath)) {
       const {loadAbi} = await inquirer.prompt([
         {
           type: 'confirm',
           name: 'loadAbi',
-          message: 'Do you want to generate scaffolding with an existing abi contract?',
+          message: 'Do you want to generate scaffolding from an existing contract abi?',
           default: false,
         },
       ]);
@@ -264,7 +263,7 @@ export default class Init extends Command {
       {
         type: 'input',
         name: 'contractAddress',
-        message: 'Please provide an address (optional)',
+        message: 'Please provide a contract address (optional)',
       },
     ]);
 
@@ -272,7 +271,7 @@ export default class Init extends Command {
       {
         type: 'input',
         name: 'startBlock',
-        message: 'Please provide startBlock',
+        message: 'Please provide startBlock when the contract was deployed or first used',
         default: 1,
       },
     ]);

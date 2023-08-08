@@ -4,9 +4,8 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {NETWORK_FAMILY} from '@subql/common';
 import git from 'simple-git';
-import {cloneProjectGit, prepareProjectScaffold, validateEthereumProjectManifest} from './init-controller';
+import {cloneProjectGit, validateEthereumProjectManifest} from './init-controller';
 
 jest.mock('simple-git', () => {
   const mGit = {
