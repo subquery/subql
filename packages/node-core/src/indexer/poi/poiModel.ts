@@ -90,7 +90,7 @@ export class PlainPoiModel implements PoiInterface {
   async getLatestPoiWithMmr(): Promise<ProofOfIndex | null> {
     const result = await this.model.findOne({
       order: [['id', 'DESC']],
-      where: {mmrRoot: {[Op.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
+      where: {mmrRoot: {[Op?.ne]: null}} as any, // Types problem with sequelize, undefined works but not null
     });
 
     if (!result) {

@@ -32,8 +32,8 @@ describe('DictionaryService', () => {
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project, nodeConfig);
 
-    const specVersions = await dictionaryService.getSpecVersions();
+    const specVersions = (await dictionaryService.getSpecVersions()).length;
 
-    expect(specVersions.length).toBeGreaterThan(0);
+    expect(specVersions).toBeGreaterThan(0);
   }, 500000);
 });

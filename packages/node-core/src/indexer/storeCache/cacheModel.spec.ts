@@ -160,14 +160,14 @@ describe('cacheModel', () => {
     beforeEach(() => {
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig);
+      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, false);
       testModel.init(() => i++);
     });
 
     // it should keep same behavior as hook we used
     it('when get data after flushed, it should exclude block range', async () => {
       const spyDbGet = jest.spyOn(testModel.model, 'findOne');
-      const sypOnApplyBlockRange = jest.spyOn(testModel.model, 'applyBlockRange');
+      const sypOnApplyBlockRange = jest.spyOn(testModel as any, 'applyBlockRange');
       testModel.set(
         'entity1_id_0x01',
         {
