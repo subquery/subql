@@ -22,14 +22,14 @@ import {
   ConnectionPoolStateManager,
   connectionPoolStateHostFunctions,
 } from '@subql/node-core';
-import { Store } from '@subql/types-soroban';
+import { Store } from '@subql/types-stellar';
 import chalk from 'chalk';
 import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
-import { SorobanApiConnection } from '../../soroban/api.connection';
-import { SorobanBlockWrapped } from '../../soroban/block.soroban';
+import { StellarApiConnection } from '../../stellar/api.connection';
+import { StellarBlockWrapped } from '../../stellar/block.stellar';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
@@ -44,8 +44,8 @@ type IndexerWorker = IIndexerWorker & {
 async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService<SorobanBlockWrapped>,
-  connectionPoolState: ConnectionPoolStateManager<SorobanApiConnection>,
+  unfinalizedBlocksService: IUnfinalizedBlocksService<StellarBlockWrapped>,
+  connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
   root: string,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
@@ -106,7 +106,7 @@ export class WorkerBlockDispatcherService
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
-    connectionPoolState: ConnectionPoolStateManager<SorobanApiConnection>,
+    connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
   ) {
     super(
       nodeConfig,

@@ -2984,12 +2984,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-soroban@workspace:*, @subql/common-soroban@workspace:packages/common-soroban":
+"@subql/common-stellar@workspace:*, @subql/common-stellar@workspace:packages/common-stellar":
   version: 0.0.0-use.local
-  resolution: "@subql/common-soroban@workspace:packages/common-soroban"
+  resolution: "@subql/common-stellar@workspace:packages/common-stellar"
   dependencies:
     "@subql/common": ^2.3.1-1
-    "@subql/types-soroban": "workspace:*"
+    "@subql/types-stellar": "workspace:*"
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
     js-yaml: ^4.1.0
@@ -3049,9 +3049,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-soroban@workspace:packages/node":
+"@subql/node-stellar@workspace:packages/node":
   version: 0.0.0-use.local
-  resolution: "@subql/node-soroban@workspace:packages/node"
+  resolution: "@subql/node-stellar@workspace:packages/node"
   dependencies:
     "@apollo/client": 3.5.8
     "@nestjs/common": ^9.4.0
@@ -3062,11 +3062,11 @@ __metadata:
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^2.3.1-1
-    "@subql/common-soroban": "workspace:*"
+    "@subql/common-stellar": "workspace:*"
     "@subql/node-core": 4.0.2-0
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.1.2
-    "@subql/types-soroban": "workspace:*"
+    "@subql/types-stellar": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
     "@types/lodash": ^4.14.178
@@ -3090,7 +3090,7 @@ __metadata:
   peerDependencies:
     "@subql/utils": "*"
   bin:
-    subql-node-soroban: ./bin/run
+    subql-node-stellar: ./bin/run
   languageName: unknown
   linkType: soft
 
@@ -3112,9 +3112,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-soroban@workspace:*, @subql/types-soroban@workspace:packages/types":
+"@subql/types-stellar@workspace:*, @subql/types-stellar@workspace:packages/types":
   version: 0.0.0-use.local
-  resolution: "@subql/types-soroban@workspace:packages/types"
+  resolution: "@subql/types-stellar@workspace:packages/types"
   dependencies:
     soroban-client: 0.9.2
   languageName: unknown

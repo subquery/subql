@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  SorobanBlock,
-  SorobanBlockWrapper,
-  SorobanEffect,
-  SorobanEvent,
-  SorobanOperation,
-  SorobanTransaction,
-} from './soroban';
+  StellarBlock,
+  StellarBlockWrapper,
+  StellarEffect,
+  StellarEvent,
+  StellarOperation,
+  StellarTransaction,
+} from './stellar';
 
 export interface Entity {
   id: string;
@@ -33,11 +33,11 @@ export interface Store {
 }
 
 export interface BlockWrapper<
-  B extends SorobanBlock = SorobanBlock,
-  T extends SorobanTransaction = SorobanTransaction,
-  O extends SorobanOperation = SorobanOperation,
-  EF extends SorobanEffect = SorobanEffect,
-  E extends SorobanEvent = SorobanEvent
+  B extends StellarBlock = StellarBlock,
+  T extends StellarTransaction = StellarTransaction,
+  O extends StellarOperation = StellarOperation,
+  EF extends StellarEffect = StellarEffect,
+  E extends StellarEvent = StellarEvent
 > {
   block: B;
   transactions: T[];
@@ -46,7 +46,7 @@ export interface BlockWrapper<
   events?: E[];
 }
 
-export interface ApiWrapper<BW extends BlockWrapper = SorobanBlockWrapper> {
+export interface ApiWrapper<BW extends BlockWrapper = StellarBlockWrapper> {
   init: () => Promise<void>;
   getGenesisHash: () => string;
   getRuntimeChain: () => string;

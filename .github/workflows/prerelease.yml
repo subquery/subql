@@ -22,7 +22,7 @@ jobs:
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-soroban'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-stellar'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -36,14 +36,14 @@ jobs:
           node-version: 18
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-types-soroban
+        id: changed-types-stellar
         with:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-common-soroban
+        id: changed-common-stellar
         with:
-          paths: packages/common-soroban
+          paths: packages/common-stellar
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -56,18 +56,18 @@ jobs:
         run: yarn build
 
       #Add remove-stable-version
-      - name: Bump types soroban & deploy
-        if: steps.changed-types-soroban.outputs.changed == 'true'
+      - name: Bump types stellar & deploy
+        if: steps.changed-types-stellar.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump common soroban & deploy
-        if: steps.changed-common-soroban.outputs.changed == 'true'
+      - name: Bump common stellar & deploy
+        if: steps.changed-common-stellar.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
-          package-path: packages/common-soroban
+          package-path: packages/common-stellar
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy

@@ -10,7 +10,7 @@ import {
   StoreCacheService,
   getLogger,
 } from '@subql/node-core';
-import { BlockWrapper } from '@subql/types-soroban';
+import { BlockWrapper } from '@subql/types-stellar';
 
 const logger = getLogger('unfinalized');
 

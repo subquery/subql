@@ -22,7 +22,7 @@ jobs:
       #Create github releases
       - uses: ./.github/actions/create-release
         with:
-          package-path: packages/common-soroban
+          package-path: packages/common-stellar
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release

@@ -22,7 +22,7 @@ jobs:
   Build-Publish:
     name: Build-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-soroban'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-stellar'"
     runs-on: ubuntu-latest
     steps:
       #Check out
@@ -37,14 +37,14 @@ jobs:
 
     #Identify changes
       - uses: marceloprado/has-changed-path@v1
-        id: changed-types-soroban
+        id: changed-types-stellar
         with:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-common-soroban
+        id: changed-common-stellar
         with:
-          paths: packages/common-soroban
+          paths: packages/common-stellar
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -57,19 +57,19 @@ jobs:
         run: yarn build
 
       #Publish to npm and github releases
-      - name: Publish Types soroban
-        if: steps.changed-types-soroban.outputs.changed == 'true'
+      - name: Publish Types stellar
+        if: steps.changed-types-stellar.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/types
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish Common soroban
-        if: steps.changed-common-soroban.outputs.changed == 'true'
+      - name: Publish Common stellar
+        if: steps.changed-common-stellar.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/common-soroban
+          package-path: packages/common-stellar
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

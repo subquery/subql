@@ -2,25 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  SorobanBlock,
-  SorobanBlockWrapper,
-  SorobanEffect,
-  SorobanOperation,
-  SorobanTransaction,
-} from '@subql/types-soroban';
+  StellarBlock,
+  StellarBlockWrapper,
+  StellarEffect,
+  StellarOperation,
+  StellarTransaction,
+} from '@subql/types-stellar';
 import { Server, ServerApi } from 'stellar-sdk';
-import { SorobanBlockWrapped } from '../soroban/block.soroban';
+import { StellarBlockWrapped } from '../stellar/block.stellar';
 
 export async function fetchEffectsForOperation(
   operationId: string,
   api: Server,
-): Promise<SorobanEffect[]> {
+): Promise<StellarEffect[]> {
   const effects = (await api.effects().forOperation(operationId).call())
     .records;
-  const wrappedEffects: SorobanEffect[] = [];
+  const wrappedEffects: StellarEffect[] = [];
 
   effects.forEach((effect) => {
-    const wrappedEffect: SorobanEffect = {
+    const wrappedEffect: StellarEffect = {
       ...effect,
       ledger: null,
       transaction: null,
@@ -36,18 +36,18 @@ export async function fetchEffectsForOperation(
 export async function fetchOperationsForTransaction(
   transactionId: string,
   api: Server,
-): Promise<SorobanOperation[]> {
+): Promise<StellarOperation[]> {
   const operations = (
     await api.operations().forTransaction(transactionId).call()
   ).records;
 
   return Promise.all(
     operations.map(async (op) => {
-      const wrappedOp: SorobanOperation = {
+      const wrappedOp: StellarOperation = {
         ...op,
         ledger: null,
         transaction: null,
-        effects: [] as SorobanEffect[],
+        effects: [] as StellarEffect[],
       };
 
       const effects = (await fetchEffectsForOperation(op.id, api)).map(
@@ -67,7 +67,7 @@ export async function fetchOperationsForTransaction(
 export async function fetchTransactionsForLedger(
   sequence: number,
   api: Server,
-): Promise<SorobanTransaction[]> {
+): Promise<StellarTransaction[]> {
   const transactions = (await api.transactions().forLedger(sequence).call())
     .records;
 
@@ -84,12 +84,12 @@ export async function fetchTransactionsForLedger(
         }
       }
 
-      const wrappedTx: SorobanTransaction = {
+      const wrappedTx: StellarTransaction = {
         ...tx,
         ledger: null,
         account: account,
-        operations: [] as SorobanOperation[],
-        effects: [] as SorobanEffect[],
+        operations: [] as StellarOperation[],
+        effects: [] as StellarEffect[],
       };
 
       const operations = (await fetchOperationsForTransaction(tx.id, api)).map(
@@ -116,17 +116,17 @@ export async function fetchTransactionsForLedger(
 export async function fetchAndWrapLedger(
   sequence: number,
   api: Server,
-): Promise<SorobanBlock> {
+): Promise<StellarBlock> {
   const ledger = (await api
     .ledgers()
     .ledger(sequence)
     .call()) as unknown as ServerApi.LedgerRecord;
 
-  const wrappedLedger: SorobanBlock = {
+  const wrappedLedger: StellarBlock = {
     ...ledger,
-    transactions: [] as SorobanTransaction[],
-    operations: [] as SorobanOperation[],
-    effects: [] as SorobanEffect[],
+    transactions: [] as StellarTransaction[],
+    operations: [] as StellarOperation[],
+    effects: [] as StellarEffect[],
   };
 
   const transactions = (await fetchTransactionsForLedger(sequence, api)).map(
@@ -156,13 +156,13 @@ export async function fetchAndWrapLedger(
 export async function fetchBlockBatches(
   batch: number[],
   api: Server,
-): Promise<SorobanBlockWrapper[]> {
+): Promise<StellarBlockWrapper[]> {
   const ledgers = await Promise.all(
     batch.map((sequence) => fetchAndWrapLedger(sequence, api)),
   );
   return ledgers.map(
     (ledger) =>
-      new SorobanBlockWrapped(
+      new StellarBlockWrapped(
         ledger,
         ledger.transactions,
         ledger.operations,

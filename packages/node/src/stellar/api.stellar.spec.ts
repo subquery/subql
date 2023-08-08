@@ -1,0 +1,84 @@
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
+
+import { EventEmitter2 } from 'eventemitter2';
+import { StellarApi } from './api.stellar';
+
+const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
+
+jest.setTimeout(60000);
+
+const prepareStellarApi = async function () {
+  const api = new StellarApi(HTTP_ENDPOINT, new EventEmitter2());
+  await api.init();
+  return api;
+};
+
+describe('StellarApi', () => {
+  let stellarApi: StellarApi;
+
+  beforeEach(async () => {
+    stellarApi = await prepareStellarApi();
+  });
+
+  it('should initialize chainId', () => {
+    expect(stellarApi.getChainId()).toEqual(
+      'Test SDF Future Network ; October 2022',
+    );
+  });
+
+  it('should get finalized block height', async () => {
+    const height = await stellarApi.getFinalizedBlockHeight();
+    expect(height).not.toBeNaN();
+    expect(height).toBeGreaterThan(0);
+  });
+
+  it('should get best block height', async () => {
+    const height = await stellarApi.getBestBlockHeight();
+    expect(height).not.toBeNaN();
+    expect(height).toBeGreaterThan(0);
+  });
+
+  it('should fetch block', async () => {
+    const latestHeight = await stellarApi.getFinalizedBlockHeight();
+    const block = (await stellarApi.fetchBlocks([latestHeight]))[0];
+    expect(block.block.sequence).toEqual(latestHeight);
+  });
+
+  it('should throw on calling connect', async () => {
+    await expect(stellarApi.connect()).rejects.toThrow('Not implemented');
+  });
+
+  it('should throw on calling disconnect', async () => {
+    await expect(stellarApi.disconnect()).rejects.toThrow('Not implemented');
+  });
+
+  it('handleError - pruned node errors', () => {
+    const error = new Error('start is before oldest ledger');
+    const handled = stellarApi.handleError(error, 1000);
+    expect(handled.message).toContain(
+      'The requested ledger number 1000 is not available on the current blockchain node',
+    );
+  });
+
+  it('handleError - non pruned node errors should return the same error', () => {
+    const error = new Error('Generic error');
+    const handled = stellarApi.handleError(error, 1000);
+    expect(handled).toBe(error);
+  });
+
+  it('should get runtime chain', () => {
+    const runtimeChain = stellarApi.getRuntimeChain();
+    expect(runtimeChain).toEqual((stellarApi as any).name);
+  });
+
+  it('should return chainId for genesis hash', () => {
+    const genesisHash = stellarApi.getGenesisHash();
+    expect(genesisHash).toEqual(stellarApi.getChainId());
+  });
+
+  it('should get spec name', () => {
+    const specName = stellarApi.getSpecName();
+    expect(specName).toEqual('Stellar');
+  });
+});

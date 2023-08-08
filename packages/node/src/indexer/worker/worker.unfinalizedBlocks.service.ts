@@ -3,7 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { Header, IUnfinalizedBlocksService } from '@subql/node-core';
-import { BlockWrapper } from '@subql/types-soroban';
+import { BlockWrapper } from '@subql/types-stellar';
 import { blockToHeader } from '../unfinalizedBlocks.service';
 
 export type HostUnfinalizedBlocks = {

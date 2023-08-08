@@ -6,9 +6,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 import {
-  SorobanHandlerKind,
-  SubqlSorobanProcessorOptions,
-} from '@subql/common-soroban';
+  StellarHandlerKind,
+  SubqlStellarProcessorOptions,
+} from '@subql/common-stellar';
 import {
   NodeConfig,
   BaseFetchService,
@@ -17,19 +17,19 @@ import {
 } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import {
-  SorobanBlock,
-  SorobanEffectFilter,
-  SorobanOperationFilter,
-  SorobanTransactionFilter,
+  StellarBlock,
+  StellarEffectFilter,
+  StellarOperationFilter,
+  StellarTransactionFilter,
   SubqlDatasource,
-} from '@subql/types-soroban';
+} from '@subql/types-stellar';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SorobanApi } from '../soroban';
-import { calcInterval } from '../soroban/utils.soroban';
+import { StellarApi } from '../stellar';
+import { calcInterval } from '../stellar/utils.stellar';
 import { yargsOptions } from '../yargs';
-import { ISorobanBlockDispatcher } from './blockDispatcher';
+import { IStellarBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -45,8 +45,8 @@ const BLOCK_TIME_VARIANCE = 5000;
 const INTERVAL_PERCENT = 0.9;
 
 function transactionFilterToQueryEntry(
-  filter: SorobanTransactionFilter,
-  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
+  filter: StellarTransactionFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [];
 
@@ -64,8 +64,8 @@ function transactionFilterToQueryEntry(
 }
 
 function operationFilterToQueryEntry(
-  filter: SorobanOperationFilter,
-  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
+  filter: StellarOperationFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [];
 
@@ -90,8 +90,8 @@ function operationFilterToQueryEntry(
 }
 
 function effectFilterToQueryEntry(
-  filter: SorobanEffectFilter,
-  dsOptions: SubqlSorobanProcessorOptions | SubqlSorobanProcessorOptions[],
+  filter: StellarEffectFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [];
 
@@ -116,7 +116,7 @@ function effectFilterToQueryEntry(
 }
 
 type GroupedSubqlProjectDs = SubqlDatasource & {
-  groupedOptions?: SubqlSorobanProcessorOptions[];
+  groupedOptions?: SubqlStellarProcessorOptions[];
 };
 export function buildDictionaryQueryEntries(
   dataSources: GroupedSubqlProjectDs[],
@@ -136,8 +136,8 @@ export function buildDictionaryQueryEntries(
       if (!handler.filter) return [];
 
       switch (handler.kind) {
-        case SorobanHandlerKind.Transaction: {
-          const filter = handler.filter as SorobanTransactionFilter;
+        case StellarHandlerKind.Transaction: {
+          const filter = handler.filter as StellarTransactionFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
               transactionFilterToQueryEntry(filter, ds.groupedOptions),
@@ -151,8 +151,8 @@ export function buildDictionaryQueryEntries(
           }
           break;
         }
-        case SorobanHandlerKind.Operation: {
-          const filter = handler.filter as SorobanOperationFilter;
+        case StellarHandlerKind.Operation: {
+          const filter = handler.filter as StellarOperationFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
               operationFilterToQueryEntry(filter, ds.groupedOptions),
@@ -164,8 +164,8 @@ export function buildDictionaryQueryEntries(
           }
           break;
         }
-        case SorobanHandlerKind.Effects: {
-          const filter = handler.filter as SorobanEffectFilter;
+        case StellarHandlerKind.Effects: {
+          const filter = handler.filter as StellarEffectFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
               effectFilterToQueryEntry(filter, ds.groupedOptions),
@@ -195,7 +195,7 @@ export function buildDictionaryQueryEntries(
 export class FetchService extends BaseFetchService<
   ApiService,
   SubqlDatasource,
-  ISorobanBlockDispatcher,
+  IStellarBlockDispatcher,
   DictionaryService
 > {
   constructor(
@@ -203,7 +203,7 @@ export class FetchService extends BaseFetchService<
     nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
-    blockDispatcher: ISorobanBlockDispatcher,
+    blockDispatcher: IStellarBlockDispatcher,
     dictionaryService: DictionaryService,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
@@ -224,7 +224,7 @@ export class FetchService extends BaseFetchService<
     );
   }
 
-  get api(): SorobanApi {
+  get api(): StellarApi {
     return this.apiService.unsafeApi;
   }
 
@@ -282,7 +282,7 @@ export class FetchService extends BaseFetchService<
       }
       for (const handler of ds.mapping.handlers) {
         if (
-          handler.kind === SorobanHandlerKind.Block &&
+          handler.kind === StellarHandlerKind.Block &&
           handler.filter &&
           handler.filter.modulo
         ) {
@@ -310,7 +310,7 @@ export class FetchService extends BaseFetchService<
   }
 
   protected async preLoopHook(): Promise<void> {
-    // Soroban doesn't need to do anything here
+    // Stellar doesn't need to do anything here
     return Promise.resolve();
   }
 

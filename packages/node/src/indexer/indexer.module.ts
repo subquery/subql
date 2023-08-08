@@ -19,8 +19,8 @@ import {
   NodeConfig,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SorobanApiService } from '../soroban';
-import { SorobanApiConnection } from '../soroban/api.connection';
+import { StellarApiService } from '../stellar';
+import { StellarApiConnection } from '../stellar/api.connection';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
@@ -49,10 +49,10 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<SorobanApiConnection>,
+        connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new SorobanApiService(
+        const apiService = new StellarApiService(
           project,
           connectionPoolService,
           eventEmitter,

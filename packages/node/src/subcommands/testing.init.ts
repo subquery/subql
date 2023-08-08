@@ -5,7 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { ApiService, getLogger, NestLogger } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { ProjectService } from '../indexer/project.service';
-import { SorobanApiService } from '../soroban';
+import { StellarApiService } from '../stellar';
 import { TestingModule } from './testing.module';
 import { TestingService } from './testing.service';
 

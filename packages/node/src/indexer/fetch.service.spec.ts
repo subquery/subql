@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  SorobanDatasourceKind,
-  SorobanHandlerKind,
+  StellarDatasourceKind,
+  StellarHandlerKind,
   SubqlRuntimeDatasource,
-} from '@subql/types-soroban';
+} from '@subql/types-stellar';
 import { buildDictionaryQueryEntries } from './fetch.service';
 
 describe('buildDictionaryQueryEntries', () => {
   it('should correctly build dictionary query entries for transactions', () => {
     const ds: SubqlRuntimeDatasource = {
-      kind: SorobanDatasourceKind.Runtime,
+      kind: StellarDatasourceKind.Runtime,
       startBlock: 1,
       mapping: {
         file: '',
         handlers: [
           {
             handler: 'handleTransactions',
-            kind: SorobanHandlerKind.Transaction,
+            kind: StellarHandlerKind.Transaction,
             filter: {
               account: 'test_account',
             },
@@ -43,14 +43,14 @@ describe('buildDictionaryQueryEntries', () => {
 
   it('should correctly build dictionary query entries for operations', () => {
     const ds: SubqlRuntimeDatasource = {
-      kind: SorobanDatasourceKind.Runtime,
+      kind: StellarDatasourceKind.Runtime,
       startBlock: 1,
       mapping: {
         file: '',
         handlers: [
           {
             handler: 'handleOperations',
-            kind: SorobanHandlerKind.Operation,
+            kind: StellarHandlerKind.Operation,
             filter: {
               source_account: 'source_account',
               type: 'operation_type',
@@ -81,14 +81,14 @@ describe('buildDictionaryQueryEntries', () => {
 
   it('should correctly build dictionary query entries for effects', () => {
     const ds: SubqlRuntimeDatasource = {
-      kind: SorobanDatasourceKind.Runtime,
+      kind: StellarDatasourceKind.Runtime,
       startBlock: 1,
       mapping: {
         file: '',
         handlers: [
           {
             handler: 'handleEffects',
-            kind: SorobanHandlerKind.Effects,
+            kind: StellarHandlerKind.Effects,
             filter: {
               account: 'effect_account',
               type: 'effect_type',
@@ -119,14 +119,14 @@ describe('buildDictionaryQueryEntries', () => {
 
   it('should return an empty array when no filters are provided', () => {
     const ds: SubqlRuntimeDatasource = {
-      kind: SorobanDatasourceKind.Runtime,
+      kind: StellarDatasourceKind.Runtime,
       startBlock: 1,
       mapping: {
         file: '',
         handlers: [
           {
             handler: 'handleTransactions',
-            kind: SorobanHandlerKind.Transaction,
+            kind: StellarHandlerKind.Transaction,
             filter: {},
           },
         ],
