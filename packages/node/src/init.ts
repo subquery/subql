@@ -3,19 +3,31 @@
 
 import { NestFactory } from '@nestjs/core';
 import { getLogger, getValidPort, NestLogger } from '@subql/node-core';
+import { lt } from 'semver';
+import updateNotifier from 'update-notifier';
 import { AppModule } from './app.module';
 import { ApiService } from './indexer/api.service';
 import { FetchService } from './indexer/fetch.service';
 import { ProjectService } from './indexer/project.service';
 import { yargsOptions } from './yargs';
+
 const pjson = require('../package.json');
 
 const { argv } = yargsOptions;
 
 const logger = getLogger('subql-node');
+const notifier = updateNotifier({ pkg: pjson, updateCheckInterval: 0 });
+
+const currentVersion = pjson.version;
+const latestVersion = notifier.update ? notifier.update.latest : currentVersion;
+
+if (notifier.update && lt(currentVersion, latestVersion)) {
+  logger.info(`Update available: ${currentVersion} → ${latestVersion}`);
+} else {
+  logger.info(`Current ${pjson.name} version is ${currentVersion}`);
+}
 
 export async function bootstrap(): Promise<void> {
-  logger.info(`Current ${pjson.name} version is ${pjson.version}`);
   const debug = argv.debug;
   const port = await getValidPort(argv.port);
   if (argv.unsafe) {
