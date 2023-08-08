@@ -342,7 +342,7 @@ OPTIONS
                                                                             k/ipfs/api/v0] IPFS gateway endpoint, used
                                                                             for validating projects on IPFS
 
-  --network-family=(Substrate|Cosmos|Algorand|Ethereum|Flare|Near|Soroban)
+  --network-family=(Substrate|Cosmos|Algorand|Ethereum|Flare|Near|Stellar)
 
   --silent
 ```

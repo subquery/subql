@@ -10,7 +10,7 @@ import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
 import {parseNearProjectManifest} from '@subql/common-near';
-import {parseSorobanProjectManifest} from '@subql/common-soroban';
+import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
 import {FileReference} from '@subql/types';
 import axios from 'axios';
@@ -80,7 +80,7 @@ export async function uploadToIpfs(
                 manifest = parseNearProjectManifest(schema).asImpl;
               } catch (e) {
                 try {
-                  manifest = parseSorobanProjectManifest(schema).asImpl;
+                  manifest = parseStellarProjectManifest(schema).asImpl;
                 } catch (e) {
                   throw new Error('Unable to pass project manifest');
                 }

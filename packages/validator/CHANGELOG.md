@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Support validating soroban manifest (#1919)
+- Support validating stellar manifest (#1919)
 
 ## [2.1.1] - 2023-07-31
 ### Fixed

@@ -4370,7 +4370,7 @@ __metadata:
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
-    "@subql/common-soroban": ^2.2.1-0
+    "@subql/common-stellar": ^2.2.1-1
     "@subql/common-substrate": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/validator": "workspace:*"
@@ -4490,19 +4490,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-soroban@npm:^2.2.1-0":
-  version: 2.2.1-0
-  resolution: "@subql/common-soroban@npm:2.2.1-0"
+"@subql/common-stellar@npm:^2.2.1-1":
+  version: 2.2.1-1
+  resolution: "@subql/common-stellar@npm:2.2.1-1"
   dependencies:
     "@subql/common": ^2.3.1-1
-    "@subql/types-soroban": 2.2.3-2
+    "@subql/types-stellar": 2.2.3-3
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 207d6e1d61780fe90dd78f3c0fbcc8332906ab85001308a66978057b9faabe8aeb6b298cd1792d388172beb575ae6eb96bbae5e69a0e63222239772c9e890cc0
+  checksum: 4dcde6f5b80187b82df2f696927abcae5ac8d426b795f21102b93bd1dec131a5ff068ed13aca558acd4584d7686951c603e7f7fb5586667f5a535e1f9b43ff2c
   languageName: node
   linkType: hard
 
@@ -4737,12 +4737,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-soroban@npm:2.2.3-2":
-  version: 2.2.3-2
-  resolution: "@subql/types-soroban@npm:2.2.3-2"
+"@subql/types-stellar@npm:2.2.3-3":
+  version: 2.2.3-3
+  resolution: "@subql/types-stellar@npm:2.2.3-3"
   dependencies:
     soroban-client: 0.9.2
-  checksum: 161dd88fce234b24f5cee0124a47d62b357d64bd0a013d159e32fc854f27faf2a0a0a4492b9d961d7691384802926c8102e13cb73ff0afbefcd4d8dfe9b54f4b
+  checksum: 86292232151e78b1c04979686703d50ebd42d05059e6a595f24d5867f302670b367c7c68644f5cfcafd90e981ffd06adc5df7362e1cc581144d9986cdd1094ba
   languageName: node
   linkType: hard
 
@@ -4789,7 +4789,7 @@ __metadata:
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
-    "@subql/common-soroban": ^2.2.1-0
+    "@subql/common-stellar": ^2.2.1-1
     "@subql/common-substrate": "workspace:*"
     "@types/js-yaml": ^4.0.5
     axios: ^0.24.0
