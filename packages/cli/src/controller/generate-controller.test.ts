@@ -353,7 +353,6 @@ export * from "./mappings/Erc721Handlers"`;
 
 import {TransferFromTransaction,ApprovalLog,} from "../types/abi-interfaces/Erc721";
 
-import assert from "assert";
 
 export async function ${expectedFnHandler}(tx: TransferFromTransaction ): Promise<void> {
 // Place your code logic here
