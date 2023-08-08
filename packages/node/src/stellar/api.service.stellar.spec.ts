@@ -58,7 +58,6 @@ export const prepareApiService = async (
 };
 
 jest.setTimeout(90000);
-
 describe('StellarApiService', () => {
   let apiService: StellarApiService;
   let app: INestApplication;
