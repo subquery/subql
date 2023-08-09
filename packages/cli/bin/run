@@ -1,5 +1,28 @@
 #!/usr/bin/env node
 
-require('@oclif/command').run()
-.then(require('@oclif/command/flush'))
-.catch(require('@oclif/errors/handle'))
+const pjson = require('../package.json');
+const updateNotifier = require('update-notifier');
+const chalk = require('chalk');
+const boxen = require('boxen');
+const semver = require('semver');
+
+const notifier = updateNotifier({pkg: pjson, updateCheckInterval: 0});
+if (notifier.update) {
+  const {current, latest, name} = notifier.update;
+
+  if (semver.lt(current, latest)) {
+    const message =
+      `Update available ${chalk.dim(`${current}`)}  →  ${chalk.green(`${latest}`)}` +
+      `\nRun ${chalk.cyan(`npm i -g ${name}`)} to update`;
+    const boxenOptions = {
+      padding: 1,
+      margin: 1,
+      align: 'center',
+      borderColor: 'yellow',
+      borderStyle: 'round',
+    };
+    console.log(boxen(message, boxenOptions));
+  }
+}
+
+require('@oclif/command').run().then(require('@oclif/command/flush')).catch(require('@oclif/errors/handle'));
