@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - add `--primary-network-endpoint` cli option (#1927)
+- Support for update availability logs (#1930)
 
 ## [2.10.1] - 2023-08-04
 ### Changed
