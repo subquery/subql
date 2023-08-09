@@ -46,7 +46,6 @@ export default class Generate extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
-    // abiPath should be absolute ?
     const {abiPath, address, events, file, functions, startBlock} = flags;
 
     const projectPath = path.resolve(file ?? process.cwd());
