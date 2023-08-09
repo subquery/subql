@@ -1,10 +1,13 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {existsSync, readFileSync} from 'fs';
+import fs, {existsSync, readFileSync} from 'fs';
+import {promisify} from 'util';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
+import ejs from 'ejs';
 import inquirer, {Inquirer} from 'inquirer';
+import rimraf from 'rimraf';
 
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
@@ -74,4 +77,20 @@ export function errorHandle(e: any, msg: string): string {
 
 export function buildProjectKey(org: string, projectName: string): string {
   return encodeURIComponent(`${org}/${projectName}`);
+}
+
+export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
+  const data = await ejs.renderFile(templatePath, templateData);
+  await fs.promises.writeFile(outputPath, data);
+}
+
+export async function prepareDirPath(path: string, recreate: boolean): Promise<void> {
+  try {
+    await promisify(rimraf)(path);
+    if (recreate) {
+      await fs.promises.mkdir(path, {recursive: true});
+    }
+  } catch (e) {
+    throw new Error(`Failed to prepare ${path}: ${e.message}`);
+  }
 }

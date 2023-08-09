@@ -4,7 +4,7 @@
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
-import {codegen} from '../controller/codegen-controller';
+import {codegen} from '../../controller/codegen-controller';
 
 export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';

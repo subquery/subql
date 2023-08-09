@@ -1,8 +1,22 @@
 specVersion: '1.0.0'
 name: 'example'
 
+version: '0.0.1'
+runner:
+  node:
+    name: '@subql/node-ethereum'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: ''
+repository: ''
 schema:
   file: './schema.graphql'
+network:
+  chainId: '1'
+  endpoint: 'aaa'
+  dictionary: ''
 
 customDs:
   assets:
@@ -14,6 +28,7 @@ dataSources:
   - kind: ethereum/Runtime
     startBlock: 1
     mapping:
+      file: ''
       handlers:
         - handler: handleTransaction
           kind: ethereum/BlockHandler

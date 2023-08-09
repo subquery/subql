@@ -3,7 +3,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import {promisify} from 'util';
 import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomCosmosDs,
@@ -46,10 +45,9 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/utils';
-import ejs from 'ejs';
 import {upperFirst, uniq, uniqBy} from 'lodash';
-import rimraf from 'rimraf';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
+import {renderTemplate, prepareDirPath} from '../utils';
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -63,7 +61,7 @@ type TemplateKind =
   | StellarDsTemplate
   | StellarCustomDsTemplate;
 
-type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
+export type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
 
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
@@ -86,12 +84,6 @@ const exportTypes = {
   enums: false,
   datasources: false,
 };
-
-// 4. Render entity data in ejs template and write it
-export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
-  const data = await ejs.renderFile(templatePath, templateData);
-  await fs.promises.writeFile(outputPath, data);
-}
 
 // 3. Re-format the field of the entity
 export interface ProcessedField {
@@ -160,7 +152,7 @@ export async function generateEnums(projectPath: string, schema: string): Promis
   }
 }
 
-interface abiRenderProps {
+export interface abiRenderProps {
   name: string;
   events: string[];
   functions: {typeName: string; functionName: string}[];
@@ -369,17 +361,6 @@ export function processFields(
     fieldList.push(injectField);
   }
   return fieldList;
-}
-
-async function prepareDirPath(path: string, recreate: boolean) {
-  try {
-    await promisify(rimraf)(path);
-    if (recreate) {
-      await fs.promises.mkdir(path, {recursive: true});
-    }
-  } catch (e) {
-    throw new Error(`Failed to prepare ${path}: ${e.message}`);
-  }
 }
 
 //1. Prepare models directory and load schema

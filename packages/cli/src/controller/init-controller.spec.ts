@@ -4,9 +4,8 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {NETWORK_FAMILY} from '@subql/common';
 import git from 'simple-git';
-import {cloneProjectGit} from './init-controller';
+import {cloneProjectGit, validateEthereumProjectManifest} from './init-controller';
 
 jest.mock('simple-git', () => {
   const mGit = {
@@ -42,5 +41,9 @@ describe('Cli can create project (mocked)', () => {
     await expect(cloneProjectGit(tempPath, projectSpec.name, 'invalid_url', 'invalid_branch')).rejects.toThrow(
       /Failed to clone starter template from git/
     );
+  });
+  it('validate ethereum project manifest', () => {
+    const projectPath = path.join(__dirname, '../../test/abiTest1');
+    expect(validateEthereumProjectManifest(projectPath)).toBe(true);
   });
 });

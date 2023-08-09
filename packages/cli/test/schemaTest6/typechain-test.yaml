@@ -9,7 +9,7 @@ dataSources:
     startBlock: 1
     assets:
       erc721:
-        file: ./erc721.json
+        file: ./abis/erc721.json
     mapping:
       handlers:
         - handler: handleTransaction
