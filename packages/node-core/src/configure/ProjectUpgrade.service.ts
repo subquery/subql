@@ -72,9 +72,6 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
 }
 
 export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject> implements IProjectUpgradeService<P> {
-  // Mapping of the start height -> Project version
-  // private projects: Record<number, P> = {};
-
   #currentHeight: number;
   #currentProject: P;
 

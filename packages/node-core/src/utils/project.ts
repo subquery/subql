@@ -7,14 +7,11 @@ import path from 'path';
 import {
   BaseCustomDataSource,
   BaseDataSource,
-  BaseHandler,
-  BaseMapping,
   DEFAULT_PORT,
   findAvailablePort,
   GithubReader,
   IPFSReader,
   LocalReader,
-  ProjectManifestV1_0_0,
   Reader,
   TemplateBase,
 } from '@subql/common';

@@ -22,7 +22,6 @@ import {
   CustomDatasourceTemplate,
 } from '@subql/common-substrate';
 import {
-  // getProjectRoot,
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
