@@ -77,7 +77,12 @@ const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
 const RESERVED_KEYS = ['filter', 'filters'];
-const CUSTOM_EVM_HANDLERS = ['cosmos/EthermintEvm', 'substrate/FrontierEvm'];
+const CUSTOM_EVM_HANDLERS = [
+  'cosmos/EthermintEvm',
+  'substrate/FrontierEvm',
+  'substrate/AcalaEvm',
+  'substrate/Moonbeam',
+];
 
 const exportTypes = {
   models: false,
