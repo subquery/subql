@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2023-08-10
+### Changed
+- Bump version with `common`;
+
 ## [2.2.1] - 2023-07-31
 ### Fixed
 - Update license (#1891)
@@ -89,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/2.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/2.3.0...HEAD
+[2.3.0]: https://github.com/subquery/subql/compare/common-substrate/2.2.1...common-substrate/2.3.0
 [2.2.1]: https://github.com/subquery/subql/compare/common-substrate/2.2.0...common-substrate/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/common-substrate/2.1.1...common-substrate/2.2.0
 [2.1.1]: https://github.com/subquery/subql/compare/common-substrate/2.1.0...common-substrate/2.1.1

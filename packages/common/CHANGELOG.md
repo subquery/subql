@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.5.0] - 2023-08-10
 ### Added
 - Add stellar to network family (#1919)
 - Support for update availability logs (#1930)
@@ -13,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Update license (#1891)
 - Fix ipfs repeat cat same cid (#1899
+
 ### Added
 - Added `forbidNonWhitelisted` to common (#1901)
 
@@ -294,7 +297,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/2.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/2.5.0...HEAD
+[2.5.0]: https://github.com/subquery/subql/compare/common/2.4.0...common/2.5.0
 [2.4.0]: https://github.com/subquery/subql/compare/common/2.3.0...common/2.4.0
 [2.3.0]: https://github.com/subquery/subql/compare/common/2.2.2...common/2.3.0
 [2.2.2]: https://github.com/subquery/subql/compare/common/v2.2.1...common/v2.2.2
