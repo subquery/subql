@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- injected `unsafeApi` in global, revert previous change in #1932. 
+
 ## [2.11.0] - 2023-08-10
 ### Fixed
 - fix injected unsafe api name in sandbox (#1932)

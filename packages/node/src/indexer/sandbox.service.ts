@@ -45,7 +45,10 @@ export class SandboxService<Api> {
       );
       this.processorCache[entry] = processor;
     }
-    processor.freeze(this.nodeConfig.unsafe ? this.apiService.api : api, 'api');
+    processor.freeze(api, 'api');
+    if (this.nodeConfig.unsafe) {
+      processor.freeze(this.apiService.api, 'unsafeApi');
+    }
     processor.freeze(this.project.network.chainId, 'chainId');
     return processor;
   }
