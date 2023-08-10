@@ -7,7 +7,6 @@ import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
 export enum SubstrateDatasourceKind {
   Runtime = 'substrate/Runtime',
-  Wasm = 'substrate/Wasm',
 }
 
 export enum SubstrateHandlerKind {
