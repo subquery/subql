@@ -24,7 +24,9 @@ import {
   ConnectionPoolStateManager,
   MmrQueryService,
   ProjectUpgradeSevice,
+  IProjectService,
 } from '@subql/node-core';
+import { BlockHeightMap } from '@subql/node-core/utils/blockHeightMap';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
 import {
@@ -40,7 +42,6 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
-import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
@@ -114,14 +115,16 @@ function mockIndexerManager(): IndexerManager & {
   } as any;
 }
 
-function mockProjectService(): ProjectService {
+function mockProjectService(): IProjectService<any> {
   return {
     blockOffset: 1,
-    getProcessedBlockCount: jest.fn(() => Promise.resolve(0)),
-    upsertMetadataBlockOffset: jest.fn(),
     setBlockOffset: jest.fn(),
-    getAllDataSources: jest.fn(),
-  } as any;
+    reindex: jest.fn(),
+    getAllDataSources: jest.fn(() => []),
+    getDataSources: jest.fn(() => Promise.resolve([])),
+    getStartBlockFromDataSources: jest.fn(() => 1),
+    getDataSourcesMap: jest.fn(() => new BlockHeightMap(new Map([[1, []]]))),
+  };
 }
 
 jest.setTimeout(200000);
@@ -139,6 +142,8 @@ async function createApp(
   project = testSubqueryProject(),
   indexerManager: IndexerManager,
 ): Promise<INestApplication> {
+  const projectService = mockProjectService();
+
   const nestModule = await Test.createTestingModule({
     providers: [
       ConnectionPoolStateManager,
@@ -215,7 +220,7 @@ async function createApp(
             nodeConfig,
             indexerManager,
             eventEmitter,
-            mockProjectService(),
+            projectService,
             projectUpgradeSevice,
             new SmartBatchService(nodeConfig.batchSize),
             storeService,
@@ -246,12 +251,16 @@ async function createApp(
             project,
           );
           (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
+          (dynamicDsService as any)._datasources = [];
 
           return dynamicDsService;
         },
         inject: [DsProcessorService, 'ISubqueryProject'],
       },
-      ProjectService,
+      {
+        provide: 'IProjectService',
+        useFactory: () => projectService,
+      },
       DictionaryService,
       SchedulerRegistry,
       UnfinalizedBlocksService,
@@ -390,10 +399,7 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    const dictionaryValidationSpy = jest.spyOn(
-      fetchService as any,
-      `dictionaryValidation`,
-    );
+    expect((fetchService as any).useDictionary).toBe(false);
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -412,8 +418,8 @@ describe('FetchService', () => {
 
     await fetchService.init(29230);
     await pendingCondition;
-    // This is no longer to be called, as it check whether dictionary is provided or not.
-    expect(dictionaryValidationSpy).toBeCalledTimes(0);
+
+    expect((fetchService as any).useDictionary).toBe(false);
     expect(nextEndBlockHeightSpy).toBeCalled();
   }, 500000);
 
@@ -431,10 +437,7 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    const dictionaryValidationSpy = jest.spyOn(
-      fetchService as any,
-      `dictionaryValidation`,
-    );
+    expect((fetchService as any).useDictionary).toBe(false);
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -454,7 +457,7 @@ describe('FetchService', () => {
     await fetchService.init(29230);
     await pendingCondition;
 
-    expect(dictionaryValidationSpy).toBeCalledTimes(1);
+    expect((fetchService as any).useDictionary).toBe(false);
     expect(nextEndBlockHeightSpy).toBeCalled();
     // fetchService.onApplicationShutdown()
     // await delay(0.5)
@@ -489,10 +492,7 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    const dictionaryValidationSpy = jest.spyOn(
-      fetchService as any,
-      `dictionaryValidation`,
-    );
+    expect((fetchService as any).useDictionary).toBe(false);
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -512,7 +512,7 @@ describe('FetchService', () => {
     await fetchService.init(29230);
     await pendingCondition;
 
-    expect(dictionaryValidationSpy).toBeCalledTimes(1);
+    expect((fetchService as any).useDictionary).toBe(false);
     expect(nextEndBlockHeightSpy).toBeCalled();
   }, 500000);
 
@@ -553,10 +553,7 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    const dictionaryValidationSpy = jest.spyOn(
-      fetchService as any,
-      `dictionaryValidation`,
-    );
+    expect((fetchService as any).useDictionary).toBe(false);
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -576,7 +573,7 @@ describe('FetchService', () => {
     await fetchService.init(29230);
     await pendingCondition;
 
-    expect(dictionaryValidationSpy).toBeCalledTimes(1);
+    expect((fetchService as any).useDictionary).toBe(false);
     expect(nextEndBlockHeightSpy).toBeCalled();
   }, 500000);
 
@@ -599,10 +596,7 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    const dictionaryValidationSpy = jest.spyOn(
-      fetchService as any,
-      `dictionaryValidation`,
-    );
+    expect((fetchService as any).useDictionary).toBe(false);
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -622,9 +616,9 @@ describe('FetchService', () => {
     await fetchService.init(29230);
     await pendingCondition;
 
-    expect(dictionaryValidationSpy).toBeCalledTimes(1);
+    expect((fetchService as any).useDictionary).toBe(false);
     expect(nextEndBlockHeightSpy).toBeCalled();
-    expect(dictionaryValidationSpy).toReturnWith(Promise.resolve(false));
+    expect((fetchService as any).useDictionary).toBe(false);
     expect((fetchService as any).runtimeService.specVersionMap.length).toBe(0);
   }, 500000);
 
