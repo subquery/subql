@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix missing `unsafeApi` in global
+
 ## [2.1.3] - 2023-07-31
 ### Fixed
 - Update license (#1891)
