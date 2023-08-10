@@ -22,7 +22,7 @@ import {
   CustomDatasourceTemplate,
 } from '@subql/common-substrate';
 import {
-  getProjectRoot,
+  // getProjectRoot,
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
@@ -93,8 +93,8 @@ export class SubqueryProject implements ISubqueryProject {
     path: string,
     rawManifest: unknown,
     reader: Reader,
+    root: string, // If project local then directory otherwise temp directory
     networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-    root?: string,
   ): Promise<SubqueryProject> {
     // rawManifest and reader can be reused here.
     // It has been pre-fetched and used for rebase manifest runner options with args
@@ -117,8 +117,8 @@ export class SubqueryProject implements ISubqueryProject {
       manifest.asV1_0_0,
       reader,
       path,
-      networkOverrides,
       root,
+      networkOverrides,
     );
   }
 }
@@ -139,12 +139,9 @@ async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
+  root: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-  root?: string,
 ): Promise<SubqueryProject> {
-  // Root is provided here only when running in a worker
-  root = root ?? (await getProjectRoot(reader));
-
   if (typeof projectManifest.network.endpoint === 'string') {
     projectManifest.network.endpoint = [projectManifest.network.endpoint];
   }

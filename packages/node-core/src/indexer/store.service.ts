@@ -144,26 +144,45 @@ export class StoreService {
     return this._metadataModel;
   }
 
-  async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
-    this._modelsRelations = modelsRelations;
-    this._historical = await this.getHistoricalStateEnabled(schema);
+  // Initialize tables and data that isnt' specific to the users data
+  async initCoreTables(schema: string): Promise<void> {
+    if (this.config.proofOfIndex) {
+      const usePoiFactory = (await this.useDeprecatePoi(schema)) ? PoiFactoryDeprecate : PoiFactory;
+      this.poiRepo = usePoiFactory(this.sequelize, schema);
+    }
+
+    this._metaDataRepo = await MetadataFactory(
+      this.sequelize,
+      schema,
+      this.config.multiChain,
+      this.subqueryProject.network.chainId
+    );
+
     this._dbType = await getDbType(this.sequelize);
 
-    let useSubscription = this.config.subscription;
-    if (useSubscription && this.dbType === SUPPORT_DB.cockRoach) {
-      useSubscription = false;
-      logger.warn(`Subscription is not support with ${this.dbType}`);
-    }
+    await this.sequelize.sync();
+
+    this._historical = await this.getHistoricalStateEnabled(schema);
     if (this.historical && this.dbType === SUPPORT_DB.cockRoach) {
       this._historical = false;
       logger.warn(`Historical feature is not supported with ${this.dbType}`);
     }
-
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
+
     this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
+    this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
+
+    this._metadataModel = this.storeCache.metadata;
+
+    this.metadataModel.set('historicalStateEnabled', this.historical);
+    this.metadataModel.setIncrement('schemaMigrationCount');
+  }
+
+  async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
+    this._modelsRelations = modelsRelations;
 
     try {
-      await this.syncSchema(schema, useSubscription);
+      await this.syncSchema(schema, this.config.subscription);
     } catch (e: any) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
@@ -174,12 +193,6 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
-
-    this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
-    this._metadataModel = this.storeCache.metadata;
-
-    this.metadataModel.set('historicalStateEnabled', this.historical);
-    this.metadataModel.setIncrement('schemaMigrationCount');
   }
 
   async initHotSchemaReloadQueries(schema: string): Promise<void> {
@@ -209,6 +222,11 @@ export class StoreService {
 
   // eslint-disable-next-line complexity
   async syncSchema(schema: string, useSubscription: boolean): Promise<void> {
+    if (useSubscription && this.dbType === SUPPORT_DB.cockRoach) {
+      useSubscription = false;
+      logger.warn(`Subscription is not support with ${this.dbType}`);
+    }
+
     const enumTypeMap = new Map<string, string>();
     if (this.historical) {
       const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
@@ -393,17 +411,6 @@ export class StoreService {
       const query = commentTableQuery(`"${schema}"."${tableName}"`, comment);
       extraQueries.push(query);
     });
-    if (this.config.proofOfIndex) {
-      const usePoiFactory = (await this.useDeprecatePoi(schema)) ? PoiFactoryDeprecate : PoiFactory;
-      this.poiRepo = usePoiFactory(this.sequelize, schema);
-    }
-
-    this._metaDataRepo = await MetadataFactory(
-      this.sequelize,
-      schema,
-      this.config.multiChain,
-      this.subqueryProject.network.chainId
-    );
 
     await this.sequelize.sync();
 

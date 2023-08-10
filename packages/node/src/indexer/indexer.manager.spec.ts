@@ -132,16 +132,22 @@ function testSubqueryProject_2(): SubqueryProject {
   );
 }
 
-function mockProjectUpgradeService(
+export function mockProjectUpgradeService(
   project: SubqueryProject,
 ): IProjectUpgradeService<SubqueryProject> {
   const startBlock = Math.min(
     ...project.dataSources.map((ds) => ds.startBlock),
   );
+
+  let currentHeight = startBlock;
   return {
     init: jest.fn(),
     updateIndexedDeployments: jest.fn(),
-    currentHeight: startBlock,
+    currentHeight: currentHeight,
+    // eslint-disable-next-line @typescript-eslint/require-await
+    setCurrentHeight: async (height: number) => {
+      currentHeight = height;
+    },
     currentProject: project,
     projects: new Map([[startBlock, project]]),
     getProject: () => project,

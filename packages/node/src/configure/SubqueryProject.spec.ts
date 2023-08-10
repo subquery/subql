@@ -3,8 +3,24 @@
 
 import path from 'path';
 
-import { IPFS_NODE_ENDPOINT, ReaderFactory } from '@subql/common';
+import {
+  GithubReader,
+  IPFSReader,
+  IPFS_NODE_ENDPOINT,
+  LocalReader,
+  makeTempDir,
+  Reader,
+  ReaderFactory,
+} from '@subql/common';
 import { SubqueryProject } from './SubqueryProject';
+
+export async function getProjectRoot(reader: Reader): Promise<string> {
+  if (reader instanceof LocalReader) return reader.root;
+  if (reader instanceof IPFSReader || reader instanceof GithubReader) {
+    return makeTempDir();
+  }
+  throw new Error('Un-known reader type');
+}
 
 describe('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
@@ -39,6 +55,7 @@ describe('SubqueryProject', () => {
         projectDirV1_0_0,
         rawManifest,
         reader,
+        await getProjectRoot(reader),
         {
           endpoint: ['wss://rpc.polkadot.io/public-ws'],
         },
@@ -54,6 +71,7 @@ describe('SubqueryProject', () => {
         projectDirV1_0_0,
         rawManifest,
         reader,
+        await getProjectRoot(reader),
         {
           endpoint: ['wss://rpc.polkadot.io/public-ws'],
         },
@@ -70,6 +88,7 @@ describe('SubqueryProject', () => {
         templateProject,
         templateRawManifest,
         reader0,
+        await getProjectRoot(reader0),
         {
           endpoint: ['wss://moonbeam-alpha.api.onfinality.io/public-ws'],
         },
@@ -80,6 +99,7 @@ describe('SubqueryProject', () => {
         projectDirV1_0_0,
         rawManifest,
         reader1,
+        await getProjectRoot(reader1),
         {
           endpoint: ['wss://rpc.polkadot.io/public-ws'],
         },
@@ -99,6 +119,7 @@ describe('SubqueryProject', () => {
       'ipfs://QmZYR6tpRYvmnKoUtugpwYfH9CpP7a8fYYcLVX3d7dph2j',
       await reader.getProjectSchema(),
       reader,
+      await getProjectRoot(reader),
       {
         endpoint: ['wss://astar.api.onfinality.io/public-ws'],
       },

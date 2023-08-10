@@ -100,8 +100,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     return this._latestProcessedHeight;
   }
 
-  set latestProcessedHeight(height: number) {
-    this.projectUpgradeService.currentHeight = height;
+  setLatestProcessedHeight(height: number): void {
     this._latestProcessedHeight = height;
   }
 
@@ -138,7 +137,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     if (lastCorrectHeight <= this.currentProcessingHeight) {
       logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
       await this.projectService.reindex(lastCorrectHeight);
-      this.latestProcessedHeight = lastCorrectHeight;
+      this.setLatestProcessedHeight(lastCorrectHeight);
       logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
     }
     this.flushQueue(lastCorrectHeight);
@@ -151,8 +150,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // Is called directly before a block is processed
-  protected preProcessBlock(height: number): void {
+  protected async preProcessBlock(height: number): Promise<void> {
     this.storeService.setBlockHeight(height);
+
+    await this.projectUpgradeService.setCurrentHeight(height);
 
     this.currentProcessingHeight = height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
@@ -170,7 +171,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
-      this.latestProcessedHeight = reindexBlockHeight;
+      this.setLatestProcessedHeight(reindexBlockHeight);
     } else {
       this.updateStoreMetadata(height);
       if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
@@ -192,7 +193,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       );
       // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
       this.setProcessedBlockCount(this._processedBlockCount + 1);
-      this.latestProcessedHeight = height;
+      this.setLatestProcessedHeight(height);
     }
 
     if (this.nodeConfig.storeCacheAsync) {

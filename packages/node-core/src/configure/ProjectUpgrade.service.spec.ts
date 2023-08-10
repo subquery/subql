@@ -250,22 +250,22 @@ describe('Project Upgrades', () => {
       expect(() => ((project as any).id = 'not possible')).toThrow();
     });
 
-    it('can set the current height on the service', () => {
-      upgradeService.currentHeight = 20;
+    it('can set the current height on the service', async () => {
+      await upgradeService.setCurrentHeight(20);
 
       expect(upgradeService.currentHeight).toEqual(20);
       expect(project.currentHeight).toEqual(20);
     });
 
-    it('can set the current height on the project', () => {
-      project.currentHeight = 20;
+    it('can set the current height on the project', async () => {
+      await project.setCurrentHeight(20);
 
       expect(upgradeService.currentHeight).toEqual(20);
       expect(project.currentHeight).toEqual(20);
     });
 
-    it('the project is the right project for a set height', () => {
-      project.currentHeight = 25;
+    it('the project is the right project for a set height', async () => {
+      await project.setCurrentHeight(25);
 
       expect(project.parent?.block).toEqual(20);
     });

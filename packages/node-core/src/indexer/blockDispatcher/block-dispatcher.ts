@@ -161,7 +161,7 @@ export abstract class BlockDispatcher<B, DS>
         const blockTasks = blocks.map((block) => async () => {
           const height = this.getBlockHeight(block);
           try {
-            this.preProcessBlock(height);
+            await this.preProcessBlock(height);
             // Inject runtimeVersion here to enhance api.at preparation
             const processBlockResponse = await this.indexBlock(block);
 

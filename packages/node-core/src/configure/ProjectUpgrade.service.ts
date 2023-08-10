@@ -9,12 +9,13 @@ import {getLogger} from '../logger';
 import {getStartHeight} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
-type OnProjectUpgradeCallback<P> = (height: number, project: P) => void;
+type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
 
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
   init: (metadata: CacheMetadataModel, onProjectUpgrade: OnProjectUpgradeCallback<P>) => Promise<number | undefined>;
   updateIndexedDeployments: (id: string, blockHeight: number) => Promise<void>;
-  currentHeight: number;
+  readonly currentHeight: number;
+  setCurrentHeight: (newHeight: number) => Promise<void>;
   currentProject: P;
   projects: Map<number, P>;
   getProject: (height: number) => P;
@@ -23,6 +24,7 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
 const serviceKeys: Array<keyof IProjectUpgradeService> = [
   'getProject',
   'currentHeight',
+  'currentProject',
   'projects',
   'init',
   'updateIndexedDeployments',
@@ -41,15 +43,6 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
   upgradeService: ProjectUpgradeSevice<P>
 ): P & IProjectUpgradeService<P> {
   return new Proxy<P & IProjectUpgradeService<P>>(upgradeService as any, {
-    set(target, key, value) {
-      if (key !== 'currentHeight') {
-        throw new Error(`All properties except 'currentHeight' are readonly. Trying to set "${key.toString()}"`);
-        // return false
-        // TODO should this return false?
-      }
-      target.currentHeight = value;
-      return true;
-    },
     get(target, prop, receiver) {
       const project = target.currentProject;
       if (project[prop as keyof P]) {
@@ -118,6 +111,11 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     const lastProjectChange = this.validateIndexedData(indexedDeployments);
 
+    if (lastProjectChange) {
+      this.#currentHeight = lastProjectChange;
+      this.#currentProject = this.getProject(this.#currentHeight);
+    }
+
     return lastProjectChange;
   }
 
@@ -133,23 +131,34 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     return this.#currentHeight;
   }
 
-  set currentHeight(height: number) {
+  async setCurrentHeight(height: number): Promise<void> {
     this.#currentHeight = height;
     const newProjectDetails = this._projects.getDetails(height);
     assert(newProjectDetails, `Unable to find project for height ${height}`);
     const {startHeight, value: newProject} = newProjectDetails;
 
-    if (this.#currentProject !== newProject) {
-      logger.info(`Project upgraded to ${newProject.id} at height ${height}`);
-      // Use the project start height here for when resuming indexing at an arbitrary height
-      void this.updateIndexedDeployments(newProject.id, startHeight).catch((e) => {
+    const hasChanged = this.#currentProject !== newProject;
+    // Need to set this so that operations under hasChanged use the new project
+    this.#currentProject = newProject;
+
+    if (hasChanged) {
+      try {
+        // Use the project start height here for when resuming indexing at an arbitrary height
+        await this.updateIndexedDeployments(newProject.id, startHeight);
+      } catch (e: any) {
         logger.error(e, 'Failed to update deployment metadata');
         process.exit(1);
-      });
+      }
 
-      this.onProjectUpgrade?.(startHeight, newProject);
+      try {
+        await this.onProjectUpgrade?.(startHeight, newProject);
+      } catch (e: any) {
+        logger.error(e, `Failed to complete upgrading project`);
+        process.exit(1);
+      }
+
+      logger.info(`Project upgraded to ${newProject.id} at height ${height}`);
     }
-    this.#currentProject = newProject;
   }
 
   static async create<P extends ISubqueryProject>(

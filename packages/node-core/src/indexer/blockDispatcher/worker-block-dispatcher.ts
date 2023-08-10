@@ -146,7 +146,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
           return;
         }
 
-        this.preProcessBlock(height);
+        await this.preProcessBlock(height);
 
         const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
 

@@ -83,22 +83,26 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
       this._schema = await this.ensureProject();
-      await this.initDbSchema();
-      await this.ensureMetadata();
+
+      // Init metadata before rest of schema so we can determine the correct project version to create the schema
+      await this.storeService.initCoreTables(this._schema);
       await this.dynamicDsService.init(this.storeService.storeCache.metadata);
+      await this.ensureMetadata();
+      const reindexedUpgrade = await this.initUpgradeService();
+
+      await this.initDbSchema();
 
       await this.initHotSchemaReload();
 
       this._startHeight = await this.getStartHeight();
 
-      const reindexedUpgrade = await this.initUpgradeService();
       const reindexedUnfinalized = await this.initUnfinalized();
 
       // Find the new start height based on some rewinding
       this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
 
       // Set the start height so the right project is used
-      this.projectUpgradeService.currentHeight = this._startHeight;
+      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true);
@@ -118,6 +122,8 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       await this.sequelize.sync();
 
       assert(this._schema, 'Schema should be created in main thread');
+      await this.storeService.initCoreTables(this._schema);
+      await this.initUpgradeService();
       await this.initDbSchema();
 
       if (this.nodeConfig.proofOfIndex) {
@@ -126,7 +132,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     }
 
     // Used to load assets into DS-processor, has to be done in any thread
-    await this.dsProcessorService.validateProjectCustomDatasources(this.getAllDataSources());
+    await this.dsProcessorService.validateProjectCustomDatasources(await this.getDataSources());
   }
 
   private async ensureProject(): Promise<string> {
@@ -275,11 +281,13 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   }
 
   // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
-  async getDataSources(blockHeight: number): Promise<DS[]> {
+  async getDataSources(blockHeight?: number): Promise<DS[]> {
     const dataSources = this.project.dataSources;
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
 
-    return [...dataSources, ...dynamicDs].filter((ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight);
+    return [...dataSources, ...dynamicDs].filter(
+      (ds) => blockHeight === undefined || (ds.startBlock !== undefined && ds.startBlock <= blockHeight)
+    );
   }
 
   getDataSourcesMap(): BlockHeightMap<DS[]> {
@@ -316,30 +324,36 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   private async initUpgradeService(): Promise<number | undefined> {
     const metadata = this.storeService.storeCache.metadata;
 
-    const upgradePoint = await this.projectUpgradeService.init(metadata, () => {
+    const upgradePoint = await this.projectUpgradeService.init(metadata, async () => {
+      // Apply any migrations to the schema
+      await this.initDbSchema();
+
       // Reload the dynamic ds with new project
       // TODO are we going to run into problems with this being non blocking
-      this.dynamicDsService.getDynamicDatasources(true);
+      await this.dynamicDsService.getDynamicDatasources(true);
     });
-    const lastProcessedHeight = await this.getLastProcessedHeight();
 
-    // New project or not using upgrades feature
-    if (upgradePoint === undefined) {
-      await this.projectUpgradeService.updateIndexedDeployments(
-        this.project.id,
-        lastProcessedHeight ?? this.getStartBlockFromDataSources()
-      );
-    } else {
-      if (lastProcessedHeight && upgradePoint < lastProcessedHeight) {
-        if (!this.isHistorical) {
-          logger.error(
-            `Unable to upgrade project. Cannot rewind to block ${upgradePoint} without historical indexing enabled.`
-          );
-          process.exit(1);
+    if (isMainThread) {
+      const lastProcessedHeight = await this.getLastProcessedHeight();
+
+      // New project or not using upgrades feature
+      if (upgradePoint === undefined) {
+        await this.projectUpgradeService.updateIndexedDeployments(
+          this.project.id,
+          lastProcessedHeight ?? this.getStartBlockFromDataSources()
+        );
+      } else {
+        if (lastProcessedHeight && upgradePoint < lastProcessedHeight) {
+          if (!this.isHistorical) {
+            logger.error(
+              `Unable to upgrade project. Cannot rewind to block ${upgradePoint} without historical indexing enabled.`
+            );
+            process.exit(1);
+          }
+          logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
+          await this.reindex(upgradePoint);
+          return upgradePoint;
         }
-        logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
-        await this.reindex(upgradePoint);
-        return upgradePoint;
       }
     }
     return undefined;

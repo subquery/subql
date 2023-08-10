@@ -31,6 +31,7 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
+import { mockProjectUpgradeService } from './indexer.manager.spec';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent } from './types';
@@ -367,22 +368,6 @@ function mockProjectService(project: SubqueryProject): ProjectService {
     setBlockOffset: jest.fn(),
     getAllDataSources: () => project.dataSources,
   } as any;
-}
-
-function mockProjectUpgradeService(
-  project: SubqueryProject,
-): IProjectUpgradeService {
-  const startBlock = Math.min(
-    ...project.dataSources.map((ds) => ds.startBlock),
-  );
-  return {
-    init: jest.fn(),
-    updateIndexedDeployments: jest.fn(),
-    currentHeight: startBlock,
-    currentProject: project,
-    projects: new Map([[startBlock, project]]),
-    getProject: () => project,
-  };
 }
 
 function mockStoreService(): StoreService {

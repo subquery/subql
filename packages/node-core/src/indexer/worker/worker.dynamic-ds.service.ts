@@ -31,3 +31,10 @@ export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
     return this.host.dynamicDsGetDynamicDatasources();
   }
 }
+
+export function dynamicDsHostFunctions<DS>(dynamicDsService: IDynamicDsService<DS>): HostDynamicDS<DS> {
+  return {
+    dynamicDsCreateDynamicDatasource: dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
+    dynamicDsGetDynamicDatasources: dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
+  };
+}

@@ -46,3 +46,16 @@ export const hostStoreToStore = (host: HostStore): Store => {
     bulkRemove: host.storeBulkRemove,
   };
 };
+
+export function storeHostFunctions(store: Store): HostStore {
+  return {
+    storeGet: store.get.bind(store),
+    storeGetByField: store.getByField.bind(store),
+    storeGetOneByField: store.getOneByField.bind(store),
+    storeSet: store.set.bind(store),
+    storeBulkCreate: store.bulkCreate.bind(store),
+    storeBulkUpdate: store.bulkUpdate.bind(store),
+    storeRemove: store.remove.bind(store),
+    storeBulkRemove: store.bulkRemove.bind(store),
+  };
+}

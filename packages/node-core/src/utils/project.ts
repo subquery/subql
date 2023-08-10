@@ -241,20 +241,6 @@ export async function loadDataSourceScript(reader: Reader, file?: string): Promi
   return entryScript;
 }
 
-async function makeTempDir(): Promise<string> {
-  const sep = path.sep;
-  const tmpDir = os.tmpdir();
-  return fs.promises.mkdtemp(`${tmpDir}${sep}`);
-}
-
-export async function getProjectRoot(reader: Reader): Promise<string> {
-  if (reader instanceof LocalReader) return reader.root;
-  if (reader instanceof IPFSReader || reader instanceof GithubReader) {
-    return makeTempDir();
-  }
-  throw new Error('Un-known reader type');
-}
-
 export async function initDbSchema(
   project: ISubqueryProject,
   schema: string,

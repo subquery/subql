@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {handleCreateSubqueryProjectError, Reader, ReaderFactory} from '@subql/common';
+import {handleCreateSubqueryProjectError, LocalReader, makeTempDir, Reader, ReaderFactory} from '@subql/common';
 import {camelCase, isNil, omitBy} from 'lodash';
 import {ISubqueryProject} from '../indexer/types';
 import {getLogger, setLevel} from '../logger';
@@ -58,14 +58,28 @@ function warnDeprecations(argv: Args) {
   }
 }
 
+// This is used to ensure the same temp dir is used across project upgrades and workers
+let rootDir: string;
+async function getCachedRoot(reader: Reader, configRoot?: string): Promise<string> {
+  if (reader instanceof LocalReader) return reader.root;
+
+  if (configRoot) return configRoot;
+
+  if (!rootDir) {
+    rootDir = await makeTempDir();
+  }
+
+  return rootDir;
+}
+
 export async function registerApp<P extends ISubqueryProject>(
   argv: Args,
   createProject: (
     path: string,
     rawManifest: unknown,
     reader: Reader,
-    networkOverrides: Record<string, unknown>,
-    root?: string
+    root: string,
+    networkOverrides: Record<string, unknown>
   ) => Promise<P>,
   showHelp: () => void,
   pjson: any,
@@ -123,14 +137,14 @@ export async function registerApp<P extends ISubqueryProject>(
       cid,
       await reader.getProjectSchema(),
       reader,
+      await getCachedRoot(reader, config.root),
       omitBy(
         {
           endpoint: config.networkEndpoints,
           dictionary: config.networkDictionary,
         },
         isNil
-      ),
-      config.root
+      )
     );
   };
 
@@ -138,14 +152,14 @@ export async function registerApp<P extends ISubqueryProject>(
     config.subquery,
     rawManifest,
     reader,
+    await getCachedRoot(reader, config.root),
     omitBy(
       {
         endpoint: config.networkEndpoints,
         dictionary: config.networkDictionary,
       },
       isNil
-    ),
-    config.root
+    )
   ).catch((err: any) => {
     handleCreateSubqueryProjectError(err, pjson, rawManifest, logger);
     process.exit(1);

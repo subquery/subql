@@ -13,14 +13,15 @@ import {
   StoreCacheService,
   IProjectService,
   IDynamicDsService,
-  HostStore,
-  HostDynamicDS,
   WorkerBlockDispatcher,
   IUnfinalizedBlocksService,
-  HostConnectionPoolState,
   ConnectionPoolStateManager,
   connectionPoolStateHostFunctions,
   IProjectUpgradeService,
+  DefaultWorkerFunctions,
+  baseWorkerFunctions,
+  storeHostFunctions,
+  dynamicDsHostFunctions,
 } from '@subql/node-core';
 import { Store, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -30,7 +31,6 @@ import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
-import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
@@ -45,37 +45,18 @@ async function createIndexerWorker(
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubstrateDatasource> &
-      HostStore &
-      HostUnfinalizedBlocks &
-      HostConnectionPoolState<ApiPromiseConnection>
+    DefaultWorkerFunctions<ApiPromiseConnection, SubstrateDatasource>
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
+      ...baseWorkerFunctions,
       'initWorker',
-      'processBlock',
-      'fetchBlock',
-      'numFetchedBlocks',
-      'numFetchingBlocks',
-      'getStatus',
       'syncRuntimeService',
       'getSpecFromMap',
-      'getMemoryLeft',
-      'waitForWorkerBatchSize',
     ],
     {
-      storeGet: store.get.bind(store),
-      storeGetByField: store.getByField.bind(store),
-      storeGetOneByField: store.getOneByField.bind(store),
-      storeSet: store.set.bind(store),
-      storeBulkCreate: store.bulkCreate.bind(store),
-      storeBulkUpdate: store.bulkUpdate.bind(store),
-      storeRemove: store.remove.bind(store),
-      storeBulkRemove: store.bulkRemove.bind(store),
-      dynamicDsCreateDynamicDatasource:
-        dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
-      dynamicDsGetDynamicDatasources:
-        dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
+      ...storeHostFunctions(store),
+      ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess:
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
