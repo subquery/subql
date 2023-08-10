@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "2.4.1-2",
+  "version": "2.5.0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -32,6 +32,5 @@
     "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1",
     "@types/update-notifier": "^6"
-  },
-  "stableVersion": "2.4.1-1"
+  }
 }
