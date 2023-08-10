@@ -37,6 +37,10 @@ export function isCustomDs<F extends SubstrateNetworkFilter>(
   return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDatasource<string, F>).processor;
 }
 
+export function isWasmDs(ds: SubstrateDatasource): ds is SubstrateCustomDatasource {
+  return ds.kind === SubstrateDatasourceKind.Wasm;
+}
+
 export function isRuntimeDs(ds: SubstrateDatasource): ds is SubstrateRuntimeDatasource {
   return ds.kind === SubstrateDatasourceKind.Runtime;
 }

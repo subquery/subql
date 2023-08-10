@@ -30,6 +30,7 @@ import {
 } from '@subql/common-stellar';
 import {
   isCustomDs as isCustomSubstrateDs,
+  isWasmDs as isWasmSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
   SubstrateCustomDataSource,
@@ -172,8 +173,13 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
     if (!d?.assets) {
       return;
     }
-    // is the ds check here needed ?
-    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d) || 'assets' in d) {
+    if (
+      isRuntimeEthereumDs(d) ||
+      isCustomEthereumDs(d) ||
+      isCustomSubstrateDs(d) ||
+      !isWasmSubstrateDs(d) ||
+      'assets' in d
+    ) {
       Object.entries(d.assets).map(([name, value]) => {
         const filePath = path.join(projectPath, value.file);
         if (!fs.existsSync(filePath)) {
