@@ -10,7 +10,7 @@ type ApiAt = ApiDecoration<'promise'> & {rpc: ApiPromise['rpc']};
 
 declare global {
   const api: ApiAt;
-  const unsafeApi: ApiPromise;
+  const unsafeApi: ApiPromise | undefined;
   const logger: Pino.Logger;
   const store: Store;
   const chainId: string;
