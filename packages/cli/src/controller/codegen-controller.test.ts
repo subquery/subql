@@ -79,4 +79,9 @@ describe('Codegen can generate schema', () => {
       fs.promises.readFile(`${projectPath}/src/types/abi-interfaces/Artifact.ts`, 'utf8')
     ).resolves.toBeTruthy();
   });
+  it('Should not generate ABI for non evm ds', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest6');
+    await codegen(projectPath, ['non-evm-project.yaml']);
+    expect(fs.existsSync(`${projectPath}/src/types/abi-interfaces/`)).toBeFalsy();
+  });
 });

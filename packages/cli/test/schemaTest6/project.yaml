@@ -5,6 +5,7 @@ schema:
   file: './schema.graphql'
 
 customDs:
+  kind: substrate/FrontierEvm
   assets:
     erc721:
       file: ./abis/erc721.json

@@ -77,6 +77,12 @@ const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
 const RESERVED_KEYS = ['filter', 'filters'];
+const CUSTOM_EVM_HANDLERS = [
+  'cosmos/EthermintEvm',
+  'substrate/FrontierEvm',
+  'substrate/AcalaEvm',
+  'substrate/Moonbeam',
+];
 
 const exportTypes = {
   models: false,
@@ -166,14 +172,17 @@ export interface abiInterface {
     type: string;
   }[];
 }
+function validateCustomDs(d: DatasourceKind) {
+  return CUSTOM_EVM_HANDLERS.includes(d.kind);
+}
+
 export async function generateAbis(datasources: DatasourceKind[], projectPath: string): Promise<void> {
   const sortedAssets = new Map<string, string>();
   datasources.map((d) => {
     if (!d?.assets) {
       return;
     }
-    // is the ds check here needed ?
-    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d) || 'assets' in d) {
+    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || validateCustomDs(d)) {
       Object.entries(d.assets).map(([name, value]) => {
         const filePath = path.join(projectPath, value.file);
         if (!fs.existsSync(filePath)) {
