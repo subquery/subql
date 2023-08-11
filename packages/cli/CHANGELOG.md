@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.5.0] - 2023-08-11
 ### Added
 - abi `codegen` support for `cosmos/Ethermint` (#1936)
 ### Fixed
@@ -15,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add new command `codegen:generate`, allowing users to generate a scaffold based on selected ABIs (#1896)
 - `subql init` supports scaffold creation via `codegen:generate` (#1896)
 - Support for update availability logs (#1930)
+
 ### Changed
 - change soroban packages to stellar (#1929)
 
@@ -420,7 +423,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/3.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql/compare/cli/3.4.0...cli/3.5.0
 [3.4.0]: https://github.com/subquery/subql/compare/cli/3.3.3...cli/3.4.0
 [3.3.3]: https://github.com/subquery/subql/compare/cli/3.3.2...cli/3.3.3
 [3.3.2]: https://github.com/subquery/subql/compare/cli/3.3.1...cli/3.3.2

@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.4] - 2023-08-11
 ### Fixed
-- Fix missing `unsafeApi` in global
+- Fix missing `unsafeApi` in global (#1935)
 
 ## [2.1.3] - 2023-07-31
 ### Fixed
@@ -110,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.10.0] - 2021-11-03
 ### Changed
 - Update interface under project for Moonbeam custom datasource processor (#579)
+
 ### Added
 - Add interface `FunctionPropertyNames` improve types of entity creation (#573)
 
@@ -175,7 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/2.1.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/2.1.4...HEAD
+[2.1.4]: https://github.com/subquery/subql/compare/types/2.1.3...types/2.1.4
 [2.1.3]: https://github.com/subquery/subql/compare/types/2.1.2...types/2.1.3
 [2.1.2]: https://github.com/subquery/subql/compare/types/2.1.1...types/2.1.2
 [2.1.1]: https://github.com/subquery/subql/compare/types/2.1.1...types/2.1.1

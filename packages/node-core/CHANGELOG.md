@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.1] - 2023-08-11
+### Fixed
+- Bump with `@subql/types` package, fix missing `unsafeApi`. (#1935)
+
 ## [4.2.0] - 2023-08-10
 ### Added
 - Added primary network endpoint that is always used from connection pool unless it fails (#1927)
@@ -362,7 +366,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.2.1...HEAD
+[4.2.1]: https://github.com/subquery/subql/compare/node-core/4.2.0...node-core/4.2.1
 [4.2.0]: https://github.com/subquery/subql/compare/node-core/4.1.0...node-core/4.2.0
 [4.1.0]: https://github.com/subquery/subql/compare/node-core/4.0.1...node-core/4.1.0
 [4.0.1]: https://github.com/subquery/subql/compare/node-core/4.0.0...node-core/4.0.1
