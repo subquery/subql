@@ -62,6 +62,7 @@ export interface SubstrateEventFilter extends SubstrateBaseHandlerFilter {
 
 export interface SubstrateCallFilter extends SubstrateEventFilter {
   success?: boolean;
+  isSigned?: boolean;
 }
 
 export type SubstrateBlockHandler = SubstrateCustomHandler<SubstrateHandlerKind.Block, SubstrateBlockFilter>;
@@ -176,7 +177,7 @@ export interface SubstrateDatasourceProcessor<
 
 export interface DictionaryQueryCondition {
   field: string;
-  value: string | string[];
+  value: string | string[] | boolean;
   matcher?: string; // defaults to "equalTo", use "contains" for JSON
 }
 

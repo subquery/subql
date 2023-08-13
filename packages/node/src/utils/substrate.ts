@@ -182,7 +182,8 @@ export function filterExtrinsic(
       extrinsic.method.section === filter.module) &&
     (filter.method === undefined ||
       extrinsic.method.method === filter.method) &&
-    (filter.success === undefined || success === filter.success)
+    (filter.success === undefined || success === filter.success) &&
+    (filter.isSigned === undefined || extrinsic.isSigned === filter.isSigned)
   );
 }
 

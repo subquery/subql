@@ -78,6 +78,9 @@ export class CallFilter extends EventFilter implements SubstrateCallFilter {
   @IsOptional()
   @IsBoolean()
   success?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  isSigned?: boolean;
 }
 
 export class BlockHandler implements SubstrateBlockHandler {

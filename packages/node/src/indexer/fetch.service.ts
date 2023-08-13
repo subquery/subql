@@ -19,6 +19,7 @@ import {
 } from '@subql/common-substrate';
 import { NodeConfig, BaseFetchService, IApi } from '@subql/node-core';
 import {
+  DictionaryQueryCondition,
   DictionaryQueryEntry,
   SubstrateCustomHandler,
   SubstrateDatasource,
@@ -61,13 +62,13 @@ function callFilterToQueryEntry(
 ): DictionaryQueryEntry {
   return {
     entity: 'extrinsics',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'call',
-        value: filter.method,
-      },
-    ],
+    conditions: Object.keys(filter).map(
+      (key) =>
+        ({
+          field: key,
+          value: filter[key],
+        } as DictionaryQueryCondition),
+    ),
   };
 }
 
@@ -109,6 +110,7 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
+  // eslint-disable-next-line complexity
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
@@ -165,7 +167,12 @@ export class FetchService extends BaseFetchService<
             break;
           case SubstrateHandlerKind.Call: {
             for (const filter of filterList as SubstrateCallFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+              if (
+                filter.module !== undefined ||
+                filter.method !== undefined ||
+                filter.isSigned !== undefined ||
+                filter.success !== undefined
+              ) {
                 queryEntries.push(callFilterToQueryEntry(filter));
               } else {
                 return [];
@@ -175,7 +182,7 @@ export class FetchService extends BaseFetchService<
           }
           case SubstrateHandlerKind.Event: {
             for (const filter of filterList as SubstrateEventFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+              if (filter.module !== undefined || filter.method !== undefined) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
                 return [];
