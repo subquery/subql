@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.4] - 2023-08-14
 ### Fixed
-- fix missing `unsafeApi` in the global
+- fix missing `unsafeApi` in the global (#141)
 
 ## [2.2.3] - 2023-07-31
 ### Fixed
@@ -55,7 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/2.2.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/2.2.4...HEAD
+[2.2.4]: https://github.com/subquery/subql-ethereum/compare/types/2.2.3...types/2.2.4
 [2.2.3]: https://github.com/subquery/subql-ethereum/compare/types/2.2.2...types/2.2.3
 [2.2.2]: https://github.com/subquery/subql-ethereum/compare/types/2.2.1...types/2.2.2
 [2.2.1]: https://github.com/subquery/subql-ethereum/compare/types/v2.2.0...types/v2.2.1
@@ -66,6 +68,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.0]: https://github.com/subquery/subql-ethereum/compare/types/0.2.2v.../types/v1.0.0
 [0.2.2]: https://github.com/subquery/subql-ethereum/compare/types/0.2.1v.../types/v0.2.2
 [0.2.1]: https://github.com/subquery/subql-ethereum/compare/types/0.2.0v.../types/v0.2.1
-[0.2.0]: https://github.com/subquery/subql-ethereum/compare/types/0.2.0v.../types/v0.2.0
 [0.2.0]: https://github.com/subquery/subql-ethereum/compare/types/0.2.0v.../types/v0.2.0
 [0.1.0]: https://github.com/subquery/subql-ethereum/tag/v0.1.0
