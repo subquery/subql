@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Support for `isSigned` filter (#1940)
+
+### Fixed
+- Dictionary query only working if `module` AND `method` filters are provided for call or event handlers (#1940)
 
 ## [2.11.1] - 2023-08-11
 ### Fixed
@@ -36,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed missing mmrQueryService in indexer module (#1885)
-- Sync 
+- Sync
   - for `@subql/apollo-links` update (#1886)
   - fix retry logic for workers in connection pool (#1829)
 
