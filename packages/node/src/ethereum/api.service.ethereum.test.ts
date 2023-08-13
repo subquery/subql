@@ -4,7 +4,12 @@
 import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
-import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
+import {
+  ConnectionPoolService,
+  ConnectionPoolStateManager,
+  delay,
+  NodeConfig,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -34,6 +39,7 @@ const prepareApiService = async (
   const module = await Test.createTestingModule({
     providers: [
       ConnectionPoolService,
+      ConnectionPoolStateManager,
       {
         provide: NodeConfig,
         useFactory: () => ({}),

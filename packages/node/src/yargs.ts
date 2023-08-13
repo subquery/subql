@@ -272,6 +272,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'string',
       describe: 'Blockchain network endpoint to connect',
     },
+    'primary-network-endpoint': {
+      demandOption: false,
+      type: 'string',
+      describe:
+        'Primary blockchain endpoint, used as the first choice for connections.',
+    },
     'output-fmt': {
       demandOption: false,
       describe: 'Print log as json or plain text',

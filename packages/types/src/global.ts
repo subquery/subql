@@ -7,6 +7,7 @@ import {Store, DynamicDatasourceCreator} from './interfaces';
 
 declare global {
   const api: Provider;
+  const unsafeApi: Provider | undefined;
   const logger: Pino.Logger;
   const store: Store;
   const chainId: string;

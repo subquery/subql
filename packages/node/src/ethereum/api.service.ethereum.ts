@@ -9,6 +9,7 @@ import {
   ConnectionPoolService,
   NetworkMetadataPayload,
   getLogger,
+  NodeConfig,
   IndexerEvent,
 } from '@subql/node-core';
 import { EthereumBlockWrapper } from '@subql/types-ethereum';
@@ -31,6 +32,7 @@ export class EthereumApiService extends ApiService<
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
     private eventEmitter: EventEmitter2,
+    private nodeConfig: NodeConfig,
   ) {
     super(connectionPoolService);
   }
@@ -50,6 +52,10 @@ export class EthereumApiService extends ApiService<
       const endpoints = Array.isArray(network.endpoint)
         ? network.endpoint
         : [network.endpoint];
+
+      if (this.nodeConfig.primaryNetworkEndpoint) {
+        endpoints.push(this.nodeConfig.primaryNetworkEndpoint);
+      }
 
       const endpointToApiIndex: Record<string, EthereumApiConnection> = {};
 

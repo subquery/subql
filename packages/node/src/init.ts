@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NestFactory } from '@nestjs/core';
-import { findAvailablePort } from '@subql/common';
+import { findAvailablePort, notifyUpdates } from '@subql/common';
 import { getLogger, NestLogger } from '@subql/node-core';
 import { AppModule } from './app.module';
 import { FetchService } from './indexer/fetch.service';
@@ -14,6 +14,8 @@ const { argv } = yargsOptions;
 
 const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
+
+notifyUpdates(pjson, logger);
 
 export async function bootstrap(): Promise<void> {
   logger.info(`Current ${pjson.name} version is ${pjson.version}`);

@@ -51,16 +51,23 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         project: SubqueryProject,
         connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
         eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
         const apiService = new EthereumApiService(
           project,
           connectionPoolService,
           eventEmitter,
+          nodeConfig,
         );
         await apiService.init();
         return apiService;
       },
-      inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
     },
     SandboxService,
     DsProcessorService,
