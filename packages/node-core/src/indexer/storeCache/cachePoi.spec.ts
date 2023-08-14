@@ -50,13 +50,12 @@ const mockPoiRepo = (): PoiRepo => {
   } as any as PoiRepo;
 };
 
-const getEmptyPoi = (id: number, mmrRoot?: any): ProofOfIndex => {
+const getEmptyPoi = (id: number): ProofOfIndex => {
   return {
     id,
     chainBlockHash: new Uint8Array(),
     hash: new Uint8Array(),
     parentHash: new Uint8Array(),
-    mmrRoot,
   } as ProofOfIndex;
 };
 
@@ -136,129 +135,23 @@ describe('CachePoi', () => {
     cachePoi = new CachePoiModel(poiRepo);
   });
 
-  // This getPoiBlocksByRangeWithCache method is deprecated
-  describe.skip('getPoiBlocksByRangeWithCache', () => {
-    // We need to avoid this case.
-    // This is an example showing merge data from Db and cache, while flush happened and cache data could be missing
-    // Another lock can be implemented to race with flush
-    // However consider performance factor, we try to get data from db only.
-    it('missed data when fetch from db take long time, and set cache has been flushed', async () => {
-      await poiRepo.bulkCreate([{id: 99}, {id: 100}, {id: 101}] as any);
-
-      const tx = await sequelize.transaction();
-
-      // upsert
-      cachePoi.bulkUpsert([getEmptyPoi(200)]);
-      cachePoi.bulkUpsert([getEmptyPoi(202)]);
-      // Expect exist in setCache
-      expect((cachePoi as any).setCache['200']).toBeDefined();
-      expect((cachePoi as any).setCache['202']).toBeDefined();
-
-      // Mock db findAll take longer than usual
-      (cachePoi as any).plainPoiModel.getPoiBlocksByRange = jest.fn().mockImplementation(async () => {
-        await delay(5);
-        return [{id: 99}, {id: 100}, {id: 101}];
-      });
-
-      // while flush doesn't have to wait findAll completed, it could flush cache
-      const [blocks] = await Promise.all([
-        // mmrService
-        cachePoi.getPoiBlocksByRangeWithCache(90),
-        // StoreCache service
-        cachePoi.flush(tx),
-      ]);
-      // Expected missing data
-      expect(blocks.find((b) => b.id === 200)).toBeUndefined();
-      expect(blocks.find((b) => b.id === 202)).toBeUndefined();
-    }, 500000);
-
-    it('with mix of cache and db data', async () => {
+  describe('getPoiBlocksByRange', () => {
+    it('getPoiBlocksByRange only db data', async () => {
       await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
 
-      cachePoi.bulkUpsert([getEmptyPoi(4)]);
-      cachePoi.bulkUpsert([getEmptyPoi(5)]);
-      cachePoi.bulkUpsert([getEmptyPoi(6)]);
-
-      const res = await cachePoi.getPoiBlocksByRangeWithCache(2);
-      expect(res.map((d) => d.id)).toEqual([2, 3, 4, 5, 6]);
-    });
-
-    it('only db data', async () => {
-      await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
-
-      const res = await cachePoi.getPoiBlocksByRangeWithCache(2);
+      const res = await cachePoi.getPoiBlocksByRange(2);
       expect(res.map((d) => d.id)).toEqual([2, 3]);
     });
-
-    it('only cache data', async () => {
-      cachePoi.bulkUpsert([getEmptyPoi(4)]);
-      cachePoi.bulkUpsert([getEmptyPoi(5)]);
-      cachePoi.bulkUpsert([getEmptyPoi(6)]);
-
-      const res = await cachePoi.getPoiBlocksByRangeWithCache(2);
-      expect(res.map((d) => d.id)).toEqual([4, 5, 6]);
-    });
   });
 
-  describe('getLatestPoi', () => {
-    it('with mix of cache and db data', async () => {
-      await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
-
-      cachePoi.bulkUpsert([getEmptyPoi(4)]);
-      cachePoi.bulkUpsert([getEmptyPoi(5)]);
-      cachePoi.bulkUpsert([getEmptyPoi(6)]);
-
-      const res = await cachePoi.getLatestPoi();
-      expect(res?.id).toBe(6);
-    });
-
-    it('only db data', async () => {
-      await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
-
-      const res = await cachePoi.getLatestPoi();
-      expect(res?.id).toBe(3);
-    });
-
-    it('only cache data', async () => {
+  describe('getPoiById', () => {
+    it('with mix of cache and db data, it should use cache data', async () => {
+      await poiRepo.bulkCreate([{id: 1, chainBlockHash: '0x1234'}, {id: 2, chainBlockHash: '0x5678'}, {id: 3}] as any);
       cachePoi.bulkUpsert([getEmptyPoi(1)]);
-      cachePoi.bulkUpsert([getEmptyPoi(2)]);
-      cachePoi.bulkUpsert([getEmptyPoi(3)]);
-
-      const res = await cachePoi.getLatestPoi();
-      expect(res?.id).toBe(3);
-    });
-  });
-
-  describe('getLatestPoiWithMmr', () => {
-    it('with mix of cache and db data', async () => {
-      await poiRepo.bulkCreate([
-        {id: 1, mmrRoot: 'mmr1'},
-        {id: 2, mmrRoot: 'mmr2'},
-        {id: 3, mmrRoot: 'mmr3'},
-      ] as any);
-
-      cachePoi.bulkUpsert([getEmptyPoi(4, 'mmr4')]);
-      cachePoi.bulkUpsert([getEmptyPoi(5)]);
-      cachePoi.bulkUpsert([getEmptyPoi(6)]);
-
-      const res = await cachePoi.getLatestPoiWithMmr();
-      expect(res?.id).toBe(4);
-    });
-
-    it('only db data', async () => {
-      await poiRepo.bulkCreate([{id: 1, mmrRoot: 'mmr1'}, {id: 2, mmrRoot: 'mmr2'}, {id: 3}] as any);
-
-      const res = await cachePoi.getLatestPoiWithMmr();
-      expect(res?.id).toBe(2);
-    });
-
-    it('only cache data', async () => {
-      cachePoi.bulkUpsert([getEmptyPoi(1, 'mmr1')]);
-      cachePoi.bulkUpsert([getEmptyPoi(2, 'mmr2')]);
-      cachePoi.bulkUpsert([getEmptyPoi(3)]);
-
-      const res = await cachePoi.getLatestPoiWithMmr();
-      expect(res?.id).toBe(2);
+      const res = await cachePoi.getPoiById(1);
+      expect(res?.chainBlockHash).not.toBe('0x1234');
+      const res2 = await cachePoi.getPoiById(2);
+      expect(res2?.chainBlockHash).toBe('0x5678');
     });
   });
 });

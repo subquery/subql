@@ -6,7 +6,7 @@ import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
-import {CacheMetadataModel, ISubqueryProject, IUnfinalizedBlocksService, MmrService, StoreService} from '../indexer';
+import {CacheMetadataModel, ISubqueryProject, IUnfinalizedBlocksService, StoreService} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
@@ -22,7 +22,6 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
-    private readonly mmrService: MmrService,
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
@@ -66,6 +65,10 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     return this.metadataRepo.find('lastProcessedHeight');
   }
 
+  private async getSyncedPoiHeight(): Promise<number | undefined> {
+    return this.metadataRepo.find('latestSyncedPoiHeight');
+  }
+
   private async getMetadataBlockOffset(): Promise<number | undefined> {
     return this.metadataRepo.find('blockOffset');
   }
@@ -87,9 +90,10 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {
-    const [startHeight, lastProcessedHeight] = await Promise.all([
+    const [startHeight, lastProcessedHeight, latestSyncedPoiHeight] = await Promise.all([
       this.getStartBlockFromDataSources(),
       this.getLastProcessedHeight(),
+      this.getSyncedPoiHeight(),
     ]);
 
     assert(lastProcessedHeight !== undefined, 'Cannot reindex without being able to get the lastProcessedHeight');
@@ -102,9 +106,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.storeService,
       this.unfinalizedBlocksService,
       this.dynamicDsService,
-      this.mmrService,
       this.sequelize,
-      this.forceCleanService
+      this.forceCleanService,
+      latestSyncedPoiHeight
     );
 
     await this.storeService.storeCache.flushCache(true, true);

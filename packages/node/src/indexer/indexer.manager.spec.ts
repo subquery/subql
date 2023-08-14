@@ -10,13 +10,11 @@ import {
 import {
   StoreService,
   PoiService,
-  MmrService,
   NodeConfig,
   ConnectionPoolService,
   StoreCacheService,
   ConnectionPoolStateManager,
-  MmrQueryService,
-  IProjectUpgradeService,
+  IProjectUpgradeService
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -182,14 +180,7 @@ function createIndexerManager(
     storeCache,
     project,
   );
-  const poiService = new PoiService(storeCache);
-  const mmrService = new MmrService(
-    nodeConfig,
-    storeCache,
-    undefined,
-    undefined,
-  );
-  const mmrQueryService = new MmrQueryService(nodeConfig, sequilize);
+  const poiService = new PoiService(storeCache, eventEmitter);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
@@ -207,8 +198,6 @@ function createIndexerManager(
     dsProcessorService,
     apiService,
     poiService,
-    mmrService,
-    mmrQueryService,
     sequilize,
     project,
     projectUpgradeService,

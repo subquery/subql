@@ -750,7 +750,7 @@ group by
           },
         },
       });
-      this.metadataModel.set('lastPoiHeight', targetBlockHeight);
+      this.metadataModel.set('lastCreatedPoiHeight', targetBlockHeight);
     }
   }
 

@@ -13,6 +13,7 @@ export class CacheMetadataModel implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
+  private removeCache: string[] = [];
 
   flushableRecordCounter = 0;
 
@@ -105,13 +106,23 @@ export class CacheMetadataModel implements ICachedModelControl {
       ...incrementKeys
         .map((key) => this.setCache[key] && this.incrementJsonbCount(key, this.setCache[key] as number, tx))
         .filter(Boolean),
+      this.model.destroy({where: {key: this.removeCache}}),
     ]);
-
     // Don't await DB operations to complete before clearing.
     // This allows new data to be cached while flushing
     this.clear();
 
     await pendingFlush;
+  }
+
+  // This is current only use for migrate Poi
+  // If concurrent change to cache, please add mutex if needed
+  bulkRemove<K extends MetadataKey>(keys: K[]): void {
+    this.removeCache.push(...keys);
+    for (const key of keys) {
+      delete this.setCache[key];
+      delete this.getCache[key];
+    }
   }
 
   private clear(): void {

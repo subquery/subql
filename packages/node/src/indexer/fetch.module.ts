@@ -6,7 +6,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   PoiBenchmarkService,
   IndexingBenchmarkService,
-  MmrService,
   StoreService,
   PoiService,
   NodeConfig,
@@ -14,8 +13,6 @@ import {
   SmartBatchService,
   StoreCacheService,
   ConnectionPoolStateManager,
-  PgMmrCacheService,
-  MmrQueryService,
   IProjectUpgradeService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -122,9 +119,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DsProcessorService,
     DynamicDsService,
     PoiService,
-    MmrService,
-    MmrQueryService,
-    PgMmrCacheService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',
@@ -132,6 +126,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     UnfinalizedBlocksService,
     RuntimeService,
   ],
-  exports: [StoreService, MmrService, StoreCacheService, MmrQueryService],
+  exports: [StoreService, StoreCacheService],
 })
 export class FetchModule {}

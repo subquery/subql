@@ -63,81 +63,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       return reindexInit(argv.targetHeight);
     },
   })
-  .command({
-    command: 'mmr-regen',
-    describe:
-      'Re-generate mmr between Filebased/Postgres mmr and Proof of index',
-    builder: (yargs) =>
-      yargs.options({
-        probe: {
-          type: 'boolean',
-          description:
-            'Fetch latest mmr height information from file based/postgres DB and Poi table',
-          demandOption: false,
-          default: false,
-        },
-        resetOnly: {
-          type: 'boolean',
-          description:
-            'Only reset the mmr value in both POI and file based/postgres DB to target height',
-          demandOption: false,
-          default: false,
-        },
-        targetHeight: {
-          type: 'number',
-          description: 'Re-genrate mmr value from this block height',
-          demandOption: false,
-        },
-        unsafe: {
-          type: 'boolean',
-          description: 'Allow sync mmr from Poi table to file or a postgres DB',
-          demandOption: false,
-          default: false,
-        },
-      }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrRegenerateInit } = require('./subcommands/mmrRegenerate.init');
-      return mmrRegenerateInit(
-        argv.probe,
-        argv.resetOnly,
-        argv.unsafe,
-        argv.targetHeight,
-      );
-    },
-  })
-  .command({
-    command: 'mmr-migrate',
-    describe: 'Migrate MMR data from storage file to postgres DB',
-    builder: (yargs) =>
-      yargs.options({
-        direction: {
-          type: 'string',
-          description: 'set direction of migration (file -> DB or DB -> file)',
-          demandOption: false,
-          choices: ['dbToFile', 'fileToDb'],
-          default: 'dbToFile',
-        },
-      }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
-      return mmrMigrateInit(argv.direction);
-    },
-  })
   // Note we must have default command $0 at last to avoid override
   .command({
     command: '$0', //default command
@@ -334,20 +259,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe: 'IPFS gateway endpoint',
       type: 'string',
-    },
-    'mmr-path': {
-      alias: 'm',
-      demandOption: false,
-      describe:
-        'File based only : local path of the merkle mountain range (.mmr) file',
-      type: 'string',
-    },
-    'mmr-store-type': {
-      demandOption: false,
-      describe: 'Store MMR in either a file or a postgres DB',
-      type: 'string',
-      choices: ['file', 'postgres'],
-      default: 'postgres',
     },
     port: {
       alias: 'p',
