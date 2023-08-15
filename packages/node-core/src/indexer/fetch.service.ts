@@ -261,7 +261,6 @@ export abstract class BaseFetchService<
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(startBlockHeight, queryEndBlock);
 
-        console.log('modulo blocks', moduloBlocks);
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
