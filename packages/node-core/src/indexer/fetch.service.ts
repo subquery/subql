@@ -259,8 +259,6 @@ export abstract class BaseFetchService<
 
       if (this.useDictionary && startBlockHeight >= this.dictionaryService.startHeight) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
-        const moduloBlocks = this.getModuloBlocks(startBlockHeight, queryEndBlock);
-
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
@@ -276,8 +274,12 @@ export abstract class BaseFetchService<
           if (dictionary && (await this.dictionaryValidation(dictionary, startBlockHeight))) {
             let {batchBlocks} = dictionary;
 
-            const cleanModuloBlocks = moduloBlocks.filter((m) => Math.max(...batchBlocks) >= m);
-            batchBlocks = uniq(batchBlocks.concat(cleanModuloBlocks)).sort((a, b) => a - b);
+            const moduloBlocks = this.getModuloBlocks(
+              startBlockHeight,
+              batchBlocks.length ? Math.max(...batchBlocks) : queryEndBlock
+            );
+            batchBlocks = uniq(batchBlocks.concat(moduloBlocks)).sort((a, b) => a - b);
+
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
               await this.blockDispatcher.enqueueBlocks(
