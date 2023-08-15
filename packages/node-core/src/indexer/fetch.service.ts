@@ -7,7 +7,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval, SchedulerRegistry} from '@nestjs/schedule';
 import {DictionaryQueryEntry} from '@subql/types';
 import {MetaData} from '@subql/utils';
-import {range, without} from 'lodash';
+import {range, uniq, without} from 'lodash';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
@@ -259,8 +259,6 @@ export abstract class BaseFetchService<
 
       if (this.useDictionary && startBlockHeight >= this.dictionaryService.startHeight) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
-        const moduloBlocks = this.getModuloBlocks(startBlockHeight, queryEndBlock);
-
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
@@ -276,7 +274,12 @@ export abstract class BaseFetchService<
           if (dictionary && (await this.dictionaryValidation(dictionary, startBlockHeight))) {
             let {batchBlocks} = dictionary;
 
-            batchBlocks = batchBlocks.concat(moduloBlocks).sort((a, b) => a - b);
+            const moduloBlocks = this.getModuloBlocks(
+              startBlockHeight,
+              batchBlocks.length ? Math.max(...batchBlocks) : queryEndBlock
+            );
+            batchBlocks = uniq(batchBlocks.concat(moduloBlocks)).sort((a, b) => a - b);
+
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
               await this.blockDispatcher.enqueueBlocks(
@@ -285,8 +288,8 @@ export abstract class BaseFetchService<
               );
             } else {
               const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
-              const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
-              await this.enqueuBlocks(enqueuingBlocks);
+              const enqueueBlocks = batchBlocks.slice(0, maxBlockSize);
+              await this.enqueueBlocks(enqueueBlocks);
             }
             continue; // skip nextBlockRange() way
           }
@@ -304,11 +307,11 @@ export abstract class BaseFetchService<
           ? this.getEnqueuedModuloBlocks(startBlockHeight)
           : range(startBlockHeight, endHeight + 1);
 
-      await this.enqueuBlocks(enqueuingBlocks);
+      await this.enqueueBlocks(enqueuingBlocks);
     }
   }
 
-  private async enqueuBlocks(enqueuingBlocks: number[]): Promise<void> {
+  private async enqueueBlocks(enqueuingBlocks: number[]): Promise<void> {
     const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
     await this.blockDispatcher.enqueueBlocks(
       cleanedBatchBlocks,
