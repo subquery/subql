@@ -250,12 +250,6 @@ export default class Init extends Command {
         type: 'input',
         name: 'abiFilePath',
         message: 'Path to ABI',
-        validate(input: string): boolean | string | Promise<boolean | string> {
-          if (!path.isAbsolute(path.resolve(input))) {
-            return 'Please enter an absolute file path';
-          }
-          return true;
-        },
       },
     ]);
 
