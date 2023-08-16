@@ -112,36 +112,30 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     this._poi = poi;
   }
 
-  private async syncPoiJob(logging?: boolean): Promise<void> {
-    const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
-    if (poiBlocks.length !== 0) {
-      if (logging) {
-        syncingMsg(poiBlocks[0].id, poiBlocks[poiBlocks.length - 1].id, poiBlocks.length);
-      }
-      const appendedBlocks: ProofOfIndex[] = [];
-      for (const block of poiBlocks) {
-        if (this.nextMmrBlockHeight < block.id) {
-          await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, block.id);
-        }
-        // it is a single mmr node, safe to append without flush here
-        appendedBlocks.push(await this.appendMmrNode(block));
-        this.eventEmitter.emit(PoiEvent.LastPoiWithMmr, {
-          height: block.id,
-          timestamp: Date.now(),
-        });
-        this._nextMmrBlockHeight = block.id + 1;
-      }
-      // This should be safe, even poi bulkUpsert faild, filebased/postgres db node should already been written and accurate.
-      if (appendedBlocks.length) {
-        await this.poi.bulkUpsert(appendedBlocks);
-        this.storeCacheService.metadata.set(
-          'latestPoiWithMmr',
-          JSON.stringify(appendedBlocks[appendedBlocks.length - 1])
-        );
-      }
+  private async syncPoiJob(poiBlocks: ProofOfIndex[], logging?: boolean): Promise<void> {
+    if (logging) {
+      syncingMsg(poiBlocks[0].id, poiBlocks[poiBlocks.length - 1].id, poiBlocks.length);
     }
-    if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
-      await delay(MMR_AWAIT_TIME);
+    const appendedBlocks: ProofOfIndex[] = [];
+    for (const block of poiBlocks) {
+      if (this.nextMmrBlockHeight < block.id) {
+        await this.addDefaultLeafWithRange(this.nextMmrBlockHeight, block.id);
+      }
+      // it is a single mmr node, safe to append without flush here
+      appendedBlocks.push(await this.appendMmrNode(block));
+      this.eventEmitter.emit(PoiEvent.LastPoiWithMmr, {
+        height: block.id,
+        timestamp: Date.now(),
+      });
+      this._nextMmrBlockHeight = block.id + 1;
+    }
+    // This should be safe, even poi bulkUpsert faild, filebased/postgres db node should already been written and accurate.
+    if (appendedBlocks.length) {
+      await this.poi.bulkUpsert(appendedBlocks);
+      this.storeCacheService.metadata.set(
+        'latestPoiWithMmr',
+        JSON.stringify(appendedBlocks[appendedBlocks.length - 1])
+      );
     }
   }
 
@@ -169,7 +163,13 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
     }
     logger.info(`MMR database start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
-      await this.syncPoiJob(logging);
+      const poiBlocks = await this.poi.getPoiBlocksByRange(this.nextMmrBlockHeight);
+      if (poiBlocks.length !== 0) {
+        await this.syncPoiJob(poiBlocks, logging);
+      }
+      if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
+        await delay(MMR_AWAIT_TIME);
+      }
       if (exitHeight !== undefined && this.nextMmrBlockHeight > exitHeight) {
         break;
       }
