@@ -6,6 +6,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
+import {resolveToAbsolutePath} from '../utils';
 import Build from './build';
 
 const ACCESS_TOKEN_PATH = path.resolve(
@@ -24,7 +25,7 @@ export default class Publish extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Publish);
-    const location = flags.location ? path.resolve(flags.location) : process.cwd();
+    const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
     const project = getProjectRootAndManifest(location);
 
     // Ensure that the project is built

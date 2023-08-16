@@ -101,5 +101,5 @@ export async function prepareDirPath(path: string, recreate: boolean): Promise<v
 // else it would not resolve, hence we need to resolve it manually.
 export function resolveToAbsolutePath(inputPath: string): string {
   const regex = new RegExp(`^~(?=$|[/\\\\])`);
-  return path.normalize(inputPath.replace(regex, os.homedir()));
+  return path.resolve(inputPath.replace(regex, os.homedir()));
 }

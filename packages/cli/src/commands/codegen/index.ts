@@ -5,6 +5,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
 import {codegen} from '../../controller/codegen-controller';
+import {resolveToAbsolutePath} from '../../utils';
 
 export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
@@ -25,7 +26,7 @@ export default class Codegen extends Command {
 
     const {file, location} = flags;
 
-    const projectPath = path.resolve(file ?? location ?? process.cwd());
+    const projectPath = resolveToAbsolutePath(file ?? location ?? process.cwd());
 
     const {manifests, root} = getProjectRootAndManifest(projectPath);
 

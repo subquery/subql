@@ -339,10 +339,4 @@ describe('CLI codegen:generate', () => {
     const absolutePath = '/root/Downloads/example.file';
     expect(resolveToAbsolutePath(absolutePath)).toBe(absolutePath);
   });
-  it('if relative path regex should resolve it to absolute', () => {
-    let relativePath = './Downloads/example.file';
-    expect(resolveToAbsolutePath(relativePath)).toBe('Downloads/example.file');
-    relativePath = '../Downloads/example.file';
-    expect(resolveToAbsolutePath(relativePath)).toBe(relativePath);
-  });
 });
