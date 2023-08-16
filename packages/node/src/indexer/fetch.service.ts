@@ -65,7 +65,7 @@ function callFilterToQueryEntry(
     conditions: Object.keys(filter).map(
       (key) =>
         ({
-          field: key,
+          field: key === 'method' ? 'call' : key,
           value: filter[key],
         } as DictionaryQueryCondition),
     ),
