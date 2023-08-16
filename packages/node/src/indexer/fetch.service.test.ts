@@ -8,7 +8,7 @@ import { createCachedProvider } from './x-provider/cachedProvider';
 
 const WS_POLKADOT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
 
-describe('FetchService2', () => {
+describe('FetchService', () => {
   let fetchService: FetchService;
   let api: ApiPromise;
 

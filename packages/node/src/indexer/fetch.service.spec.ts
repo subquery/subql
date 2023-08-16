@@ -84,7 +84,7 @@ const makeDs = (handlers: SubstrateRuntimeHandler[]) => {
   };
 };
 
-describe('FetchSevice2', () => {
+describe('FetchSevice', () => {
   let fetchService: FetchService & {
     buildDictionaryQueryEntries: (
       ds: SubstrateDatasource[],
@@ -131,19 +131,19 @@ describe('FetchSevice2', () => {
     });
 
     it('supports block handlers with modulo filter', () => {
-      const result2 = fetchService.buildDictionaryQueryEntries([
+      const result1 = fetchService.buildDictionaryQueryEntries([
         makeDs([
           { ...blockHandler, filter: { modulo: 5 } },
           callHandler,
           eventHandler,
         ]),
       ]);
-      expect(result2).toEqual([
+      expect(result1).toEqual([
         {
           entity: 'extrinsics',
           conditions: [
-            { field: 'module', value: 'module' },
             { field: 'call', value: 'call' },
+            { field: 'module', value: 'module' },
           ],
         },
         {

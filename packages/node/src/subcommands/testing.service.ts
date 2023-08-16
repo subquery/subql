@@ -34,12 +34,17 @@ export class TestingService extends BaseTestingService<
   }
 
   async getTestRunner(): Promise<
-    TestRunner<ApiPromise, ApiAt, BlockContent, SubqlProjectDs<SubstrateDatasource>>
+    TestRunner<
+      ApiPromise,
+      ApiAt,
+      BlockContent,
+      SubqlProjectDs<SubstrateDatasource>
+    >
   > {
     const testContext = await NestFactory.createApplicationContext(
       TestingModule,
       {
-        logger: new NestLogger(),
+        logger: new NestLogger(this.nodeConfig.debug),
       },
     );
 
