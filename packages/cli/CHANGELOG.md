@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.5.1] - 2023-08-16
 ### Fixed
 - Ensure absolute pathing for all path related flags (#1947)
 
 ## [3.5.0] - 2023-08-11
 ### Added
 - abi `codegen` support for `cosmos/Ethermint` (#1936)
+
 ### Fixed
 - Ensure non evm custom datasource do not generate abis (#1936)
 
@@ -425,7 +428,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/3.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.5.1...HEAD
+[3.5.1]: https://github.com/subquery/subql/compare/cli/3.5.0...cli/3.5.1
 [3.5.0]: https://github.com/subquery/subql/compare/cli/3.4.0...cli/3.5.0
 [3.4.0]: https://github.com/subquery/subql/compare/cli/3.3.3...cli/3.4.0
 [3.3.3]: https://github.com/subquery/subql/compare/cli/3.3.2...cli/3.3.3
