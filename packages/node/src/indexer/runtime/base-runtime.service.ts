@@ -70,6 +70,7 @@ export abstract class BaseRuntimeService {
   @profiler()
   async prefetchMeta(height: number): Promise<void> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
+    console.log('XXXXX', this.parentSpecVersion, this.specVersionMap?.length);
     if (
       this.parentSpecVersion !== undefined &&
       this.specVersionMap &&
@@ -78,6 +79,7 @@ export abstract class BaseRuntimeService {
       const parentSpecVersion = this.specVersionMap.find(
         (spec) => Number(spec.id) === this.parentSpecVersion,
       );
+      console.log('XXXXX', parentSpecVersion);
       if (parentSpecVersion === undefined) {
         await SubstrateUtil.prefetchMetadata(this.api, blockHash);
       } else {
@@ -86,6 +88,7 @@ export abstract class BaseRuntimeService {
             specVersion.start > parentSpecVersion.end &&
             specVersion.start <= height
           ) {
+            console.log('XXXXXXX2', specVersion);
             const blockHash = await this.api.rpc.chain.getBlockHash(
               specVersion.start,
             );

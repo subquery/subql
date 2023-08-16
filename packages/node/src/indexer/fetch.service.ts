@@ -75,20 +75,19 @@ function callFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  ApiService,
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
   DictionaryService
 > {
   constructor(
-    apiService: ApiService,
+    private apiService: ApiService,
     nodeConfig: NodeConfig,
     @Inject('IProjectService') projectService: ProjectService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: ISubstrateBlockDispatcher,
     dictionaryService: DictionaryService,
-    dsProcessorService: DsProcessorService,
+    private dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
@@ -96,13 +95,11 @@ export class FetchService extends BaseFetchService<
     private runtimeService: RuntimeService,
   ) {
     super(
-      apiService,
       nodeConfig,
       projectService,
       project.network,
       blockDispatcher,
       dictionaryService,
-      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
@@ -239,8 +236,10 @@ export class FetchService extends BaseFetchService<
     this.runtimeService.init(this.getLatestFinalizedHeight.bind(this));
 
     if (this.dictionaryService.useDictionary) {
-      const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
-      this.runtimeService.setSpecVersionMap(rawSpecVersions);
+      // const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
+      // this.runtimeService.setSpecVersionMap(rawSpecVersions);
+
+      await this.runtimeService.syncDictionarySpecVersions();
     } else {
       this.runtimeService.setSpecVersionMap(undefined);
     }

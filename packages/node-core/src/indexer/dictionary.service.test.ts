@@ -164,6 +164,7 @@ describe('DictionaryService', () => {
     dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, 'INAVLID CHAIN ID', nodeConfig, new EventEmitter2());
 
     await expect(dictionaryService.initValidation()).resolves.toBe(false);
+    expect(dictionaryService.useDictionary).toBeFalsy();
   });
 
   // SubQuery managed service is no longer running Polkadot/Kusama dictionaries

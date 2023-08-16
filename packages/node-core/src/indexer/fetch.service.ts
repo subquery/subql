@@ -8,14 +8,12 @@ import {Interval, SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource} from '@subql/common';
 import {DictionaryQueryEntry} from '@subql/types';
 import {range, uniq, without} from 'lodash';
-import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {checkMemoryUsage, cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {DictionaryService} from './dictionary.service';
-import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IProjectNetworkConfig, IProjectService} from './types';
 
@@ -24,7 +22,6 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
-  API extends IApi,
   DS extends BaseDataSource,
   B extends IBlockDispatcher,
   D extends DictionaryService
@@ -53,13 +50,11 @@ export abstract class BaseFetchService<
   protected abstract preLoopHook(data: {startHeight: number}): Promise<void>;
 
   constructor(
-    protected apiService: API,
     private nodeConfig: NodeConfig,
     protected projectService: IProjectService<DS>,
     protected networkConfig: IProjectNetworkConfig,
     protected blockDispatcher: B,
     protected dictionaryService: D,
-    protected dsProcessorService: BaseDsProcessorService,
     private dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry
@@ -262,7 +257,6 @@ export abstract class BaseFetchService<
               batchBlocks.length ? Math.max(...batchBlocks) : queryEndBlock
             );
             batchBlocks = uniq(batchBlocks.concat(moduloBlocks)).sort((a, b) => a - b);
-
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
               await this.blockDispatcher.enqueueBlocks(

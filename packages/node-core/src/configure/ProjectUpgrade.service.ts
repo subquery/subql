@@ -43,6 +43,10 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
   upgradeService: ProjectUpgradeSevice<P>
 ): P & IProjectUpgradeService<P> {
   return new Proxy<P & IProjectUpgradeService<P>>(upgradeService as any, {
+    set() {
+      // Everything is read-only unless updated via function
+      return false;
+    },
     get(target, prop, receiver) {
       const project = target.currentProject;
       if (project[prop as keyof P]) {
