@@ -97,6 +97,8 @@ export async function prepareDirPath(path: string, recreate: boolean): Promise<v
   }
 }
 
+// oclif's default path resolver only applies when parsed as `--flag path`
+// else it would not resolve, hence we need to resolve it manually.
 export function resolveToAbsolutePath(inputPath: string): string {
   const regex = new RegExp(`^~(?=$|[/\\\\])`);
   return path.normalize(inputPath.replace(regex, os.homedir()));

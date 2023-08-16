@@ -1,12 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import os from 'os';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {resolveToAbsolutePath} from '../utils';
 import {
   constructDatasources,
   constructHandlerProps,
@@ -328,5 +330,19 @@ describe('CLI codegen:generate', () => {
     expect(getAbiInterface(mockPath_1, 'artifact.json')).toBeTruthy();
 
     expect(() => getAbiInterface(mockPath_2, 'artifact.json')).toThrow('Provided ABI is not a valid ABI or Artifact');
+  });
+  it('resolve to absolutePath from tilde', () => {
+    const tildePath = '~/Downloads/example.file';
+    expect(resolveToAbsolutePath(tildePath)).toBe(`${os.homedir()}/Downloads/example.file`);
+  });
+  it('if absolutePath regex should not do anything', () => {
+    const absolutePath = '/root/Downloads/example.file';
+    expect(resolveToAbsolutePath(absolutePath)).toBe(absolutePath);
+  });
+  it('if relative path regex should resolve it to absolute', () => {
+    let relativePath = './Downloads/example.file';
+    expect(resolveToAbsolutePath(relativePath)).toBe('Downloads/example.file');
+    relativePath = '../Downloads/example.file';
+    expect(resolveToAbsolutePath(relativePath)).toBe(relativePath);
   });
 });

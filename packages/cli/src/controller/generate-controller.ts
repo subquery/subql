@@ -53,7 +53,7 @@ export async function prepareAbiDirectory(abiPath: string, rootPath: string): Pr
   }
 
   // Ensure abiPath is an absolute path
-  const ensuredAbiPath = path.isAbsolute(abiPath) ? abiPath : resolveToAbsolutePath(abiPath);
+  const ensuredAbiPath = resolveToAbsolutePath(abiPath);
 
   try {
     const abiFileContent = await fs.promises.readFile(ensuredAbiPath, 'utf8');
