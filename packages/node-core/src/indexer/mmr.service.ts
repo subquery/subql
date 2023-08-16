@@ -4,7 +4,13 @@
 import fs from 'fs';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME, RESET_MMR_BLOCK_BATCH} from '@subql/common';
+import {
+  DEFAULT_WORD_SIZE,
+  DEFAULT_LEAF,
+  MMR_AWAIT_TIME,
+  RESET_MMR_BLOCK_BATCH,
+  DEFAULT_FETCH_RANGE,
+} from '@subql/common';
 import {u8aToHex, u8aEq} from '@subql/utils';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
 import {Op} from '@subql/x-sequelize';
@@ -133,6 +139,9 @@ export class MmrService extends baseMmrService implements OnApplicationShutdown 
           JSON.stringify(appendedBlocks[appendedBlocks.length - 1])
         );
       }
+    }
+    if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
+      await delay(MMR_AWAIT_TIME);
     }
   }
 
