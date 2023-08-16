@@ -23,6 +23,7 @@ import {
   validateEthereumProjectManifest,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
+import {resolveToAbsolutePath} from '../utils';
 import Generate from './codegen/generate';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
@@ -88,7 +89,7 @@ export default class Init extends Command {
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
 
-    this.location = flags.location ? path.resolve(flags.location) : process.cwd();
+    this.location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
     this.project = {} as ProjectSpecBase;
     this.project.name = args.projectName
       ? args.projectName
@@ -250,12 +251,6 @@ export default class Init extends Command {
         type: 'input',
         name: 'abiFilePath',
         message: 'Path to ABI',
-        validate(input: string): boolean | string | Promise<boolean | string> {
-          if (!path.isAbsolute(path.resolve(input))) {
-            return 'Please enter an absolute file path';
-          }
-          return true;
-        },
       },
     ]);
 

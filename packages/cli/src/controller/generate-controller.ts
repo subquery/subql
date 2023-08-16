@@ -19,7 +19,7 @@ import {upperFirst, difference, pickBy} from 'lodash';
 import {parseContractPath} from 'typechain';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {renderTemplate} from '../utils';
+import {renderTemplate, resolveToAbsolutePath} from '../utils';
 
 interface HandlerPropType {
   name: string;
@@ -53,7 +53,8 @@ export async function prepareAbiDirectory(abiPath: string, rootPath: string): Pr
   }
 
   // Ensure abiPath is an absolute path
-  const ensuredAbiPath = path.isAbsolute(abiPath) ? abiPath : path.resolve(rootPath, abiPath);
+  const ensuredAbiPath = resolveToAbsolutePath(abiPath);
+
   try {
     const abiFileContent = await fs.promises.readFile(ensuredAbiPath, 'utf8');
     await fs.promises.writeFile(path.join(abiDirPath, path.basename(ensuredAbiPath)), abiFileContent);

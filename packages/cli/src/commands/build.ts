@@ -6,6 +6,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import glob from 'glob';
 import {runWebpack} from '../controller/build-controller';
+import {resolveToAbsolutePath} from '../utils';
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
@@ -21,7 +22,7 @@ export default class Build extends Command {
     try {
       const {flags} = await this.parse(Build);
 
-      const directory = flags.location ? path.resolve(flags.location) : process.cwd();
+      const directory = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
       const isDev = flags.mode === 'development' || flags.mode === 'dev';
 
       if (!lstatSync(directory).isDirectory()) {

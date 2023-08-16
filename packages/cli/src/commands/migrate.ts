@@ -5,6 +5,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {migrate, prepare} from '../controller/migrate-controller';
+import {resolveToAbsolutePath} from '../utils';
 
 export default class Migrate extends Command {
   static description = 'Migrate Subquery project manifest to v1.0.0';
@@ -17,7 +18,7 @@ export default class Migrate extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Migrate);
-    const location = flags.location ? path.resolve(flags.location) : process.cwd();
+    const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
     let manifest: SubstrateProjectManifestVersioned;
     try {
       manifest = loadSubstrateProjectManifest(location);

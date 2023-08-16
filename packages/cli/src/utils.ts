@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import fs, {existsSync, readFileSync} from 'fs';
+import os from 'os';
+import path from 'path';
 import {promisify} from 'util';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
@@ -93,4 +95,11 @@ export async function prepareDirPath(path: string, recreate: boolean): Promise<v
   } catch (e) {
     throw new Error(`Failed to prepare ${path}: ${e.message}`);
   }
+}
+
+// oclif's default path resolver only applies when parsed as `--flag path`
+// else it would not resolve, hence we need to resolve it manually.
+export function resolveToAbsolutePath(inputPath: string): string {
+  const regex = new RegExp(`^~(?=$|[/\\\\])`);
+  return path.resolve(inputPath.replace(regex, os.homedir()));
 }

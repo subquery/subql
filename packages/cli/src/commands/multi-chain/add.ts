@@ -4,6 +4,7 @@
 import {Command, Flags} from '@oclif/core';
 import {cli} from 'cli-ux';
 import {addChain} from '../../controller/add-chain-controller';
+import {resolveToAbsolutePath} from '../../utils';
 
 export default class MultiChainAdd extends Command {
   static description = 'Add new chain manifest to multi-chain configuration';
@@ -23,6 +24,6 @@ export default class MultiChainAdd extends Command {
       chainManifestPath = await cli.prompt('Enter the path to the new chain manifest');
     }
 
-    await addChain(multichain, chainManifestPath);
+    await addChain(multichain, resolveToAbsolutePath(chainManifestPath));
   }
 }
