@@ -10,13 +10,13 @@ import {
   StoreService,
   PoiService,
   ApiService,
-  NodeConfig,
   ConnectionPoolService,
   SmartBatchService,
   StoreCacheService,
   PgMmrCacheService,
   MmrQueryService,
   ConnectionPoolStateManager,
+  NodeConfig,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiConnection } from '../stellar/api.connection';

@@ -28,4 +28,6 @@ export type IStellarProjectManifest = IProjectManifest<SubqlDatasource>;
 export interface StellarProjectNetworkConfig extends ProjectNetworkConfig {
   genesisHash?: string;
   chainId?: string;
+  endpoint: string | string[]; //keep the name and type consistent with other SDKs
+  soroban: string;
 }

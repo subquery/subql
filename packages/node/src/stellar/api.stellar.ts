@@ -5,15 +5,18 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
+  SorobanEvent,
   StellarBlock,
   StellarBlockWrapper,
   StellarEffect,
   StellarOperation,
   StellarTransaction,
 } from '@subql/types-stellar';
+import { SorobanRpc } from 'soroban-client';
 import { Server, ServerApi } from 'stellar-sdk';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
+import { SorobanServer } from './soroban.server';
 import { StellarServer } from './stellar.server';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -29,7 +32,11 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   private genesisHash: string;
   private name: string;
 
-  constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
+  constructor(
+    private endpoint: string,
+    private eventEmitter: EventEmitter2,
+    private sorobanClient: SorobanServer,
+  ) {
     const { hostname, protocol, searchParams } = new URL(endpoint);
 
     const protocolStr = protocol.replace(':', '');
@@ -86,11 +93,21 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     return 'Stellar';
   }
 
-  /*
-  async getEvents(height: number): Promise<StellarRpc.GetEventsResponse> {
-    return this.client.getEvents({ startLedger: height, filters: [] });
+  async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
+    const events = (
+      await this.sorobanClient.getEvents({ startLedger: height, filters: [] })
+    ).events;
+    return events.map((event) => {
+      const wrappedEvent = {
+        ...event,
+        ledger: null,
+        transaction: null,
+        operation: null,
+      } as SorobanEvent;
+
+      return wrappedEvent;
+    });
   }
-  */
 
   private async fetchEffectsForOperation(
     operationId: string,
@@ -115,6 +132,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
   private async fetchOperationsForTransaction(
     transactionId: string,
+    sequence: number,
   ): Promise<StellarOperation[]> {
     const operations = (
       await this.api.operations().forTransaction(transactionId).call()
@@ -122,11 +140,24 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
     return Promise.all(
       operations.map(async (op) => {
+        //There will be only one operation for soroban transaction
+        let events: SorobanEvent[] = [];
+
+        try {
+          events =
+            op.type.toString() === 'invoke_host_function'
+              ? await this.getAndWrapEvents(sequence)
+              : ([] as SorobanEvent[]);
+        } catch (e) {
+          logger.error(`unable to fetch events: ${e}`);
+        }
+
         const wrappedOp: StellarOperation = {
           ...op,
           ledger: null,
           transaction: null,
           effects: [] as StellarEffect[],
+          events: events,
         };
 
         const effects = (await this.fetchEffectsForOperation(op.id)).map(
@@ -169,15 +200,20 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
           account: account,
           operations: [] as StellarOperation[],
           effects: [] as StellarEffect[],
+          events: [] as SorobanEvent[],
         };
 
         const operations = (
-          await this.fetchOperationsForTransaction(tx.id)
+          await this.fetchOperationsForTransaction(tx.id, sequence)
         ).map((op) => {
           op.transaction = JSON.parse(JSON.stringify(wrappedTx));
           op.effects = op.effects.map((effect) => {
             effect.transaction = JSON.parse(JSON.stringify(wrappedTx));
             return effect;
+          });
+          op.events = op.events.map((event) => {
+            event.transaction = JSON.parse(JSON.stringify(wrappedTx));
+            return event;
           });
           return op;
         });
@@ -185,6 +221,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         wrappedTx.operations.push(...operations);
         operations.forEach((op) => {
           wrappedTx.effects.push(...op.effects);
+          wrappedTx.events.push(...op.events);
         });
 
         return wrappedTx;
@@ -203,6 +240,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       transactions: [] as StellarTransaction[],
       operations: [] as StellarOperation[],
       effects: [] as StellarEffect[],
+      events: [] as SorobanEvent[],
     };
 
     const transactions = (await this.fetchTransactionsForLedger(sequence)).map(
@@ -214,6 +252,10 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
             effect.ledger = JSON.parse(JSON.stringify(wrappedLedger));
             return effect;
           });
+          op.events = op.events.map((event) => {
+            event.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+            return event;
+          });
           return op;
         });
         return tx;
@@ -223,7 +265,10 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     transactions.forEach((tx) => {
       wrappedLedger.transactions.push(tx);
       wrappedLedger.operations.push(...tx.operations);
-      tx.operations.forEach((op) => wrappedLedger.effects.push(...op.effects));
+      tx.operations.forEach((op) => {
+        wrappedLedger.effects.push(...op.effects);
+        wrappedLedger.events.push(...op.events);
+      });
     });
 
     return wrappedLedger;
@@ -240,6 +285,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
           ledger.transactions,
           ledger.operations,
           ledger.effects,
+          ledger.events,
         ),
     );
   }

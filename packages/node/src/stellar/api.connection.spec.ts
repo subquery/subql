@@ -14,12 +14,15 @@ import EventEmitter2 from 'eventemitter2';
 import { StellarApiConnection } from './api.connection';
 import { StellarApi } from './api.stellar';
 import SafeStellarProvider from './safe-api';
+import { SorobanServer } from './soroban.server';
 
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
+const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
 
 describe('StellarApiConnection', () => {
   let apiConnection: StellarApiConnection;
   let unsafeApi: StellarApi;
+  let sorobanApi: SorobanServer;
   const mockBlocks: StellarBlockWrapper[] = [
     {
       block: { sequence: 1, hash: 'hash1' } as unknown as StellarBlock,
@@ -38,7 +41,8 @@ describe('StellarApiConnection', () => {
   const fetchBlockBatches = jest.fn().mockResolvedValue(mockBlocks);
 
   beforeEach(async () => {
-    unsafeApi = new StellarApi(HTTP_ENDPOINT, new EventEmitter2());
+    sorobanApi = new SorobanServer(SOROBAN_ENDPOINT);
+    unsafeApi = new StellarApi(HTTP_ENDPOINT, new EventEmitter2(), sorobanApi);
     await unsafeApi.init();
     apiConnection = new StellarApiConnection(unsafeApi, fetchBlockBatches);
   });
@@ -47,6 +51,7 @@ describe('StellarApiConnection', () => {
     expect(
       await StellarApiConnection.create(
         HTTP_ENDPOINT,
+        sorobanApi,
         fetchBlockBatches,
         new EventEmitter2(),
       ),

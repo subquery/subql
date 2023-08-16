@@ -5,7 +5,7 @@ import {forbidNonWhitelisted} from '@subql/common';
 import {
   StellarHandlerKind,
   StellarDatasourceKind,
-  StellarEventFilter,
+  SorobanEventFilter,
   SubqlCustomHandler,
   SubqlMapping,
   SubqlHandler,
@@ -22,6 +22,7 @@ import {
   SubqlTransactionHandler,
   SubqlOperationHandler,
   SubqlEffectHandler,
+  SubqlEventHandler,
 } from '@subql/types-stellar';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
@@ -106,8 +107,7 @@ export class EffectHandler implements SubqlEffectHandler {
   handler: string;
 }
 
-/*
-export class EventFilter implements StellarEventFilter {
+export class EventFilter implements SorobanEventFilter {
   @IsOptional()
   @IsString()
   contractId?: string;
@@ -121,13 +121,12 @@ export class EventHandler implements SubqlEventHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => EventFilter)
-  filter?: StellarEventFilter;
+  filter?: SorobanEventFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Event]})
   kind: StellarHandlerKind.Event;
   @IsString()
   handler: string;
 }
-*/
 
 export class CustomHandler implements SubqlCustomHandler {
   @IsString()
@@ -152,8 +151,8 @@ export class StellarMapping implements SubqlMapping {
           return plainToClass(OperationHandler, handler);
         case StellarHandlerKind.Effects:
           return plainToClass(EffectHandler, handler);
-        //case StellarHandlerKind.Event:
-        //  return plainToClass(EventHandler, handler);
+        case StellarHandlerKind.Event:
+          return plainToClass(EventHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
       }

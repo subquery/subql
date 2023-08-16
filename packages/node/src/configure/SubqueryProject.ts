@@ -101,9 +101,15 @@ async function loadProjectFromManifestBase(
     ...networkOverrides,
   });
 
+  if (!network.soroban) {
+    throw new Error(
+      `Soroban network endpoint must be provided for network. chainId="${network.chainId}"`,
+    );
+  }
+
   if (!network.endpoint) {
     throw new Error(
-      `Network endpoint must be provided for network. chainId="${network.chainId}"`,
+      `Stellar network endpoint must be provided for network. chainId="${network.chainId}"`,
     );
   }
 

@@ -13,6 +13,7 @@ import {
   isTransactionHandlerProcessor,
   isOperationHandlerProcessor,
   isEffectHandlerProcessor,
+  isEventHandlerProcessor,
 } from '@subql/common-stellar';
 import {
   NodeConfig,
@@ -34,6 +35,8 @@ import {
   StellarTransactionFilter,
   StellarOperationFilter,
   StellarEffectFilter,
+  SorobanEvent,
+  SorobanEventFilter,
 } from '@subql/types-stellar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
@@ -134,6 +137,10 @@ export class IndexerManager extends BaseIndexerManager<
         for (const effect of operation.effects) {
           await this.indexEffect(effect, dataSources, getVM);
         }
+
+        for (const event of operation.events) {
+          await this.indexEvent(event, dataSources, getVM);
+        }
       }
     }
   }
@@ -183,9 +190,8 @@ export class IndexerManager extends BaseIndexerManager<
     }
   }
 
-  /*
   private async indexEvent(
-    event: StellarEvent,
+    event: SorobanEvent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -193,7 +199,6 @@ export class IndexerManager extends BaseIndexerManager<
       await this.indexData(StellarHandlerKind.Event, event, ds, getVM);
     }
   }
-  */
 
   protected async prepareFilteredData<T = any>(
     kind: StellarHandlerKind,
@@ -209,7 +214,7 @@ type ProcessorTypeMap = {
   [StellarHandlerKind.Transaction]: typeof isTransactionHandlerProcessor;
   [StellarHandlerKind.Operation]: typeof isOperationHandlerProcessor;
   [StellarHandlerKind.Effects]: typeof isEffectHandlerProcessor;
-  //[StellarHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [StellarHandlerKind.Event]: typeof isEventHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
@@ -217,7 +222,7 @@ const ProcessorTypeMap = {
   [StellarHandlerKind.Transaction]: isTransactionHandlerProcessor,
   [StellarHandlerKind.Operation]: isOperationHandlerProcessor,
   [StellarHandlerKind.Effects]: isEffectHandlerProcessor,
-  //[StellarHandlerKind.Event]: isEventHandlerProcessor,
+  [StellarHandlerKind.Event]: isEventHandlerProcessor,
 };
 
 const FilterTypeMap = {
@@ -264,4 +269,11 @@ const FilterTypeMap = {
       filter,
       ds.options?.address,
     ),
+
+  [StellarHandlerKind.Event]: (
+    data: SorobanEvent,
+    filter: SorobanEventFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterEventProcessor(data, filter, ds.options?.address),
 };

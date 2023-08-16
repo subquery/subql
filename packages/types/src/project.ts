@@ -7,8 +7,8 @@ import {
   StellarBlockFilter,
   StellarEffect,
   StellarEffectFilter,
-  StellarEvent,
-  StellarEventFilter,
+  SorobanEvent,
+  SorobanEventFilter,
   StellarOperation,
   StellarOperationFilter,
   StellarTransaction,
@@ -24,7 +24,7 @@ export enum StellarHandlerKind {
   Transaction = 'stellar/TransactionHandler',
   Operation = 'stellar/OperationHandler',
   Effects = 'stellar/EffectHandler',
-  //Event = 'stellar/EventHandler',
+  Event = 'soroban/EventHandler',
 }
 
 export type StellarRuntimeHandlerInputMap = {
@@ -32,7 +32,7 @@ export type StellarRuntimeHandlerInputMap = {
   [StellarHandlerKind.Transaction]: StellarTransaction;
   [StellarHandlerKind.Operation]: StellarOperation;
   [StellarHandlerKind.Effects]: StellarEffect;
-  //[StellarHandlerKind.Event]: StellarEvent;
+  [StellarHandlerKind.Event]: SorobanEvent;
 };
 
 type StellarRuntimeFilterMap = {
@@ -40,7 +40,7 @@ type StellarRuntimeFilterMap = {
   [StellarHandlerKind.Transaction]: StellarTransactionFilter;
   [StellarHandlerKind.Operation]: StellarOperationFilter;
   [StellarHandlerKind.Effects]: StellarEffectFilter;
-  //[StellarHandlerKind.Event]: StellarEventFilter;
+  [StellarHandlerKind.Event]: SorobanEventFilter;
 };
 
 export interface ProjectManifest {
@@ -82,13 +82,11 @@ export interface SubqlEffectHandler {
   filter?: StellarEffectFilter;
 }
 
-/*
 export interface SubqlEventHandler {
   handler: string;
   kind: StellarHandlerKind.Event;
-  filter?: StellarEventFilter;
+  filter?: SorobanEventFilter;
 }
-*/
 
 export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
@@ -104,7 +102,12 @@ export type SubqlRuntimeHandler =
 
 export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
 
-export type SubqlHandlerFilter = StellarEventFilter;
+export type SubqlHandlerFilter =
+  | SorobanEventFilter
+  | StellarTransactionFilter
+  | StellarOperationFilter
+  | StellarEffectFilter
+  | StellarBlockFilter;
 
 export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> {
   file: string;

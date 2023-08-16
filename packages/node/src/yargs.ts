@@ -267,7 +267,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
-    'network-endpoint': {
+    'stellar-network-endpoint': {
+      demandOption: false,
+      type: 'string',
+      describe: 'Blockchain network endpoint to connect',
+    },
+    'soroban-network-endpoint': {
       demandOption: false,
       type: 'string',
       describe: 'Blockchain network endpoint to connect',

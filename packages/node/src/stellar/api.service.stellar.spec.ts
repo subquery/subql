@@ -7,18 +7,23 @@ import { Test } from '@nestjs/testing';
 import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
 import { ConnectionPoolStateManager } from '@subql/node-core/dist';
 import { GraphQLSchema } from 'graphql';
-import { range } from 'lodash';
+import { range, some } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiService } from './api.service.stellar';
 import { StellarApi } from './api.stellar';
 import { StellarBlockWrapped } from './block.stellar';
 
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
+const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
 
-export function testSubqueryProject(endpoint: string): SubqueryProject {
+export function testSubqueryProject(
+  endpoint: string,
+  soroban: string,
+): SubqueryProject {
   return {
     network: {
       endpoint,
+      soroban,
       chainId: 'Test SDF Future Network ; October 2022',
     },
     dataSources: [],
@@ -31,6 +36,7 @@ export function testSubqueryProject(endpoint: string): SubqueryProject {
 
 export const prepareApiService = async (
   endpoint: string = HTTP_ENDPOINT,
+  soroban: string = SOROBAN_ENDPOINT,
   project?: SubqueryProject,
 ): Promise<[StellarApiService, INestApplication]> => {
   const module = await Test.createTestingModule({
@@ -43,7 +49,7 @@ export const prepareApiService = async (
       },
       {
         provide: 'ISubqueryProject',
-        useFactory: () => project ?? testSubqueryProject(endpoint),
+        useFactory: () => project ?? testSubqueryProject(endpoint, soroban),
       },
       StellarApiService,
     ],
@@ -83,15 +89,15 @@ describe('StellarApiService', () => {
 
   it('should throw error when chainId does not match', async () => {
     const faultyProject = {
-      ...testSubqueryProject(HTTP_ENDPOINT),
+      ...testSubqueryProject(HTTP_ENDPOINT, SOROBAN_ENDPOINT),
       network: {
-        ...testSubqueryProject(HTTP_ENDPOINT).network,
+        ...testSubqueryProject(HTTP_ENDPOINT, SOROBAN_ENDPOINT).network,
         chainId: 'Incorrect ChainId',
       },
     };
 
     await expect(
-      prepareApiService(HTTP_ENDPOINT, faultyProject),
+      prepareApiService(HTTP_ENDPOINT, SOROBAN_ENDPOINT, faultyProject),
     ).rejects.toThrow();
   });
 

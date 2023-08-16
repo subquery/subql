@@ -15,6 +15,7 @@ import {
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import { StellarApi } from './api.stellar';
 import SafeStellarProvider from './safe-api';
+import { SorobanServer } from './soroban.server';
 
 type FetchFunc = (
   api: StellarApi,
@@ -44,10 +45,11 @@ export class StellarApiConnection
 
   static async create(
     endpoint: string,
+    soroban: SorobanServer,
     fetchBlockBatches: FetchFunc,
     eventEmitter: EventEmitter2,
   ): Promise<StellarApiConnection> {
-    const api = new StellarApi(endpoint, eventEmitter);
+    const api = new StellarApi(endpoint, eventEmitter, soroban);
 
     await api.init();
 

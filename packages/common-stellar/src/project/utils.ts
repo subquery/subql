@@ -34,13 +34,11 @@ export function isEffectHandlerProcessor<E>(
   return hp.baseHandlerKind === StellarHandlerKind.Effects;
 }
 
-/*
 export function isEventHandlerProcessor<E>(
   hp: SecondLayerHandlerProcessor<StellarHandlerKind, unknown, unknown>
 ): hp is SecondLayerHandlerProcessor<StellarHandlerKind.Event, unknown, E> {
   return hp.baseHandlerKind === StellarHandlerKind.Event;
 }
-*/
 
 export function isCustomDs(ds: SubqlDatasource): ds is SubqlCustomDatasource<string> {
   return ds.kind !== StellarDatasourceKind.Runtime && !!(ds as SubqlCustomDatasource<string>).processor;

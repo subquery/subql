@@ -5,7 +5,7 @@ import {
   StellarBlock,
   StellarBlockWrapper,
   StellarEffect,
-  StellarEvent,
+  SorobanEvent,
   StellarOperation,
   StellarTransaction,
 } from './stellar';
@@ -37,7 +37,7 @@ export interface BlockWrapper<
   T extends StellarTransaction = StellarTransaction,
   O extends StellarOperation = StellarOperation,
   EF extends StellarEffect = StellarEffect,
-  E extends StellarEvent = StellarEvent
+  E extends SorobanEvent = SorobanEvent
 > {
   block: B;
   transactions: T[];

@@ -3,13 +3,16 @@
 
 import { EventEmitter2 } from 'eventemitter2';
 import { StellarApi } from './api.stellar';
+import { SorobanServer } from './soroban.server';
 
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
+const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
 
 jest.setTimeout(60000);
 
 const prepareStellarApi = async function () {
-  const api = new StellarApi(HTTP_ENDPOINT, new EventEmitter2());
+  const soroban = new SorobanServer(SOROBAN_ENDPOINT);
+  const api = new StellarApi(HTTP_ENDPOINT, new EventEmitter2(), soroban);
   await api.init();
   return api;
 };

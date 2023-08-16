@@ -16,6 +16,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiConnection } from './api.connection';
 import { StellarApi } from './api.stellar';
 import SafeStellarProvider from './safe-api';
+import { SorobanServer } from './soroban.server';
 
 const logger = getLogger('api');
 
@@ -47,6 +48,8 @@ export class StellarApiService extends ApiService<
         process.exit(1);
       }
 
+      const sorobanClient = new SorobanServer(network.soroban);
+
       const endpoints = Array.isArray(network.endpoint)
         ? network.endpoint
         : [network.endpoint];
@@ -56,6 +59,7 @@ export class StellarApiService extends ApiService<
       for await (const [i, endpoint] of endpoints.entries()) {
         const connection = await StellarApiConnection.create(
           endpoint,
+          sorobanClient,
           this.fetchBlockBatches,
           this.eventEmitter,
         );

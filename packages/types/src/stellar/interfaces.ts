@@ -10,6 +10,7 @@ export type StellarBlock = Omit<ServerApi.LedgerRecord, 'effects' | 'operations'
   effects: StellarEffect[];
   operations: StellarOperation[];
   transactions: StellarTransaction[];
+  events: SorobanEvent[];
 };
 
 export type StellarTransaction = Omit<
@@ -20,6 +21,7 @@ export type StellarTransaction = Omit<
   effects: StellarEffect[];
   ledger: StellarBlock;
   operations: StellarOperation[];
+  events: SorobanEvent[];
 };
 
 export type StellarOperation<T extends Horizon.BaseOperationResponse = ServerApi.OperationRecord> = Omit<
@@ -29,6 +31,7 @@ export type StellarOperation<T extends Horizon.BaseOperationResponse = ServerApi
   effects: StellarEffect[];
   transaction: StellarTransaction;
   ledger: StellarBlock;
+  events: SorobanEvent[];
 };
 
 export type StellarEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> = T & {
@@ -37,11 +40,14 @@ export type StellarEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> =
   ledger: StellarBlock;
 };
 
-export type StellarEvent = SorobanRpc.EventResponse & {
+export type SorobanEvent = SorobanRpc.EventResponse & {
   value: {
     xdr: string;
     decoded?: string;
   };
+  ledger: StellarBlock;
+  transaction: StellarTransaction;
+  operation: StellarOperation;
 };
 
 export interface StellarBlockFilter {
@@ -63,7 +69,7 @@ export interface StellarEffectFilter {
   account?: string;
 }
 
-export interface StellarEventFilter {
+export interface SorobanEventFilter {
   contractId?: string;
   topics?: string[];
 }
@@ -73,5 +79,5 @@ export type StellarBlockWrapper = BlockWrapper<
   StellarTransaction,
   StellarOperation,
   StellarEffect,
-  StellarEvent
+  SorobanEvent
 >;

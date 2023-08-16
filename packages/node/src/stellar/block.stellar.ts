@@ -7,8 +7,8 @@ import {
   StellarBlockWrapper,
   StellarEffect,
   StellarEffectFilter,
-  StellarEvent,
-  StellarEventFilter,
+  SorobanEvent,
+  SorobanEventFilter,
   StellarOperation,
   StellarOperationFilter,
   StellarTransaction,
@@ -23,6 +23,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     private _transactions: StellarTransaction[],
     private _operations: StellarOperation[],
     private _effects: StellarEffect[],
+    private _events: SorobanEvent[],
   ) {}
 
   get block(): StellarBlock {
@@ -39,6 +40,10 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
 
   get effects(): StellarEffect[] {
     return this._effects;
+  }
+
+  get events(): SorobanEvent[] {
+    return this._events;
   }
 
   static filterBlocksProcessor(
@@ -96,10 +101,10 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
 
     return true;
   }
-  /*
+
   static filterEventProcessor(
-    event: StellarEvent,
-    filter: StellarEventFilter,
+    event: SorobanEvent,
+    filter: SorobanEventFilter,
     address?: string,
   ): boolean {
     if (address && !stringNormalizedEq(address, event.contractId)) {
@@ -109,7 +114,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     if (!filter) return true;
 
     if (filter.contractId && filter.contractId !== event.contractId) {
-      return false; 
+      return false;
     }
 
     if (filter.topics) {
@@ -170,5 +175,4 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
         return scValToNative(scVal);
     }
   }
-  */
 }
