@@ -28,7 +28,11 @@ const YargsNameMapping: Record<string, string> = {};
 
 type Args = (typeof yargsOptions.argv)['argv'];
 
-function yargsToIConfig(yargs: Args): Partial<IConfig> {
+export interface IStellarConfig extends IConfig {
+  sorobanNetworkEndpoint: string;
+}
+
+function yargsToIConfig(yargs: Args): Partial<IStellarConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
 
@@ -129,7 +133,7 @@ export class ConfigureModule {
         omitBy<StellarProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
-            soroban: argv.sorobanNetworkEndpoint as string,
+            soroban: yargsToIConfig(argv).sorobanNetworkEndpoint,
             dictionary: config.networkDictionary,
           },
           isNil,

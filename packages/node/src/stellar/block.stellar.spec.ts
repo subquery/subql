@@ -168,4 +168,104 @@ describe('StellarBlockWrapped', () => {
       expect(result).toBe(true);
     });
   });
+
+  describe('StellarBlockWrapped', function () {
+    const mockEvent: SorobanEvent = {
+      ledger: null,
+      transaction: null,
+      operation: null,
+      ledgerClosedAt: null,
+      contractId: 'testaddress',
+      id: null,
+      pagingToken: null,
+      inSuccessfulContractCall: null,
+      topic: ['topic1', 'topic2'],
+      value: null,
+    };
+
+    const mockEventFilterValid: SorobanEventFilter = {
+      topics: ['topic1', 'topic2'],
+    };
+
+    const mockEventFilterInvalid: SorobanEventFilter = {
+      topics: ['topics3'],
+    };
+
+    it('should pass filter - valid address and topics', function () {
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterValid,
+          'testaddress',
+        ),
+      ).toEqual(true);
+    });
+
+    it('should pass filter - no address and valid topics', function () {
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterValid,
+        ),
+      ).toEqual(true);
+    });
+
+    it('should fail filter - valid address and invalid topics', function () {
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterInvalid,
+          'testaddress',
+        ),
+      ).toEqual(false);
+    });
+
+    it('should fail filter - event not found', function () {
+      mockEventFilterInvalid.topics = ['topic1', 'topic2', 'topic3'];
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterInvalid,
+        ),
+      ).toEqual(false);
+    });
+
+    it('should pass filter - skip null topics', function () {
+      mockEventFilterValid.topics = [null, 'topic2'];
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterValid,
+        ),
+      ).toEqual(true);
+    });
+
+    it('should pass filer - valid contractId', function () {
+      mockEventFilterValid.contractId = 'testaddress';
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterValid,
+        ),
+      ).toEqual(true);
+    });
+
+    it('should fail filter - invalid contractId', function () {
+      expect(
+        StellarBlockWrapped.filterEventProcessor(mockEvent, {
+          contractId: 'invalidaddress',
+        }),
+      ).toEqual(false);
+    });
+
+    it('should fail filter - invalid address', function () {
+      expect(
+        StellarBlockWrapped.filterEventProcessor(
+          mockEvent,
+          mockEventFilterValid,
+          'invalidaddress',
+        ),
+      ).toEqual(false);
+    });
+  });
 });
