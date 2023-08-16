@@ -12,7 +12,6 @@ import {
   StellarOperation,
   StellarTransaction,
 } from '@subql/types-stellar';
-import { SorobanRpc } from 'soroban-client';
 import { Server, ServerApi } from 'stellar-sdk';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
@@ -93,6 +92,18 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     return 'Stellar';
   }
 
+  private getTransactionApplicationOrder(eventId: string) {
+    // Right shift the ID by 12 bits to exclude the Operation Index
+    const shiftedId = BigInt(eventId.split('-')[0]) >> BigInt(12);
+
+    // Create a mask for 20 bits to ignore the Ledger Sequence Number
+    const mask = BigInt((1 << 20) - 1);
+
+    // Apply bitwise AND operation with the mask to get the Transaction Application Order
+    const transactionApplicationOrder = shiftedId & mask;
+    return Number(transactionApplicationOrder);
+  }
+
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
     const events = (
       await this.sorobanClient.getEvents({ startLedger: height, filters: [] })
@@ -132,6 +143,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
   private async fetchOperationsForTransaction(
     transactionId: string,
+    applicationOrder: number,
     sequence: number,
   ): Promise<StellarOperation[]> {
     const operations = (
@@ -142,14 +154,25 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       operations.map(async (op) => {
         //There will be only one operation for soroban transaction
         let events: SorobanEvent[] = [];
-
         try {
           events =
             op.type.toString() === 'invoke_host_function'
-              ? await this.getAndWrapEvents(sequence)
+              ? (await this.getAndWrapEvents(sequence)).filter(
+                  (event) =>
+                    this.getTransactionApplicationOrder(event.id) ===
+                    applicationOrder,
+                )
               : ([] as SorobanEvent[]);
         } catch (e) {
-          logger.error(`unable to fetch events: ${e}`);
+          if (e.message === 'start is before oldest ledger') {
+            throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node. 
+            This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
+            To resolve this issue, you can either:
+            1. Increase the start ledger to a more recent one, or
+            2. Connect to a different node that might have a longer history of ledgers.`);
+          }
+
+          throw e;
         }
 
         const wrappedOp: StellarOperation = {
@@ -182,7 +205,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     ).records;
 
     return Promise.all(
-      transactions.map(async (tx) => {
+      transactions.map(async (tx, index) => {
         let account: ServerApi.AccountRecord;
         try {
           account = await tx.account();
@@ -204,7 +227,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         };
 
         const operations = (
-          await this.fetchOperationsForTransaction(tx.id, sequence)
+          await this.fetchOperationsForTransaction(tx.id, index + 1, sequence)
         ).map((op) => {
           op.transaction = JSON.parse(JSON.stringify(wrappedTx));
           op.effects = op.effects.map((effect) => {
