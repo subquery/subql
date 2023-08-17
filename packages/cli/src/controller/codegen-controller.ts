@@ -3,6 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import telescope from '@cosmology/telescope';
 import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomCosmosDs,
@@ -47,6 +48,7 @@ import {
 } from '@subql/utils';
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
+import {TELESCOPE_OPTS} from '../constants';
 import {renderTemplate, prepareDirPath} from '../utils';
 
 type TemplateKind =
@@ -73,6 +75,8 @@ const DYNAMIC_DATASOURCE_TEMPLATE_PATH = path.resolve(__dirname, '../template/da
 const TYPE_ROOT_DIR = 'src/types';
 const MODEL_ROOT_DIR = 'src/types/models';
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
+const PROTO_INTERFACES_ROOT_DIR = 'src/types/proto-interfaces';
+const PROTO_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/proto-interface.ts.ejs');
 const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
@@ -174,6 +178,73 @@ export interface abiInterface {
 }
 function validateCustomDs(d: DatasourceKind) {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
+}
+interface CosmosChainType {
+  file: string;
+  messages: string[];
+}
+interface ProtobufRenderProps {
+  messageNames: string[]; // all messages
+  path: string; // should process the file Path and concat with PROTO dir
+}
+
+export function processProtoFilePath(path: string): string {
+  // removes `./proto` and `.proto` suffix, converts all `.` to `/`
+  return `./${path.replace(/^\.\/proto\/|\.proto$/g, '').replace(/\./g, '/')}`;
+}
+
+export async function generateProto(chainTypes: Map<string, CosmosChainType>[], projectPath: string): Promise<void> {
+  // const sortedProtoAssets = new Map<string, CosmosChainType>();
+
+  const protobufRenderProps: ProtobufRenderProps[] = chainTypes.flatMap((chainType) => {
+    return Object.entries(chainType).map(([key, value]) => {
+      const filePath = path.join(projectPath, value.file);
+
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`Error: chainType ${key}, file ${value.file} does not exist`);
+      }
+
+      const processedFilePath = processProtoFilePath(value.file);
+      console.log('processedFilePath: ', processedFilePath);
+
+      return {
+        messageNames: value.messages,
+        path: processedFilePath,
+      };
+    });
+  });
+  console.log(protobufRenderProps);
+  const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
+
+  // const protoPaths = Array.from(sortedProtoAssets.values()).map(obj => {
+  //   return obj.file
+  // })
+
+  // clear directory
+  await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
+  const protoPaths = [path.join(projectPath, './proto')];
+  // const protoPaths = [path.join(projectPath, './proto/cosmos/osmosis/gamm/v1beta1/tx.proto')]
+  console.log('protoPaths', protoPaths);
+  try {
+    await telescope({
+      protoDirs: protoPaths,
+      outPath: outputPath,
+      options: TELESCOPE_OPTS,
+    });
+    console.log('✨ jobs done!');
+
+    await renderTemplate(
+      PROTO_INTERFACE_TEMPLATE_PATH,
+      path.join(projectPath, PROTO_INTERFACES_ROOT_DIR, 'wrappedMessageTypes.ts'),
+      {
+        props: {proto: protobufRenderProps},
+        helper: {upperFirst},
+      }
+    );
+    console.log('✨ Message wrappers created');
+  } catch (e) {
+    throw new Error(`Failed to generate from protobufs. ${e.message}`);
+  }
 }
 
 export async function generateAbis(datasources: DatasourceKind[], projectPath: string): Promise<void> {
@@ -384,6 +455,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
       loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
         specVersion: string;
         templates?: TemplateKind[];
+        network: {chainTypes?: Map<string, {file: string; messages: string[]}>};
         dataSources: DatasourceKind[];
       }
   );
@@ -423,6 +495,19 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   if (customDatasources.length !== 0) {
     datasources = datasources.concat(customDatasources);
+  }
+  // validate if the manifests are cosmos
+  const chainTypes = plainManifests
+    .map((m) => {
+      if (m.network.chainTypes) {
+        return m.network.chainTypes;
+      }
+    })
+    .filter(Boolean);
+  // console.log(plainManifests)
+  console.log(chainTypes);
+  if (chainTypes.length !== 0) {
+    await generateProto(chainTypes, projectPath);
   }
 
   await generateAbis(datasources, projectPath);

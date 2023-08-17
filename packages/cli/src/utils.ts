@@ -5,6 +5,8 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
+import {loadFromJsonOrYaml} from '@subql/common';
+import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
@@ -102,4 +104,13 @@ export async function prepareDirPath(path: string, recreate: boolean): Promise<v
 export function resolveToAbsolutePath(inputPath: string): string {
   const regex = new RegExp(`^~(?=$|[/\\\\])`);
   return path.resolve(inputPath.replace(regex, os.homedir()));
+}
+
+export function validateCosmosProjectManifest(projectPath: string): boolean {
+  const doc = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
+  try {
+    return !!parseCosmosProjectManifest(doc);
+  } catch (e) {
+    return false;
+  }
 }
