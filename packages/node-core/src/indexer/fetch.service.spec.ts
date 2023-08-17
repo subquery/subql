@@ -58,9 +58,10 @@ const nodeConfig = {
   dictionaryResolver: '',
 } as any as NodeConfig;
 
-const networkConfig = {
-  dictionary: 'https://example.com',
-} as IProjectNetworkConfig;
+const getNetworkConfig = () =>
+  ({
+    dictionary: 'https://example.com',
+  } as IProjectNetworkConfig);
 
 const mockDs: BaseDataSource = {
   kind: 'mock/DataSource',
@@ -125,6 +126,7 @@ describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher;
   let dictionaryService: DictionaryService;
+  let networkConfig: IProjectNetworkConfig;
 
   beforeEach(() => {
     const eventEmitter = new EventEmitter2();
@@ -132,6 +134,7 @@ describe('Fetch Service', () => {
 
     blockDispatcher = getBlockDispatcher();
     dictionaryService = getDictionaryService();
+    networkConfig = getNetworkConfig();
 
     fetchService = new TestFetchService(
       nodeConfig,

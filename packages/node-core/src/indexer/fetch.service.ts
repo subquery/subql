@@ -254,7 +254,8 @@ export abstract class BaseFetchService<
 
             const moduloBlocks = this.getModuloBlocks(
               startBlockHeight,
-              batchBlocks.length ? Math.max(...batchBlocks) : queryEndBlock
+              // If the results fill the batch size then use the last block in the reesults
+              batchBlocks.length >= scaledBatchSize ? Math.max(...batchBlocks) : queryEndBlock
             );
             batchBlocks = uniq(batchBlocks.concat(moduloBlocks)).sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
