@@ -130,8 +130,8 @@ export abstract class TestingService<A, SA, B, DS> {
       this.indexBlock.bind(this)
     );
 
-    this.totalPassedTests += passedTests;
-    this.totalFailedTests += failedTests;
+    failedTests > 0 ? this.totalFailedTests++ : this.totalPassedTests++;
+
     if (failedTestSummary) {
       this.failedTestsSummary.push(failedTestSummary);
     }
