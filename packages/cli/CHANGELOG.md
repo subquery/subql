@@ -6,10 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.5.2] - 2023-08-17
-### Fixed
-- fix pathing for generate command tests (#1953)
-
 ## [3.5.1] - 2023-08-16
 ### Fixed
 - Ensure absolute pathing for all path related flags (#1947)
@@ -432,8 +428,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/3.5.2...HEAD
-[3.5.2]: https://github.com/subquery/subql/compare/cli/3.5.1...cli/3.5.2
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.5.1...HEAD
 [3.5.1]: https://github.com/subquery/subql/compare/cli/3.5.0...cli/3.5.1
 [3.5.0]: https://github.com/subquery/subql/compare/cli/3.4.0...cli/3.5.0
 [3.4.0]: https://github.com/subquery/subql/compare/cli/3.3.3...cli/3.4.0
