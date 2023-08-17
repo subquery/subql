@@ -371,7 +371,7 @@ export async function ${expectedEventHandler}(log: ApprovalLog ): Promise<void> 
     );
   });
   it('Should be able to parse relative path on abiPath', async () => {
-    const abiPath_relative = '../abiTest1/abis/abis.json';
+    const abiPath_relative = './packages/cli/test/abiTest1/abis/abis.json';
     await prepareAbiDirectory(abiPath_relative, PROJECT_PATH);
 
     expect(fs.existsSync(path.join(PROJECT_PATH, 'abis/abis.json'))).toBeTruthy();

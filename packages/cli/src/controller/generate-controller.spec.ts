@@ -335,6 +335,10 @@ describe('CLI codegen:generate', () => {
     const tildePath = '~/Downloads/example.file';
     expect(resolveToAbsolutePath(tildePath)).toBe(`${os.homedir()}/Downloads/example.file`);
   });
+  it('resolve to absolutePath from relativePath', () => {
+    const abiPath_relative = './packages/cli/test/abiTest1/abis/abis.json';
+    expect(resolveToAbsolutePath(abiPath_relative)).toBe(path.join(__dirname, '../../test/abiTest1/abis/abis.json'));
+  });
   it('if absolutePath regex should not do anything', () => {
     const absolutePath = '/root/Downloads/example.file';
     expect(resolveToAbsolutePath(absolutePath)).toBe(absolutePath);
