@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.2.3] - 2023-08-17
 ### Fixed
-- delay getPoiBlocksByRange when fully synced, fixes the high CPU usage (#1952)
+- delay getPoiBlocksByRange when fully synced, fixes the high CPU usage issue (#1952)
 
 ## [4.2.2] - 2023-08-16
 ### Fixed

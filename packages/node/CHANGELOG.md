@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.12.2] - 2023-08-17
 ### Fixed
 - Testing framework not starting because of missing dependency (#1955)
-- Bump with node-core 4.2.3, delay getPoiBlocksByRange when fully synced, fixes the high CPU usage
+- Bump with node-core 4.2.3, delay getPoiBlocksByRange when fully synced, fixes the high CPU usage issue
 
 ## [2.12.1] - 2023-08-17
 ### Fixed
