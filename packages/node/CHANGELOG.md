@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ## [2.12.1] - 2023-08-17
 ### Fixed
 - Incorrect dictionary query for methods/calls filter (#1950)
