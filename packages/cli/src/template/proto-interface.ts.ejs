@@ -2,9 +2,8 @@
 
 // Auto-generated , DO NOT EDIT
 import {CosmosMessage} from "@subql/types-cosmos";
-
 <% props.proto.forEach(function(proto) { %>
-import {<% proto.messageNames.forEach(function(msg, index) { %><%= helper.upperFirst(msg) %><% if (index < proto.messageNames.length - 1) { %>,<% } %><% }); %> } from "<%= proto.path %>";
+import {<% proto.messageNames.forEach(function(msg, index) { %><%= helper.upperFirst(msg) %><% if (index < proto.messageNames.length - 1) { %>,<% } %><% }); %>} from "<%= proto.path %>";
 <% }); %>
 <% props.proto.forEach(function(proto) { %><% proto.messageNames.forEach(function(msg) { %>
 export type Wrapped<%= helper.upperFirst(msg) %> = CosmosMessage<<%= helper.upperFirst(msg) %>>;<% }); %>
