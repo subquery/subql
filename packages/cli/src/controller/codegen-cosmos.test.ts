@@ -50,10 +50,8 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
 `;
 
     await generateProto(mockChainTypes, PROJECT_PATH);
-    const codegenResult = await fs.promises.readFile(
-      path.join(PROJECT_PATH, '/src/types/proto-interfaces/wrappedMessageTypes.ts')
-    );
-    expect(fs.existsSync(`${PROJECT_PATH}/src/types/proto-interfaces/wrappedMessageTypes.ts`)).toBeTruthy();
+    const codegenResult = await fs.promises.readFile(path.join(PROJECT_PATH, '/src/types/CosmosMessageTypes.ts'));
+    expect(fs.existsSync(`${PROJECT_PATH}/src/types/CosmosMessageTypes.ts`)).toBeTruthy();
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
   });
   it('On missing protobuf dependency should throw', async () => {

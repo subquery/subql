@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {isProtoPath, prepareProtobufRenderProps, processProtoFilePath} from './codegen-controller';
+import {loadFromJsonOrYaml} from '@subql/common';
+import {parseCosmosProjectManifest} from '@subql/common-cosmos';
+import {
+  isProtoPath,
+  prepareProtobufRenderProps,
+  processProtoFilePath,
+  validateCosmosManifest,
+} from './codegen-controller';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
 describe('Codegen cosmos, protobuf to ts', () => {
@@ -51,5 +58,13 @@ describe('Codegen cosmos, protobuf to ts', () => {
     expect(isProtoPath(p, PROJECT_PATH)).toBe(false);
     p = './protos/cosmos/osmosis/gamm/v1beta1/tx.proto';
     expect(isProtoPath(p, PROJECT_PATH)).toBe(false);
+  });
+  it('Ensure correctness on Cosmos Manifest validate', () => {
+    const cosmosManifest = loadFromJsonOrYaml(path.join(PROJECT_PATH, 'project.yaml')) as any;
+    const ethManifest = loadFromJsonOrYaml(
+      path.join(__dirname, '../../test/schemaTest6', 'generate-project.yaml')
+    ) as any;
+    expect(validateCosmosManifest(cosmosManifest)).toBe(true);
+    expect(validateCosmosManifest(ethManifest)).toBe(false);
   });
 });

@@ -10,6 +10,7 @@ import {
   isRuntimeCosmosDs,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
+  parseCosmosProjectManifest,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -451,6 +452,16 @@ export function processFields(
   return fieldList;
 }
 
+export function validateCosmosManifest(manifest: {
+  network: {chainTypes?: Map<string, {file: string; messages: string[]}>};
+}): boolean {
+  try {
+    return !!parseCosmosProjectManifest(manifest);
+  } catch (e) {
+    return false;
+  }
+}
+
 //1. Prepare models directory and load schema
 export async function codegen(projectPath: string, fileNames: string[] = [DEFAULT_MANIFEST]): Promise<void> {
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
@@ -507,6 +518,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   // validate if the manifests are cosmos
   const chainTypes = plainManifests
     .map((m) => {
+      if (!validateCosmosManifest(m)) return;
       if (m.network.chainTypes) {
         return m.network.chainTypes;
       }
