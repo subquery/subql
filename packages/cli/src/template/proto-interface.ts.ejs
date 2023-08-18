@@ -6,5 +6,5 @@ import {CosmosMessage} from "@subql/types-cosmos";
 import {<% proto.messageNames.forEach(function(msg, index) { %><%= helper.upperFirst(msg) %><% if (index < proto.messageNames.length - 1) { %>,<% } %><% }); %>} from "<%= proto.path %>";
 <% }); %>
 <% props.proto.forEach(function(proto) { %><% proto.messageNames.forEach(function(msg) { %>
-export type Wrapped<%= helper.upperFirst(msg) %> = CosmosMessage<<%= helper.upperFirst(msg) %>>;<% }); %>
+export type <%= helper.upperFirst(msg) %>Message = CosmosMessage<<%= helper.upperFirst(msg) %>>;<% }); %>
 <% }); %>

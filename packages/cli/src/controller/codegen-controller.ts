@@ -191,7 +191,12 @@ interface ProtobufRenderProps {
 export function processProtoFilePath(path: string): string {
   // removes `./proto` and `.proto` suffix, converts all `.` to `/`
   // should be able to accept more paths, not just from `proto directory`
-  return `./${path.replace(/^\.\/proto\/|\.proto$/g, '').replace(/\./g, '/')}`;
+  return `./proto-interfaces/${path.replace(/^\.\/proto\/|\.proto$/g, '').replace(/\./g, '/')}`;
+}
+
+export function isProtoPath(filePath: string, projectPath: string): boolean {
+  // check if the protobuf files are under ./proto directory
+  return !!path.join(projectPath, filePath).startsWith(path.join(projectPath, './proto/'));
 }
 
 export function prepareProtobufRenderProps(
@@ -201,15 +206,17 @@ export function prepareProtobufRenderProps(
   return chainTypes.flatMap((chainType) => {
     return Object.entries(chainType).map(([key, value]) => {
       const filePath = path.join(projectPath, value.file);
-
       if (!fs.existsSync(filePath)) {
         throw new Error(`Error: chainType ${key}, file ${value.file} does not exist`);
       }
-
-      const processedFilePath = processProtoFilePath(value.file);
+      if (!isProtoPath(value.file, projectPath)) {
+        console.error(
+          `Codegen will not apply for this file: ${value.file} Please ensure it is under the ./proto directory`
+        );
+      }
       return {
         messageNames: value.messages,
-        path: processedFilePath,
+        path: processProtoFilePath(value.file),
       };
     });
   });
@@ -218,11 +225,9 @@ export function prepareProtobufRenderProps(
 export async function generateProto(chainTypes: Map<string, CosmosChainType>[], projectPath: string): Promise<void> {
   const protobufRenderProps = prepareProtobufRenderProps(chainTypes, projectPath);
   const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
-
-  // clear directory
   await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
-  // currently it would just process all that is in the `proto` directory,
-  // should be able to accept various paths and copy the structure under `proto` directory to generate
+
+  // All *.proto files should belong under `./proto` directory, as then the generated types would retain original structure
   const protoPaths = [path.join(projectPath, './proto')];
   try {
     await telescope({
@@ -230,19 +235,23 @@ export async function generateProto(chainTypes: Map<string, CosmosChainType>[], 
       outPath: outputPath,
       options: TELESCOPE_OPTS,
     });
-    console.log('✨ Jobs done! ✨');
+    console.log('* Protobuf types generated !');
 
     await renderTemplate(
       PROTO_INTERFACE_TEMPLATE_PATH,
-      path.join(projectPath, PROTO_INTERFACES_ROOT_DIR, 'wrappedMessageTypes.ts'),
+      path.join(projectPath, TYPE_ROOT_DIR, 'CosmosMessageTypes.ts'),
       {
         props: {proto: protobufRenderProps},
         helper: {upperFirst},
       }
     );
-    console.log('✨ Message wrappers generated ✨');
-  } catch (e) {
-    throw new Error(`Failed to generate from protobufs. ${e.message}`);
+    console.log('* Cosmos message wrappers generated !');
+  } catch (e: any) {
+    const errorMessage = e.message.startsWith('Dependency')
+      ? `Please add the missing protobuf file to ./proto directory`
+      : '';
+
+    throw new Error(`Failed to generate from protobufs. ${e.message}, ${errorMessage}`);
   }
 }
 
@@ -503,8 +512,6 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
       }
     })
     .filter(Boolean);
-  // console.log(plainManifests)
-  console.log(chainTypes);
   if (chainTypes.length !== 0) {
     await generateProto(chainTypes, projectPath);
   }

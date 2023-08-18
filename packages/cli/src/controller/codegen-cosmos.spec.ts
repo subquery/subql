@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {prepareProtobufRenderProps, processProtoFilePath} from './codegen-controller';
+import {isProtoPath, prepareProtobufRenderProps, processProtoFilePath} from './codegen-controller';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
 describe('Codegen cosmos, protobuf to ts', () => {
@@ -40,5 +40,16 @@ describe('Codegen cosmos, protobuf to ts', () => {
         path: './cosmos/osmosis/poolmanager/v1beta1/swap_route',
       },
     ]);
+  });
+
+  it('ensure correct regex for protoPath', () => {
+    let p = './proto/cosmos/osmosis/gamm/v1beta1/tx.proto';
+    expect(isProtoPath(p, PROJECT_PATH)).toBe(true);
+    p = 'proto/cosmos/osmosis/gamm/v1beta1/tx.proto';
+    expect(isProtoPath(p, PROJECT_PATH)).toBe(true);
+    p = '../proto/cosmos/osmosis/gamm/v1beta1/tx.proto';
+    expect(isProtoPath(p, PROJECT_PATH)).toBe(false);
+    p = './protos/cosmos/osmosis/gamm/v1beta1/tx.proto';
+    expect(isProtoPath(p, PROJECT_PATH)).toBe(false);
   });
 });

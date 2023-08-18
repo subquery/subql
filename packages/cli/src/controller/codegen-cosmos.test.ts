@@ -8,10 +8,12 @@ import rimraf from 'rimraf';
 import {generateProto} from './codegen-controller';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
+const PROJECT_PATH_2 = path.join(__dirname, '../../test/protoTest2');
 
 describe('Able to generate cosmos types from protobuf', () => {
   afterEach(async () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
+    await promisify(rimraf)(path.join(__dirname, '../../test/protoTest2/src'));
   });
 
   it('Able to generate ts types from protobufs', async () => {
@@ -36,14 +38,14 @@ describe('Able to generate cosmos types from protobuf', () => {
 // Auto-generated , DO NOT EDIT
 import {CosmosMessage} from "@subql/types-cosmos";
 
-import {MsgSwapExactAmountIn} from "./cosmos/osmosis/gamm/v1beta1/tx";
+import {MsgSwapExactAmountIn} from "./proto-interfaces/cosmos/osmosis/gamm/v1beta1/tx";
 
-import {SwapAmountInRoute} from "./cosmos/osmosis/poolmanager/v1beta1/swap_route";
+import {SwapAmountInRoute} from "./proto-interfaces/cosmos/osmosis/poolmanager/v1beta1/swap_route";
 
 
-export type WrappedMsgSwapExactAmountIn = CosmosMessage<MsgSwapExactAmountIn>;
+export type MsgSwapExactAmountInMessage = CosmosMessage<MsgSwapExactAmountIn>;
 
-export type WrappedSwapAmountInRoute = CosmosMessage<SwapAmountInRoute>;
+export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
 
 `;
 
@@ -53,5 +55,24 @@ export type WrappedSwapAmountInRoute = CosmosMessage<SwapAmountInRoute>;
     );
     expect(fs.existsSync(`${PROJECT_PATH}/src/types/proto-interfaces/wrappedMessageTypes.ts`)).toBeTruthy();
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
+  });
+  it('On missing protobuf dependency should throw', async () => {
+    const mockChainTypes = [
+      {
+        'osmosis.gamm.v1beta1': {
+          file: './proto/cosmos/osmosis/gamm/v1beta1/tx.proto',
+          messages: ['MsgSwapExactAmountIn'],
+        },
+      },
+      {
+        'osmosis.poolmanager.v1beta1': {
+          file: './proto/cosmos/osmosis/poolmanager/v1beta1/swap_route.proto',
+          messages: ['SwapAmountInRoute'],
+        },
+      },
+    ] as any;
+    await expect(generateProto(mockChainTypes, PROJECT_PATH_2)).rejects.toThrow(
+      'Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
+    );
   });
 });
