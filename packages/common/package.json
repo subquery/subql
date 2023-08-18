@@ -17,8 +17,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "fs-extra": "^10.1.0",
-    "ipfs-http-client": "^52.0.3",
     "js-yaml": "^4.1.0",
+    "kubo-rpc-client": "^3.0.1",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "update-notifier": "5.1.0"

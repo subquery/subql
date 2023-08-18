@@ -15,7 +15,7 @@ import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-sub
 import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
-import {IPFSHTTPClient, create} from 'ipfs-http-client';
+import {IPFSHTTPClient, create} from 'kubo-rpc-client';
 
 export async function createIPFSFile(root: string, manifest: string, cid: string): Promise<void> {
   const {name} = path.parse(manifest);

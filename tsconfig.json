@@ -11,7 +11,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["ES2017", "ES2020"],
+    "lib": ["ES2017", "ES2020", "DOM"],
     "emitDecoratorMetadata": true,
     "declaration": true,
     "sourceMap": true,
