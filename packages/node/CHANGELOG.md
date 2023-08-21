@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix missing ds option for event in dictionary query entries (#145)
+
 ## [2.11.1] - 2023-08-14
 ### Changed
 - Synced with main sdk:

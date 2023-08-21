@@ -82,6 +82,10 @@ describe('Dictionary queries', () => {
       const ds: SubqlRuntimeDatasource = {
         kind: EthereumDatasourceKind.Runtime,
         assets: new Map(),
+        options: {
+          abi: 'erc20',
+          address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+        },
         startBlock: 1,
         mapping: {
           file: '',
@@ -107,6 +111,11 @@ describe('Dictionary queries', () => {
         {
           entity: 'evmLogs',
           conditions: [
+            {
+              field: 'address',
+              matcher: 'equalTo',
+              value: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+            },
             {
               field: 'topics0',
               value:
@@ -150,6 +159,45 @@ describe('Dictionary queries', () => {
         {
           entity: 'evmTransactions',
           conditions: [{ field: 'to', matcher: 'isNull', value: true }],
+        },
+      ]);
+    });
+
+    it('Build a filter with include ds option and contract address', () => {
+      const ds: SubqlRuntimeDatasource = {
+        kind: EthereumDatasourceKind.Runtime,
+        assets: new Map(),
+        options: {
+          abi: 'erc20',
+          address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+        },
+        startBlock: 1,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              handler: 'handleTransfer',
+              kind: EthereumHandlerKind.Call,
+              filter: {
+                function: 'approve(address spender, uint256 rawAmount)',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = buildDictionaryQueryEntries([ds], 1);
+      expect(result).toEqual([
+        {
+          entity: 'evmTransactions',
+          conditions: [
+            {
+              field: 'address',
+              matcher: 'equalTo',
+              value: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+            },
+            { field: 'func', matcher: 'equalTo', value: '0x095ea7b3' },
+          ],
         },
       ]);
     });

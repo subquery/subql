@@ -43,14 +43,11 @@ const BLOCK_TIME_VARIANCE = 5000;
 
 const INTERVAL_PERCENT = 0.9;
 
-function eventFilterToQueryEntry(
-  filter: EthereumLogFilter,
+function appendDsOptions(
   dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
-): DictionaryQueryEntry {
+  conditions: DictionaryQueryCondition[],
+): void {
   const queryAddressLimit = yargsOptions.argv['query-address-limit'];
-
-  const conditions: DictionaryQueryCondition[] = [];
-
   if (Array.isArray(dsOptions)) {
     const addresses = dsOptions.map((option) => option.address).filter(Boolean);
 
@@ -76,6 +73,14 @@ function eventFilterToQueryEntry(
       });
     }
   }
+}
+
+function eventFilterToQueryEntry(
+  filter: EthereumLogFilter,
+  dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
+): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+  appendDsOptions(dsOptions, conditions);
   if (filter.topics) {
     for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
       const topic = filter.topics[i];
@@ -107,8 +112,10 @@ function eventFilterToQueryEntry(
 
 function callFilterToQueryEntry(
   filter: EthereumTransactionFilter,
+  dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [];
+  appendDsOptions(dsOptions, conditions);
   if (filter.from) {
     conditions.push({
       field: 'from',
@@ -172,7 +179,7 @@ export function buildDictionaryQueryEntries(
             filter.to !== undefined ||
             filter.function
           ) {
-            queryEntries.push(callFilterToQueryEntry(filter));
+            queryEntries.push(callFilterToQueryEntry(filter, ds.options));
           } else {
             return [];
           }
