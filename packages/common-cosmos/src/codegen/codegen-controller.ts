@@ -55,12 +55,8 @@ export function prepareProtobufRenderProps(
 
 export async function tempProtoDir(projectPath: string): Promise<string> {
   const tmpDir = await makeTempDir();
-  const tmpProtoDir = path.join(tmpDir, './proto/');
-  if (fs.existsSync(tmpDir)) {
-    fs.rmSync(tmpDir, {recursive: true, force: true});
-  }
   const userProto = path.join(projectPath, './proto');
-  const commonProtos = [
+  const commonProtoPaths = [
     require('@protobufs/amino'),
     require('@protobufs/confio'),
     require('@protobufs/cosmos'),
@@ -71,13 +67,12 @@ export async function tempProtoDir(projectPath: string): Promise<string> {
     require('@protobufs/tendermint'),
   ];
 
-  commonProtos.forEach((p) => {
+  commonProtoPaths.forEach((p) => {
     // ensure output format is a dir
-    copySync(p, path.join(tmpProtoDir, `${p.replace(path.dirname(p), '')}`));
+    copySync(p, path.join(tmpDir, `${p.replace(path.dirname(p), '')}`));
   });
-
-  copySync(userProto, tmpProtoDir, {overwrite: true});
-  return tmpProtoDir;
+  copySync(userProto, tmpDir, {overwrite: true});
+  return tmpDir;
 }
 
 export async function generateProto(
@@ -118,6 +113,7 @@ export async function generateProto(
     throw new Error(`Failed to generate from protobufs. ${e.message}, ${errorMessage}`);
   } finally {
     if (fs.existsSync(tmpPath)) {
+      // remove tmp directory
       fs.rmSync(tmpPath, {recursive: true, force: true});
     }
   }
