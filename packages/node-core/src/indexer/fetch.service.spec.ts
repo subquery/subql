@@ -21,7 +21,7 @@ import {BaseFetchService} from './fetch.service';
 const CHAIN_INTERVAL = 100; // 100ms
 
 class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher, DictionaryService> {
-  finalizedHeight = 10;
+  finalizedHeight = 1000;
   bestHeight = 20;
   modulos: number[] = [];
 
@@ -361,5 +361,21 @@ describe('Fetch Service', () => {
 
     // Modulo blocks should not be added as we are within batch size
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10);
+  });
+
+  it('dictionary dictionary queries to be limited to target block height (finalized/latest depending on settings)', async () => {
+    // Set finalized height behind dict results
+    // This can happen when an RPC endpoint is behind the dictionary
+    enableDictionary();
+
+    const FINALIZED_HEIGHT = 10;
+
+    fetchService.finalizedHeight = FINALIZED_HEIGHT;
+
+    const dictSpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
+
+    await fetchService.init(1);
+
+    expect(dictSpy).toHaveBeenCalledWith(1, FINALIZED_HEIGHT, 10);
   });
 });
