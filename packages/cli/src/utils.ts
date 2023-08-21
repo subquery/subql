@@ -106,10 +106,11 @@ export function resolveToAbsolutePath(inputPath: string): string {
   return path.resolve(inputPath.replace(regex, os.homedir()));
 }
 
-export function validateCosmosProjectManifest(projectPath: string): boolean {
-  const doc = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
+export function validateCosmosManifest(manifest: {
+  network: {chainTypes?: Map<string, {file: string; messages: string[]}>};
+}): boolean {
   try {
-    return !!parseCosmosProjectManifest(doc);
+    return !!parseCosmosProjectManifest(manifest);
   } catch (e) {
     return false;
   }

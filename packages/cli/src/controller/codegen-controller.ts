@@ -3,14 +3,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import telescope from '@cosmology/telescope';
 import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
-  parseCosmosProjectManifest,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -47,11 +45,9 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/utils';
-import {copySync} from 'fs-extra';
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
-import {TELESCOPE_OPTS} from '../constants';
-import {renderTemplate, prepareDirPath} from '../utils';
+import {renderTemplate, prepareDirPath, validateCosmosManifest} from '../utils';
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -77,8 +73,6 @@ const DYNAMIC_DATASOURCE_TEMPLATE_PATH = path.resolve(__dirname, '../template/da
 const TYPE_ROOT_DIR = 'src/types';
 const MODEL_ROOT_DIR = 'src/types/models';
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
-const PROTO_INTERFACES_ROOT_DIR = 'src/types/proto-interfaces';
-const PROTO_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/proto-interface.ts.ejs');
 const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
@@ -180,115 +174,6 @@ export interface abiInterface {
 }
 function validateCustomDs(d: DatasourceKind) {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
-}
-export interface CosmosChainType {
-  file: string;
-  messages: string[];
-}
-interface ProtobufRenderProps {
-  messageNames: string[]; // all messages
-  path: string; // should process the file Path and concat with PROTO dir
-}
-
-export function processProtoFilePath(path: string): string {
-  // removes `./proto` and `.proto` suffix, converts all `.` to `/`
-  // should be able to accept more paths, not just from `proto directory`
-  return `./proto-interfaces/${path.replace(/^\.\/proto\/|\.proto$/g, '').replace(/\./g, '/')}`;
-}
-
-export function isProtoPath(filePath: string, projectPath: string): boolean {
-  // check if the protobuf files are under ./proto directory
-  return !!path.join(projectPath, filePath).startsWith(path.join(projectPath, './proto/'));
-}
-
-export function prepareProtobufRenderProps(
-  chainTypes: Map<string, CosmosChainType>[],
-  projectPath: string
-): ProtobufRenderProps[] {
-  return chainTypes.flatMap((chainType) => {
-    return Object.entries(chainType).map(([key, value]) => {
-      const filePath = path.join(projectPath, value.file);
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Error: chainType ${key}, file ${value.file} does not exist`);
-      }
-      if (!isProtoPath(value.file, projectPath)) {
-        console.error(
-          `Codegen will not apply for this file: ${value.file} Please ensure it is under the ./proto directory`
-        );
-      }
-      return {
-        messageNames: value.messages,
-        path: processProtoFilePath(value.file),
-      };
-    });
-  });
-}
-export async function tempProtoDir(projectPath: string): Promise<string> {
-  const tmpDir = await makeTempDir();
-  const tmpProtoDir = path.join(tmpDir, './proto/');
-  if (fs.existsSync(tmpDir)) {
-    fs.rmSync(tmpDir, {recursive: true, force: true});
-  }
-  const userProto = path.join(projectPath, './proto');
-  const commonProtos = [
-    require('@protobufs/amino'),
-    require('@protobufs/confio'),
-    require('@protobufs/cosmos'),
-    require('@protobufs/cosmos_proto'),
-    require('@protobufs/gogoproto'),
-    require('@protobufs/google'),
-    require('@protobufs/ibc'),
-    require('@protobufs/tendermint'),
-  ];
-
-  commonProtos.forEach((p) => {
-    // ensure output format is a dir
-    copySync(p, path.join(tmpProtoDir, `${p.replace(path.dirname(p), '')}`));
-  });
-
-  copySync(userProto, tmpProtoDir, {overwrite: true});
-  return tmpProtoDir;
-}
-
-export async function generateProto(
-  chainTypes: Map<string, CosmosChainType>[],
-  projectPath: string,
-  mkdirProto: (projectPath: string) => Promise<string>
-): Promise<void> {
-  let tmpPath: string;
-
-  try {
-    tmpPath = await mkdirProto(projectPath);
-    const protobufRenderProps = prepareProtobufRenderProps(chainTypes, projectPath);
-    const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
-    await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
-
-    await telescope({
-      protoDirs: [tmpPath],
-      outPath: outputPath,
-      options: TELESCOPE_OPTS,
-    });
-    console.log('* Protobuf types generated !');
-
-    await renderTemplate(
-      PROTO_INTERFACE_TEMPLATE_PATH,
-      path.join(projectPath, TYPE_ROOT_DIR, 'CosmosMessageTypes.ts'),
-      {
-        props: {proto: protobufRenderProps},
-        helper: {upperFirst},
-      }
-    );
-    console.log('* Cosmos message wrappers generated !');
-  } catch (e: any) {
-    const errorMessage = e.message.startsWith('Dependency')
-      ? `Please add the missing protobuf file to ./proto directory`
-      : '';
-    throw new Error(`Failed to generate from protobufs. ${e.message}, ${errorMessage}`);
-  } finally {
-    if (fs.existsSync(tmpPath)) {
-      fs.rmSync(tmpPath, {recursive: true, force: true});
-    }
-  }
 }
 
 export async function generateAbis(datasources: DatasourceKind[], projectPath: string): Promise<void> {
@@ -485,16 +370,6 @@ export function processFields(
     fieldList.push(injectField);
   }
   return fieldList;
-}
-
-export function validateCosmosManifest(manifest: {
-  network: {chainTypes?: Map<string, {file: string; messages: string[]}>};
-}): boolean {
-  try {
-    return !!parseCosmosProjectManifest(manifest);
-  } catch (e) {
-    return false;
-  }
 }
 
 //1. Prepare models directory and load schema

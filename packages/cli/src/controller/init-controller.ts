@@ -6,7 +6,6 @@ import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
 import {loadFromJsonOrYaml, makeTempDir, ProjectManifestV1_0_0} from '@subql/common';
-import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
