@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import telescope from '@cosmology/telescope';
-import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -47,6 +47,7 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/utils';
+import {copySync} from 'fs-extra';
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {TELESCOPE_OPTS} from '../constants';
@@ -222,17 +223,48 @@ export function prepareProtobufRenderProps(
     });
   });
 }
+export async function tempProtoDir(projectPath: string): Promise<string> {
+  const tmpDir = await makeTempDir();
+  const tmpProtoDir = path.join(tmpDir, './proto/');
+  if (fs.existsSync(tmpDir)) {
+    fs.rmSync(tmpDir, {recursive: true, force: true});
+  }
+  const userProto = path.join(projectPath, './proto');
+  const commonProtos = [
+    require('@protobufs/amino'),
+    require('@protobufs/confio'),
+    require('@protobufs/cosmos'),
+    require('@protobufs/cosmos_proto'),
+    require('@protobufs/gogoproto'),
+    require('@protobufs/google'),
+    require('@protobufs/ibc'),
+    require('@protobufs/tendermint'),
+  ];
 
-export async function generateProto(chainTypes: Map<string, CosmosChainType>[], projectPath: string): Promise<void> {
-  const protobufRenderProps = prepareProtobufRenderProps(chainTypes, projectPath);
-  const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
-  await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
+  commonProtos.forEach((p) => {
+    // ensure output format is a dir
+    copySync(p, path.join(tmpProtoDir, `${p.replace(path.dirname(p), '')}`));
+  });
 
-  // All *.proto files should belong under `./proto` directory, as then the generated types would retain original structure
-  const protoPaths = [path.join(projectPath, './proto')];
+  copySync(userProto, tmpProtoDir, {overwrite: true});
+  return tmpProtoDir;
+}
+
+export async function generateProto(
+  chainTypes: Map<string, CosmosChainType>[],
+  projectPath: string,
+  mkdirProto: (projectPath: string) => Promise<string>
+): Promise<void> {
+  let tmpPath: string;
+
   try {
+    tmpPath = await mkdirProto(projectPath);
+    const protobufRenderProps = prepareProtobufRenderProps(chainTypes, projectPath);
+    const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
+    await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
+
     await telescope({
-      protoDirs: protoPaths,
+      protoDirs: [tmpPath],
       outPath: outputPath,
       options: TELESCOPE_OPTS,
     });
@@ -251,8 +283,11 @@ export async function generateProto(chainTypes: Map<string, CosmosChainType>[], 
     const errorMessage = e.message.startsWith('Dependency')
       ? `Please add the missing protobuf file to ./proto directory`
       : '';
-
     throw new Error(`Failed to generate from protobufs. ${e.message}, ${errorMessage}`);
+  } finally {
+    if (fs.existsSync(tmpPath)) {
+      fs.rmSync(tmpPath, {recursive: true, force: true});
+    }
   }
 }
 
@@ -525,7 +560,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     })
     .filter(Boolean);
   if (chainTypes.length !== 0) {
-    await generateProto(chainTypes, projectPath);
+    await generateProto(chainTypes, projectPath, tempProtoDir);
   }
 
   await generateAbis(datasources, projectPath);

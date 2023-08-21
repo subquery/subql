@@ -1,18 +1,23 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import path from 'path';
-import {loadFromJsonOrYaml} from '@subql/common';
-import {parseCosmosProjectManifest} from '@subql/common-cosmos';
+import {promisify} from 'util';
+import {loadFromJsonOrYaml, makeTempDir} from '@subql/common';
+import rimraf from 'rimraf';
 import {
   isProtoPath,
   prepareProtobufRenderProps,
   processProtoFilePath,
+  tempProtoDir,
   validateCosmosManifest,
 } from './codegen-controller';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
 describe('Codegen cosmos, protobuf to ts', () => {
+  // afterEach(async () => {
+  // })
   it('process protobuf file paths', () => {
     const p = './proto/cosmos/osmosis/poolmanager/v1beta1/swap_route.proto';
     expect(processProtoFilePath(p)).toBe('./cosmos/osmosis/poolmanager/v1beta1/swap_route');
