@@ -5,9 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import telescope from '@cosmology/telescope';
 import {makeTempDir} from '@subql/common';
+import {CustomModule} from '@subql/types-cosmos';
 import {Data} from 'ejs';
 import {copySync} from 'fs-extra';
-import {CosmosChainType} from '../project';
 import {TELESCOPE_OPTS} from './constants';
 
 const PROTO_INTERFACES_ROOT_DIR = 'src/types/proto-interfaces';
@@ -18,6 +18,7 @@ interface ProtobufRenderProps {
   messageNames: string[]; // all messages
   path: string; // should process the file Path and concat with PROTO dir
 }
+type CosmosChainTypeDataType = Map<string, CustomModule> | Record<string, CustomModule>;
 
 export function processProtoFilePath(path: string): string {
   // removes `./proto` and `.proto` suffix, converts all `.` to `/`
@@ -31,7 +32,7 @@ export function isProtoPath(filePath: string, projectPath: string): boolean {
 }
 
 export function prepareProtobufRenderProps(
-  chainTypes: Map<string, CosmosChainType>[],
+  chainTypes: CosmosChainTypeDataType[],
   projectPath: string
 ): ProtobufRenderProps[] {
   return chainTypes.flatMap((chainType) => {
@@ -76,7 +77,7 @@ export async function tempProtoDir(projectPath: string): Promise<string> {
 }
 
 export async function generateProto(
-  chainTypes: Map<string, CosmosChainType>[],
+  chainTypes: CosmosChainTypeDataType[],
   projectPath: string,
   prepareDirPath: (path: string, recreate: boolean) => Promise<void>,
   renderTemplate: (templatePath: string, outputPath: string, templateData: Data) => Promise<void>,
