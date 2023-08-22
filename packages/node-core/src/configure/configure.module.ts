@@ -128,26 +128,6 @@ export async function registerApp<P extends ISubqueryProject>(
     setLevel('debug');
   }
 
-  const createParentProject = async (cid: string): Promise<P> => {
-    cid = `ipfs://${cid}`;
-    const reader = await ReaderFactory.create(cid, {
-      ipfs: config.ipfs,
-    });
-    return createProject(
-      cid,
-      await reader.getProjectSchema(),
-      reader,
-      await getCachedRoot(reader, config.root),
-      omitBy(
-        {
-          endpoint: config.networkEndpoints,
-          dictionary: config.networkDictionary,
-        },
-        isNil
-      )
-    );
-  };
-
   const project = await createProject(
     config.subquery,
     rawManifest,
@@ -164,6 +144,27 @@ export async function registerApp<P extends ISubqueryProject>(
     handleCreateSubqueryProjectError(err, pjson, rawManifest, logger);
     process.exit(1);
   });
+
+  const createParentProject = async (cid: string): Promise<P> => {
+    cid = `ipfs://${cid}`;
+    const reader = await ReaderFactory.create(cid, {
+      ipfs: config.ipfs,
+    });
+    return createProject(
+      cid,
+      await reader.getProjectSchema(),
+      reader,
+      await getCachedRoot(reader, config.root),
+      omitBy(
+        // Apply the network endpoint and dictionary from the source project to the parent projects if they are not defined in the config
+        {
+          endpoint: config.networkEndpoints ?? project.network.endpoint,
+          dictionary: config.networkDictionary ?? project.network.dictionary,
+        },
+        isNil
+      )
+    );
+  };
 
   const projectUpgradeService = await ProjectUpgradeSevice.create(project, createParentProject);
 
