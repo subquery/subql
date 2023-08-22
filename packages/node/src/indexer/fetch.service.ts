@@ -116,6 +116,12 @@ function callFilterToQueryEntry(
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [];
   appendDsOptions(dsOptions, conditions);
+
+  for (const condition of conditions) {
+    if (condition.field === 'address') {
+      condition.field = 'to';
+    }
+  }
   if (filter.from) {
     conditions.push({
       field: 'from',
@@ -123,19 +129,27 @@ function callFilterToQueryEntry(
       matcher: 'equalTo',
     });
   }
-  if (filter.to) {
-    conditions.push({
-      field: 'to',
-      value: filter.to.toLowerCase(),
-      matcher: 'equalTo',
-    });
-  } else if (filter.to === null) {
-    conditions.push({
-      field: 'to',
-      value: true as any, // TODO update types to allow boolean
-      matcher: 'isNull',
-    });
+  const optionsAddresses = conditions.find((c) => c.field === 'to');
+  if (!optionsAddresses) {
+    if (filter.to) {
+      conditions.push({
+        field: 'to',
+        value: filter.to.toLowerCase(),
+        matcher: 'equalTo',
+      });
+    } else if (filter.to === null) {
+      conditions.push({
+        field: 'to',
+        value: true as any, // TODO update types to allow boolean
+        matcher: 'isNull',
+      });
+    }
+  } else {
+    logger.warn(
+      `TransactionFilter 'to' conflict with 'address' in data source options`,
+    );
   }
+
   if (filter.function) {
     conditions.push({
       field: 'func',
