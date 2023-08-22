@@ -4479,7 +4479,6 @@ __metadata:
     "@types/pino": ^6.3.12
     fs-extra: ^11.1.1
     js-yaml: ^4.1.0
-    protobufjs: ~6.11.3
     reflect-metadata: ^0.1.13
   peerDependencies:
     class-transformer: "*"
