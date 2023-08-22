@@ -11,7 +11,6 @@ export async function testingInit(): Promise<void> {
     const { nodeConfig, project } = await ConfigureModule.getInstance();
 
     const testingService = new TestingService(nodeConfig, project);
-    await testingService.init();
     await testingService.run();
   } catch (e) {
     logger.error(e, 'Testing failed');

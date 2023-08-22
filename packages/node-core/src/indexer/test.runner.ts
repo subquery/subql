@@ -77,6 +77,8 @@ export class TestRunner<A, SA, B, DS> {
           entityName: undefined,
           failedAttributes: [`Runtime Error:\n${e.stack}`],
         };
+
+        this.failedTests++;
         throw e;
       }
 
