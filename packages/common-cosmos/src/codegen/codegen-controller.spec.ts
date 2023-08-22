@@ -3,6 +3,7 @@
 
 import path from 'path';
 import {loadFromJsonOrYaml} from '@subql/common';
+import {CosmosChainType} from '@subql/common-cosmos';
 import {isProtoPath, prepareProtobufRenderProps, processProtoFilePath} from './codegen-controller';
 import {validateCosmosManifest} from './util';
 
@@ -27,7 +28,7 @@ describe('Codegen cosmos, protobuf to ts', () => {
           messages: ['SwapAmountInRoute'],
         },
       },
-    ] as any;
+    ] as unknown as Map<string, CosmosChainType>[];
     expect(prepareProtobufRenderProps(mockChainTypes, PROJECT_PATH)).toStrictEqual([
       {
         messageNames: ['MsgSwapExactAmountIn'],
@@ -47,7 +48,7 @@ describe('Codegen cosmos, protobuf to ts', () => {
           messages: ['MsgSwapExactAmountIn'],
         },
       },
-    ] as any;
+    ] as unknown as Map<string, CosmosChainType>[];
     expect(() => prepareProtobufRenderProps(mockChainTypes, PROJECT_PATH)).toThrow(
       'Error: chainType osmosis.gamm.v1beta1, file ./protato/osmosis/gamm/v1beta1/tx.proto does not exist'
     );
