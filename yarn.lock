@@ -4484,6 +4484,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
+    ejs: "*"
   languageName: unknown
   linkType: soft
 

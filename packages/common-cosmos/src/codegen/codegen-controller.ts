@@ -42,7 +42,7 @@ export function prepareProtobufRenderProps(
       }
       if (!isProtoPath(value.file, projectPath)) {
         console.error(
-          `Codegen will not apply for this file: ${value.file} Please ensure it is under the ./proto directory`
+          `Codegen will not apply for this file: ${value.file} Please ensure it is under the ./proto directory if you want to run codegen on it`
         );
       }
       return {
@@ -112,9 +112,6 @@ export async function generateProto(
       : '';
     throw new Error(`Failed to generate from protobufs. ${e.message}, ${errorMessage}`);
   } finally {
-    if (fs.existsSync(tmpPath)) {
-      // remove tmp directory
-      fs.rmSync(tmpPath, {recursive: true, force: true});
-    }
+    fs.rmSync(tmpPath, {recursive: true, force: true});
   }
 }

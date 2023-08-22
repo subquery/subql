@@ -30,7 +30,8 @@
   },
   "peerDependencies": {
     "class-transformer": "*",
-    "class-validator": "*"
+    "class-validator": "*",
+    "ejs": "*"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",
