@@ -9,3 +9,4 @@
 *.tgz
 *.cmd
 *.sh
+*.proto

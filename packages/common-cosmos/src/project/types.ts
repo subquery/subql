@@ -3,6 +3,7 @@
 
 import {IProjectManifest, ProjectNetworkConfig} from '@subql/common';
 import {SubqlCosmosDatasource, CustomModule} from '@subql/types-cosmos';
+import {Root} from 'protobufjs';
 
 // All of these used to be redefined in this file, re-exporting for simplicity
 export {
@@ -27,3 +28,13 @@ export interface CosmosProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
   bypassBlocks?: (number | string)[];
 }
+
+export type CosmosChainType = CustomModule & {
+  proto: Root;
+  packageName?: string;
+};
+
+export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
+  chainId: string;
+  chainTypes: Map<string, CosmosChainType> & {protoRoot: protobuf.Root};
+};

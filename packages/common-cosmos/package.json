@@ -13,17 +13,29 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
+    "@cosmology/telescope": "^0.104.0",
+    "@protobufs/cosmos": "^0.1.0",
+    "@protobufs/cosmos_proto": "^0.0.10",
+    "@protobufs/cosmwasm": "^0.1.1",
+    "@protobufs/gogoproto": "^0.0.10",
+    "@protobufs/google": "^0.0.10",
+    "@protobufs/ibc": "^0.1.0",
+    "@protobufs/tendermint": "^0.0.10",
     "@subql/common": "^2.4.0",
     "@subql/types-cosmos": "workspace:*",
+    "fs-extra": "^11.1.1",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {
     "class-transformer": "*",
-    "class-validator": "*"
+    "class-validator": "*",
+    "ejs": "*"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",
+    "@types/ejs": "^3.1.2",
+    "@types/fs-extra": "^11",
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
   }

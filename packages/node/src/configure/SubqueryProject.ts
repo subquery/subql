@@ -15,26 +15,15 @@ import {
   isCustomCosmosDs,
 } from '@subql/common-cosmos';
 import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
-import { CustomModule, SubqlCosmosHandlerKind } from '@subql/types-cosmos';
+import { SubqlCosmosHandlerKind } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
-import * as protobuf from 'protobufjs';
 import { CosmosClient } from '../indexer/api.service';
 import { processNetworkConfig } from '../utils/project';
 
-export type CosmosChainType = CustomModule & {
-  proto: protobuf.Root;
-  packageName?: string;
-};
-
 export type SubqlProjectDs = SubqlCosmosDataSource & {
   mapping: SubqlCosmosDataSource['mapping'] & { entryScript: string };
-};
-
-export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
-  chainId: string;
-  chainTypes: Map<string, CosmosChainType> & { protoRoot: protobuf.Root };
 };
 
 export type SubqlProjectBlockFilter = CosmosBlockFilter & {

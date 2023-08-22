@@ -1,28 +1,16 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
-import { LocalReader, Reader } from '@subql/common';
+import { Reader } from '@subql/common';
 import {
-  isCustomCosmosDs,
   SubqlCosmosRuntimeHandler,
   SubqlCosmosCustomHandler,
   SubqlCosmosHandler,
   SubqlCosmosHandlerKind,
-} from '@subql/common-cosmos';
-import {
-  loadDataSourceScript,
-  updateDataSourcesEntry,
-  updateProcessor,
-} from '@subql/node-core';
-import { SubqlCosmosDatasource } from '@subql/types-cosmos';
-import * as protobuf from 'protobufjs';
-import {
-  SubqlProjectDs,
-  CosmosChainType,
   CosmosProjectNetConfig,
-} from '../configure/SubqueryProject';
+  CosmosChainType,
+} from '@subql/common-cosmos';
+import * as protobuf from 'protobufjs';
 
 export function isBaseHandler(
   handler: SubqlCosmosHandler,

@@ -17,6 +17,7 @@ import {
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc/build/tendermint37/responses';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { CosmosProjectNetConfig } from '@subql/common-cosmos';
 import {
   getLogger,
   NetworkMetadataPayload,
@@ -32,10 +33,7 @@ import {
   MsgStoreCode,
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import {
-  CosmosProjectNetConfig,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
 import { CosmosClientConnection } from './cosmosClient.connection';
 import { BlockContent } from './types';
