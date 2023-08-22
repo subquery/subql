@@ -1,0 +1,38 @@
+syntax = "proto3";
+package osmosis.poolmanager.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/osmosis-labs/osmosis/v15/x/poolmanager/types";
+
+message SwapAmountInRoute {
+  uint64 pool_id = 1 [ (gogoproto.moretags) = "yaml:\"pool_id\"" ];
+  string token_out_denom = 2
+      [ (gogoproto.moretags) = "yaml:\"token_out_denom\"" ];
+}
+
+message SwapAmountOutRoute {
+  uint64 pool_id = 1 [ (gogoproto.moretags) = "yaml:\"pool_id\"" ];
+  string token_in_denom = 2
+      [ (gogoproto.moretags) = "yaml:\"token_in_denom\"" ];
+}
+
+message SwapAmountInSplitRoute {
+  repeated SwapAmountInRoute pools = 1
+      [ (gogoproto.moretags) = "yaml:\"pools\"", (gogoproto.nullable) = false ];
+  string token_in_amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.moretags) = "yaml:\"token_in_amount\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message SwapAmountOutSplitRoute {
+  repeated SwapAmountOutRoute pools = 1
+      [ (gogoproto.moretags) = "yaml:\"pools\"", (gogoproto.nullable) = false ];
+  string token_out_amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.moretags) = "yaml:\"token_out_amount\"",
+    (gogoproto.nullable) = false
+  ];
+}

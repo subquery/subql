@@ -2,3 +2,4 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './codegen-controller';
+export * from './util';
