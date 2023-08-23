@@ -17,6 +17,7 @@ import {
 } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import {
+  SorobanEventFilter,
   StellarBlock,
   StellarEffectFilter,
   StellarOperationFilter,
@@ -115,6 +116,59 @@ function effectFilterToQueryEntry(
   };
 }
 
+function eventFilterToQueryEntry(
+  filter: SorobanEventFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
+): DictionaryQueryEntry {
+  const queryAddressLimit = yargsOptions.argv['query-address-limit'];
+
+  const conditions: DictionaryQueryCondition[] = [];
+
+  if (Array.isArray(dsOptions)) {
+    const addresses = dsOptions.map((option) => option.address).filter(Boolean);
+
+    if (addresses.length > queryAddressLimit) {
+      logger.warn(
+        `Addresses length: ${addresses.length} is exceeding limit: ${queryAddressLimit}. Consider increasing this value with the flag --query-address-limit  `,
+      );
+    }
+
+    if (addresses.length !== 0 && addresses.length <= queryAddressLimit) {
+      conditions.push({
+        field: 'address',
+        value: addresses,
+        matcher: 'in',
+      });
+    }
+  } else {
+    if (dsOptions?.address) {
+      conditions.push({
+        field: 'address',
+        value: dsOptions.address.toLowerCase(),
+        matcher: 'equalTo',
+      });
+    }
+  }
+  if (filter.topics) {
+    for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
+      const topic = filter.topics[i];
+      if (!topic) {
+        continue;
+      }
+      const field = `topics${i}`;
+      conditions.push({
+        field,
+        value: topic,
+        matcher: 'equalTo',
+      });
+    }
+  }
+  return {
+    entity: 'events',
+    conditions,
+  };
+}
+
 type GroupedSubqlProjectDs = SubqlDatasource & {
   groupedOptions?: SubqlStellarProcessorOptions[];
 };
@@ -136,6 +190,8 @@ export function buildDictionaryQueryEntries(
       if (!handler.filter) return [];
 
       switch (handler.kind) {
+        case StellarHandlerKind.Block:
+          return [];
         case StellarHandlerKind.Transaction: {
           const filter = handler.filter as StellarTransactionFilter;
           if (ds.groupedOptions) {
@@ -172,6 +228,19 @@ export function buildDictionaryQueryEntries(
             );
           } else if (filter.account || filter.type) {
             queryEntries.push(effectFilterToQueryEntry(filter, ds.options));
+          } else {
+            return [];
+          }
+          break;
+        }
+        case StellarHandlerKind.Event: {
+          const filter = handler.filter as SorobanEventFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              eventFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (ds.options?.address || filter.topics) {
+            queryEntries.push(eventFilterToQueryEntry(filter, ds.options));
           } else {
             return [];
           }
