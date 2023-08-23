@@ -6,21 +6,14 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {NETWORK_FAMILY, ReaderFactory} from '@subql/common';
+import {ReaderFactory} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
 import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Publish from '../commands/publish';
-import {
-  isProjectSpecV0_0_1,
-  isProjectSpecV1_0_0,
-  ProjectSpecBase,
-  ProjectSpecV0_0_1,
-  ProjectSpecV0_2_0,
-  ProjectSpecV1_0_0,
-} from '../types';
+import {ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0, ProjectSpecV1_0_0} from '../types';
 import {cloneProjectTemplate, fetchTemplates, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
 
@@ -109,7 +102,7 @@ describe('Cli publish', () => {
     const ipfs = create({url: ipfsEndpoint});
 
     //test string
-    const cid = (await uploadFile([{path: '', content: 'Test for upload string to ipfs'}], testAuth)).get('');
+    const cid = await uploadFile({path: '', content: 'Test for upload string to ipfs'}, testAuth);
     console.log(`upload file cid: ${cid}`);
   });
 

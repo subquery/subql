@@ -8,7 +8,7 @@ export const DEFAULT_PORT = 3000;
 export const IPFS_READ = 'https://unauthipfs.subquery.network';
 export const IPFS_WRITE = 'https://authipfs.subquery.network';
 export const IPFS_NODE_ENDPOINT = `${IPFS_READ}/ipfs/api/v0`;
-export const IPFS_CLUSTER_ENDPOINT = `${IPFS_WRITE}/cluster/add`;
+export const IPFS_CLUSTER_ENDPOINT = `${IPFS_WRITE}/ipfs/api/v0`;
 export const IPFS_REGEX = /^ipfs:\/\//i;
 
 // MANIFEST
