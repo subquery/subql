@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
+import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -12,6 +12,7 @@ import {
   generateProto,
   tempProtoDir,
   validateCosmosManifest,
+  ProjectManifestImpls as CosmosManifest,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -51,6 +52,10 @@ import {
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {renderTemplate, prepareDirPath} from '../utils';
+
+interface Array<T> {
+  filter<U extends T>(pred: (a: T) => a is U): U[];
+}
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -387,7 +392,6 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
       loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
         specVersion: string;
         templates?: TemplateKind[];
-        network: {chainTypes?: Map<string, {file: string; messages: string[]}>};
         dataSources: DatasourceKind[];
       }
   );
@@ -428,15 +432,11 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   if (customDatasources.length !== 0) {
     datasources = datasources.concat(customDatasources);
   }
-  // validate if the manifests are cosmos
+
   const chainTypes = plainManifests
-    .map((m) => {
-      if (!validateCosmosManifest(m)) return;
-      if (m.network.chainTypes) {
-        return m.network.chainTypes;
-      }
-    })
-    .filter(Boolean);
+    .filter((m) => validateCosmosManifest(m))
+    .map((m) => (m as CosmosManifest).network.chainTypes);
+
   if (chainTypes.length !== 0) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }

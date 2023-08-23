@@ -6048,7 +6048,7 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-algorand": latest
-    "@subql/common-cosmos": 2.3.2-1
+    "@subql/common-cosmos": 2.3.2-2
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
@@ -6116,9 +6116,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:2.3.2-1":
-  version: 2.3.2-1
-  resolution: "@subql/common-cosmos@npm:2.3.2-1"
+"@subql/common-cosmos@npm:2.3.2-2":
+  version: 2.3.2-2
+  resolution: "@subql/common-cosmos@npm:2.3.2-2"
   dependencies:
     "@cosmology/telescope": ^0.104.0
     "@protobufs/cosmos": ^0.1.0
@@ -6137,7 +6137,7 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
     ejs: "*"
-  checksum: 5bb6d6eaabba0922c915661345e8b0690f5248ff195fdb67d880adec1bcff041008ea276a1ebde9b478bcbf146eada33e031b7d50ba7c1b266950800d3f7d6fc
+  checksum: 2c4fde6c911f7ae6567996297c27c9f31a9c2f76cbce0d0dcc489d964145542e5da099276357e23c10a979501df6d182a34b4159900561b9638262982a61a91e
   languageName: node
   linkType: hard
 

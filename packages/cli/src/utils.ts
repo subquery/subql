@@ -5,8 +5,6 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {loadFromJsonOrYaml} from '@subql/common';
-import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
