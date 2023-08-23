@@ -19,12 +19,12 @@ network:
   dictionary: 'https://api.subquery.network/sq/subquery/cosmos-osmosis-dictionary'
   chainTypes:
     osmosis.gamm.v1beta1:
-      file: './proto/cosmos/osmosis/gamm/v1beta1/tx.proto'
+      file: './proto/osmosis/gamm/v1beta1/tx.proto'
       messages:
         - MsgSwapExactAmountIn
     osmosis.poolmanager.v1beta1:
       # needed by MsgSwapExactAmountIn
-      file: './proto/cosmos/osmosis/poolmanager/v1beta1/swap_route.proto'
+      file: './proto/osmosis/poolmanager/v1beta1/swap_route.proto'
       messages:
         - SwapAmountInRoute
     cosmos.base.v1beta1:

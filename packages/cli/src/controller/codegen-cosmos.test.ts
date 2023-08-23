@@ -10,21 +10,20 @@ import rimraf from 'rimraf';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
-const PROJECT_PATH_2 = path.join(__dirname, '../../test/protoTest2');
 const MOCK_CHAINTYPES = [
   {
     'osmosis.gamm.v1beta1': {
-      file: './proto/cosmos/osmosis/gamm/v1beta1/tx.proto',
+      file: './proto/osmosis/gamm/v1beta1/tx.proto',
       messages: ['MsgSwapExactAmountIn'],
     },
   },
   {
     'osmosis.poolmanager.v1beta1': {
-      file: './proto/cosmos/osmosis/poolmanager/v1beta1/swap_route.proto',
+      file: './proto/osmosis/poolmanager/v1beta1/swap_route.proto',
       messages: ['SwapAmountInRoute'],
     },
   },
-] as any;
+];
 
 describe('Able to generate cosmos types from protobuf', () => {
   afterEach(async () => {
@@ -40,9 +39,9 @@ describe('Able to generate cosmos types from protobuf', () => {
 // Auto-generated , DO NOT EDIT
 import {CosmosMessage} from "@subql/types-cosmos";
 
-import {MsgSwapExactAmountIn} from "./proto-interfaces/cosmos/osmosis/gamm/v1beta1/tx";
+import {MsgSwapExactAmountIn} from "./proto-interfaces/osmosis/gamm/v1beta1/tx";
 
-import {SwapAmountInRoute} from "./proto-interfaces/cosmos/osmosis/poolmanager/v1beta1/swap_route";
+import {SwapAmountInRoute} from "./proto-interfaces/osmosis/poolmanager/v1beta1/swap_route";
 
 
 export type MsgSwapExactAmountInMessage = CosmosMessage<MsgSwapExactAmountIn>;
@@ -56,20 +55,28 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
   });
   it('On missing protobuf dependency should throw', async () => {
     const tmpDir = await tempProtoDir(PROJECT_PATH);
+    const badChainTypes = [
+      {
+        'osmosis.gamm.v1beta1': {
+          file: './proto/cosmos/osmosis/gamm/v1beta1/tx.proto',
+          messages: ['MsgSwapExactAmountIn'],
+        },
+      },
+    ];
     await expect(
-      generateProto(MOCK_CHAINTYPES, PROJECT_PATH_2, prepareDirPath, renderTemplate, upperFirst, () =>
+      generateProto(badChainTypes, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, () =>
         Promise.resolve(tmpDir)
       )
     ).rejects.toThrow(
-      'Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
+      'Failed to generate from protobufs. Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
     );
     expect(fs.existsSync(tmpDir)).toBe(false);
   });
   it('create temp dir with all protobufs', async () => {
     // user Protobufs should not be overwritten
-    const preFile = await fs.promises.readFile(path.join(PROJECT_PATH, 'proto/cosmos/osmosis/gamm/v1beta1/tx.proto'));
+    const preFile = await fs.promises.readFile(path.join(PROJECT_PATH, 'proto/osmosis/gamm/v1beta1/tx.proto'));
     const tmpDir = await tempProtoDir(PROJECT_PATH);
-    const afterFile = await fs.promises.readFile(path.join(tmpDir, 'cosmos/osmosis/gamm/v1beta1/tx.proto'));
+    const afterFile = await fs.promises.readFile(path.join(tmpDir, 'osmosis/gamm/v1beta1/tx.proto'));
     expect(preFile.toString()).toBe(afterFile.toString());
     await promisify(rimraf)(tmpDir);
   });
