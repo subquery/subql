@@ -12,6 +12,7 @@ export interface ArgvOverrideOptions {
   unsafe?: boolean;
   disableHistorical?: boolean;
   unfinalizedBlocks?: boolean;
+  skipBlock?: boolean;
 }
 
 export function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
@@ -29,20 +30,28 @@ export function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   } as MinConfig;
 }
 
+function applyArgs(
+  argvs: ArgvOverrideOptions,
+  options: RunnerNodeOptionsModel,
+  key: keyof Omit<ArgvOverrideOptions, 'disableHistorical'>
+) {
+  if (argvs[key] === undefined && options[key] !== undefined) {
+    argvs[key] = options[key];
+  }
+}
+
 export function rebaseArgsWithManifest(argvs: ArgvOverrideOptions, rawManifest: unknown): void {
   const options = plainToClass(RunnerNodeOptionsModel, (rawManifest as any)?.runner?.node?.options);
   if (!options) {
     return;
   }
+
   // we override them if they are not provided in args/flag
-  if (argvs.unsafe === undefined && options.unsafe !== undefined) {
-    argvs.unsafe = options.unsafe;
-  }
   if (argvs.disableHistorical === undefined && options.historical !== undefined) {
     // THIS IS OPPOSITE
     argvs.disableHistorical = !options.historical;
   }
-  if (argvs.unfinalizedBlocks === undefined && options.unfinalizedBlocks !== undefined) {
-    argvs.unfinalizedBlocks = options.unfinalizedBlocks;
-  }
+  applyArgs(argvs, options, 'unsafe');
+  applyArgs(argvs, options, 'unfinalizedBlocks');
+  applyArgs(argvs, options, 'skipBlock');
 }

@@ -162,9 +162,9 @@ export const yargsOptions = yargs(hideBin(process.argv))
           },
           'disable-historical': {
             demandOption: false,
-            default: false,
             describe: 'Disable storing historical state entities',
             type: 'boolean',
+            // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
           },
           'log-level': {
             demandOption: false,
@@ -267,6 +267,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
             type: 'boolean',
             default: false,
           },
+          skipBlock: {
+            demandOption: false,
+            describe:
+              'If the project contains only event handlers and only accesses the events or block header then you can enable this option to reduce RPC requests and have a slight performance increase. This will be automatically disabled if handlers other than EventHandlers are detected.',
+            type: 'boolean',
+            // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
+          },
           timeout: {
             demandOption: false,
             describe:
@@ -275,14 +282,15 @@ export const yargsOptions = yargs(hideBin(process.argv))
           },
           'unfinalized-blocks': {
             demandOption: false,
-            default: false,
             describe: 'Enable to fetch and index unfinalized blocks',
             type: 'boolean',
+            // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
           },
           unsafe: {
             type: 'boolean',
             demandOption: false,
             describe: 'Allows usage of any built-in module within the sandbox',
+            // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
           },
           workers: {
             alias: 'w',

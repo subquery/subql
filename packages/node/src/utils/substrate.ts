@@ -9,6 +9,7 @@ import {
   EventRecord,
   RuntimeVersion,
   SignedBlock,
+  Header,
 } from '@polkadot/types/interfaces';
 import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
 import { getLogger } from '@subql/node-core';
@@ -20,11 +21,12 @@ import {
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
+  BlockHeader,
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
 import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../indexer/apiPromise.connection';
-import { BlockContent } from '../indexer/types';
+import { BlockContent, LightBlockContent } from '../indexer/types';
 const logger = getLogger('fetch');
 const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
 const DEFAULT_TIME = new BN(6_000);
@@ -275,6 +277,30 @@ export async function getBlockByHeight(
   return block;
 }
 
+export async function getHeaderByHeight(
+  api: ApiPromise,
+  height: number,
+): Promise<Header> {
+  const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
+    logger.error(`failed to fetch BlockHash ${height}`);
+    throw ApiPromiseConnection.handleError(e);
+  });
+
+  const header = await api.rpc.chain.getHeader(blockHash).catch((e) => {
+    logger.error(
+      `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
+    );
+    throw ApiPromiseConnection.handleError(e);
+  });
+  // validate block is valid
+  if (header.hash.toHex() !== blockHash.toHex()) {
+    throw new Error(
+      `fetched block header hash ${header.hash.toHex()} is not match with blockHash ${blockHash.toHex()} at block ${height}. This is likely a problem with the rpc provider.`,
+    );
+  }
+  return header;
+}
+
 export async function fetchBlocksRange(
   api: ApiPromise,
   startHeight: number,
@@ -293,6 +319,15 @@ export async function fetchBlocksArray(
 ): Promise<SignedBlock[]> {
   return Promise.all(
     blockArray.map(async (height) => getBlockByHeight(api, height)),
+  );
+}
+
+export async function fetchHeaderArray(
+  api: ApiPromise,
+  blockArray: number[],
+): Promise<Header[]> {
+  return Promise.all(
+    blockArray.map(async (height) => getHeaderByHeight(api, height)),
   );
 }
 
@@ -351,12 +386,55 @@ export async function fetchBlocksBatches(
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
+
+    wrappedBlock.block.header;
     return {
       block: wrappedBlock,
       extrinsics: wrappedExtrinsics,
       events: wrappedEvents,
     };
   });
+}
+
+// TODO why is fetchBlocksBatches a breadth first funciton rather than depth?
+export async function fetchLightBlock(
+  api: ApiPromise,
+  height: number,
+): Promise<LightBlockContent> {
+  const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
+    logger.error(`failed to fetch BlockHash ${height}`);
+    throw ApiPromiseConnection.handleError(e);
+  });
+
+  const [header, events] = await Promise.all([
+    api.rpc.chain.getHeader(blockHash).catch((e) => {
+      logger.error(
+        `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
+      );
+      throw ApiPromiseConnection.handleError(e);
+    }),
+    api.query.system.events.at(blockHash).catch((e) => {
+      logger.error(`failed to fetch events at block ${blockHash}`);
+      throw ApiPromiseConnection.handleError(e);
+    }),
+  ]);
+
+  const blockHeader: BlockHeader = {
+    block: { header },
+    events: events.toArray(),
+  };
+
+  return {
+    block: blockHeader,
+    events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
+  };
+}
+
+export async function fetchBlocksBatchesLight(
+  api: ApiPromise,
+  blockArray: number[],
+): Promise<LightBlockContent[]> {
+  return Promise.all(blockArray.map((height) => fetchLightBlock(api, height)));
 }
 
 export function calcInterval(api: ApiPromise): BN {

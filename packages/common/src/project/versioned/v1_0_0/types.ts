@@ -24,6 +24,7 @@ export interface NodeOptions {
   historical?: boolean;
   unsafe?: boolean;
   unfinalizedBlocks?: boolean;
+  skipBlock?: boolean;
 }
 
 export interface ParentProject {

@@ -102,7 +102,7 @@ describe('ApiService', () => {
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 1 } as unknown as RuntimeVersion;
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     const [patchedValidators, currentValidators] = await Promise.all([
@@ -121,7 +121,7 @@ describe('ApiService', () => {
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 13 } as unknown as RuntimeVersion;
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     const apiResults = await api.query.staking.erasStakers.at(
@@ -151,7 +151,7 @@ describe('ApiService', () => {
     const apiResults = await api.rpc.state.getRuntimeVersion(earlyBlockhash);
     // step 2, api get patched result with block height
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     const patchedResult = await patchedApi.rpc.state.getRuntimeVersion(
@@ -179,7 +179,7 @@ describe('ApiService', () => {
     const futureBlockhash = await api.rpc.chain.getBlockHash(6721195);
     // step 2, api get patched result with block height
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     await expect(
@@ -206,7 +206,7 @@ describe('ApiService', () => {
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 28 } as unknown as RuntimeVersion;
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     expect(
@@ -379,7 +379,7 @@ describe('ApiService', () => {
     const runtimeVersion = { specVersion: 1 } as unknown as RuntimeVersion;
 
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
@@ -399,7 +399,7 @@ describe('ApiService', () => {
     const runtimeVersion = { specVersion: 1103 } as unknown as RuntimeVersion;
 
     const patchedApi = await apiService.getPatchedApi(
-      mockBlock,
+      mockBlock.block.header,
       runtimeVersion,
     );
     /* If Block number not provided should be ignored and `blockNumber` above used */

@@ -3,7 +3,7 @@
 
 import {AnyTuple, Codec} from '@polkadot/types-codec/types';
 import {GenericExtrinsic} from '@polkadot/types/extrinsic';
-import {EventRecord, SignedBlock} from '@polkadot/types/interfaces';
+import {EventRecord, SignedBlock, Header} from '@polkadot/types/interfaces';
 import {IEvent} from '@polkadot/types/types';
 
 export interface Entity {
@@ -44,9 +44,24 @@ export interface SubstrateExtrinsic<A extends AnyTuple = AnyTuple> {
   success: boolean;
 }
 
-export interface SubstrateEvent<T extends AnyTuple = AnyTuple> extends TypedEventRecord<T> {
+interface BaseSubstrateEvent<T extends AnyTuple = AnyTuple> extends TypedEventRecord<T> {
   // index in the block
   idx: number;
+}
+
+// A subset of SubstrateBlock with just the header
+export interface BlockHeader {
+  block: {
+    header: Header;
+  };
+  events: EventRecord[];
+}
+
+export interface LightSubstrateEvent<T extends AnyTuple = AnyTuple> extends BaseSubstrateEvent<T> {
+  block: BlockHeader;
+}
+
+export interface SubstrateEvent<T extends AnyTuple = AnyTuple> extends BaseSubstrateEvent<T> {
   extrinsic?: SubstrateExtrinsic;
   block: SubstrateBlock;
 }

@@ -14,13 +14,13 @@ import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
-import { BlockContent } from '../types';
+import { BlockContent, isFullBlock, LightBlockContent } from '../types';
 
 export type FetchBlockResponse = { specVersion: number; parentHash: string };
 
 @Injectable()
 export class WorkerService extends BaseWorkerService<
-  BlockContent,
+  BlockContent | LightBlockContent,
   FetchBlockResponse,
   SubstrateDatasource,
   { specVersion: number }
@@ -41,7 +41,7 @@ export class WorkerService extends BaseWorkerService<
   protected async fetchChainBlock(
     height: number,
     { specVersion },
-  ): Promise<BlockContent> {
+  ): Promise<BlockContent | LightBlockContent> {
     const specChanged = await this.workerRuntimeService.specChanged(
       height,
       specVersion,
@@ -63,12 +63,12 @@ export class WorkerService extends BaseWorkerService<
   }
 
   protected async processFetchedBlock(
-    block: BlockContent,
+    block: BlockContent | LightBlockContent,
     dataSources: SubstrateDatasource[],
   ): Promise<ProcessBlockResponse> {
-    const runtimeVersion = await this.workerRuntimeService.getRuntimeVersion(
-      block.block,
-    );
+    const runtimeVersion = !isFullBlock(block)
+      ? undefined
+      : await this.workerRuntimeService.getRuntimeVersion(block.block);
 
     return this.indexerManager.indexBlock(block, dataSources, runtimeVersion);
   }
