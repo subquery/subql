@@ -6048,7 +6048,7 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-algorand": latest
-    "@subql/common-cosmos": 2.3.2-2
+    "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
@@ -6116,9 +6116,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:2.3.2-2":
-  version: 2.3.2-2
-  resolution: "@subql/common-cosmos@npm:2.3.2-2"
+"@subql/common-cosmos@npm:latest":
+  version: 2.4.0
+  resolution: "@subql/common-cosmos@npm:2.4.0"
   dependencies:
     "@cosmology/telescope": ^0.104.0
     "@protobufs/cosmos": ^0.1.0
@@ -6137,22 +6137,7 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
     ejs: "*"
-  checksum: 2c4fde6c911f7ae6567996297c27c9f31a9c2f76cbce0d0dcc489d964145542e5da099276357e23c10a979501df6d182a34b4159900561b9638262982a61a91e
-  languageName: node
-  linkType: hard
-
-"@subql/common-cosmos@npm:latest":
-  version: 2.2.1
-  resolution: "@subql/common-cosmos@npm:2.2.1"
-  dependencies:
-    "@subql/common": ^2.2.1
-    "@subql/types-cosmos": 2.2.0
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-  peerDependencies:
-    class-transformer: "*"
-    class-validator: "*"
-  checksum: d3e57204a0a76f9e6252bec69bc98a9a5a40c46c18f0d97c408835d091509e0320e8d4c4b3e3d89b598d2609a8f333e13ce288ba7e2ebd3623d2808fea4111aa
+  checksum: 7f6d59af1aff3c7872ca2943bbdf590841ba8e736f6a1adac8ccbf5b32eeaab48986e5bbc7f19542ca73d9629cfa2c5c5dd81c14235c70c41be7e5cc6e6d29e0
   languageName: node
   linkType: hard
 
@@ -6394,17 +6379,6 @@ __metadata:
   peerDependencies:
     algosdk: ^2.2.0
   checksum: 02063ad43fa89afe60206616bd92b14314e28dd5c6baa643c6c5d4f2b3ec4fd7364f4e1a8a16b356721bf64b61e71d8a097bce05fa5a5793c2d6f2c21e6d818d
-  languageName: node
-  linkType: hard
-
-"@subql/types-cosmos@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@subql/types-cosmos@npm:2.2.0"
-  dependencies:
-    "@cosmjs/cosmwasm-stargate": ^0.30.1
-    "@cosmjs/proto-signing": ^0.30.1
-    "@cosmjs/stargate": ^0.30.1
-  checksum: c3c9fa178881eb4820b85eb2b0f735789c0ac1f3dea583cad7b17da824d60f26d204d68912f98ead8f69710f78f4cf7c8eca3a8d0aff4f4f62ea440530ed61b0
   languageName: node
   linkType: hard
 
@@ -10920,9 +10894,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.477":
-  version: 1.4.499
-  resolution: "electron-to-chromium@npm:1.4.499"
-  checksum: 9002f3bcd9018f38b3496c2ced5393c6144d3a09bc5e1ea9866541045f6364841a6d11afe8c5977838835bc70f50f8caee63ba928a910e68ac1eed45afd18120
+  version: 1.4.500
+  resolution: "electron-to-chromium@npm:1.4.500"
+  checksum: fdd56b7f27ccc0aba837614ba80741f20aaaf558dc4eceb1e9525bf5e6ca9010d02d5a9554adeed43506facc60602c1b162b66fbee93d52db3d279a4e1a135db
   languageName: node
   linkType: hard
 
