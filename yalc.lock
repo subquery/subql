@@ -1,9 +1,0 @@
-{
-  "version": "v1",
-  "packages": {
-    "@subql/common-cosmos": {
-      "signature": "0aa410c2681c6deae7a01fcb27bb82b1",
-      "file": true
-    }
-  }
-}
