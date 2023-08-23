@@ -40,7 +40,7 @@ export type StellarEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> =
   ledger: StellarBlock;
 };
 
-export type SorobanEvent = SorobanRpc.EventResponse & {
+export type SorobanEvent = Omit<SorobanRpc.EventResponse, 'ledger'> & {
   value: {
     xdr: string;
     decoded?: string;
