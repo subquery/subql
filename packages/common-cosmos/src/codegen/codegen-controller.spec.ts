@@ -39,6 +39,25 @@ describe('Codegen cosmos, protobuf to ts', () => {
       },
     ]);
   });
+  it('prepareProtobufRenderProps should handle undefined and array undefined', () => {
+    const mixedMockChainTypes = [
+      {
+        'osmosis.poolmanager.v1beta1': {
+          file: './proto/osmosis/poolmanager/v1beta1/swap_route.proto',
+          messages: ['SwapAmountInRoute'],
+        },
+      },
+      undefined,
+    ];
+    expect(prepareProtobufRenderProps(mixedMockChainTypes, PROJECT_PATH)).toStrictEqual([
+      {
+        messageNames: ['SwapAmountInRoute'],
+        path: './proto-interfaces/osmosis/poolmanager/v1beta1/swap_route',
+      },
+    ]);
+    expect(prepareProtobufRenderProps(undefined, PROJECT_PATH)).toStrictEqual([]);
+    expect(prepareProtobufRenderProps([undefined], PROJECT_PATH)).toStrictEqual([]);
+  });
   it('Should throw if path to protobuf does not exist', () => {
     const mockChainTypes = [
       {
