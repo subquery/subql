@@ -48,7 +48,9 @@ export class StellarApiService extends ApiService<
         process.exit(1);
       }
 
-      const sorobanClient = new SorobanServer(network.soroban);
+      const sorobanClient = network.soroban
+        ? new SorobanServer(network.soroban)
+        : undefined;
 
       const endpoints = Array.isArray(network.endpoint)
         ? network.endpoint
@@ -59,9 +61,9 @@ export class StellarApiService extends ApiService<
       for await (const [i, endpoint] of endpoints.entries()) {
         const connection = await StellarApiConnection.create(
           endpoint,
-          sorobanClient,
           this.fetchBlockBatches,
           this.eventEmitter,
+          sorobanClient,
         );
 
         const api = connection.unsafeApi;

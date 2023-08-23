@@ -45,9 +45,9 @@ export class StellarApiConnection
 
   static async create(
     endpoint: string,
-    soroban: SorobanServer,
     fetchBlockBatches: FetchFunc,
     eventEmitter: EventEmitter2,
+    soroban?: SorobanServer,
   ): Promise<StellarApiConnection> {
     const api = new StellarApi(endpoint, eventEmitter, soroban);
 

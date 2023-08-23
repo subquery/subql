@@ -98,7 +98,8 @@ export type SubqlRuntimeHandler =
   | SubqlBlockHandler
   | SubqlTransactionHandler
   | SubqlOperationHandler
-  | SubqlEffectHandler;
+  | SubqlEffectHandler
+  | SubqlEventHandler;
 
 export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
 

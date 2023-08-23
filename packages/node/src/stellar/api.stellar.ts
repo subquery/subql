@@ -35,7 +35,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   constructor(
     private endpoint: string,
     private eventEmitter: EventEmitter2,
-    private sorobanClient: SorobanServer,
+    private sorobanClient?: SorobanServer,
   ) {
     const { hostname, protocol, searchParams } = new URL(endpoint);
 
@@ -106,6 +106,10 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   }
 
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
+    if (!this.sorobanClient) {
+      return [];
+    }
+
     const events = (
       await this.sorobanClient.getEvents({ startLedger: height, filters: [] })
     ).events;

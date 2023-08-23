@@ -51,9 +51,9 @@ describe('StellarApiConnection', () => {
     expect(
       await StellarApiConnection.create(
         HTTP_ENDPOINT,
-        sorobanApi,
         fetchBlockBatches,
         new EventEmitter2(),
+        sorobanApi,
       ),
     ).toBeInstanceOf(StellarApiConnection);
   });
