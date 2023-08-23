@@ -11,7 +11,7 @@ import {copySync} from 'fs-extra';
 import {TELESCOPE_OPTS} from './constants';
 
 const PROTO_INTERFACES_ROOT_DIR = 'src/types/proto-interfaces';
-const PROTO_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, './templates/proto-interface.ts.ejs');
+const PROTO_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../../templates/proto-interface.ts.ejs');
 const TYPE_ROOT_DIR = 'src/types';
 
 interface ProtobufRenderProps {
