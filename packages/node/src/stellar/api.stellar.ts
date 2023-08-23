@@ -12,6 +12,7 @@ import {
   StellarOperation,
   StellarTransaction,
 } from '@subql/types-stellar';
+import { cloneDeep } from 'lodash';
 import { Server, ServerApi } from 'stellar-sdk';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
@@ -125,20 +126,12 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   ): Promise<StellarEffect[]> {
     const effects = (await this.api.effects().forOperation(operationId).call())
       .records;
-    const wrappedEffects: StellarEffect[] = [];
-
-    effects.forEach((effect) => {
-      const wrappedEffect: StellarEffect = {
-        ...effect,
-        ledger: null,
-        transaction: null,
-        operation: null,
-      };
-
-      wrappedEffects.push(wrappedEffect);
-    });
-
-    return wrappedEffects;
+    return effects.map((effect) => ({
+      ...effect,
+      ledger: null,
+      transaction: null,
+      operation: null,
+    }));
   }
 
   private async fetchOperationsForTransaction(
@@ -185,7 +178,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
         const effects = (await this.fetchEffectsForOperation(op.id)).map(
           (effect) => {
-            effect.operation = JSON.parse(JSON.stringify(wrappedOp));
+            effect.operation = cloneDeep(wrappedOp);
             return effect;
           },
         );
@@ -229,9 +222,9 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         const operations = (
           await this.fetchOperationsForTransaction(tx.id, index + 1, sequence)
         ).map((op) => {
-          op.transaction = JSON.parse(JSON.stringify(wrappedTx));
+          op.transaction = cloneDeep(wrappedTx);
           op.effects = op.effects.map((effect) => {
-            effect.transaction = JSON.parse(JSON.stringify(wrappedTx));
+            effect.transaction = cloneDeep(wrappedTx);
             return effect;
           });
           op.events = op.events.map((event) => {
@@ -268,11 +261,11 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
     const transactions = (await this.fetchTransactionsForLedger(sequence)).map(
       (tx) => {
-        tx.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+        tx.ledger = cloneDeep(wrappedLedger);
         tx.operations = tx.operations.map((op) => {
-          op.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+          op.ledger = cloneDeep(wrappedLedger);
           op.effects = op.effects.map((effect) => {
-            effect.ledger = JSON.parse(JSON.stringify(wrappedLedger));
+            effect.ledger = cloneDeep(wrappedLedger);
             return effect;
           });
           op.events = op.events.map((event) => {

@@ -34,7 +34,7 @@ export type StellarOperation<T extends Horizon.BaseOperationResponse = ServerApi
   events: SorobanEvent[];
 };
 
-export type StellarEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> = T & {
+export type StellarEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> = Omit<T, 'operation'> & {
   operation: StellarOperation;
   transaction: StellarTransaction;
   ledger: StellarBlock;
