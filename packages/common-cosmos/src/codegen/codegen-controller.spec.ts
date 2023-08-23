@@ -1,9 +1,12 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import path from 'path';
+import {promisify} from 'util';
 import {loadFromJsonOrYaml} from '@subql/common';
-import {isProtoPath, prepareProtobufRenderProps, processProtoFilePath} from './codegen-controller';
+import rimraf from 'rimraf';
+import {isProtoPath, prepareProtobufRenderProps, processProtoFilePath, tempProtoDir} from './codegen-controller';
 import {validateCosmosManifest} from './util';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
@@ -86,5 +89,11 @@ describe('Codegen cosmos, protobuf to ts', () => {
     const ethManifest = loadFromJsonOrYaml(path.join(PROJECT_PATH, 'bad-cosmos-project.yaml')) as any;
     expect(validateCosmosManifest(cosmosManifest)).toBe(true);
     expect(validateCosmosManifest(ethManifest)).toBe(false);
+  });
+  it('User provided common protos should only overwrite the provided .proto file', async () => {
+    const tp = await tempProtoDir(PROJECT_PATH);
+    const v = await fs.promises.readFile(path.join(tp, './cosmos/base/v1beta1/coin.proto'));
+    expect(v.toString()).toBe('fake proto');
+    await promisify(rimraf)(tp);
   });
 });
