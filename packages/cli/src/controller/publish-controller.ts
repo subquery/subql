@@ -14,6 +14,8 @@ import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {FileReference} from '@subql/types';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
+const PIN_SERVICE = 'onfinality';
+
 export async function createIPFSFile(root: string, manifest: string, cid: string): Promise<void> {
   const {name} = path.parse(manifest);
   const MANIFEST_FILE = path.join(root, `.${name}-cid`);
@@ -159,6 +161,12 @@ export async function uploadFiles(
 
     for await (const result of results) {
       fileCidMap.set(result.path, result.cid.toString());
+
+      await ipfsCluster.pin.remote.add(result.cid, {service: PIN_SERVICE}).catch((e) => {
+        console.warn(
+          `Failed to pin file ${result.path}. There might be problems with this file being accessible later. ${e}`
+        );
+      });
     }
   } catch (e) {
     throw new Error(`Publish project to default cluster failed, ${e}`);
@@ -193,7 +201,18 @@ export async function uploadFile(
 
   const pendingCid = ipfsCluster
     .add(contents.content, {pin: true, cidVersion: 0})
-    .then((result) => result.cid.toString())
+    .then((result) => result.cid)
+    .then(async (cid) => {
+      try {
+        await ipfsCluster.pin.remote.add(cid, {service: PIN_SERVICE});
+        return cid.toString();
+      } catch (e) {
+        console.warn(
+          `Failed to pin file ${contents.path}. There might be problems with this file being accessible later. ${e}`
+        );
+        return cid.toString();
+      }
+    })
     .catch((e) => {
       throw new Error(`Publish project to default cluster failed, ${e}`);
     });
