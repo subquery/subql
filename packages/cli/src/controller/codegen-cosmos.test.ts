@@ -4,8 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
+import {generateProto, tempProtoDir} from '@subql/common-cosmos';
+import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
-import {generateProto, tempProtoDir} from './codegen-controller';
+import {prepareDirPath, renderTemplate} from '../utils';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
 const PROJECT_PATH_2 = path.join(__dirname, '../../test/protoTest2');
@@ -46,16 +48,19 @@ import {SwapAmountInRoute} from "./proto-interfaces/cosmos/osmosis/poolmanager/v
 export type MsgSwapExactAmountInMessage = CosmosMessage<MsgSwapExactAmountIn>;
 
 export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
-
 `;
-    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, tempProtoDir);
+    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
     const codegenResult = await fs.promises.readFile(path.join(PROJECT_PATH, '/src/types/CosmosMessageTypes.ts'));
     expect(fs.existsSync(`${PROJECT_PATH}/src/types/CosmosMessageTypes.ts`)).toBeTruthy();
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
   });
   it('On missing protobuf dependency should throw', async () => {
     const tmpDir = await tempProtoDir(PROJECT_PATH);
-    await expect(generateProto(MOCK_CHAINTYPES, PROJECT_PATH_2, () => Promise.resolve(tmpDir))).rejects.toThrow(
+    await expect(
+      generateProto(MOCK_CHAINTYPES, PROJECT_PATH_2, prepareDirPath, renderTemplate, upperFirst, () =>
+        Promise.resolve(tmpDir)
+      )
+    ).rejects.toThrow(
       'Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
     );
     expect(fs.existsSync(tmpDir)).toBe(false);
@@ -70,7 +75,9 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
   });
   it('tmpDirectory should be removed after codegen', async () => {
     const tmpDir = await tempProtoDir(PROJECT_PATH);
-    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, () => Promise.resolve(tmpDir));
+    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, () =>
+      Promise.resolve(tmpDir)
+    );
     expect(fs.existsSync(tmpDir)).toBe(false);
   });
 });

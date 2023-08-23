@@ -9,6 +9,9 @@ import {
   isRuntimeCosmosDs,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
+  generateProto,
+  tempProtoDir,
+  validateCosmosManifest,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -47,7 +50,7 @@ import {
 } from '@subql/utils';
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
-import {renderTemplate, prepareDirPath, validateCosmosManifest} from '../utils';
+import {renderTemplate, prepareDirPath} from '../utils';
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -435,7 +438,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     })
     .filter(Boolean);
   if (chainTypes.length !== 0) {
-    await generateProto(chainTypes, projectPath, tempProtoDir);
+    await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
 
   await generateAbis(datasources, projectPath);

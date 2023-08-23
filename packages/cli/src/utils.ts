@@ -105,13 +105,3 @@ export function resolveToAbsolutePath(inputPath: string): string {
   const regex = new RegExp(`^~(?=$|[/\\\\])`);
   return path.resolve(inputPath.replace(regex, os.homedir()));
 }
-
-export function validateCosmosManifest(manifest: {
-  network: {chainTypes?: Map<string, {file: string; messages: string[]}>};
-}): boolean {
-  try {
-    return !!parseCosmosProjectManifest(manifest);
-  } catch (e) {
-    return false;
-  }
-}
