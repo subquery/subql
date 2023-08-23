@@ -147,43 +147,36 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       .forTransaction(transactionId)
       .call();
 
-    return Promise.all(
-      operations.map(async (op) => {
-        let eventsPromise: Promise<SorobanEvent[]> = Promise.resolve(
-          [] as SorobanEvent[],
-        );
+    let sequenceEvents: SorobanEvent[] = [];
 
-        if (
-          this.sorobanClient &&
-          op.type.toString() === 'invoke_host_function'
-        ) {
-          eventsPromise = this.getAndWrapEvents(sequence)
-            .then((events) =>
-              events.filter(
-                (event) =>
-                  this.getTransactionApplicationOrder(event.id) ===
-                  applicationOrder,
-              ),
-            )
-            .catch((e) => {
-              if (e.message === 'start is before oldest ledger') {
-                throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node. 
+    const hasInvokeHostFunctionOp = operations.some(
+      (op) => op.type.toString() === 'invoke_host_function',
+    );
+
+    if (this.sorobanClient && hasInvokeHostFunctionOp) {
+      try {
+        sequenceEvents = await this.getAndWrapEvents(sequence);
+      } catch (e) {
+        if (e.message === 'start is before oldest ledger') {
+          throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node. 
                 This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
                 To resolve this issue, you can either:
                 1. Increase the start ledger to a more recent one, or
                 2. Connect to a different node that might have a longer history of ledgers.`);
-              }
-
-              throw e;
-            });
         }
 
-        const effectsPromise = this.fetchEffectsForOperation(op.id);
+        throw e;
+      }
+    }
 
-        const [events, effects] = await Promise.all([
-          eventsPromise,
-          effectsPromise,
-        ]);
+    return Promise.all(
+      operations.map(async (op) => {
+        const effects = await this.fetchEffectsForOperation(op.id);
+
+        const events = sequenceEvents.filter(
+          (event) =>
+            this.getTransactionApplicationOrder(event.id) === applicationOrder,
+        );
 
         const wrappedOp: StellarOperation = {
           ...op,
