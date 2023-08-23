@@ -25,8 +25,24 @@ dataSources:
     mapping:
       file: './dist/index.js'
       handlers:
-        - handler: handleEvent
+        - handler: handleTransaction
+          kind: stellar/TransactionHandler
+          filter:
+            account: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
+        - handler: handleOperation
           kind: stellar/OperationHandler
           filter:
-            source_account:: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
+            source_account: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
             type: 'account_merge'
+        - handler: handleEffect
+          kind: stellar/EffectHandler
+          filter:
+            type: 'account_credited'
+            account: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
+        - handler: handleEvent
+          kind: soroban/EventHandler
+          filter:
+            contractId: '34799b3411940249e73d21def8eb2c2b56b285ab8d1ca76d6780ec10a0e8f02e'
+            topics:
+              - 'COUNTER'
+              - 'increment'
