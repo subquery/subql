@@ -14,7 +14,7 @@ const SUPPORTED_VERSIONS = {
 
 type Versions = keyof typeof SUPPORTED_VERSIONS;
 
-type ProjectManifestImpls = InstanceType<(typeof SUPPORTED_VERSIONS)[Versions]>;
+export type ProjectManifestImpls = InstanceType<(typeof SUPPORTED_VERSIONS)[Versions]>;
 
 export function manifestIsV1_0_0(manifest: ICosmosProjectManifest): manifest is ProjectManifestV1_0_0Impl {
   return manifest.specVersion === '1.0.0';
