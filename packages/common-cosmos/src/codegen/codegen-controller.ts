@@ -32,10 +32,13 @@ export function isProtoPath(filePath: string, projectPath: string): boolean {
 }
 
 export function prepareProtobufRenderProps(
-  chainTypes: CosmosChainTypeDataType[],
+  chainTypes: (CosmosChainTypeDataType | undefined)[] | undefined,
   projectPath: string
 ): ProtobufRenderProps[] {
-  return chainTypes.flatMap((chainType) => {
+  if (!chainTypes) {
+    return [];
+  }
+  return chainTypes.filter(Boolean).flatMap((chainType) => {
     return Object.entries(chainType).map(([key, value]) => {
       const filePath = path.join(projectPath, value.file);
       if (!fs.existsSync(filePath)) {
