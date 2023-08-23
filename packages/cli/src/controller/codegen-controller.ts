@@ -53,10 +53,6 @@ import {upperFirst, uniq, uniqBy} from 'lodash';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {renderTemplate, prepareDirPath} from '../utils';
 
-interface Array<T> {
-  filter<U extends T>(pred: (a: T) => a is U): U[];
-}
-
 type TemplateKind =
   | SubstrateDsTemplate
   | SubstrateCustomDsTemplate
