@@ -6117,8 +6117,8 @@ __metadata:
   linkType: hard
 
 "@subql/common-cosmos@npm:latest":
-  version: 2.4.0
-  resolution: "@subql/common-cosmos@npm:2.4.0"
+  version: 2.4.1
+  resolution: "@subql/common-cosmos@npm:2.4.1"
   dependencies:
     "@cosmology/telescope": ^0.104.0
     "@protobufs/cosmos": ^0.1.0
@@ -6137,7 +6137,7 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
     ejs: "*"
-  checksum: 7f6d59af1aff3c7872ca2943bbdf590841ba8e736f6a1adac8ccbf5b32eeaab48986e5bbc7f19542ca73d9629cfa2c5c5dd81c14235c70c41be7e5cc6e6d29e0
+  checksum: 761a3e77aa147a8a2849d21dc5ce9835bb65bda2f84242c07282b4d45fe72e9b86d8266d4a7e362ddaa62d2160a4cf2cb90bdd469d6c976560596bf75ce02d12
   languageName: node
   linkType: hard
 
