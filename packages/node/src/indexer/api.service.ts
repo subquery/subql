@@ -45,26 +45,14 @@ export class ApiService
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
-    private eventEmitter: EventEmitter2,
+    eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,
   ) {
-    super(connectionPoolService);
+    super(connectionPoolService, eventEmitter);
   }
 
   async onApplicationShutdown(): Promise<void> {
     await this.connectionPoolService.onApplicationShutdown();
-  }
-
-  private metadataMismatchError(
-    metadata: string,
-    expected: string,
-    actual: string,
-  ): Error {
-    return Error(
-      `Value of ${metadata} does not match across all endpoints\n
-       Expected: ${expected}
-       Actual: ${actual}`,
-    );
   }
 
   async init(): Promise<ApiService> {
@@ -89,81 +77,43 @@ export class ApiService
       );
     }
 
-    const endpointToApiIndex: Record<string, ApiPromiseConnection> = {};
-
     if (chainTypes) {
       logger.info('Using provided chain types');
     }
 
-    for await (const [i, endpoint] of network.endpoint.entries()) {
-      try {
-        const connection = await ApiPromiseConnection.create(
-          endpoint,
-          this.fetchBlocksBatches,
-          {
-            chainTypes,
-          },
-        );
-
+    await this.createConnections(
+      network,
+      //createConnection
+      (endpoint) =>
+        ApiPromiseConnection.create(endpoint, this.fetchBlocksBatches, {
+          chainTypes,
+        }),
+      //getChainId
+      //eslint-disable-next-line @typescript-eslint/require-await
+      async (connection: ApiPromiseConnection) => {
         const api = connection.unsafeApi;
-
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 1,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-
+        return api.genesisHash.toString();
+      },
+      //postConnectedHook
+      (connection: ApiPromiseConnection, endpoint: string, index: number) => {
+        const api = connection.unsafeApi;
         api.on('connected', () => {
           this.eventEmitter.emit(IndexerEvent.ApiConnected, {
             value: 1,
-            apiIndex: i,
+            apiIndex: index,
             endpoint: endpoint,
           });
         });
         api.on('disconnected', () => {
           this.eventEmitter.emit(IndexerEvent.ApiConnected, {
             value: 0,
-            apiIndex: i,
+            apiIndex: index,
             endpoint: endpoint,
           });
         });
+      },
+    );
 
-        if (!this.networkMeta) {
-          this.networkMeta = connection.networkMeta;
-
-          if (
-            network.chainId &&
-            network.chainId !== this.networkMeta.genesisHash
-          ) {
-            const err = new Error(
-              `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
-                network.chainId ?? network.genesisHash
-              }", however the endpoint that you are connecting to is different("${
-                this.networkMeta.genesisHash
-              }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-            );
-            logger.error(err, err.message);
-            throw err;
-          }
-        } else {
-          const genesisHash = api.genesisHash.toString();
-          if (this.networkMeta.genesisHash !== genesisHash) {
-            throw this.metadataMismatchError(
-              'Genesis Hash',
-              this.networkMeta.genesisHash,
-              genesisHash,
-            );
-          }
-        }
-
-        endpointToApiIndex[endpoint] = connection;
-      } catch (e) {
-        logger.error(`failed to init ${endpoint}: ${e}`);
-        endpointToApiIndex[endpoint] = null;
-      }
-    }
-
-    await this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
     return this;
   }
 
