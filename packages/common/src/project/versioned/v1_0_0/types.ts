@@ -26,6 +26,10 @@ export interface NodeOptions {
   unfinalizedBlocks?: boolean;
 }
 
+export interface FileReference {
+  file: string;
+}
+
 export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extends object = BaseDataSource>
   extends Omit<ProjectManifestV0_2_1<T, D>, 'network'> {
   dataSources: D[];

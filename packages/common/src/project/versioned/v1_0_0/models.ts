@@ -2,20 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Type} from 'class-transformer';
-import {
-  Equals,
-  IsBoolean,
-  IsObject,
-  IsOptional,
-  IsString,
-  Matches,
-  Validate,
-  ValidateNested,
-  equals,
-} from 'class-validator';
-import {RUNNER_REGEX} from '../../../constants';
+import {Equals, IsBoolean, IsObject, IsOptional, IsString, Validate, ValidateNested} from 'class-validator';
 import {SemverVersionValidator} from '../../utils';
-import {NodeOptions, NodeSpec, QuerySpec} from './types';
+import {FileReference, NodeOptions, NodeSpec, QuerySpec} from './types';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
@@ -50,4 +39,9 @@ export class RunnerNodeOptionsModel implements NodeOptions {
   @IsOptional()
   @IsBoolean()
   unfinalizedBlocks?: boolean;
+}
+
+export class FileType implements FileReference {
+  @IsString()
+  file: string;
 }
