@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, Reader} from '@subql/common';
+import {ReaderFactory, IPFS_WRITE_ENDPOINT, Reader} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
@@ -151,25 +151,25 @@ export async function uploadFiles(
     }
   }
 
-  const ipfsCluster = create({
-    url: IPFS_CLUSTER_ENDPOINT,
+  const ipfsWrite = create({
+    url: IPFS_WRITE_ENDPOINT,
     headers: {Authorization: `Bearer ${authToken}`},
   });
 
   try {
-    const results = ipfsCluster.addAll(contents, {pin: true, cidVersion: 0});
+    const results = ipfsWrite.addAll(contents, {pin: true, cidVersion: 0});
 
     for await (const result of results) {
       fileCidMap.set(result.path, result.cid.toString());
 
-      await ipfsCluster.pin.remote.add(result.cid, {service: PIN_SERVICE}).catch((e) => {
+      await ipfsWrite.pin.remote.add(result.cid, {service: PIN_SERVICE}).catch((e) => {
         console.warn(
           `Failed to pin file ${result.path}. There might be problems with this file being accessible later. ${e}`
         );
       });
     }
   } catch (e) {
-    throw new Error(`Publish project to default cluster failed, ${e}`);
+    throw new Error(`Publish project to default failed, ${e}`);
   }
 
   return fileCidMap;
@@ -190,21 +190,21 @@ export async function uploadFile(
       .add(contents.content, {pin: true, cidVersion: 0})
       .then((result) => result.cid.toString())
       .catch((e) => {
-        throw new Error(`Publish project to default cluster failed, ${e}`);
+        throw new Error(`Publish project to default failed, ${e}`);
       });
   }
 
-  const ipfsCluster = create({
-    url: IPFS_CLUSTER_ENDPOINT,
+  const ipfsWrite = create({
+    url: IPFS_WRITE_ENDPOINT,
     headers: {Authorization: `Bearer ${authToken}`},
   });
 
-  const pendingCid = ipfsCluster
+  const pendingCid = ipfsWrite
     .add(contents.content, {pin: true, cidVersion: 0})
     .then((result) => result.cid)
     .then(async (cid) => {
       try {
-        await ipfsCluster.pin.remote.add(cid, {service: PIN_SERVICE});
+        await ipfsWrite.pin.remote.add(cid, {service: PIN_SERVICE});
         return cid.toString();
       } catch (e) {
         console.warn(
@@ -214,19 +214,19 @@ export async function uploadFile(
       }
     })
     .catch((e) => {
-      throw new Error(`Publish project to default cluster failed, ${e}`);
+      throw new Error(`Publish project to default failed, ${e}`);
     });
 
   fileMap.set(contents.path, pendingCid);
 
-  const [clusterCid, clientCid] = await Promise.all([pendingCid, pendingClientCid]);
+  const [cid, clientCid] = await Promise.all([pendingCid, pendingClientCid]);
 
-  if (clientCid && clientCid !== clusterCid) {
+  if (clientCid && clientCid !== cid) {
     throw new Error(`Published and received IPFS cid not identical \n,
-    IPFS gateway: ${clientCid}, IPFS cluster: ${clusterCid}`);
+    Client IPFS: ${clientCid}, IPFS: ${cid}`);
   }
 
-  return clusterCid;
+  return cid;
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
