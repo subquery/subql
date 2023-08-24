@@ -99,7 +99,7 @@ export class ApiPromiseConnection
     const blocks = await this.fetchBlocksBatches(
       this.unsafeApi,
       heights,
-      // overallSpecVer,
+      overallSpecVer,
     );
     return blocks;
   }
