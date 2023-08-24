@@ -24,6 +24,7 @@ export interface ConnectionPoolItem<T> {
   failed: boolean;
   lastRequestTime: number;
   connected: boolean;
+  initFailed: boolean;
   timeoutId?: NodeJS.Timeout;
 }
 
@@ -53,7 +54,12 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async addToConnections(endpoint: string, index: number, primary: boolean): Promise<void> {
+  async addToConnections(endpoint: string, index: number, primary: boolean, initFailed: boolean): Promise<void> {
+    //avoid overwriting state if init failed in one of the workers
+    if (this.pool[index] && this.pool[index].initFailed) {
+      return;
+    }
+
     const poolItem: ConnectionPoolItem<T> = {
       primary: primary,
       performanceScore: 100,
@@ -61,9 +67,10 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       endpoint: endpoint,
       backoffDelay: 0,
       rateLimited: false,
-      failed: false,
+      failed: initFailed,
       connected: true,
       lastRequestTime: 0,
+      initFailed: initFailed,
     };
     this.pool[index] = poolItem;
 
@@ -79,9 +86,15 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       return primaryIndex;
     }
 
-    const indices = Object.keys(this.pool)
+    const initedIndices = Object.keys(this.pool)
       .map(Number)
-      .filter((index) => !this.pool[index].backoffDelay && this.pool[index].connected);
+      .filter((index) => !this.pool[index].initFailed);
+
+    if (initedIndices.length === 0) {
+      throw new Error(`Initialization failed for all endpoints. Please add healthier endpoints.`);
+    }
+
+    const indices = initedIndices.filter((index) => !this.pool[index].backoffDelay && this.pool[index].connected);
 
     if (indices.length === 0) {
       // If all endpoints are suspended, try to find a rate-limited one
@@ -124,7 +137,13 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   private getPrimaryEndpointIndex(): number | undefined {
     return Object.keys(this.pool)
       .map(Number)
-      .find((index) => this.pool[index].primary && !this.pool[index].backoffDelay && this.pool[index].connected);
+      .find(
+        (index) =>
+          this.pool[index].primary &&
+          !this.pool[index].backoffDelay &&
+          this.pool[index].connected &&
+          !this.pool[index].initFailed
+      );
   }
 
   get numConnections(): number {

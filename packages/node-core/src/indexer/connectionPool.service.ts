@@ -51,7 +51,12 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   async addToConnections(api: T, endpoint: string): Promise<void> {
     const index = this.allApi.length;
     this.allApi.push(api);
-    await this.poolStateManager.addToConnections(endpoint, index, endpoint === this.nodeConfig.primaryNetworkEndpoint);
+    await this.poolStateManager.addToConnections(
+      endpoint,
+      index,
+      endpoint === this.nodeConfig.primaryNetworkEndpoint,
+      api === null
+    );
     this.apiToIndexMap.set(api, index);
     await this.updateNextConnectedApiIndex();
   }
