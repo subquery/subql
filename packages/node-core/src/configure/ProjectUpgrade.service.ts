@@ -204,7 +204,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       }
 
       // Load the next project and repeat
-      const nextProject = await loadProject(currentProject.parent.reference);
+      const nextProject = await loadProject(currentProject.parent.reference).catch((e) => {
+        throw new Error(`Failed to load parent project with cid: ${currentProject.parent?.reference}. ${e}`);
+      });
       if (nextProject.parent && nextProject.parent.block > currentProject.parent.block) {
         throw new Error(
           `Parent project ${currentProject.parent.reference} has a block height that is greater than the current project`

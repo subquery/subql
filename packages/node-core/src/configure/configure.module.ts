@@ -146,28 +146,24 @@ export async function registerApp<P extends ISubqueryProject>(
   });
 
   const createParentProject = async (cid: string): Promise<P> => {
-    try {
-      cid = `ipfs://${cid}`;
-      const reader = await ReaderFactory.create(cid, {
-        ipfs: config.ipfs,
-      });
-      return createProject(
-        cid,
-        await reader.getProjectSchema(),
-        reader,
-        await getCachedRoot(reader, config.root),
-        omitBy(
-          // Apply the network endpoint and dictionary from the source project to the parent projects if they are not defined in the config
-          {
-            endpoint: config.networkEndpoints ?? project.network.endpoint,
-            dictionary: config.networkDictionary ?? project.network.dictionary,
-          },
-          isNil
-        )
-      );
-    } catch (e) {
-      throw new Error(`Failed to load parent project with cid: ${cid}. ${e}`);
-    }
+    cid = `ipfs://${cid}`;
+    const reader = await ReaderFactory.create(cid, {
+      ipfs: config.ipfs,
+    });
+    return createProject(
+      cid,
+      await reader.getProjectSchema(),
+      reader,
+      await getCachedRoot(reader, config.root),
+      omitBy(
+        // Apply the network endpoint and dictionary from the source project to the parent projects if they are not defined in the config
+        {
+          endpoint: config.networkEndpoints ?? project.network.endpoint,
+          dictionary: config.networkDictionary ?? project.network.dictionary,
+        },
+        isNil
+      )
+    );
   };
 
   const projectUpgradeService = await ProjectUpgradeSevice.create(project, createParentProject);
