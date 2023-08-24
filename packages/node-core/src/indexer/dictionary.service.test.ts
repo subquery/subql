@@ -350,11 +350,5 @@ describe('DictionaryService', () => {
     expect(results?.queryEndBlock).toEqual(499);
   });
 
-  // it('sort map', () => {
-  //   const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
-  //   dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
-  //   expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual([100, 500, 1000]);
-  // });
-
   // TODO write a test that queries over 2 block ranges in case DS has been removed
 });

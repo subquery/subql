@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - move block filters to common (#1969)
+### Added
+- Add spec for project upgrades (#1797)
 
 ## [2.6.0] - 2023-08-25
 ### Changed
