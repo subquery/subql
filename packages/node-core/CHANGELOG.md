@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Use test runs as unit for tests instead of entity checks (#1957)
+- handle APIs in connection pool whose initialization failed (#1970)
 
 ## [4.2.3] - 2023-08-17
 ### Fixed
