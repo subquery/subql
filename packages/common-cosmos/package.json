@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-cosmos",
-  "version": "2.4.1-0",
+  "version": "2.4.1",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -40,6 +40,5 @@
     "@types/pino": "^6.3.12",
     "@types/rimraf": "3.0.2",
     "rimraf": "^3.0.2"
-  },
-  "stableVersion": "2.4.0"
+  }
 }
