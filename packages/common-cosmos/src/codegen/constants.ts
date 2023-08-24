@@ -5,12 +5,8 @@ import {TelescopeOptions} from '@cosmology/types/types/telescope';
 
 export const TELESCOPE_OPTS: TelescopeOptions = {
   removeUnusedImports: true,
-  tsDisable: {
-    patterns: ['**/*amino.ts', '**/*registry.ts'],
-  },
-  // experimentalGlobalProtoNamespace: true, //  [ 'v1beta1' ] concentratedliquidity
   interfaces: {
-    enabled: true,
+    enabled: false,
     useUnionTypes: false,
   },
   prototypes: {
@@ -25,6 +21,8 @@ export const TELESCOPE_OPTS: TelescopeOptions = {
         // 'ibc.core.port.v1',
         // 'ibc.core.types.v1',
       ],
+      // query.proto can be removed, and it is unnecessary to generate types for them
+      protos: ['**/query.proto'],
     },
     methods: {
       fromJSON: false,
