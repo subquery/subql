@@ -31,7 +31,7 @@ export interface ConnectionPoolItem<T> {
 const logger = getLogger('connection-pool-state');
 
 export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
-  addToConnections(endpoint: string, index: number, primary: boolean): Promise<void>;
+  addToConnections(endpoint: string, index: number, primary: boolean, initFailed: boolean): Promise<void>;
   getNextConnectedApiIndex(): Promise<number | undefined>;
   // Async to be compatible with workers
   getFieldValue<K extends keyof ConnectionPoolItem<T>>(apiIndex: number, field: K): Promise<ConnectionPoolItem<T>[K]>;
