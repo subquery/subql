@@ -1,6 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {IsString} from 'class-validator';
+
 export interface IProjectManifest<D> {
   specVersion: string;
   description: string;
@@ -17,7 +19,11 @@ export interface ProjectNetworkConfig {
   //genesisHash?: string;
 }
 
-export interface BlockFilter {
-  modulo?: number;
-  timestamp?: string;
+export interface FileReference {
+  file: string;
+}
+
+export class FileType implements FileReference {
+  @IsString()
+  file: string;
 }
