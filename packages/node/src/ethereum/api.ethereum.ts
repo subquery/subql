@@ -27,6 +27,9 @@ import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
 import { yargsOptions } from '../yargs';
 import { EthereumBlockWrapped } from './block.ethereum';
+import { CeloJsonRpcBatchProvider } from './ethers/celo/celo-json-rpc-batch-provider';
+import { CeloJsonRpcProvider } from './ethers/celo/celo-json-rpc-provider';
+import { CeloWsProvider } from './ethers/celo/celo-ws-provider';
 import { JsonRpcBatchProvider } from './ethers/json-rpc-batch-provider';
 import { JsonRpcProvider } from './ethers/json-rpc-provider';
 import { ConnectionInfo } from './ethers/web';
@@ -130,11 +133,22 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   async init(): Promise<void> {
     this.injectClient();
 
+    const network = await this.client.getNetwork();
+
+    //celo
+    if (network.chainId === 42220) {
+      if (this.client instanceof WebSocketProvider) {
+        this.client = new CeloWsProvider(this.client.connection.url);
+      } else {
+        this.client = new CeloJsonRpcBatchProvider(this.client.connection);
+        this.nonBatchClient = new CeloJsonRpcProvider(this.client.connection);
+      }
+    }
+
     try {
-      const [genesisBlock, network, supportsFinalization, supportsSafe] =
+      const [genesisBlock, supportsFinalization, supportsSafe] =
         await Promise.all([
           this.client.getBlock('earliest'),
-          this.client.getNetwork(),
           this.getSupportsTag('finalized'),
           this.getSupportsTag('safe'),
         ]);
