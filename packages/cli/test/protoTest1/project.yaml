@@ -1,0 +1,45 @@
+specVersion: 1.0.0
+name: test
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node-cosmos'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: ''
+repository: ''
+schema:
+  file: ./schema.graphql
+network:
+  chainId: osmosis-1
+  endpoint:
+    - https://osmosis.api.onfinality.io/public
+  dictionary: 'https://api.subquery.network/sq/subquery/cosmos-osmosis-dictionary'
+  chainTypes:
+    osmosis.gamm.v1beta1:
+      file: './proto/osmosis/gamm/v1beta1/tx.proto'
+      messages:
+        - MsgSwapExactAmountIn
+    osmosis.poolmanager.v1beta1:
+      # needed by MsgSwapExactAmountIn
+      file: './proto/osmosis/poolmanager/v1beta1/swap_route.proto'
+      messages:
+        - SwapAmountInRoute
+    cosmos.base.v1beta1:
+      # needed by MsgSwapExactAmountIn
+      file: './proto/cosmos/base/v1beta1/coin.proto'
+      messages:
+        - 'Coin'
+
+dataSources:
+  - kind: cosmos/Runtime
+    startBlock: 9798050
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleMessage
+          kind: cosmos/MessageHandler
+          filter:
+            type: /osmosis.gamm.v1beta1.MsgSwapExactAmountIn
