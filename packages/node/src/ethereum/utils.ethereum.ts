@@ -33,6 +33,9 @@ function handleNumber(value: string | number): BigNumber {
   if (value === '0x') {
     return Zero;
   }
+  if (value === null) {
+    return Zero;
+  }
   return BigNumber.from(value);
 }
 

@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Fallback to singular provider if batch provider is not supported (#144)
-
-### Fixed
 - Fix missing ds option for event in dictionary query entries (#145)
+
+### Added
+- Custom provider for Celo (#147)
 
 ## [2.11.1] - 2023-08-14
 ### Changed
