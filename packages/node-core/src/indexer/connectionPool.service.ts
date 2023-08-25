@@ -51,12 +51,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   async addToConnections(api: T, endpoint: string): Promise<void> {
     const index = this.allApi.length;
     this.allApi.push(api);
-    await this.poolStateManager.addToConnections(
-      endpoint,
-      index,
-      endpoint === this.nodeConfig.primaryNetworkEndpoint,
-      api === null
-    );
+    await this.poolStateManager.addToConnections(endpoint, index, endpoint === this.nodeConfig.primaryNetworkEndpoint);
     this.apiToIndexMap.set(api, index);
     await this.updateNextConnectedApiIndex();
   }
@@ -67,12 +62,25 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     }
   }
 
+  async updateConnection(api: T, index: number): Promise<void> {
+    if (index >= this.allApi.length) {
+      throw new Error(`Attempting to update connection that does not exist.`);
+    }
+
+    this.allApi[index] = api;
+    this.apiToIndexMap.set(api, index);
+    await this.updateNextConnectedApiIndex();
+  }
+
   async connectToApi(apiIndex: number): Promise<void> {
     await this.allApi[apiIndex].apiConnect();
   }
 
   private async updateNextConnectedApiIndex(): Promise<void> {
     this.cachedApiIndex = await this.poolStateManager.getNextConnectedApiIndex();
+    if (this.cachedApiIndex === null) {
+      return this.updateNextConnectedApiIndex();
+    }
   }
 
   get api(): T {

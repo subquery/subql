@@ -8,7 +8,7 @@ import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 
 export type HostConnectionPoolState<T> = {
   hostGetNextConnectedApiIndex: () => Promise<number | undefined>;
-  hostAddToConnections: (endpoint: string, index: number, primary: boolean, initFailed: boolean) => Promise<void>;
+  hostAddToConnections: (endpoint: string, index: number, primary: boolean) => Promise<void>;
   hostGetFieldFromConnectionPoolItem: <K extends keyof ConnectionPoolItem<T>>(
     index: number,
     field: K
@@ -63,8 +63,8 @@ export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
     return this.host.hostGetNextConnectedApiIndex();
   }
 
-  async addToConnections(endpoint: string, index: number, primary = false, initFailed = false): Promise<void> {
-    return this.host.hostAddToConnections(endpoint, index, primary, initFailed);
+  async addToConnections(endpoint: string, index: number, primary = false): Promise<void> {
+    return this.host.hostAddToConnections(endpoint, index, primary);
   }
 
   async getFieldValue<K extends keyof ConnectionPoolItem<T>>(

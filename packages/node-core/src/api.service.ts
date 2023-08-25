@@ -62,7 +62,6 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
     const apiInstance = this.connectionPoolService.api;
     return apiInstance.unsafeApi;
   }
-
   async createConnections(
     network: ProjectNetworkConfig & {chainId: string},
     createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
@@ -70,6 +69,8 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
     postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
   ): Promise<void> {
     const endpointToApiIndex: Record<string, IApiConnectionSpecific> = {};
+
+    const failedConnections: Map<number, string> = new Map();
 
     for await (const [i, endpoint] of (network.endpoint as string[]).entries()) {
       try {
@@ -96,15 +97,60 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
 
         endpointToApiIndex[endpoint] = connection;
       } catch (e) {
-        logger.error(`failed to init ${endpoint}: ${e}`);
+        logger.error(`Failed to init ${endpoint}: ${e}`);
         endpointToApiIndex[endpoint] = null as unknown as IApiConnectionSpecific;
+        failedConnections.set(i, endpoint);
       }
     }
+
     if (Object.values(endpointToApiIndex).every((value) => value === null)) {
       throw new Error('All endpoints failed to initialize. Please add healthier endpoints');
     }
 
     await this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
+
+    // Retry failed connections in the background
+    for (const [index, endpoint] of failedConnections) {
+      this.retryConnection(createConnection, getChainId, network, index, endpoint, 0, postConnectedHook);
+    }
+  }
+
+  retryConnection(
+    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
+    getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
+    network: ProjectNetworkConfig & {chainId: string},
+    index: number,
+    endpoint: string,
+    attempt: number,
+    postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
+  ): void {
+    if (attempt < 5) {
+      //eslint-disable-next-line @typescript-eslint/no-misused-promises
+      setTimeout(async () => {
+        try {
+          const connection = await createConnection(endpoint);
+          const chainId = await getChainId(connection);
+
+          if (postConnectedHook) {
+            postConnectedHook(connection, endpoint, index);
+          }
+
+          if (network.chainId === chainId) {
+            // Replace null connection with the new connection
+            await this.connectionPoolService.updateConnection(connection, index);
+            logger.info(`Updated connection for ${endpoint}`);
+          } else {
+            throw this.metadataMismatchError('ChainId', network.chainId, chainId);
+          }
+        } catch (e) {
+          logger.error(`Initialization retry failed for ${endpoint}: ${e}`);
+          // Retry with exponential backoff
+          this.retryConnection(createConnection, getChainId, network, index, endpoint, attempt + 1, postConnectedHook);
+        }
+      }, Math.pow(2, attempt) * 1000); // Exponential backoff
+    } else {
+      logger.error(`Initialization retry attempts exhausted for ${endpoint}`);
+    }
   }
 
   protected metadataMismatchError(metadata: string, expected: string, actual: string): Error {

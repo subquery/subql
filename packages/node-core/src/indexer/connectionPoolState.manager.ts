@@ -53,12 +53,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   private pool: Record<number, ConnectionPoolItem<T>> = {};
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async addToConnections(endpoint: string, index: number, primary: boolean, initFailed: boolean): Promise<void> {
-    //avoid overwriting state if init failed in one of the workers
-    if (this.pool[index] && this.pool[index].failed) {
-      return;
-    }
-
+  async addToConnections(endpoint: string, index: number, primary: boolean): Promise<void> {
     const poolItem: ConnectionPoolItem<T> = {
       primary: primary,
       performanceScore: 100,
@@ -66,7 +61,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       endpoint: endpoint,
       backoffDelay: 0,
       rateLimited: false,
-      failed: initFailed,
+      failed: false,
       connected: true,
       lastRequestTime: 0,
     };
