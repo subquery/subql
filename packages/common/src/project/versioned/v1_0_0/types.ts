@@ -41,3 +41,8 @@ export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extend
     };
   };
 }
+
+export interface BlockFilter {
+  modulo?: number;
+  timestamp?: string;
+}

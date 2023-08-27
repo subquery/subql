@@ -3,7 +3,7 @@
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 
-import {BaseMapping, FileReference} from '@subql/common';
+import {BaseMapping, BlockFilterImpl, FileReference} from '@subql/common';
 import {
   CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
   SubstrateBlockFilter,
@@ -34,17 +34,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class BlockFilter implements SubstrateBlockFilter {
+export class BlockFilter extends BlockFilterImpl implements SubstrateBlockFilter {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(2)
   specVersion?: [number, number];
-  @IsOptional()
-  @IsInt()
-  modulo?: number;
-  @IsOptional()
-  @IsString()
-  timestamp?: string;
 }
 
 export class EventFilter extends BlockFilter implements SubstrateEventFilter {
