@@ -16,6 +16,7 @@ import {
   NodeConfig,
   PgMmrCacheService,
   MmrQueryService,
+  RetryManager,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -35,6 +36,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
     IndexerManager,
     StoreCacheService,
     StoreService,
+    RetryManager,
     {
       provide: ConnectionPoolStateManager,
       useFactory: () => {
@@ -52,12 +54,14 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
         eventEmitter: EventEmitter2,
         nodeConfig: NodeConfig,
+        retryManager: RetryManager,
       ) => {
         const apiService = new ApiService(
           project,
           connectionPoolService,
           eventEmitter,
           nodeConfig,
+          retryManager,
         );
         await apiService.init();
         return apiService;
@@ -67,6 +71,7 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         ConnectionPoolService,
         EventEmitter2,
         NodeConfig,
+        RetryManager,
       ],
     },
     SandboxService,

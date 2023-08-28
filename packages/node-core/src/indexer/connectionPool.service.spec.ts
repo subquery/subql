@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {delay} from '@subql/common';
-import {ApiErrorType, ConnectionPoolStateManager, IApiConnectionSpecific, NodeConfig} from '..';
+import {ApiErrorType, ConnectionPoolStateManager, IApiConnectionSpecific, NodeConfig, RetryManager} from '..';
 import {ConnectionPoolService} from './connectionPool.service';
 
 async function waitFor(conditionFn: () => boolean, timeout = 30000, interval = 100): Promise<void> {
@@ -45,7 +45,8 @@ describe('ConnectionPoolService', () => {
   beforeEach(() => {
     connectionPoolService = new ConnectionPoolService<typeof mockApiConnection>(
       nodeConfig,
-      new ConnectionPoolStateManager()
+      new ConnectionPoolStateManager(),
+      new RetryManager()
     );
     connectionPoolService.addToConnections(mockApiConnection, 'https://example.com/api');
   });

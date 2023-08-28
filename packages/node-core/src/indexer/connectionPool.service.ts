@@ -9,7 +9,7 @@ import {ApiConnectionError, ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
-import {delay} from '../utils';
+import {RetryManager, delay} from '../utils';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 const logger = getLogger('connection-pool');
@@ -40,7 +40,11 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private cacheSizeThreshold = 10;
   private cacheFlushInterval = 60 * 100;
 
-  constructor(private nodeConfig: NodeConfig, private poolStateManager: ConnectionPoolStateManager<T>) {
+  constructor(
+    private nodeConfig: NodeConfig,
+    private poolStateManager: ConnectionPoolStateManager<T>,
+    private retryManager: RetryManager
+  ) {
     this.cacheSizeThreshold = this.nodeConfig.batchSize;
   }
 
@@ -53,7 +57,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     this.allApi.push(api);
     await this.poolStateManager.addToConnections(endpoint, index, endpoint === this.nodeConfig.primaryNetworkEndpoint);
     this.apiToIndexMap.set(api, index);
-    await this.updateNextConnectedApiIndex();
+    if (api !== null) {
+      await this.updateNextConnectedApiIndex();
+    }
   }
 
   async addBatchToConnections(endpointToApiIndex: Record<string, T>): Promise<void> {
@@ -78,7 +84,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
   private async updateNextConnectedApiIndex(): Promise<void> {
     this.cachedApiIndex = await this.poolStateManager.getNextConnectedApiIndex();
-    if (this.cachedApiIndex === null) {
+    if (this.allApi[this.cachedApiIndex as number] === null) {
       return this.updateNextConnectedApiIndex();
     }
   }
@@ -135,33 +141,28 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     logger.warn(`disconnected from ${endpoint}`);
 
     const maxAttempts = 5;
-    let currentAttempt = 1;
 
     const tryReconnect = async () => {
-      logger.info(`Attempting to reconnect to ${endpoint} (attempt ${currentAttempt})`);
+      logger.info(`Attempting to reconnect to ${endpoint}`);
 
-      try {
-        await this.allApi[apiIndex].apiConnect();
-        await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
-        logger.info(`Reconnected to ${endpoint} successfully`);
-      } catch (error) {
-        if (currentAttempt < maxAttempts) {
-          logger.error(`Reconnection failed: ${error}`);
-
-          const delay = 2 ** currentAttempt * 1000;
-          currentAttempt += 1;
-
-          setTimeout(() => {
-            tryReconnect();
-          }, delay);
-        } else {
-          logger.error(`Reached max reconnection attempts. Removing connection ${endpoint} from pool.`);
-          await this.poolStateManager.removeFromConnections(apiIndex);
-        }
-      }
+      await this.allApi[apiIndex].apiConnect();
+      await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
+      logger.info(`Reconnected to ${endpoint} successfully`);
     };
 
-    await tryReconnect();
+    this.retryManager.retryWithBackoff(
+      tryReconnect,
+      (error) => {
+        logger.error(`Reconnection failed: ${error}`);
+      },
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      async () => {
+        logger.error(`Reached max reconnection attempts. Removing connection ${endpoint} from pool.`);
+        await this.poolStateManager.removeFromConnections(apiIndex);
+      },
+      0,
+      maxAttempts
+    );
 
     await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
     this.reconnectingIndices[apiIndex] = false;

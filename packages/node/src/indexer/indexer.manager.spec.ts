@@ -16,6 +16,7 @@ import {
   StoreCacheService,
   ConnectionPoolStateManager,
   MmrQueryService,
+  RetryManager,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -143,6 +144,7 @@ function createIndexerManager(
     connectionPoolService,
     eventEmitter,
     nodeConfig,
+    new RetryManager(),
   );
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -220,6 +222,7 @@ describe('IndexerManager', () => {
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
         new ConnectionPoolStateManager(),
+        new RetryManager(),
       ),
       nodeConfig,
     );
@@ -234,6 +237,7 @@ describe('IndexerManager', () => {
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
         new ConnectionPoolStateManager(),
+        new RetryManager(),
       ),
       nodeConfig,
     );

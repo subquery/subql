@@ -16,6 +16,7 @@ import {
   ConnectionPoolStateManager,
   PgMmrCacheService,
   MmrQueryService,
+  RetryManager,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -119,6 +120,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     PoiService,
     MmrService,
     MmrQueryService,
+    RetryManager,
     PgMmrCacheService,
     {
       useClass: ProjectService,

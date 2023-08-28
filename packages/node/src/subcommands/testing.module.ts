@@ -10,6 +10,7 @@ import {
   DbModule,
   NodeConfig,
   PoiService,
+  RetryManager,
   StoreService,
   TestRunner,
 } from '@subql/node-core';
@@ -38,6 +39,7 @@ import { MetaModule } from '../meta/meta.module';
     UnfinalizedBlocksService,
     ConnectionPoolStateManager,
     ConnectionPoolService,
+    RetryManager,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
@@ -49,12 +51,14 @@ import { MetaModule } from '../meta/meta.module';
         connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
         eventEmitter: EventEmitter2,
         config: NodeConfig,
+        retryManager: RetryManager,
       ) => {
         const apiService = new ApiService(
           project,
           connectionPoolService,
           eventEmitter,
           config,
+          retryManager,
         );
         await apiService.init();
         return apiService;
@@ -64,6 +68,7 @@ import { MetaModule } from '../meta/meta.module';
         ConnectionPoolService,
         EventEmitter2,
         NodeConfig,
+        RetryManager,
       ],
     },
     SchedulerRegistry,

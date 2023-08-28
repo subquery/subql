@@ -7,6 +7,7 @@ import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
+import {RetryManager} from './utils/retry.manager';
 
 const logger = getLogger('api');
 
@@ -28,6 +29,7 @@ export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
   constructor(
     protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>,
+    protected retryManager: RetryManager,
     protected eventEmitter: EventEmitter2
   ) {}
 
@@ -111,7 +113,31 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
 
     // Retry failed connections in the background
     for (const [index, endpoint] of failedConnections) {
-      this.retryConnection(createConnection, getChainId, network, index, endpoint, 0, postConnectedHook);
+      this.retryConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
+    }
+  }
+
+  async performConnection(
+    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
+    getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
+    network: ProjectNetworkConfig & {chainId: string},
+    index: number,
+    endpoint: string,
+    postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
+  ) {
+    const connection = await createConnection(endpoint);
+    const chainId = await getChainId(connection);
+
+    if (postConnectedHook) {
+      postConnectedHook(connection, endpoint, index);
+    }
+
+    if (network.chainId === chainId) {
+      // Replace null connection with the new connection
+      await this.connectionPoolService.updateConnection(connection, index);
+      logger.info(`Updated connection for ${endpoint}`);
+    } else {
+      throw this.metadataMismatchError('ChainId', network.chainId, chainId);
     }
   }
 
@@ -121,36 +147,17 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
     network: ProjectNetworkConfig & {chainId: string},
     index: number,
     endpoint: string,
-    attempt: number,
     postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
   ): void {
-    if (attempt < 5) {
-      //eslint-disable-next-line @typescript-eslint/no-misused-promises
-      setTimeout(async () => {
-        try {
-          const connection = await createConnection(endpoint);
-          const chainId = await getChainId(connection);
-
-          if (postConnectedHook) {
-            postConnectedHook(connection, endpoint, index);
-          }
-
-          if (network.chainId === chainId) {
-            // Replace null connection with the new connection
-            await this.connectionPoolService.updateConnection(connection, index);
-            logger.info(`Updated connection for ${endpoint}`);
-          } else {
-            throw this.metadataMismatchError('ChainId', network.chainId, chainId);
-          }
-        } catch (e) {
-          logger.error(`Initialization retry failed for ${endpoint}: ${e}`);
-          // Retry with exponential backoff
-          this.retryConnection(createConnection, getChainId, network, index, endpoint, attempt + 1, postConnectedHook);
-        }
-      }, Math.pow(2, attempt) * 1000); // Exponential backoff
-    } else {
-      logger.error(`Initialization retry attempts exhausted for ${endpoint}`);
-    }
+    this.retryManager.retryWithBackoff(
+      () => this.performConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook),
+      (error) => {
+        logger.error(`Initialization retry failed for ${endpoint}: ${error}`);
+      },
+      () => {
+        logger.error(`Initialization retry attempts exhausted for ${endpoint}`);
+      }
+    );
   }
 
   protected metadataMismatchError(metadata: string, expected: string, actual: string): Error {
