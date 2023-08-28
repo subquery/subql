@@ -206,21 +206,9 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
     return Promise.all(
       transactions.map(async (tx, index) => {
-        let account: ServerApi.AccountRecord;
-        try {
-          account = await tx.account();
-        } catch (e) {
-          if ((e as Error).name === 'NotFoundError') {
-            account = null;
-          } else {
-            throw e;
-          }
-        }
-
         const wrappedTx: StellarTransaction = {
           ...tx,
           ledger: null,
-          account: account,
           operations: [] as StellarOperation[],
           effects: [] as StellarEffect[],
           events: [] as SorobanEvent[],

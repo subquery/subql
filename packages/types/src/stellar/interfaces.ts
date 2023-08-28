@@ -15,9 +15,8 @@ export type StellarBlock = Omit<ServerApi.LedgerRecord, 'effects' | 'operations'
 
 export type StellarTransaction = Omit<
   ServerApi.TransactionRecord,
-  'account' | 'effects' | 'ledger' | 'operations' | 'precedes' | 'self' | 'succeeds'
+  'effects' | 'ledger' | 'operations' | 'precedes' | 'self' | 'succeeds'
 > & {
-  account: ServerApi.AccountRecord;
   effects: StellarEffect[];
   ledger: StellarBlock;
   operations: StellarOperation[];
