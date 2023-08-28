@@ -36,6 +36,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   protected abstract packageVersion: string;
   protected abstract getBlockTimestamp(height: number): Promise<Date>;
+  protected abstract onProjectChange(project: ISubqueryProject<IProjectNetworkConfig, DS>): void | Promise<void>;
 
   constructor(
     private readonly dsProcessorService: BaseDsProcessorService,
@@ -331,7 +332,12 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       // Reload the dynamic ds with new project
       // TODO are we going to run into problems with this being non blocking
       await this.dynamicDsService.getDynamicDatasources(true);
+
+      await this.onProjectChange(this.project);
     });
+
+    // Called to allow handling the first project
+    await this.onProjectChange(this.project);
 
     if (isMainThread) {
       const lastProcessedHeight = await this.getLastProcessedHeight();

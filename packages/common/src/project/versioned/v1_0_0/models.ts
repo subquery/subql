@@ -51,6 +51,9 @@ export class RunnerNodeOptionsModel implements NodeOptions {
   @IsOptional()
   @IsBoolean()
   unfinalizedBlocks?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  skipBlock?: boolean;
 }
 
 export class BlockFilterImpl implements BlockFilter {

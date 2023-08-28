@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ApiConnectionError, ApiErrorType} from './api.connection.error';
-import {NodeConfig} from './configure';
 import {NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
@@ -11,25 +10,25 @@ const logger = getLogger('api');
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-export interface IApi<A = any, SA = any, B = any> {
-  fetchBlocks(heights: number[], ...args: any): Promise<B[]>;
+export interface IApi<A = any, SA = any, B extends Array<any> = any[]> {
+  fetchBlocks(heights: number[], ...args: any): Promise<B>;
   safeApi(height: number): SA;
   unsafeApi: A;
   networkMeta: NetworkMetadataPayload;
 }
 
-export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi<A, SA, B> {
+export interface IApiConnectionSpecific<A = any, SA = any, B extends Array<any> = any[]> extends IApi<A, SA, B> {
   handleError(error: Error): ApiConnectionError;
   apiConnect(): Promise<void>;
   apiDisconnect(): Promise<void>;
 }
 
-export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
+export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]> implements IApi<A, SA, B> {
   constructor(protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>) {}
 
   abstract networkMeta: NetworkMetadataPayload;
 
-  async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {
+  async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B> {
     let reconnectAttempts = 0;
     while (reconnectAttempts < numAttempts) {
       try {

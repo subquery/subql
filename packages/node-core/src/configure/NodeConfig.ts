@@ -59,6 +59,7 @@ export interface IConfig {
   readonly storeFlushInterval: number;
   readonly isTest?: boolean;
   readonly root?: string;
+  readonly skipBlock?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -86,6 +87,7 @@ const DEFAULT_CONFIG = {
   storeGetCacheSize: 500,
   storeCacheAsync: true,
   storeFlushInterval: 5,
+  skipBlock: false,
 };
 
 export class NodeConfig implements IConfig {
@@ -271,6 +273,10 @@ export class NodeConfig implements IConfig {
 
   get scaleBatchSize(): boolean {
     return !!this.scaleBatchSize;
+  }
+
+  get skipBlock(): boolean {
+    return !!this._config.skipBlock;
   }
 
   get postgresCACert(): string | undefined {

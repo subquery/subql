@@ -34,7 +34,7 @@ export abstract class BaseIndexerManager<
   SA, // Api Type
   A, // SafeApi Type
   B, // Block Type
-  API extends IApi<A, SA, B>,
+  API extends IApi<A, SA, B[]>,
   DS extends BaseDataSource,
   CDS extends DS & BaseCustomDataSource, // Custom datasource
   FilterMap extends FilterTypeMap,

@@ -3,7 +3,7 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {AnyTuple, RegistryTypes} from '@polkadot/types/types';
-import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
+import {LightSubstrateEvent, SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
 export enum SubstrateDatasourceKind {
   Runtime = 'substrate/Runtime',
@@ -17,7 +17,7 @@ export enum SubstrateHandlerKind {
 
 export type RuntimeHandlerInputMap<T extends AnyTuple = AnyTuple> = {
   [SubstrateHandlerKind.Block]: SubstrateBlock;
-  [SubstrateHandlerKind.Event]: SubstrateEvent<T>;
+  [SubstrateHandlerKind.Event]: SubstrateEvent<T> | LightSubstrateEvent<T>;
   [SubstrateHandlerKind.Call]: SubstrateExtrinsic<T>;
 };
 

@@ -28,7 +28,7 @@ export class TestRunner<A, SA, B, DS> {
   private passedTests = 0;
   private failedTests = 0;
   constructor(
-    @Inject('IApi') protected readonly apiService: IApi<A, SA, B>,
+    @Inject('IApi') protected readonly apiService: IApi<A, SA, B[]>,
     protected readonly storeService: StoreService,
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,
@@ -42,7 +42,7 @@ export class TestRunner<A, SA, B, DS> {
       block: B,
       handler: string,
       indexerManager: IIndexerManager<B, DS>,
-      apiService?: IApi<A, SA, B>
+      apiService?: IApi<A, SA, B[]>
     ) => Promise<void>
   ): Promise<{
     passedTests: number;

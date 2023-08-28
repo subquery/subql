@@ -14,9 +14,7 @@ import {
   TestRunner,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
-import { ApiPromiseConnection } from '../indexer/apiPromise.connection';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { FetchModule } from '../indexer/fetch.module';
@@ -42,30 +40,7 @@ import { MetaModule } from '../meta/meta.module';
       provide: 'IProjectService',
       useClass: ProjectService,
     },
-    {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
-        eventEmitter: EventEmitter2,
-        config: NodeConfig,
-      ) => {
-        const apiService = new ApiService(
-          project,
-          connectionPoolService,
-          eventEmitter,
-          config,
-        );
-        await apiService.init();
-        return apiService;
-      },
-      inject: [
-        'ISubqueryProject',
-        ConnectionPoolService,
-        EventEmitter2,
-        NodeConfig,
-      ],
-    },
+    ApiService,
     SchedulerRegistry,
     TestRunner,
     {

@@ -23,6 +23,7 @@ import {
   BaseIndexerManager,
 } from '@subql/node-core';
 import {
+  LightSubstrateEvent,
   SubstrateBlock,
   SubstrateBlockFilter,
   SubstrateDatasource,
@@ -39,7 +40,7 @@ import {
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
-import { ApiAt, BlockContent } from './types';
+import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
@@ -48,7 +49,7 @@ const logger = getLogger('indexer');
 export class IndexerManager extends BaseIndexerManager<
   ApiAt,
   ApiPromise,
-  BlockContent,
+  BlockContent | LightBlockContent,
   ApiService,
   SubstrateDatasource,
   SubstrateCustomDataSource,
@@ -88,7 +89,7 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: BlockContent,
+    block: BlockContent | LightBlockContent,
     dataSources: SubstrateDatasource[],
     runtimeVersion: RuntimeVersion,
   ): Promise<ProcessBlockResponse> {
@@ -97,52 +98,62 @@ export class IndexerManager extends BaseIndexerManager<
     );
   }
 
-  getBlockHeight(block: BlockContent): number {
+  getBlockHeight(block: LightBlockContent | BlockContent): number {
     return block.block.block.header.number.toNumber();
   }
 
-  getBlockHash(block: BlockContent): string {
+  getBlockHash(block: LightBlockContent | BlockContent): string {
     return block.block.block.header.hash.toHex();
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(
-    block: BlockContent,
+    block: LightBlockContent | BlockContent,
     runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
-    return this.apiService.getPatchedApi(block.block, runtimeVersion);
+    return this.apiService.getPatchedApi(
+      block.block.block.header,
+      runtimeVersion,
+    );
   }
 
   protected async indexBlockData(
-    { block, events, extrinsics }: BlockContent,
+    blockContent: LightBlockContent | BlockContent,
     dataSources: SubstrateProjectDs[],
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
-    await this.indexBlockContent(block, dataSources, getVM);
+    if (isFullBlock(blockContent)) {
+      const { block, events, extrinsics } = blockContent;
+      await this.indexBlockContent(block, dataSources, getVM);
 
-    // Run initialization events
-    const initEvents = events.filter((evt) => evt.phase.isInitialization);
-    for (const event of initEvents) {
-      await this.indexEvent(event, dataSources, getVM);
-    }
-
-    for (const extrinsic of extrinsics) {
-      await this.indexExtrinsic(extrinsic, dataSources, getVM);
-
-      // Process extrinsic events
-      const extrinsicEvents = events
-        .filter((e) => e.extrinsic?.idx === extrinsic.idx)
-        .sort((a, b) => a.idx - b.idx);
-
-      for (const event of extrinsicEvents) {
+      // Run initialization events
+      const initEvents = events.filter((evt) => evt.phase.isInitialization);
+      for (const event of initEvents) {
         await this.indexEvent(event, dataSources, getVM);
       }
-    }
 
-    // Run finalization events
-    const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
-    for (const event of finalizeEvents) {
-      await this.indexEvent(event, dataSources, getVM);
+      for (const extrinsic of extrinsics) {
+        await this.indexExtrinsic(extrinsic, dataSources, getVM);
+
+        // Process extrinsic events
+        const extrinsicEvents = events
+          .filter((e) => e.extrinsic?.idx === extrinsic.idx)
+          .sort((a, b) => a.idx - b.idx);
+
+        for (const event of extrinsicEvents) {
+          await this.indexEvent(event, dataSources, getVM);
+        }
+      }
+
+      // Run finalization events
+      const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
+      for (const event of finalizeEvents) {
+        await this.indexEvent(event, dataSources, getVM);
+      }
+    } else {
+      for (const event of blockContent.events) {
+        await this.indexEvent(event, dataSources, getVM);
+      }
     }
   }
 
@@ -167,7 +178,7 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   private async indexEvent(
-    event: SubstrateEvent,
+    event: SubstrateEvent | LightSubstrateEvent,
     dataSources: SubstrateProjectDs[],
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
