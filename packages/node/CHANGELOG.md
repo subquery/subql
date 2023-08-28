@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - fix crashes when intialization fails for one of the endpoint (#1970)
 
+### Changed
+- Move code to node-core (#1797)
+
+### Added
+- Project upgrades feature which allows upgrading projects at specific heights (#1797)
+
 ## [2.12.2] - 2023-08-17
 ### Fixed
 - Testing framework not starting because of missing dependency (#1955)

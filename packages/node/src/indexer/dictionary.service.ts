@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { gql } from '@apollo/client/core';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
   timeout,
@@ -26,15 +27,18 @@ export type SpecVersionDictionary = {
 const logger = getLogger('dictionary');
 
 @Injectable()
-export class DictionaryService
-  extends CoreDictionaryService
-  implements OnApplicationShutdown
-{
+export class DictionaryService extends CoreDictionaryService {
   constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
   ) {
-    super(project.network.dictionary, project.network.chainId, nodeConfig);
+    super(
+      project.network.dictionary,
+      project.network.chainId,
+      nodeConfig,
+      eventEmitter,
+    );
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {

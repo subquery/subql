@@ -1,24 +1,12 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SpecVersion } from '../dictionary.service';
-import {
-  BaseRuntimeService,
-  SPEC_VERSION_BLOCK_GAP,
-} from './base-runtime.service';
+import { BaseRuntimeService } from './base-runtime.service';
 
 @Injectable()
-export class WorkerRuntimeService
-  extends BaseRuntimeService
-  implements OnApplicationShutdown
-{
-  private isShutdown = false;
-
-  onApplicationShutdown(): void {
-    this.isShutdown = true;
-  }
-
+export class WorkerRuntimeService extends BaseRuntimeService {
   // sync specVersion between main and workers
   syncSpecVersionMap(
     specVersionMap: SpecVersion[],

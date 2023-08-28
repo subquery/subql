@@ -9,6 +9,10 @@ import {
   isRuntimeCosmosDs,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
+  generateProto,
+  tempProtoDir,
+  validateCosmosManifest,
+  ProjectManifestImpls as CosmosManifest,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -423,6 +427,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   if (customDatasources.length !== 0) {
     datasources = datasources.concat(customDatasources);
+  }
+
+  const chainTypes = plainManifests
+    .filter((m) => validateCosmosManifest(m))
+    .map((m) => (m as CosmosManifest).network.chainTypes);
+
+  if (chainTypes.length !== 0) {
+    await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
 
   await generateAbis(datasources, projectPath);

@@ -71,6 +71,7 @@ jest.mock('@subql/x-sequelize', () => {
     Op: {
       in: jest.fn(),
       notIn: jest.fn(),
+      ne: jest.fn(),
     },
     define: () => ({
       findOne: jest.fn(),

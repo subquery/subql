@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2023-08-25
+### Added
+- `codegen` support for Cosmos (Protobufs to ts) (#1958)
+
+### Fixed
+- Publish command uploading files to IPFS multiple times (#1967)
+
 ## [3.5.1] - 2023-08-16
 ### Fixed
 - Ensure absolute pathing for all path related flags (#1947)

@@ -5,17 +5,18 @@ import {Type} from 'class-transformer';
 import {
   Equals,
   IsBoolean,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  IsInt,
   Matches,
   Validate,
   ValidateNested,
-  equals,
 } from 'class-validator';
 import {RUNNER_REGEX} from '../../../constants';
 import {SemverVersionValidator} from '../../utils';
-import {NodeOptions, NodeSpec, QuerySpec} from './types';
+import {BlockFilter, NodeOptions, NodeSpec, ParentProject, QuerySpec} from './types';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
@@ -50,4 +51,20 @@ export class RunnerNodeOptionsModel implements NodeOptions {
   @IsOptional()
   @IsBoolean()
   unfinalizedBlocks?: boolean;
+}
+
+export class BlockFilterImpl implements BlockFilter {
+  @IsOptional()
+  @IsInt()
+  modulo?: number;
+  @IsOptional()
+  @IsString()
+  timestamp?: string;
+}
+
+export class ParentProjectModel implements ParentProject {
+  @IsNumber()
+  block: number;
+  @IsString()
+  reference: string;
 }

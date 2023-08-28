@@ -7,7 +7,6 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
 import {
   DynamicDsService,
-  IProjectNetworkConfig,
   IProjectService,
   ISubqueryProject,
   PoiBlock,
@@ -17,6 +16,7 @@ import {
   StoreService,
 } from '..';
 import {NodeConfig} from '../../configure';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue} from '../../utils';
@@ -53,15 +53,16 @@ function isNullMerkelRoot(operationHash: Uint8Array): boolean {
 export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBlockDispatcher {
   protected _latestBufferedHeight = 0;
   protected _processedBlockCount = 0;
-  protected latestProcessedHeight = 0;
+  protected _latestProcessedHeight = 0;
   protected currentProcessingHeight = 0;
   private _onDynamicDsCreated?: (height: number) => Promise<void>;
 
   constructor(
     protected nodeConfig: NodeConfig,
     protected eventEmitter: EventEmitter2,
-    private project: ISubqueryProject<IProjectNetworkConfig>,
+    private project: ISubqueryProject,
     protected projectService: IProjectService<DS>,
+    private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected smartBatchService: SmartBatchService,
     protected storeService: StoreService,
@@ -93,6 +94,14 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
   get minimumHeapLimit(): number {
     return this.smartBatchService.minimumHeapRequired;
+  }
+
+  get latestProcessedHeight(): number {
+    return this._latestProcessedHeight;
+  }
+
+  setLatestProcessedHeight(height: number): void {
+    this._latestProcessedHeight = height;
   }
 
   protected get onDynamicDsCreated(): (height: number) => Promise<void> {
@@ -128,7 +137,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     if (lastCorrectHeight <= this.currentProcessingHeight) {
       logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
       await this.projectService.reindex(lastCorrectHeight);
-      this.latestProcessedHeight = lastCorrectHeight;
+      this.setLatestProcessedHeight(lastCorrectHeight);
       logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
     }
     this.flushQueue(lastCorrectHeight);
@@ -141,8 +150,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // Is called directly before a block is processed
-  protected preProcessBlock(height: number): void {
+  protected async preProcessBlock(height: number): Promise<void> {
     this.storeService.setBlockHeight(height);
+
+    await this.projectUpgradeService.setCurrentHeight(height);
 
     this.currentProcessingHeight = height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
@@ -160,7 +171,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
-      this.latestProcessedHeight = reindexBlockHeight;
+      this.setLatestProcessedHeight(reindexBlockHeight);
     } else {
       this.updateStoreMetadata(height);
       if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
@@ -182,7 +193,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       );
       // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
       this.setProcessedBlockCount(this._processedBlockCount + 1);
-      this.latestProcessedHeight = height;
+      this.setLatestProcessedHeight(height);
     }
 
     if (this.nodeConfig.storeCacheAsync) {

@@ -3,22 +3,21 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {Inject} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {BaseDataSource} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
-import {NodeConfig} from '../configure';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {MmrQueryService} from '../meta/mmrQuery.service';
-import {getExistingProjectSchema, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {MetadataKeys} from './entities';
 import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {CacheMetadataModel} from './storeCache';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
@@ -30,18 +29,13 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<API extends IApi, DS extends {startBlock?: number}>
-  implements IProjectService<DS>
-{
+export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSource> implements IProjectService<DS> {
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
 
   protected abstract packageVersion: string;
-  protected abstract generateTimestampReferenceForBlockFilters(dataSources: DS[]): Promise<DS[]>;
-
-  // Used in the substrate SDK to do extra filtering for spec version
-  protected abstract getStartBlockDatasources(): DS[];
+  protected abstract getBlockTimestamp(height: number): Promise<Date>;
 
   constructor(
     private readonly dsProcessorService: BaseDsProcessorService,
@@ -50,7 +44,8 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     protected readonly mmrService: MmrService,
     protected readonly mmrQueryService: MmrQueryService,
     protected readonly sequelize: Sequelize,
-    @Inject('ISubqueryProject') protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    protected readonly projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
     protected readonly storeService: StoreService,
     protected readonly nodeConfig: NodeConfig,
     protected readonly dynamicDsService: DynamicDsService<DS>,
@@ -81,25 +76,34 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
   }
 
   async init(): Promise<void> {
-    // Used to load assets into DS-processor, has to be done in any thread
-    await this.dsProcessorService.validateProjectCustomDatasources();
+    for await (const [, project] of this.projectUpgradeService.projects) {
+      await project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
+    }
+
     // Do extra work on main thread to setup stuff
-    this.project.dataSources = await this.generateTimestampReferenceForBlockFilters(this.project.dataSources);
     if (isMainThread) {
       this._schema = await this.ensureProject();
-      await this.initDbSchema();
+
+      // Init metadata before rest of schema so we can determine the correct project version to create the schema
+      await this.storeService.initCoreTables(this._schema);
+      await this.dynamicDsService.init(this.storeService.storeCache.metadata);
       await this.ensureMetadata();
-      this.dynamicDsService.init(this.storeService.storeCache.metadata);
+      const reindexedUpgrade = await this.initUpgradeService();
+
+      await this.initDbSchema();
 
       await this.initHotSchemaReload();
 
       this._startHeight = await this.getStartHeight();
 
-      const reindexedTo = await this.initUnfinalized();
+      const reindexedUnfinalized = await this.initUnfinalized();
 
-      if (reindexedTo !== undefined) {
-        this._startHeight = reindexedTo;
-      }
+      // Find the new start height based on some rewinding
+      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
+
+      // Set the start height so the right project is used
+      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
+
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true);
 
@@ -118,12 +122,17 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
       await this.sequelize.sync();
 
       assert(this._schema, 'Schema should be created in main thread');
+      await this.storeService.initCoreTables(this._schema);
+      await this.initUpgradeService();
       await this.initDbSchema();
 
       if (this.nodeConfig.proofOfIndex) {
         await this.poiService.init();
       }
     }
+
+    // Used to load assets into DS-processor, has to be done in any thread
+    await this.dsProcessorService.validateProjectCustomDatasources(await this.getDataSources());
   }
 
   private async ensureProject(): Promise<string> {
@@ -171,7 +180,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
-      'deployments',
     ] as const;
 
     const existing = await metadata.findMany(keys);
@@ -219,8 +227,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     if (!existing.startHeight) {
       metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
-
-    await this.syncDeployments(existing, metadata);
   }
 
   protected async getMetadataBlockOffset(): Promise<number | undefined> {
@@ -229,41 +235,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
 
   protected async getLastProcessedHeight(): Promise<number | undefined> {
     return this.storeService.storeCache.metadata.find('lastProcessedHeight');
-  }
-
-  private async syncDeployments(existing: Partial<MetadataKeys>, metadata: CacheMetadataModel): Promise<void> {
-    if (!existing.deployments) {
-      const deployments: Record<number, string> = {};
-      //If metadata never record deployment, we are safe to use start height
-      deployments[existing.startHeight ?? this.getStartBlockFromDataSources()] = this.project.id;
-      metadata.set('deployments', JSON.stringify(deployments));
-    } else {
-      const deployments = JSON.parse(existing.deployments) as Record<number, string>;
-      const values = Object.values(deployments);
-      const lastDeployment = values[values.length - 1];
-      // avoid 0
-      if (lastDeployment !== this.project.id) {
-        const newDeploymentStart = await this.getLastProcessedHeight();
-        if (newDeploymentStart === undefined) {
-          throw new Error(`Try to record new deployment failed, unable to find last processed height from metadata`);
-        }
-        logger.warn(`Project deployment upgrade found, start height: ${newDeploymentStart}, ID: ${this.project.id}`);
-        deployments[newDeploymentStart] = this.project.id;
-        metadata.set('deployments', JSON.stringify(deployments));
-      }
-      // if we found this deployment, all good.
-    }
-  }
-
-  private async getStartHeight(): Promise<number> {
-    let startHeight: number;
-    const lastProcessedHeight = await this.getLastProcessedHeight();
-    if (lastProcessedHeight !== null && lastProcessedHeight !== undefined) {
-      startHeight = Number(lastProcessedHeight) + 1;
-    } else {
-      startHeight = this.getStartBlockFromDataSources();
-    }
-    return startHeight;
   }
 
   async setBlockOffset(offset: number): Promise<void> {
@@ -279,23 +250,64 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     });
   }
 
-  protected getStartBlockFromDataSources(): number {
-    // Ensure minimum start height should be 1
-    const startBlocksList = this.getStartBlockDatasources().map((item) => item.startBlock || 1);
-    if (startBlocksList.length === 0) {
-      logger.error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
-      process.exit(1);
+  private async getStartHeight(): Promise<number> {
+    let startHeight: number;
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    if (hasValue(lastProcessedHeight)) {
+      startHeight = Number(lastProcessedHeight) + 1;
     } else {
-      return Math.min(...startBlocksList);
+      startHeight = this.getStartBlockFromDataSources();
+    }
+    return startHeight;
+  }
+
+  getStartBlockFromDataSources(): number {
+    try {
+      return getStartHeight(this.project.dataSources);
+    } catch (e: any) {
+      logger.error(e);
+      process.exit(1);
     }
   }
 
-  async getAllDataSources(blockHeight: number): Promise<DS[]> {
+  // This is used everywhere but within indexing blocks, see comment on getDataSources for more info
+  getAllDataSources(): DS[] {
+    assert(isMainThread, 'This method is only avaiable on the main thread');
+    const dataSources = this.project.dataSources;
+    const dynamicDs = this.dynamicDsService.dynamicDatasources;
+
+    return [...dataSources, ...dynamicDs];
+  }
+
+  // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
+  async getDataSources(blockHeight?: number): Promise<DS[]> {
+    const dataSources = this.project.dataSources;
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
 
-    return [...this.project.dataSources, ...dynamicDs].filter(
-      (ds) => ds.startBlock !== undefined && ds.startBlock <= blockHeight
+    return [...dataSources, ...dynamicDs].filter(
+      (ds) => blockHeight === undefined || (ds.startBlock !== undefined && ds.startBlock <= blockHeight)
     );
+  }
+
+  getDataSourcesMap(): BlockHeightMap<DS[]> {
+    assert(isMainThread, 'This method is only avaiable on the main thread');
+    const dynamicDs = this.dynamicDsService.dynamicDatasources;
+
+    const dsMap = new Map<number, DS[]>();
+
+    // Loop through all projects
+    for (const [height, project] of this.projectUpgradeService.projects) {
+      // Iterate all the DS at the project height
+      [...project.dataSources, ...dynamicDs]
+        .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+        .sort((a, b) => a.startBlock - b.startBlock)
+        .forEach((ds, index, dataSources) => {
+          dsMap.set(Math.max(height, ds.startBlock), dataSources.slice(0, index + 1));
+        });
+    }
+
+    return new BlockHeightMap(dsMap);
   }
 
   private async initUnfinalized(): Promise<number | undefined> {
@@ -307,6 +319,44 @@ export abstract class BaseProjectService<API extends IApi, DS extends {startBloc
     }
 
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
+  }
+
+  private async initUpgradeService(): Promise<number | undefined> {
+    const metadata = this.storeService.storeCache.metadata;
+
+    const upgradePoint = await this.projectUpgradeService.init(metadata, async () => {
+      // Apply any migrations to the schema
+      await this.initDbSchema();
+
+      // Reload the dynamic ds with new project
+      // TODO are we going to run into problems with this being non blocking
+      await this.dynamicDsService.getDynamicDatasources(true);
+    });
+
+    if (isMainThread) {
+      const lastProcessedHeight = await this.getLastProcessedHeight();
+
+      // New project or not using upgrades feature
+      if (upgradePoint === undefined) {
+        await this.projectUpgradeService.updateIndexedDeployments(
+          this.project.id,
+          lastProcessedHeight ?? this.getStartBlockFromDataSources()
+        );
+      } else {
+        if (lastProcessedHeight && upgradePoint < lastProcessedHeight) {
+          if (!this.isHistorical) {
+            logger.error(
+              `Unable to upgrade project. Cannot rewind to block ${upgradePoint} without historical indexing enabled.`
+            );
+            process.exit(1);
+          }
+          logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
+          await this.reindex(upgradePoint);
+          return upgradePoint;
+        }
+      }
+    }
+    return undefined;
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {

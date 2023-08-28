@@ -17,6 +17,7 @@ import {
   ConnectionPoolStateManager,
   MmrQueryService,
   RetryManager,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -65,12 +66,14 @@ const nodeConfig = new NodeConfig({
 });
 
 function testSubqueryProject_1(): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
-    dataSources: [
+    [
       {
         name: 'runtime0',
         kind: SubstrateDatasourceKind.Runtime,
@@ -96,22 +99,22 @@ function testSubqueryProject_1(): SubqueryProject {
         },
       },
     ],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+    new GraphQLSchema({}),
+    [],
+  );
 }
 
 function testSubqueryProject_2(): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
       chainId:
         '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     },
-    dataSources: [
+    [
       {
         name: 'runtime0',
         kind: SubstrateDatasourceKind.Runtime,
@@ -125,10 +128,30 @@ function testSubqueryProject_2(): SubqueryProject {
         },
       },
     ],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
+    new GraphQLSchema({}),
+    [],
+  );
+}
+
+export function mockProjectUpgradeService(
+  project: SubqueryProject,
+): IProjectUpgradeService<SubqueryProject> {
+  const startBlock = Math.min(
+    ...project.dataSources.map((ds) => ds.startBlock),
+  );
+
+  let currentHeight = startBlock;
+  return {
+    init: jest.fn(),
+    updateIndexedDeployments: jest.fn(),
+    currentHeight: currentHeight,
+    // eslint-disable-next-line @typescript-eslint/require-await
+    setCurrentHeight: async (height: number) => {
+      currentHeight = height;
+    },
+    currentProject: project,
+    projects: new Map([[startBlock, project]]),
+    getProject: () => project,
   };
 }
 
@@ -180,6 +203,8 @@ function createIndexerManager(
     nodeConfig,
     project,
   );
+
+  const projectUpgradeService = mockProjectUpgradeService(project);
   const projectService = new ProjectService(
     dsProcessorService,
     apiService,
@@ -188,6 +213,7 @@ function createIndexerManager(
     mmrQueryService,
     sequilize,
     project,
+    projectUpgradeService,
     storeService,
     nodeConfig,
     dynamicDsService,

@@ -10,14 +10,12 @@ import {
   StoreService,
   NodeConfig,
   MmrQueryService,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
-import {
-  generateTimestampReferenceForBlockFilters,
-  SubqlProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
+import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -41,6 +39,8 @@ export class ProjectService extends BaseProjectService<
     mmrQueryService: MmrQueryService,
     sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
+    @Inject('IProjectUpgradeService')
+    protected readonly projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
     storeService: StoreService,
     nodeConfig: NodeConfig,
     dynamicDsService: DynamicDsService,
@@ -55,6 +55,7 @@ export class ProjectService extends BaseProjectService<
       mmrQueryService,
       sequelize,
       project,
+      projectUpgradeService,
       storeService,
       nodeConfig,
       dynamicDsService,
@@ -63,18 +64,8 @@ export class ProjectService extends BaseProjectService<
     );
   }
 
-  protected async generateTimestampReferenceForBlockFilters(
-    ds: SubqlProjectDs[],
-  ): Promise<SubqlProjectDs[]> {
-    return generateTimestampReferenceForBlockFilters(ds, this.apiService.api);
-  }
-
-  protected getStartBlockDatasources(): SubstrateDatasource[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName ===
-          this.apiService.api.runtimeVersion.specName.toString(),
-    );
+  protected async getBlockTimestamp(height: number): Promise<Date> {
+    const block = await getBlockByHeight(this.apiService.api, height);
+    return getTimestamp(block);
   }
 }

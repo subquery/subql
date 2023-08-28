@@ -1,24 +1,25 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       endpoint: '',
       dictionary: `https://api.subquery.network/sq/subquery/moonbeam-dictionary`,
       chainId: '',
     },
-    dataSources: [],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+    [],
+    new GraphQLSchema({}),
+    [],
+  );
 }
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
@@ -30,7 +31,11 @@ const nodeConfig = new NodeConfig({
 describe('DictionaryService', () => {
   it('should return all specVersion', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project, nodeConfig);
+    const dictionaryService = new DictionaryService(
+      project,
+      nodeConfig,
+      new EventEmitter2(),
+    );
 
     const specVersions = await dictionaryService.getSpecVersions();
 

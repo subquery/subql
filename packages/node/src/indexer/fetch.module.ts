@@ -17,6 +17,7 @@ import {
   PgMmrCacheService,
   MmrQueryService,
   RetryManager,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -55,6 +56,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
+        projectUpgradeService: IProjectUpgradeService,
         apiService: ApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
@@ -71,6 +73,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               nodeConfig,
               eventEmitter,
               projectService,
+              projectUpgradeService,
               smartBatchService,
               storeService,
               storeCacheService,
@@ -86,6 +89,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               indexerManager,
               eventEmitter,
               projectService,
+              projectUpgradeService,
               smartBatchService,
               storeService,
               storeCacheService,
@@ -97,6 +101,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         NodeConfig,
         EventEmitter2,
         'IProjectService',
+        'IProjectUpgradeService',
         ApiService,
         IndexerManager,
         SmartBatchService,

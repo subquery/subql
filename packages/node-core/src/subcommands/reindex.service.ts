@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
@@ -13,20 +14,19 @@ import {ForceCleanService} from './forceClean.service';
 
 const logger = getLogger('Reindex');
 
-export abstract class BaseReindexService<P extends ISubqueryProject, DS extends BaseDataSource, B> {
+@Injectable()
+export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSource, B> {
   private _metadataRepo?: CacheMetadataModel;
-
-  protected abstract getStartBlockDatasources(): Promise<DS[]>;
 
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
-    protected readonly project: P,
+    @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
-    private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
-    private readonly dynamicDsService: DynamicDsService<DS>
+    @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
+    @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>
   ) {}
 
   private get metadataRepo(): CacheMetadataModel {
@@ -45,7 +45,7 @@ export abstract class BaseReindexService<P extends ISubqueryProject, DS extends 
 
     this._metadataRepo = this.storeService.storeCache.metadata;
 
-    this.dynamicDsService.init(this.metadataRepo);
+    await this.dynamicDsService.init(this.metadataRepo);
   }
 
   async getTargetHeightWithUnfinalizedBlocks(inputHeight: number): Promise<number> {
@@ -70,12 +70,12 @@ export abstract class BaseReindexService<P extends ISubqueryProject, DS extends 
     return this.metadataRepo.find('blockOffset');
   }
 
-  protected async getMetadataSpecName(): Promise<string | undefined> {
+  private async getMetadataSpecName(): Promise<string | undefined> {
     return this.metadataRepo.find('specName');
   }
 
-  private async getStartBlockFromDataSources() {
-    const datasources = await this.getStartBlockDatasources();
+  private getStartBlockFromDataSources() {
+    const datasources = this.project.dataSources;
 
     const startBlocksList = datasources.map((item) => item.startBlock ?? 1);
     if (startBlocksList.length === 0) {

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use test runs as unit for tests instead of entity checks (#1957)
 - handle APIs in connection pool whose initialization failed (#1970)
 
+### Changed
+- Move more code from node to node-core. Including configure module, workers (#1797)
+
+### Added
+- Project upgrades feature and many other changes to support it (#1797)
+
 ## [4.2.3] - 2023-08-17
 ### Fixed
 - delay getPoiBlocksByRange when fully synced, fixes the high CPU usage issue (#1952)
