@@ -22,6 +22,12 @@ export function isTransactionHandlerProcessor<T>(
   return hp.baseHandlerKind === StellarHandlerKind.Transaction;
 }
 
+export function isSorobanTransactionHandlerProcessor<T>(
+  hp: SecondLayerHandlerProcessor<StellarHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<StellarHandlerKind.SorobanTransaction, unknown, T> {
+  return hp.baseHandlerKind === StellarHandlerKind.SorobanTransaction;
+}
+
 export function isOperationHandlerProcessor<O>(
   hp: SecondLayerHandlerProcessor<StellarHandlerKind, unknown, unknown>
 ): hp is SecondLayerHandlerProcessor<StellarHandlerKind.Operation, unknown, O> {

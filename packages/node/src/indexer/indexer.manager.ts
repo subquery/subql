@@ -14,6 +14,7 @@ import {
   isOperationHandlerProcessor,
   isEffectHandlerProcessor,
   isEventHandlerProcessor,
+  isSorobanTransactionHandlerProcessor,
 } from '@subql/common-stellar';
 import {
   NodeConfig,
@@ -167,6 +168,19 @@ export class IndexerManager extends BaseIndexerManager<
         ds,
         getVM,
       );
+
+      if (
+        transaction.operations.some(
+          (op) => op.type.toString() === 'invoke_host_function',
+        )
+      ) {
+        await this.indexData(
+          StellarHandlerKind.SorobanTransaction,
+          transaction,
+          ds,
+          getVM,
+        );
+      }
     }
   }
 
@@ -212,6 +226,7 @@ export class IndexerManager extends BaseIndexerManager<
 type ProcessorTypeMap = {
   [StellarHandlerKind.Block]: typeof isBlockHandlerProcessor;
   [StellarHandlerKind.Transaction]: typeof isTransactionHandlerProcessor;
+  [StellarHandlerKind.SorobanTransaction]: typeof isSorobanTransactionHandlerProcessor;
   [StellarHandlerKind.Operation]: typeof isOperationHandlerProcessor;
   [StellarHandlerKind.Effects]: typeof isEffectHandlerProcessor;
   [StellarHandlerKind.Event]: typeof isEventHandlerProcessor;
@@ -220,6 +235,7 @@ type ProcessorTypeMap = {
 const ProcessorTypeMap = {
   [StellarHandlerKind.Block]: isBlockHandlerProcessor,
   [StellarHandlerKind.Transaction]: isTransactionHandlerProcessor,
+  [StellarHandlerKind.SorobanTransaction]: isSorobanTransactionHandlerProcessor,
   [StellarHandlerKind.Operation]: isOperationHandlerProcessor,
   [StellarHandlerKind.Effects]: isEffectHandlerProcessor,
   [StellarHandlerKind.Event]: isEventHandlerProcessor,
@@ -238,6 +254,17 @@ const FilterTypeMap = {
     ),
 
   [StellarHandlerKind.Transaction]: (
+    data: StellarTransaction,
+    filter: StellarTransactionFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterTransactionProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [StellarHandlerKind.SorobanTransaction]: (
     data: StellarTransaction,
     filter: StellarTransactionFilter,
     ds: SubqlStellarDataSource,

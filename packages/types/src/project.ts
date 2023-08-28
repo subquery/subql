@@ -22,6 +22,7 @@ export enum StellarDatasourceKind {
 export enum StellarHandlerKind {
   Block = 'stellar/BlockHandler',
   Transaction = 'stellar/TransactionHandler',
+  SorobanTransaction = 'soroban/TransactionHandler',
   Operation = 'stellar/OperationHandler',
   Effects = 'stellar/EffectHandler',
   Event = 'soroban/EventHandler',
@@ -30,6 +31,7 @@ export enum StellarHandlerKind {
 export type StellarRuntimeHandlerInputMap = {
   [StellarHandlerKind.Block]: StellarBlock;
   [StellarHandlerKind.Transaction]: StellarTransaction;
+  [StellarHandlerKind.SorobanTransaction]: StellarTransaction;
   [StellarHandlerKind.Operation]: StellarOperation;
   [StellarHandlerKind.Effects]: StellarEffect;
   [StellarHandlerKind.Event]: SorobanEvent;
@@ -38,6 +40,7 @@ export type StellarRuntimeHandlerInputMap = {
 type StellarRuntimeFilterMap = {
   [StellarHandlerKind.Block]: StellarBlockFilter;
   [StellarHandlerKind.Transaction]: StellarTransactionFilter;
+  [StellarHandlerKind.SorobanTransaction]: StellarTransactionFilter;
   [StellarHandlerKind.Operation]: StellarOperationFilter;
   [StellarHandlerKind.Effects]: StellarEffectFilter;
   [StellarHandlerKind.Event]: SorobanEventFilter;
@@ -70,6 +73,12 @@ export interface SubqlTransactionHandler {
   filter?: StellarTransactionFilter;
 }
 
+export interface SubqlSorobanTransactionHandler {
+  handler: string;
+  kind: StellarHandlerKind.SorobanTransaction;
+  filter?: StellarTransactionFilter;
+}
+
 export interface SubqlOperationHandler {
   handler: string;
   kind: StellarHandlerKind.Operation;
@@ -97,6 +106,7 @@ export interface SubqlCustomHandler<K extends string = string, F = Record<string
 export type SubqlRuntimeHandler =
   | SubqlBlockHandler
   | SubqlTransactionHandler
+  | SubqlSorobanTransactionHandler
   | SubqlOperationHandler
   | SubqlEffectHandler
   | SubqlEventHandler;
@@ -201,6 +211,7 @@ export type SecondLayerHandlerProcessorArray<
 > =
   | SecondLayerHandlerProcessor<StellarHandlerKind.Block, F, T, DS>
   | SecondLayerHandlerProcessor<StellarHandlerKind.Transaction, F, T, DS>
+  | SecondLayerHandlerProcessor<StellarHandlerKind.SorobanTransaction, F, T, DS>
   | SecondLayerHandlerProcessor<StellarHandlerKind.Operation, F, T, DS>
   | SecondLayerHandlerProcessor<StellarHandlerKind.Effects, F, T, DS>;
 

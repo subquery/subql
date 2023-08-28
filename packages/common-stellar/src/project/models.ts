@@ -23,6 +23,7 @@ import {
   SubqlOperationHandler,
   SubqlEffectHandler,
   SubqlEventHandler,
+  SubqlSorobanTransactionHandler,
 } from '@subql/types-stellar';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
@@ -81,6 +82,17 @@ export class TransactionHandler implements SubqlTransactionHandler {
   filter?: TransactionFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Transaction]})
   kind: StellarHandlerKind.Transaction;
+  @IsString()
+  handler: string;
+}
+
+export class SorobanTransactionHandler implements SubqlSorobanTransactionHandler {
+  @IsObject()
+  @IsOptional()
+  @Type(() => TransactionFilter)
+  filter?: TransactionFilter;
+  @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.SorobanTransaction]})
+  kind: StellarHandlerKind.SorobanTransaction;
   @IsString()
   handler: string;
 }
@@ -147,6 +159,8 @@ export class StellarMapping implements SubqlMapping {
           return plainToClass(BlockHandler, handler);
         case StellarHandlerKind.Transaction:
           return plainToClass(TransactionHandler, handler);
+        case StellarHandlerKind.SorobanTransaction:
+          return plainToClass(SorobanTransactionHandler, handler);
         case StellarHandlerKind.Operation:
           return plainToClass(OperationHandler, handler);
         case StellarHandlerKind.Effects:
