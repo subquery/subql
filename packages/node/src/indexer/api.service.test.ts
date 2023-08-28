@@ -26,23 +26,23 @@ const TEST_BLOCKHASH =
 const TEST_BLOCKNUMBER = 6721189; // kusama
 
 function testSubqueryProject(endpoint: string[]): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    './',
+    {
       endpoint,
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
       chainId: '',
     },
-    dataSources: [],
-    id: 'test',
-    root: './',
-    chainTypes: {
+    [],
+    new GraphQLSchema({}),
+    [],
+    {
       types: {
         TestType: 'u32',
       },
     },
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+  );
 }
 
 jest.setTimeout(90000);

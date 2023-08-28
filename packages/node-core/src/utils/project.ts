@@ -13,9 +13,11 @@ import {
   IPFSReader,
   LocalReader,
   Reader,
+  TemplateBase,
 } from '@subql/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
+import Cron from 'cron-converter';
 import {isNumber, range, uniq, without, flatten} from 'lodash';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
@@ -113,6 +115,25 @@ type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
 export type SubqlProjectDs<DS extends BaseDataSource> = DS & {
   mapping: DS['mapping'] & {entryScript: string};
 };
+
+export function getModulos<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
+  dataSources: DS[],
+  isCustomDs: IsCustomDs<DS, CDS>,
+  blockHandlerKind: string
+): number[] {
+  const modulos: number[] = [];
+  for (const ds of dataSources) {
+    if (isCustomDs(ds)) {
+      continue;
+    }
+    for (const handler of ds.mapping.handlers) {
+      if (handler.kind === blockHandlerKind && handler.filter && handler.filter.modulo) {
+        modulos.push(handler.filter.modulo);
+      }
+    }
+  }
+  return modulos;
+}
 
 export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
   _dataSources: (DS | CDS)[],
@@ -217,20 +238,6 @@ export async function loadDataSourceScript(reader: Reader, file?: string): Promi
   return entryScript;
 }
 
-async function makeTempDir(): Promise<string> {
-  const sep = path.sep;
-  const tmpDir = os.tmpdir();
-  return fs.promises.mkdtemp(`${tmpDir}${sep}`);
-}
-
-export async function getProjectRoot(reader: Reader): Promise<string> {
-  if (reader instanceof LocalReader) return reader.root;
-  if (reader instanceof IPFSReader || reader instanceof GithubReader) {
-    return makeTempDir();
-  }
-  throw new Error('Un-known reader type');
-}
-
 export async function initDbSchema(
   project: ISubqueryProject,
   schema: string,
@@ -242,4 +249,79 @@ export async function initDbSchema(
 
 export async function initHotSchemaReload(schema: string, storeService: StoreService): Promise<void> {
   await storeService.initHotSchemaReloadQueries(schema);
+}
+
+type IsRuntimeDs = (ds: BaseDataSource) => boolean;
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource = BaseDataSource>(
+  dataSources: DS[],
+  getBlockTimestamp: (height: number) => Promise<Date>,
+  isRuntimeDs: IsRuntimeDs,
+  blockHandlerKind: string
+): Promise<DS[]> {
+  const cron = new Cron();
+
+  dataSources = await Promise.all(
+    dataSources.map(async (ds) => {
+      if (isRuntimeDs(ds)) {
+        const startBlock = ds.startBlock ?? 1;
+        let timestampReference: Date;
+
+        ds.mapping.handlers = await Promise.all(
+          ds.mapping.handlers.map(async (handler) => {
+            if (handler.kind === blockHandlerKind) {
+              if (handler.filter?.timestamp) {
+                if (!timestampReference) {
+                  timestampReference = await getBlockTimestamp(startBlock);
+                }
+                try {
+                  cron.fromString(handler.filter.timestamp);
+                } catch (e) {
+                  throw new Error(`Invalid Cron string: ${handler.filter.timestamp}`);
+                }
+
+                const schedule = cron.schedule(timestampReference);
+                handler.filter.cronSchedule = {
+                  schedule: schedule,
+                  get next() {
+                    return Date.parse(this.schedule.next().format());
+                  },
+                };
+              }
+            }
+            return handler;
+          })
+        );
+      }
+      return ds;
+    })
+  );
+
+  return dataSources;
+}
+
+export async function loadProjectTemplates<T extends BaseDataSource & TemplateBase>(
+  templates: T[] | undefined,
+  root: string,
+  reader: Reader,
+  isCustomDs: IsCustomDs<BaseDataSource, BaseCustomDataSource>
+): Promise<SubqlProjectDs<T>[]> {
+  if (!templates || !templates.length) {
+    return [];
+  }
+  const dsTemplates = await updateDataSourcesV1_0_0(templates, reader, root, isCustomDs);
+  return dsTemplates.map((ds, index) => ({
+    ...ds,
+    name: templates[index].name,
+  })) as SubqlProjectDs<T>[]; // How to get rid of cast here?
+}
+
+export function getStartHeight(dataSources: BaseDataSource[]): number {
+  const startBlocksList = dataSources.map((item) => item.startBlock || 1);
+  if (startBlocksList.length === 0) {
+    throw new Error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
+  } else {
+    return Math.min(...startBlocksList);
+  }
 }

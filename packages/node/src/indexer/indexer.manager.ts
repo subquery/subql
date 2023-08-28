@@ -29,7 +29,7 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import {
@@ -115,8 +115,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   protected async indexBlockData(
     { block, events, extrinsics }: BlockContent,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: SubstrateProjectDs[],
+    getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
@@ -148,8 +148,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexBlockContent(
     block: SubstrateBlock,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: SubstrateProjectDs[],
+    getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM);
@@ -158,8 +158,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexExtrinsic(
     extrinsic: SubstrateExtrinsic,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: SubstrateProjectDs[],
+    getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM);
@@ -168,8 +168,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexEvent(
     event: SubstrateEvent,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: SubstrateProjectDs[],
+    getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM);

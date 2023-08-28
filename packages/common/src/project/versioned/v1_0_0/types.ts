@@ -26,8 +26,20 @@ export interface NodeOptions {
   unfinalizedBlocks?: boolean;
 }
 
-export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extends object = BaseDataSource>
-  extends Omit<ProjectManifestV0_2_1<T, D>, 'network'> {
+export interface ParentProject {
+  // The block height to switch from the parent project to this project
+  block: number;
+
+  // The IPFS CID to the parent project
+  reference: string;
+}
+
+export type TemplateBaseDs<DS extends BaseDataSource = BaseDataSource> = Omit<DS, 'startBlock'> & TemplateBase;
+
+export interface ProjectManifestV1_0_0<
+  D extends BaseDataSource = BaseDataSource,
+  T extends TemplateBaseDs<D> = TemplateBaseDs<D>
+> extends Omit<ProjectManifestV0_2_1<T, D>, 'network'> {
   dataSources: D[];
   runner: RunnerSpecs;
   templates?: T[];
@@ -40,6 +52,7 @@ export interface ProjectManifestV1_0_0<T extends object = TemplateBase, D extend
       file: string;
     };
   };
+  parent?: ParentProject;
 }
 
 export interface BlockFilter {

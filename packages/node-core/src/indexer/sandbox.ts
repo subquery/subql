@@ -3,6 +3,7 @@
 
 import {existsSync, readFileSync} from 'fs';
 import path from 'path';
+import {SubqlTest} from '@subql/testing';
 import {Store} from '@subql/types';
 import {levelFilter} from '@subql/utils';
 import {last, merge} from 'lodash';
@@ -187,8 +188,8 @@ export class TestSandbox extends Sandbox {
     this.freeze(logger, 'logger');
   }
 
-  async getTests() {
-    await this.runTimeout(1000);
+  getTests(): SubqlTest[] {
+    this.run(this.script);
     return this.getGlobal('subqlTests');
   }
 }

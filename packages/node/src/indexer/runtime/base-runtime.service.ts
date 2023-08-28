@@ -10,7 +10,6 @@ import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from './../dictionary.service';
 export const SPEC_VERSION_BLOCK_GAP = 100;
-type GetUseDictionary = () => boolean;
 type GetLatestFinalizedHeight = () => number;
 
 @Injectable()
@@ -18,7 +17,6 @@ export abstract class BaseRuntimeService {
   parentSpecVersion: number;
   specVersionMap: SpecVersion[];
   protected currentRuntimeVersion: RuntimeVersion;
-  protected useDictionary: boolean;
   latestFinalizedHeight: number;
 
   constructor(protected apiService: ApiService) {}
@@ -39,11 +37,7 @@ export abstract class BaseRuntimeService {
     blockHeight: number,
   ): Promise<{ blockSpecVersion: number; syncedDictionary: boolean }>;
 
-  init(
-    getUseDictionary: GetUseDictionary,
-    getLatestFinalizedHeight: GetLatestFinalizedHeight,
-  ): void {
-    this.useDictionary = getUseDictionary();
+  init(getLatestFinalizedHeight: GetLatestFinalizedHeight): void {
     this.latestFinalizedHeight = getLatestFinalizedHeight();
   }
 

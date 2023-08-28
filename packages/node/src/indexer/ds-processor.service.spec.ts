@@ -12,12 +12,14 @@ import { DsProcessorService } from './ds-processor.service';
 function getTestProject(
   extraDataSources?: SubstrateCustomDatasource[],
 ): SubqueryProject {
-  return {
-    network: {
+  return new SubqueryProject(
+    'test',
+    path.resolve(__dirname, '../../'),
+    {
       chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
-    dataSources: [
+    [
       {
         kind: 'substrate/Jsonfy',
         processor: { file: 'test/jsonfy.js' },
@@ -29,11 +31,9 @@ function getTestProject(
       },
       ...extraDataSources,
     ] as any,
-    id: 'test',
-    root: path.resolve(__dirname, '../../'),
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
+    new GraphQLSchema({}),
+    [],
+  );
 }
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
@@ -51,7 +51,7 @@ describe('DsProcessorService', () => {
 
   it('can validate custom ds', async () => {
     await expect(
-      service.validateProjectCustomDatasources(),
+      service.validateProjectCustomDatasources(project.dataSources),
     ).resolves.not.toThrow();
   });
 
@@ -69,7 +69,9 @@ describe('DsProcessorService', () => {
     project = getTestProject([badDs]);
     service = new DsProcessorService(project, nodeConfig);
 
-    await expect(service.validateProjectCustomDatasources()).rejects.toThrow();
+    await expect(
+      service.validateProjectCustomDatasources(project.dataSources),
+    ).rejects.toThrow();
   });
 
   it('can run a custom ds processor', () => {

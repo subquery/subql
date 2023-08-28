@@ -1,9 +1,10 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
+import {BaseDataSource, ParentProject, ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
 import {Entity} from '@subql/types';
 import {GraphQLSchema} from 'graphql';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 import {ProcessBlockResponse} from './blockDispatcher';
 
 export enum OperationType {
@@ -23,18 +24,21 @@ export interface IProjectNetworkConfig extends ProjectNetworkConfig {
 
 export interface ISubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
-  DS = unknown,
+  DS extends BaseDataSource = BaseDataSource,
   T = unknown,
   C = unknown
 > {
-  id: string;
-  root: string;
-  network: N;
-  dataSources: DS[];
-  schema: GraphQLSchema;
-  templates: T[];
-  chainTypes?: C;
-  runner?: RunnerSpecs;
+  readonly id: string;
+  readonly root: string;
+  readonly network: N;
+  readonly dataSources: DS[];
+  readonly schema: GraphQLSchema;
+  readonly templates: T[];
+  readonly chainTypes?: C;
+  readonly runner?: RunnerSpecs;
+  readonly parent?: ParentProject;
+
+  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date>) => Promise<void>;
 }
 
 export interface IIndexerManager<B, DS> {
@@ -46,7 +50,10 @@ export interface IProjectService<DS> {
   blockOffset: number | undefined;
   reindex(lastCorrectHeight: number): Promise<void>;
   setBlockOffset(offset: number): Promise<void>;
-  getAllDataSources(blockHeight: number): Promise<DS[]>;
+  getAllDataSources(): DS[];
+  getDataSources(blockHeight?: number): Promise<DS[]>;
+  getStartBlockFromDataSources(): number;
+  getDataSourcesMap(): BlockHeightMap<DS[]>;
 }
 
 // Equivalent to SubstrateDatasourceProcessor

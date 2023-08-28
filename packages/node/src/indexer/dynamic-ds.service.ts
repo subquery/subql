@@ -8,11 +8,14 @@ import {
   DynamicDsService as BaseDynamicDsService,
 } from '@subql/node-core';
 import { cloneDeep } from 'lodash';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  SubqueryProject,
+  SubstrateProjectDs,
+} from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 
 @Injectable()
-export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
+export class DynamicDsService extends BaseDynamicDsService<SubstrateProjectDs> {
   constructor(
     private readonly dsProcessorService: DsProcessorService,
     @Inject('ISubqueryProject') private readonly project: SubqueryProject,
@@ -22,7 +25,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
 
   protected async getDatasource(
     params: DatasourceParams,
-  ): Promise<SubqlProjectDs> {
+  ): Promise<SubstrateProjectDs> {
     const template = cloneDeep(
       this.project.templates.find((t) => t.name === params.templateName),
     );
@@ -36,7 +39,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
     const dsObj = {
       ...template,
       startBlock: params.startBlock,
-    } as SubqlProjectDs;
+    } as SubstrateProjectDs;
     delete dsObj.name;
     try {
       if (isCustomDs(dsObj)) {

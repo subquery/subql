@@ -34,7 +34,7 @@ function isResponse(message: Request | Response): message is Response {
 type ResponseListener = Record<number | string, (data?: any, error?: SerializableError) => void>;
 
 export type AsyncFunc<T = any> = (...args: any[]) => T | Promise<T | void> | void;
-type AsyncMethods = Record<string, AsyncFunc>;
+export type AsyncMethods = Record<string, AsyncFunc>;
 
 abstract class WorkerIO {
   private responseListeners: ResponseListener = {};

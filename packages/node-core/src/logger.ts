@@ -32,6 +32,8 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 export class NestLogger implements LoggerService {
   private logger = logger.getLogger(`nestjs${isMainThread ? '-0' : `-#${threadId}`}`);
 
+  constructor(private readonly debugLevel = false) {}
+
   error(message: any, trace?: string): void {
     if (trace) {
       this.logger.error({trace}, message);
@@ -41,10 +43,22 @@ export class NestLogger implements LoggerService {
   }
 
   log(message: any): void {
+    // if (!this.debugLevel) return;
     this.logger.info(message);
   }
 
   warn(message: any): void {
+    // if (!this.debugLevel) return;
     this.logger.warn(message);
+  }
+
+  debug(message: any): void {
+    if (!this.debugLevel) return;
+    this.logger.debug(message);
+  }
+
+  verbose(message: any): void {
+    if (!this.debugLevel) return;
+    this.logger.verbose(message);
   }
 }

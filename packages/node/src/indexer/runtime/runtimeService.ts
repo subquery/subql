@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
 import {
@@ -14,11 +14,7 @@ import {
 } from './base-runtime.service';
 
 @Injectable()
-export class RuntimeService
-  extends BaseRuntimeService
-  implements OnApplicationShutdown
-{
-  private isShutdown = false;
+export class RuntimeService extends BaseRuntimeService {
   protected useDictionary: boolean;
 
   constructor(
@@ -28,13 +24,9 @@ export class RuntimeService
     super(apiService);
   }
 
-  onApplicationShutdown(): void {
-    this.isShutdown = true;
-  }
-
   // get latest specVersions from dictionary
   async syncDictionarySpecVersions(): Promise<void> {
-    const response = this.useDictionary
+    const response = this.dictionaryService.useDictionary
       ? await this.dictionaryService.getSpecVersions()
       : undefined;
     if (response !== undefined) {
