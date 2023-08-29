@@ -9,7 +9,7 @@ import {ApiConnectionError, ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
-import {RetryManager, delay} from '../utils';
+import {delay, retryWithBackoff} from '../utils';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 const logger = getLogger('connection-pool');
@@ -34,17 +34,13 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private allApi: T[] = [];
   private apiToIndexMap: Map<T, number> = new Map();
   private cachedApiIndex: number | undefined;
-  private reconnectingIndices: Record<number, boolean> = {};
+  private reconnectingIndices: Record<number, NodeJS.Timeout | undefined> = {};
   private resultCache: Array<ResultCacheEntry<number | ApiConnectionError['errorType']>> = [];
   private lastCacheFlushTime: number = Date.now();
   private cacheSizeThreshold = 10;
   private cacheFlushInterval = 60 * 100;
 
-  constructor(
-    private nodeConfig: NodeConfig,
-    private poolStateManager: ConnectionPoolStateManager<T>,
-    private retryManager: RetryManager
-  ) {
+  constructor(private nodeConfig: NodeConfig, private poolStateManager: ConnectionPoolStateManager<T>) {
     this.cacheSizeThreshold = this.nodeConfig.batchSize;
   }
 
@@ -147,10 +143,11 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
       await this.allApi[apiIndex].apiConnect();
       await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
+      this.reconnectingIndices[apiIndex] = undefined;
       logger.info(`Reconnected to ${endpoint} successfully`);
     };
 
-    this.retryManager.retryWithBackoff(
+    this.reconnectingIndices[apiIndex] = retryWithBackoff(
       tryReconnect,
       (error) => {
         logger.error(`Reconnection failed: ${error}`);
@@ -164,8 +161,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       maxAttempts
     );
 
-    await this.poolStateManager.setFieldValue(apiIndex, 'connected', true);
-    this.reconnectingIndices[apiIndex] = false;
     await this.handleConnectionStateChange();
     logger.info(`reconnected to ${endpoint}!`);
   }
@@ -219,7 +214,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
         return;
       }
       this.handleApiDisconnects(index);
-      this.reconnectingIndices[index] = true;
     });
   }
 

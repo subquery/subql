@@ -7,7 +7,6 @@ import {
   ConnectionPoolService,
   ConnectionPoolStateManager,
   NodeConfig,
-  RetryManager,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
@@ -86,18 +85,15 @@ function testSubqueryProject(): SubqueryProject {
 describe('ApiService', () => {
   it('read custom types from project manifest', async () => {
     const project = testSubqueryProject();
-    const retryManager = new RetryManager();
 
     const apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
         new ConnectionPoolStateManager(),
-        retryManager,
       ),
       new EventEmitter2(),
       nodeConfig,
-      retryManager,
     );
     await apiService.init();
     const { version } = require('../../package.json');
@@ -123,18 +119,14 @@ describe('ApiService', () => {
       subquery: 'example',
     });
 
-    const retryManager = new RetryManager();
-
     const apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
         new ConnectionPoolStateManager(),
-        retryManager,
       ),
       new EventEmitter2(),
       nodeConfig,
-      retryManager,
     );
 
     await expect(apiService.init()).rejects.toThrow();

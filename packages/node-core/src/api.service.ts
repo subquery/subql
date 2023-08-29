@@ -7,7 +7,7 @@ import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
-import {RetryManager} from './utils/retry.manager';
+import {retryWithBackoff} from './utils';
 
 const logger = getLogger('api');
 
@@ -29,11 +29,12 @@ export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi
 export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
   constructor(
     protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>,
-    protected retryManager: RetryManager,
     protected eventEmitter: EventEmitter2
   ) {}
 
   abstract networkMeta: NetworkMetadataPayload;
+
+  private timeouts: Record<string, NodeJS.Timeout | undefined> = {};
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {
     let reconnectAttempts = 0;
@@ -149,7 +150,7 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
     endpoint: string,
     postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
   ): void {
-    this.retryManager.retryWithBackoff(
+    this.timeouts[endpoint] = retryWithBackoff(
       () => this.performConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook),
       (error) => {
         logger.error(`Initialization retry failed for ${endpoint}: ${error}`);

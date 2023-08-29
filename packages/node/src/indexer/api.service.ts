@@ -15,7 +15,6 @@ import {
   profilerWrap,
   ConnectionPoolService,
   ApiService as BaseApiService,
-  RetryManager,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -48,9 +47,8 @@ export class ApiService
     connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,
-    retryManager: RetryManager,
   ) {
-    super(connectionPoolService, retryManager, eventEmitter);
+    super(connectionPoolService, eventEmitter);
   }
 
   async onApplicationShutdown(): Promise<void> {

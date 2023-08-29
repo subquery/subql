@@ -12,4 +12,3 @@ export * from './fetchHelpers';
 export * from './blockSizeBuffer';
 export * from './configure';
 export * from './reindex';
-export * from './retry.manager';
