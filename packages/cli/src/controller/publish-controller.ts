@@ -13,6 +13,7 @@ import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {FileReference} from '@subql/types';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
+import yaml from 'js-yaml';
 
 const PIN_SERVICE = 'onfinality';
 
@@ -77,10 +78,14 @@ export async function uploadToIpfs(
       throw new Error('Unable to parse project manifest');
     }
 
-    const deployment = await replaceFileReferences(reader.root, manifest, authToken, ipfs);
+    const deployment = await replaceFileReferences(reader.root, (manifest as any).deployment, authToken, ipfs);
+
+    // Use JSON.* to convert Map to Object
+    const deploymentStr = yaml.dump(JSON.parse(JSON.stringify(deployment)), {sortKeys: true, condenseFlow: true});
+
     contents.push({
       path: path.join(directory ?? '', path.basename(project)),
-      content: deployment.toDeployment(),
+      content: deploymentStr,
     });
   }
 
