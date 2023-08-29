@@ -90,7 +90,8 @@ jest.mock('@subql/x-sequelize', () => {
       upsert: jest.fn(),
       associations: [{}, {}],
       count: 5,
-      findAll: jest.fn().mockImplementation(async () => {
+      findAll: jest.fn().mockImplementation(async (limit, order, where) => {
+        console.log(``);
         await delay(5);
       }),
       findOne: jest.fn(({transaction, where: {id}}) => ({
@@ -121,6 +122,11 @@ jest.mock('@subql/x-sequelize', () => {
     DataTypes: actualSequelize.DataTypes,
     QueryTypes: actualSequelize.QueryTypes,
     Deferrable: actualSequelize.Deferrable,
+    Op: {
+      in: jest.fn(),
+      notIn: jest.fn(),
+      ne: jest.fn(),
+    },
   };
 });
 
