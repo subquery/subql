@@ -150,4 +150,17 @@ describe('Codegen can generate schema (mocked)', () => {
 
     expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_string_string_address_arr_');
   });
+  it('ensure correct output when input does not contain []', () => {
+    const mockAbiInterface = {
+      type: 'function',
+      name: 'initialize',
+      inputs: [
+        {
+          name: '__name',
+          type: 'STRING',
+        },
+      ],
+    } as abiInterface;
+    expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_');
+  });
 });
