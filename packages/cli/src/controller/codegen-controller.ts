@@ -306,9 +306,11 @@ export function processAbis(
   return renderInterfaceJobs;
 }
 
-function joinInputAbiName(abiObject: abiInterface) {
+export function joinInputAbiName(abiObject: abiInterface) {
   // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
-  const inputToSnake: string = abiObject.inputs.map((obj) => obj.type.toLowerCase()).join('_');
+  const inputToSnake = abiObject.inputs
+    .map((obj) => (obj.type.includes('[]') ? obj.type.replace(/\[\]/g, '_arr') : obj.type.toLowerCase()))
+    .join('_');
   return `${abiObject.name}_${inputToSnake}_`;
 }
 

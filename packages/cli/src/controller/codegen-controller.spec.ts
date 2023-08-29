@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
-import {abiInterface, codegen, processAbis, validateEntityName} from './codegen-controller';
+import {abiInterface, codegen, joinInputAbiName, processAbis, validateEntityName} from './codegen-controller';
 
 jest.mock('fs', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,5 +122,32 @@ describe('Codegen can generate schema (mocked)', () => {
     expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
       'Provided ABI is not a valid ABI or Artifact'
     );
+  });
+
+  it('should replace [] in input abi name', () => {
+    const mockAbiInterface = {
+      type: 'function',
+      name: 'initialize',
+      inputs: [
+        {
+          name: '__name',
+          type: 'string',
+        },
+        {
+          name: '__symbol',
+          type: 'string',
+        },
+        {
+          name: '__baseURI',
+          type: 'string',
+        },
+        {
+          name: 'admins',
+          type: 'address[]',
+        },
+      ],
+    } as abiInterface;
+
+    expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_string_string_address_arr_');
   });
 });
