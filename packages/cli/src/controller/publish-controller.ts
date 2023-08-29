@@ -78,7 +78,7 @@ export async function uploadToIpfs(
       throw new Error('Unable to parse project manifest');
     }
 
-    const deployment = await replaceFileReferences(reader.root, (manifest as any).deployment, authToken, ipfs);
+    const deployment = await replaceFileReferences(reader.root, manifest.deployment, authToken, ipfs);
 
     // Use JSON.* to convert Map to Object
     const deploymentStr = yaml.dump(JSON.parse(JSON.stringify(deployment)), {sortKeys: true, condenseFlow: true});
