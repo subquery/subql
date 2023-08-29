@@ -15,6 +15,7 @@ import {
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { isOnlyEventHandlers } from '../utils/project';
 import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -67,5 +68,9 @@ export class ProjectService extends BaseProjectService<
   protected async getBlockTimestamp(height: number): Promise<Date> {
     const block = await getBlockByHeight(this.apiService.api, height);
     return getTimestamp(block);
+  }
+
+  protected onProjectChange(project: SubqueryProject): void | Promise<void> {
+    this.apiService.updateBlockFetching();
   }
 }

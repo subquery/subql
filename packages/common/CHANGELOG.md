@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - move block filters to common (#1969)
+
 ### Added
 - Add spec for project upgrades (#1797)
+- skipBlock node runner option (#1968)
 
 ## [2.6.0] - 2023-08-25
 ### Changed
@@ -305,7 +307,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/2.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/2.6.0...HEAD
+[2.6.0]: https://github.com/subquery/subql/compare/common/2.5.0...common/2.6.0
 [2.5.0]: https://github.com/subquery/subql/compare/common/2.4.0...common/2.5.0
 [2.4.0]: https://github.com/subquery/subql/compare/common/2.3.0...common/2.4.0
 [2.3.0]: https://github.com/subquery/subql/compare/common/2.2.2...common/2.3.0

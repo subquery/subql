@@ -5,7 +5,7 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { RpcMethodResult } from '@polkadot/api/types';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { RuntimeVersion, Header } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import {
   IndexerEvent,
@@ -16,11 +16,11 @@ import {
   ConnectionPoolService,
   ApiService as BaseApiService,
 } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { isOnlyEventHandlers } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
-import { ApiPromiseConnection } from './apiPromise.connection';
-import { ApiAt, BlockContent } from './types';
+import { ApiPromiseConnection, FetchFunc } from './apiPromise.connection';
+import { ApiAt, BlockContent, LightBlockContent } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -34,10 +34,14 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService
-  extends BaseApiService<ApiPromise, ApiAt, BlockContent>
+  extends BaseApiService<
+    ApiPromise,
+    ApiAt,
+    BlockContent[] | LightBlockContent[]
+  >
   implements OnApplicationShutdown
 {
-  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
+  private fetchBlocksBatches: FetchFunc;
   private currentBlockHash: string;
   private currentBlockNumber: number;
   networkMeta: NetworkMetadataPayload;
@@ -49,6 +53,8 @@ export class ApiService
     private nodeConfig: NodeConfig,
   ) {
     super(connectionPoolService, eventEmitter);
+
+    this.updateBlockFetching();
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -117,16 +123,55 @@ export class ApiService
     return this;
   }
 
+  updateBlockFetching(): void {
+    const onlyEventHandlers = isOnlyEventHandlers(this.project);
+    const skipBlock = this.nodeConfig.skipBlock && onlyEventHandlers;
+
+    if (this.nodeConfig.skipBlock) {
+      if (onlyEventHandlers) {
+        logger.info(
+          'skipBlock is enabled, only events and block headers will be fetched.',
+        );
+      } else {
+        logger.info(
+          `skipBlock is disabled, the project contains handlers that aren't event handlers.`,
+        );
+      }
+    } else {
+      if (onlyEventHandlers) {
+        logger.warn(
+          'skipBlock is disabled, the project contains only event handlers, it could be enabled to improve indexing performance.',
+        );
+      } else {
+        logger.info(`skipBlock is disabled.`);
+      }
+    }
+
+    const fetchFunc = skipBlock
+      ? SubstrateUtil.fetchBlocksBatchesLight
+      : SubstrateUtil.fetchBlocksBatches;
+
+    if (this.nodeConfig?.profiler) {
+      this.fetchBlocksBatches = profilerWrap(
+        fetchFunc,
+        'SubstrateUtil',
+        'fetchBlocksBatches',
+      );
+    } else {
+      this.fetchBlocksBatches = fetchFunc;
+    }
+  }
+
   get api(): ApiPromise {
     return this.unsafeApi;
   }
 
   async getPatchedApi(
-    block: SubstrateBlock,
+    header: Header,
     runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
-    this.currentBlockHash = block.block.hash.toString();
-    this.currentBlockNumber = block.block.header.number.toNumber();
+    this.currentBlockHash = header.hash.toString();
+    this.currentBlockNumber = header.number.toNumber();
 
     const api = this.api;
     const apiAt = (await api.at(
@@ -222,7 +267,7 @@ export class ApiService
     heights: number[],
     overallSpecVer?: number,
     numAttempts = MAX_RECONNECT_ATTEMPTS,
-  ): Promise<BlockContent[]> {
+  ): Promise<LightBlockContent[]> {
     let reconnectAttempts = 0;
     while (reconnectAttempts < numAttempts) {
       try {

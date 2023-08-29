@@ -105,7 +105,7 @@ export async function registerApp<P extends ISubqueryProject>(
     config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv, nameMapping), isTest);
   } else {
     if (!argv.subquery) {
-      logger.error('Subquery path is missing neither in cli options nor in config file');
+      logger.error('Subquery path is missing in both cli options and config file');
       showHelp();
       process.exit(1);
     }

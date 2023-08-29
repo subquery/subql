@@ -59,7 +59,7 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
     block: B,
     handler: string,
     indexerManager: IIndexerManager<B, DS>,
-    apiService?: IApi<A, SA, B>
+    apiService?: IApi<A, SA, B[]>
   ): Promise<void> {
     await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }

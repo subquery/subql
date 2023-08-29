@@ -16,7 +16,7 @@ import {
   IApiConnectionSpecific,
 } from '@subql/node-core';
 import * as SubstrateUtil from '../utils/substrate';
-import { ApiAt, BlockContent } from './types';
+import { ApiAt, BlockContent, LightBlockContent } from './types';
 import { createCachedProvider } from './x-provider/cachedProvider';
 import { HttpProvider } from './x-provider/http';
 
@@ -25,10 +25,17 @@ const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
 
-type FetchFunc = typeof SubstrateUtil.fetchBlocksBatches;
+export type FetchFunc =
+  | typeof SubstrateUtil.fetchBlocksBatches
+  | typeof SubstrateUtil.fetchBlocksBatchesLight;
 
 export class ApiPromiseConnection
-  implements IApiConnectionSpecific<ApiPromise, ApiAt, BlockContent>
+  implements
+    IApiConnectionSpecific<
+      ApiPromise,
+      ApiAt,
+      BlockContent[] | LightBlockContent[]
+    >
 {
   readonly networkMeta: NetworkMetadataPayload;
 
@@ -88,7 +95,7 @@ export class ApiPromiseConnection
   async fetchBlocks(
     heights: number[],
     overallSpecVer?: number,
-  ): Promise<BlockContent[]> {
+  ): Promise<BlockContent[] | LightBlockContent[]> {
     const blocks = await this.fetchBlocksBatches(
       this.unsafeApi,
       heights,

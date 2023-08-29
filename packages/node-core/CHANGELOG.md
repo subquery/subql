@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)
+- Update api service generics to support multiple block types (#1968)
 
 ### Added
 - Project upgrades feature and many other changes to support it (#1797)
+- skipBlock option to NodeConfig (#1968)
 
 ## [4.2.3] - 2023-08-17
 ### Fixed

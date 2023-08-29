@@ -16,14 +16,14 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
-import { ApiAt, BlockContent } from '../indexer/types';
+import { ApiAt, BlockContent, LightBlockContent } from '../indexer/types';
 import { TestingModule } from './testing.module';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
   ApiPromise,
   ApiAt,
-  BlockContent,
+  BlockContent | LightBlockContent,
   SubqlProjectDs<SubstrateDatasource>
 > {
   constructor(
@@ -61,7 +61,7 @@ export class TestingService extends BaseTestingService<
   }
 
   async indexBlock(
-    block: BlockContent,
+    block: BlockContent | LightBlockContent,
     handler: string,
     indexerManager: IndexerManager,
     apiService: ApiService,

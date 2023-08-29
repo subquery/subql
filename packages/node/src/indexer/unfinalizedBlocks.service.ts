@@ -10,7 +10,7 @@ import {
   StoreCacheService,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
-import { BlockContent } from './types';
+import { BlockContent, LightBlockContent } from './types';
 
 export function substrateHeaderToHeader(header: SubstrateHeader): Header {
   return {
@@ -21,7 +21,9 @@ export function substrateHeaderToHeader(header: SubstrateHeader): Header {
 }
 
 @Injectable()
-export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockContent> {
+export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
+  BlockContent | LightBlockContent
+> {
   constructor(
     private readonly apiService: ApiService,
     nodeConfig: NodeConfig,

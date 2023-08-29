@@ -13,20 +13,20 @@ const logger = getLogger('api');
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-export interface IApi<A = any, SA = any, B = any> {
-  fetchBlocks(heights: number[], ...args: any): Promise<B[]>;
+export interface IApi<A = any, SA = any, B extends Array<any> = any[]> {
+  fetchBlocks(heights: number[], ...args: any): Promise<B>;
   safeApi(height: number): SA;
   unsafeApi: A;
   networkMeta: NetworkMetadataPayload;
 }
 
-export interface IApiConnectionSpecific<A = any, SA = any, B = any> extends IApi<A, SA, B> {
+export interface IApiConnectionSpecific<A = any, SA = any, B extends Array<any> = any[]> extends IApi<A, SA, B> {
   handleError(error: Error): ApiConnectionError;
   apiConnect(): Promise<void>;
   apiDisconnect(): Promise<void>;
 }
 
-export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, SA, B> {
+export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]> implements IApi<A, SA, B> {
   constructor(
     protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>,
     protected eventEmitter: EventEmitter2
@@ -36,7 +36,7 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
 
   private timeouts: Record<string, NodeJS.Timeout | undefined> = {};
 
-  async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B[]> {
+  async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B> {
     let reconnectAttempts = 0;
     while (reconnectAttempts < numAttempts) {
       try {
@@ -67,11 +67,11 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
   }
   async createConnections(
     network: ProjectNetworkConfig & {chainId: string},
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
+    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
     getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
     postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
   ): Promise<void> {
-    const endpointToApiIndex: Record<string, IApiConnectionSpecific> = {};
+    const endpointToApiIndex: Record<string, IApiConnectionSpecific<A, SA, B>> = {};
 
     const failedConnections: Map<number, string> = new Map();
 
@@ -101,7 +101,7 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
         endpointToApiIndex[endpoint] = connection;
       } catch (e) {
         logger.error(`Failed to init ${endpoint}: ${e}`);
-        endpointToApiIndex[endpoint] = null as unknown as IApiConnectionSpecific;
+        endpointToApiIndex[endpoint] = null as unknown as IApiConnectionSpecific<A, SA, B>;
         failedConnections.set(i, endpoint);
       }
     }
@@ -119,7 +119,7 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
   }
 
   async performConnection(
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
+    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
     getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
     network: ProjectNetworkConfig & {chainId: string},
     index: number,
@@ -143,7 +143,7 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
   }
 
   retryConnection(
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
+    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
     getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
     network: ProjectNetworkConfig & {chainId: string},
     index: number,

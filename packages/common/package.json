@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "2.6.1-1",
+  "version": "2.6.1-2",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -33,5 +33,5 @@
     "@types/tar": "^6.1.1",
     "@types/update-notifier": "^6"
   },
-  "stableVersion": "2.6.1-0"
+  "stableVersion": "2.6.1-1"
 }

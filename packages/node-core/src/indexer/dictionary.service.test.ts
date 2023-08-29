@@ -110,6 +110,7 @@ const nodeConfig = new NodeConfig({
   subqueryName: 'asdf',
   networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
+  // dictionaryResolver: 'https://kepler-auth.subquery.network'
 });
 
 jest.setTimeout(10000);

@@ -11,11 +11,17 @@ import {
   SubstrateCustomHandler,
   SubstrateHandler,
   SubstrateHandlerKind,
+  isRuntimeDs,
+  isCustomDs,
 } from '@subql/common-substrate';
 import { saveFile } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
+import {
+  SubqueryProject,
+  SubstrateProjectDs,
+} from '../configure/SubqueryProject';
 
 export function isBaseHandler(
   handler: SubstrateHandler,
@@ -111,4 +117,27 @@ export function loadChainTypesFromJs(
     );
   }
   return rawContent;
+}
+
+function dsContainsNonEventHandlers(ds: SubstrateProjectDs): boolean {
+  if (isRuntimeDs(ds)) {
+    return !!ds.mapping.handlers.find(
+      (handler) => handler.kind !== SubstrateHandlerKind.Event,
+    );
+  } else if (isCustomDs(ds)) {
+    // TODO this can be improved upon in the future.
+    return true;
+  }
+  return true;
+}
+
+export function isOnlyEventHandlers(project: SubqueryProject): boolean {
+  const hasNonEventHandler = !!project.dataSources.find((ds) =>
+    dsContainsNonEventHandlers(ds),
+  );
+  const hasNonEventTemplate = !!project.templates.find((ds) =>
+    dsContainsNonEventHandlers(ds),
+  );
+
+  return !hasNonEventHandler && !hasNonEventTemplate;
 }
