@@ -135,7 +135,7 @@ export abstract class ApiService<A = any, SA = any, B = any> implements IApi<A, 
 
     if (network.chainId === chainId) {
       // Replace null connection with the new connection
-      await this.connectionPoolService.updateConnection(connection, index);
+      await this.connectionPoolService.updateConnection(connection, endpoint);
       logger.info(`Updated connection for ${endpoint}`);
     } else {
       throw this.metadataMismatchError('ChainId', network.chainId, chainId);

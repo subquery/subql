@@ -5,13 +5,15 @@ import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 describe('ConnectionPoolStateManager', function () {
   let connectionPoolStateManager: ConnectionPoolStateManager<any>;
+  const EXAMPLE_ENDPOINT1 = 'http://example1.com';
+  const EXAMPLE_ENDPOINT2 = 'http://example2.com';
 
   beforeEach(function () {
     connectionPoolStateManager = new ConnectionPoolStateManager();
   });
 
   it('chooses primary endpoint first', async function () {
-    (connectionPoolStateManager as any).pool[0] = {
+    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT1] = {
       primary: true,
       performanceScore: 100,
       failureCount: 0,
@@ -23,7 +25,7 @@ describe('ConnectionPoolStateManager', function () {
       lastRequestTime: 0,
     };
 
-    (connectionPoolStateManager as any).pool[1] = {
+    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] = {
       primary: false,
       performanceScore: 100,
       failureCount: 0,
@@ -35,11 +37,11 @@ describe('ConnectionPoolStateManager', function () {
       lastRequestTime: 0,
     };
 
-    expect(await connectionPoolStateManager.getNextConnectedApiIndex()).toEqual(0);
+    expect(await connectionPoolStateManager.getNextConnectedEndpoint()).toEqual(EXAMPLE_ENDPOINT1);
   });
 
   it('does not choose primary endpoint if failed', async function () {
-    (connectionPoolStateManager as any).pool[0] = {
+    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT1] = {
       primary: true,
       performanceScore: 100,
       failureCount: 0,
@@ -51,7 +53,7 @@ describe('ConnectionPoolStateManager', function () {
       lastRequestTime: 0,
     };
 
-    (connectionPoolStateManager as any).pool[1] = {
+    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] = {
       primary: false,
       performanceScore: 100,
       failureCount: 0,
@@ -63,7 +65,7 @@ describe('ConnectionPoolStateManager', function () {
       lastRequestTime: 0,
     };
 
-    expect(await connectionPoolStateManager.getNextConnectedApiIndex()).toEqual(1);
+    expect(await connectionPoolStateManager.getNextConnectedEndpoint()).toEqual(EXAMPLE_ENDPOINT2);
   });
 
   it('can calculate performance score for response time of zero', function () {

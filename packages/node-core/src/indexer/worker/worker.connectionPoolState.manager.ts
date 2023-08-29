@@ -7,34 +7,34 @@ import {ApiErrorType} from '../../api.connection.error';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 
 export type HostConnectionPoolState<T> = {
-  hostGetNextConnectedApiIndex: () => Promise<number | undefined>;
-  hostAddToConnections: (endpoint: string, index: number, primary: boolean) => Promise<void>;
+  hostGetNextConnectedEndpoint: () => Promise<string | undefined>;
+  hostAddToConnections: (endpoint: string, primary: boolean) => Promise<void>;
   hostGetFieldFromConnectionPoolItem: <K extends keyof ConnectionPoolItem<T>>(
-    index: number,
+    endpoint: string,
     field: K
   ) => Promise<ConnectionPoolItem<T>[K]>;
   hostSetFieldInConnectionPoolItem: <K extends keyof ConnectionPoolItem<T>>(
-    index: number,
+    endpoint: string,
     field: K,
     value: ConnectionPoolItem<T>[K]
   ) => Promise<void>;
-  hostGetSuspendedIndices: () => Promise<number[]>;
-  hostRemoveFromConnections: (index: number) => Promise<void>;
-  hostHandleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void>;
-  hostHandleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void>;
-  hostGetDisconnectedIndices: () => Promise<number[]>;
+  hostGetSuspendedEndpoints: () => Promise<string[]>;
+  hostRemoveFromConnections: (endpoint: string) => Promise<void>;
+  hostHandleBatchApiSuccess(successResults: Array<{endpoint: string; responseTime: number}>): Promise<void>;
+  hostHandleBatchApiError(errorResults: Array<{endpoint: string; errorType: ApiErrorType}>): Promise<void>;
+  hostGetDisconnectedEndpoints: () => Promise<string[]>;
 };
 
 export const hostConnectionPoolStateKeys: (keyof HostConnectionPoolState<any>)[] = [
-  'hostGetNextConnectedApiIndex',
+  'hostGetNextConnectedEndpoint',
   'hostAddToConnections',
   'hostGetFieldFromConnectionPoolItem',
   'hostSetFieldInConnectionPoolItem',
-  'hostGetSuspendedIndices',
+  'hostGetSuspendedEndpoints',
   'hostRemoveFromConnections',
   'hostHandleBatchApiError',
   'hostHandleBatchApiSuccess',
-  'hostGetDisconnectedIndices',
+  'hostGetDisconnectedEndpoints',
 ];
 
 export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecific>(
@@ -42,14 +42,14 @@ export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecifi
 ): HostConnectionPoolState<T> {
   return {
     hostAddToConnections: connectionPoolState.addToConnections.bind(connectionPoolState),
-    hostGetNextConnectedApiIndex: connectionPoolState.getNextConnectedApiIndex.bind(connectionPoolState),
+    hostGetNextConnectedEndpoint: connectionPoolState.getNextConnectedEndpoint.bind(connectionPoolState),
     hostGetFieldFromConnectionPoolItem: connectionPoolState.getFieldValue.bind(connectionPoolState),
     hostSetFieldInConnectionPoolItem: connectionPoolState.setFieldValue.bind(connectionPoolState),
-    hostGetSuspendedIndices: connectionPoolState.getSuspendedIndices.bind(connectionPoolState),
+    hostGetSuspendedEndpoints: connectionPoolState.getSuspendedEndpoints.bind(connectionPoolState),
     hostRemoveFromConnections: connectionPoolState.removeFromConnections.bind(connectionPoolState),
     hostHandleBatchApiError: connectionPoolState.handleBatchApiError.bind(connectionPoolState),
     hostHandleBatchApiSuccess: connectionPoolState.handleBatchApiSuccess.bind(connectionPoolState),
-    hostGetDisconnectedIndices: connectionPoolState.getDisconnectedIndices.bind(connectionPoolState),
+    hostGetDisconnectedEndpoints: connectionPoolState.getDisconnectedEndpoints.bind(connectionPoolState),
   };
 }
 
@@ -59,56 +59,56 @@ export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
 {
   constructor(private host: HostConnectionPoolState<any>) {}
 
-  async getNextConnectedApiIndex(): Promise<number | undefined> {
-    return this.host.hostGetNextConnectedApiIndex();
+  async getNextConnectedEndpoint(): Promise<string | undefined> {
+    return this.host.hostGetNextConnectedEndpoint();
   }
 
-  async addToConnections(endpoint: string, index: number, primary = false): Promise<void> {
-    return this.host.hostAddToConnections(endpoint, index, primary);
+  async addToConnections(endpoint: string, primary = false): Promise<void> {
+    return this.host.hostAddToConnections(endpoint, primary);
   }
 
   async getFieldValue<K extends keyof ConnectionPoolItem<T>>(
-    index: number,
+    endpoint: string,
     field: K
   ): Promise<ConnectionPoolItem<T>[K]> {
-    return this.host.hostGetFieldFromConnectionPoolItem(index, field);
+    return this.host.hostGetFieldFromConnectionPoolItem(endpoint, field);
   }
 
   async setFieldValue<K extends keyof ConnectionPoolItem<T>>(
-    index: number,
+    endpoint: string,
     field: K,
     value: ConnectionPoolItem<T>[K]
   ): Promise<void> {
-    return this.host.hostSetFieldInConnectionPoolItem(index, field, value);
+    return this.host.hostSetFieldInConnectionPoolItem(endpoint, field, value);
   }
 
-  async getSuspendedIndices(): Promise<number[]> {
-    return this.host.hostGetSuspendedIndices();
+  async getSuspendedEndpoints(): Promise<string[]> {
+    return this.host.hostGetSuspendedEndpoints();
   }
 
-  async removeFromConnections(index: number): Promise<void> {
-    return this.host.hostRemoveFromConnections(index);
+  async removeFromConnections(endpoint: string): Promise<void> {
+    return this.host.hostRemoveFromConnections(endpoint);
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async handleApiError(index: number, errorType: ApiErrorType): Promise<void> {
+  async handleApiError(endpoint: string, errorType: ApiErrorType): Promise<void> {
     throw new Error(`Not Implemented`); // workers use handleBatchApiError
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async handleApiSuccess(index: number, responseTime: number): Promise<void> {
+  async handleApiSuccess(endpoint: string, responseTime: number): Promise<void> {
     throw new Error(`Not Implemented`); // workers use handleBatchApiSuccess
   }
 
-  async handleBatchApiSuccess(successResults: Array<{apiIndex: number; responseTime: number}>): Promise<void> {
+  async handleBatchApiSuccess(successResults: Array<{endpoint: string; responseTime: number}>): Promise<void> {
     return this.host.hostHandleBatchApiSuccess(successResults);
   }
 
-  async handleBatchApiError(errorResults: Array<{apiIndex: number; errorType: ApiErrorType}>): Promise<void> {
+  async handleBatchApiError(errorResults: Array<{endpoint: string; errorType: ApiErrorType}>): Promise<void> {
     return this.host.hostHandleBatchApiError(errorResults);
   }
 
-  async getDisconnectedIndices(): Promise<number[]> {
-    return this.host.hostGetDisconnectedIndices();
+  async getDisconnectedEndpoints(): Promise<string[]> {
+    return this.host.hostGetDisconnectedEndpoints();
   }
 }

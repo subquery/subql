@@ -99,12 +99,12 @@ describe('ConnectionPoolService', () => {
       const handleApiDisconnectsSpy = jest.spyOn(connectionPoolService as any, 'handleApiDisconnects');
 
       // Trigger handleApiError with connection issue twice
-      connectionPoolService.handleApiError(0, {
+      connectionPoolService.handleApiError('https://example.com/api', {
         name: 'ConnectionError',
         errorType: ApiErrorType.Connection,
         message: 'Connection error',
       });
-      connectionPoolService.handleApiError(0, {
+      connectionPoolService.handleApiError('https://example.com/api', {
         name: 'ConnectionError',
         errorType: ApiErrorType.Connection,
         message: 'Connection error',
