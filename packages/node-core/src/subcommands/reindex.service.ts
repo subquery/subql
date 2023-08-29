@@ -40,6 +40,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       logger.error('Unable to locate schema');
       throw new Error('Schema does not exist.');
     }
+
+    await this.storeService.initCoreTables(schema);
+
     await initDbSchema(this.project, schema, this.storeService);
 
     this._metadataRepo = this.storeService.storeCache.metadata;

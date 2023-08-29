@@ -16,10 +16,6 @@ initLogger(
 const { setProfiler } = require('@subql/node-core');
 setProfiler(argv.profiler);
 
-// Lazy import, to allow logger to be initialised before bootstrap()
-// As bootstrap runs services that requires logger
-const { bootstrap } = require('./init');
-if (!(argv._[0] === 'test' || argv._[0] === 'force-clean')) {
 if (argv._[0] === undefined) {
   // Lazy import, to allow logger to be initialised before bootstrap()
   // As bootstrap runs services that requires logger
