@@ -125,6 +125,7 @@ export function filterBlock(
   filter?: SubstrateBlockFilter,
 ): SubstrateBlock | undefined {
   if (!filter) return block;
+  if (!filterBlockHeight(block, filter)) return;
   if (!filterBlockModulo(block, filter)) return;
   if (filter.timestamp) {
     if (!filterBlockTimestamp(block, filter as SubqlProjectBlockFilter)) {
@@ -136,6 +137,15 @@ export function filterBlock(
     checkSpecRange(filter.specVersion, block.specVersion)
     ? block
     : undefined;
+}
+
+export function filterBlockHeight(
+  block: SubstrateBlock,
+  filter: SubstrateBlockFilter,
+): boolean {
+  const { height } = filter;
+  if (!height) return true;
+  return block.block.header.number.toNumber() === height;
 }
 
 export function filterBlockModulo(

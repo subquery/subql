@@ -135,6 +135,25 @@ export function getModulos<DS extends BaseDataSource, CDS extends DS & BaseCusto
   return modulos;
 }
 
+export function getFilteredHeights<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
+  dataSources: DS[],
+  isCustomDs: IsCustomDs<DS, CDS>,
+  blockHandlerKind: string
+): number[] {
+  const heights: number[] = [];
+  for (const ds of dataSources) {
+    if (isCustomDs(ds)) {
+      continue;
+    }
+    for (const handler of ds.mapping.handlers) {
+      if (handler.kind === blockHandlerKind && handler.filter && handler.filter.height) {
+        heights.push(handler.filter.height);
+      }
+    }
+  }
+  return heights;
+}
+
 export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
   _dataSources: (DS | CDS)[],
   reader: Reader,

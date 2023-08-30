@@ -24,6 +24,7 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   finalizedHeight = 1000;
   bestHeight = 20;
   modulos: number[] = [];
+  filteredHeight: number[] = [];
 
   protected buildDictionaryQueryEntries(
     dataSources: BaseDataSource<any, BaseHandler<any>, BaseMapping<any, BaseHandler<any>>>[]
@@ -42,6 +43,9 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   }
   protected getModulos(): number[] {
     return this.modulos;
+  }
+  protected getFilteredHeights(): number[] {
+    return this.filteredHeight;
   }
   protected async initBlockDispatcher(): Promise<void> {
     return Promise.resolve();

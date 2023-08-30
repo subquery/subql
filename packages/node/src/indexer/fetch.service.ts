@@ -17,7 +17,12 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
+import {
+  NodeConfig,
+  BaseFetchService,
+  getModulos,
+  getFilteredHeights,
+} from '@subql/node-core';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
@@ -149,7 +154,7 @@ export class FetchService extends BaseFetchService<
         switch (baseHandlerKind) {
           case SubstrateHandlerKind.Block:
             for (const filter of filterList as SubstrateBlockFilter[]) {
-              if (filter.modulo === undefined) {
+              if (filter.modulo === undefined || filter.height === undefined) {
                 return [];
               }
             }
@@ -215,6 +220,14 @@ export class FetchService extends BaseFetchService<
       .toNumber();
 
     return Math.min(BLOCK_TIME_VARIANCE, chainInterval);
+  }
+
+  protected getFilteredHeights(): number[] {
+    return getFilteredHeights(
+      this.projectService.getAllDataSources(),
+      isCustomDs,
+      SubstrateHandlerKind.Block,
+    );
   }
 
   protected getModulos(): number[] {

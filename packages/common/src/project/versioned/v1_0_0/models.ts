@@ -63,6 +63,9 @@ export class BlockFilterImpl implements BlockFilter {
   @IsOptional()
   @IsString()
   timestamp?: string;
+  @IsOptional()
+  @IsInt()
+  height?: number;
 }
 
 export class ParentProjectModel implements ParentProject {

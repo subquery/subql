@@ -59,4 +59,5 @@ export interface ProjectManifestV1_0_0<
 export interface BlockFilter {
   modulo?: number;
   timestamp?: string;
+  height?: number;
 }
