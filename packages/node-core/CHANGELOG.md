@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Fixed
+## [4.2.5] - 2023-09-01
 - Update apollo-links to 1.0.2, fix dictionary resolver failed to get token issue
 - Use test runs as unit for tests instead of entity checks (#1957)
 
@@ -377,7 +377,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.2.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.2.4...HEAD
+[4.2.3]: https://github.com/subquery/subql/compare/node-core/4.2.3...node-core/4.2.4
 [4.2.3]: https://github.com/subquery/subql/compare/node-core/4.2.2...node-core/4.2.3
 [4.2.2]: https://github.com/subquery/subql/compare/node-core/4.2.1...node-core/4.2.2
 [4.2.1]: https://github.com/subquery/subql/compare/node-core/4.2.0...node-core/4.2.1
