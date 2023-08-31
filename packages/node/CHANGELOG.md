@@ -5,10 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.12.0] - 2023-09-01
 ### Fixed
 - Fallback to singular provider if batch provider is not supported (#144)
 - Fix missing ds option for event in dictionary query entries (#145)
-
+- Update `node-core` to 4.2.5, fix dictionary failed to get token issue.
 ### Added
 - Custom provider for Celo (#147)
 
@@ -204,14 +206,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.11.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.0...HEAD
+[2.12.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.11.1...node-ethereum/2.12.0
 [2.11.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.10.0...node-ethereum/2.11.1
 [2.10.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.2...node-ethereum/2.10.0
 [2.9.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.1...node-ethereum/2.9.2
 [2.9.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.9.0...node-ethereum/2.9.1
 [2.9.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.8.0...node-ethereum/2.9.0
 [2.8.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.6.1...node-ethereum/2.8.0
-[2.6.1]: https://github.com/subquery/subql-ethereum/compare/node/2.6.0...node-ethereum/2.6.1
+[2.6.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum//2.6.0...node-ethereum/2.6.1
 [2.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.3...node-ethereum/2.6.0
 [2.5.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.2...node-ethereum/2.5.3
 [2.5.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.5.1...node-ethereum/2.5.2
