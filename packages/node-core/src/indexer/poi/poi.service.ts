@@ -34,7 +34,7 @@ export class PoiService implements OnApplicationShutdown {
   constructor(
     private storeCache: StoreCacheService,
     private eventEmitter: EventEmitter2,
-    @Inject('ISubqueryProject') protected project: ISubqueryProject
+    @Inject('ISubqueryProject') private project: ISubqueryProject
   ) {}
 
   onApplicationShutdown(): void {
