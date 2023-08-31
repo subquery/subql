@@ -167,7 +167,7 @@ describe('cacheModel', () => {
     // it should keep same behavior as hook we used
     it('when get data after flushed, it should exclude block range', async () => {
       const spyDbGet = jest.spyOn(testModel.model, 'findOne');
-      const sypOnApplyBlockRange = jest.spyOn(testModel.model, 'applyBlockRange');
+      const sypOnApplyBlockRange = jest.spyOn(testModel as any, 'applyBlockRange');
       testModel.set(
         'entity1_id_0x01',
         {

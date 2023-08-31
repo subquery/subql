@@ -10,12 +10,10 @@ import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {MmrQueryService} from '../meta/mmrQuery.service';
 import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {MmrService} from './mmr.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
@@ -42,8 +40,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     private readonly dsProcessorService: BaseDsProcessorService,
     protected readonly apiService: API,
     private readonly poiService: PoiService,
-    protected readonly mmrService: MmrService,
-    protected readonly mmrQueryService: MmrQueryService,
     protected readonly sequelize: Sequelize,
     protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected readonly projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
@@ -109,13 +105,10 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       await this.storeService.storeCache.flushCache(true);
 
       if (this.nodeConfig.proofOfIndex) {
-        const blockOffset = await this.getMetadataBlockOffset();
-        await this.poiService.init();
-        // Flush cache to setup rest of POI related meta
+        await this.poiService.init(this.schema);
+        // Flush cache to set up rest of POI related meta
         await this.storeService.storeCache.flushCache(true);
-        // syncFileBaseFromPoi at the bottom, avoid DB be blocked lead project init not completed,
-        // And fetch service have to keep waiting
-        void this.setBlockOffset(Number(blockOffset));
+        void this.poiService.syncPoi(undefined, this.nodeConfig.debug);
       }
     } else {
       this._schema = await this.getExistingProjectSchema();
@@ -126,10 +119,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       await this.storeService.initCoreTables(this._schema);
       await this.initUpgradeService();
       await this.initDbSchema();
-
-      if (this.nodeConfig.proofOfIndex) {
-        await this.poiService.init();
-      }
     }
 
     // Used to load assets into DS-processor, has to be done in any thread
@@ -236,19 +225,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   protected async getLastProcessedHeight(): Promise<number | undefined> {
     return this.storeService.storeCache.metadata.find('lastProcessedHeight');
-  }
-
-  async setBlockOffset(offset: number): Promise<void> {
-    if (this._blockOffset !== undefined || offset === null || offset === undefined || isNaN(offset)) {
-      return;
-    }
-    logger.info(`set blockOffset to ${offset}`);
-    this._blockOffset = offset;
-    await this.mmrQueryService.init(offset);
-    return this.mmrService.syncFileBaseFromPoi(offset, undefined, true).catch((err) => {
-      logger.error(err, 'failed to sync poi to mmr');
-      process.exit(1);
-    });
   }
 
   private async getStartHeight(): Promise<number> {
@@ -380,7 +356,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       this.storeService,
       this.unfinalizedBlockService,
       this.dynamicDsService,
-      this.mmrService,
       this.sequelize
       /* Not providing force clean service, it should never be needed */
     );

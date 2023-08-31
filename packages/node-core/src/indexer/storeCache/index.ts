@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './storeCache.service';
-export * from './pgMmrCache.service';
 export * from './types';
 export * from './cacheModel';
 export * from './cacheMetadata';
-export * from './cacheMmr';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {DynamicDsService, IUnfinalizedBlocksService, MmrService, StoreService} from '../indexer';
+import {DynamicDsService, IUnfinalizedBlocksService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {ForceCleanService} from '../subcommands';
 
@@ -16,9 +16,9 @@ export async function reindex(
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
-  mmrService: MmrService,
   sequelize: Sequelize,
-  forceCleanService?: ForceCleanService
+  forceCleanService?: ForceCleanService,
+  latestSyncedPoiHeight?: number
 ): Promise<void> {
   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
     logger.warn(
@@ -47,11 +47,9 @@ export async function reindex(
         unfinalizedBlockService.resetLastFinalizedVerifiedHeight(),
         dynamicDsService.resetDynamicDatasource(targetBlockHeight),
       ]);
-
-      if (blockOffset) {
-        await mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
+      if (latestSyncedPoiHeight !== undefined && latestSyncedPoiHeight > targetBlockHeight) {
+        storeService.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
       }
-
       // Flush metadata changes from above Promise.all
       await storeService.storeCache.metadata.flush(transaction);
 

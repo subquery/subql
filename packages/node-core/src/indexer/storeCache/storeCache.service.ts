@@ -76,9 +76,6 @@ export class StoreCacheService extends BaseCacheService {
     if (entity === '_poi') {
       throw new Error('Please use getPoiModel instead');
     }
-    if (entity === '_mmr') {
-      throw new Error('MMR repo is not publicly accessible');
-    }
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);

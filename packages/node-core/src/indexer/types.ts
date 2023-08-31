@@ -49,7 +49,6 @@ export interface IIndexerManager<B, DS> {
 export interface IProjectService<DS> {
   blockOffset: number | undefined;
   reindex(lastCorrectHeight: number): Promise<void>;
-  setBlockOffset(offset: number): Promise<void>;
   getAllDataSources(): DS[];
   getDataSources(blockHeight?: number): Promise<DS[]>;
   getStartBlockFromDataSources(): number;

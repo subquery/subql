@@ -104,8 +104,8 @@ export class PoiBenchmarkService extends BaseBenchmarkService {
     }
   }
 
-  @OnEvent(PoiEvent.LastPoiWithMmr)
-  handleLastPoiWithMmr(blockPayload: ProcessBlockPayload): void {
+  @OnEvent(PoiEvent.LatestSyncedPoi)
+  handleLatestSyncedPoi(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
   }
