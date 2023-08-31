@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+- Move code to node-core (#1797)
+
+### Added
+- Project upgrades feature which allows upgrading projects at specific heights (#1797)
+- Support for skipBlock and LightBlock (#1968)
+
 ### Fixed
+- Project node runner options being overwritten by yargs defaults (#1967)
 - Sync with node-core, fix dictionary resolver failed to get token issue
 
 ## [2.12.2] - 2023-08-17
