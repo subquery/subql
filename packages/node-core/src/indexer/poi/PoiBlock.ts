@@ -40,11 +40,17 @@ const poiBlockHash = (
 };
 
 export class PoiBlock implements ProofOfIndex {
+  // poi block id, this usually same as on chain block height
   readonly id: number;
+  // on chain block hash
   readonly chainBlockHash: Uint8Array | null;
+  // Hash generated from store actions within current block
   readonly operationHashRoot: Uint8Array | null;
+  // project deployment ID
   readonly projectId: string;
+  // previous poi block hash
   readonly parentHash: Uint8Array | undefined;
+  // current poi hash, this is hash from above values.
   readonly hash: Uint8Array | undefined;
 
   constructor(
