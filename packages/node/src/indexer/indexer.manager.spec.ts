@@ -14,7 +14,7 @@ import {
   ConnectionPoolService,
   StoreCacheService,
   ConnectionPoolStateManager,
-  IProjectUpgradeService
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -180,7 +180,7 @@ function createIndexerManager(
     storeCache,
     project,
   );
-  const poiService = new PoiService(storeCache, eventEmitter);
+  const poiService = new PoiService(storeCache, eventEmitter, project);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,

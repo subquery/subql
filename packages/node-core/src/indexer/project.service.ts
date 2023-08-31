@@ -105,7 +105,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       await this.storeService.storeCache.flushCache(true);
 
       if (this.nodeConfig.proofOfIndex) {
-        await this.poiService.init(this.schema, this.project.id);
+        await this.poiService.init(this.schema);
         // Flush cache to set up rest of POI related meta
         await this.storeService.storeCache.flushCache(true);
         void this.poiService.syncPoi(undefined, this.nodeConfig.debug);
@@ -224,7 +224,8 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   }
 
   protected async getLastProcessedHeight(): Promise<number | undefined> {
-    return this.storeService.storeCache.metadata.find('lastProcessedHeight');}
+    return this.storeService.storeCache.metadata.find('lastProcessedHeight');
+  }
 
   private async getStartHeight(): Promise<number> {
     let startHeight: number;

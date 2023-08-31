@@ -11,6 +11,7 @@ import {getLogger} from '../../logger';
 import {ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
+import {ISubqueryProject} from '../types';
 import {PoiBlock} from './PoiBlock';
 
 const GENESIS_PARENT_HASH = hexToU8a('0x00');
@@ -29,9 +30,12 @@ export class PoiService implements OnApplicationShutdown {
   private _poiRepo?: CachePoiModel;
   private _latestSyncedPoi?: ProofOfIndex;
   private isSyncing = false;
-  private _projectId?: string;
 
-  constructor(private storeCache: StoreCacheService, private eventEmitter: EventEmitter2) {}
+  constructor(
+    private storeCache: StoreCacheService,
+    private eventEmitter: EventEmitter2,
+    private project: ISubqueryProject
+  ) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
@@ -45,10 +49,10 @@ export class PoiService implements OnApplicationShutdown {
   }
 
   get projectId(): string {
-    if (!this._projectId) {
-      throw new Error(`No project Id inited`);
+    if (!this.project) {
+      throw new Error(`No project inited`);
     }
-    return this._projectId;
+    return this.project.id;
   }
 
   get latestSyncedPoi(): SyncedProofOfIndex {
@@ -63,9 +67,8 @@ export class PoiService implements OnApplicationShutdown {
     }
   }
 
-  async init(schema: string, projectId: string): Promise<void> {
+  async init(schema: string): Promise<void> {
     this._poiRepo = this.storeCache.poi ?? undefined;
-    this._projectId = projectId;
     const latestSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
     if (latestSyncedPoiHeight !== undefined) {
       const recordedPoi = await this.poiRepo.getPoiById(latestSyncedPoiHeight);
@@ -91,6 +94,9 @@ export class PoiService implements OnApplicationShutdown {
       return;
     }
     try {
+      // Remove and Change column from sequelize not work, it only applies to public schema
+      // https://github.com/sequelize/sequelize/issues/13365
+      // await this.poiRepo?.model.sequelize?.getQueryInterface().changeColumn(tableName,'mmrRoot',{})
       const tableName = this.poiRepo.model.getTableName().toString();
       const checkAttributesQuery = `SELECT
         (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "operationHashRoot" IS NOT NULL)) AS operationHashRoot_nullable,
@@ -153,9 +159,6 @@ export class PoiService implements OnApplicationShutdown {
           logger.info(`If file based mmr were used previously, it can be clean up mannually`);
         }
       }
-      // Remove and Change column from sequelize not work, it only applies to public schema
-      // https://github.com/sequelize/sequelize/issues/13365
-      // await this.poiRepo?.model.sequelize?.getQueryInterface().changeColumn(tableName,'mmrRoot',{})
     } catch (e) {
       throw new Error(`Failed to migrate poi table. {e}`);
     }

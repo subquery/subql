@@ -118,7 +118,15 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     SandboxService,
     DsProcessorService,
     DynamicDsService,
-    PoiService,
+    {
+      provide: PoiService,
+      useFactory: (
+        eventEmitter: EventEmitter2,
+        storeCache: StoreCacheService,
+        project: SubqueryProject,
+      ) => new PoiService(storeCache, eventEmitter, project),
+      inject: [EventEmitter2, StoreCacheService, 'ISubqueryProject'],
+    },
     {
       useClass: ProjectService,
       provide: 'IProjectService',

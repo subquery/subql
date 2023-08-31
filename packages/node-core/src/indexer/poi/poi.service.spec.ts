@@ -6,6 +6,7 @@ import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from '../storeCache';
+import {ISubqueryProject} from '../types';
 import {PoiService} from './poi.service';
 
 jest.mock('@subql/x-sequelize', () => {
@@ -30,7 +31,7 @@ function createPoiService(): PoiService {
 
   storeCache.setRepos({} as any, undefined);
   storeCache.flushCache = jest.fn();
-  return new PoiService(storeCache, eventEmitter);
+  return new PoiService(storeCache, eventEmitter, {id: 'testId'} as ISubqueryProject);
 }
 
 async function createGenesisPoi(poiService: PoiService) {
@@ -80,7 +81,7 @@ describe('Poi Service init', () => {
     const spyOnSetLatestSyncedPoi = jest.spyOn(poiService as any, 'setLatestSyncedPoi');
     const spyOnMigration = jest.spyOn(poiService as any, 'migratePoi');
     const spyOnCreateGenesisPoi = jest.spyOn(poiService as any, 'createGenesisPoi');
-    await poiService.init('test', 'testId');
+    await poiService.init('test');
     expect(spyOnSetLatestSyncedPoi).toBeCalledTimes(1);
     expect(poiService.projectId).toBe('testId');
     expect(poiService.latestSyncedPoi.id).toBe(100);
@@ -104,7 +105,7 @@ describe('Poi Service init', () => {
       bulkUpsert: jest.fn(),
       getPoiBlocksByRange: jest.fn(),
     };
-    await expect(poiService.init('test', 'testId')).rejects.toThrow(
+    await expect(poiService.init('test')).rejects.toThrow(
       `Found synced poi at height 100 is not valid, please check D`
     );
   });
