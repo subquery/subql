@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_FETCH_RANGE, delay, POI_AWAIT_TIME} from '@subql/common';
 import {hexToU8a} from '@subql/utils';
@@ -34,7 +34,7 @@ export class PoiService implements OnApplicationShutdown {
   constructor(
     private storeCache: StoreCacheService,
     private eventEmitter: EventEmitter2,
-    private project: ISubqueryProject
+    @Inject('ISubqueryProject') protected project: ISubqueryProject
   ) {}
 
   onApplicationShutdown(): void {
