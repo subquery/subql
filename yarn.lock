@@ -6040,20 +6040,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:^0.5.8":
-  version: 0.5.8
-  resolution: "@subql/apollo-links@npm:0.5.8"
+"@subql/apollo-links@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@subql/apollo-links@npm:1.0.2"
   dependencies:
     "@metamask/eth-sig-util": 5.1.0
     apollo-link-error: ^1.1.13
     axios: ^0.27.2
     buffer: ^6.0.3
+    cross-fetch: ^4.0.0
     ethers: ^5.6.8
     jwt-decode: ^3.1.2
+    lru-cache: ^10.0.1
   peerDependencies:
     "@apollo/client": "*"
     graphql: "*"
-  checksum: 34366e720bfe5c5dece380b93ec61d754f0bc804d07ff43e46aaca792f26f202b112a47cc2729a43e55181190b322aa1665618162f94add5cb341fb553f22116
+  checksum: b7e3511d78d136bdda4e1ae1722c22522a10dacbe7b0908fe7065233cd1ed2e61a6e3a599b9a37b356bedf48833212eb037593324bc409def6e562c094605376
   languageName: node
   linkType: hard
 
@@ -6290,7 +6292,7 @@ __metadata:
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/apollo-links": ^0.5.8
+    "@subql/apollo-links": ^1.0.2
     "@subql/common": "workspace:*"
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
@@ -10464,6 +10466,15 @@ __metadata:
   dependencies:
     node-fetch: ^2.6.11
   checksum: 704b3519ab7de488328cc49a52cf1aa14132ec748382be5b9557b22398c33ffa7f8c2530e8a97ed8cb55da52b0a9740a9791d361271c4591910501682d981d9c
+  languageName: node
+  linkType: hard
+
+"cross-fetch@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "cross-fetch@npm:4.0.0"
+  dependencies:
+    node-fetch: ^2.6.12
+  checksum: ecca4f37ffa0e8283e7a8a590926b66713a7ef7892757aa36c2d20ffa27b0ac5c60dcf453119c809abe5923fc0bae3702a4d896bfb406ef1077b0d0018213e24
   languageName: node
   linkType: hard
 
@@ -15709,6 +15720,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lru-cache@npm:^10.0.1, lru-cache@npm:^9.1.1 || ^10.0.0":
+  version: 10.0.1
+  resolution: "lru-cache@npm:10.0.1"
+  checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^5.0.0, lru-cache@npm:^5.1.1":
   version: 5.1.1
   resolution: "lru-cache@npm:5.1.1"
@@ -15731,13 +15749,6 @@ __metadata:
   version: 7.9.0
   resolution: "lru-cache@npm:7.9.0"
   checksum: c91a293a103d11ea4f07de4122ba4f73d8203d0de51852fb612b1764296aebf623a3e11dddef1b3aefdc8d71af97d52b222dad5459dcb967713bbab9a19fed7d
-  languageName: node
-  linkType: hard
-
-"lru-cache@npm:^9.1.1 || ^10.0.0":
-  version: 10.0.1
-  resolution: "lru-cache@npm:10.0.1"
-  checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
   languageName: node
   linkType: hard
 

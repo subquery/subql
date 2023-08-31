@@ -171,13 +171,14 @@ export class DictionaryService implements OnApplicationShutdown {
     let link: ApolloLink;
 
     if (this.nodeConfig.dictionaryResolver) {
-      link = dictHttpLink({
+      const authHttpLink = dictHttpLink({
         authUrl: this.nodeConfig.dictionaryResolver,
         chainId: this.chainId,
         logger,
         httpOptions: {fetch},
         fallbackServiceUrl: this.dictionaryEndpoint,
       });
+      link = authHttpLink.link;
     } else {
       link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
