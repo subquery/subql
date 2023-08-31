@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
+
+// Auto-generated, DO NOT EDIT
+import { CosmosMessage, <%= Object.keys(props.abi.messages) %> } from "@subql/types-cosmos";
+
+import { <%= Object.values(props.abi.messages).join(', ') %> } from "../cosmwasm-interfaces/<%=props.abi.contract %>.types";
+
+<% Object.entries(props.abi.messages).forEach(([key, value]) => { %>
+export type <%= props.abi.contract%><%= value%> = CosmosMessage<<%= key %><<%= value%>>>;
+<% }); %>

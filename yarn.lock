@@ -2769,6 +2769,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cosmwasm/ts-codegen@npm:^0.35.3":
+  version: 0.35.3
+  resolution: "@cosmwasm/ts-codegen@npm:0.35.3"
+  dependencies:
+    "@babel/core": 7.18.10
+    "@babel/generator": 7.18.12
+    "@babel/parser": 7.18.11
+    "@babel/plugin-proposal-class-properties": 7.18.6
+    "@babel/plugin-proposal-export-default-from": 7.18.10
+    "@babel/plugin-proposal-object-rest-spread": 7.18.9
+    "@babel/plugin-transform-runtime": 7.18.10
+    "@babel/preset-env": 7.18.10
+    "@babel/preset-typescript": ^7.18.6
+    "@babel/runtime": ^7.18.9
+    "@babel/traverse": 7.18.11
+    "@babel/types": 7.18.10
+    "@pyramation/json-schema-to-typescript": " 11.0.4"
+    case: 1.6.3
+    dargs: 7.0.0
+    deepmerge: 4.2.2
+    dotty: 0.1.2
+    fuzzy: 0.1.3
+    glob: 8.0.3
+    inquirerer: 0.1.3
+    long: ^5.2.0
+    minimist: 1.2.6
+    mkdirp: 1.0.4
+    parse-package-name: 1.0.0
+    rimraf: 3.0.2
+    shelljs: 0.8.5
+    wasm-ast-types: ^0.26.2
+  bin:
+    cosmwasm-ts-codegen: main/ts-codegen.js
+  checksum: 0403a2882a87e83196b720e971aa946921b1feb338d63e08e95e9f65c0464bb1368b2a6236263bea1a888e852b9d6ed1af728f7944dfff2fe49d17ee601abc83
+  languageName: node
+  linkType: hard
+
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"
@@ -4463,6 +4500,7 @@ __metadata:
   resolution: "@subql/common-cosmos@workspace:packages/common-cosmos"
   dependencies:
     "@cosmology/telescope": ^0.104.0
+    "@cosmwasm/ts-codegen": ^0.35.3
     "@protobufs/cosmos": ^0.1.0
     "@protobufs/cosmos_proto": ^0.0.10
     "@protobufs/cosmwasm": ^0.1.1
@@ -4476,10 +4514,13 @@ __metadata:
     "@types/ejs": ^3.1.2
     "@types/fs-extra": ^11
     "@types/js-yaml": ^4.0.4
+    "@types/lodash": ^4
     "@types/pino": ^6.3.12
     "@types/rimraf": 3.0.2
+    ejs: 3.1.6
     fs-extra: ^11.1.1
     js-yaml: ^4.1.0
+    lodash: 4.17.21
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
   peerDependencies:
@@ -4971,17 +5012,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4, @types/lodash@npm:^4.14.182":
+  version: 4.14.197
+  resolution: "@types/lodash@npm:4.14.197"
+  checksum: 53d7567d1704de76cf33266c78062e0fd722d4b846e5b1417d0b6ef0ee41c0d9c451b92bc34f73d5f1fcc45c7d36511e92f6f47a9279b48157ba60a92ddaa078
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:^4.14.178":
   version: 4.14.195
   resolution: "@types/lodash@npm:4.14.195"
   checksum: 39b75ca635b3fa943d17d3d3aabc750babe4c8212485a4df166fe0516e39288e14b0c60afc6e21913cc0e5a84734633c71e617e2bd14eaa1cf51b8d7799c432e
-  languageName: node
-  linkType: hard
-
-"@types/lodash@npm:^4.14.182":
-  version: 4.14.197
-  resolution: "@types/lodash@npm:4.14.197"
-  checksum: 53d7567d1704de76cf33266c78062e0fd722d4b846e5b1417d0b6ef0ee41c0d9c451b92bc34f73d5f1fcc45c7d36511e92f6f47a9279b48157ba60a92ddaa078
   languageName: node
   linkType: hard
 
@@ -5910,6 +5951,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"async@npm:^3.2.3":
+  version: 3.2.4
+  resolution: "async@npm:3.2.4"
+  checksum: 43d07459a4e1d09b84a20772414aa684ff4de085cbcaec6eea3c7a8f8150e8c62aa6cd4e699fe8ee93c3a5b324e777d34642531875a0817a35697522c1b02e89
+  languageName: node
+  linkType: hard
+
 "asynckit@npm:^0.4.0":
   version: 0.4.0
   resolution: "asynckit@npm:0.4.0"
@@ -6464,7 +6512,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^4.0.0, chalk@npm:^4.1.0, chalk@npm:^4.1.2":
+"chalk@npm:^4.0.0, chalk@npm:^4.0.2, chalk@npm:^4.1.0, chalk@npm:^4.1.2":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
   dependencies:
@@ -7189,6 +7237,17 @@ __metadata:
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1"
   checksum: 1b4cac778d64ce3b582a7e26b218afe07e207a0f9bfe13cc7395a6d307849cfe361e65033c3251e00c27dd060cab43014c2d6b2647676135e18b77d2d05b3f4f
+  languageName: node
+  linkType: hard
+
+"ejs@npm:3.1.6":
+  version: 3.1.6
+  resolution: "ejs@npm:3.1.6"
+  dependencies:
+    jake: ^10.6.1
+  bin:
+    ejs: ./bin/cli.js
+  checksum: 81a9cdea0b4ded3b5a4b212b7c17e20bb07468f08394e2d519708d367957a70aef3d282a6d5d38bf6ad313ba25802b9193d4227f29b084d2ee0f28d115141d48
   languageName: node
   linkType: hard
 
@@ -8049,6 +8108,15 @@ __metadata:
   dependencies:
     flat-cache: ^3.0.4
   checksum: f49701feaa6314c8127c3c2f6173cfefff17612f5ed2daaafc6da13b5c91fd43e3b2a58fd0d63f9f94478a501b167615931e7200e31485e320f74a33885a9c74
+  languageName: node
+  linkType: hard
+
+"filelist@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "filelist@npm:1.0.4"
+  dependencies:
+    minimatch: ^5.0.1
+  checksum: a303573b0821e17f2d5e9783688ab6fbfce5d52aaac842790ae85e704a6f5e4e3538660a63183d6453834dedf1e0f19a9dadcebfa3e926c72397694ea11f5160
   languageName: node
   linkType: hard
 
@@ -9574,6 +9642,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jake@npm:^10.6.1":
+  version: 10.8.7
+  resolution: "jake@npm:10.8.7"
+  dependencies:
+    async: ^3.2.3
+    chalk: ^4.0.2
+    filelist: ^1.0.4
+    minimatch: ^3.1.2
+  bin:
+    jake: bin/cli.js
+  checksum: a23fd2273fb13f0d0d845502d02c791fd55ef5c6a2d207df72f72d8e1eac6d2b8ffa6caf660bc8006b3242e0daaa88a3ecc600194d72b5c6016ad56e9cd43553
+  languageName: node
+  linkType: hard
+
 "jest-changed-files@npm:^27.5.1":
   version: 27.5.1
   resolution: "jest-changed-files@npm:27.5.1"
@@ -10546,7 +10628,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.12, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.3.0, lodash@npm:^4.7.0":
+"lodash@npm:4.17.21, lodash@npm:^4.17.12, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.3.0, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -14019,6 +14101,20 @@ __metadata:
     case: 1.6.3
     deepmerge: 4.2.2
   checksum: e08cf943f0f1ad41e9e092cbc109687476835c33727fe0548b7db1f45b58c82a5e59d828871f590d6f3ea6b5f16a28bd3fca818c570652f1a8301263c91006da
+  languageName: node
+  linkType: hard
+
+"wasm-ast-types@npm:^0.26.2":
+  version: 0.26.2
+  resolution: "wasm-ast-types@npm:0.26.2"
+  dependencies:
+    "@babel/runtime": ^7.18.9
+    "@babel/types": 7.18.10
+    "@jest/transform": 28.1.3
+    ast-stringify: 0.1.0
+    case: 1.6.3
+    deepmerge: 4.2.2
+  checksum: c2baff55ac20ff58bcf66da6836c9da48ba3a21a36cfa091e3cb33d8e036a3226e2e360305eea261394e7983a3a32036095cdfacdb0fdf51af257df748f9d28a
   languageName: node
   linkType: hard
 

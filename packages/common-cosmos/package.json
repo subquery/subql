@@ -14,6 +14,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@cosmology/telescope": "^0.104.0",
+    "@cosmwasm/ts-codegen": "^0.35.3",
     "@protobufs/cosmos": "^0.1.0",
     "@protobufs/cosmos_proto": "^0.0.10",
     "@protobufs/cosmwasm": "^0.1.1",
@@ -37,8 +38,11 @@
     "@types/ejs": "^3.1.2",
     "@types/fs-extra": "^11",
     "@types/js-yaml": "^4.0.4",
+    "@types/lodash": "^4",
     "@types/pino": "^6.3.12",
     "@types/rimraf": "3.0.2",
+    "ejs": "3.1.6",
+    "lodash": "4.17.21",
     "rimraf": "^3.0.2"
   }
 }

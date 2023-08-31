@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {TelescopeOptions} from '@cosmology/types/types/telescope';
+import {TSBuilderInput, ContractFile} from '@cosmwasm/ts-codegen';
 
 export const TELESCOPE_OPTS: TelescopeOptions = {
   removeUnusedImports: true,
@@ -63,4 +64,22 @@ export const TELESCOPE_OPTS: TelescopeOptions = {
     enabled: false,
     camelCase: true,
   },
+};
+
+export const COSMWASM_OPTS = (outPath: string, contracts: (ContractFile | string)[]): TSBuilderInput => {
+  return {
+    contracts,
+    outPath,
+    options: {
+      bundle: {
+        enabled: false,
+      },
+      types: {
+        enabled: true,
+      },
+      messageComposer: {
+        enabled: true,
+      },
+    },
+  };
 };
