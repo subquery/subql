@@ -65,15 +65,15 @@ export default class Publish extends Command {
       project.manifests.map((manifest) => createIPFSFile(project.root, manifest, fileToCidMap.get(path.join(manifest))))
     );
 
+    const directoryCid = Array.from(fileToCidMap).find(([file, cid]) => file === '');
+
+    if (directoryCid) {
+      this.log(`SubQuery Multichain Project uploaded to IPFS: ${directoryCid[1]}`);
+    }
+
     fileToCidMap.forEach((cid, file, _) => {
-      if (file === '') {
-        this.log(`Directory uploaded to IPFS: ${cid}`);
-        return;
-      }
-      if (!flags.output) {
-        this.log(`SubQuery Project ${file} uploaded to IPFS: ${cid}`);
-      } else {
-        this.log(`${file}: ${cid}`);
+      if (file !== '') {
+        this.log(`${directoryCid ? '- This includes' : 'SubQuery Project'} ${file} uploaded to IPFS: ${cid}`);
       }
     });
   }
