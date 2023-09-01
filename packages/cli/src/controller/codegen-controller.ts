@@ -13,6 +13,7 @@ import {
   tempProtoDir,
   validateCosmosManifest,
   ProjectManifestImpls as CosmosManifest,
+  generateCosmwasm,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -436,6 +437,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   if (chainTypes.length !== 0) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
+  await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
   await generateAbis(datasources, projectPath);
 
