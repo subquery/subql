@@ -6040,9 +6040,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@subql/apollo-links@npm:1.0.2"
+"@subql/apollo-links@npm:^1.0.3-0":
+  version: 1.0.3-0
+  resolution: "@subql/apollo-links@npm:1.0.3-0"
   dependencies:
     "@metamask/eth-sig-util": 5.1.0
     apollo-link-error: ^1.1.13
@@ -6055,7 +6055,7 @@ __metadata:
   peerDependencies:
     "@apollo/client": "*"
     graphql: "*"
-  checksum: b7e3511d78d136bdda4e1ae1722c22522a10dacbe7b0908fe7065233cd1ed2e61a6e3a599b9a37b356bedf48833212eb037593324bc409def6e562c094605376
+  checksum: aa786524696e516c85474837fabcbbfdfa3d192951863a0d7f41420a1e517449f8381074ab6d84fb18ed0650650608d2197a400fd796eb1e5b3abbbfb64f945b
   languageName: node
   linkType: hard
 
@@ -6243,7 +6243,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:^2.2.1, @subql/common@npm:^2.3.1-1, @subql/common@npm:^2.4.0, @subql/common@npm:^2.6.0":
+"@subql/common@npm:2.6.0, @subql/common@npm:^2.2.1, @subql/common@npm:^2.3.1-1, @subql/common@npm:^2.4.0":
   version: 2.6.0
   resolution: "@subql/common@npm:2.6.0"
   dependencies:
@@ -6284,7 +6284,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/node-core@4.2.5, @subql/node-core@workspace:packages/node-core":
+"@subql/node-core@4.2.6, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
@@ -6292,8 +6292,8 @@ __metadata:
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/apollo-links": ^1.0.2
-    "@subql/common": ^2.6.0
+    "@subql/apollo-links": ^1.0.3-0
+    "@subql/common": 2.6.0
     "@subql/testing": ^2.0.2
     "@subql/types": ^2.2.0
     "@subql/utils": ^2.4.3
@@ -6328,9 +6328,9 @@ __metadata:
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
     "@polkadot/api": 10.7.1
-    "@subql/common": ^2.6.0
+    "@subql/common": 2.6.0
     "@subql/common-substrate": ^2.4.0
-    "@subql/node-core": 4.2.5
+    "@subql/node-core": 4.2.6
     "@subql/testing": ^2.0.2
     "@subql/types": ^2.2.0
     "@subql/utils": ^2.4.3
