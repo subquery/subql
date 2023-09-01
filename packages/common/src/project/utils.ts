@@ -237,3 +237,20 @@ export function notifyUpdates(pjson: Package, logger: Pino.Logger): void {
     logger.info(`Current ${pjson.name} version is ${pjson.version}`);
   }
 }
+
+@ValidatorConstraint({name: 'isFileReference', async: false})
+export class FileReferenceImp<T> implements ValidatorConstraintInterface {
+  validate(value: Map<string, T>): boolean {
+    if (!value) {
+      return false;
+    }
+    return !!Object.values(value).find((fileReference: T) => this.isValidFileReference(fileReference));
+  }
+  defaultMessage(args: ValidationArguments): string {
+    return `${JSON.stringify(args.value)} is not a valid assets format`;
+  }
+
+  private isValidFileReference(fileReference: T): boolean {
+    return typeof fileReference === 'object' && 'file' in fileReference && typeof fileReference.file === 'string';
+  }
+}
