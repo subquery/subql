@@ -182,22 +182,15 @@ export abstract class BaseFetchService<
     await this.fillNextBlockBuffer(initBlockHeight);
   }
 
-  getFilteredHeightBlocks(startHeight: number, endHeight: number): number[] {
+  getFilteredHeightBlocks(startBlockHeight: number, endBlockHeight: number): number[] {
     const filteredBlocks = this.getFilteredHeights();
     const heights: number[] = [];
-    for (let i = startHeight; i < endHeight; i++) {
+    for (let i = startBlockHeight; i < endBlockHeight; i++) {
       if (filteredBlocks.find((m) => m === i)) {
         heights.push(i);
       }
     }
     return heights;
-  }
-
-  getEnqueuedFilteredHeightBlocks(startBlockHeight: number): number[] {
-    return this.getFilteredHeightBlocks(
-      startBlockHeight,
-      this.nodeConfig.batchSize * Math.max(...this.getFilteredHeights()) + startBlockHeight
-    ).slice(0, this.nodeConfig.batchSize);
   }
 
   getModuloBlocks(startHeight: number, endHeight: number): number[] {
@@ -215,7 +208,7 @@ export abstract class BaseFetchService<
     return this.getModuloBlocks(
       startBlockHeight,
       this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight
-    ).slice(0, this.nodeConfig.batchSize);
+    );
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
@@ -281,7 +274,7 @@ export abstract class BaseFetchService<
 
             const moduloBlocks = this.getModuloBlocks(
               startBlockHeight,
-              // If the results fill the batch size then use the last block in the reesults
+              // If the results fill the batch size then use the last block in the results
               batchBlocks.length >= scaledBatchSize ? Math.max(...batchBlocks) : queryEndBlock
             );
             batchBlocks = uniq(batchBlocks.concat([...moduloBlocks, ...filteredHeightBlocks])).sort((a, b) => a - b);
@@ -304,20 +297,16 @@ export abstract class BaseFetchService<
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-
       const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
-
-      //TODO, add filteredHeight
-
-      const filteredHeight = this.getEnqueuedFilteredHeightBlocks(startBlockHeight);
-      console.log(`filtered height .........${filteredHeight}`);
-
-      const enqueuingBlocks =
+      const enqueueFilteredBlocks = this.getFilteredHeightBlocks(startBlockHeight, endHeight);
+      const enqueuingModuloBlocks =
         handlers.length && this.getModulos().length === handlers.length
           ? this.getEnqueuedModuloBlocks(startBlockHeight)
           : range(startBlockHeight, endHeight + 1);
-
-      await this.enqueueBlocks(enqueuingBlocks);
+      const actualEnqueueBlocks = uniq([...enqueuingModuloBlocks, ...enqueueFilteredBlocks])
+        .sort((a, b) => a - b)
+        .slice(0, this.nodeConfig.batchSize);
+      await this.enqueueBlocks(actualEnqueueBlocks);
     }
   }
 
