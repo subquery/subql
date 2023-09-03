@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.2] - 2023-09-04
+### Fixed
+- Previous failed release
+
 ## [2.12.1] - 2023-09-01
 ### Fixed
 - Update `node-core` to 4.2.6, fix timeout issue for unavailable networks in dictionary resolver.
@@ -15,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fallback to singular provider if batch provider is not supported (#144)
 - Fix missing ds option for event in dictionary query entries (#145)
 - Update `node-core` to 4.2.5, fix dictionary failed to get token issue.
+
 ### Added
 - Custom provider for Celo (#147)
 
@@ -27,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.10.0] - 2023-07-31
 ### Added
 - Added `!null` filter for logs (#135)
+
 ### Changed
 - Update license to GPL-3.0 (#137)
 - Updated retry logic for eth requests (#134)
@@ -211,6 +217,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Init release
 
 [Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.2...HEAD
+[2.12.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.1...node-ethereum/2.12.2
 [2.12.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.0...node-ethereum/2.12.1
 [2.12.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.11.1...node-ethereum/2.12.0
 [2.11.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.10.0...node-ethereum/2.11.1

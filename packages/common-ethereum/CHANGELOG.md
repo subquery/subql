@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.4] - 2023-09-04
+### Fixed
+- Previous failed release
+
 ## [2.2.3] - 2023-09-01
 ### Fixed
 - Sync with common `@subql/common` (#141)
@@ -58,7 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.4...HEAD
+[2.2.4]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.3...common-ethereum/2.2.4
 [2.2.3]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.2...common-ethereum/2.2.3
 [2.2.2]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.1...common-ethereum/2.2.2
 [2.2.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.0...common-ethereum/2.2.1
