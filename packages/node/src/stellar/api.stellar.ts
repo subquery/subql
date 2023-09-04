@@ -149,6 +149,8 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
     let sequenceEvents: SorobanEvent[] = [];
 
+    //check if there is InvokeHostFunctionOp operation
+    //If yes then, this is a soroban transaction and we should we fetch soroban events
     const hasInvokeHostFunctionOp = operations.some(
       (op) => op.type.toString() === 'invoke_host_function',
     );
@@ -240,7 +242,9 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     );
   }
 
-  private async fetchAndWrapLedger(sequence: number): Promise<StellarBlock> {
+  private async fetchAndWrapLedger(
+    sequence: number,
+  ): Promise<StellarBlockWrapper> {
     const [ledger, transactions] = await Promise.all([
       this.api.ledgers().ledger(sequence).call(),
       this.fetchTransactionsForLedger(sequence),
@@ -278,23 +282,22 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       });
     });
 
-    return wrappedLedger;
+    const wrappedLedgerInstance = new StellarBlockWrapped(
+      wrappedLedger,
+      wrappedLedger.transactions,
+      wrappedLedger.operations,
+      wrappedLedger.effects,
+      wrappedLedger.events,
+    );
+
+    return wrappedLedgerInstance;
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<StellarBlockWrapper[]> {
     const ledgers = await Promise.all(
       bufferBlocks.map((sequence) => this.fetchAndWrapLedger(sequence)),
     );
-    return ledgers.map(
-      (ledger) =>
-        new StellarBlockWrapped(
-          ledger,
-          ledger.transactions,
-          ledger.operations,
-          ledger.effects,
-          ledger.events,
-        ),
-    );
+    return ledgers;
   }
 
   get api(): Server {

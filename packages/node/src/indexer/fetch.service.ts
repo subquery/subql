@@ -77,10 +77,10 @@ function operationFilterToQueryEntry(
       matcher: 'equalTo',
     });
   }
-  if (filter.source_account) {
+  if (filter.sourceAccount) {
     conditions.push({
       field: 'sourceAccount',
-      value: filter.source_account.toLowerCase(),
+      value: filter.sourceAccount.toLowerCase(),
       matcher: 'equalTo',
     });
   }
@@ -213,7 +213,7 @@ export function buildDictionaryQueryEntries(
             queryEntries.push(
               operationFilterToQueryEntry(filter, ds.groupedOptions),
             );
-          } else if (filter.source_account || filter.type) {
+          } else if (filter.sourceAccount || filter.type) {
             queryEntries.push(operationFilterToQueryEntry(filter, ds.options));
           } else {
             return [];

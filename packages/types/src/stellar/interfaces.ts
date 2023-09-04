@@ -60,7 +60,7 @@ export interface StellarTransactionFilter {
 
 export interface StellarOperationFilter {
   type?: Horizon.OperationResponseType;
-  source_account?: string;
+  sourceAccount?: string;
 }
 
 export interface StellarEffectFilter {

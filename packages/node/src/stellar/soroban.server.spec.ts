@@ -6,7 +6,7 @@ import { SorobanServer } from './soroban.server';
 
 const DEFAULT_PAGE_SIZE = 100;
 
-describe('StellarServer', () => {
+describe('SorobanServer', () => {
   let server: SorobanServer;
   const url = 'https://example.com';
   let spy: jest.SpyInstance;

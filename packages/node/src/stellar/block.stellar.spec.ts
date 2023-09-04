@@ -79,7 +79,7 @@ describe('StellarBlockWrapped', () => {
         type: 'type1',
       } as unknown as StellarOperation;
       const filter: StellarOperationFilter = {
-        source_account: 'account2',
+        sourceAccount: 'account2',
         type: Horizon.OperationResponseType.createAccount,
       };
 
@@ -97,7 +97,7 @@ describe('StellarBlockWrapped', () => {
         type: Horizon.OperationResponseType.createAccount,
       } as unknown as StellarOperation;
       const filter: StellarOperationFilter = {
-        source_account: 'account1',
+        sourceAccount: 'account1',
         type: Horizon.OperationResponseType.createAccount,
       };
 

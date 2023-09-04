@@ -76,7 +76,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     address?: string,
   ): boolean {
     if (!filter) return true;
-    if (filter.source_account && filter.source_account !== op.source_account) {
+    if (filter.sourceAccount && filter.sourceAccount !== op.source_account) {
       return false;
     }
     if (filter.type && filter.type !== op.type) {
