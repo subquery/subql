@@ -36,11 +36,6 @@ network:
 dataSources:
   - kind: cosmos/Runtime
     startBlock: 9798050
-    options:
-      abi: cw20
-    assets:
-      cw20:
-        file: './cosmwasm/cw20/cw20.json'
     mapping:
       file: ./dist/index.js
       handlers:
