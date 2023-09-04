@@ -3406,6 +3406,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cosmwasm/ts-codegen@npm:^0.35.3":
+  version: 0.35.3
+  resolution: "@cosmwasm/ts-codegen@npm:0.35.3"
+  dependencies:
+    "@babel/core": 7.18.10
+    "@babel/generator": 7.18.12
+    "@babel/parser": 7.18.11
+    "@babel/plugin-proposal-class-properties": 7.18.6
+    "@babel/plugin-proposal-export-default-from": 7.18.10
+    "@babel/plugin-proposal-object-rest-spread": 7.18.9
+    "@babel/plugin-transform-runtime": 7.18.10
+    "@babel/preset-env": 7.18.10
+    "@babel/preset-typescript": ^7.18.6
+    "@babel/runtime": ^7.18.9
+    "@babel/traverse": 7.18.11
+    "@babel/types": 7.18.10
+    "@pyramation/json-schema-to-typescript": " 11.0.4"
+    case: 1.6.3
+    dargs: 7.0.0
+    deepmerge: 4.2.2
+    dotty: 0.1.2
+    fuzzy: 0.1.3
+    glob: 8.0.3
+    inquirerer: 0.1.3
+    long: ^5.2.0
+    minimist: 1.2.6
+    mkdirp: 1.0.4
+    parse-package-name: 1.0.0
+    rimraf: 3.0.2
+    shelljs: 0.8.5
+    wasm-ast-types: ^0.26.2
+  bin:
+    cosmwasm-ts-codegen: main/ts-codegen.js
+  checksum: 0403a2882a87e83196b720e971aa946921b1feb338d63e08e95e9f65c0464bb1368b2a6236263bea1a888e852b9d6ed1af728f7944dfff2fe49d17ee601abc83
+  languageName: node
+  linkType: hard
+
 "@cspotcode/source-map-consumer@npm:0.8.0":
   version: 0.8.0
   resolution: "@cspotcode/source-map-consumer@npm:0.8.0"
@@ -6070,7 +6107,7 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-algorand": latest
-    "@subql/common-cosmos": latest
+    "@subql/common-cosmos": ^2.5.0
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
@@ -6138,11 +6175,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:latest":
-  version: 2.4.1
-  resolution: "@subql/common-cosmos@npm:2.4.1"
+"@subql/common-cosmos@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@subql/common-cosmos@npm:2.5.0"
   dependencies:
     "@cosmology/telescope": ^0.104.0
+    "@cosmwasm/ts-codegen": ^0.35.3
     "@protobufs/cosmos": ^0.1.0
     "@protobufs/cosmos_proto": ^0.0.10
     "@protobufs/cosmwasm": ^0.1.1
@@ -6151,7 +6189,7 @@ __metadata:
     "@protobufs/ibc": ^0.1.0
     "@protobufs/tendermint": ^0.0.10
     "@subql/common": ^2.4.0
-    "@subql/types-cosmos": 2.2.1
+    "@subql/types-cosmos": 2.2.2-0
     fs-extra: ^11.1.1
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
@@ -6159,7 +6197,7 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
     ejs: "*"
-  checksum: 761a3e77aa147a8a2849d21dc5ce9835bb65bda2f84242c07282b4d45fe72e9b86d8266d4a7e362ddaa62d2160a4cf2cb90bdd469d6c976560596bf75ce02d12
+  checksum: c0496cf5821431e0edf3ef326c83cde3f97e20d15a7809341d4343aabb0f85cfe86e08d4e9e9bfdd34c1fbdc6b7d78879ea68e2afd5bdb48536520df2a698609
   languageName: node
   linkType: hard
 
@@ -6403,14 +6441,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-cosmos@npm:2.2.1":
-  version: 2.2.1
-  resolution: "@subql/types-cosmos@npm:2.2.1"
+"@subql/types-cosmos@npm:2.2.2-0":
+  version: 2.2.2-0
+  resolution: "@subql/types-cosmos@npm:2.2.2-0"
   dependencies:
     "@cosmjs/cosmwasm-stargate": ^0.30.1
     "@cosmjs/proto-signing": ^0.30.1
     "@cosmjs/stargate": ^0.30.1
-  checksum: d2eee0c844fc9c7653c5cbfc73c7303f25eb78d5354e99b6dcd3a1590e2e8c1f5d29b0fe158812a3dc5af5725c3e9e9f340af3486bfaf25315f7c6606140f5b1
+  checksum: a35986e71df04e70f95d5def473fb5d491546f6ad8e68c2ee10423cf3ace998ebac1abdd64a69b0c8467087d4c1cf8af44b6481d273bb7df2d7d6cb4d8dd5556
   languageName: node
   linkType: hard
 
@@ -6490,7 +6528,7 @@ __metadata:
   dependencies:
     "@subql/common": "workspace:*"
     "@subql/common-algorand": latest
-    "@subql/common-cosmos": latest
+    "@subql/common-cosmos": ^2.5.0
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
@@ -20749,6 +20787,20 @@ __metadata:
     case: 1.6.3
     deepmerge: 4.2.2
   checksum: e08cf943f0f1ad41e9e092cbc109687476835c33727fe0548b7db1f45b58c82a5e59d828871f590d6f3ea6b5f16a28bd3fca818c570652f1a8301263c91006da
+  languageName: node
+  linkType: hard
+
+"wasm-ast-types@npm:^0.26.2":
+  version: 0.26.2
+  resolution: "wasm-ast-types@npm:0.26.2"
+  dependencies:
+    "@babel/runtime": ^7.18.9
+    "@babel/types": 7.18.10
+    "@jest/transform": 28.1.3
+    ast-stringify: 0.1.0
+    case: 1.6.3
+    deepmerge: 4.2.2
+  checksum: c2baff55ac20ff58bcf66da6836c9da48ba3a21a36cfa091e3cb33d8e036a3226e2e360305eea261394e7983a3a32036095cdfacdb0fdf51af257df748f9d28a
   languageName: node
   linkType: hard
 

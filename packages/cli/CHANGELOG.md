@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix incorrect codegen on unstructured storage proxy contract abis (#1976)
 - Publish multichain projects file to a directory in ipfs (#1981)
 
+### Added
+- Support for cosmwasm contract abi codegen (#1989)
+
 ## [3.6.1] - 2023-08-29
 ### Fixed
 - Publish command creating invalid deployment (#1977)
