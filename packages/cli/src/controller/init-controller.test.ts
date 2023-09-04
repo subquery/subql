@@ -11,10 +11,10 @@ import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../type
 import {
   cloneProjectGit,
   cloneProjectTemplate,
-  fetchTemplates,
+  fetchExampleProjects,
   prepare,
+  ExampleProjectInterface,
   readDefaults,
-  Template,
 } from './init-controller';
 
 async function testYAML(projectPath: string, project: ProjectSpecBase): Promise<{old: Document; new: Document}> {
@@ -69,8 +69,8 @@ const projectSpec = {
 describe('Cli can create project', () => {
   it('should resolve when starter project created via template', async () => {
     const tempPath = await makeTempDir();
-    const templates = await fetchTemplates();
-    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    const projects = await fetchExampleProjects('polkadot', 'acala');
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, projects[0]);
     await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
   });
@@ -89,15 +89,15 @@ describe('Cli can create project', () => {
 
   it('throw error if .git exists in starter project', async () => {
     const tempPath = await makeTempDir();
-    const templates = await fetchTemplates();
-    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    const projects = await fetchExampleProjects('polkadot', 'polkadot');
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, projects[0]);
     await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}/.git`))).rejects.toThrow();
   });
   it('YAML contains comments', async () => {
     const tempPath = await makeTempDir();
-    const templates = await fetchTemplates();
-    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    const projects = await fetchExampleProjects('polkadot', 'polkadot');
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, projects[0]);
     const output = await testYAML(projectPath, projectSpec);
     expect(output.new.toJS().network.chainId).toBe('random chainId');
     expect(output.new).not.toEqual(output.old);
@@ -108,9 +108,12 @@ describe('Cli can create project', () => {
 
   it('prepare correctly applies project details', async () => {
     const tempPath = await makeTempDir();
-    const templates = await fetchTemplates();
-    const template = templates.find(({name}) => name.toLowerCase() === 'polkadot-starter');
-    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, template);
+    const projects = await fetchExampleProjects('polkadot', 'polkadot');
+    const projectPath = await cloneProjectTemplate(
+      tempPath,
+      projectSpec.name,
+      projects.find((p) => p.name === 'Polkadot-starter')
+    );
     await prepare(projectPath, projectSpec);
     const [specVersion, repository, endpoint, author, version, description, license] = await readDefaults(projectPath);
     expect(projectSpec.specVersion).toEqual(specVersion);
@@ -125,13 +128,11 @@ describe('Cli can create project', () => {
   it('allow git from sub directory', async () => {
     const tempPath = await makeTempDir();
 
-    const template: Template = {
-      remote: 'https://github.com/subquery/subql-starter',
-      family: 'Substrate',
-      branch: 'main',
-      network: 'Polkadot',
+    const template: ExampleProjectInterface = {
       name: 'Polkadot-starter',
       description: '',
+      remote: 'https://github.com/subquery/subql-starter',
+      path: 'Polkadot/Polkadot-starter',
     };
 
     const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, template);
