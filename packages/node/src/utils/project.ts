@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { LocalReader, Reader, loadFromJsonOrYaml } from '@subql/common';
+import { LocalReader, loadFromJsonOrYaml } from '@subql/common';
 import {
   ChainTypes,
   parseChainTypes,
@@ -15,7 +15,7 @@ import {
   isCustomDs,
 } from '@subql/common-substrate';
 import { saveFile } from '@subql/node-core';
-import { SubstrateDatasource } from '@subql/types';
+import { Reader } from '@subql/types-core';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
 import {

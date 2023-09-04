@@ -2,19 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  BaseMapping,
   FileType,
-  NodeSpec,
-  ParentProject,
   ParentProjectModel,
   ProjectManifestBaseImpl,
-  QuerySpec,
   RunnerNodeImpl,
   RunnerQueryBaseModel,
-  RunnerSpecs,
   validateObject,
 } from '@subql/common';
-import {SubstrateCustomDatasource, SubstrateNetworkFilter, SubstrateRuntimeDatasource} from '@subql/types';
+import {
+  SubstrateCustomDatasource,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeDatasource,
+  CustomDatasourceTemplate,
+  RuntimeDatasourceTemplate,
+  SubstrateProjectManifestV1_0_0,
+} from '@subql/types';
+import {BaseMapping, NodeSpec, ParentProject, QuerySpec, RunnerSpecs} from '@subql/types-core';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
@@ -23,12 +26,10 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Validate,
   ValidateNested,
   validateSync,
 } from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
-import {CustomDatasourceTemplate, RuntimeDatasourceTemplate, SubstrateProjectManifestV1_0_0} from './types';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
 

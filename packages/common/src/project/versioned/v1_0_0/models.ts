@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {BlockFilter, NodeOptions, NodeSpec, ParentProject, QuerySpec} from '@subql/types-core';
 import {Type} from 'class-transformer';
 import {
   Equals,
@@ -10,13 +11,10 @@ import {
   IsOptional,
   IsString,
   IsInt,
-  Matches,
   Validate,
   ValidateNested,
 } from 'class-validator';
-import {RUNNER_REGEX} from '../../../constants';
 import {SemverVersionValidator} from '../../utils';
-import {BlockFilter, NodeOptions, NodeSpec, ParentProject, QuerySpec} from './types';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')

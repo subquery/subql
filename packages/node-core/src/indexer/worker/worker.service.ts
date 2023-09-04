@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {threadId} from 'node:worker_threads';
-import {BaseDataSource} from '@subql/common';
+import {BaseDataSource} from '@subql/types-core';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {AutoQueue, memoryLock} from '../../utils';

@@ -5,7 +5,7 @@ import assert from 'node:assert';
 import {getHeapStatistics} from 'node:v8';
 import {threadId} from 'node:worker_threads';
 import {INestApplication} from '@nestjs/common';
-import {BaseDataSource} from '@subql/common';
+import {BaseDataSource} from '@subql/types-core';
 import {getLogger} from '../../logger';
 import {waitForBatchSize} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';

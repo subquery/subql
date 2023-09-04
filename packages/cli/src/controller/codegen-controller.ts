@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {
+  DEFAULT_MANIFEST,
+  extensionIsTs,
+  getManifestPath,
+  getSchemaPath,
+  loadFromJsonOrYaml,
+  loadProjectFromScript,
+} from '@subql/common';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -33,12 +40,12 @@ import {
   RuntimeDatasourceTemplate as StellarDsTemplate,
   CustomDatasourceTemplate as StellarCustomDsTemplate,
 } from '@subql/common-stellar';
+import {isCustomDs as isCustomSubstrateDs, SubstrateCustomDataSource} from '@subql/common-substrate';
 import {
-  isCustomDs as isCustomSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
-  SubstrateCustomDataSource,
-} from '@subql/common-substrate';
+} from '@subql/types';
+import {TemplateBase} from '@subql/types-core';
 import {SubqlRuntimeDatasource as EthereumDs, SubqlCustomDatasource as EthereumCustomDs} from '@subql/types-ethereum';
 import {
   getAllEntitiesRelations,
@@ -221,15 +228,20 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
-
-  const plainManifests = fileNames.map(
-    (fileName) =>
-      loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
-        specVersion: string;
-        templates?: TemplateKind[];
-        dataSources: DatasourceKind[];
-      }
-  );
+  const plainManifests = fileNames.map((fileName) => {
+    let project;
+    const {ext} = path.parse(fileName);
+    if (extensionIsTs(ext)) {
+      project = loadProjectFromScript(getManifestPath(projectPath, fileName), path.resolve(projectPath));
+    } else {
+      project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName));
+    }
+    return project as {
+      specVersion: string;
+      templates?: TemplateKind[];
+      dataSources: DatasourceKind[];
+    };
+  });
 
   const expectKeys = ['datasources', 'templates'];
 
@@ -372,7 +384,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
 
 export async function generateDatasourceTemplates(projectPath: string, templates: TemplateKind[]): Promise<void> {
   const props = templates.map((t) => ({
-    name: t.name,
+    name: (t as TemplateBase).name,
     args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
   }));
 

@@ -9,9 +9,10 @@ import {
   SubstrateHandlerKind,
   SubstrateNetworkFilter,
   SubstrateRuntimeDatasource,
+  CustomDatasourceTemplate,
+  RuntimeDatasourceTemplate,
 } from '@subql/types';
 import {gte} from 'semver';
-import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '../project/versioned';
 
 export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>

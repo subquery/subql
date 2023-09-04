@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
-
-import {BaseMapping, BlockFilterImpl, FileReference} from '@subql/common';
+import {BlockFilterImpl} from '@subql/common';
 import {
-  CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
   SubstrateBlockFilter,
   SubstrateBlockHandler,
   SubstrateCallFilter,
@@ -20,7 +18,9 @@ import {
   SubstrateRuntimeHandler,
   SubstrateRuntimeHandlerFilter,
   SubstrateCustomDatasource,
+  CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
 } from '@subql/types';
+import {BaseMapping, FileReference} from '@subql/types-core';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,

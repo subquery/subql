@@ -3,15 +3,13 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource, BaseHandler, BaseMapping} from '@subql/common';
-import {DictionaryQueryEntry} from '@subql/types';
+import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
 import {
   BlockDispatcher,
   delay,
   DictionaryService,
   DynamicDsService,
   IBlockDispatcher,
-  IProjectNetworkConfig,
   IProjectService,
   NodeConfig,
 } from '..';

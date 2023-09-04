@@ -4,6 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import {FileReference, MultichainProjectManifest, ProjectRootAndManifest} from '@subql/types-core';
 import {
   registerDecorator,
   validateSync,
@@ -18,10 +19,13 @@ import Pino from 'pino';
 import {lt, prerelease, satisfies, valid, validRange} from 'semver';
 import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
-import {MultichainProjectManifest} from '../multichain';
 
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MANIFEST = 'project.yaml';
+
+export function isFileReference(value: any): value is FileReference {
+  return value?.file && typeof value.file === 'string';
+}
 
 // Input manifest here, we might need to handler other error later on
 export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger) {
@@ -54,11 +58,6 @@ export async function findAvailablePort(startPort: number, range = 10): Promise<
   return null;
 }
 
-export interface ProjectRootAndManifest {
-  root: string;
-  manifests: string[];
-}
-
 export function getProjectRootAndManifest(subquery: string): ProjectRootAndManifest {
   const project: ProjectRootAndManifest = {
     root: '',
@@ -89,17 +88,20 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       throw new Error(`Unable to resolve manifest file from given directory: ${subquery}`);
     }
   } else if (stats.isFile()) {
-    const {ext} = path.parse(subquery);
-    if (!extensionIsYamlOrJSON(ext)) {
+    const {dir, ext} = path.parse(subquery);
+    if (!extensionIsTs(ext) && !extensionIsYamlOrJSON(ext)) {
       throw new Error(`Extension ${ext} not supported for project ${subquery}`);
     }
-    const {dir} = path.parse(subquery);
     project.root = dir;
-    const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
-    if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
-      addMultichainManifestProjects(dir, multichainManifestContent, project);
-    } else {
+    if (extensionIsTs(ext)) {
       project.manifests.push(subquery);
+    } else {
+      const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
+      if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
+        addMultichainManifestProjects(dir, multichainManifestContent, project);
+      } else {
+        project.manifests.push(subquery);
+      }
     }
   }
 
@@ -195,6 +197,10 @@ export function validateObject(object: any, errorMessage = 'failed to validate o
     const errorMsgs = errors.map((e) => e.toString()).join('\n');
     throw new Error(`${errorMessage}\n${errorMsgs}`);
   }
+}
+
+export function extensionIsTs(ext: string): boolean {
+  return ext === '.ts';
 }
 
 export function extensionIsYamlOrJSON(ext: string): boolean {

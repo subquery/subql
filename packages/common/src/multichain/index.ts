@@ -2,4 +2,3 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './models';
-export * from './types';

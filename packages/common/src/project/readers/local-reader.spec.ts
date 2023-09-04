@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import * as path from 'path';
+import {Reader} from '@subql/types-core';
 import {LocalReader} from './local-reader';
-import {Reader} from './reader';
+import {loadProjectFromScript} from './readerSandbox';
 
 describe('LocalReader', () => {
   let reader: Reader;
@@ -21,5 +22,21 @@ describe('LocalReader', () => {
   it('should return the project schema object', async () => {
     const data: any = await reader.getProjectSchema();
     expect(data.repository).toBe('https://github.com/subquery/subql-starter');
+  });
+});
+
+describe(' Load ts/js project', () => {
+  it('could resolve ts project', () => {
+    const root = path.join(__dirname, '../../../test/sandbox');
+    const entry = './project.ts';
+    const result = loadProjectFromScript(entry, root);
+    expect((result as any).name).toBe('tsProject');
+  });
+  it('could resolve js project, could read chainTypes', () => {
+    const root = path.join(__dirname, '../../../test/sandbox');
+    const entry = './project.js';
+    const result = loadProjectFromScript(entry, root);
+    expect((result as any).name).toBe('tsProject');
+    expect((result as any).network.chainTypes).toStrictEqual({file: './dist/chaintypes.js'});
   });
 });

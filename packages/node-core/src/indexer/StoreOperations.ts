@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Entity} from '@subql/types';
+import {Entity} from '@subql/types-core';
 import {getTypeByScalarName, GraphQLModelsType, u8aConcat, u8aToBuffer, isString} from '@subql/utils';
 import MerkleTools from 'merkle-tools';
 import {OperationEntity, OperationType} from './types';

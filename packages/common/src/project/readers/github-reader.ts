@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
+import {Reader} from '@subql/types-core';
 import axios, {AxiosInstance} from 'axios';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
 import {DEFAULT_MANIFEST} from '../utils';
-import {Reader} from './reader';
 
 export class GithubReader implements Reader {
   private readonly api: AxiosInstance;

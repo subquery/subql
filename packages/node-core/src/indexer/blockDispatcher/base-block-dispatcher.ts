@@ -8,7 +8,6 @@ import {hexToU8a, u8aEq} from '@subql/utils';
 import {
   DynamicDsService,
   IProjectService,
-  ISubqueryProject,
   PoiBlock,
   PoiService,
   StoreCacheService,
@@ -21,6 +20,7 @@ import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue} from '../../utils';
 import {CachePoiModel} from '../storeCache/cachePoi';
+import {ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
 

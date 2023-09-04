@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {BaseCustomDataSource, BaseDataSource} from '@subql/common';
+import {BaseCustomDataSource, BaseDataSource} from '@subql/types-core';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';

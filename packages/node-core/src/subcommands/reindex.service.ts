@@ -3,10 +3,10 @@
 
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
-import {BaseDataSource} from '@subql/common';
+import {BaseDataSource} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
-import {CacheMetadataModel, ISubqueryProject, IUnfinalizedBlocksService, StoreService} from '../indexer';
+import {CacheMetadataModel, IUnfinalizedBlocksService, StoreService, ISubqueryProject} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';

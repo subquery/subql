@@ -15,11 +15,13 @@ export function parseSubstrateProjectManifest(raw: unknown): SubstrateProjectMan
 }
 
 export function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVersioned {
+  // TODO, depend on file extension, if is ts, import manifest object
   const doc = loadFromJsonOrYaml(getManifestPath(file));
   const projectManifest = new SubstrateProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }
+
 export function parseChainTypes(raw: unknown): ChainTypes {
   const chainTypes = plainToClass(ChainTypes, raw);
   if (

@@ -1,9 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IProjectManifest, ProjectNetworkConfig} from '@subql/common';
 import {SubstrateDatasource} from '@subql/types';
-import {RuntimeDataSourceV0_0_1} from '../project/versioned/v0_0_1';
+import {IProjectManifest, ProjectNetworkConfig} from '@subql/types-core';
 
 // All of these used to be redefined in this file, re-exporting for simplicity
 export {
@@ -24,7 +23,7 @@ export {
 } from '@subql/types';
 
 //make exception for runtime datasource 0.0.1
-export type ISubstrateProjectManifest = IProjectManifest<SubstrateDatasource | RuntimeDataSourceV0_0_1>;
+export type ISubstrateProjectManifest = IProjectManifest<SubstrateDatasource>;
 
 export interface SubstrateProjectNetworkConfig extends ProjectNetworkConfig {
   genesisHash?: string;

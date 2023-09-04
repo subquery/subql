@@ -13,7 +13,6 @@ import {
 import { SubstrateDatasource } from '@subql/types';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { isOnlyEventHandlers } from '../utils/project';
 import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';

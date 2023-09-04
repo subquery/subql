@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FieldsExpression, Store} from '@subql/types';
+import {Store,FieldsExpression} from '@subql/types-core';
 import {classToPlain} from 'class-transformer';
 
 export type HostStore = {

@@ -5,8 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval, SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource} from '@subql/common';
-import {DictionaryQueryEntry} from '@subql/types';
+import {DictionaryQueryEntry, BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {range, uniq, without} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
@@ -15,7 +14,7 @@ import {checkMemoryUsage, cleanedBatchBlocks, delay, transformBypassBlocks, wait
 import {IBlockDispatcher} from './blockDispatcher';
 import {DictionaryService} from './dictionary.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {IProjectNetworkConfig, IProjectService} from './types';
+import {IProjectService} from './types';
 
 const logger = getLogger('FetchService');
 const DICTIONARY_MAX_QUERY_SIZE = 10000;

@@ -36,6 +36,16 @@ jobs:
           node-version: 18
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-utils
+        with:
+          paths: packages/utils
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types-core
+        with:
+          paths: packages/types-core
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-types
         with:
           paths: packages/types
@@ -71,19 +81,14 @@ jobs:
           paths: packages/query
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-utils
+        id: changed-testing
         with:
-          paths: packages/utils
+          paths: packages/testing
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-validator
         with:
           paths: packages/validator
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-testing
-        with:
-          paths: packages/testing
 
       - run: yarn
 
@@ -96,6 +101,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/utils
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump types-core & deploy
+        if: steps.changed-types.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/types-core
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump types & deploy

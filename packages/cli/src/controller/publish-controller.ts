@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_WRITE_ENDPOINT, Reader} from '@subql/common';
+import {ReaderFactory, IPFS_WRITE_ENDPOINT, isFileReference} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
@@ -11,7 +11,7 @@ import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/
 import {parseNearProjectManifest} from '@subql/common-near';
 import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
-import {FileReference} from '@subql/types';
+import {Reader} from '@subql/types-core';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 import yaml from 'js-yaml';
 
@@ -241,9 +241,4 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
     assetsObj[key] = map.get(key);
   }
   return assetsObj;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isFileReference(value: any): value is FileReference {
-  return value?.file && typeof value.file === 'string';
 }

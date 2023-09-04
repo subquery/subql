@@ -9,9 +9,9 @@ import {
   IPFS_NODE_ENDPOINT,
   LocalReader,
   makeTempDir,
-  Reader,
   ReaderFactory,
 } from '@subql/common';
+import { Reader } from '@subql/types-core';
 import { SubqueryProject } from './SubqueryProject';
 
 export async function getProjectRoot(reader: Reader): Promise<string> {

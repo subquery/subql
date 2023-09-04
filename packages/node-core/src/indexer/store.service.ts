@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-import {Entity, FieldsExpression, Store} from '@subql/types';
+import {Entity, Store, IProjectNetworkConfig,FieldsExpression} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   GraphQLModelsType,
@@ -61,7 +61,7 @@ import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo}
 import {CacheMetadataModel} from './storeCache';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
-import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
+import {ISubqueryProject, OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');

@@ -15,10 +15,7 @@ export class RequireCustomDsValidation implements Rule {
   validate(ctx: Context): boolean {
     const schema = ctx.data.schema;
 
-    if (
-      (schema as SubstrateProjectManifestVersioned).isV0_2_0 ||
-      (schema as SubstrateProjectManifestVersioned).isV0_2_1
-    ) {
+    if ((schema as SubstrateProjectManifestVersioned).isV1_0_0) {
       for (const customDs of (schema as SubstrateProjectManifestVersioned).dataSources.filter(isCustomDs)) {
         const processor: SubstrateDatasourceProcessor<string, SubstrateNetworkFilter> = require(path.resolve(
           ctx.data.projectPath,

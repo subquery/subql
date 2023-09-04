@@ -16,5 +16,5 @@
     "outDir": "."
   },
   "exclude": [],
-  "include": ["./main.ts"]
+  "include": ["./main.ts", "./project.ts"]
 }

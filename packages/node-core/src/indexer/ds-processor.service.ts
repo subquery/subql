@@ -4,12 +4,12 @@
 import fs from 'fs';
 import path from 'path';
 import {Inject} from '@nestjs/common';
-import {BaseCustomDataSource, BaseDataSource} from '@subql/common';
+import {BaseCustomDataSource, BaseDataSource, DsProcessor, IProjectNetworkConfig} from '@subql/types-core';
 import {VMScript} from 'vm2';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {Sandbox, SandboxOption} from './sandbox';
-import {DsProcessor, IProjectNetworkConfig, ISubqueryProject} from './types';
+import {ISubqueryProject} from './types';
 
 const logger = getLogger('ds-sandbox');
 

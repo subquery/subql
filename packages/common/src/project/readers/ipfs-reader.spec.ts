@@ -1,8 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Reader} from '@subql/types-core';
 import {IPFSReader} from './ipfs-reader';
-import {Reader} from './reader';
 
 const IPFSGateway = 'https://unauthipfs.subquery.network/ipfs/api/v0';
 

@@ -4,12 +4,7 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { RegisteredTypes } from '@polkadot/types/types';
-import {
-  ParentProject,
-  Reader,
-  RunnerSpecs,
-  validateSemver,
-} from '@subql/common';
+import { validateSemver } from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
@@ -18,17 +13,20 @@ import {
   isRuntimeDs,
   SubstrateHandlerKind,
   isCustomDs,
-  RuntimeDatasourceTemplate,
-  CustomDatasourceTemplate,
 } from '@subql/common-substrate';
 import {
   insertBlockFiltersCronSchedules,
-  ISubqueryProject,
   loadProjectTemplates,
   SubqlProjectDs,
   updateDataSourcesV1_0_0,
+  ISubqueryProject,
 } from '@subql/node-core';
-import { SubstrateDatasource } from '@subql/types';
+import {
+  SubstrateDatasource,
+  RuntimeDatasourceTemplate,
+  CustomDatasourceTemplate,
+} from '@subql/types';
+import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';

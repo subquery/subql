@@ -18,12 +18,11 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
+import { SubstrateCustomHandler, SubstrateDatasource } from '@subql/types';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
-  SubstrateCustomHandler,
-  SubstrateDatasource,
-} from '@subql/types';
+} from '@subql/types-core';
 import { sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';

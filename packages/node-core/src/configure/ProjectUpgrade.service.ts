@@ -3,8 +3,7 @@
 
 import assert from 'assert';
 import {findLast, last} from 'lodash';
-import {CacheMetadataModel} from '../indexer';
-import {ISubqueryProject} from '../indexer/types';
+import {CacheMetadataModel, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';

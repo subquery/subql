@@ -3,11 +3,12 @@
 
 import fs from 'fs';
 import path from 'path';
+import {loadProjectFromScript} from '@subql/common';
+import {ProjectManifestV0_2_0} from '@subql/types-core';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
-import {ProjectManifestV0_2_0} from '../project/versioned';
-import {DEFAULT_MANIFEST, extensionIsYamlOrJSON} from './utils';
+import {DEFAULT_MANIFEST, extensionIsTs, extensionIsYamlOrJSON} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (!extensionIsYamlOrJSON(ext)) {
@@ -34,11 +35,17 @@ export function getManifestPath(manifestDir: string, fileName?: string): string 
 }
 
 export function getSchemaPath(manifestDir: string, fileName?: string): string {
-  const yamlFile = loadFromJsonOrYaml(getManifestPath(manifestDir, fileName));
-  if ((yamlFile as any).specVersion === '0.0.1') {
-    return path.join(manifestDir, (yamlFile as any).schema);
+  let rawProject: unknown;
+  const {ext} = path.parse(fileName);
+  if (extensionIsTs(ext)) {
+    rawProject = loadProjectFromScript(getManifestPath(manifestDir, fileName), path.resolve(manifestDir));
+  } else {
+    const rawProject = loadFromJsonOrYaml(getManifestPath(manifestDir, fileName));
+    if ((rawProject as any).specVersion === '0.0.1') {
+      return path.join(manifestDir, (rawProject as any).schema);
+    }
   }
-  const project = yamlFile as ProjectManifestV0_2_0;
+  const project = rawProject as ProjectManifestV0_2_0;
   if (!project.schema) {
     throw new Error(`Can't get schema in yaml file`);
   }

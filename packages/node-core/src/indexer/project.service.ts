@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {BaseDataSource} from '@subql/common';
+import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
@@ -16,7 +16,7 @@ import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from './types';
+import {ISubqueryProject, IProjectService} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('Project');

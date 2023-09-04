@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {ProjectNetworkConfig} from '@subql/common';
+import {ProjectNetworkConfig} from '@subql/types-core';
 import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';

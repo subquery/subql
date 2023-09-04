@@ -1,0 +1,22 @@
+{
+  "name": "@subql/types-core",
+  "version": "2.2.1-0",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "GPL-3.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "dependencies": {
+    "package-json-type": "^1.0.3"
+  },
+  "stableVersion": "2.2.0"
+}

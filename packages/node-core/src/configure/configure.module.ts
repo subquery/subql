@@ -1,9 +1,10 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {handleCreateSubqueryProjectError, LocalReader, makeTempDir, Reader, ReaderFactory} from '@subql/common';
+import {handleCreateSubqueryProjectError, LocalReader, makeTempDir, ReaderFactory} from '@subql/common';
+import {Reader} from '@subql/types-core';
 import {camelCase, isNil, omitBy} from 'lodash';
-import {ISubqueryProject} from '../indexer/types';
+import {ISubqueryProject} from '../indexer';
 import {getLogger, setLevel} from '../logger';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
 import {IConfig, NodeConfig} from './NodeConfig';

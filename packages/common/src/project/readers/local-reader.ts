@@ -3,9 +3,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import {Reader} from '@subql/types-core';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
-import {Reader} from './reader';
+import {extensionIsTs, extensionIsYamlOrJSON} from '../../project';
+import {loadProjectFromScript} from './readerSandbox';
 
 export class LocalReader implements Reader {
   constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
@@ -18,11 +20,16 @@ export class LocalReader implements Reader {
     return yaml.load(await this.getFile('package.json')) as IPackageJson;
   }
 
-  async getProjectSchema(): Promise<unknown | undefined> {
+  async getProjectSchema(unsafe = false): Promise<unknown | undefined> {
     if (!fs.existsSync(this.manifestPath)) {
       return Promise.resolve(undefined);
     }
-    return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
+    const {ext} = path.parse(this.manifestPath);
+    if (extensionIsTs(ext)) {
+      return loadProjectFromScript(this.manifestPath, this.root);
+    } else if (extensionIsYamlOrJSON(ext)) {
+      return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
+    }
   }
 
   async getFile(fileName: string): Promise<string | undefined> {
