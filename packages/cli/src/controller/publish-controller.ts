@@ -98,7 +98,7 @@ export async function uploadToIpfs(
   }
 
   // Upload schema
-  return uploadFiles(contents, authToken, ipfs);
+  return uploadFiles(contents, authToken, multichainProjectPath !== undefined, ipfs);
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
@@ -140,13 +140,14 @@ const fileMap = new Map<string | fs.ReadStream, Promise<string>>();
 export async function uploadFiles(
   contents: {path: string; content: string}[],
   authToken: string,
+  isMultichain?: boolean,
   ipfs?: IPFSHTTPClient
 ): Promise<Map<string, string>> {
   const fileCidMap: Map<string, string> = new Map();
 
   if (ipfs) {
     try {
-      const results = ipfs.addAll(contents, {wrapWithDirectory: true});
+      const results = ipfs.addAll(contents, {wrapWithDirectory: isMultichain});
 
       for await (const result of results) {
         fileCidMap.set(result.path, result.cid.toString());
@@ -162,8 +163,7 @@ export async function uploadFiles(
   });
 
   try {
-    const results = ipfsWrite.addAll(contents, {pin: true, cidVersion: 0});
-
+    const results = ipfsWrite.addAll(contents, {pin: true, cidVersion: 0, wrapWithDirectory: isMultichain});
     for await (const result of results) {
       fileCidMap.set(result.path, result.cid.toString());
 
