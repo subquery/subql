@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.5] - 2023-09-04
 ### Fixed
-- lock to `@subql/common` 2.6.0, in order to fix unknown reader issue.
+- lock to `@subql/common` 2.6.0, in order to fix unknown reader issue. (#152)
 
 ## [2.2.4] - 2023-09-04
 ### Fixed
@@ -65,7 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.4...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.5...HEAD
+[2.2.5]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.4...common-ethereum/2.2.5
 [2.2.4]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.3...common-ethereum/2.2.4
 [2.2.3]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.2...common-ethereum/2.2.3
 [2.2.2]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.1...common-ethereum/2.2.2
