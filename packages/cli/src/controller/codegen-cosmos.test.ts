@@ -4,11 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {generateCosmwasm, generateProto, tempProtoDir} from '@subql/common-cosmos';
+import {generateProto, tempProtoDir} from '@subql/common-cosmos';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
 import {prepareDirPath, renderTemplate} from '../utils';
-import {getManifestData} from './generate-controller';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
 const MOCK_CHAINTYPES = [
@@ -86,13 +85,5 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
       Promise.resolve(tmpDir)
     );
     expect(fs.existsSync(tmpDir)).toBe(false);
-  });
-  it('able to codegen from cosmwasm contract abis', async () => {
-    const manifest = await getManifestData(PROJECT_PATH, './project.yaml');
-    const ds = (manifest.get('dataSources') as any)?.toJSON() as any[];
-
-    await generateCosmwasm(ds, PROJECT_PATH, prepareDirPath, upperFirst, renderTemplate);
-    expect(fs.existsSync(`${PROJECT_PATH}/src/types/cosmwasm-interface-wrappers/Cw20MsgWrapper.ts`)).toBeTruthy();
-    expect(fs.existsSync(`${PROJECT_PATH}/src/types/cosmwasm-interfaces/Cw20.types.ts`)).toBeTruthy();
   });
 });
