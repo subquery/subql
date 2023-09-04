@@ -52,7 +52,7 @@ describe('buildDictionaryQueryEntries', () => {
             handler: 'handleOperations',
             kind: StellarHandlerKind.Operation,
             filter: {
-              source_account: 'source_account',
+              sourceAccount: 'source_account',
               type: 'operation_type',
             },
           } as any,
