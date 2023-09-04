@@ -126,13 +126,19 @@ async function loadProjectFromManifestBase(
     isCustomDs,
   );
 
-  if (dsHasSorobanEventHandler(dataSources) && !network.soroban) {
+  const templates = await loadProjectTemplates(projectManifest, root, reader);
+
+  if (
+    dsHasSorobanEventHandler([
+      ...dataSources,
+      ...(templates as SubqlProjectDs[]),
+    ]) &&
+    !network.soroban
+  ) {
     throw new Error(
       `Soroban network endpoint must be provided for network. chainId="${network.chainId}"`,
     );
   }
-
-  const templates = await loadProjectTemplates(projectManifest, root, reader);
 
   return {
     id: reader.root ? reader.root : path, //TODO, need to method to get project_id
