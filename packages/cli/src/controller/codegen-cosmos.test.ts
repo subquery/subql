@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {generateCosmwasm, generateProto, SubqlCosmosDataSource, tempProtoDir} from '@subql/common-cosmos';
+import {generateCosmwasm, generateProto, tempProtoDir} from '@subql/common-cosmos';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
 import {prepareDirPath, renderTemplate} from '../utils';
@@ -92,7 +92,7 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
     const ds = (manifest.get('dataSources') as any)?.toJSON() as any[];
 
     await generateCosmwasm(ds, PROJECT_PATH, prepareDirPath, upperFirst, renderTemplate);
-    expect(fs.existsSync(`${PROJECT_PATH}/src/types/cosmwasm-interface-wrappers/BaseMinterMsgWrapper.ts`)).toBeTruthy();
-    expect(fs.existsSync(`${PROJECT_PATH}/src/types/cosmwasm-interfaces/BaseMinter.types.ts`)).toBeTruthy();
+    expect(fs.existsSync(`${PROJECT_PATH}/src/types/cosmwasm-interface-wrappers/Cw20MsgWrapper.ts`)).toBeTruthy();
+    expect(fs.existsSync(`${PROJECT_PATH}/src/types/cosmwasm-interfaces/Cw20.types.ts`)).toBeTruthy();
   });
 });

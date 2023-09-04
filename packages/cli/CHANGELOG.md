@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix incorrect codegen on unstructured storage proxy contract abis (#1976)
 
+### Added
+- Support for cosmwasm contract abi codegen (#1989)
+
 ## [3.6.1] - 2023-08-29
 ### Fixed
 - Publish command creating invalid deployment (#1977)
@@ -396,13 +399,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2021-04-19
 ### Added
-- `@index` annotation is now supported in `graphql.schema` (#255):
-    - Can be added on any field of any entity except primary or foreign keys
-    - `@subql/node` will recognise it and create table with additional indexes to speed querying
-    - Allow query by indexed field via `global.store` (#271)
-- `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
-    - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-    - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+- annotation is now supported in
+- Can be added on any field of any entity except primary or foreign keys
+- `@subql/node` will recognise it and create table with additional indexes to speed querying
+- Allow query by indexed field via `global.store` (#271)
+- annotation is now supported in
+- We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+- Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.8.0] - 2021-03-11
 ### Added
