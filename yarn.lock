@@ -3017,7 +3017,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": ^2.6.0
+    "@subql/common": 2.6.0
     "@subql/types-ethereum": "workspace:*"
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
@@ -3030,7 +3030,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.6.0, @subql/common@npm:^2.6.0":
+"@subql/common@npm:2.6.0":
   version: 2.6.0
   resolution: "@subql/common@npm:2.6.0"
   dependencies:
@@ -3091,7 +3091,7 @@ __metadata:
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
-    "@subql/common": ^2.6.0
+    "@subql/common": 2.6.0
     "@subql/common-ethereum": "workspace:*"
     "@subql/node-core": ^4.2.6
     "@subql/testing": ^2.0.0

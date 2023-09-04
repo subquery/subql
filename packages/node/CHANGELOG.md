@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- lock to `@subql/common` 2.6.0, in order to fix unknown reader issue.
+
 ## [2.12.2] - 2023-09-04
 ### Fixed
 - Previous failed release

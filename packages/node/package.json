@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^2.0.0",
     "@nestjs/platform-express": "^9.4.0",
     "@nestjs/schedule": "^3.0.1",
-    "@subql/common": "^2.6.0",
+    "@subql/common": "2.6.0",
     "@subql/common-ethereum": "workspace:*",
     "@subql/node-core": "^4.2.6",
     "@subql/testing": "^2.0.0",
