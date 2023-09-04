@@ -6107,7 +6107,7 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-algorand": latest
-    "@subql/common-cosmos": ^2.5.0
+    "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
@@ -6175,7 +6175,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^2.5.0":
+"@subql/common-cosmos@npm:latest":
   version: 2.5.0
   resolution: "@subql/common-cosmos@npm:2.5.0"
   dependencies:
@@ -6528,7 +6528,7 @@ __metadata:
   dependencies:
     "@subql/common": "workspace:*"
     "@subql/common-algorand": latest
-    "@subql/common-cosmos": ^2.5.0
+    "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
     "@subql/common-near": latest
