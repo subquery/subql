@@ -241,6 +241,84 @@ describe('Dictionary queries', () => {
         },
       ]);
     });
+
+    it('If ds option provide contract address, it should use ds options "address" ', () => {
+      const ds: SubqlRuntimeDatasource = {
+        kind: EthereumDatasourceKind.Runtime,
+        assets: new Map(),
+        options: {
+          abi: 'erc20',
+          address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+        },
+        startBlock: 1,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              handler: 'handleTransfer',
+              kind: EthereumHandlerKind.Call,
+              filter: {
+                function: 'approve(address spender, uint256 rawAmount)',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = buildDictionaryQueryEntries([ds], 1);
+      expect(result).toEqual([
+        {
+          entity: 'evmTransactions',
+          conditions: [
+            {
+              field: 'to',
+              matcher: 'equalTo',
+              value: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+            },
+            { field: 'func', matcher: 'equalTo', value: '0x095ea7b3' },
+          ],
+        },
+      ]);
+    });
+
+    it('If filter  provide contract address, it should use filter "to" ', () => {
+      const ds: SubqlRuntimeDatasource = {
+        kind: EthereumDatasourceKind.Runtime,
+        assets: new Map(),
+        options: {
+          abi: 'erc20',
+        },
+        startBlock: 1,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              handler: 'handleTransfer',
+              kind: EthereumHandlerKind.Call,
+              filter: {
+                to: '0xabcde',
+                function: 'approve(address spender, uint256 rawAmount)',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = buildDictionaryQueryEntries([ds], 1);
+      expect(result).toEqual([
+        {
+          entity: 'evmTransactions',
+          conditions: [
+            {
+              field: 'to',
+              matcher: 'equalTo',
+              value: '0xabcde',
+            },
+            { field: 'func', matcher: 'equalTo', value: '0x095ea7b3' },
+          ],
+        },
+      ]);
+    });
   });
   describe('Correct dictionary query with dynamic ds', () => {
     it('Build correct erc1155 transfer single query', () => {

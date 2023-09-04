@@ -144,7 +144,7 @@ function callFilterToQueryEntry(
         matcher: 'isNull',
       });
     }
-  } else {
+  } else if (optionsAddresses && (filter.to || filter.to === null)) {
     logger.warn(
       `TransactionFilter 'to' conflict with 'address' in data source options`,
     );
