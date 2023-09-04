@@ -36,6 +36,11 @@ network:
 dataSources:
   - kind: cosmos/Runtime
     startBlock: 9798050
+    options:
+      abi: baseMinter
+    assets:
+      baseMinter:
+        file: './cosmwasm/base-minter/base-minter.json'
     mapping:
       file: ./dist/index.js
       handlers:
