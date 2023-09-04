@@ -40,7 +40,7 @@ dataSources:
       abi: baseMinter
     assets:
       baseMinter:
-        file: './cosmwasm/base-minter/base-minter.json'
+        file: './cosmwasm/cw20/cw20.json'
     mapping:
       file: ./dist/index.js
       handlers:
