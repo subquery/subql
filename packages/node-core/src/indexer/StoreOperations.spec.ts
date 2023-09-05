@@ -79,6 +79,18 @@ const testOperations = [
   },
 ];
 
+// Single object in operations
+const testOperations2 = [
+  {
+    operation: OperationType.Set,
+    entityType: 'StarterEntity',
+    data: {
+      id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
+      field1: 41914,
+    },
+  },
+];
+
 const falseOperation = {
   operation: OperationType.Remove,
   entityType: 'StarterEntity',
@@ -189,15 +201,32 @@ const models = [
 ];
 
 describe('StoreOperations', () => {
+  it('single leaf, expect merkleRoot to be hashed', () => {
+    const operationStack = new StoreOperations(models);
+    for (const o of testOperations2) {
+      operationStack.put(o.operation, o.entityType, o.data);
+    }
+
+    operationStack.makeOperationMerkleTree();
+    expect(operationStack.getOperationLeafCount()).toBe(1);
+    const mRoot = operationStack.getOperationMerkleRoot();
+    // To be hashed and 32 bytes long
+    expect(mRoot?.length).toBe(32);
+    console.log(`Root in hex: ${u8aToHex(mRoot)}`);
+    operationStack.reset();
+    expect(operationStack.getOperationLeafCount()).toBe(0);
+  });
+
   it('put operation into the merkel leaf, and generate Merkle Root, also able to reset', () => {
     const operationStack = new StoreOperations(models);
     for (const o of testOperations) {
       operationStack.put(o.operation, o.entityType, o.data);
     }
-
     operationStack.makeOperationMerkleTree();
     expect(operationStack.getOperationLeafCount()).toBe(5);
-    console.log(`Root in hex: ${u8aToHex(operationStack.getOperationMerkleRoot())}`);
+    const mRoot = operationStack.getOperationMerkleRoot();
+    expect(mRoot?.length).toBe(32);
+    console.log(`Root in hex: ${u8aToHex(mRoot)}`);
     operationStack.reset();
     expect(operationStack.getOperationLeafCount()).toBe(0);
   });
