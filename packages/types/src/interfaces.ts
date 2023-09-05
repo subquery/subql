@@ -16,9 +16,18 @@ export type FunctionPropertyNames<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
 
+export type FieldOperators = '=' | '!=' | 'in' | '!in';
+
+export type FieldsExpression<T> = [field: keyof T, operator: FieldOperators, value: T[keyof T] | Array<T[keyof T]>];
+
 export interface Store {
   get(entity: string, id: string): Promise<Entity | undefined>;
   getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;
+  getByFields<T extends Entity>(
+    entity: string,
+    filter: FieldsExpression<T>[],
+    options?: {offset?: number; limit?: number}
+  ): Promise<T[]>;
   getOneByField(entity: string, field: string, value: any): Promise<Entity | undefined>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;

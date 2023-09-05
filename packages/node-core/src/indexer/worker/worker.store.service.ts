@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Store} from '@subql/types';
+import {FieldsExpression, Store} from '@subql/types';
 import {classToPlain} from 'class-transformer';
 
 export type HostStore = {
@@ -11,6 +11,11 @@ export type HostStore = {
     entity: string,
     field: string,
     value: any,
+    options?: {offset?: number; limit?: number}
+  ) => Promise<any[]>;
+  storeGetByFields: (
+    entity: string,
+    filter: FieldsExpression<any>[],
     options?: {offset?: number; limit?: number}
   ) => Promise<any[]>;
   storeGetOneByField: (entity: string, field: string, value: any) => Promise<any | null>;
@@ -24,6 +29,7 @@ export type HostStore = {
 export const hostStoreKeys: (keyof HostStore)[] = [
   'storeGet',
   'storeGetByField',
+  'storeGetByFields',
   'storeGetOneByField',
   'storeSet',
   'storeBulkCreate',
@@ -38,6 +44,7 @@ export const hostStoreToStore = (host: HostStore): Store => {
   return {
     get: host.storeGet,
     getByField: host.storeGetByField,
+    getByFields: host.storeGetByFields,
     getOneByField: host.storeGetOneByField,
     set: (entity, id, data) => host.storeSet(entity, id, classToPlain(data)),
     bulkCreate: (entity, data) => host.storeBulkCreate(entity, classToPlain(data) as any[]),
@@ -51,6 +58,7 @@ export function storeHostFunctions(store: Store): HostStore {
   return {
     storeGet: store.get.bind(store),
     storeGetByField: store.getByField.bind(store),
+    storeGetByFields: store.getByFields.bind(store),
     storeGetOneByField: store.getOneByField.bind(store),
     storeSet: store.set.bind(store),
     storeBulkCreate: store.bulkCreate.bind(store),
