@@ -25,7 +25,8 @@ if (
     argv._[0] === 'test' ||
     argv._[0] === 'mmr-migrate' ||
     argv._[0] === 'mmr-regen' ||
-    argv._[0] === 'force-clean'
+    argv._[0] === 'force-clean' ||
+    argv._[0] === 'reindex'
   )
 ) {
   void bootstrap();
