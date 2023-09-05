@@ -16,9 +16,13 @@ export type FunctionPropertyNames<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
 
-export type FieldOperators = '=' | '!=' | 'in' | '!in';
+type SingleOperators = '=' | '!=';
+type ArrayOperators = 'in' | '!in';
+export type FieldOperators = SingleOperators | ArrayOperators;
 
-export type FieldsExpression<T> = [field: keyof T, operator: FieldOperators, value: T[keyof T] | Array<T[keyof T]>];
+export type FieldsExpression<T> =
+  | [field: keyof T, operator: SingleOperators, value: T[keyof T]]
+  | [field: keyof T, operator: ArrayOperators, value: Array<T[keyof T]>];
 
 export interface Store {
   get(entity: string, id: string): Promise<Entity | undefined>;

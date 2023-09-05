@@ -107,7 +107,7 @@ export class SetValueModel<T> {
       return true;
     }
     if (Array.isArray(value)) {
-      return value.findIndex((v) => this.isMatchData(field, value)) > -1;
+      return value.findIndex((v) => this.isMatchData(field, v)) > -1;
     } else {
       return isEqual(this.getLatest()?.data?.[field], value);
     }
