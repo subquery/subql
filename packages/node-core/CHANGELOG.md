@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update apollo-links to 1.0.2, fix dictionary resolver failed to get token issue
 - Use test runs as unit for tests instead of entity checks (#1957)
 - Fix generated operation hash with single entity, buffer did not get hashed issue.
-- Infinite recursion in setValueModel (#1993)
+- Infinite recursion in setValueModel with arrays (#1993)
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)
