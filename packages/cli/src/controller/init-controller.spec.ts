@@ -8,6 +8,7 @@ import git from 'simple-git';
 import {
   cloneProjectGit,
   fetchExampleProjects,
+  fetchNetworks,
   fetchTemplates,
   validateEthereumProjectManifest,
 } from './init-controller';
@@ -52,16 +53,12 @@ describe('Cli can create project (mocked)', () => {
     expect(validateEthereumProjectManifest(projectPath)).toBe(true);
   });
   it('fetch templates', async () => {
-    // const v = await fetchTemplates()
-    // should be able to get, and results should be expected
+    expect((await fetchTemplates()).length).toBeGreaterThan(0);
   });
   it('fetch networks', async () => {
-    // get networks
+    expect((await fetchNetworks()).length).toBeGreaterThan(0);
   });
   it('fetch example projects', async () => {
-    // get projects
-    const mockFamCode = 'evm';
-    const mockNetCode = '1';
-    const v = await fetchExampleProjects(mockFamCode, mockNetCode);
+    expect((await fetchExampleProjects('evm', '1')).length).toBeGreaterThan(0);
   });
 });
