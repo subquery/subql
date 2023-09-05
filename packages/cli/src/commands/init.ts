@@ -101,7 +101,7 @@ export default class Init extends Command {
     const networkTemplates = await fetchNetworks();
 
     //Family selection
-    const families = uniq(networkTemplates.map(({name}) => name)).sort();
+    const families = networkTemplates.map(({name}) => name);
     await inquirer
       .prompt([
         {
@@ -122,9 +122,7 @@ export default class Init extends Command {
     const selectedFamily = networkTemplates.find((family) => family.name === this.networkFamily);
 
     // Network selection
-    const networks = uniq(selectedFamily.networks).sort();
-
-    const networkStrArr = networks.map((n) => n.name);
+    const networkStrArr = selectedFamily.networks.map((n) => n.name);
 
     await inquirer
       .prompt([
@@ -141,7 +139,7 @@ export default class Init extends Command {
       .then(({networkResponse}) => {
         this.network = networkResponse;
       });
-    const selectedNetwork = networks.find((network) => this.network === network.name);
+    const selectedNetwork = selectedFamily.networks.find((network) => this.network === network.name);
 
     const candidateProjects = await fetchExampleProjects(selectedFamily.code, selectedNetwork.code);
 
