@@ -242,7 +242,7 @@ describe('cacheModel', () => {
         await testModel.getByFields(
           [
             ['field1', '=', 1],
-            ['field1', 'in', 2],
+            ['field1', 'in', [2]],
           ],
           {offset: 0, limit: 1}
         );
