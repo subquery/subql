@@ -1,7 +1,6 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
 import {codegen} from '../../controller/codegen-controller';

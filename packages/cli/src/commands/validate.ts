@@ -16,14 +16,14 @@ export default class Validate extends Command {
       default: IPFS_NODE_ENDPOINT,
     }),
     silent: Flags.boolean(),
-    'network-family': Flags.enum({options: Object.values(NETWORK_FAMILY)}),
+    'network-family': Flags.string({options: Object.values(NETWORK_FAMILY)}),
   };
 
   //TODO, currently validation only work for complete project, ipfs deployment is not supported
   async run(): Promise<void> {
     const {flags} = await this.parse(Validate);
     const location = flags.location ?? process.cwd();
-    const v = await Validator.create(location, {ipfs: flags.ipfs}, flags['network-family']);
+    const v = await Validator.create(location, {ipfs: flags.ipfs}, flags['network-family'] as any);
 
     const ipfsMatch = location.match(IPFS_REGEX);
     if (ipfsMatch) {

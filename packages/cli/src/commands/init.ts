@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
-import {Command, Flags} from '@oclif/core';
+import {Args, Command, Flags} from '@oclif/core';
 import {NETWORK_FAMILY} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
@@ -74,12 +74,11 @@ export default class Init extends Command {
     abiPath: Flags.string({description: 'path to abi file'}),
   };
 
-  static args = [
-    {
-      name: 'projectName',
+  static args = {
+    projectName: Args.string({
       description: 'Give the starter project name',
-    },
-  ];
+    }),
+  };
   private projectPath: string; //path on GitHub
   private project: ProjectSpecBase;
   private location: string;
