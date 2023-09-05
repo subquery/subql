@@ -10,7 +10,6 @@ import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
-import {uniq} from 'lodash';
 import {
   installDependencies,
   cloneProjectTemplate,
