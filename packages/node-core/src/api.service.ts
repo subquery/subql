@@ -7,7 +7,7 @@ import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
-import {retryWithBackoff} from './utils';
+import {raceFulfilled, retryWithBackoff} from './utils';
 
 const logger = getLogger('api');
 
@@ -65,6 +65,7 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     const apiInstance = this.connectionPoolService.api;
     return apiInstance.unsafeApi;
   }
+
   async createConnections(
     network: ProjectNetworkConfig & {chainId: string},
     createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
@@ -75,7 +76,7 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
 
     const failedConnections: Map<number, string> = new Map();
 
-    for await (const [i, endpoint] of (network.endpoint as string[]).entries()) {
+    const connectionPromises = (network.endpoint as string[]).map(async (endpoint, i) => {
       try {
         const connection = await createConnection(endpoint);
         this.eventEmitter.emit(IndexerEvent.ApiConnected, {
@@ -98,24 +99,31 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
           throw this.metadataMismatchError('ChainId', network.chainId, chainId);
         }
 
-        endpointToApiIndex[endpoint] = connection;
+        this.connectionPoolService.addToConnections(connection, endpoint);
       } catch (e) {
         logger.error(`Failed to init ${endpoint}: ${e}`);
         endpointToApiIndex[endpoint] = null as unknown as IApiConnectionSpecific<A, SA, B>;
         failedConnections.set(i, endpoint);
+        throw e;
       }
-    }
+    });
 
-    if (Object.values(endpointToApiIndex).every((value) => value === null)) {
+    try {
+      const {fulfilledIndex, result} = (await raceFulfilled(connectionPromises)) as {
+        result: void;
+        fulfilledIndex: number;
+      };
+      connectionPromises.splice(fulfilledIndex, 1);
+    } catch (e) {
       throw new Error('All endpoints failed to initialize. Please add healthier endpoints');
     }
 
-    await this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
-
-    // Retry failed connections in the background
-    for (const [index, endpoint] of failedConnections) {
-      this.retryConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
-    }
+    Promise.allSettled(connectionPromises).then((res) => {
+      // Retry failed connections in the background
+      for (const [index, endpoint] of failedConnections) {
+        this.retryConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
+      }
+    });
   }
 
   async performConnection(
