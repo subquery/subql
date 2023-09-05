@@ -5,7 +5,13 @@ import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
 import git from 'simple-git';
-import {cloneProjectGit, validateEthereumProjectManifest} from './init-controller';
+import {
+  cloneProjectGit,
+  fetchExampleProjects,
+  fetchNetworks,
+  fetchTemplates,
+  validateEthereumProjectManifest,
+} from './init-controller';
 
 jest.mock('simple-git', () => {
   const mGit = {
@@ -45,5 +51,14 @@ describe('Cli can create project (mocked)', () => {
   it('validate ethereum project manifest', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest1');
     expect(validateEthereumProjectManifest(projectPath)).toBe(true);
+  });
+  it('fetch templates', async () => {
+    expect((await fetchTemplates()).length).toBeGreaterThan(0);
+  });
+  it('fetch networks', async () => {
+    expect((await fetchNetworks()).length).toBeGreaterThan(0);
+  });
+  it('fetch example projects', async () => {
+    expect((await fetchExampleProjects('evm', '1')).length).toBeGreaterThan(0);
   });
 });

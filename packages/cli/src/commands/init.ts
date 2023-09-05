@@ -12,8 +12,6 @@ import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
 import {uniq} from 'lodash';
 import {
-  fetchTemplates,
-  Template,
   installDependencies,
   cloneProjectTemplate,
   cloneProjectGit,
@@ -21,6 +19,9 @@ import {
   prepare,
   prepareProjectScaffold,
   validateEthereumProjectManifest,
+  fetchNetworks,
+  fetchExampleProjects,
+  ExampleProjectInterface,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
 import {resolveToAbsolutePath} from '../utils';
@@ -29,7 +30,7 @@ inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
 
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
-  return (_: any, input: string) => {
+  return (_: string, input: string) => {
     input = input || '';
     return new Promise((resolve) => {
       resolve(
@@ -71,7 +72,6 @@ export default class Init extends Command {
     'install-dependencies': Flags.boolean({description: 'Install dependencies as well', default: false}),
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     abiPath: Flags.string({description: 'path to abi file'}),
-    // multiple abi ?
   };
 
   static args = [
@@ -98,14 +98,10 @@ export default class Init extends Command {
       throw new Error(`Directory ${this.project.name} exists, try another project name`);
     }
 
-    let templates: Template[];
-    let selectedTemplate: Template;
-
-    templates = await fetchTemplates();
-    await this.observeTemplates(templates);
+    const networkTemplates = await fetchNetworks();
 
     //Family selection
-    const families = uniq(templates.map(({family}) => family)).sort();
+    const families = networkTemplates.map(({name}) => name);
     await inquirer
       .prompt([
         {
@@ -123,11 +119,11 @@ export default class Init extends Command {
       });
 
     // if network family is of ethereum, then should prompt them an abiPath
-    templates = templates.filter(({family}) => family === this.networkFamily);
-    await this.observeTemplates(templates);
+    const selectedFamily = networkTemplates.find((family) => family.name === this.networkFamily);
 
     // Network selection
-    const networks = uniq(templates.map(({network}) => network)).sort();
+    const networkStrArr = selectedFamily.networks.map((n) => n.name);
+
     await inquirer
       .prompt([
         {
@@ -137,18 +133,20 @@ export default class Init extends Command {
           searchText: '',
           emptyText: 'Network not found',
           pageSize: 20,
-          source: filterInput(networks),
+          source: filterInput(networkStrArr),
         },
       ])
       .then(({networkResponse}) => {
         this.network = networkResponse;
       });
-    const candidateTemplates = templates.filter(({network}) => network === this.network);
-    await this.observeTemplates(candidateTemplates);
+    const selectedNetwork = selectedFamily.networks.find((network) => this.network === network.name);
 
+    const candidateProjects = await fetchExampleProjects(selectedFamily.code, selectedNetwork.code);
+
+    let selectedProject: ExampleProjectInterface;
     // Templates selection
-    const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
-    const templateDisplays = candidateTemplates.map(
+    const paddingWidth = candidateProjects.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+    const templateDisplays = candidateProjects.map(
       ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
     );
     templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
@@ -166,13 +164,12 @@ export default class Init extends Command {
       .then(async ({templateDisplay}) => {
         const templateName = (templateDisplay as string).split(' ')[0];
         if (templateName === 'Other') {
-          await this.observeTemplates([]);
+          await this.cloneCustomRepo();
         } else {
-          selectedTemplate = templates.find(({name}) => name === templateName);
-          await this.observeTemplates([selectedTemplate]);
+          selectedProject = candidateProjects.find((project) => project.name === templateName);
         }
       });
-    this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedTemplate);
+    this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedProject);
     await this.setupProject(flags);
 
     if (validateEthereumProjectManifest(this.projectPath)) {
@@ -191,11 +188,9 @@ export default class Init extends Command {
     }
   }
 
-  async observeTemplates(templates: Template[]): Promise<void> {
-    if (templates.length === 0) {
-      const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
-      this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
-    }
+  async cloneCustomRepo(): Promise<void> {
+    const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
+    this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
   }
 
   async setupProject(flags: any): Promise<void> {

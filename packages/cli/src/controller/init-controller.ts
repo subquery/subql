@@ -12,27 +12,87 @@ import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
+import {BASE_TEMPLATE_URl} from '../constants';
 import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
-import {prepareDirPath} from '../utils';
-const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
+import {errorHandle, prepareDirPath} from '../utils';
 
-export interface Template {
+export interface ExampleProjectInterface {
   name: string;
   description: string;
   remote: string;
-  branch: string;
-  network: string;
-  family: string;
+  path: string;
 }
 
-export async function fetchTemplates(remote: string = TEMPLATES_REMOTE): Promise<Template[]> {
-  return axios
-    .create()
-    .get(remote)
-    .then(({data}) => data as Template[])
-    .catch((err) => {
-      throw new Error(`Unable to reach endpoint '${remote}', ${err}`);
-    });
+export interface Network {
+  code: string;
+  name: string;
+  chain_id: string;
+  description: string;
+  logo: string;
+}
+
+export interface Template {
+  code: string;
+  name: string;
+  description: string;
+  logo: string;
+  networks: {
+    code: string;
+    name: string;
+    chain_id: string;
+    description: string;
+    logo: string;
+    examples: ExampleProjectInterface[];
+  }[];
+}
+// GET /all
+// https://templates.subquery.network/all
+export async function fetchTemplates(): Promise<Template[]> {
+  try {
+    return (
+      await axios({
+        method: 'get',
+        url: '/all', // /networks
+        baseURL: BASE_TEMPLATE_URl,
+      })
+    ).data?.templates as Template[];
+  } catch (e) {
+    errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/all`);
+  }
+}
+
+// GET /networks
+// https://templates.subquery.network/networks
+export async function fetchNetworks(): Promise<Template[]> {
+  try {
+    return (
+      await axios({
+        method: 'get',
+        url: '/networks',
+        baseURL: BASE_TEMPLATE_URl,
+      })
+    ).data.results as Template[];
+  } catch (e) {
+    errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/networks`);
+  }
+}
+
+// The family query param must be an exact case-insensitive match otherwise an empty result will be returned
+export async function fetchExampleProjects(
+  familyCode: string,
+  networkCode: string
+): Promise<ExampleProjectInterface[]> {
+  try {
+    return (
+      await axios({
+        method: 'get',
+        url: `/networks/${familyCode}/${networkCode}`,
+        baseURL: BASE_TEMPLATE_URl,
+      })
+    ).data.results as ExampleProjectInterface[];
+  } catch (e) {
+    errorHandle(e, `Update to reach endpoint ${familyCode}/${networkCode}`);
+  }
 }
 
 export async function cloneProjectGit(
@@ -59,17 +119,17 @@ export async function cloneProjectGit(
 export async function cloneProjectTemplate(
   localPath: string,
   projectName: string,
-  selectedTemplate: Template
+  selectedProject: ExampleProjectInterface
 ): Promise<string> {
   const projectPath = path.join(localPath, projectName);
   //make temp directory to store project
   const tempPath = await makeTempDir();
   //use sparse-checkout to clone project to temp directory
-  await git(tempPath).init().addRemote('origin', selectedTemplate.remote);
-  await git(tempPath).raw('sparse-checkout', 'set', `${selectedTemplate.network}/${selectedTemplate.name}`);
-  await git(tempPath).raw('pull', 'origin', selectedTemplate.branch);
+  await git(tempPath).init().addRemote('origin', selectedProject.remote);
+  await git(tempPath).raw('sparse-checkout', 'set', `${selectedProject.path}`);
+  await git(tempPath).raw('pull', 'origin', 'main');
   // Copy content to project path
-  copySync(path.join(tempPath, `${selectedTemplate.network}/${selectedTemplate.name}`), projectPath);
+  copySync(path.join(tempPath, `${selectedProject.path}`), projectPath);
   // Clean temp folder
   fs.rmSync(tempPath, {recursive: true, force: true});
   return projectPath;
