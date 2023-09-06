@@ -105,6 +105,19 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     return Number(transactionApplicationOrder);
   }
 
+  private getOperationIndex(id: string) {
+    // Pick the first part of the ID before the '-' character
+    const idPart = id.split('-')[0];
+
+    // Create a mask for 12 bits to isolate the Operation Index
+    const mask = BigInt((1 << 12) - 1);
+
+    // Apply bitwise AND operation with the mask to get the Operation Index
+    const operationIndex = BigInt(idPart) & mask;
+
+    return Number(operationIndex);
+  }
+
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
     const { events: events } = await this.sorobanClient.getEvents({
       startLedger: height,
@@ -122,30 +135,30 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     });
   }
 
-  private async fetchEffectsForOperation(
-    operationId: string,
-  ): Promise<StellarEffect[]> {
-    const { records: effects } = await this.api
-      .effects()
-      .forOperation(operationId)
-      .call();
-    return effects.map((effect) => ({
-      ...effect,
-      ledger: null,
-      transaction: null,
-      operation: null,
-    }));
+  private wrapEffectsForOperation(
+    operationIndex: number,
+    effectsForSequence: ServerApi.EffectRecord[],
+  ): StellarEffect[] {
+    return effectsForSequence
+      .filter((effect) => this.getOperationIndex(effect.id) === operationIndex)
+      .map((effect) => ({
+        ...effect,
+        ledger: null,
+        transaction: null,
+        operation: null,
+      }));
   }
 
-  private async fetchOperationsForTransaction(
+  private async wrapOperationsForTx(
     transactionId: string,
     applicationOrder: number,
     sequence: number,
+    operationsForSequence: ServerApi.OperationRecord[],
+    effectsForSequence: ServerApi.EffectRecord[],
   ): Promise<StellarOperation[]> {
-    const { records: operations } = await this.api
-      .operations()
-      .forTransaction(transactionId)
-      .call();
+    const operations = operationsForSequence.filter(
+      (op) => op.transaction_hash === transactionId,
+    );
 
     let sequenceEvents: SorobanEvent[] = [];
 
@@ -171,41 +184,37 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       }
     }
 
-    return Promise.all(
-      operations.map(async (op) => {
-        const effects = await this.fetchEffectsForOperation(op.id);
+    return operations.map((op, index) => {
+      const effects = this.wrapEffectsForOperation(index, effectsForSequence);
 
-        const events = sequenceEvents.filter(
-          (event) =>
-            this.getTransactionApplicationOrder(event.id) === applicationOrder,
-        );
+      const events = sequenceEvents.filter(
+        (event) =>
+          this.getTransactionApplicationOrder(event.id) === applicationOrder,
+      );
 
-        const wrappedOp: StellarOperation = {
-          ...op,
-          ledger: null,
-          transaction: null,
-          effects: [],
-          events,
-        };
+      const wrappedOp: StellarOperation = {
+        ...op,
+        ledger: null,
+        transaction: null,
+        effects: [],
+        events,
+      };
 
-        effects.forEach((effect) => {
-          effect.operation = cloneDeep(wrappedOp);
-          wrappedOp.effects.push(effect);
-        });
+      effects.forEach((effect) => {
+        effect.operation = cloneDeep(wrappedOp);
+        wrappedOp.effects.push(effect);
+      });
 
-        return wrappedOp;
-      }),
-    );
+      return wrappedOp;
+    });
   }
 
-  private async fetchTransactionsForLedger(
+  private async wrapTransactionsForLedger(
     sequence: number,
+    transactions: ServerApi.TransactionRecord[],
+    operationsForSequence: ServerApi.OperationRecord[],
+    effectsForSequence: ServerApi.EffectRecord[],
   ): Promise<StellarTransaction[]> {
-    const { records: transactions } = await this.api
-      .transactions()
-      .forLedger(sequence)
-      .call();
-
     return Promise.all(
       transactions.map(async (tx, index) => {
         const wrappedTx: StellarTransaction = {
@@ -217,7 +226,13 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         };
 
         const operations = (
-          await this.fetchOperationsForTransaction(tx.id, index + 1, sequence)
+          await this.wrapOperationsForTx(
+            tx.id,
+            index + 1,
+            sequence,
+            operationsForSequence,
+            effectsForSequence,
+          )
         ).map((op) => {
           op.transaction = cloneDeep(wrappedTx);
           op.effects = op.effects.map((effect) => {
@@ -245,9 +260,16 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   private async fetchAndWrapLedger(
     sequence: number,
   ): Promise<StellarBlockWrapper> {
-    const [ledger, transactions] = await Promise.all([
+    const [
+      ledger,
+      { records: transactions },
+      { records: operations },
+      { records: effects },
+    ] = await Promise.all([
       this.api.ledgers().ledger(sequence).call(),
-      this.fetchTransactionsForLedger(sequence),
+      this.api.transactions().forLedger(sequence).call(),
+      this.api.operations().forLedger(sequence).call(),
+      this.api.effects().forLedger(sequence).call(),
     ]);
 
     const wrappedLedger: StellarBlock = {
@@ -258,7 +280,14 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       events: [] as SorobanEvent[],
     };
 
-    transactions.forEach((tx) => {
+    const wrapperTxs = await this.wrapTransactionsForLedger(
+      sequence,
+      transactions,
+      operations,
+      effects,
+    );
+
+    wrapperTxs.forEach((tx) => {
       tx.ledger = cloneDeep(wrappedLedger);
       tx.operations = tx.operations.map((op) => {
         op.ledger = cloneDeep(wrappedLedger);
