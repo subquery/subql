@@ -167,7 +167,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     const operationHash = this.storeService.getOperationMerkleRoot();
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
 
-    await this.updatePOI(height, blockHash, operationHash);
+    this.createPOI(height, blockHash, operationHash);
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
@@ -175,14 +175,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     } else {
       this.updateStoreMetadata(height);
       if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
-        // We only check if it is undefined, need to be caution here when blockOffset is 0
-        if (this.projectService.blockOffset === undefined) {
-          // Which means during project init, it has not found offset and set value
-          this.storeCacheService.metadata.set('blockOffset', height - 1);
-        }
-        // this will return if project service blockOffset already exist
-        // dont await this, this starts a loop
-        void this.projectService.setBlockOffset(height - 1);
+        await this.poiService.ensureGenesisPoi(height);
       }
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);
@@ -208,27 +201,20 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     }
   }
 
-  private async updatePOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
+  // First creation of POI
+  private createPOI(height: number, blockHash: string, operationHash: Uint8Array): void {
     if (!this.nodeConfig.proofOfIndex) {
       return;
     }
-    //check if operation is null, then poi will not be inserted
     if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-      const poiBlock = PoiBlock.create(
-        height,
-        blockHash,
-        operationHash,
-        await this.poiService.getLatestPoiBlockHash(),
-        this.project.id
-      );
+      const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
       // This is the first creation of POI
       this.poi.bulkUpsert([poiBlock]);
+      this.storeCacheService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}]);
       this.eventEmitter.emit(PoiEvent.PoiTarget, {
         height,
         timestamp: Date.now(),
       });
-      this.poiService.setLatestPoiBlockHash(poiBlock.hash);
-      this.storeCacheService.metadata.set('lastPoiHeight', height);
     }
   }
 
@@ -248,7 +234,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   private get poi(): CachePoiModel {
     const poi = this.storeCacheService.poi;
     if (!poi) {
-      throw new Error('MMR service expected POI but it was not found');
+      throw new Error('Poi service expected poi repo but it was not found');
     }
     return poi;
   }

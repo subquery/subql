@@ -13,6 +13,7 @@ import {
   tempProtoDir,
   validateCosmosManifest,
   ProjectManifestImpls as CosmosManifest,
+  generateCosmwasm,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -306,9 +307,9 @@ export function processAbis(
   return renderInterfaceJobs;
 }
 
-function joinInputAbiName(abiObject: abiInterface) {
+export function joinInputAbiName(abiObject: abiInterface): string {
   // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
-  const inputToSnake: string = abiObject.inputs.map((obj) => obj.type.toLowerCase()).join('_');
+  const inputToSnake = abiObject.inputs.map((obj) => obj.type.replace(/\[\]/g, '_arr').toLowerCase()).join('_');
   return `${abiObject.name}_${inputToSnake}_`;
 }
 
@@ -436,6 +437,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   if (chainTypes.length !== 0) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
+  await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
   await generateAbis(datasources, projectPath);
 

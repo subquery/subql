@@ -14,10 +14,8 @@ export const IPFS_REGEX = /^ipfs:\/\//i;
 // MANIFEST
 export const RUNNER_REGEX = /(\^?)(\d|x|\*)+\.(\d|x|\*)+\.(\d|x|\*)+/;
 
-//MMR
-export const DEFAULT_WORD_SIZE = 32;
-export const DEFAULT_LEAF = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex');
-export const MMR_AWAIT_TIME = 2;
+// POI
+export const POI_AWAIT_TIME = 2; // seconds
 
 // NETWORK
 export enum NETWORK_FAMILY {

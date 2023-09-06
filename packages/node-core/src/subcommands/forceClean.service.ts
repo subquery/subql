@@ -68,11 +68,6 @@ export class ForceCleanService {
       }
 
       logger.info('force cleaned schema and tables');
-
-      if (fs.existsSync(this.nodeConfig.mmrPath)) {
-        await fs.promises.unlink(this.nodeConfig.mmrPath);
-        logger.info('force cleaned file based mmr');
-      }
     } catch (err: any) {
       logger.error(err, 'failed to force clean');
       throw err;

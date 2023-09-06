@@ -19,7 +19,6 @@ export interface MetadataKeys {
   runnerQuery: string;
   runnerQueryVersion: string;
   specName: string;
-  lastPoiHeight: number;
   lastFinalizedVerifiedHeight: number;
   indexerHealthy: boolean;
   targetHeight: number;
@@ -27,7 +26,10 @@ export interface MetadataKeys {
   unfinalizedBlocks: string;
   schemaMigrationCount: number;
   deployments: string;
-  latestPoiWithMmr: string;
+  lastCreatedPoiHeight: number;
+  latestSyncedPoiHeight: number;
+  latestPoiWithMmr: string; // Deprecated, keep for poi migration
+  lastPoiHeight: string; // Deprecated, keep for poi migration
 }
 
 export interface Metadata {

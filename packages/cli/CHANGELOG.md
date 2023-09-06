@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Fix incorrect codegen on unstructured storage proxy contract abis (#1976)
+- Publish multichain projects file to a directory in ipfs (#1981)
+
+### Added
+- Support for cosmwasm contract abi codegen (#1989)
+- Update `subql init` to use proxy templates (#1991)
+
+### Changed
+- Update common packages version from `latest`, to ensure they will be bumped (#1992)
+- Update model codegen to include `getByFields` and produce prettier code (#1993)
+
+## [3.6.1] - 2023-08-29
+### Fixed
+- Publish command creating invalid deployment (#1977)
 
 ## [3.6.0] - 2023-08-25
 ### Added
@@ -435,7 +450,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/3.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/3.6.1...HEAD
+[3.6.1]: https://github.com/subquery/subql/compare/cli/3.6.0...cli/3.6.1
+[3.6.0]: https://github.com/subquery/subql/compare/cli/3.5.1...cli/3.6.0
 [3.5.1]: https://github.com/subquery/subql/compare/cli/3.5.0...cli/3.5.1
 [3.5.0]: https://github.com/subquery/subql/compare/cli/3.4.0...cli/3.5.0
 [3.4.0]: https://github.com/subquery/subql/compare/cli/3.3.3...cli/3.4.0

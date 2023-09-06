@@ -1,16 +1,20 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {BuildOptions, DataTypes, Model, Sequelize} from '@subql/x-sequelize';
+import {BuildOptions, DataTypes, Model, Op, Sequelize} from '@subql/x-sequelize';
 
 export interface ProofOfIndex {
   id: number; //blockHeight
-  chainBlockHash: Uint8Array;
-  hash: Uint8Array;
-  parentHash?: Uint8Array;
-  operationHashRoot: Uint8Array;
-  mmrRoot?: Uint8Array;
+  chainBlockHash: Uint8Array | null;
+  hash: Uint8Array | undefined;
+  parentHash: Uint8Array | undefined;
+  operationHashRoot: Uint8Array | null;
   projectId?: string;
+}
+
+export interface SyncedProofOfIndex extends ProofOfIndex {
+  hash: Uint8Array;
+  parentHash: Uint8Array;
 }
 
 export interface PoiModel extends Model<ProofOfIndex>, ProofOfIndex {}
@@ -46,11 +50,6 @@ export function PoiFactoryDeprecate(sequelize: Sequelize, schema: string): PoiRe
         type: DataTypes.BLOB,
         allowNull: false,
       },
-      mmrRoot: {
-        type: DataTypes.BLOB,
-        allowNull: true,
-        unique: true,
-      },
       projectId: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -75,33 +74,27 @@ export function PoiFactory(sequelize: Sequelize, schema: string): PoiRepo {
       },
       chainBlockHash: {
         type: DataTypes.BLOB,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
       hash: {
         type: DataTypes.BLOB,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
       parentHash: {
         type: DataTypes.BLOB,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
       operationHashRoot: {
         type: DataTypes.BLOB,
-        allowNull: false,
-      },
-      mmrRoot: {
-        type: DataTypes.BLOB,
         allowNull: true,
-        unique: true,
       },
     },
     {
       freezeTableName: true,
       schema: schema,
-      indexes: [{fields: ['hash']}],
     }
   );
 }

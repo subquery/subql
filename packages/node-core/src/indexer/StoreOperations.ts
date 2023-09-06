@@ -52,7 +52,7 @@ export class StoreOperations {
       entityType: entity,
       data: data,
     };
-    this.merkleTools.addLeaf(u8aToBuffer(this.operationEntityToUint8Array(operationEntity)));
+    this.merkleTools.addLeaf(u8aToBuffer(this.operationEntityToUint8Array(operationEntity)), true);
   }
 
   reset(): void {

@@ -28,7 +28,6 @@ const MOCK_CHAINTYPES = [
 describe('Able to generate cosmos types from protobuf', () => {
   afterEach(async () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
-    await promisify(rimraf)(path.join(__dirname, '../../test/protoTest2/src'));
   });
 
   it('Able to generate ts types from protobufs', async () => {

@@ -14,7 +14,7 @@ import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Publish from '../commands/publish';
 import {ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0, ProjectSpecV1_0_0} from '../types';
-import {cloneProjectTemplate, fetchTemplates, prepare} from './init-controller';
+import {cloneProjectTemplate, fetchExampleProjects, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -68,8 +68,8 @@ jest.setTimeout(150000);
 export async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
-  const templates = await fetchTemplates();
-  const projectPath = await cloneProjectTemplate(tmpdir, projectSpec.name, templates[0]);
+  const projects = await fetchExampleProjects('polkadot', 'polkadot');
+  const projectPath = await cloneProjectTemplate(tmpdir, projectSpec.name, projects[0]);
   await prepare(projectPath, projectSpec);
 
   // Install dependencies

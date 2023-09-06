@@ -1,6 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
+import {FieldOperators, FieldsExpression} from '@subql/types';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
 import {Mutex} from 'async-mutex';
@@ -23,6 +25,13 @@ const getCacheOptions = {
   updateAgeOnGet: true, // we want to keep most used record in cache longer
 };
 
+const operatorsMap: Record<FieldOperators, any> = {
+  '=': Op.eq,
+  '!=': Op.ne,
+  in: Op.in,
+  '!in': Op.notIn,
+};
+
 export class CachedModel<
   T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
 > implements ICachedModel<T>, ICachedModelControl
@@ -31,7 +40,6 @@ export class CachedModel<
   private getCache: GetData<T>;
   private setCache: SetData<T> = {};
   private removeCache: Record<string, RemoveValue> = {};
-  private _getNextStoreOperationIndex?: () => number;
   readonly hasAssociations: boolean = false;
   private mutex = new Mutex();
 
@@ -40,28 +48,20 @@ export class CachedModel<
   constructor(
     readonly model: ModelStatic<Model<T, T>>,
     private readonly historical = true,
-    private config: NodeConfig,
+    config: NodeConfig,
+    private getNextStoreOperationIndex: () => number,
+    // This is used by methods such as getByFields which don't support caches
+    private flushAll: () => Promise<void>,
     private readonly useCockroachDb = false
   ) {
     // In case, this might be want to be 0
-    if (this.config.storeGetCacheSize !== undefined) {
-      getCacheOptions.max = this.config.storeGetCacheSize;
+    if (config.storeGetCacheSize !== undefined) {
+      getCacheOptions.max = config.storeGetCacheSize;
     }
     this.getCache = new GetData<T>(getCacheOptions);
     if (Object.keys(this.model.associations).length > 0) {
       this.hasAssociations = true;
     }
-  }
-
-  init(getNextStoreOperationIndex: () => number): void {
-    this._getNextStoreOperationIndex = getNextStoreOperationIndex;
-  }
-
-  private getNextStoreOperationIndex(): number {
-    if (!this._getNextStoreOperationIndex) {
-      throw new Error(`Cache model ${this.model.name} has not been initialized`);
-    }
-    return this._getNextStoreOperationIndex();
   }
 
   allCachedIds(): string[] {
@@ -136,6 +136,56 @@ export class CachedModel<
     });
 
     return cachedData.concat(records.map((record) => record.toJSON() as T));
+  }
+
+  async getByFields(
+    filter: FieldsExpression<T>[],
+    options: {
+      offset: number;
+      limit: number;
+    }
+  ): Promise<T[]> {
+    // Validate filter
+    filter.forEach(([field, operator]) => {
+      assert(
+        operatorsMap[operator],
+        `Operator ('${operator}') for field ${String(field)} is not valid. Options are ${Object.keys(operatorsMap).join(
+          ', '
+        )}`
+      );
+    });
+
+    // If there is a single field we can use `getByField`
+    if (filter.length === 1) {
+      const [field, operator, value] = filter[0];
+      if (operator === '=' || operator === 'in') {
+        return this.getByField(field, value, options);
+      }
+    }
+
+    // This query doesn't support the cache, so we flush to ensure all data is in the db then query from the db
+    if (this.isFlushable) {
+      // This will flush all entities
+      await this.flushAll();
+    }
+
+    // Acquire a lock so the cache cant be updated in the mean time
+    const release = await this.mutex.acquire();
+
+    try {
+      const records = await this.model.findAll({
+        where: {
+          // Explicit with AND here to remove any ambiguity
+          [Op.and]: filter.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})) as any, // Types not working properly
+        },
+        limit: options?.limit,
+        offset: options?.offset,
+      });
+
+      return records.map((r) => r.toJSON());
+    } finally {
+      release();
+    }
   }
 
   async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {

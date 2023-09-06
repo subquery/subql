@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Injectable} from '@nestjs/common';
-import {ConnectionPoolItem, IApiConnectionSpecific, IConnectionPoolStateManager} from '@subql/node-core';
 import {ApiErrorType} from '../../api.connection.error';
-import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
+import {IApiConnectionSpecific} from '../../api.service';
+import {
+  ConnectionPoolStateManager,
+  ConnectionPoolItem,
+  IConnectionPoolStateManager,
+} from '../connectionPoolState.manager';
 
 export type HostConnectionPoolState<T> = {
   hostGetNextConnectedEndpoint: () => Promise<string | undefined>;

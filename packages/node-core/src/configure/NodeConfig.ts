@@ -12,11 +12,6 @@ import {assign} from '../utils/object';
 
 const logger = getLogger('configure');
 
-export enum MmrStoreType {
-  File = 'file',
-  Postgres = 'postgres',
-}
-
 export interface IConfig {
   readonly subquery: string;
   readonly subqueryName?: string;
@@ -36,8 +31,6 @@ export interface IConfig {
   readonly indexCountLimit: number;
   readonly timestampField: boolean;
   readonly proofOfIndex: boolean;
-  readonly mmrStoreType: MmrStoreType;
-  readonly mmrPath?: string;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
   readonly workers?: number;
@@ -75,7 +68,6 @@ const DEFAULT_CONFIG = {
   indexCountLimit: 10,
   timestampField: true,
   proofOfIndex: false,
-  mmrStoreType: MmrStoreType.Postgres,
   dictionaryTimeout: 30,
   profiler: false,
   subscription: false,
@@ -219,17 +211,10 @@ export class NodeConfig implements IConfig {
     return this._config.proofOfIndex;
   }
 
-  get mmrStoreType(): MmrStoreType {
-    return this._config.mmrStoreType;
-  }
-
   get dictionaryTimeout(): number {
     return this._config.dictionaryTimeout;
   }
 
-  get mmrPath(): string {
-    return this._config.mmrPath ?? `.mmr/${this.subqueryName}.mmr`;
-  }
   get ipfs(): string | undefined {
     return this._config.ipfs;
   }

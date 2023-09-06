@@ -1,10 +1,55 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {base58Validate} from '@polkadot/util-crypto';
 import {PoiBlock} from './PoiBlock';
 
 describe('Poi Block', () => {
+  it('create default block, block that has no operation and not been fetched', () => {
+    const poiBlock = PoiBlock.create(100, null, null, 'test', new Uint8Array());
+    expect(poiBlock.hash).toBeDefined();
+  });
+
+  it('chainBlockHash and Operation hash should either both null or both defined, otherwise should throw error', () => {
+    expect(() =>
+      PoiBlock.create(
+        100,
+        '0xe1858e5710e2a60caad17505d799baafa8bc58a49bb52b9b9009427e9dc764ee',
+        null,
+        'test',
+        new Uint8Array()
+      )
+    ).toThrow();
+  });
+
+  it('for default block, parentHash must be provided, otherwise should throw', () => {
+    expect(() => PoiBlock.create(100, null, null, 'test', undefined)).toThrow();
+  });
+
+  it('create new block with operations, and place hold for parent hash and hash', () => {
+    const poiBlock = PoiBlock.create(
+      1,
+      '0xe1858e5710e2a60caad17505d799baafa8bc58a49bb52b9b9009427e9dc764ee',
+      new Uint8Array(),
+      'test',
+      undefined
+    );
+    expect(poiBlock.hash).toBeUndefined();
+    expect(poiBlock.parentHash).toBeUndefined();
+    expect(poiBlock.operationHashRoot).toBeDefined();
+  });
+
+  it('update existing block with parent hash, it should create its own block hash', () => {
+    const poiBlock = PoiBlock.create(
+      1,
+      '0xe1858e5710e2a60caad17505d799baafa8bc58a49bb52b9b9009427e9dc764ee',
+      new Uint8Array(),
+      'test',
+      new Uint8Array()
+    );
+    expect(poiBlock.hash).toBeDefined();
+    expect(poiBlock.parentHash).toBeDefined();
+  });
+
   it('supports hex block hashes', () => {
     // Shiden
     // https://polkadot.js.org/apps/#/explorer/query/0xe1858e5710e2a60caad17505d799baafa8bc58a49bb52b9b9009427e9dc764ee
@@ -12,8 +57,8 @@ describe('Poi Block', () => {
       1,
       '0xe1858e5710e2a60caad17505d799baafa8bc58a49bb52b9b9009427e9dc764ee',
       new Uint8Array(),
-      new Uint8Array(),
-      'test'
+      'test',
+      undefined
     );
 
     expect(poiBlock.chainBlockHash).toBeDefined();
@@ -24,7 +69,7 @@ describe('Poi Block', () => {
       225, 133, 142, 87, 16, 226, 166, 12, 170, 209, 117, 5, 215, 153, 186, 175, 168, 188, 88, 164, 155, 181, 43, 155,
       144, 9, 66, 126, 157, 199, 100, 238,
     ]);
-    const poiBlock = PoiBlock.create(1, hash, new Uint8Array(), new Uint8Array(), 'test');
+    const poiBlock = PoiBlock.create(1, hash, new Uint8Array(), 'test', new Uint8Array());
     expect(poiBlock.chainBlockHash).toBeDefined();
   });
 
@@ -34,8 +79,8 @@ describe('Poi Block', () => {
       1,
       '8gBy5MhHUAg2gVv5Uu9A8mTJF4hpDXteoKykgJiwSFZS',
       new Uint8Array(),
-      new Uint8Array(),
-      'test'
+      'test',
+      new Uint8Array()
     );
     expect(poiBlock.chainBlockHash).toBeDefined();
   });
@@ -46,8 +91,8 @@ describe('Poi Block', () => {
       1,
       'KDG6EJ7FUMNFWZJLHDIJQICOZZ4PORTW5OZPUPRJRGOOM63WQ74A',
       new Uint8Array(),
-      new Uint8Array(),
-      'test'
+      'test',
+      new Uint8Array()
     );
     expect(poiBlock.chainBlockHash).toBeDefined();
 
@@ -55,8 +100,8 @@ describe('Poi Block', () => {
       1,
       '7mxLwnp5sElF3ZtZaR2Pe/28+ytwwVNn3hfcQnSurV4=',
       new Uint8Array(),
-      new Uint8Array(),
-      'test'
+      'test',
+      new Uint8Array()
     );
     expect(poiBlock.chainBlockHash).toBeDefined();
 
@@ -65,13 +110,13 @@ describe('Poi Block', () => {
       1,
       'a1UbyspTdnyZXLUQaQbciCxrCWWxz24kgSwGXSQnkbs=',
       new Uint8Array(),
-      new Uint8Array(),
-      'test'
+      'test',
+      new Uint8Array()
     );
     expect(poiBlock.chainBlockHash).toBeDefined();
   });
 
   it('throws on unsupported block hash format', () => {
-    expect(() => PoiBlock.create(1, '!@#$%^&', new Uint8Array(), new Uint8Array(), 'test')).toThrow();
+    expect(() => PoiBlock.create(1, '!@#$%^&', new Uint8Array(), 'test', new Uint8Array())).toThrow();
   });
 });

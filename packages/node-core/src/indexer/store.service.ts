@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-import {Entity, Store} from '@subql/types';
+import {Entity, FieldsExpression, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
   GraphQLModelsType,
@@ -750,8 +750,17 @@ group by
           },
         },
       });
-      this.metadataModel.set('lastPoiHeight', targetBlockHeight);
+      this.metadataModel.set('lastCreatedPoiHeight', targetBlockHeight);
     }
+  }
+
+  isIndexed(entity: string, field: string): boolean {
+    return (
+      this.modelIndexedFields.findIndex(
+        (indexField) =>
+          upperFirst(camelCase(indexField.entityName)) === entity && camelCase(indexField.fieldName) === field
+      ) > -1
+    );
   }
 
   getStore(): Store {
@@ -773,11 +782,7 @@ group by
         } = {}
       ): Promise<T[]> => {
         try {
-          const indexed =
-            this.modelIndexedFields.findIndex(
-              (indexField) =>
-                upperFirst(camelCase(indexField.entityName)) === entity && camelCase(indexField.fieldName) === field
-            ) > -1;
+          const indexed = this.isIndexed(entity, String(field));
           assert(indexed, `to query by field ${String(field)}, an index must be created on model ${entity}`);
           if (options?.limit && this.config.queryLimit < options?.limit) {
             logger.warn(
@@ -793,6 +798,39 @@ group by
             .getByField(field, value, {limit: finalLimit, offset: options.offset});
         } catch (e) {
           throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
+        }
+      },
+      getByFields: async <T extends Entity>(
+        entity: string,
+        filter: FieldsExpression<T>[],
+        options?: {
+          offset?: number;
+          limit?: number;
+        }
+      ): Promise<T[]> => {
+        try {
+          // Check that the fields are indexed
+          filter.forEach((f) => {
+            assert(
+              this.isIndexed(entity, String(f[0])),
+              `to query by field ${String(f[0])}, an index must be created on model ${entity}`
+            );
+          });
+
+          if (options?.limit && this.config.queryLimit < options?.limit) {
+            logger.warn(
+              `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${this.config.queryLimit} as the limit.`
+            );
+          }
+
+          const finalOptions = {
+            offset: options?.offset ?? 0,
+            limit: Math.min(options?.limit ?? this.config.queryLimit, this.config.queryLimit),
+          };
+
+          return this.storeCache.getModel<T>(entity).getByFields(filter, finalOptions);
+        } catch (e) {
+          throw new Error(`Failed to getByFields Entity ${entity}: ${e}`);
         }
       },
       getOneByField: async <T extends Entity>(

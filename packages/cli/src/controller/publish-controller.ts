@@ -13,6 +13,7 @@ import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {FileReference} from '@subql/types';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
+import yaml from 'js-yaml';
 
 const PIN_SERVICE = 'onfinality';
 
@@ -77,10 +78,14 @@ export async function uploadToIpfs(
       throw new Error('Unable to parse project manifest');
     }
 
-    const deployment = await replaceFileReferences(reader.root, manifest, authToken, ipfs);
+    const deployment = await replaceFileReferences(reader.root, manifest.deployment, authToken, ipfs);
+
+    // Use JSON.* to convert Map to Object
+    const deploymentStr = yaml.dump(JSON.parse(JSON.stringify(deployment)), {sortKeys: true, condenseFlow: true});
+
     contents.push({
       path: path.join(directory ?? '', path.basename(project)),
-      content: deployment.toDeployment(),
+      content: deploymentStr,
     });
   }
 
@@ -93,7 +98,7 @@ export async function uploadToIpfs(
   }
 
   // Upload schema
-  return uploadFiles(contents, authToken, ipfs);
+  return uploadFiles(contents, authToken, multichainProjectPath !== undefined, ipfs);
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
@@ -135,13 +140,14 @@ const fileMap = new Map<string | fs.ReadStream, Promise<string>>();
 export async function uploadFiles(
   contents: {path: string; content: string}[],
   authToken: string,
+  isMultichain?: boolean,
   ipfs?: IPFSHTTPClient
 ): Promise<Map<string, string>> {
   const fileCidMap: Map<string, string> = new Map();
 
   if (ipfs) {
     try {
-      const results = ipfs.addAll(contents, {wrapWithDirectory: true});
+      const results = ipfs.addAll(contents, {wrapWithDirectory: isMultichain});
 
       for await (const result of results) {
         fileCidMap.set(result.path, result.cid.toString());
@@ -157,8 +163,7 @@ export async function uploadFiles(
   });
 
   try {
-    const results = ipfsWrite.addAll(contents, {pin: true, cidVersion: 0});
-
+    const results = ipfsWrite.addAll(contents, {pin: true, cidVersion: 0, wrapWithDirectory: isMultichain});
     for await (const result of results) {
       fileCidMap.set(result.path, result.cid.toString());
 

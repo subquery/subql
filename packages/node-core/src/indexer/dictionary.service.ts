@@ -174,13 +174,14 @@ export class DictionaryService {
     let link: ApolloLink;
 
     if (this.nodeConfig.dictionaryResolver) {
-      link = dictHttpLink({
+      const authHttpLink = dictHttpLink({
         authUrl: this.nodeConfig.dictionaryResolver,
         chainId,
         logger,
         httpOptions: {fetch},
         fallbackServiceUrl: dictionaryEndpoint,
       });
+      link = authHttpLink.link;
     } else {
       link = new HttpLink({uri: dictionaryEndpoint, fetch});
     }
