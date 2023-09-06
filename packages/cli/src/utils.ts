@@ -104,6 +104,6 @@ export function resolveToAbsolutePath(inputPath: string): string {
   return path.resolve(inputPath.replace(regex, os.homedir()));
 }
 
-export function isValidateEnum<T extends Record<string, string>>(enumType: T, input: string): input is T[keyof T] {
+export function isValidEnum<T extends Record<string, string>>(enumType: T, input: string): input is T[keyof T] {
   return Object.values(enumType).includes(input);
 }
