@@ -55,7 +55,6 @@
     "eslint": "^8.8.0",
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.2",
-    "globby": "^11",
     "oclif": "^3.15.0"
   },
   "engines": {

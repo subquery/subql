@@ -6253,7 +6253,6 @@ __metadata:
     eslint-config-oclif-typescript: ^1.0.2
     ethers: ^5.7.0
     fuzzy: ^0.1.3
-    globby: ^11
     inquirer: ^8.2.0
     inquirer-autocomplete-prompt: ^1.4.0
     node-fetch: 2.6.7
@@ -13109,7 +13108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:^11, globby@npm:^11.0.1, globby@npm:^11.0.3, globby@npm:^11.0.4, globby@npm:^11.1.0":
+"globby@npm:^11.0.1, globby@npm:^11.0.3, globby@npm:^11.0.4, globby@npm:^11.1.0":
   version: 11.1.0
   resolution: "globby@npm:11.1.0"
   dependencies:
