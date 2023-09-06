@@ -5,7 +5,7 @@ import {forbidNonWhitelisted} from '@subql/common';
 import {
   StellarHandlerKind,
   StellarDatasourceKind,
-  StellarEventFilter,
+  SorobanEventFilter,
   SubqlCustomHandler,
   SubqlMapping,
   SubqlHandler,
@@ -14,13 +14,112 @@ import {
   SubqlCustomDatasource,
   FileReference,
   CustomDataSourceAsset,
+  StellarBlockFilter,
+  StellarTransactionFilter,
+  StellarOperationFilter,
+  StellarEffectFilter,
+  SubqlBlockHandler,
+  SubqlTransactionHandler,
+  SubqlOperationHandler,
+  SubqlEffectHandler,
   SubqlEventHandler,
+  SubqlSorobanTransactionHandler,
 } from '@subql/types-stellar';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
+import {Horizon} from 'stellar-sdk';
 import {SubqlStellarProcessorOptions} from './types';
 
-export class EventFilter implements StellarEventFilter {
+export class BlockFilter implements StellarBlockFilter {
+  @IsOptional()
+  @IsInt()
+  modulo?: number;
+  @IsOptional()
+  @IsString()
+  timestamp?: string;
+}
+
+export class TransactionFilter implements StellarTransactionFilter {
+  @IsOptional()
+  @IsString()
+  account?: string;
+}
+
+export class OperationFilter implements StellarOperationFilter {
+  @IsOptional()
+  type: Horizon.OperationResponseType;
+
+  @IsOptional()
+  @IsString()
+  source_account?: string;
+}
+
+export class EffectFilter implements StellarEffectFilter {
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @IsOptional()
+  @IsString()
+  account?: string;
+}
+
+export class BlockHandler implements SubqlBlockHandler {
+  @IsObject()
+  @IsOptional()
+  @Type(() => BlockFilter)
+  filter?: BlockFilter;
+  @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Block]})
+  kind: StellarHandlerKind.Block;
+  @IsString()
+  handler: string;
+}
+
+export class TransactionHandler implements SubqlTransactionHandler {
+  @IsObject()
+  @IsOptional()
+  @Type(() => TransactionFilter)
+  filter?: TransactionFilter;
+  @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Transaction]})
+  kind: StellarHandlerKind.Transaction;
+  @IsString()
+  handler: string;
+}
+
+export class SorobanTransactionHandler implements SubqlSorobanTransactionHandler {
+  @IsObject()
+  @IsOptional()
+  @Type(() => TransactionFilter)
+  filter?: TransactionFilter;
+  @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.SorobanTransaction]})
+  kind: StellarHandlerKind.SorobanTransaction;
+  @IsString()
+  handler: string;
+}
+
+export class OperationHandler implements SubqlOperationHandler {
+  @IsObject()
+  @IsOptional()
+  @Type(() => OperationFilter)
+  filter?: OperationFilter;
+  @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Operation]})
+  kind: StellarHandlerKind.Operation;
+  @IsString()
+  handler: string;
+}
+
+export class EffectHandler implements SubqlEffectHandler {
+  @IsObject()
+  @IsOptional()
+  @Type(() => EffectFilter)
+  filter?: EffectFilter;
+  @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Effects]})
+  kind: StellarHandlerKind.Effects;
+  @IsString()
+  handler: string;
+}
+
+export class EventFilter implements SorobanEventFilter {
   @IsOptional()
   @IsString()
   contractId?: string;
@@ -34,7 +133,7 @@ export class EventHandler implements SubqlEventHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => EventFilter)
-  filter?: StellarEventFilter;
+  filter?: SorobanEventFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Event]})
   kind: StellarHandlerKind.Event;
   @IsString()
@@ -56,6 +155,16 @@ export class StellarMapping implements SubqlMapping {
     const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
+        case StellarHandlerKind.Block:
+          return plainToClass(BlockHandler, handler);
+        case StellarHandlerKind.Transaction:
+          return plainToClass(TransactionHandler, handler);
+        case StellarHandlerKind.SorobanTransaction:
+          return plainToClass(SorobanTransactionHandler, handler);
+        case StellarHandlerKind.Operation:
+          return plainToClass(OperationHandler, handler);
+        case StellarHandlerKind.Effects:
+          return plainToClass(EffectHandler, handler);
         case StellarHandlerKind.Event:
           return plainToClass(EventHandler, handler);
         default:

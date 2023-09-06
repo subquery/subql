@@ -1,70 +1,138 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { NodeConfig } from '@subql/node-core';
 import {
   StellarDatasourceKind,
   StellarHandlerKind,
   SubqlRuntimeDatasource,
 } from '@subql/types-stellar';
-import { GraphQLSchema } from 'graphql';
-import {
-  SubqlProjectDsTemplate,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { buildDictionaryQueryEntries, FetchService } from './fetch.service';
+import { buildDictionaryQueryEntries } from './fetch.service';
 
-const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
-
-function testSubqueryProject(endpoint: string, ds: any): SubqueryProject {
-  return {
-    network: {
-      endpoint,
-      chainId: '1',
-    },
-    dataSources: ds as any,
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: null,
-  };
-}
-
-describe('Dictioanry queries', () => {
-  describe('Correct dictionary query with dynamic ds', () => {
-    it('Build correct counter increment single query', () => {
-      const ds: SubqlRuntimeDatasource = {
-        kind: StellarDatasourceKind.Runtime,
-        assets: new Map(),
-        startBlock: 1,
-        mapping: {
-          file: '',
-          handlers: [
-            {
-              handler: 'handleDyanmicDs',
-              kind: StellarHandlerKind.Event,
-              filter: {
-                topics: ['COUNTER'],
-              },
+describe('buildDictionaryQueryEntries', () => {
+  it('should correctly build dictionary query entries for transactions', () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: StellarDatasourceKind.Runtime,
+      startBlock: 1,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransactions',
+            kind: StellarHandlerKind.Transaction,
+            filter: {
+              account: 'test_account',
             },
-          ],
-        },
-      };
-      const result = buildDictionaryQueryEntries([ds], 1);
-      expect(result).toEqual([
-        {
-          entity: 'events',
-          conditions: [
-            {
-              field: 'topics0',
-              value: 'COUNTER',
-              matcher: 'equalTo',
+          },
+        ],
+      },
+    };
+    const result = buildDictionaryQueryEntries([ds], 1);
+    expect(result).toEqual([
+      {
+        entity: 'transactions',
+        conditions: [
+          {
+            field: 'account',
+            value: 'test_account',
+            matcher: 'equalTo',
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('should correctly build dictionary query entries for operations', () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: StellarDatasourceKind.Runtime,
+      startBlock: 1,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleOperations',
+            kind: StellarHandlerKind.Operation,
+            filter: {
+              sourceAccount: 'source_account',
+              type: 'operation_type',
             },
-          ],
-        },
-      ]);
-    });
+          } as any,
+        ],
+      },
+    };
+    const result = buildDictionaryQueryEntries([ds], 1);
+    expect(result).toEqual([
+      {
+        entity: 'operations',
+        conditions: [
+          {
+            field: 'type',
+            value: 'operation_type',
+            matcher: 'equalTo',
+          },
+          {
+            field: 'sourceAccount',
+            value: 'source_account',
+            matcher: 'equalTo',
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('should correctly build dictionary query entries for effects', () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: StellarDatasourceKind.Runtime,
+      startBlock: 1,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleEffects',
+            kind: StellarHandlerKind.Effects,
+            filter: {
+              account: 'effect_account',
+              type: 'effect_type',
+            },
+          },
+        ],
+      },
+    };
+    const result = buildDictionaryQueryEntries([ds], 1);
+    expect(result).toEqual([
+      {
+        entity: 'effects',
+        conditions: [
+          {
+            field: 'type',
+            value: 'effect_type',
+            matcher: 'equalTo',
+          },
+          {
+            field: 'account',
+            value: 'effect_account',
+            matcher: 'equalTo',
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('should return an empty array when no filters are provided', () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: StellarDatasourceKind.Runtime,
+      startBlock: 1,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransactions',
+            kind: StellarHandlerKind.Transaction,
+            filter: {},
+          },
+        ],
+      },
+    };
+    const result = buildDictionaryQueryEntries([ds], 1);
+    expect(result).toEqual([]);
   });
 });

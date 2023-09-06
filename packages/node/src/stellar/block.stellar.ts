@@ -3,27 +3,108 @@
 
 import {
   StellarBlock,
+  StellarBlockFilter,
   StellarBlockWrapper,
-  StellarEvent,
-  StellarEventFilter,
+  StellarEffect,
+  StellarEffectFilter,
+  SorobanEvent,
+  SorobanEventFilter,
+  StellarOperation,
+  StellarOperationFilter,
+  StellarTransaction,
+  StellarTransactionFilter,
 } from '@subql/types-stellar';
 import { Address, scValToNative, xdr } from 'soroban-client';
 import { stringNormalizedEq } from '../utils/string';
 
 export class StellarBlockWrapped implements StellarBlockWrapper {
-  constructor(private _events: StellarEvent[], private _block: StellarBlock) {}
+  constructor(
+    private _block: StellarBlock,
+    private _transactions: StellarTransaction[],
+    private _operations: StellarOperation[],
+    private _effects: StellarEffect[],
+    private _events: SorobanEvent[],
+  ) {}
 
   get block(): StellarBlock {
     return this._block;
   }
 
-  get events(): StellarEvent[] {
+  get transactions(): StellarTransaction[] {
+    return this._transactions;
+  }
+
+  get operations(): StellarOperation[] {
+    return this._operations;
+  }
+
+  get effects(): StellarEffect[] {
+    return this._effects;
+  }
+
+  get events(): SorobanEvent[] {
     return this._events;
   }
 
+  static filterBlocksProcessor(
+    block: StellarBlock,
+    filter: StellarBlockFilter,
+    address?: string,
+  ): boolean {
+    if (filter?.modulo && block.sequence % filter.modulo !== 0) {
+      return false;
+    }
+    return true;
+  }
+
+  static filterTransactionProcessor(
+    tx: StellarTransaction,
+    filter: StellarTransactionFilter,
+    address?: string,
+  ): boolean {
+    if (!filter) return true;
+    if (filter.account && filter.account !== tx.source_account) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static filterOperationProcessor(
+    op: StellarOperation,
+    filter: StellarOperationFilter,
+    address?: string,
+  ): boolean {
+    if (!filter) return true;
+    if (filter.sourceAccount && filter.sourceAccount !== op.source_account) {
+      return false;
+    }
+    if (filter.type && filter.type !== op.type) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static filterEffectProcessor(
+    effect: StellarEffect,
+    filter: StellarEffectFilter,
+    address?: string,
+  ): boolean {
+    if (!filter) return true;
+    if (filter.account && filter.account !== effect.account) {
+      return false;
+    }
+    if (filter.type && filter.type !== effect.type) {
+      return false;
+    }
+
+    return true;
+  }
+
   static filterEventProcessor(
-    event: StellarEvent,
-    filter: StellarEventFilter,
+    event: SorobanEvent,
+    filter: SorobanEventFilter,
     address?: string,
   ): boolean {
     if (address && !stringNormalizedEq(address, event.contractId)) {

@@ -7,7 +7,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 
 import {
   StellarHandlerKind,
-  StellarEventFilter,
   SubqlStellarProcessorOptions,
 } from '@subql/common-stellar';
 import {
@@ -17,7 +16,14 @@ import {
   getLogger,
 } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
-import { StellarBlock, SubqlDatasource } from '@subql/types-stellar';
+import {
+  SorobanEventFilter,
+  StellarBlock,
+  StellarEffectFilter,
+  StellarOperationFilter,
+  StellarTransactionFilter,
+  SubqlDatasource,
+} from '@subql/types-stellar';
 import { MetaData } from '@subql/utils';
 import { groupBy, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -39,8 +45,79 @@ const BLOCK_TIME_VARIANCE = 5000;
 
 const INTERVAL_PERCENT = 0.9;
 
+function transactionFilterToQueryEntry(
+  filter: StellarTransactionFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
+): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+
+  if (filter.account) {
+    conditions.push({
+      field: 'account',
+      value: filter.account.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  return {
+    entity: 'transactions',
+    conditions,
+  };
+}
+
+function operationFilterToQueryEntry(
+  filter: StellarOperationFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
+): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+
+  if (filter.type) {
+    conditions.push({
+      field: 'type',
+      value: filter.type.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  if (filter.sourceAccount) {
+    conditions.push({
+      field: 'sourceAccount',
+      value: filter.sourceAccount.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  return {
+    entity: 'operations',
+    conditions,
+  };
+}
+
+function effectFilterToQueryEntry(
+  filter: StellarEffectFilter,
+  dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
+): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+
+  if (filter.type) {
+    conditions.push({
+      field: 'type',
+      value: filter.type.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  if (filter.account) {
+    conditions.push({
+      field: 'account',
+      value: filter.account.toLowerCase(),
+      matcher: 'equalTo',
+    });
+  }
+  return {
+    entity: 'effects',
+    conditions,
+  };
+}
+
 function eventFilterToQueryEntry(
-  filter: StellarEventFilter,
+  filter: SorobanEventFilter,
   dsOptions: SubqlStellarProcessorOptions | SubqlStellarProcessorOptions[],
 ): DictionaryQueryEntry {
   const queryAddressLimit = yargsOptions.argv['query-address-limit'];
@@ -113,8 +190,51 @@ export function buildDictionaryQueryEntries(
       if (!handler.filter) return [];
 
       switch (handler.kind) {
+        case StellarHandlerKind.Block:
+          return [];
+        case StellarHandlerKind.Transaction: {
+          const filter = handler.filter as StellarTransactionFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              transactionFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (filter.account) {
+            queryEntries.push(
+              transactionFilterToQueryEntry(filter, ds.options),
+            );
+          } else {
+            return [];
+          }
+          break;
+        }
+        case StellarHandlerKind.Operation: {
+          const filter = handler.filter as StellarOperationFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              operationFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (filter.sourceAccount || filter.type) {
+            queryEntries.push(operationFilterToQueryEntry(filter, ds.options));
+          } else {
+            return [];
+          }
+          break;
+        }
+        case StellarHandlerKind.Effects: {
+          const filter = handler.filter as StellarEffectFilter;
+          if (ds.groupedOptions) {
+            queryEntries.push(
+              effectFilterToQueryEntry(filter, ds.groupedOptions),
+            );
+          } else if (filter.account || filter.type) {
+            queryEntries.push(effectFilterToQueryEntry(filter, ds.options));
+          } else {
+            return [];
+          }
+          break;
+        }
         case StellarHandlerKind.Event: {
-          const filter = handler.filter as StellarEventFilter;
+          const filter = handler.filter as SorobanEventFilter;
           if (ds.groupedOptions) {
             queryEntries.push(
               eventFilterToQueryEntry(filter, ds.groupedOptions),

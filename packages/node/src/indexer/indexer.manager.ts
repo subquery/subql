@@ -3,13 +3,18 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
   SubqlStellarCustomDataSource,
   StellarHandlerKind,
   StellarRuntimeHandlerInputMap,
   SubqlStellarDataSource,
+  isBlockHandlerProcessor,
+  isTransactionHandlerProcessor,
+  isOperationHandlerProcessor,
+  isEffectHandlerProcessor,
+  isEventHandlerProcessor,
+  isSorobanTransactionHandlerProcessor,
 } from '@subql/common-stellar';
 import {
   NodeConfig,
@@ -21,10 +26,18 @@ import {
   ApiService,
 } from '@subql/node-core';
 import {
-  StellarEvent,
-  StellarEventFilter,
   StellarBlockWrapper,
   SubqlDatasource,
+  StellarTransaction,
+  StellarOperation,
+  StellarEffect,
+  StellarBlock,
+  StellarBlockFilter,
+  StellarTransactionFilter,
+  StellarOperationFilter,
+  StellarEffectFilter,
+  SorobanEvent,
+  SorobanEventFilter,
 } from '@subql/types-stellar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
@@ -94,7 +107,7 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   getBlockHeight(block: StellarBlockWrapper): number {
-    return block.block.ledger;
+    return block.block.sequence;
   }
 
   getBlockHash(block: StellarBlockWrapper): string {
@@ -110,17 +123,89 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   protected async indexBlockData(
-    { events }: StellarBlockWrapper,
+    { block, effects, operations, transactions }: StellarBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
-    for (const event of events) {
-      await this.indexEvent(event, dataSources, getVM);
+    await this.indexBlockContent(block, dataSources, getVM);
+
+    for (const tx of transactions) {
+      await this.indexTransaction(tx, dataSources, getVM);
+
+      for (const operation of tx.operations) {
+        await this.indexOperation(operation, dataSources, getVM);
+
+        for (const effect of operation.effects) {
+          await this.indexEffect(effect, dataSources, getVM);
+        }
+
+        for (const event of operation.events) {
+          await this.indexEvent(event, dataSources, getVM);
+        }
+      }
+    }
+  }
+
+  private async indexBlockContent(
+    block: StellarBlock,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(StellarHandlerKind.Block, block, ds, getVM);
+    }
+  }
+
+  private async indexTransaction(
+    transaction: StellarTransaction,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(
+        StellarHandlerKind.Transaction,
+        transaction,
+        ds,
+        getVM,
+      );
+
+      if (
+        transaction.operations.some(
+          (op) => op.type.toString() === 'invoke_host_function',
+        )
+      ) {
+        await this.indexData(
+          StellarHandlerKind.SorobanTransaction,
+          transaction,
+          ds,
+          getVM,
+        );
+      }
+    }
+  }
+
+  private async indexOperation(
+    operation: StellarOperation,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(StellarHandlerKind.Operation, operation, ds, getVM);
+    }
+  }
+
+  private async indexEffect(
+    effect: StellarEffect,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(StellarHandlerKind.Effects, effect, ds, getVM);
     }
   }
 
   private async indexEvent(
-    event: StellarEvent,
+    event: SorobanEvent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -139,17 +224,82 @@ export class IndexerManager extends BaseIndexerManager<
 }
 
 type ProcessorTypeMap = {
+  [StellarHandlerKind.Block]: typeof isBlockHandlerProcessor;
+  [StellarHandlerKind.Transaction]: typeof isTransactionHandlerProcessor;
+  [StellarHandlerKind.SorobanTransaction]: typeof isSorobanTransactionHandlerProcessor;
+  [StellarHandlerKind.Operation]: typeof isOperationHandlerProcessor;
+  [StellarHandlerKind.Effects]: typeof isEffectHandlerProcessor;
   [StellarHandlerKind.Event]: typeof isEventHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
+  [StellarHandlerKind.Block]: isBlockHandlerProcessor,
+  [StellarHandlerKind.Transaction]: isTransactionHandlerProcessor,
+  [StellarHandlerKind.SorobanTransaction]: isSorobanTransactionHandlerProcessor,
+  [StellarHandlerKind.Operation]: isOperationHandlerProcessor,
+  [StellarHandlerKind.Effects]: isEffectHandlerProcessor,
   [StellarHandlerKind.Event]: isEventHandlerProcessor,
 };
 
 const FilterTypeMap = {
+  [StellarHandlerKind.Block]: (
+    data: StellarBlock,
+    filter: StellarBlockFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterBlocksProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [StellarHandlerKind.Transaction]: (
+    data: StellarTransaction,
+    filter: StellarTransactionFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterTransactionProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [StellarHandlerKind.SorobanTransaction]: (
+    data: StellarTransaction,
+    filter: StellarTransactionFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterTransactionProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [StellarHandlerKind.Operation]: (
+    data: StellarOperation,
+    filter: StellarOperationFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterOperationProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
+  [StellarHandlerKind.Effects]: (
+    data: StellarEffect,
+    filter: StellarEffectFilter,
+    ds: SubqlStellarDataSource,
+  ) =>
+    StellarBlockWrapped.filterEffectProcessor(
+      data,
+      filter,
+      ds.options?.address,
+    ),
+
   [StellarHandlerKind.Event]: (
-    data: StellarEvent,
-    filter: StellarEventFilter,
+    data: SorobanEvent,
+    filter: SorobanEventFilter,
     ds: SubqlStellarDataSource,
   ) =>
     StellarBlockWrapped.filterEventProcessor(data, filter, ds.options?.address),

@@ -13,16 +13,16 @@ import {
   xdr,
 } from 'soroban-client';
 import { Durability, GetEventsRequest } from 'soroban-client/lib/server';
-import { StellarServer } from './stellar.server';
+import { SorobanServer } from './soroban.server';
 
 const logger = getLogger('safe.api.stellar');
 
-export default class SafeStellarProvider extends StellarServer {
+export default class SafeStellarProvider extends SorobanServer {
   private blockHeight: number;
   private baseApi: Server;
 
   constructor(baseApi: Server, blockHeight: number) {
-    super(baseApi.serverURL);
+    super(baseApi.serverURL.toString());
     this.blockHeight = blockHeight;
     this.baseApi = baseApi;
   }

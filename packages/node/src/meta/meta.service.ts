@@ -12,7 +12,9 @@ import {
 } from '@subql/node-core';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: stellarSdkVersion } = require('soroban-client/package.json');
+const { version: sorobanSdkVersion } = require('soroban-client/package.json');
+const { version: stellarSdkVersion } = require('stellar-sdk/package.json');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 const logger = getLogger('profiler');
@@ -39,6 +41,9 @@ export class MetaService extends BaseMetaService {
   protected packageVersion = packageVersion;
   protected sdkVersion(): { name: string; version: string } {
     return { name: 'stellarSdkVersion', version: stellarSdkVersion };
+  }
+  protected sorobanSdkVersion(): { name: string; version: string } {
+    return { name: 'sorobanSdkVersion', version: sorobanSdkVersion };
   }
 
   @OnEvent('enqueueBlocks')

@@ -1,19 +1,18 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { SorobanRpc } from 'soroban-client';
 import { GetEventsRequest, Server } from 'soroban-client/lib/server';
-import { StellarServer } from './stellar.server';
+import { SorobanServer } from './soroban.server';
 
 const DEFAULT_PAGE_SIZE = 100;
 
-describe('StellarServer', () => {
-  let server: StellarServer;
+describe('SorobanServer', () => {
+  let server: SorobanServer;
   const url = 'https://example.com';
   let spy: jest.SpyInstance;
 
   beforeEach(() => {
-    server = new StellarServer(url);
+    server = new SorobanServer(url);
     spy = jest.spyOn(Server.prototype, 'getEvents');
   });
 

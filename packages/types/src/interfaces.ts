@@ -1,7 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {StellarBlock, StellarBlockWrapper, StellarEvent} from './stellar';
+import {
+  StellarBlock,
+  StellarBlockWrapper,
+  StellarEffect,
+  SorobanEvent,
+  StellarOperation,
+  StellarTransaction,
+} from './stellar';
 
 export interface Entity {
   id: string;
@@ -25,9 +32,18 @@ export interface Store {
   bulkRemove(entity: string, ids: string[]): Promise<void>;
 }
 
-export interface BlockWrapper<B extends StellarBlock = StellarBlock, E extends StellarEvent = StellarEvent> {
-  events?: E[];
+export interface BlockWrapper<
+  B extends StellarBlock = StellarBlock,
+  T extends StellarTransaction = StellarTransaction,
+  O extends StellarOperation = StellarOperation,
+  EF extends StellarEffect = StellarEffect,
+  E extends SorobanEvent = SorobanEvent
+> {
   block: B;
+  transactions: T[];
+  operations: O[];
+  effects: EF[];
+  events?: E[];
 }
 
 export interface ApiWrapper<BW extends BlockWrapper = StellarBlockWrapper> {

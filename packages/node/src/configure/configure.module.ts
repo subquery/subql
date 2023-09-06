@@ -11,12 +11,12 @@ import {
 import { StellarProjectNetworkConfig } from '@subql/common-stellar';
 import {
   IConfig,
-  NodeConfig,
   getLogger,
   setLevel,
   rebaseArgsWithManifest,
   defaultSubqueryName,
   validDbSchemaName,
+  NodeConfig,
 } from '@subql/node-core';
 import { camelCase, omitBy, isNil } from 'lodash';
 import { yargsOptions } from '../yargs';
@@ -28,7 +28,11 @@ const YargsNameMapping: Record<string, string> = {};
 
 type Args = (typeof yargsOptions.argv)['argv'];
 
-function yargsToIConfig(yargs: Args): Partial<IConfig> {
+export interface IStellarConfig extends IConfig {
+  sorobanNetworkEndpoint: string;
+}
+
+function yargsToIConfig(yargs: Args): Partial<IStellarConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
 
@@ -74,14 +78,22 @@ export class ConfigureModule {
     // Therefore, we should rebase the manifest runner options with args first but not the config in the end
     if (argv.config) {
       // get manifest options
-      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv), isTest);
+      config = NodeConfig.fromFile(
+        argv.config,
+        yargsToIConfig(argv),
+        isTest,
+      ) as NodeConfig;
       reader = await ReaderFactory.create(config.subquery, {
         ipfs: config.ipfs,
       });
       rawManifest = await reader.getProjectSchema();
       rebaseArgsWithManifest(argv, rawManifest);
       // use rebased argv generate config to override current config
-      config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv), isTest);
+      config = NodeConfig.rebaseWithArgs(
+        config,
+        yargsToIConfig(argv),
+        isTest,
+      ) as NodeConfig;
     } else {
       if (!argv.subquery) {
         logger.error(
@@ -121,6 +133,7 @@ export class ConfigureModule {
         omitBy<StellarProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
+            soroban: yargsToIConfig(argv).sorobanNetworkEndpoint,
             dictionary: config.networkDictionary,
           },
           isNil,

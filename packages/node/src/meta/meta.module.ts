@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Module } from '@nestjs/common';
-import { metaControllers, metaServices } from '@subql/node-core';
+import {
+  metaControllers,
+  metaServices,
+  NodeConfig as BaseNodeConfig,
+} from '@subql/node-core';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { FetchModule } from '../indexer/fetch.module';
 import { MetaController } from './meta.controller';

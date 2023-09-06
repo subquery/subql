@@ -1,90 +1,96 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApiConnectionError, ApiErrorType } from '@subql/node-core';
+import {
+  ApiConnectionError,
+  ApiErrorType,
+  DisconnectionError,
+  LargeResponseError,
+  RateLimitError,
+  TimeoutError,
+} from '@subql/node-core';
 import { StellarBlock, StellarBlockWrapper } from '@subql/types-stellar';
 import EventEmitter2 from 'eventemitter2';
 import { StellarApiConnection } from './api.connection';
 import { StellarApi } from './api.stellar';
 import SafeStellarProvider from './safe-api';
+import { SorobanServer } from './soroban.server';
 
-const HTTP_ENDPOINT = 'https://rpc-futurenet.stellar.org:443';
+const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
+const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
 
 describe('StellarApiConnection', () => {
   let apiConnection: StellarApiConnection;
   let unsafeApi: StellarApi;
-  const mockBlocks: StellarBlock[] = [
+  let sorobanApi: SorobanServer;
+  const mockBlocks: StellarBlockWrapper[] = [
     {
-      ledger: 1,
-      hash: 'hash1',
-      events: [],
+      block: { sequence: 1, hash: 'hash1' } as unknown as StellarBlock,
+      transactions: [],
+      operations: [],
+      effects: [],
     },
     {
-      ledger: 2,
-      hash: 'hash2',
-      events: [],
+      block: { sequence: 2, hash: 'hash2' } as unknown as StellarBlock,
+      transactions: [],
+      operations: [],
+      effects: [],
     },
   ];
 
-  const mockBlockWrappers = mockBlocks.map((_block) => {
-    return { block: _block, events: [] } as StellarBlockWrapper;
-  });
-
-  const fetchBlockBatches = jest.fn().mockResolvedValue(mockBlockWrappers);
+  const fetchBlockBatches = jest.fn().mockResolvedValue(mockBlocks);
 
   beforeEach(async () => {
-    unsafeApi = new StellarApi(HTTP_ENDPOINT, new EventEmitter2());
+    sorobanApi = new SorobanServer(SOROBAN_ENDPOINT);
+    unsafeApi = new StellarApi(HTTP_ENDPOINT, new EventEmitter2(), sorobanApi);
     await unsafeApi.init();
     apiConnection = new StellarApiConnection(unsafeApi, fetchBlockBatches);
   });
 
-  it('calling apiConnect throws error', async () => {
-    await expect(apiConnection.apiConnect()).rejects.toThrow();
+  it('creates a connection', async () => {
+    expect(
+      await StellarApiConnection.create(
+        HTTP_ENDPOINT,
+        fetchBlockBatches,
+        new EventEmitter2(),
+        sorobanApi,
+      ),
+    ).toBeInstanceOf(StellarApiConnection);
   });
 
-  it('calling apiDisconnect throws error', async () => {
-    await expect(apiConnection.apiDisconnect()).rejects.toThrow();
-  });
-
-  it('should fetch blocks', async () => {
+  it('fetches blocks', async () => {
     const result = await apiConnection.fetchBlocks([1, 2]);
-    expect(result).toEqual(mockBlockWrappers);
-    expect(fetchBlockBatches).toHaveBeenCalledWith(
-      apiConnection.unsafeApi,
-      [1, 2],
-    );
-  });
-
-  it('should safely provide API at a given height', () => {
-    const height = 10;
-    const safeApi = apiConnection.safeApi(height);
-    expect(safeApi).toBeInstanceOf(SafeStellarProvider);
+    expect(result).toEqual(mockBlocks);
+    expect(fetchBlockBatches).toHaveBeenCalledWith(unsafeApi, [1, 2]);
   });
 
   describe('Error handling', () => {
-    it('should handle timeout errors', () => {
+    it('handles timeout errors', () => {
       const error = new Error('Timeout');
       const handledError = StellarApiConnection.handleError(error);
-      expect(handledError).toBeInstanceOf(ApiConnectionError);
-      expect(handledError.errorType).toEqual(ApiErrorType.Timeout);
+      expect(handledError).toBeInstanceOf(TimeoutError);
     });
 
-    it('should handle disconnection errors', () => {
+    it('handles disconnection errors', () => {
       const error = new Error('disconnected from ');
       const handledError = StellarApiConnection.handleError(error);
-      expect(handledError).toBeInstanceOf(ApiConnectionError);
-      expect(handledError.errorType).toEqual(ApiErrorType.Connection);
+      expect(handledError).toBeInstanceOf(DisconnectionError);
     });
 
-    it('should handle rate limit errors', () => {
+    it('handles rate limit errors', () => {
       const error = new Error('Rate Limit Exceeded');
       const handledError = StellarApiConnection.handleError(error);
-      expect(handledError).toBeInstanceOf(ApiConnectionError);
-      expect(handledError.errorType).toEqual(ApiErrorType.RateLimit);
+      expect(handledError).toBeInstanceOf(RateLimitError);
     });
 
-    it('should handle large response errors', () => {
+    it('handles large response errors', () => {
       const error = new Error('limit must not exceed');
+      const handledError = StellarApiConnection.handleError(error);
+      expect(handledError).toBeInstanceOf(LargeResponseError);
+    });
+
+    it('handles default errors', () => {
+      const error = new Error('default error');
       const handledError = StellarApiConnection.handleError(error);
       expect(handledError).toBeInstanceOf(ApiConnectionError);
       expect(handledError.errorType).toEqual(ApiErrorType.Default);

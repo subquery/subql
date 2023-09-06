@@ -2,22 +2,48 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ApiWrapper} from './interfaces';
-import {StellarEvent, StellarEventFilter} from './stellar';
+import {
+  StellarBlock,
+  StellarBlockFilter,
+  StellarEffect,
+  StellarEffectFilter,
+  SorobanEvent,
+  SorobanEventFilter,
+  StellarOperation,
+  StellarOperationFilter,
+  StellarTransaction,
+  StellarTransactionFilter,
+} from './stellar';
 
 export enum StellarDatasourceKind {
   Runtime = 'stellar/Runtime',
 }
 
 export enum StellarHandlerKind {
-  Event = 'stellar/EventHandler',
+  Block = 'stellar/BlockHandler',
+  Transaction = 'stellar/TransactionHandler',
+  SorobanTransaction = 'soroban/TransactionHandler',
+  Operation = 'stellar/OperationHandler',
+  Effects = 'stellar/EffectHandler',
+  Event = 'soroban/EventHandler',
 }
 
 export type StellarRuntimeHandlerInputMap = {
-  [StellarHandlerKind.Event]: StellarEvent;
+  [StellarHandlerKind.Block]: StellarBlock;
+  [StellarHandlerKind.Transaction]: StellarTransaction;
+  [StellarHandlerKind.SorobanTransaction]: StellarTransaction;
+  [StellarHandlerKind.Operation]: StellarOperation;
+  [StellarHandlerKind.Effects]: StellarEffect;
+  [StellarHandlerKind.Event]: SorobanEvent;
 };
 
 type StellarRuntimeFilterMap = {
-  [StellarHandlerKind.Event]: StellarEventFilter;
+  [StellarHandlerKind.Block]: StellarBlockFilter;
+  [StellarHandlerKind.Transaction]: StellarTransactionFilter;
+  [StellarHandlerKind.SorobanTransaction]: StellarTransactionFilter;
+  [StellarHandlerKind.Operation]: StellarOperationFilter;
+  [StellarHandlerKind.Effects]: StellarEffectFilter;
+  [StellarHandlerKind.Event]: SorobanEventFilter;
 };
 
 export interface ProjectManifest {
@@ -35,10 +61,40 @@ export interface ProjectManifest {
   bypassBlocks?: number[];
 }
 
+export interface SubqlBlockHandler {
+  handler: string;
+  kind: StellarHandlerKind.Block;
+  filter?: StellarBlockFilter;
+}
+
+export interface SubqlTransactionHandler {
+  handler: string;
+  kind: StellarHandlerKind.Transaction;
+  filter?: StellarTransactionFilter;
+}
+
+export interface SubqlSorobanTransactionHandler {
+  handler: string;
+  kind: StellarHandlerKind.SorobanTransaction;
+  filter?: StellarTransactionFilter;
+}
+
+export interface SubqlOperationHandler {
+  handler: string;
+  kind: StellarHandlerKind.Operation;
+  filter?: StellarOperationFilter;
+}
+
+export interface SubqlEffectHandler {
+  handler: string;
+  kind: StellarHandlerKind.Effects;
+  filter?: StellarEffectFilter;
+}
+
 export interface SubqlEventHandler {
   handler: string;
   kind: StellarHandlerKind.Event;
-  filter?: StellarEventFilter;
+  filter?: SorobanEventFilter;
 }
 
 export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
@@ -47,11 +103,22 @@ export interface SubqlCustomHandler<K extends string = string, F = Record<string
   filter?: F;
 }
 
-export type SubqlRuntimeHandler = SubqlEventHandler;
+export type SubqlRuntimeHandler =
+  | SubqlBlockHandler
+  | SubqlTransactionHandler
+  | SubqlSorobanTransactionHandler
+  | SubqlOperationHandler
+  | SubqlEffectHandler
+  | SubqlEventHandler;
 
 export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
 
-export type SubqlHandlerFilter = StellarEventFilter;
+export type SubqlHandlerFilter =
+  | SorobanEventFilter
+  | StellarTransactionFilter
+  | StellarOperationFilter
+  | StellarEffectFilter
+  | StellarBlockFilter;
 
 export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> {
   file: string;
@@ -141,7 +208,12 @@ export type SecondLayerHandlerProcessorArray<
   F,
   T,
   DS extends SubqlCustomDatasource<K> = SubqlCustomDatasource<K>
-> = SecondLayerHandlerProcessor<StellarHandlerKind.Event, F, T, DS>;
+> =
+  | SecondLayerHandlerProcessor<StellarHandlerKind.Block, F, T, DS>
+  | SecondLayerHandlerProcessor<StellarHandlerKind.Transaction, F, T, DS>
+  | SecondLayerHandlerProcessor<StellarHandlerKind.SorobanTransaction, F, T, DS>
+  | SecondLayerHandlerProcessor<StellarHandlerKind.Operation, F, T, DS>
+  | SecondLayerHandlerProcessor<StellarHandlerKind.Effects, F, T, DS>;
 
 export interface SubqlDatasourceProcessor<
   K extends string,

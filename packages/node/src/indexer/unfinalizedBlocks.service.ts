@@ -33,7 +33,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   }
 
   protected blockToHeader(block: BlockWrapper): Header {
-    return blockToHeader(block.block.ledger);
+    return blockToHeader(block.block.sequence);
   }
 
   protected async getFinalizedHead(): Promise<Header> {

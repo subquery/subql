@@ -23,11 +23,41 @@ describe('project.yaml', () => {
     expect(() => loadStellarProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'))).not.toThrow();
   });
 
-  it('get v1.0.0 deployment mapping filter', () => {
+  it('get v1.0.0 deployment mapping filter - transaction', () => {
     const manifestVersioned = loadStellarProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
 
     const deployment = manifestVersioned.asV1_0_0.deployment;
     const filter = deployment.dataSources[0].mapping.handlers[0].filter;
+    const deploymentString = manifestVersioned.toDeployment();
+    expect(filter).not.toBeNull();
+    expect(deploymentString).toContain('account');
+  });
+
+  it('get v1.0.0 deployment mapping filter - operation', () => {
+    const manifestVersioned = loadStellarProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+
+    const deployment = manifestVersioned.asV1_0_0.deployment;
+    const filter = deployment.dataSources[0].mapping.handlers[1].filter;
+    const deploymentString = manifestVersioned.toDeployment();
+    expect(filter).not.toBeNull();
+    expect(deploymentString).toContain('account_merge');
+  });
+
+  it('get v1.0.0 deployment mapping filter - effect', () => {
+    const manifestVersioned = loadStellarProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+
+    const deployment = manifestVersioned.asV1_0_0.deployment;
+    const filter = deployment.dataSources[0].mapping.handlers[2].filter;
+    const deploymentString = manifestVersioned.toDeployment();
+    expect(filter).not.toBeNull();
+    expect(deploymentString).toContain('account_credited');
+  });
+
+  it('get v1.0.0 deployment mapping filter - events', () => {
+    const manifestVersioned = loadStellarProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+
+    const deployment = manifestVersioned.asV1_0_0.deployment;
+    const filter = deployment.dataSources[0].mapping.handlers[3].filter;
     const deploymentString = manifestVersioned.toDeployment();
     expect(filter).not.toBeNull();
     expect(deploymentString).toContain('COUNTER');

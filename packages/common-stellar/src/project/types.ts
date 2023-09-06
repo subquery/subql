@@ -13,7 +13,10 @@ export {
   StellarHandlerKind,
   SubqlDatasource as SubqlStellarDataSource,
   SubqlCustomDatasource as SubqlStellarCustomDataSource,
-  StellarEventFilter,
+  StellarBlockFilter,
+  StellarTransactionFilter,
+  StellarOperationFilter,
+  StellarEffectFilter,
   SubqlDatasourceProcessor,
   SubqlHandlerFilter,
   StellarDatasourceKind,
@@ -25,4 +28,5 @@ export type IStellarProjectManifest = IProjectManifest<SubqlDatasource>;
 export interface StellarProjectNetworkConfig extends ProjectNetworkConfig {
   genesisHash?: string;
   chainId?: string;
+  soroban: string;
 }

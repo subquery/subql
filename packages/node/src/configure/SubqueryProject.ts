@@ -9,6 +9,8 @@ import {
   SubqlStellarDataSource,
   ProjectManifestV1_0_0Impl,
   isCustomDs,
+  StellarHandlerKind,
+  isRuntimeDs,
 } from '@subql/common-stellar';
 import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
 import { buildSchemaFromString } from '@subql/utils';
@@ -103,7 +105,7 @@ async function loadProjectFromManifestBase(
 
   if (!network.endpoint) {
     throw new Error(
-      `Network endpoint must be provided for network. chainId="${network.chainId}"`,
+      `Stellar network endpoint must be provided for network. chainId="${network.chainId}"`,
     );
   }
 
@@ -125,6 +127,18 @@ async function loadProjectFromManifestBase(
   );
 
   const templates = await loadProjectTemplates(projectManifest, root, reader);
+
+  if (
+    dsHasSorobanEventHandler([
+      ...dataSources,
+      ...(templates as SubqlProjectDs[]),
+    ]) &&
+    !network.soroban
+  ) {
+    throw new Error(
+      `Soroban network endpoint must be provided for network. chainId="${network.chainId}"`,
+    );
+  }
 
   return {
     id: reader.root ? reader.root : path, //TODO, need to method to get project_id
@@ -180,6 +194,21 @@ async function loadProjectTemplates(
     ...ds,
     name: projectManifest.templates[index].name,
   }));
+}
+
+export function dsHasSorobanEventHandler(
+  dataSources: SubqlProjectDs[],
+): boolean {
+  return (
+    dataSources.findIndex(function (ds) {
+      return (
+        isRuntimeDs(ds) &&
+        ds.mapping.handlers.findIndex(function (handler) {
+          return handler.kind === StellarHandlerKind.Event;
+        }) !== -1
+      );
+    }) !== -1
+  );
 }
 
 /*
