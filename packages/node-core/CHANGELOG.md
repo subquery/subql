@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Update apollo-links to 1.0.2, fix dictionary resolver failed to get token issue
 - Use test runs as unit for tests instead of entity checks (#1957)
+- handle APIs in connection pool whose initialization failed (#1970)
 - Fix generated operation hash with single entity, buffer did not get hashed issue.
 - Infinite recursion in setValueModel with arrays (#1993)
 

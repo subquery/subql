@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- fix crashes when intialization fails for one of the endpoint (#1970)
+
 ### Changed
 - Move code to node-core (#1797)
 

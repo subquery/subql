@@ -25,14 +25,17 @@ const TEST_BLOCKHASH =
 
 const TEST_BLOCKNUMBER = 6721189; // kusama
 
-function testSubqueryProject(endpoint: string[]): SubqueryProject {
+function testSubqueryProject(
+  endpoint: string[],
+  chainId: string,
+): SubqueryProject {
   return new SubqueryProject(
     'test',
     './',
     {
       endpoint,
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
-      chainId: '',
+      chainId: chainId,
     },
     [],
     new GraphQLSchema({}),
@@ -55,6 +58,7 @@ describe('ApiService', () => {
 
   const prepareApiService = async (
     endpoint: string = WS_ENDPOINT,
+    chainId = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
   ): Promise<ApiService> => {
     const module = await Test.createTestingModule({
       providers: [
@@ -62,7 +66,7 @@ describe('ApiService', () => {
         ConnectionPoolService,
         {
           provide: 'ISubqueryProject',
-          useFactory: () => testSubqueryProject([endpoint]),
+          useFactory: () => testSubqueryProject([endpoint], chainId),
         },
         {
           provide: NodeConfig,
@@ -140,6 +144,7 @@ describe('ApiService', () => {
   it('apiAt could fetch previous block info', async () => {
     const apiService = await prepareApiService(
       'wss://polkadot.api.onfinality.io/public-ws',
+      '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     );
     const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(6721195);
@@ -169,6 +174,7 @@ describe('ApiService', () => {
   it('apiAt will throw when fetch future block info', async () => {
     const apiService = await prepareApiService(
       'wss://polkadot.api.onfinality.io/public-ws',
+      '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     );
     const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(5661443);
@@ -389,6 +395,7 @@ describe('ApiService', () => {
   it('can correctly call rpc methods that use block number', async () => {
     const apiService = await prepareApiService(
       'wss://moonbeam-alpha.api.onfinality.io/public-ws',
+      '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527',
     );
     const api = apiService.api;
 
