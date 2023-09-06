@@ -12,12 +12,28 @@ jest.mock('@subql/x-sequelize', () => {
   let pendingData: typeof data = {};
   let afterCommitHooks: Array<() => void> = [];
 
+  const Op = {
+    in: jest.fn(),
+    notIn: jest.fn(),
+    eq: jest.fn(),
+    ne: jest.fn(),
+  };
+
+  const transaction = () => ({
+    commit: jest.fn(async () => {
+      await delay(1);
+      data = {...data, ...pendingData};
+      pendingData = {};
+      afterCommitHooks.map((fn) => fn());
+      afterCommitHooks = [];
+    }), // Delay of 1s is used to test whether we wait for cache to flush
+    rollback: jest.fn(),
+    afterCommit: jest.fn((fn) => afterCommitHooks.push(fn)),
+  });
+
   const mSequelize = {
     authenticate: jest.fn(),
-    Op: {
-      in: jest.fn(),
-      notIn: jest.fn(),
-    },
+    Op,
     define: () => ({
       findOne: jest.fn(),
       create: (input: any) => input,
@@ -32,16 +48,19 @@ jest.mock('@subql/x-sequelize', () => {
         fn: jest.fn().mockImplementation(() => {
           return {fn: 'int8range', args: [41204769, null]};
         }),
+        transaction,
       },
       upsert: jest.fn(),
       associations: [{}, {}],
       count: 5,
-      findAll: [
+      findAll: jest.fn(() => [
         {
-          id: 'apple-05-sequelize',
-          field1: 'set apple at block 5 with sequelize',
+          toJSON: () => ({
+            id: 'apple-05-sequelize',
+            field1: 'set apple at block 5 with sequelize',
+          }),
         },
-      ],
+      ]),
       findOne: jest.fn(({transaction, where: {id}}) => ({
         toJSON: () => (transaction ? pendingData[id] ?? data[id] : data[id]),
       })),
@@ -51,17 +70,7 @@ jest.mock('@subql/x-sequelize', () => {
       destroy: jest.fn(),
     }),
     sync: jest.fn(),
-    transaction: () => ({
-      commit: jest.fn(async () => {
-        await delay(1);
-        data = {...data, ...pendingData};
-        pendingData = {};
-        afterCommitHooks.map((fn) => fn());
-        afterCommitHooks = [];
-      }), // Delay of 1s is used to test whether we wait for cache to flush
-      rollback: jest.fn(),
-      afterCommit: jest.fn((fn) => afterCommitHooks.push(fn)),
-    }),
+    transaction,
     // createSchema: jest.fn(),
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
@@ -70,6 +79,7 @@ jest.mock('@subql/x-sequelize', () => {
     DataTypes: actualSequelize.DataTypes,
     QueryTypes: actualSequelize.QueryTypes,
     Deferrable: actualSequelize.Deferrable,
+    Op,
   };
 });
 
@@ -89,8 +99,17 @@ describe('cacheModel', () => {
     beforeEach(() => {
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(sequelize.model('entity1'), false, {} as NodeConfig);
-      testModel.init(() => i++);
+      testModel = new CachedModel(
+        sequelize.model('entity1'),
+        false,
+        {} as NodeConfig,
+        () => i++,
+        async () => {
+          const tx = await sequelize.transaction();
+          await testModel.flush(tx);
+          await tx.commit();
+        }
+      );
     });
 
     it('can avoid race conditions', async () => {
@@ -160,8 +179,17 @@ describe('cacheModel', () => {
     beforeEach(() => {
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig);
-      testModel.init(() => i++);
+      testModel = new CachedModel(
+        sequelize.model('entity1'),
+        true,
+        {} as NodeConfig,
+        () => i++,
+        async () => {
+          const tx = await sequelize.transaction();
+          await testModel.flush(tx);
+          await tx.commit();
+        }
+      );
     });
 
     // it should keep same behavior as hook we used
@@ -188,5 +216,49 @@ describe('cacheModel', () => {
       expect(spyDbGet).not.toBeCalled();
       expect(JSON.stringify(entity)).not.toContain('__block_range');
     }, 500000);
+
+    describe('getByFields', () => {
+      it('calls getByField if there is one filter', async () => {
+        const spy = jest.spyOn(testModel, 'getByField');
+
+        await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 1});
+
+        expect(spy).toBeCalledWith('field1', 1, {offset: 0, limit: 1});
+      });
+
+      it('flushes the cache first', async () => {
+        const spy = jest.spyOn(testModel, 'flush');
+
+        // Set data so there is something to be flushed
+        testModel.set(
+          'entity1_id_0x02',
+          {
+            id: 'entity1_id_0x02',
+            field1: 2,
+          },
+          2
+        );
+
+        await testModel.getByFields(
+          [
+            ['field1', '=', 1],
+            ['field1', 'in', [2]],
+          ],
+          {offset: 0, limit: 1}
+        );
+
+        expect(spy).toBeCalled();
+      });
+
+      it('throws for unsupported operators', async () => {
+        await expect(
+          testModel.getByFields(
+            // Any needed to get past type check
+            [['field1', 'badOperator' as any, 1]],
+            {offset: 0, limit: 1}
+          )
+        ).rejects.toThrow(`Operator ('badOperator') for field field1 is not valid. Options are =, !=, in, !in`);
+      });
+    });
   });
 });

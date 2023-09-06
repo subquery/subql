@@ -11,12 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Support for cosmwasm contract abi codegen (#1989)
-
-### Added
 - Update `subql init` to use proxy templates (#1991)
 
 ### Changed
 - Update common packages version from `latest`, to ensure they will be bumped (#1992)
+- Update model codegen to include `getByFields` and produce prettier code (#1993)
 
 ## [3.6.1] - 2023-08-29
 ### Fixed

@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {FieldsExpression} from '@subql/types';
 import {Transaction} from '@subql/x-sequelize';
 import LRUCache from 'lru-cache';
 import {SetValueModel} from './setValueModel';
@@ -15,6 +16,7 @@ export interface ICachedModel<T> {
     value: T[keyof T] | T[keyof T][],
     options: {limit: number; offset: number}
   ) => Promise<T[]>;
+  getByFields: (filter: FieldsExpression<T>[], options: {limit: number; offset: number}) => Promise<T[]>;
   getOneByField: (field: keyof T, value: T[keyof T]) => Promise<T | undefined>;
   set: (id: string, data: T, blockHeight: number) => void;
   bulkCreate: (data: T[], blockHeight: number) => void;
