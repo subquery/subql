@@ -93,6 +93,45 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     return 'Stellar';
   }
 
+  private async fetchTransactionsForLedger(
+    sequence: number,
+  ): Promise<ServerApi.TransactionRecord[]> {
+    const txs: ServerApi.TransactionRecord[] = [];
+    let txsPage = await this.api.transactions().forLedger(sequence).call();
+    while (txsPage.records.length !== 0) {
+      txs.push(...txsPage.records);
+      txsPage = await txsPage.next();
+    }
+
+    return txs;
+  }
+
+  private async fetchOperationsForLedger(
+    sequence: number,
+  ): Promise<ServerApi.OperationRecord[]> {
+    const operations: ServerApi.OperationRecord[] = [];
+    let operationsPage = await this.api.operations().forLedger(sequence).call();
+    while (operationsPage.records.length !== 0) {
+      operations.push(...operationsPage.records);
+      operationsPage = await operationsPage.next();
+    }
+
+    return operations;
+  }
+
+  private async fetchEffectsForLedger(
+    sequence: number,
+  ): Promise<ServerApi.EffectRecord[]> {
+    const effects: ServerApi.EffectRecord[] = [];
+    let effectsPage = await this.api.effects().forLedger(sequence).call();
+    while (effectsPage.records.length !== 0) {
+      effects.push(...effectsPage.records);
+      effectsPage = await effectsPage.next();
+    }
+
+    return effects;
+  }
+
   private getTransactionApplicationOrder(eventId: string) {
     // Right shift the ID by 12 bits to exclude the Operation Index
     const shiftedId = BigInt(eventId.split('-')[0]) >> BigInt(12);
@@ -235,16 +274,11 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   private async fetchAndWrapLedger(
     sequence: number,
   ): Promise<StellarBlockWrapper> {
-    const [
-      ledger,
-      { records: transactions },
-      { records: operations },
-      { records: effects },
-    ] = await Promise.all([
+    const [ledger, transactions, operations, effects] = await Promise.all([
       this.api.ledgers().ledger(sequence).call(),
-      this.api.transactions().forLedger(sequence).call(),
-      this.api.operations().forLedger(sequence).call(),
-      this.api.effects().forLedger(sequence).call(),
+      this.fetchTransactionsForLedger(sequence),
+      this.fetchOperationsForLedger(sequence),
+      this.fetchEffectsForLedger(sequence),
     ]);
 
     let eventsForSequence: SorobanEvent[] = [];
