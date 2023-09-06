@@ -103,3 +103,7 @@ export function resolveToAbsolutePath(inputPath: string): string {
   const regex = new RegExp(`^~(?=$|[/\\\\])`);
   return path.resolve(inputPath.replace(regex, os.homedir()));
 }
+
+export function isValidateEnum<T extends Record<string, string>>(enumType: T, input: string): input is T[keyof T] {
+  return Object.values(enumType).includes(input);
+}
