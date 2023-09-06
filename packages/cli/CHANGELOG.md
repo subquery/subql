@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update model codegen to include `getByFields` and produce prettier code (#1993)
 - migrate from `oclif` v1 to v2
 
+### Removed
+- replaced `oclif-dev` dependency with `oclif` due to v2 migration (#1998)
+- globby from dev dependencies (#1998)
+
 ## [3.6.1] - 2023-08-29
 ### Fixed
 - Publish command creating invalid deployment (#1977)
