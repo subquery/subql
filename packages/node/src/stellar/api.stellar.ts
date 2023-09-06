@@ -149,45 +149,22 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       }));
   }
 
-  private async wrapOperationsForTx(
+  private wrapOperationsForTx(
     transactionId: string,
     applicationOrder: number,
     sequence: number,
     operationsForSequence: ServerApi.OperationRecord[],
     effectsForSequence: ServerApi.EffectRecord[],
-  ): Promise<StellarOperation[]> {
+    eventsForSequence: SorobanEvent[],
+  ): StellarOperation[] {
     const operations = operationsForSequence.filter(
       (op) => op.transaction_hash === transactionId,
     );
 
-    let sequenceEvents: SorobanEvent[] = [];
-
-    //check if there is InvokeHostFunctionOp operation
-    //If yes then, this is a soroban transaction and we should we fetch soroban events
-    const hasInvokeHostFunctionOp = operations.some(
-      (op) => op.type.toString() === 'invoke_host_function',
-    );
-
-    if (this.sorobanClient && hasInvokeHostFunctionOp) {
-      try {
-        sequenceEvents = await this.getAndWrapEvents(sequence);
-      } catch (e) {
-        if (e.message === 'start is before oldest ledger') {
-          throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node. 
-                This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
-                To resolve this issue, you can either:
-                1. Increase the start ledger to a more recent one, or
-                2. Connect to a different node that might have a longer history of ledgers.`);
-        }
-
-        throw e;
-      }
-    }
-
     return operations.map((op, index) => {
       const effects = this.wrapEffectsForOperation(index, effectsForSequence);
 
-      const events = sequenceEvents.filter(
+      const events = eventsForSequence.filter(
         (event) =>
           this.getTransactionApplicationOrder(event.id) === applicationOrder,
       );
@@ -209,52 +186,50 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     });
   }
 
-  private async wrapTransactionsForLedger(
+  private wrapTransactionsForLedger(
     sequence: number,
     transactions: ServerApi.TransactionRecord[],
     operationsForSequence: ServerApi.OperationRecord[],
     effectsForSequence: ServerApi.EffectRecord[],
-  ): Promise<StellarTransaction[]> {
-    return Promise.all(
-      transactions.map(async (tx, index) => {
-        const wrappedTx: StellarTransaction = {
-          ...tx,
-          ledger: null,
-          operations: [] as StellarOperation[],
-          effects: [] as StellarEffect[],
-          events: [] as SorobanEvent[],
-        };
+    eventsForSequence: SorobanEvent[],
+  ): StellarTransaction[] {
+    return transactions.map((tx, index) => {
+      const wrappedTx: StellarTransaction = {
+        ...tx,
+        ledger: null,
+        operations: [] as StellarOperation[],
+        effects: [] as StellarEffect[],
+        events: [] as SorobanEvent[],
+      };
 
-        const operations = (
-          await this.wrapOperationsForTx(
-            tx.id,
-            index + 1,
-            sequence,
-            operationsForSequence,
-            effectsForSequence,
-          )
-        ).map((op) => {
-          op.transaction = cloneDeep(wrappedTx);
-          op.effects = op.effects.map((effect) => {
-            effect.transaction = cloneDeep(wrappedTx);
-            return effect;
-          });
-          op.events = op.events.map((event) => {
-            event.transaction = cloneDeep(wrappedTx);
-            return event;
-          });
-          return op;
+      const operations = this.wrapOperationsForTx(
+        tx.id,
+        index + 1,
+        sequence,
+        operationsForSequence,
+        effectsForSequence,
+        eventsForSequence,
+      ).map((op) => {
+        op.transaction = cloneDeep(wrappedTx);
+        op.effects = op.effects.map((effect) => {
+          effect.transaction = cloneDeep(wrappedTx);
+          return effect;
         });
-
-        wrappedTx.operations.push(...operations);
-        operations.forEach((op) => {
-          wrappedTx.effects.push(...op.effects);
-          wrappedTx.events.push(...op.events);
+        op.events = op.events.map((event) => {
+          event.transaction = cloneDeep(wrappedTx);
+          return event;
         });
+        return op;
+      });
 
-        return wrappedTx;
-      }),
-    );
+      wrappedTx.operations.push(...operations);
+      operations.forEach((op) => {
+        wrappedTx.effects.push(...op.effects);
+        wrappedTx.events.push(...op.events);
+      });
+
+      return wrappedTx;
+    });
   }
 
   private async fetchAndWrapLedger(
@@ -272,19 +247,44 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       this.api.effects().forLedger(sequence).call(),
     ]);
 
+    let eventsForSequence: SorobanEvent[] = [];
+
+    //check if there is InvokeHostFunctionOp operation
+    //If yes then, there are soroban transactions and we should we fetch soroban events
+    const hasInvokeHostFunctionOp = operations.some(
+      (op) => op.type.toString() === 'invoke_host_function',
+    );
+
+    if (this.sorobanClient && hasInvokeHostFunctionOp) {
+      try {
+        eventsForSequence = await this.getAndWrapEvents(sequence);
+      } catch (e) {
+        if (e.message === 'start is before oldest ledger') {
+          throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node. 
+                This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
+                To resolve this issue, you can either:
+                1. Increase the start ledger to a more recent one, or
+                2. Connect to a different node that might have a longer history of ledgers.`);
+        }
+
+        throw e;
+      }
+    }
+
     const wrappedLedger: StellarBlock = {
       ...(ledger as unknown as ServerApi.LedgerRecord),
       transactions: [] as StellarTransaction[],
       operations: [] as StellarOperation[],
       effects: [] as StellarEffect[],
-      events: [] as SorobanEvent[],
+      events: eventsForSequence,
     };
 
-    const wrapperTxs = await this.wrapTransactionsForLedger(
+    const wrapperTxs = this.wrapTransactionsForLedger(
       sequence,
       transactions,
       operations,
       effects,
+      eventsForSequence,
     );
 
     wrapperTxs.forEach((tx) => {
@@ -307,7 +307,6 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
       tx.operations.forEach((op) => {
         wrappedLedger.effects.push(...op.effects);
-        wrappedLedger.events.push(...op.events);
       });
     });
 
