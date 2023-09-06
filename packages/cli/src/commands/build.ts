@@ -21,7 +21,6 @@ export default class Build extends Command {
   async run(): Promise<void> {
     try {
       const {flags} = await this.parse(Build);
-
       const directory = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
       const isDev = flags.mode === 'development' || flags.mode === 'dev';
 

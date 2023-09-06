@@ -17,14 +17,9 @@ import {
   projectsInfo,
   redeploy,
 } from '../../controller/deploy-controller';
-import {addV, checkToken, isValidateEnum, promptWithDefaultValues, valueOrPrompt} from '../../utils';
+import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
-
-enum DEPLOYMENT_TYPE {
-  production = 'primary',
-  development = 'stage',
-}
 
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
@@ -152,12 +147,6 @@ export default class Deploy extends Command {
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
-    }
-    if (!isValidateEnum(DEPLOYMENT_TYPE, flags.type)) {
-      throw new Error(
-        `${flags.type} is not a valid deployment type\n
-          Please use one of the following ${Object.values(DEPLOYMENT_TYPE)}`
-      );
     }
     const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
 

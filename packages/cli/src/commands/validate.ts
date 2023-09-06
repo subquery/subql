@@ -27,7 +27,7 @@ export default class Validate extends Command {
     const {flags} = await this.parse(Validate);
     const location = flags.location ?? process.cwd();
 
-    // Validate that networkFamily is a part of enum
+    // Validate that networkFamily is a part of enum, ensure type
     if (!isValidateEnum(NETWORK_FAMILY, flags['network-family'])) {
       throw new Error(
         `${flags['network-family']} is not a valid network family\n
