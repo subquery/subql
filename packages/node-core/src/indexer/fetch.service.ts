@@ -184,13 +184,7 @@ export abstract class BaseFetchService<
 
   getFilteredHeightBlocks(startBlockHeight: number, endBlockHeight: number): number[] {
     const filteredBlocks = this.getFilteredHeights();
-    const heights: number[] = [];
-    for (let i = startBlockHeight; i < endBlockHeight; i++) {
-      if (filteredBlocks.find((m) => m === i)) {
-        heights.push(i);
-      }
-    }
-    return heights;
+    return filteredBlocks.filter(height => height >= startBlockHeight && height < endBlockHeight)
   }
 
   getModuloBlocks(startHeight: number, endHeight: number): number[] {
