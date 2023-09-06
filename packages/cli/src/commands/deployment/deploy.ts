@@ -20,6 +20,7 @@ import {
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
+
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
@@ -28,7 +29,7 @@ export default class Deploy extends Command {
     projectName: Flags.string({description: 'Enter project name'}),
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
-    type: Flags.enum({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+    type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
     indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
     queryVersion: Flags.string({description: 'Enter query-version', required: false}),
     dict: Flags.string({description: 'Enter dictionary', required: false}),
@@ -115,14 +116,13 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(
+          indexerVersion = await promptWithDefaultValues(
             inquirer,
             'Enter indexer version',
             null,
             indexerVersions,
             true
           );
-          indexerVersion = response;
         } else {
           indexerVersion = indexerVersions[0];
         }
@@ -148,7 +148,6 @@ export default class Deploy extends Command {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
     }
-
     const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
 
     if (projectInfo !== undefined) {
