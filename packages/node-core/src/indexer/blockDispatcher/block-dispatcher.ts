@@ -109,8 +109,6 @@ export abstract class BlockDispatcher<B, DS>
 
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
-    // Process queue is full, no point in fetching more blocks
-    // if (this.processQueue.freeSpace < this.nodeConfig.batchSize) return;
 
     this.fetching = true;
 
@@ -121,6 +119,7 @@ export abstract class BlockDispatcher<B, DS>
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
 
+        // Wait for capacity to fetch blocks
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (!blockNum || !this.fetchQueue.freeSpace!) {
           await delay(1);
