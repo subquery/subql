@@ -99,6 +99,7 @@ export abstract class BlockDispatcher<B, DS>
 
   flushQueue(height: number): void {
     super.flushQueue(height);
+    this.fetchQueue.flush();
     this.processQueue.flush();
   }
 

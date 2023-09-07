@@ -11,6 +11,12 @@ export interface IQueue {
   flush(): void;
 }
 
+class TaskFlushedError extends Error {
+  constructor() {
+    super('This task was flushed from the queue before completing');
+  }
+}
+
 export class Queue<T> implements IQueue {
   protected items: T[] = [];
   private _capacity?: number;
@@ -186,9 +192,12 @@ export class AutoQueue<T> implements IQueue {
           this.outOfOrderTasks[action.index] = {action, error};
         })
         .finally(() => {
-          this.processOutOfOrderTasks();
           const index = this.runningTasks.indexOf(p);
-          this.runningTasks.splice(index, 1);
+          // If the index is -1 then the queue will have been flushed
+          if (index >= 0) {
+            this.processOutOfOrderTasks();
+            this.runningTasks.splice(index, 1);
+          }
         });
 
       this.runningTasks.push(p);
@@ -204,8 +213,17 @@ export class AutoQueue<T> implements IQueue {
 
   flush(): void {
     // Empty the queue
-    // TODO do we need to reject all promises?
     this.queue.takeAll();
+
+    // Remove reference to runing tasks, they will still continue running but the result wont be used
+    this.runningTasks = [];
+
+    // Clean up out of order tasks
+    Object.entries(this.outOfOrderTasks).map(([id, task]) => {
+      // Is this desired behaviour? The other option would be resolving undefined
+      task.action.reject(new TaskFlushedError());
+    });
+    this.outOfOrderTasks = {};
   }
 
   abort(): void {
