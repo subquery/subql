@@ -26,11 +26,14 @@ export class SetValueModel<T> {
       // Set multiple time within same block, replace with input data only
       if (this.historicalValues[latestIndex].startHeight === blockHeight) {
         this.historicalValues[latestIndex].data = data;
+        this.historicalValues[latestIndex].endHeight = null;
+        this.historicalValues[latestIndex].removed = false;
       } else if (this.historicalValues[latestIndex].startHeight > blockHeight) {
         throw new Error(
           `Can not set record with block height ${blockHeight} as data for future block heights has been set`
         );
       } else {
+        // close previous historicalValues record endHeight
         this.historicalValues[latestIndex].endHeight = blockHeight;
         this.create(data, blockHeight, operationIndex);
       }
@@ -51,6 +54,8 @@ export class SetValueModel<T> {
     }
   }
 
+  // the latest record could be mark as removed
+  // we need to handle return value in where this method called accordingly , rather than return undefined here.
   getLatest(): SetValue<T> | undefined {
     const latestIndex = this.latestIndex();
     if (latestIndex === -1) {
@@ -100,6 +105,7 @@ export class SetValueModel<T> {
       return;
     }
     this.historicalValues[latestIndex].endHeight = removeAtBlock;
+    this.historicalValues[latestIndex].removed = true;
   }
 
   isMatchData(field?: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
@@ -109,12 +115,19 @@ export class SetValueModel<T> {
     if (Array.isArray(value)) {
       return value.findIndex((v) => this.isMatchData(field, value)) > -1;
     } else {
+      if (this.getLatest()?.removed) return false;
       return isEqual(this.getLatest()?.data?.[field], value);
     }
   }
 
   private create(data: T, blockHeight: number, operationIndex: number): void {
-    this.historicalValues.push({data, startHeight: blockHeight, endHeight: null, operationIndex: operationIndex});
+    this.historicalValues.push({
+      data,
+      startHeight: blockHeight,
+      endHeight: null,
+      operationIndex: operationIndex,
+      removed: false,
+    });
     this._latestIndex += 1;
   }
 
