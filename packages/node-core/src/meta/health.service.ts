@@ -44,7 +44,7 @@ export class HealthService {
     }
   }
 
-  @OnEvent(IndexerEvent.BlockTarget)
+  @OnEvent(IndexerEvent.BlockBest)
   handleTargetBlock(blockPayload: TargetBlockPayload): void {
     if (this.recordBlockHeight !== blockPayload.height) {
       this.recordBlockHeight = blockPayload.height;
