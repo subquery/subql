@@ -26,10 +26,10 @@ on:
         description: 'Network endpoint'
         default: 'https://eth.api.onfinality.io/public'
         require: true
-      disableHistorical:
-        description: 'Disable historical'
-        default: 'true'
-        require: false
+      use-network-api-key:
+        description: 'Use api endpoint key'
+        default: false
+        required: true
       batch-size:
         description: 'batch-size'
         default: 30
@@ -70,6 +70,20 @@ jobs:
           fetch-depth: 100
           token: ${{ secrets.REPO_TOKEN }}
 
+
+      - name: Prepare Network Endpoint
+        id: prepare-network-endpoint
+        run: |
+          if [ "${{ github.event.inputs.use-network-api-key }}" = "true" ]; then
+            NETWORK_ENDPOINT="${{ github.event.inputs.network-endpoint }}${{ secrets.NETWORK_API_KEY }}"
+          else
+            NETWORK_ENDPOINT="${{ github.event.inputs.network-endpoint }}"
+          fi
+          echo "::set-output name=network-endpoint::${NETWORK_ENDPOINT}"
+          echo "::add-mask::${NETWORK_ENDPOINT}"
+          # Store the prepared NETWORK_ENDPOINT in an environment variable
+          echo "NETWORK_ENDPOINT=${NETWORK_ENDPOINT}" >> $GITHUB_ENV 
+
       - name: Install Docker inside the container
         run: |
           apt-get update
@@ -108,7 +122,7 @@ jobs:
       - name: Benchmarking
         id: app
         run: |
-          docker run --cpus=${{github.event.inputs.cpus}} --memory=${{github.event.inputs.memory}} --network ${{ job.container.network }} --name my_container -v "${PWD}/output/benchmark:/app/output/benchmark" my_indexer ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ github.event.inputs.network-endpoint }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.disableHistorical }} ${{ github.event.inputs.others }}
+          docker run --cpus=${{github.event.inputs.cpus}} --memory=${{github.event.inputs.memory}} --network ${{ job.container.network }} --name my_container -v "${PWD}/output/benchmark:/app/output/benchmark" my_indexer ${{github.event.inputs.benchmark-time}} ${{ github.event.inputs.deployment }} ${{ env.NETWORK_ENDPOINT }} ${{ github.event.inputs.batch-size }} ${{ github.event.inputs.workers }} ${{ github.event.inputs.others }}
           docker cp my_container:/app/output/benchmark/indexing.log output/benchmark/
 
       - name: Stop and remove the benchmark container
@@ -128,8 +142,9 @@ jobs:
           echo "indexer=${{steps.query_meta.outputs.runner_node}}" >> output/benchmark/benchmark.log
           echo "indexerVersion=${{steps.query_meta.outputs.indexer_version}}" >> output/benchmark/benchmark.log
           echo "deployment=${{github.event.inputs.deployment}}" >> output/benchmark/benchmark.log
-          echo "network-endpoint=${{github.event.inputs.network-endpoint}}" >> output/benchmark/benchmark.log
-          echo "disableHistorical=${{github.event.inputs.disableHistorical}}" >> output/benchmark/benchmark.log
+          if [ "${{ github.event.inputs.use-network-api-key }}" = "false" ]; then
+            echo "network-endpoint=${{github.event.inputs.network-endpoint}}" >> output/benchmark/benchmark.log
+          fi
           echo "batch-size=${{github.event.inputs.batch-size}}" >> output/benchmark/benchmark.log
           echo "workers=${{github.event.inputs.workers}}" >> output/benchmark/benchmark.log
           if [ -n "${{github.event.inputs.others}}" ]; then
