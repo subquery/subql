@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - handle APIs in connection pool whose initialization failed (#1970)
 - Fix generated operation hash with single entity, buffer did not get hashed issue.
 - Infinite recursion in setValueModel with arrays (#1993)
+- Fix health checks for Networks that produce batched blocks (#2005)
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)
