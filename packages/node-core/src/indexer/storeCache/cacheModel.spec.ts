@@ -217,7 +217,7 @@ describe('cacheModel', () => {
       // should read from get cache, and entity should exclude __block_range
       expect(spyDbGet).not.toBeCalled();
       expect(JSON.stringify(entity)).not.toContain('__block_range');
-    }, 500000);
+    });
 
     // TODO, getByFields still works
 
@@ -235,7 +235,7 @@ describe('cacheModel', () => {
         );
         const result = await testModel.get('entity1_id_0x01');
         expect(result?.field1).toBe(5);
-      }, 500000);
+      });
 
       it('In same block, remove then set, should able to get', () => {
         testModel.remove('entity1_id_0x01', 1);
@@ -252,7 +252,7 @@ describe('cacheModel', () => {
         expect((testModel as any).removeCache.entity1_id_0x01).toBeUndefined();
 
         expect(result).toBeDefined();
-      }, 500000);
+      });
 
       it('In different block, remove and set, then remove again, should get nothing', async () => {
         testModel.remove('entity1_id_0x01', 4);
@@ -275,7 +275,7 @@ describe('cacheModel', () => {
         expect(latestSetRecord.removed).toBeTruthy();
         expect(latestSetRecord.endHeight).toBe(8);
         expect(result).toBeUndefined();
-      }, 500000);
+      });
 
       it('In same block, remove and set, then remove again, should get nothing', async () => {
         testModel.remove('entity1_id_0x01', 1);
@@ -296,7 +296,7 @@ describe('cacheModel', () => {
         expect(latestSetRecord.removed).toBeTruthy();
         expect(latestSetRecord.endHeight).toBe(1);
         expect(result).toBeUndefined();
-      }, 500000);
+      });
 
       it('clean flushable records when applyBlockRange, if found set and removed happened in the same height', () => {
         testModel.set(
@@ -328,7 +328,7 @@ describe('cacheModel', () => {
         // should filter out id 1
         expect(records.length).toBe(1);
         expect(records[0].id).toBe('entity1_id_0x02');
-      }, 500000);
+      });
 
       it('clean flushable records when applyBlockRange, pass if set and remove in the different height', () => {
         testModel.set(
@@ -356,7 +356,7 @@ describe('cacheModel', () => {
         expect(records[0].__block_range).toStrictEqual({args: [1, 2], fn: 'int8range'});
         expect(records[1].id).toBe('entity1_id_0x02');
         expect(records[1].__block_range).toStrictEqual({args: [2, null], fn: 'int8range'});
-      }, 500000);
+      });
 
       it('getFromCache could filter out removed data', async () => {
         testModel.set(
@@ -388,7 +388,7 @@ describe('cacheModel', () => {
             field1: 'set apple at block 5 with sequelize', // And mocked record
           },
         ]);
-      }, 500000);
+      });
 
       it('getFromCache with removed and set again data', async () => {
         testModel.set(
@@ -428,7 +428,7 @@ describe('cacheModel', () => {
             field1: 'set apple at block 5 with sequelize',
           },
         ]);
-      }, 500000);
+      });
     });
 
     describe('getByFields', () => {
