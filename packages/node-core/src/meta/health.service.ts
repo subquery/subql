@@ -44,6 +44,8 @@ export class HealthService {
     }
   }
 
+  // Not all networks have a consistent interval for Finalized Blocks
+  // Hence, the endpoint's health will be dictated by the best block (as it is a consistent interval)
   @OnEvent(IndexerEvent.BlockBest)
   handleTargetBlock(blockPayload: TargetBlockPayload): void {
     if (this.recordBlockHeight !== blockPayload.height) {
