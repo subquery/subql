@@ -265,13 +265,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     includeTx?: boolean,
   ): Promise<EthereumBlockWrapped> {
     try {
-      const [block, logs] = await Promise.all([
-        this.getBlockPromise(blockNumber, includeTx),
-        this.client.getLogs({
-          fromBlock: hexValue(blockNumber),
-          toBlock: hexValue(blockNumber),
-        }),
-      ]);
+      const block = await this.getBlockPromise(blockNumber, includeTx);
+      const logs = await this.client.getLogs({ blockHash: block.hash });
 
       const ret = new EthereumBlockWrapped(
         block,
