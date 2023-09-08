@@ -24,6 +24,7 @@ import {
   SubqlCosmosBlockFilter,
   SubqlCosmosTxFilter,
 } from '@subql/types-cosmos';
+import { isLong } from 'long';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 
@@ -69,10 +70,19 @@ export function filterMessageData(
   }
   if (filter.values) {
     for (const key in filter.values) {
-      if (
-        filter.values[key] !==
-        key.split('.').reduce((acc, curr) => acc[curr], data.msg.decodedMsg)
-      ) {
+      let decodedMsgData = key
+        .split('.')
+        .reduce((acc, curr) => acc[curr], data.msg.decodedMsg);
+
+      //stringify Long for equality check
+      if (isLong(decodedMsgData)) {
+        decodedMsgData =
+          typeof filter.values[key] === 'number'
+            ? decodedMsgData.toNumber()
+            : decodedMsgData.toString();
+      }
+
+      if (filter.values[key] !== decodedMsgData) {
         return false;
       }
     }

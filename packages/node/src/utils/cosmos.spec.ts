@@ -8,7 +8,9 @@ import {
   DecodedTxRaw,
 } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
+import { longify } from '@cosmjs/stargate/build/queryclient';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
+import { CosmosMessageFilter } from '@subql/common-cosmos';
 import {
   SubqlCosmosMessageFilter,
   CosmosBlock,
@@ -27,7 +29,7 @@ import { CosmosClient } from '../indexer/api.service';
 import { HttpClient } from '../indexer/rpc-clients';
 import { filterMessageData, wrapEvent } from './cosmos';
 
-const ENDPOINT = 'https://juno.api.onfinality.io/public';
+const ENDPOINT = 'https://rpc-archive.junonetwork.io';
 const CHAINID = 'juno-1';
 
 const TEST_BLOCKNUMBER = 4136538;
@@ -172,5 +174,74 @@ describe('CosmosUtils', () => {
     const spy = jest.spyOn(msg.msg, 'decodedMsg', 'get');
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_TRUE);
     expect(spy).toHaveBeenCalled();
+  });
+
+  it('can filter long type decoded msg for true', () => {
+    const msg: CosmosMessage = {
+      tx: null,
+      msg: {
+        typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract',
+        decodedMsg: {
+          codeId: longify(4),
+        },
+      },
+    } as unknown as CosmosMessage;
+
+    const filter: CosmosMessageFilter = {
+      type: '/cosmwasm.wasm.v1.MsgInstantiateContract',
+      values: {
+        codeId: '4',
+      },
+      includeFailedTx: true,
+    };
+
+    const result = filterMessageData(msg, filter);
+    expect(result).toEqual(true);
+  });
+
+  it('can filter long type decoded msg for number filter', () => {
+    const msg: CosmosMessage = {
+      tx: null,
+      msg: {
+        typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract',
+        decodedMsg: {
+          codeId: longify(4),
+        },
+      },
+    } as unknown as CosmosMessage;
+
+    const filter: CosmosMessageFilter = {
+      type: '/cosmwasm.wasm.v1.MsgInstantiateContract',
+      values: {
+        codeId: 4 as unknown as string,
+      },
+      includeFailedTx: true,
+    };
+
+    const result = filterMessageData(msg, filter);
+    expect(result).toEqual(true);
+  });
+
+  it('can filter long type decoded msg for false', () => {
+    const msg: CosmosMessage = {
+      tx: null,
+      msg: {
+        typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract',
+        decodedMsg: {
+          codeId: longify(4),
+        },
+      },
+    } as unknown as CosmosMessage;
+
+    const filter: CosmosMessageFilter = {
+      type: '/cosmwasm.wasm.v1.MsgInstantiateContract',
+      values: {
+        codeId: '5',
+      },
+      includeFailedTx: true,
+    };
+
+    const result = filterMessageData(msg, filter);
+    expect(result).toEqual(false);
   });
 });
