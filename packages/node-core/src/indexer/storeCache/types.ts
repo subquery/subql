@@ -55,6 +55,7 @@ export type SetValue<T> = {
   startHeight: number;
   endHeight: number | null;
   operationIndex: number;
+  removed: boolean;
 };
 
 export type SetData<T> = Record<string, SetValueModel<T>>;

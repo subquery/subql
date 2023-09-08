@@ -72,13 +72,26 @@ export class CachedModel<
 
   async get(id: string): Promise<T | undefined> {
     // If this already been removed
+    const latestSetRecord = this.setCache[id]?.getLatest();
+
     if (this.removeCache[id]) {
+      // Entity has been set again after being removed
+      if (
+        latestSetRecord &&
+        !latestSetRecord.removed &&
+        this.removeCache[id].removedAtBlock <= latestSetRecord.startHeight
+      ) {
+        return latestSetRecord.data;
+      }
       return;
     }
     if (!this.getCache.has(id)) {
       // LFU getCache could remove record from due to it is least frequently used
       // Then we try look from setCache
-      let record = this.setCache[id]?.getLatest()?.data;
+      let record = latestSetRecord?.data;
+      if (latestSetRecord?.removed) {
+        return undefined;
+      }
       if (!record) {
         await this.mutex.waitForUnlock();
         record = (
@@ -219,6 +232,10 @@ export class CachedModel<
     // Experimental, this means getCache keeps duplicate data from setCache,
     // we can remove this once memory is too full.
     this.getCache.set(id, data);
+    // Handle remove cache, when removed data been created again
+    if (this.removeCache[id] && this.removeCache[id].removedAtBlock === blockHeight) {
+      delete this.removeCache[id];
+    }
     this.flushableRecordCounter += 1;
   }
 
@@ -379,17 +396,24 @@ export class CachedModel<
         if (!this.historical) {
           return v.getLatest()?.data;
         }
-
         // Historical
-        return v.getValues().map((historicalValue) => {
-          // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
-          historicalValue.data.__block_range = this.sequelize.fn(
-            'int8range',
-            historicalValue.startHeight,
-            historicalValue.endHeight
-          );
-          return historicalValue.data;
-        });
+        // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
+        return v
+          .getValues()
+          .map((historicalValue) => {
+            // prevent flush this record,
+            // this is happened when set and remove in same block
+            if (historicalValue.removed && historicalValue.startHeight === historicalValue.endHeight) {
+              return;
+            }
+            historicalValue.data.__block_range = this.sequelize.fn(
+              'int8range',
+              historicalValue.startHeight,
+              historicalValue.endHeight
+            );
+            return historicalValue.data;
+          })
+          .filter((r) => !!r);
       })
     ) as unknown as CreationAttributes<Model<T, T>>[];
   }
@@ -433,7 +457,7 @@ export class CachedModel<
     const unifiedIds: string[] = [];
     Object.entries(this.setCache).map(([, model]) => {
       if (model.isMatchData(field, value)) {
-        const latestData = model.getLatest()?.data;
+        const latestData = model.getLatest()?.removed ? undefined : model.getLatest()?.data;
         if (latestData) {
           unifiedIds.push(latestData.id);
           joinedData.push(latestData);
