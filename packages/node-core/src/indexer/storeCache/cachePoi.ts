@@ -38,6 +38,11 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
     await this.mutex.waitForUnlock();
     return this.plainPoiModel.getPoiBlocksByRange(startHeight);
   }
+
+  async getPoiBlocksBefore(startHeight: number): Promise<ProofOfIndex[]> {
+    await this.mutex.waitForUnlock();
+    return this.plainPoiModel.getPoiBlocksBefore(startHeight);
+  }
   async getPoiById(id: number): Promise<ProofOfIndex | undefined> {
     await this.mutex.waitForUnlock();
     if (this.setCache[id]) {
