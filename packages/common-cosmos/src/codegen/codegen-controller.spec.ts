@@ -120,9 +120,7 @@ describe('Codegen cosmos', () => {
           ],
         },
       } as SubqlCosmosRuntimeDatasource;
-      const expectedOutput = new Map<string, string>([
-        ['cw20', path.join(PROJECT_PATH, 'cosmwasm-contract/cw20/schema/cw20.json')],
-      ]);
+      const expectedOutput = {cw20: path.join(PROJECT_PATH, 'cosmwasm-contract/cw20/schema/cw20.json')};
 
       expect(prepareSortedAssets([cosmosDs], PROJECT_PATH)).toStrictEqual(expectedOutput);
     });

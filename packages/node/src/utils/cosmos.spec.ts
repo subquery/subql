@@ -244,4 +244,8 @@ describe('CosmosUtils', () => {
     const result = filterMessageData(msg, filter);
     expect(result).toEqual(false);
   });
+
+  afterEach(() => {
+    api.disconnect();
+  });
 });
