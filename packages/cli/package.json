@@ -20,8 +20,6 @@
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
-    "@typechain/ethers-v5": "10.2.0",
-    "algosdk": "^1.19.0",
     "boxen": "5.1.2",
     "cli-ux": "^6.0.9",
     "ejs": "^3.1.6",

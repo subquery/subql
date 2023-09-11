@@ -69,7 +69,7 @@ const mockDsFn = (): EthereumDs[] => [
 ];
 
 describe('CLI codegen:generate', () => {
-  const projectPath = path.join(__dirname, '../../test/schemaTest6');
+  const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
   const abiName = parseContractPath('./erc721.json').name;
   const eventFragments = abiInterface.events;

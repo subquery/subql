@@ -1,11 +1,10 @@
-specVersion: "0.0.1"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
-
-schema: "./schema.graphql"
+specVersion: '0.0.1'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
+schema: './badEntity.graphql'
 
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
 
 dataSources:
   - name: main
@@ -15,8 +14,3 @@ dataSources:
       handlers:
         - handler: handleBlock
           kind: substrate/BlockHandler
-
-
-
-
-
