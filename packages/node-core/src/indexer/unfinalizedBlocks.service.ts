@@ -33,7 +33,7 @@ export interface IUnfinalizedBlocksService<B> {
 export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlocksService<B> {
   private _unfinalizedBlocks?: UnfinalizedBlocks;
   private _finalizedHeader?: Header;
-  private lastCheckedBlockHeight?: number;
+  protected lastCheckedBlockHeight?: number;
 
   protected abstract blockToHeader(block: B): Header;
   protected abstract getFinalizedHead(): Promise<Header>;
@@ -44,7 +44,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     this._unfinalizedBlocks = unfinalizedBlocks;
   }
 
-  private get unfinalizedBlocks(): UnfinalizedBlocks {
+  protected get unfinalizedBlocks(): UnfinalizedBlocks {
     assert(this._unfinalizedBlocks !== undefined, new Error('Unfinalized blocks service has not been initialized'));
     return this._unfinalizedBlocks;
   }
@@ -53,12 +53,12 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     this._finalizedHeader = finalizedHeader;
   }
 
-  private get finalizedHeader(): Header {
+  protected get finalizedHeader(): Header {
     assert(this._finalizedHeader !== undefined, new Error('Unfinalized blocks service has not been initialized'));
     return this._finalizedHeader;
   }
 
-  constructor(private readonly nodeConfig: NodeConfig, private readonly storeCache: StoreCacheService) {}
+  constructor(protected readonly nodeConfig: NodeConfig, protected readonly storeCache: StoreCacheService) {}
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
@@ -163,7 +163,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   }
 
   // check unfinalized blocks for a fork, returns the header where a fork happened
-  private async hasForked(): Promise<Header | undefined> {
+  protected async hasForked(): Promise<Header | undefined> {
     const lastVerifiableBlock = this.getClosestRecord(this.finalizedBlockNumber);
 
     // No unfinalized blocks
@@ -206,7 +206,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return;
   }
 
-  private async getLastCorrectFinalizedBlock(forkedHeader: Header): Promise<number | undefined> {
+  protected async getLastCorrectFinalizedBlock(forkedHeader: Header): Promise<number | undefined> {
     const bestVerifiableBlocks = this.unfinalizedBlocks.filter(
       ({blockHeight}) => blockHeight <= this.finalizedBlockNumber
     );
