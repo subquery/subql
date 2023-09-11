@@ -6524,7 +6524,7 @@ __metadata:
     "@subql/utils": "workspace:*"
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/async-lock": ^1
-    "@willsoto/nestjs-prometheus": ^5.1.1
+    "@willsoto/nestjs-prometheus": 5.1.1
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
     cross-fetch: ^3.1.6
@@ -8097,6 +8097,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@willsoto/nestjs-prometheus@npm:5.1.1":
+  version: 5.1.1
+  resolution: "@willsoto/nestjs-prometheus@npm:5.1.1"
+  peerDependencies:
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0
+    prom-client: ^13.0.0 || ^14.0.0
+  checksum: fa60f20442605c4243bc21b829be80a53ac2a0d1b7c5ab5c816048970ae57486cbba38c9d9707c989608501b27aa9a50acb5046dca76d19900a5719e068f57ae
+  languageName: node
+  linkType: hard
+
 "@willsoto/nestjs-prometheus@npm:^4.4.0":
   version: 4.6.0
   resolution: "@willsoto/nestjs-prometheus@npm:4.6.0"
@@ -8104,16 +8114,6 @@ __metadata:
     "@nestjs/common": ^7.0.0 || ^8.0.0
     prom-client: ^13.0.0 || ^14.0.0
   checksum: 256fbd7d2db4e2a77b32e7739a6f6b2af7a7514273ad7d47d1ba42bb1bad63e95d2d591d126454395026431120ae3187d1b6a054d8342570d06da5da33758a4d
-  languageName: node
-  linkType: hard
-
-"@willsoto/nestjs-prometheus@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "@willsoto/nestjs-prometheus@npm:5.1.1"
-  peerDependencies:
-    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0
-    prom-client: ^13.0.0 || ^14.0.0
-  checksum: fa60f20442605c4243bc21b829be80a53ac2a0d1b7c5ab5c816048970ae57486cbba38c9d9707c989608501b27aa9a50acb5046dca76d19900a5719e068f57ae
   languageName: node
   linkType: hard
 
