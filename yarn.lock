@@ -6284,7 +6284,39 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/node-core@4.2.6, @subql/node-core@workspace:packages/node-core":
+"@subql/node-core@npm:4.2.6":
+  version: 4.2.6
+  resolution: "@subql/node-core@npm:4.2.6"
+  dependencies:
+    "@apollo/client": ^3.7.16
+    "@nestjs/common": ^9.4.0
+    "@nestjs/event-emitter": ^2.0.0
+    "@nestjs/schedule": ^3.0.1
+    "@subql/apollo-links": ^1.0.3-0
+    "@subql/common": 2.6.0
+    "@subql/testing": ^2.0.2
+    "@subql/types": ^2.2.0
+    "@subql/utils": ^2.4.3
+    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.3
+    "@subql/x-sequelize": 6.32.0-0.0.2
+    "@willsoto/nestjs-prometheus": ^5.1.1
+    async-lock: ^1.4.0
+    async-mutex: ^0.4.0
+    cross-fetch: ^3.1.6
+    dayjs: ^1.10.7
+    lodash: ^4.17.21
+    lru-cache: 8.0.4
+    merkle-tools: ^1.4.1
+    prom-client: ^14.0.1
+    source-map: ^0.7.4
+    tar: ^6.1.11
+    vm2: ^3.9.19
+    yargs: ^16.2.0
+  checksum: e8f36fd876f3ebd86811d81f356506209480cd5b972aadd4b0f94096b05a4bf4929998049da636e1a4b053e01dec3c233f076979e71383bdcbf087e48a2e1c77
+  languageName: node
+  linkType: hard
+
+"@subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
