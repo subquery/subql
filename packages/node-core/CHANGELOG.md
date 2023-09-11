@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move more code from node to node-core. Including configure module, workers (#1797)
 - Update api service generics to support multiple block types (#1968)
 - UnfinalizedBlocksService: make private methods protected to allow custom fork detection (#2009)
+- Update fetching blocks to use moving window rather than batches (#2000)
 
 ### Added
 - Project upgrades feature and many other changes to support it (#1797)
