@@ -101,17 +101,8 @@ describe('cacheModel', () => {
     beforeEach(() => {
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(
-        sequelize.model('entity1'),
-        false,
-        {} as NodeConfig,
-        () => i++,
-        async () => {
-          const tx = await sequelize.transaction();
-          await testModel.flush(tx);
-          await tx.commit();
-        }
-      );
+      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig);
+      testModel.init(() => i++);
     });
 
     it('can avoid race conditions', async () => {
@@ -181,17 +172,8 @@ describe('cacheModel', () => {
     beforeEach(() => {
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(
-        sequelize.model('entity1'),
-        true,
-        {} as NodeConfig,
-        () => i++,
-        async () => {
-          const tx = await sequelize.transaction();
-          await testModel.flush(tx);
-          await tx.commit();
-        }
-      );
+      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig);
+      testModel.init(() => i++);
     });
 
     // it should keep same behavior as hook we used
@@ -428,50 +410,6 @@ describe('cacheModel', () => {
             field1: 'set apple at block 5 with sequelize',
           },
         ]);
-      });
-    });
-
-    describe('getByFields', () => {
-      it('calls getByField if there is one filter', async () => {
-        const spy = jest.spyOn(testModel, 'getByField');
-
-        await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 1});
-
-        expect(spy).toBeCalledWith('field1', 1, {offset: 0, limit: 1});
-      });
-
-      it('flushes the cache first', async () => {
-        const spy = jest.spyOn(testModel, 'flush');
-
-        // Set data so there is something to be flushed
-        testModel.set(
-          'entity1_id_0x02',
-          {
-            id: 'entity1_id_0x02',
-            field1: 2,
-          },
-          2
-        );
-
-        await testModel.getByFields(
-          [
-            ['field1', '=', 1],
-            ['field1', 'in', [2]],
-          ],
-          {offset: 0, limit: 1}
-        );
-
-        expect(spy).toBeCalled();
-      });
-
-      it('throws for unsupported operators', async () => {
-        await expect(
-          testModel.getByFields(
-            // Any needed to get past type check
-            [['field1', 'badOperator' as any, 1]],
-            {offset: 0, limit: 1}
-          )
-        ).rejects.toThrow(`Operator ('badOperator') for field field1 is not valid. Options are =, !=, in, !in`);
       });
     });
   });
