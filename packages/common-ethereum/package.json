@@ -15,16 +15,23 @@
   "dependencies": {
     "@subql/common": "2.6.0",
     "@subql/types-ethereum": "workspace:*",
+    "@typechain/ethers-v5": "^11.1.1",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "typechain": "^8.3.1"
   },
   "peerDependencies": {
     "class-transformer": "*",
     "class-validator": "*"
   },
   "devDependencies": {
+    "@types/ejs": "^3.1.2",
     "@types/js-yaml": "^4.0.4",
-    "@types/pino": "^6.3.12"
+    "@types/lodash": "^4",
+    "@types/pino": "^6.3.12",
+    "@types/rimraf": "3.0.2",
+    "ejs": "3.1.6",
+    "lodash": "4.17.21"
   }
 }

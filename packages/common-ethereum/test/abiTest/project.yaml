@@ -1,0 +1,51 @@
+specVersion: '1.0.0'
+name: 'example'
+
+version: '0.0.1'
+runner:
+  node:
+    name: '@subql/node-ethereum'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: ''
+repository: ''
+schema:
+  file: './schema.graphql'
+network:
+  chainId: '1'
+  endpoint: 'aaa'
+  dictionary: ''
+
+customDs:
+  assets:
+    abi:
+      file: ./erc20.json
+    artifact:
+      file: ./abis/Erc20.sol/erc20.json
+dataSources:
+  - kind: ethereum/Runtime
+    options:
+      abi: Erc20
+    assets:
+      Erc20:
+        file: './abis/erc20.json'
+    startBlock: 1
+    mapping:
+      file: ''
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler
+  - kind: ethereum/Runtime
+    options:
+      abi: 'artifactErc20'
+    assets:
+      'artifactErc20':
+        file: './abis/Erc20.sol/Erc20.json'
+    startBlock: 1
+    mapping:
+      file: ''
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler
