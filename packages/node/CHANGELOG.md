@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - fix crashes when intialization fails for one of the endpoint (#1970)
-- Update `@willsoto/nestjs-prometheus` to 5.4.0 (#2012)
+- Remove `@willsoto/nestjs-prometheus` from dependency as it is already added in node-core (#2012)
+
 ### Changed
 - Move code to node-core (#1797)
 

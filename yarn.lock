@@ -6524,7 +6524,7 @@ __metadata:
     "@subql/utils": "workspace:*"
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/async-lock": ^1
-    "@willsoto/nestjs-prometheus": 5.4.0
+    "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
     cross-fetch: ^3.1.6
@@ -6565,7 +6565,6 @@ __metadata:
     "@types/pino": ^6.3.12
     "@types/tar": ^6.1.1
     "@types/yargs": ^16.0.4
-    "@willsoto/nestjs-prometheus": 5.4.0
     cron-converter: ^1.0.2
     dotenv: ^15.0.1
     eventemitter2: ^6.4.5
@@ -8097,7 +8096,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@willsoto/nestjs-prometheus@npm:5.4.0":
+"@willsoto/nestjs-prometheus@npm:^5.4.0":
   version: 5.4.0
   resolution: "@willsoto/nestjs-prometheus@npm:5.4.0"
   peerDependencies:
