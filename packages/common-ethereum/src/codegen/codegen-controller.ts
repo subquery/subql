@@ -10,7 +10,7 @@ import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {CUSTOM_EVM_HANDLERS} from './constants';
 import {loadReadAbi} from './utils';
 
-const ABI_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../templates/abi-interface.ts.ejs');
+const ABI_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../../templates/abi-interface.ts.ejs');
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
 const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const TYPECHAIN_TARGET = 'ethers-v5';
