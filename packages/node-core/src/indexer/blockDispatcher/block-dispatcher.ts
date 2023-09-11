@@ -133,10 +133,14 @@ export abstract class BlockDispatcher<B, DS>
             // this.smartBatchService.addToSizeBuffer([block]);
             return block;
           })
+          .catch((e) => {
+            logger.error(e, `Failed to fetch block ${blockNum}.`);
+            throw e;
+          })
           .then((block) => {
             const height = this.getBlockHeight(block);
 
-            void this.processQueue.put(async () => {
+            return this.processQueue.put(async () => {
               // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
               // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
               const peeked = this.queue.peek();
@@ -161,11 +165,14 @@ export abstract class BlockDispatcher<B, DS>
                 }
                 logger.error(
                   e,
-                  `failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
+                  `Failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
                 );
                 throw e;
               }
             });
+          })
+          .catch((e) => {
+            process.exit(1);
           });
 
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
@@ -173,7 +180,7 @@ export abstract class BlockDispatcher<B, DS>
         });
       }
     } catch (e: any) {
-      logger.error(e, 'Failed to fetch blocks from queue');
+      logger.error(e, 'Failed to process blocks from queue');
       if (!this.isShutdown) {
         process.exit(1);
       }

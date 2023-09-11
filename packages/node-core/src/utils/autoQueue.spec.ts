@@ -54,4 +54,27 @@ describe('AutoQueue', () => {
 
     expect(results).toEqual([1, 2]);
   });
+
+  it('has a cap on the number of out of order tasks', async () => {
+    const autoQueue = new AutoQueue<number>(10, 2, 0.2);
+    const results: number[] = [];
+
+    const tasks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => async () => {
+      // Set a large timeout for the first task to simulate blocking
+      const randomTime = v === 1 ? 400 : 100;
+      await new Promise((resolve) => setTimeout(resolve, randomTime));
+
+      return v;
+    });
+
+    await expect(
+      Promise.all(
+        tasks.map(async (t) => {
+          const r = await autoQueue.put(t);
+
+          results.push(r);
+        })
+      )
+    ).rejects.toEqual(new Error('timeout'));
+  });
 });

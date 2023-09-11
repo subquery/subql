@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {timeout} from './promise';
 
 export interface IQueue {
   size: number;
@@ -110,7 +111,12 @@ export class AutoQueue<T> implements IQueue {
   // Next task to resolve, used to order the outOfOrderTasks
   private nextTask = 0;
 
-  constructor(capacity?: number, private concurrency = 1) {
+  /**
+   * @param {number} capacity - The size limit of the queue, if undefined there is no limit
+   * @param {number} [concurrency=1] - The number of parallel tasks that can be processed at any one time.
+   * @param {number} [taskTimeoutSec=60] - A timeout for tasks to complete in. Units are seconds.
+   * */
+  constructor(capacity?: number, private concurrency = 1, private taskTimeoutSec = 60) {
     this.queue = new Queue<Action<T>>(capacity);
   }
 
@@ -184,7 +190,7 @@ export class AutoQueue<T> implements IQueue {
 
       this.pendingPromise = true;
 
-      const p = Promise.resolve(action.task())
+      const p = timeout(Promise.resolve(action.task()), this.taskTimeoutSec)
         .then((result) => {
           this.outOfOrderTasks[action.index] = {action, result};
         })
