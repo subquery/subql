@@ -16,7 +16,6 @@ import chalk from 'chalk';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
 import {upperFirst, difference, pickBy} from 'lodash';
-import {parseContractPath} from 'typechain';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {renderTemplate, resolveToAbsolutePath} from '../utils';
