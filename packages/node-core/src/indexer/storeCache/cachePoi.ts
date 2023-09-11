@@ -39,9 +39,9 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
     return this.plainPoiModel.getPoiBlocksByRange(startHeight);
   }
 
-  async getPoiBlocksBefore(startHeight: number): Promise<ProofOfIndex[]> {
+  async getPoiBlocksBefore(startHeight: number, options?: {offset: number; limit: number}): Promise<ProofOfIndex[]> {
     await this.mutex.waitForUnlock();
-    return this.plainPoiModel.getPoiBlocksBefore(startHeight);
+    return this.plainPoiModel.getPoiBlocksBefore(startHeight, options);
   }
   async getPoiById(id: number): Promise<ProofOfIndex | undefined> {
     await this.mutex.waitForUnlock();

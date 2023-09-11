@@ -49,9 +49,13 @@ export class PlainPoiModel implements PoiInterface {
     return result.map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
   }
 
-  async getPoiBlocksBefore(startHeight: number): Promise<ProofOfIndex[]> {
+  async getPoiBlocksBefore(
+    startHeight: number,
+    options: {limit: number; offset: number} = {limit: DEFAULT_FETCH_RANGE, offset: 0}
+  ): Promise<ProofOfIndex[]> {
     const result = await this.model.findAll({
-      limit: DEFAULT_FETCH_RANGE,
+      limit: options.limit,
+      offset: options.offset,
       where: {
         id: {[Op.lte]: startHeight},
         operationHashRoot: {[Op.ne]: null},
