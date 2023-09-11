@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix generated operation hash with single entity, buffer did not get hashed issue.
 - Infinite recursion in setValueModel with arrays (#1993)
 - Fix health checks for Networks that produce batched blocks (#2005)
+- Pin `@willsoto/nestjs-prometheus` version to `5.1.1` (#2012)
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)
