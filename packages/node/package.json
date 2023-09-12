@@ -30,7 +30,6 @@
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.1.4",
     "@subql/types-ethereum": "workspace:*",
-    "@willsoto/nestjs-prometheus": "^4.4.0",
     "cacheable-lookup": "6",
     "cron-converter": "^1.0.2",
     "ethers": "^5.7.0",

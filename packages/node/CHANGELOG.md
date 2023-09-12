@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix nestjs-prometheus dependency issue (#163)
+
 ## [2.12.4] - 2023-09-12
 ### Fixed
 - Fetching logs via block height resulting in invalid results. Block hash is now used to ensure correct results. (#156)
