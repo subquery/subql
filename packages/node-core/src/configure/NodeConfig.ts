@@ -270,7 +270,7 @@ export class NodeConfig implements IConfig {
   }
 
   get scaleBatchSize(): boolean {
-    return !!this.scaleBatchSize;
+    return !!this._config.scaleBatchSize;
   }
 
   get postgresCACert(): string | undefined {
