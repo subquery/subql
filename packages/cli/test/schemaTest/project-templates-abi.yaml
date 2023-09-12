@@ -18,7 +18,7 @@ templates:
       abi: erc721
     assets:
       erc721:
-        file: './erc721.json'
+        file: './abis/erc721.json'
     mapping:
       handlers:
         - handler: handleERC721
