@@ -71,6 +71,7 @@ async function deployTestProject(
 }
 
 const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
+  // eslint-disable-next-line jest/valid-describe-callback, jest/valid-title, jest/no-disabled-tests
   condition ? describe(...args) : describe.skip(...args);
 
 // Replace/Update your access token when test locally
@@ -117,6 +118,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
   });
 
   // Only test locally
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip('Promote Deployment', async () => {
     const {ipfs, org, projectName} = projectSpec;
     let status: string;
@@ -130,6 +132,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       status = await deploymentStatus(org, projectName, testAuth, deployOutput.id, ROOT_API_URL_DEV);
       if (status === 'running') {
         const promoteOutput = await promoteDeployment(org, projectName, testAuth, deployOutput.id, ROOT_API_URL_DEV);
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(+promoteOutput).toBe(deployOutput.id);
       }
     }
@@ -139,11 +142,9 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     expect(validator.valid).toBe(true);
   });
   it('to throw error for invalid ipfsCID', async () => {
-    try {
-      await ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV);
-    } catch (e) {
-      expect(e.message).toBe('Failed to validate IPFS CID: fake is not a valid subquery deployment id!');
-    }
+    await expect(ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV)).rejects.toEqual(
+      'Failed to validate IPFS CID: fake is not a valid subquery deployment id!'
+    );
   });
 
   it('get Endpoint - polkadot', async () => {
