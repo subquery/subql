@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update common packages version from `latest`, to ensure they will be bumped (#1992)
 - Update model codegen to include `getByFields` and produce prettier code (#1993)
 - migrate from `oclif` v1 to v2
+- Move abi-codegen from `cli` to `common-ethereum` (#2010)
 
 ### Removed
 - replaced `oclif-dev` dependency with `oclif` due to v2 migration (#1998)
