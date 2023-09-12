@@ -3025,7 +3025,7 @@ __metadata:
     "@types/lodash": ^4
     "@types/pino": ^6.3.12
     "@types/rimraf": 3.0.2
-    ejs: 3.1.6
+    ejs: 3.1.7
     js-yaml: ^4.1.0
     lodash: 4.17.21
     pino: ^6.13.3
@@ -5842,14 +5842,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:3.1.6":
-  version: 3.1.6
-  resolution: "ejs@npm:3.1.6"
+"ejs@npm:3.1.7":
+  version: 3.1.7
+  resolution: "ejs@npm:3.1.7"
   dependencies:
-    jake: ^10.6.1
+    jake: ^10.8.5
   bin:
-    ejs: ./bin/cli.js
-  checksum: 81a9cdea0b4ded3b5a4b212b7c17e20bb07468f08394e2d519708d367957a70aef3d282a6d5d38bf6ad313ba25802b9193d4227f29b084d2ee0f28d115141d48
+    ejs: bin/cli.js
+  checksum: fe40764af39955ce8f8b116716fc8b911959946698edb49ecab85df597746c07aa65d5b74ead28a1e2ffa75b0f92d9bedd752f1c29437da6137b3518271e988c
   languageName: node
   linkType: hard
 
@@ -8170,7 +8170,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jake@npm:^10.6.1":
+"jake@npm:^10.8.5":
   version: 10.8.7
   resolution: "jake@npm:10.8.7"
   dependencies:
