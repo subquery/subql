@@ -10,6 +10,7 @@ import {
   EthereumHandlerKind,
   EthereumTransactionFilter,
   SubqlRuntimeHandler,
+  parseContractPath,
 } from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import chalk from 'chalk';

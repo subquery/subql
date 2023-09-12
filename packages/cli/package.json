@@ -13,7 +13,7 @@
     "@subql/common": "workspace:*",
     "@subql/common-algorand": "^2.4.0",
     "@subql/common-cosmos": "^2.5.0",
-    "@subql/common-ethereum": "^2.2.5",
+    "@subql/common-ethereum": "^2.3.0",
     "@subql/common-flare": "^2.2.5",
     "@subql/common-near": "^2.4.0",
     "@subql/common-stellar": "^2.2.1-1",

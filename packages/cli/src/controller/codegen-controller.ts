@@ -19,6 +19,7 @@ import {
   isRuntimeDs as isRuntimeEthereumDs,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
+  generateAbis,
 } from '@subql/common-ethereum';
 import {
   isCustomDs as isCustomNearDs,
@@ -276,7 +277,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   }
   await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
-  // await generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  await generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
