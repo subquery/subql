@@ -3075,7 +3075,6 @@ __metadata:
     "@types/pino": ^6.3.12
     "@types/tar": ^6.1.1
     "@types/yargs": ^16.0.4
-    "@willsoto/nestjs-prometheus": ^4.4.0
     cacheable-lookup: 6
     cron-converter: ^1.0.2
     dotenv: ^15.0.1
@@ -3786,16 +3785,6 @@ __metadata:
     "@typescript-eslint/types": 5.62.0
     eslint-visitor-keys: ^3.3.0
   checksum: 976b05d103fe8335bef5c93ad3f76d781e3ce50329c0243ee0f00c0fcfb186c81df50e64bfdd34970148113f8ade90887f53e3c4938183afba830b4ba8e30a35
-  languageName: node
-  linkType: hard
-
-"@willsoto/nestjs-prometheus@npm:^4.4.0":
-  version: 4.7.0
-  resolution: "@willsoto/nestjs-prometheus@npm:4.7.0"
-  peerDependencies:
-    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0
-    prom-client: ^13.0.0 || ^14.0.0
-  checksum: 06020f2cb36bf6f98b1f7ca3494103cc77bea227ab766bb66e0294040c6a1399c3ff2a1781b7d163a5590cd9ccf0903fc08fc3bd9d3112d63c7400c4d6d55f23
   languageName: node
   linkType: hard
 
