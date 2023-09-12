@@ -6224,6 +6224,7 @@ __metadata:
     "@types/semver": ^7
     "@types/update-notifier": ^6
     "@types/websocket": ^1
+    algosdk: ^1.19.0
     boxen: 5.1.2
     cli-ux: ^6.0.9
     ejs: ^3.1.6
@@ -8320,6 +8321,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"algo-msgpack-with-bigint@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "algo-msgpack-with-bigint@npm:2.1.1"
+  checksum: 81645fc1248f42b048713f2218a7e108711da34cd229b7a58d18af8c041ea1f72051437afb4fcca2d78e6960094b8a88a2e6a45b6d48bca176b5cad24703a976
+  languageName: node
+  linkType: hard
+
+"algosdk@npm:^1.19.0":
+  version: 1.24.1
+  resolution: "algosdk@npm:1.24.1"
+  dependencies:
+    algo-msgpack-with-bigint: ^2.1.1
+    buffer: ^6.0.2
+    cross-fetch: ^3.1.5
+    hi-base32: ^0.5.1
+    js-sha256: ^0.9.0
+    js-sha3: ^0.8.0
+    js-sha512: ^0.8.0
+    json-bigint: ^1.0.0
+    tweetnacl: ^1.0.3
+    vlq: ^2.0.4
+  checksum: 3b6960dddec3d7d37a1505dcb3c6997740c5b02fa076a140efcf51eaddd83b7a7c8f56bab3001ec0ac7b1ccdd264e5a41d051b8bf5b9b72762e338c704547203
+  languageName: node
+  linkType: hard
+
 "already@npm:^2.2.1":
   version: 2.2.1
   resolution: "already@npm:2.2.1"
@@ -9146,6 +9172,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bignumber.js@npm:^9.0.0":
+  version: 9.1.2
+  resolution: "bignumber.js@npm:9.1.2"
+  checksum: 582c03af77ec9cb0ebd682a373ee6c66475db94a4325f92299621d544aa4bd45cb45fd60001610e94aef8ae98a0905fa538241d9638d4422d57abbeeac6fadaf
+  languageName: node
+  linkType: hard
+
 "bignumber.js@npm:^9.1.1":
   version: 9.1.1
   resolution: "bignumber.js@npm:9.1.1"
@@ -9557,7 +9590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^6.0.1, buffer@npm:^6.0.3":
+"buffer@npm:^6.0.1, buffer@npm:^6.0.2, buffer@npm:^6.0.3":
   version: 6.0.3
   resolution: "buffer@npm:6.0.3"
   dependencies:
@@ -10696,6 +10729,15 @@ __metadata:
   dependencies:
     luxon: ^3.2.1
   checksum: ac27c257cb8dba4b51978b4767119fc79bfc0dfa35ef0be2533bc4142ae006130515236e2102d04ee3ce44bffc2a4e37a3bee18a2152bbb303bf5ff944e25204
+  languageName: node
+  linkType: hard
+
+"cross-fetch@npm:^3.1.5":
+  version: 3.1.8
+  resolution: "cross-fetch@npm:3.1.8"
+  dependencies:
+    node-fetch: ^2.6.12
+  checksum: 78f993fa099eaaa041122ab037fe9503ecbbcb9daef234d1d2e0b9230a983f64d645d088c464e21a247b825a08dc444a6e7064adfa93536d3a9454b4745b3632
   languageName: node
   linkType: hard
 
@@ -13387,6 +13429,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hi-base32@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "hi-base32@npm:0.5.1"
+  checksum: 6655682b5796d75ed3068071e61d05a490e2086c4908af3b94a730059147b8a4a5e8870e656b828d0550dcc9988d8748bda54a53e428cbce28e0d7a785b2ffde
+  languageName: node
+  linkType: hard
+
 "hmac-drbg@npm:^1.0.1":
   version: 1.0.1
   resolution: "hmac-drbg@npm:1.0.1"
@@ -15315,6 +15364,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-sha512@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "js-sha512@npm:0.8.0"
+  checksum: 32ca371ebd14c6c5c83360fd8b036cad2211537bef546b199ac8b901917299cab4c68f7f7c26ae72f836bbce0349cb463df9a62cdb4c90e38090fdb4db89ee87
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -15367,6 +15423,15 @@ __metadata:
   bin:
     jsesc: bin/jsesc
   checksum: b8b44cbfc92f198ad972fba706ee6a1dfa7485321ee8c0b25f5cedd538dcb20cde3197de16a7265430fce8277a12db066219369e3d51055038946039f6e20e17
+  languageName: node
+  linkType: hard
+
+"json-bigint@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "json-bigint@npm:1.0.0"
+  dependencies:
+    bignumber.js: ^9.0.0
+  checksum: c67bb93ccb3c291e60eb4b62931403e378906aab113ec1c2a8dd0f9a7f065ad6fd9713d627b732abefae2e244ac9ce1721c7a3142b2979532f12b258634ce6f6
   languageName: node
   linkType: hard
 
@@ -21480,6 +21545,13 @@ __metadata:
     remove-trailing-separator: ^1.0.1
     replace-ext: ^1.0.0
   checksum: 1f663973f1362f2d074b554f79ff7673187667082373b3d3e628beb1fc2a7ff33024f10b492fbd8db421a09ea3b7b22c3d3de4a0f0e73ead7b4685af570b906f
+  languageName: node
+  linkType: hard
+
+"vlq@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "vlq@npm:2.0.4"
+  checksum: b2ed0d3a5423f34bba98a18250f8b13a96eebff9c8f9427fa9cd78065d31f35641f6fd659c5642253b79532000a37aec0582abac95d1ef4af2cd0c96a716f1b6
   languageName: node
   linkType: hard
 

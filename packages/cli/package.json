@@ -20,6 +20,7 @@
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
+    "algosdk": "^1.19.0",
     "boxen": "5.1.2",
     "cli-ux": "^6.0.9",
     "ejs": "^3.1.6",
@@ -78,7 +79,7 @@
     ]
   },
   "scripts": {
-    "build": "rm -rf lib && tsc -b",
+    "build": "rm -rf lib && tsc -b && cp -r src/template lib/",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "yarn build && cp -r src/template lib/ && oclif manifest && oclif readme",
