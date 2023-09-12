@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.5] - 2023-09-12
 ### Fixed
 - Fix nestjs-prometheus dependency issue (#163)
+- Sync with node-core 4.2.8, fix NodeConfig scaleBatchSize call itself
 
 ## [2.12.4] - 2023-09-12
 ### Fixed
@@ -230,8 +232,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/v2.12.4...HEAD
-[2.12.4]: https://github.com/subquery/subql-ethereum/compare/v2.12.3...v2.12.4
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.5...HEAD
+[2.12.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.4...node-ethereum/2.12.5
+[2.12.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.3...node-ethereum/2.12.4
 [2.12.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.2...node-ethereum/2.12.3
 [2.12.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.1...node-ethereum/2.12.2
 [2.12.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.0...node-ethereum/2.12.1
