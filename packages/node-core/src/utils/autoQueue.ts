@@ -116,7 +116,7 @@ export class AutoQueue<T> implements IQueue {
    * @param {number} [concurrency=1] - The number of parallel tasks that can be processed at any one time.
    * @param {number} [taskTimeoutSec=60] - A timeout for tasks to complete in. Units are seconds.
    * */
-  constructor(capacity?: number, private concurrency = 1, private taskTimeoutSec = 60) {
+  constructor(capacity?: number, public concurrency = 1, private taskTimeoutSec = 60) {
     this.queue = new Queue<Action<T>>(capacity);
   }
 

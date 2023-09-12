@@ -114,23 +114,36 @@ export abstract class BlockDispatcher<B, DS>
 
     try {
       while (!this.isShutdown) {
-        const blockNum = this.queue.take();
-
-        // Used to compare before and after as a way to check if queue was flushed
-        const bufferedHeight = this._latestBufferedHeight;
-
-        // Wait for capacity to fetch blocks
+        // Wait for blocks or capacity to fetch blocks
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (!blockNum || !this.fetchQueue.freeSpace!) {
+        if (!this.queue.size || !this.fetchQueue.freeSpace!) {
           await delay(1);
           continue;
         }
 
+        const blockNum = this.queue.take();
+
+        // This shouldn't happen but if it does it whould get caught above
+        if (!blockNum) {
+          continue;
+        }
+
+        // Used to compare before and after as a way to check if queue was flushed
+        const bufferedHeight = this._latestBufferedHeight;
+
+        if (this.memoryleft() < 0) {
+          //stop fetching until memory is freed
+          await waitForBatchSize(this.minimumHeapLimit);
+        }
+
         void this.fetchQueue
           .put(async () => {
+            if (memoryLock.isLocked()) {
+              await memoryLock.waitForUnlock();
+            }
             const [block] = await this.fetchBlocksBatches([blockNum]);
 
-            // this.smartBatchService.addToSizeBuffer([block]);
+            this.smartBatchService.addToSizeBuffer([block]);
             return block;
           })
           .catch((e) => {
@@ -157,7 +170,7 @@ export abstract class BlockDispatcher<B, DS>
                 await this.postProcessBlock(height, processBlockResponse);
 
                 //set block to null for garbage collection
-                // (block as any) = null;
+                (block as any) = null;
               } catch (e: any) {
                 // TODO discard any cache changes from this block height
                 if (this.isShutdown) {
