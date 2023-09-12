@@ -12,13 +12,6 @@ jest.mock('@subql/x-sequelize', () => {
   let pendingData: typeof data = {};
   let afterCommitHooks: Array<() => void> = [];
 
-  const Op = {
-    in: jest.fn(),
-    notIn: jest.fn(),
-    eq: jest.fn(),
-    ne: jest.fn(),
-  };
-
   const transaction = () => ({
     commit: jest.fn(async () => {
       await delay(1);
@@ -33,7 +26,6 @@ jest.mock('@subql/x-sequelize', () => {
 
   const mSequelize = {
     authenticate: jest.fn(),
-    Op,
     define: () => ({
       findOne: jest.fn(),
       create: (input: any) => input,
@@ -77,11 +69,8 @@ jest.mock('@subql/x-sequelize', () => {
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
+    ...actualSequelize,
     Sequelize: jest.fn(() => mSequelize),
-    DataTypes: actualSequelize.DataTypes,
-    QueryTypes: actualSequelize.QueryTypes,
-    Deferrable: actualSequelize.Deferrable,
-    Op,
   };
 });
 
@@ -208,14 +197,14 @@ describe('cacheModel', () => {
       );
       await flush();
       // the block range has been set
-      expect(sypOnApplyBlockRange).toBeCalledTimes(1);
+      expect(sypOnApplyBlockRange).toHaveBeenCalledTimes(1);
 
       const entity = await testModel.get('entity1_id_0x01');
       if (!entity) {
         throw new Error('Entity should exist');
       }
       // should read from get cache, and entity should exclude __block_range
-      expect(spyDbGet).not.toBeCalled();
+      expect(spyDbGet).not.toHaveBeenCalled();
       expect(JSON.stringify(entity)).not.toContain('__block_range');
     });
 
@@ -379,7 +368,7 @@ describe('cacheModel', () => {
         );
         const spyFindAll = jest.spyOn(testModel.model, 'findAll');
         const result = await testModel.getByField('field1', 1, {offset: 0, limit: 50});
-        expect(spyFindAll).toBeCalledTimes(1);
+        expect(spyFindAll).toHaveBeenCalledTimes(1);
 
         expect(result).toStrictEqual([
           {id: 'entity1_id_0x02', field1: 1}, //Filtered out removed record
@@ -410,7 +399,7 @@ describe('cacheModel', () => {
         );
         const spyFindAll = jest.spyOn(testModel.model, 'findAll');
         const result = await testModel.getByField('field1', 1, {offset: 0, limit: 50});
-        expect(spyFindAll).toBeCalledTimes(1);
+        expect(spyFindAll).toHaveBeenCalledTimes(1);
         expect(result).toStrictEqual([
           {id: 'entity1_id_0x01', field1: 1},
           {
@@ -437,7 +426,7 @@ describe('cacheModel', () => {
 
         await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 1});
 
-        expect(spy).toBeCalledWith('field1', 1, {offset: 0, limit: 1});
+        expect(spy).toHaveBeenCalledWith('field1', 1, {offset: 0, limit: 1});
       });
 
       it('flushes the cache first', async () => {
@@ -461,7 +450,7 @@ describe('cacheModel', () => {
           {offset: 0, limit: 1}
         );
 
-        expect(spy).toBeCalled();
+        expect(spy).toHaveBeenCalled();
       });
 
       it('throws for unsupported operators', async () => {

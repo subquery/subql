@@ -13,10 +13,8 @@ jest.mock('@subql/x-sequelize', () => {
   const mSequelize = {};
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
+    ...actualSequelize,
     Sequelize: jest.fn(() => mSequelize),
-    DataTypes: actualSequelize.DataTypes,
-    QueryTypes: actualSequelize.QueryTypes,
-    Deferrable: actualSequelize.Deferrable,
   };
 });
 
@@ -82,15 +80,15 @@ describe('Poi Service init', () => {
     const spyOnMigration = jest.spyOn(poiService as any, 'migratePoi');
     const spyOnCreateGenesisPoi = jest.spyOn(poiService as any, 'createGenesisPoi');
     await poiService.init('test');
-    expect(spyOnSetLatestSyncedPoi).toBeCalledTimes(1);
+    expect(spyOnSetLatestSyncedPoi).toHaveBeenCalledTimes(1);
     expect(poiService.projectId).toBe('testId');
     expect(poiService.latestSyncedPoi.id).toBe(100);
     // Still called migration method, but should not process anything, as latestSyncedPoi is set
-    expect(spyOnMigration).toBeCalledTimes(1);
-    expect(spyOnCreateGenesisPoi).toBeCalledTimes(0);
+    expect(spyOnMigration).toHaveBeenCalledTimes(1);
+    expect(spyOnCreateGenesisPoi).toHaveBeenCalledTimes(0);
   });
 
-  it('should throw if set latestSyncedPoi is not valid ', async () => {
+  it('should throw if set latestSyncedPoi is not valid', async () => {
     (poiService as any).storeCache.metadata.getCache = {latestSyncedPoiHeight: 100};
     (poiService as any).storeCache.cachedModels._poi = {
       getPoiById: jest.fn((id) => {
@@ -125,7 +123,7 @@ describe('Poi Service sync', () => {
   it('sync hold until genesis poi been created', () => {
     const spyOnSync = jest.spyOn(poiService as any, 'syncPoiJob');
     void poiService.syncPoi(100);
-    expect(spyOnSync).not.toBeCalled();
+    expect(spyOnSync).not.toHaveBeenCalled();
   });
 
   it('create genesis poi if latestSyncedPoi not defined', async () => {
@@ -140,7 +138,7 @@ describe('Poi Service sync', () => {
     await createGenesisPoi(poiService);
     await poiService.ensureGenesisPoi(105);
     // should be only called once
-    expect(spyOnCreateGenesisPoi).toBeCalledTimes(1);
+    expect(spyOnCreateGenesisPoi).toHaveBeenCalledTimes(1);
     // And genesis poi should not be changed
     expect(poiService.latestSyncedPoi.id).toBe(100);
   });
@@ -172,11 +170,11 @@ describe('Poi Service sync', () => {
       },
     ]);
     await poiService.syncPoi(102);
-    expect(spyOnPoiCreation).toBeCalled();
-    expect(spyOnCreateDefaultBlock).not.toBeCalled();
+    expect(spyOnPoiCreation).toHaveBeenCalled();
+    expect(spyOnCreateDefaultBlock).not.toHaveBeenCalled();
   }, 50000);
 
-  it('sync poi block in discontinuous range,should get default block created ', async () => {
+  it('sync poi block in discontinuous range,should get default block created', async () => {
     await createGenesisPoi(poiService);
     poiService.poiRepo.bulkUpsert = jest.fn();
     const spyOnPoiCreation = jest.spyOn(poiService.poiRepo, 'bulkUpsert');
@@ -205,13 +203,13 @@ describe('Poi Service sync', () => {
       },
     ]);
     await poiService.syncPoi(102);
-    expect(spyOnPoiCreation).toBeCalled();
-    expect(spyOnCreateDefaultBlock).toBeCalledTimes(1);
+    expect(spyOnPoiCreation).toHaveBeenCalled();
+    expect(spyOnCreateDefaultBlock).toHaveBeenCalledTimes(1);
     // Set block 101,102,103,104,105
-    expect(spyOnSetLatestSyncedPoi).toBeCalledTimes(5);
+    expect(spyOnSetLatestSyncedPoi).toHaveBeenCalledTimes(5);
   }, 50000);
 
-  it('if sync poi block out of order, it will throw ', async () => {
+  it('if sync poi block out of order, it will throw', async () => {
     await createGenesisPoi(poiService);
     poiService.poiRepo.bulkUpsert = jest.fn();
     await (poiService as any).syncPoiJob([

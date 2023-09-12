@@ -88,7 +88,7 @@ describe('Runtime service', () => {
     await runtimeService.specChanged(2);
     await runtimeService.specChanged(3);
 
-    expect(metaSpy).toBeCalledTimes(1);
+    expect(metaSpy).toHaveBeenCalledTimes(1);
   });
 
   it('fetches metadata only when spec version changes', async () => {
@@ -100,7 +100,7 @@ describe('Runtime service', () => {
     await runtimeService.specChanged(29232); // Spec change here
     await runtimeService.specChanged(29233);
 
-    expect(metaSpy).toBeCalledTimes(2);
+    expect(metaSpy).toHaveBeenCalledTimes(2);
   });
 
   it('use dictionary and specVersionMap to get block specVersion', async () => {
@@ -113,7 +113,7 @@ describe('Runtime service', () => {
 
     await runtimeService.getSpecVersion(29233);
 
-    expect(metaSpy).not.toBeCalled();
+    expect(metaSpy).not.toHaveBeenCalled();
   });
 
   it('getSpecVersion will fetch the spec version if its not in the map', async () => {
@@ -127,8 +127,8 @@ describe('Runtime service', () => {
     runtimeService.latestFinalizedHeight = height + SPEC_VERSION_BLOCK_GAP + 1;
     await runtimeService.getSpecVersion(height);
 
-    expect(apiSpy).toBeCalled();
-    expect(dictSpy).toBeCalled();
+    expect(apiSpy).toHaveBeenCalled();
+    expect(dictSpy).toHaveBeenCalled();
   });
 
   // OLD tests from fetch.service, unsure how to implements

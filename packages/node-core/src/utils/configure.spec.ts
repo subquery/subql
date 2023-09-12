@@ -8,7 +8,7 @@ import {rebaseArgsWithManifest} from '../utils/configure';
 jest.setTimeout(30000);
 
 describe('configure utils', () => {
-  it('could rebase node args with manifest file ', async () => {
+  it('could rebase node args with manifest file', async () => {
     const mockArgv = {
       ipfs: '',
       unsafe: false,

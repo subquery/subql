@@ -67,11 +67,6 @@ jest.mock('@subql/x-sequelize', () => {
 
   const mSequelize = {
     authenticate: jest.fn(),
-    Op: {
-      in: jest.fn(),
-      notIn: jest.fn(),
-      ne: jest.fn(),
-    },
     define: () => ({
       findOne: jest.fn(),
       create: (input: any) => input,
@@ -118,15 +113,8 @@ jest.mock('@subql/x-sequelize', () => {
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
+    ...actualSequelize,
     Sequelize: jest.fn(() => mSequelize),
-    DataTypes: actualSequelize.DataTypes,
-    QueryTypes: actualSequelize.QueryTypes,
-    Deferrable: actualSequelize.Deferrable,
-    Op: {
-      in: jest.fn(),
-      notIn: jest.fn(),
-      ne: jest.fn(),
-    },
   };
 });
 

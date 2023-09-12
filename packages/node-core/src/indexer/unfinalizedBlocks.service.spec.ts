@@ -259,7 +259,7 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService2.init(reindex);
 
-    expect(reindex).toBeCalledWith(90);
+    expect(reindex).toHaveBeenCalledWith(90);
     expect((unfinalizedBlocksService2 as any).lastCheckedBlockHeight).toBe(90);
   });
 });

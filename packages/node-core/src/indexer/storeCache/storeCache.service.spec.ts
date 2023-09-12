@@ -46,10 +46,8 @@ jest.mock('@subql/x-sequelize', () => {
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
+    ...actualSequelize,
     Sequelize: jest.fn(() => mSequelize),
-    DataTypes: actualSequelize.DataTypes,
-    QueryTypes: actualSequelize.QueryTypes,
-    Deferrable: actualSequelize.Deferrable,
   };
 });
 
@@ -302,7 +300,7 @@ describe('Store Cache flush with non-historical', () => {
     storeService.init(false, false);
   });
 
-  it.only('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
+  it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
     const entity1Model = storeService.getModel('entity1');
 
     //create Id 1
