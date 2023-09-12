@@ -82,7 +82,7 @@
     "build": "rm -rf lib && tsc -b && cp -r src/template lib/",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "prepack": "yarn build && cp -r src/template lib/ && oclif manifest && oclif readme",
+    "prepack": "yarn build && oclif manifest && oclif readme",
     "test": "echo NO TESTS",
     "version": "oclif readme && git add README.md",
     "format": "prettier --write \"src/**/*.ts\""
