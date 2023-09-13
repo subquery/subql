@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-stellar",
-  "version": "2.3.1-0",
+  "version": "2.3.1",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -27,6 +27,5 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  },
-  "stableVersion": "2.3.0"
+  }
 }
