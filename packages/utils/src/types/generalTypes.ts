@@ -5,5 +5,5 @@ import * as supportedTypes from './supported';
 import {TypeClass} from './TypeClass';
 
 export function getTypeByScalarName(type: string): TypeClass | undefined {
-  return Object.values(supportedTypes).find(({name}) => name === type) as TypeClass;
+  return Object.values(supportedTypes).find(({name}) => name === type);
 }
