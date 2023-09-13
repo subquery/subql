@@ -190,7 +190,7 @@ export function processFields(
     } else {
       switch (field.type) {
         default: {
-          injectField.type = getTypeByScalarName(field.type).tsType;
+          injectField.type = getTypeByScalarName(field.type)?.tsType;
           if (!injectField.type) {
             throw new Error(
               `Schema: undefined type "${field.type.toString()}" on field "${

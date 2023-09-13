@@ -4,7 +4,8 @@
 import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
-import {codegen, validateEntityName} from './codegen-controller';
+import {codegen, processFields, validateEntityName} from './codegen-controller';
+
 
 jest.mock('fs', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,6 +38,28 @@ describe('Codegen can generate schema (mocked)', () => {
     const bad_name = 'exampleEntityFilters';
     expect(() => validateEntityName(bad_name)).toThrow(
       'EntityName: exampleEntityFilters cannot end with reservedKey: filters'
+    );
+  });
+
+  it('throw error when processing unsupported type in json fields', () => {
+    expect(() =>
+      processFields(
+        'jsonField',
+        'TypeNotSupported',
+        [
+          // Ignoring to test unsupported scalar type
+          // @ts-ignore
+          {
+            name: 'notSupported',
+            type: 'UnsupportedScalar',
+            nullable: false,
+            isArray: false,
+          },
+        ],
+        []
+      )
+    ).toThrow(
+      'Schema: undefined type "UnsupportedScalar" on field "notSupported" in "type TypeNotSupported @jsonField"'
     );
   });
 });
