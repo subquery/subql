@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
-import {codegen, validateEntityName} from './codegen-controller';
+import {codegen, processFields, validateEntityName} from './codegen-controller';
 
 
 jest.mock('fs', () => {
