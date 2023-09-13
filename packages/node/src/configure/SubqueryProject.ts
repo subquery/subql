@@ -133,7 +133,7 @@ async function loadProjectFromManifestBase(
       ...dataSources,
       ...(templates as SubqlProjectDs[]),
     ]) &&
-    !network.soroban
+    !network.sorobanEndpoint
   ) {
     throw new Error(
       `Soroban network endpoint must be provided for network. chainId="${network.chainId}"`,

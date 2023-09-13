@@ -133,7 +133,7 @@ export class ConfigureModule {
         omitBy<StellarProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoints,
-            soroban: yargsToIConfig(argv).sorobanNetworkEndpoint,
+            sorobanEndpoint: yargsToIConfig(argv).sorobanNetworkEndpoint,
             dictionary: config.networkDictionary,
           },
           isNil,

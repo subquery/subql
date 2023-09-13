@@ -28,5 +28,5 @@ export type IStellarProjectManifest = IProjectManifest<SubqlDatasource>;
 export interface StellarProjectNetworkConfig extends ProjectNetworkConfig {
   genesisHash?: string;
   chainId?: string;
-  soroban: string;
+  sorobanEndpoint: string;
 }

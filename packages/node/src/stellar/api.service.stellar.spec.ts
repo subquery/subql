@@ -18,12 +18,12 @@ const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
 
 export function testSubqueryProject(
   endpoint: string,
-  soroban: string,
+  sorobanEndpoint: string,
 ): SubqueryProject {
   return {
     network: {
       endpoint,
-      soroban,
+      sorobanEndpoint,
       chainId: 'Test SDF Future Network ; October 2022',
     },
     dataSources: [],
