@@ -21,11 +21,6 @@ notifyUpdates(pjson, logger);
 export async function bootstrap(): Promise<void> {
   const debug = argv.debug;
   const port = await getValidPort(argv.port);
-  if (argv.unsafe) {
-    logger.warn(
-      'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service',
-    );
-  }
 
   try {
     const app = await NestFactory.create(AppModule, {

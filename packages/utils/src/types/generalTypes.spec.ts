@@ -13,4 +13,8 @@ describe('general types', () => {
     const typeClass = getTypeByScalarName('Date');
     expect(typeClass.sequelizeType).toBe('timestamp');
   });
+
+  it('get unsupported type', () => {
+    expect(getTypeByScalarName('Unsupported')).toBe(undefined);
+  });
 });

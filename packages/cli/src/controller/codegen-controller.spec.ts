@@ -4,7 +4,8 @@
 import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
-import {abiInterface, codegen, joinInputAbiName, processAbis, validateEntityName} from './codegen-controller';
+import {codegen, processFields, validateEntityName} from './codegen-controller';
+
 
 jest.mock('fs', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,128 +40,26 @@ describe('Codegen can generate schema (mocked)', () => {
       'EntityName: exampleEntityFilters cannot end with reservedKey: filters'
     );
   });
-  it('read artifact abis', () => {
-    const projectPath = path.join(__dirname, '../../test/abiTest1');
-    const abisAssetObj = {
-      key: 'abis',
-      value: './abis/abis.json',
-    };
 
-    const artifactAssetObj = {
-      key: 'artifact',
-      value: './abis/artifact.sol/artifact.json',
-    };
-    const sortAssets_abis = new Map<string, string>();
-    const sortAssets_artifact = new Map<string, string>();
-
-    sortAssets_abis.set(abisAssetObj.key, abisAssetObj.value);
-    sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
-    const a = path.join(projectPath, './abis/abis.json');
-    const b = path.join(projectPath, './abis/artifact.sol/artifact.json');
-    // to mock the values for processAbi function
-
-    // mock loadFromJsonOrYaml, in Jest environment it would return undefined.
-    const mockLoadFromJsonOrYaml: jest.Mock<abiInterface[] | {abi: abiInterface[]}> = jest.fn();
-
-    // Conditional for which json should be implemented depending on the given path
-    mockLoadFromJsonOrYaml.mockImplementation((filePath: string) => {
-      if (filePath === a) {
-        return require(a);
-      } else if (filePath === b) {
-        return require(b);
-      }
-      return [];
-    });
-
-    const abisRendered = processAbis(sortAssets_abis, projectPath, mockLoadFromJsonOrYaml);
-    const artifactRendered = processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml);
-
-    // exclude name field
-    artifactRendered.map((e) => {
-      e.name = expect.any(String);
-    });
-    expect(abisRendered).toStrictEqual(expect.objectContaining(artifactRendered));
-  });
-  it('Empty abi json, should throw', () => {
-    const projectPath = path.join(__dirname, '../../test/abiTest2');
-    const artifactAssetObj = {
-      key: 'artifact',
-      value: './artifact.json',
-    };
-    const sortAssets_artifact = new Map<string, string>();
-
-    sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
-
-    const mockLoadFromJsonOrYaml: jest.Mock<abiInterface[] | {abi: abiInterface[]}> = jest.fn();
-
-    // mock loadFromJsonOrYaml, in Jest environment it would return undefined.
-    mockLoadFromJsonOrYaml.mockImplementation((filePath: string) => {
-      return [];
-    });
-
-    expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
-      'Invalid abi is provided at asset: artifact'
+  it('throw error when processing unsupported type in json fields', () => {
+    expect(() =>
+      processFields(
+        'jsonField',
+        'TypeNotSupported',
+        [
+          // Ignoring to test unsupported scalar type
+          // @ts-ignore
+          {
+            name: 'notSupported',
+            type: 'UnsupportedScalar',
+            nullable: false,
+            isArray: false,
+          },
+        ],
+        []
+      )
+    ).toThrow(
+      'Schema: undefined type "UnsupportedScalar" on field "notSupported" in "type TypeNotSupported @jsonField"'
     );
-  });
-  it('json is object without abi field, should throw', () => {
-    const projectPath = path.join(__dirname, '../../test/abiTest2');
-    const artifactAssetObj = {
-      key: 'artifact',
-      value: './abis/artifact.json',
-    };
-    const sortAssets_artifact = new Map<string, string>();
-
-    sortAssets_artifact.set(artifactAssetObj.key, artifactAssetObj.value);
-
-    const mockLoadFromJsonOrYaml: jest.Mock<abiInterface[] | {abi: abiInterface[]}> = jest.fn();
-
-    // mock loadFromJsonOrYaml, in Jest environment it would return undefined.
-    mockLoadFromJsonOrYaml.mockImplementation((filePath: string) => {
-      return require(path.join(projectPath, artifactAssetObj.value));
-    });
-
-    expect(() => processAbis(sortAssets_artifact, projectPath, mockLoadFromJsonOrYaml)).toThrow(
-      'Provided ABI is not a valid ABI or Artifact'
-    );
-  });
-
-  it('should replace [] in input abi name', () => {
-    const mockAbiInterface = {
-      type: 'function',
-      name: 'initialize',
-      inputs: [
-        {
-          name: '__name',
-          type: 'string',
-        },
-        {
-          name: '__symbol',
-          type: 'string',
-        },
-        {
-          name: '__baseURI',
-          type: 'string',
-        },
-        {
-          name: 'admins',
-          type: 'address[]',
-        },
-      ],
-    } as abiInterface;
-
-    expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_string_string_address_arr_');
-  });
-  it('ensure correct output when input does not contain []', () => {
-    const mockAbiInterface = {
-      type: 'function',
-      name: 'initialize',
-      inputs: [
-        {
-          name: '__name',
-          type: 'STRING',
-        },
-      ],
-    } as abiInterface;
-    expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_');
   });
 });

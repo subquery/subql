@@ -4,9 +4,9 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {loadFromJsonOrYaml} from '@subql/common';
-import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum/dist/project';
+import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import rimraf from 'rimraf';
 import {parseContractPath} from 'typechain';
 import {Document, stringify} from 'yaml';
@@ -25,7 +25,7 @@ import {
 } from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
-const PROJECT_PATH = path.join(__dirname, '../../test/schemaTest6');
+const PROJECT_PATH = path.join(__dirname, '../../test/schemaTest');
 const MANIFEST_PATH = './generate-project.yaml';
 
 const mockConstructedFunctions: SelectedMethod[] = [
@@ -173,8 +173,8 @@ jest.setTimeout(30000);
 describe('CLI codegen:generate, Can write to file', () => {
   afterEach(async () => {
     await Promise.all([
-      promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/src')),
-      promisify(rimraf)(path.join(__dirname, '../../test/schemaTest6/abis/abis.json')),
+      promisify(rimraf)(path.join(__dirname, '../../test/schemaTest/src')),
+      promisify(rimraf)(path.join(__dirname, '../../test/schemaTest/abis/abis.json')),
       fs.promises.writeFile(path.join(PROJECT_PATH, MANIFEST_PATH), stringify(originalManifestData), {
         encoding: 'utf8',
         flag: 'w',

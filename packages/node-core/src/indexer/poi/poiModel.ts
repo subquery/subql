@@ -9,7 +9,15 @@ import {PoiRepo, ProofOfIndex} from '../entities';
 export interface PoiInterface {
   model: PoiRepo;
   bulkUpsert(proofs: ProofOfIndex[]): Promise<void> | void;
+  /**
+   * Gets the first 100 blocks >= the startHeight.
+   * */
   getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]>;
+  /**
+   * Gets the 100 blocks <= to the start height where there is an operation.
+   * This can be used to determine the last blocks that had data to index.
+   * */
+  getPoiBlocksBefore(startHeight: number): Promise<ProofOfIndex[]>;
   getFirst(): Promise<ProofOfIndex | undefined>;
 }
 
@@ -37,6 +45,22 @@ export class PlainPoiModel implements PoiInterface {
       limit: DEFAULT_FETCH_RANGE,
       where: {id: {[Op.gte]: startHeight}},
       order: [['id', 'ASC']],
+    });
+    return result.map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
+  }
+
+  async getPoiBlocksBefore(
+    startHeight: number,
+    options: {limit: number; offset: number} = {limit: DEFAULT_FETCH_RANGE, offset: 0}
+  ): Promise<ProofOfIndex[]> {
+    const result = await this.model.findAll({
+      limit: options.limit,
+      offset: options.offset,
+      where: {
+        id: {[Op.lte]: startHeight},
+        operationHashRoot: {[Op.ne]: null},
+      },
+      order: [['id', 'DESC']],
     });
     return result.map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
   }

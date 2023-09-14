@@ -12,15 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix generated operation hash with single entity, buffer did not get hashed issue.
 - Infinite recursion in setValueModel with arrays (#1993)
 - Fix health checks for Networks that produce batched blocks (#2005)
+- Update `@willsoto/nestjs-prometheus` version to `5.4.0` (#2012)
+- scaleBatchSize referring to itself instead of config (#2018)
+- set default startBlock of datasources to 1 (#2019)
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)
 - Update api service generics to support multiple block types (#1968)
+- UnfinalizedBlocksService: make private methods protected to allow custom fork detection (#2009)
+- Update fetching blocks to use moving window rather than batches (#2000)
 
 ### Added
 - Project upgrades feature and many other changes to support it (#1797)
 - `skipBlock` option to NodeConfig (#1968)
 - `getByFields` to store (#1993)
+- `getPoiBlocksBefore` method to PoiModel so we can get recent blocks with operations (#2009)
 
 ## [4.2.3] - 2023-08-17
 ### Fixed

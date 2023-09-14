@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "3.6.2-6",
+  "version": "3.6.2-8",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -13,14 +13,13 @@
     "@subql/common": "workspace:*",
     "@subql/common-algorand": "^2.4.0",
     "@subql/common-cosmos": "^2.5.0",
-    "@subql/common-ethereum": "^2.2.5",
+    "@subql/common-ethereum": "^2.3.0",
     "@subql/common-flare": "^2.2.5",
     "@subql/common-near": "^2.4.0",
     "@subql/common-stellar": "^2.2.1-1",
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
-    "@typechain/ethers-v5": "10.2.0",
     "algosdk": "^1.19.0",
     "boxen": "5.1.2",
     "cli-ux": "^6.0.9",
@@ -36,7 +35,6 @@
     "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.2.6",
     "tslib": "^2.3.1",
-    "typechain": "8.1.1",
     "update-notifier": "5.1.0",
     "webpack": "^5.76.0",
     "webpack-merge": "^5.8.0",
@@ -81,10 +79,10 @@
     ]
   },
   "scripts": {
-    "build": "rm -rf lib && tsc -b",
+    "build": "rm -rf lib && tsc -b && cp -r src/template lib/",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "prepack": "yarn build && cp -r src/template lib/ && oclif manifest && oclif readme",
+    "prepack": "yarn build && oclif manifest && oclif readme",
     "test": "echo NO TESTS",
     "version": "oclif readme && git add README.md",
     "format": "prettier --write \"src/**/*.ts\""
@@ -93,5 +91,5 @@
   "resolutions": {
     "node-fetch": "2.6.7"
   },
-  "stableVersion": "3.6.2-5"
+  "stableVersion": "3.6.2-7"
 }
