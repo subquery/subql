@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
-import {BlockFilterImpl} from '@subql/common';
+import {BlockFilterImpl, ProcessorImpl} from '@subql/common';
 import {
   SubstrateBlockFilter,
   SubstrateBlockHandler,
@@ -19,7 +19,7 @@ import {
   SubstrateCustomDatasource,
   CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
 } from '@subql/types';
-import {BaseMapping, FileReference} from '@subql/types-core';
+import {BaseMapping, FileReference, Processor} from '@subql/types-core';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -181,7 +181,8 @@ export class CustomDataSourceBase<K extends string, M extends CustomMapping, O =
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, SubstrateCustomDataSourceAsset>;
-  @Type(() => FileReferenceImpl)
+  @Type(() => ProcessorImpl)
   @IsObject()
-  processor: FileReference;
+  @ValidateNested()
+  processor: Processor<O>;
 }
