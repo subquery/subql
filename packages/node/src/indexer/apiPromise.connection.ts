@@ -29,6 +29,9 @@ export type FetchFunc =
   | typeof SubstrateUtil.fetchBlocksBatches
   | typeof SubstrateUtil.fetchBlocksBatchesLight;
 
+// We use a function to get the fetch function because it can change depending on the skipBlocks feature
+export type GetFetchFunc = () => FetchFunc;
+
 export class ApiPromiseConnection
   implements
     IApiConnectionSpecific<
@@ -43,7 +46,7 @@ export class ApiPromiseConnection
     public unsafeApi: ApiPromise,
     private apiOptions: ApiOptions,
     private endpoint: string,
-    private fetchBlocksBatches: FetchFunc,
+    private fetchBlocksBatches: GetFetchFunc,
   ) {
     this.networkMeta = {
       chain: unsafeApi.runtimeChain.toString(),
@@ -54,7 +57,7 @@ export class ApiPromiseConnection
 
   static async create(
     endpoint: string,
-    fetchBlocksBatches: FetchFunc,
+    fetchBlocksBatches: GetFetchFunc,
     args: { chainTypes: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
     let provider: ProviderInterface;
@@ -96,7 +99,7 @@ export class ApiPromiseConnection
     heights: number[],
     overallSpecVer?: number,
   ): Promise<BlockContent[] | LightBlockContent[]> {
-    const blocks = await this.fetchBlocksBatches(
+    const blocks = await this.fetchBlocksBatches()(
       this.unsafeApi,
       heights,
       overallSpecVer,

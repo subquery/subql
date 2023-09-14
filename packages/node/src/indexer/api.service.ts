@@ -19,7 +19,11 @@ import {
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
-import { ApiPromiseConnection, FetchFunc } from './apiPromise.connection';
+import {
+  ApiPromiseConnection,
+  FetchFunc,
+  GetFetchFunc,
+} from './apiPromise.connection';
 import { ApiAt, BlockContent, LightBlockContent } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
@@ -41,7 +45,8 @@ export class ApiService
   >
   implements OnApplicationShutdown
 {
-  private fetchBlocksBatches: FetchFunc;
+  private fetchBlocksFunction: FetchFunc;
+  private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
   private currentBlockHash: string;
   private currentBlockNumber: number;
   networkMeta: NetworkMetadataPayload;
@@ -73,14 +78,6 @@ export class ApiService
     } catch (e) {
       logger.error(e);
       process.exit(1);
-    }
-
-    if (this.nodeConfig?.profiler) {
-      this.fetchBlocksBatches = profilerWrap(
-        SubstrateUtil.fetchBlocksBatches,
-        'SubstrateUtil',
-        'fetchBlocksBatches',
-      );
     }
 
     if (chainTypes) {
@@ -152,13 +149,13 @@ export class ApiService
       : SubstrateUtil.fetchBlocksBatches;
 
     if (this.nodeConfig?.profiler) {
-      this.fetchBlocksBatches = profilerWrap(
+      this.fetchBlocksFunction = profilerWrap(
         fetchFunc,
         'SubstrateUtil',
         'fetchBlocksBatches',
       );
     } else {
-      this.fetchBlocksBatches = fetchFunc;
+      this.fetchBlocksFunction = fetchFunc;
     }
   }
 
