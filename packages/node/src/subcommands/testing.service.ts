@@ -50,7 +50,7 @@ export class TestingService extends BaseTestingService<
 
     await testContext.init();
 
-    const projectService: ProjectService = testContext.get(ProjectService);
+    const projectService: ProjectService = testContext.get('IProjectService');
     const apiService = testContext.get(ApiService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events

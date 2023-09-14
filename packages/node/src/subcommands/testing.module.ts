@@ -32,7 +32,6 @@ import { MetaModule } from '../meta/meta.module';
     SandboxService,
     DsProcessorService,
     DynamicDsService,
-    ProjectService,
     UnfinalizedBlocksService,
     ConnectionPoolStateManager,
     ConnectionPoolService,
@@ -45,7 +44,7 @@ import { MetaModule } from '../meta/meta.module';
     TestRunner,
     {
       provide: 'IApi',
-      useClass: ApiService,
+      useExisting: ApiService,
     },
     {
       provide: 'IIndexerManager',
