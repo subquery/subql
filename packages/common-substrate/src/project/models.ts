@@ -13,7 +13,6 @@ import {
   SubstrateEventFilter,
   SubstrateEventHandler,
   SubstrateHandlerKind,
-  SubstrateNetworkFilter,
   SubstrateRuntimeDatasource,
   SubstrateRuntimeHandler,
   SubstrateRuntimeHandlerFilter,
@@ -152,12 +151,6 @@ export class CustomMapping implements BaseMapping<Record<string, unknown>, Subst
   file: string;
 }
 
-export class SubqlNetworkFilterImpl implements SubstrateNetworkFilter {
-  @IsString()
-  @IsOptional()
-  specName?: string;
-}
-
 export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
   @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
   kind: SubstrateDatasourceKind.Runtime;
@@ -167,10 +160,6 @@ export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => SubqlNetworkFilterImpl)
-  filter?: SubstrateNetworkFilter;
 }
 
 export class FileReferenceImpl implements FileReference {
@@ -178,8 +167,8 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
-export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFilter, M extends CustomMapping, O = any>
-  implements SubstrateCustomDatasource<K, T, M, O>
+export class CustomDataSourceBase<K extends string, M extends CustomMapping, O = any>
+  implements SubstrateCustomDatasource<K, M, O>
 {
   @IsString()
   kind: K;
@@ -195,7 +184,4 @@ export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFi
   @Type(() => FileReferenceImpl)
   @IsObject()
   processor: FileReference;
-  @IsOptional()
-  @IsObject()
-  filter?: T;
 }

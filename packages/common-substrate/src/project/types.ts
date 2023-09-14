@@ -16,7 +16,6 @@ export {
   SubstrateCallFilter,
   SubstrateEventFilter,
   SubstrateDatasourceProcessor,
-  SubstrateNetworkFilter,
   SubstrateRuntimeHandlerFilter,
   SubstrateDatasourceKind,
   RuntimeHandlerInputMap as SubstrateRuntimeHandlerInputMap,
@@ -26,6 +25,15 @@ export {
 export type ISubstrateProjectManifest = IProjectManifest<SubstrateDatasource>;
 
 export interface SubstrateProjectNetworkConfig extends ProjectNetworkConfig {
+  /**
+   * The hash of the chains first block
+   * @deprecated Use `chainId` instead
+   * @type {string}
+   * */
   genesisHash?: string;
+  /**
+   * The identity of the chain. In this case the hash of the chains first block
+   * @type {string}
+   * */
   chainId?: string;
 }

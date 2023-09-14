@@ -1,8 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {GraphQLSchema} from 'graphql';
-import {ParentProject, RunnerSpecs, BaseDataSource} from './versioned';
+import {ParentProject, RunnerSpecs, BaseDataSource, BaseTemplateDataSource} from './versioned';
 
 /**
  * Represents the common network configuration for a subquery project.
@@ -31,7 +30,7 @@ export interface CommonSubqueryNetworkConfig extends ProjectNetworkConfig {
 export interface CommonSubqueryProject<
   N extends CommonSubqueryNetworkConfig = CommonSubqueryNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
-  T extends DS = DS & {name: string}
+  T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>
 > {
   /**
    * The version of the subquery project.
@@ -134,10 +133,12 @@ export interface ProjectNetworkConfig {
   dictionary?: string;
 
   /**
-   * An array of block numbers or block hashes to bypass (optional).
+   * An array of block numbers or block ranges to bypass (optional).
    * @type {(number | string)[]}
+   * @example
+   * [1, 2, 3, '5-10']
    */
-  bypassBlocks?: (number | string)[];
+  bypassBlocks?: (number | `${number}-${number}`)[];
 }
 
 /**

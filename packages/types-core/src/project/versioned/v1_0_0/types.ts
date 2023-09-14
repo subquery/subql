@@ -1,8 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {BaseDataSource} from '../base';
-import {ProjectManifestV0_2_1, TemplateBase} from '../v0_2_1';
+import {BaseDataSource, BaseTemplateDataSource} from '../base';
+import {ProjectManifestV0_2_1} from '../v0_2_1';
 
 /**
  * Represents specifications for an indexer runner.
@@ -125,11 +125,9 @@ export interface ParentProject {
   reference: string;
 }
 
-export type TemplateBaseDs<DS extends BaseDataSource = BaseDataSource> = Omit<DS, 'startBlock'> & TemplateBase;
-
 export interface ProjectManifestV1_0_0<
   D extends BaseDataSource = BaseDataSource,
-  T extends TemplateBaseDs<D> = TemplateBaseDs<D>
+  T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>
 > extends Omit<ProjectManifestV0_2_1<T, D>, 'network'> {
   dataSources: D[];
   runner: RunnerSpecs;

@@ -26,7 +26,12 @@ import {
   RuntimeDatasourceTemplate,
   CustomDatasourceTemplate,
 } from '@subql/types';
-import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
+import {
+  BaseTemplateDataSource,
+  ParentProject,
+  Reader,
+  RunnerSpecs,
+} from '@subql/types-core';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';

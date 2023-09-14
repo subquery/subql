@@ -19,6 +19,7 @@ import { Reader } from '@subql/types-core';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
 import {
+  SubqlProjectDsTemplate,
   SubqueryProject,
   SubstrateProjectDs,
 } from '../configure/SubqueryProject';
@@ -136,7 +137,7 @@ export function isOnlyEventHandlers(project: SubqueryProject): boolean {
     dsContainsNonEventHandlers(ds),
   );
   const hasNonEventTemplate = !!project.templates.find((ds) =>
-    dsContainsNonEventHandlers(ds),
+    dsContainsNonEventHandlers(ds as SubstrateProjectDs),
   );
 
   return !hasNonEventHandler && !hasNonEventTemplate;

@@ -11,7 +11,6 @@ import {
 } from '@subql/common';
 import {
   SubstrateCustomDatasource,
-  SubstrateNetworkFilter,
   SubstrateRuntimeDatasource,
   CustomDatasourceTemplate,
   RuntimeDatasourceTemplate,
@@ -46,11 +45,10 @@ export class SubstrateRuntimeDataSourceImpl extends RuntimeDataSourceBase implem
 
 export class SubstrateCustomDataSourceImpl<
     K extends string = string,
-    T extends SubstrateNetworkFilter = SubstrateNetworkFilter,
     M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
   >
-  extends CustomDataSourceBase<K, T, M>
-  implements SubstrateCustomDatasource<K, T, M>
+  extends CustomDataSourceBase<K, M>
+  implements SubstrateCustomDatasource<K, M>
 {
   validate(): void {
     return validateObject(this, 'failed to validate custom datasource.');

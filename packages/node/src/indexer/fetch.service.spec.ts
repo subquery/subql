@@ -173,7 +173,6 @@ describe('FetchSevice', () => {
       const result1 = fetchService.buildDictionaryQueryEntries([
         {
           kind: 'substrate/Jsonfy',
-          name: '',
           processor: { file: '' },
           assets: new Map(),
           mapping: {
@@ -206,7 +205,6 @@ describe('FetchSevice', () => {
       const result2 = fetchService.buildDictionaryQueryEntries([
         {
           kind: 'substrate/Jsonfy',
-          name: '',
           processor: { file: '' },
           assets: new Map(),
           mapping: {

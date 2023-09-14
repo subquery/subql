@@ -4,22 +4,21 @@
 import {ApiPromise} from '@polkadot/api';
 import {AnyTuple} from '@polkadot/types/types';
 import {
+  BaseTemplateDataSource,
   CommonSubqueryNetworkConfig,
   CommonSubqueryProject,
   DictionaryQueryEntry,
   FileReference,
   Processor,
   ProjectManifestV1_0_0,
-  TemplateBase,
 } from '@subql/types-core';
 import {LightSubstrateEvent, SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
-export interface RuntimeDatasourceTemplate extends Omit<SubstrateRuntimeDatasource, 'name'>, TemplateBase {}
-export interface CustomDatasourceTemplate extends Omit<SubstrateCustomDatasource, 'name'>, TemplateBase {}
+export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubstrateDatasource>;
+export type CustomDatasourceTemplate = BaseTemplateDataSource<SubstrateCustomDatasource>;
 
 export type SubstrateProjectManifestV1_0_0 = ProjectManifestV1_0_0<
-  SubstrateRuntimeDatasource | SubstrateCustomDatasource,
-  RuntimeDatasourceTemplate | CustomDatasourceTemplate
+  SubstrateRuntimeDatasource | SubstrateCustomDatasource
 >;
 
 /**
@@ -61,7 +60,7 @@ export type RuntimeHandlerInputMap<T extends AnyTuple = AnyTuple> = {
 };
 
 type RuntimeFilterMap = {
-  [SubstrateHandlerKind.Block]: SubstrateNetworkFilter;
+  [SubstrateHandlerKind.Block]: SubstrateBlockFilter;
   [SubstrateHandlerKind.Event]: SubstrateEventFilter;
   [SubstrateHandlerKind.Call]: SubstrateCallFilter;
 };
@@ -82,12 +81,16 @@ export interface SubstrateBlockFilter extends SubstrateBaseHandlerFilter {
   /**
    * The modulo value for filtering blocks (optional).
    * @type {number}
+   * @example
+   * modulo: 5, // every 5 blocks will be indexed
    */
   modulo?: number;
 
   /**
-   * The timestamp for filtering blocks (optional).
+   * A cron expression will index blocks at an interval (optional).
    * @type {string}
+   * @example
+   * timestamp: "\*\/5 * * * *"
    */
   timestamp?: string;
 }
@@ -99,14 +102,18 @@ export interface SubstrateBlockFilter extends SubstrateBaseHandlerFilter {
  */
 export interface SubstrateEventFilter extends SubstrateBaseHandlerFilter {
   /**
-   * The module name for filtering events (optional).
+   * The module name for filtering events or calls (optional).
    * @type {string}
+   * @example
+   * module: balances
    */
   module?: string;
 
   /**
-   * The method name for filtering events (optional).
+   * The method name for filtering events calls (optional).
    * @type {string}
+   * @example
+   * method: Transfer
    */
   method?: string;
 }
@@ -156,8 +163,10 @@ export type SubstrateEventHandler = SubstrateCustomHandler<SubstrateHandlerKind.
  */
 export interface SubstrateCustomHandler<K extends string = string, F = Record<string, unknown>> {
   /**
-   * The handler identifier.
+   * The name of your handler function.
    * @type {string}
+   * @example
+   * handler: 'handleBlock'
    */
   handler: string;
 
@@ -211,13 +220,7 @@ export interface SubstrateMapping<T extends SubstrateHandler = SubstrateHandler>
  * @template M - The mapping type for the datasource.
  * @template F - The filter type for the datasource (default: SubstrateNetworkFilter).
  */
-interface ISubstrateDatasource<M extends SubstrateMapping, F extends SubstrateNetworkFilter = SubstrateNetworkFilter> {
-  /**
-   * The name of the datasource (optional).
-   * @type {string}
-   */
-  name?: string;
-
+interface ISubstrateDatasource<M extends SubstrateMapping> {
   /**
    * The kind of the datasource.
    * @type {string}
@@ -225,13 +228,7 @@ interface ISubstrateDatasource<M extends SubstrateMapping, F extends SubstrateNe
   kind: string;
 
   /**
-   * The filter for the datasource (optional).
-   * @type {F}
-   */
-  filter?: F;
-
-  /**
-   * The starting block number for the datasource (optional).
+   * The starting block number for the datasource. If not specified, 1 will be used (optional).
    * @type {number}
    */
   startBlock?: number;
@@ -242,7 +239,6 @@ interface ISubstrateDatasource<M extends SubstrateMapping, F extends SubstrateNe
    */
   mapping: M;
 }
-``;
 
 /**
  * Represents a runtime datasource for Substrate.
@@ -253,22 +249,10 @@ export interface SubstrateRuntimeDatasource<
   M extends SubstrateMapping<SubstrateRuntimeHandler> = SubstrateMapping<SubstrateRuntimeHandler>
 > extends ISubstrateDatasource<M> {
   /**
-   * The kind of the datasource, which is SubstrateDatasourceKind.Runtime.
+   * The kind of the datasource, which is substrate/Runtime.
    * @type {SubstrateDatasourceKind.Runtime}
    */
   kind: SubstrateDatasourceKind.Runtime;
-}
-
-/**
- * Represents a network filter for Substrate.
- * @interface
- */
-export interface SubstrateNetworkFilter {
-  /**
-   * The name of the spec for filtering (optional).
-   * @type {string}
-   */
-  specName?: string;
 }
 
 /**
@@ -287,15 +271,14 @@ export type SubstrateDatasource = SubstrateRuntimeDatasource | SubstrateCustomDa
  */
 export interface SubstrateCustomDatasource<
   K extends string = string,
-  T extends SubstrateNetworkFilter = SubstrateNetworkFilter,
   M extends SubstrateMapping = SubstrateMapping<SubstrateCustomHandler>,
   O = any
-> extends ISubstrateDatasource<M, T> {
+> extends ISubstrateDatasource<M> {
   /**
    * The kind of the custom datasource.
    * @type {K}
    */
-  kind: K;
+  kind: K; //`substrate/${string}`;
 
   /**
    * A map of custom datasource assets.
@@ -321,7 +304,7 @@ export interface HandlerInputTransformer_0_0_0<
 
 export interface HandlerInputTransformer_1_0_0<
   T extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
@@ -337,10 +320,10 @@ export interface HandlerInputTransformer_1_0_0<
 
 type SecondLayerHandlerProcessorArray<
   K extends string,
-  F extends SubstrateNetworkFilter,
+  F extends Record<string, unknown>,
   T,
   IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>
+  DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>
 > =
   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, IT, DS>
   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, IT, DS>
@@ -348,8 +331,8 @@ type SecondLayerHandlerProcessorArray<
 
 export interface SubstrateDatasourceProcessor<
   K extends string,
-  F extends SubstrateNetworkFilter,
-  DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>,
+  F extends Record<string, unknown>,
+  DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>,
   P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, any, DS>> = Record<
     string,
     SecondLayerHandlerProcessorArray<K, F, any, any, DS>
@@ -363,7 +346,7 @@ export interface SubstrateDatasourceProcessor<
 
 interface SecondLayerHandlerProcessorBase<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > {
   baseHandlerKind: K;
@@ -375,7 +358,7 @@ interface SecondLayerHandlerProcessorBase<
 // only allow one custom handler for each baseHandler kind
 export interface SecondLayerHandlerProcessor_0_0_0<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
@@ -387,7 +370,7 @@ export interface SecondLayerHandlerProcessor_0_0_0<
 
 export interface SecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
@@ -399,7 +382,7 @@ export interface SecondLayerHandlerProcessor_1_0_0<
 
 export type SecondLayerHandlerProcessor<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
@@ -415,10 +398,10 @@ export type SubstrateSubqueryNetworkConfig = CommonSubqueryNetworkConfig;
  * Represents a Substrate project configuration based on the CommonSubqueryProject template.
  * @type {CommonSubqueryProject<SubstrateSubqueryNetworkConfig, SubstrateDatasource, RuntimeDatasourceTemplate | CustomDatasourceTemplate>}
  */
-export type SubstrateProject = CommonSubqueryProject<
+export type SubstrateProject<DS extends SubstrateDatasource = SubstrateRuntimeDatasource> = CommonSubqueryProject<
   SubstrateSubqueryNetworkConfig,
-  SubstrateDatasource,
-  RuntimeDatasourceTemplate | CustomDatasourceTemplate
+  SubstrateRuntimeDatasource | DS,
+  BaseTemplateDataSource<SubstrateRuntimeDatasource> | BaseTemplateDataSource<DS>
 >;
 
 export type CustomDataSourceAsset = FileReference;

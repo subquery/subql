@@ -72,7 +72,6 @@ function testSubqueryProject_1(): SubqueryProject {
     },
     [
       {
-        name: 'runtime0',
         kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
@@ -84,7 +83,6 @@ function testSubqueryProject_1(): SubqueryProject {
         },
       },
       {
-        name: 'runtime1',
         kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
@@ -113,7 +111,6 @@ function testSubqueryProject_2(): SubqueryProject {
     },
     [
       {
-        name: 'runtime0',
         kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {

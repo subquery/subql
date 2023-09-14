@@ -8,7 +8,6 @@ export interface BaseDataSource<
   H extends BaseHandler<F> = BaseHandler<F>,
   T extends BaseMapping<F, H> = BaseMapping<F, H>
 > {
-  name?: string;
   kind: string;
   startBlock?: number;
   mapping: T;
@@ -33,3 +32,9 @@ export interface BaseHandler<T> {
   kind: string;
   filter?: T;
 }
+
+export interface TemplateBase {
+  name: string;
+}
+
+export type BaseTemplateDataSource<DS extends BaseDataSource = BaseDataSource> = Omit<DS, 'startBlock'> & TemplateBase;
