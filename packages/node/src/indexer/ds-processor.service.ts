@@ -6,20 +6,21 @@ import { AnyTuple } from '@polkadot/types-codec/types';
 import {
   isCustomDs,
   SubstrateDatasourceProcessor,
-  SubstrateNetworkFilter,
 } from '@subql/common-substrate';
 import { BaseDsProcessorService } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
   SubstrateCustomDatasource,
+  SubstrateCustomHandler,
   SubstrateDatasource,
   SubstrateHandlerKind,
+  SubstrateMapping,
 } from '@subql/types';
 
 export function isSecondLayerHandlerProcessor_0_0_0<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
@@ -34,7 +35,7 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 
 export function isSecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
@@ -48,7 +49,7 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 
 export function asSecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
@@ -80,8 +81,8 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 @Injectable()
 export class DsProcessorService extends BaseDsProcessorService<
   SubstrateDatasource,
-  SubstrateCustomDatasource<string, SubstrateNetworkFilter>,
-  SubstrateDatasourceProcessor<string, SubstrateNetworkFilter>
+  SubstrateCustomDatasource<string, SubstrateMapping<SubstrateCustomHandler>>,
+  SubstrateDatasourceProcessor<string, Record<string, unknown>>
 > {
   protected isCustomDs = isCustomDs;
 }

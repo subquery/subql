@@ -7,33 +7,35 @@ import {
   SubstrateDatasource,
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
-  SubstrateNetworkFilter,
   SubstrateRuntimeDatasource,
   CustomDatasourceTemplate,
   RuntimeDatasourceTemplate,
+  SubstrateMapping,
+  SubstrateCustomHandler,
 } from '@subql/types';
+import {BaseTemplateDataSource} from '@subql/types-core';
 import {gte} from 'semver';
 
-export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, T, E> {
+export function isBlockHandlerProcessor<F extends Record<string, unknown>, E>(
+  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, F, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, E> {
   return hp.baseHandlerKind === SubstrateHandlerKind.Block;
 }
 
-export function isEventHandlerProcessor<T extends SubstrateNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, T, E> {
+export function isEventHandlerProcessor<F extends Record<string, unknown>, E>(
+  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, F, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, E> {
   return hp.baseHandlerKind === SubstrateHandlerKind.Event;
 }
 
-export function isCallHandlerProcessor<T extends SubstrateNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, T, E> {
+export function isCallHandlerProcessor<F extends Record<string, unknown>, E>(
+  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, F, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, E> {
   return hp.baseHandlerKind === SubstrateHandlerKind.Call;
 }
 
-export function isCustomDs<F extends SubstrateNetworkFilter>(
-  ds: SubstrateDatasource
+export function isCustomDs<F extends SubstrateMapping<SubstrateCustomHandler>>(
+  ds: SubstrateDatasource | BaseTemplateDataSource<SubstrateDatasource>
 ): ds is SubstrateCustomDatasource<string, F> {
   return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDatasource<string, F>).processor;
 }

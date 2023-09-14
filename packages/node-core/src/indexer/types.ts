@@ -1,7 +1,13 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {BaseDataSource, CommonSubqueryProject, Entity, IProjectNetworkConfig} from '@subql/types-core';
+import {
+  BaseDataSource,
+  BaseTemplateDataSource,
+  CommonSubqueryProject,
+  Entity,
+  IProjectNetworkConfig,
+} from '@subql/types-core';
 import {GraphQLSchema} from 'graphql';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {ProcessBlockResponse} from './blockDispatcher';
@@ -9,7 +15,7 @@ import {ProcessBlockResponse} from './blockDispatcher';
 export interface ISubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
-  T extends DS = DS & {name: string},
+  T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>,
   C = unknown
 > extends Omit<CommonSubqueryProject<N, DS, T>, 'schema' | 'version' | 'name' | 'specVersion' | 'description'> {
   readonly schema: GraphQLSchema;

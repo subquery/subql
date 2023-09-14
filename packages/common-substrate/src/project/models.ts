@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
-import {BlockFilterImpl} from '@subql/common';
+import {BlockFilterImpl, ProcessorImpl} from '@subql/common';
 import {
   SubstrateBlockFilter,
   SubstrateBlockHandler,
@@ -13,14 +13,13 @@ import {
   SubstrateEventFilter,
   SubstrateEventHandler,
   SubstrateHandlerKind,
-  SubstrateNetworkFilter,
   SubstrateRuntimeDatasource,
   SubstrateRuntimeHandler,
   SubstrateRuntimeHandlerFilter,
   SubstrateCustomDatasource,
   CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
 } from '@subql/types';
-import {BaseMapping, FileReference} from '@subql/types-core';
+import {BaseMapping, FileReference, Processor} from '@subql/types-core';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -152,12 +151,6 @@ export class CustomMapping implements BaseMapping<Record<string, unknown>, Subst
   file: string;
 }
 
-export class SubqlNetworkFilterImpl implements SubstrateNetworkFilter {
-  @IsString()
-  @IsOptional()
-  specName?: string;
-}
-
 export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
   @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
   kind: SubstrateDatasourceKind.Runtime;
@@ -167,10 +160,6 @@ export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => SubqlNetworkFilterImpl)
-  filter?: SubstrateNetworkFilter;
 }
 
 export class FileReferenceImpl implements FileReference {
@@ -178,8 +167,8 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
-export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFilter, M extends CustomMapping, O = any>
-  implements SubstrateCustomDatasource<K, T, M, O>
+export class CustomDataSourceBase<K extends string, M extends CustomMapping, O = any>
+  implements SubstrateCustomDatasource<K, M, O>
 {
   @IsString()
   kind: K;
@@ -192,10 +181,8 @@ export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFi
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, SubstrateCustomDataSourceAsset>;
-  @Type(() => FileReferenceImpl)
+  @Type(() => ProcessorImpl)
   @IsObject()
-  processor: FileReference;
-  @IsOptional()
-  @IsObject()
-  filter?: T;
+  @ValidateNested()
+  processor: Processor<O>;
 }
