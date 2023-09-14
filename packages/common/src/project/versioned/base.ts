@@ -1,8 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FileReference} from '@subql/types-core';
-import {Allow, IsString, validateSync} from 'class-validator';
+import {FileReference, Processor} from '@subql/types-core';
+import {Allow, IsObject, IsOptional, IsString, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 
 export abstract class ProjectManifestBaseImpl<D extends object> {
@@ -39,4 +39,10 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
 export class FileType implements FileReference {
   @IsString()
   file: string;
+}
+
+export class ProcessorImpl<O = any> extends FileType implements Processor<O> {
+  @IsOptional()
+  @IsObject()
+  options?: O;
 }

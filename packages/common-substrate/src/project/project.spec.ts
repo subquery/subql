@@ -76,6 +76,15 @@ describe('project.yaml', () => {
     validateSync(deployment.runner, {whitelist: true, forbidNonWhitelisted: true});
   });
 
+  it('deployment can wrong whitelist processor option', () => {
+    const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_bad_processor.yaml'));
+    // This because we not whitelist manifest, as user could use yaml anchors.
+    expect((manifest.dataSources[0] as any).processor.something).toBeDefined();
+    const deployment = manifest.asV1_0_0.deployment;
+    expect((deployment.dataSources[0] as any).processor.something).toBeUndefined();
+    expect((deployment.dataSources[0] as any).processor.options).toBeDefined();
+  });
+
   it('can validate bypass blocks', () => {
     const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml')).asV1_0_0.deployment;
     const range_deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass_range.yaml')).asV1_0_0
