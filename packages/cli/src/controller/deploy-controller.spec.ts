@@ -142,7 +142,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     expect(validator.valid).toBe(true);
   });
   it('to throw error for invalid ipfsCID', async () => {
-    await expect(ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV)).rejects.toEqual(
+    await expect(ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV)).rejects.toThrow(
       'Failed to validate IPFS CID: fake is not a valid subquery deployment id!'
     );
   });

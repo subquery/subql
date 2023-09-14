@@ -13,8 +13,8 @@ function testSubqueryProject(): SubqueryProject {
     './',
     {
       endpoint: '',
-      dictionary: `https://api.subquery.network/sq/subquery/moonbeam-dictionary`,
-      chainId: '',
+      chainId:
+        '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     },
     [],
     new GraphQLSchema({}),
@@ -24,8 +24,8 @@ function testSubqueryProject(): SubqueryProject {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['wss://moonbeam.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
+  dictionaryResolver: 'https://kepler-auth.subquery.network',
 });
 
 describe('DictionaryService', () => {
