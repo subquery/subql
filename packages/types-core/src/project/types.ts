@@ -4,68 +4,45 @@
 import {ParentProject, RunnerSpecs, BaseDataSource, BaseTemplateDataSource} from './versioned';
 
 /**
- * Represents the common network configuration for a subquery project.
- * @interface
- * @extends {ProjectNetworkConfig}
- */
-export interface CommonSubqueryNetworkConfig extends ProjectNetworkConfig {
-  /**
-   * The blockchain network identifier
-   * @type {string}
-   */
-  chainId: string;
-  /**
-   * The chain types associated with the network (optional).
-   * @type {FileReference}
-   */
-  chaintypes?: FileReference; // Align with previous field name
-}
-
-/**
  * Represents a common subquery project configuration.
  * @template N - The type of the network configuration (default: CommonSubqueryNetworkConfig).
  * @template DS - The type of the base data source (default: BaseDataSource).
  * @template T - The type of templates (default: unknown).
  */
 export interface CommonSubqueryProject<
-  N extends CommonSubqueryNetworkConfig = CommonSubqueryNetworkConfig,
+  N extends IProjectNetworkConfig = IProjectNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
   T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>
 > {
   /**
-   * The version of the subquery project.
+   * The version of the SubQuery project.
    * @type {string}
+   * @default "1.0.0"
    */
   version?: string;
   /**
-   * The name of the subquery project.
+   * The name of the SubQuery project.
    * @type {string}
    */
   name?: string;
   /**
-   * The specVersion of the subquery project, latest is 1.0.0
+   * The specVersion of the SubQuery project, latest is 1.0.0
    * @type {string}
    * @default "1.0.0"
    */
   specVersion: string;
   /**
-   * A description of the subquery project.
+   * A description of the SubQuery project.
    * @type {string}
    */
   description?: string;
   /**
-   * The schema reference to a file.
+   * The graphql schema reference to a file.
    * @type {FileReference}
    */
   schema: FileReference;
   /**
-   * An array of project templates associated with the project.
-   * @readonly
-   * @type {T[]}
-   */
-  readonly templates?: T[];
-  /**
-   * The runner specifications for the common subquery project.
+   * The runner specifications for the common SubQuery project.
    * @readonly
    * @type {RunnerSpecs}
    */
@@ -77,20 +54,45 @@ export interface CommonSubqueryProject<
    */
   readonly parent?: ParentProject;
   /**
-   * The network configuration for the subquery project.
+   * The network configuration for the SubQuery project.
+   * This defines what network you are wanting to index as well as the details on how to conect to it.
    * @readonly
    * @type {N}
    */
   readonly network: N;
   /**
-   * An array of data sources associated with the subquery project.
+   * An array of data sources associated with the SubQuery project.
+   *
+   * Defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
    * @readonly
    * @type {DS[]}
    */
   readonly dataSources: DS[];
+  /**
+   * An array of project templates associated with the project.
+   * These are the same as datasources but instead of having a startBlock they have a unique name.
+   * These are used to dynamically create data sources, this is useful when you don't know the start block.
+   * e.g When a factory creates a new instance of a contract you can initialize a datasource from a template in your mapping function.
+   * @readonly
+   * @type {T[]}
+   */
+  readonly templates?: T[];
 }
 
+/**
+ * Represents the common network configuration for a subquery project.
+ * @interface
+ * @extends {ProjectNetworkConfig}
+ */
 export interface IProjectNetworkConfig extends ProjectNetworkConfig {
+  /**
+   * The identity of the chain.
+   * @type {string}
+   * @example
+   * chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' // Polkadot
+   * @example
+   * chainId: '1' // Ethereum
+   * */
   chainId: string;
 }
 

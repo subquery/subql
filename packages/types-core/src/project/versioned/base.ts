@@ -34,6 +34,9 @@ export interface BaseHandler<T> {
 }
 
 export interface TemplateBase {
+  /**
+   * The name of the template. This must be unique.
+   * */
   name: string;
 }
 
