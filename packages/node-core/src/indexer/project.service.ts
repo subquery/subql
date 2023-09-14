@@ -48,7 +48,13 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     protected readonly dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
     private unfinalizedBlockService: IUnfinalizedBlocksService<any>
-  ) {}
+  ) {
+    if (this.nodeConfig.unsafe) {
+      logger.warn(
+        'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service'
+      );
+    }
+  }
 
   protected get schema(): string {
     assert(this._schema, new NotInitError());
