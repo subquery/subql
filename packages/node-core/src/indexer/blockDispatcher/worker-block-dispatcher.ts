@@ -25,6 +25,7 @@ type Worker = {
   processBlock: (height: number) => Promise<any>;
   getStatus: () => Promise<any>;
   getMemoryLeft: () => Promise<number>;
+  getBlocksLoaded: () => Promise<number>;
   waitForWorkerBatchSize: (heapSizeInBytes: number) => Promise<void>;
   terminate: () => Promise<number>;
 };
@@ -190,8 +191,20 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   }
 
   private async getNextWorkerIndex(): Promise<number> {
-    return Promise.all(this.workers.map((worker) => worker.getMemoryLeft())).then((memoryLeftValues) => {
-      return memoryLeftValues.indexOf(Math.max(...memoryLeftValues));
+    return Promise.all(this.workers.map((worker) => worker.getBlocksLoaded())).then((blocksLoaded) => {
+      const minBlocks = Math.min(...blocksLoaded);
+
+      // Collect all indices with minimum blocks loaded
+      const minIndices = [];
+      for (let i = 0; i < blocksLoaded.length; i++) {
+        if (blocksLoaded[i] === minBlocks) {
+          minIndices.push(i);
+        }
+      }
+
+      // Return a random index among the minIndices
+      const randomIndex = Math.floor(Math.random() * minIndices.length);
+      return minIndices[randomIndex];
     });
   }
 
