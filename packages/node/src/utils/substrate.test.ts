@@ -39,9 +39,7 @@ describe('substrate utils', () => {
     // This endpoint has issue when fetch block 3467086
     const provider = new WsProvider(ENDPOINT_KARURA);
     const api = await ApiPromise.create({ provider });
-    await expect(
-      fetchBlocksArray(api, [3467085, 3467086]),
-    ).rejects.toThrowError(
+    await expect(fetchBlocksArray(api, [3467085, 3467086])).rejects.toThrow(
       'fetched block header hash 0xdcdd89927d8a348e00257e1ecc8617f45edb5118efff3ea2f9961b2ad9b7690a is not match with blockHash 0xd13a656c8c4cd7a6f7d03db8209eee9c597edffba1b7ee2dc40844089e10b21a at block 3467086',
     );
 

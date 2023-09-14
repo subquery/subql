@@ -55,8 +55,8 @@ describe('TestRunner', () => {
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect(sequelizeMock.dropSchema).toBeCalledTimes(1);
-    expect(sequelizeMock.dropSchema).toBeCalledWith(expect.any(String), {
+    expect(sequelizeMock.dropSchema).toHaveBeenCalledTimes(1);
+    expect(sequelizeMock.dropSchema).toHaveBeenCalledWith(expect.any(String), {
       logging: false,
       benchmark: false,
     });

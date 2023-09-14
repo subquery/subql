@@ -19,10 +19,10 @@ describe('fetchHelpers', () => {
     });
     // If not Axios error, should only be called once
     await expect(retryOnFailAxios(mockNotAxiosRequest, [429])).rejects.toThrow();
-    expect(mockNotAxiosRequest).toBeCalledTimes(1);
+    expect(mockNotAxiosRequest).toHaveBeenCalledTimes(1);
 
     //If Axios error, should retry 5 times before throwing
     await expect(retryOnFailAxios(mockAxiosRequest, [429])).rejects.toThrow();
-    expect(mockAxiosRequest).toBeCalledTimes(5);
+    expect(mockAxiosRequest).toHaveBeenCalledTimes(5);
   });
 });

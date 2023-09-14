@@ -320,7 +320,7 @@ describe('Project Upgrades', () => {
       expect(upgradeService.validateIndexedData(indexedData)).toEqual(undefined);
     });
 
-    it('it can rewind if an upgrade needs replacing', () => {
+    it('can rewind if an upgrade needs replacing', () => {
       // indexed a -> b -> c -> d
       // upgrade to a -> b -> c -> e
 

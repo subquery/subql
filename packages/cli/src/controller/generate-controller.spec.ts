@@ -258,7 +258,7 @@ describe('CLI codegen:generate', () => {
     expect(constructedEvents.length).toBe(Object.keys(eventFragments).length);
     expect(constructedFunctions.length).toBe(Object.keys(functionFragments).length);
   });
-  it('filter out existing methods, inputAddress === undefined || "" should filter all ds that contains no address ', () => {
+  it('filter out existing methods, inputAddress === undefined || "" should filter all ds that contains no address', () => {
     const ds = mockDsFn();
     ds[0].options.address = undefined;
     const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);

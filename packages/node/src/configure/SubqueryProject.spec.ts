@@ -14,6 +14,7 @@ import {
 } from '@subql/common';
 import { SubqueryProject } from './SubqueryProject';
 
+// eslint-disable-next-line jest/no-export
 export async function getProjectRoot(reader: Reader): Promise<string> {
   if (reader instanceof LocalReader) return reader.root;
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {

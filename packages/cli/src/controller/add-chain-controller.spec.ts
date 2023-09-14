@@ -122,10 +122,7 @@ async function createMultichainProject(
   return projectDir;
 }
 
-export async function createChildManifestFile(
-  childManifest: ProjectManifestV1_0_0,
-  projectDir: string
-): Promise<string> {
+async function createChildManifestFile(childManifest: ProjectManifestV1_0_0, projectDir: string): Promise<string> {
   const childManifestYaml = yaml.dump(childManifest);
   const fileName = `${childManifest.name}.yaml`;
   await fs.promises.writeFile(path.join(projectDir, fileName), childManifestYaml);

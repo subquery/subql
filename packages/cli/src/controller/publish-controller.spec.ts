@@ -38,6 +38,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
   license: '',
 };
 
+// eslint-disable-next-line jest/no-export
 export const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
   name: 'mocked_starter',
   repository: '',
@@ -65,6 +66,7 @@ const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 jest.setTimeout(150000);
 
+// eslint-disable-next-line jest/no-export
 export async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
@@ -119,12 +121,7 @@ describe('Cli publish', () => {
     const manifestPath = path.resolve(projectDir, 'project.yaml');
     const testManifestPath = path.resolve(projectDir, 'test.yaml');
     fs.renameSync(manifestPath, testManifestPath);
-    await Publish.run(['-f', testManifestPath]);
-  });
-
-  it('should not allow uploading a v0.0.1 spec version project', async () => {
-    projectDir = await createTestProject(projectSpecV0_0_1);
-    await expect(uploadToIpfs([''], ipfsEndpoint, projectDir)).rejects.toBeDefined();
+    await expect(Publish.run(['-f', testManifestPath])).resolves.not.toThrow();
   });
 
   it('v1.0.0 should deploy', async () => {

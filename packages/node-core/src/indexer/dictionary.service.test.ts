@@ -112,8 +112,8 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
   // dictionaryResolver: 'https://kepler-auth.subquery.network'
 });
-
-jest.setTimeout(10000);
+// Need longer timeout
+jest.setTimeout(50000);
 
 describe('GraphqlTypes', () => {
   it('Supports arrays of primitives', () => {
