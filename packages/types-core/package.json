@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-core",
-  "version": "2.2.1-0",
+  "version": "0.0.0-0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -12,11 +12,9 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "files": [
-    "src/global.d.ts",
     "/dist"
   ],
   "dependencies": {
     "package-json-type": "^1.0.3"
-  },
-  "stableVersion": "2.2.0"
+  }
 }

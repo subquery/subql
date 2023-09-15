@@ -4,9 +4,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {
-    "typescript": "^4.9.5"
-  },
   "devDependencies": {
     "@actions/core": "^1.10.0",
     "@babel/preset-env": "^7.16.11",
@@ -33,7 +30,8 @@
     "ts-jest": "^29.1.1",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
-    "tsconfig-paths": "^3.12.0"
+    "tsconfig-paths": "^3.12.0",
+    "typescript": "^4.9.5"
   },
   "resolutions": {
     "@polkadot/api": "10.7.1",

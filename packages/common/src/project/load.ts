@@ -4,11 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import {loadProjectFromScript} from '@subql/common';
-import {ProjectManifestV0_2_0} from '@subql/types-core';
+import {ProjectManifestV1_0_0} from '@subql/types-core';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
-import {DEFAULT_MANIFEST, extensionIsTs, extensionIsYamlOrJSON} from './utils';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, extensionIsYamlOrJSON} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (!extensionIsYamlOrJSON(ext)) {
@@ -21,9 +21,12 @@ export function loadFromJsonOrYaml(file: string): unknown {
 export function getManifestPath(manifestDir: string, fileName?: string): string {
   let manifestPath = manifestDir;
   if (fs.existsSync(manifestDir) && fs.lstatSync(manifestDir).isDirectory()) {
+    const tsFilePath = path.join(manifestDir, fileName ?? DEFAULT_TS_MANIFEST);
     const yamlFilePath = path.join(manifestDir, fileName ?? DEFAULT_MANIFEST);
     const jsonFilePath = path.join(manifestDir, fileName ?? 'project.json');
-    if (fs.existsSync(yamlFilePath)) {
+    if (fs.existsSync(tsFilePath)) {
+      manifestPath = tsFilePath;
+    } else if (fs.existsSync(yamlFilePath)) {
       manifestPath = yamlFilePath;
     } else if (fs.existsSync(jsonFilePath)) {
       manifestPath = jsonFilePath;
@@ -45,7 +48,7 @@ export function getSchemaPath(manifestDir: string, fileName?: string): string {
       return path.join(manifestDir, (rawProject as any).schema);
     }
   }
-  const project = rawProject as ProjectManifestV0_2_0;
+  const project = rawProject as ProjectManifestV1_0_0;
   if (!project.schema) {
     throw new Error(`Can't get schema in yaml file`);
   }

@@ -22,6 +22,7 @@ import {RUNNER_ERROR_REGEX} from '../constants';
 
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MANIFEST = 'project.yaml';
+export const DEFAULT_TS_MANIFEST = 'project.ts';
 
 export function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
@@ -69,8 +70,10 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
   if (stats.isDirectory()) {
     project.root = subquery;
 
-    // Check for 'project.yaml' first
-    if (fs.existsSync(path.resolve(subquery, DEFAULT_MANIFEST))) {
+    // Check for 'project.ts' first , then 'project.yaml'
+    if (fs.existsSync(path.resolve(subquery, DEFAULT_TS_MANIFEST))) {
+      project.manifests.push(path.resolve(subquery, DEFAULT_TS_MANIFEST));
+    } else if (fs.existsSync(path.resolve(subquery, DEFAULT_MANIFEST))) {
       project.manifests.push(path.resolve(subquery, DEFAULT_MANIFEST));
     }
     // Then check for a 'multichain manifest'

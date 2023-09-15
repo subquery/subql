@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {BaseDataSource, BaseTemplateDataSource} from '../base';
-import {ProjectManifestV0_2_1} from '../v0_2_1';
 
 /**
  * Represents specifications for an indexer runner.
@@ -128,10 +127,18 @@ export interface ParentProject {
 export interface ProjectManifestV1_0_0<
   D extends BaseDataSource = BaseDataSource,
   T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>
-> extends Omit<ProjectManifestV0_2_1<T, D>, 'network'> {
+> {
+  name: string;
+  version: string;
+  schema: {
+    file: string;
+  };
+  specVersion?: string;
+  repository?: string;
+  description?: string;
+  templates?: T[];
   dataSources: D[];
   runner: RunnerSpecs;
-  templates?: T[];
   network: {
     chainId: string;
     endpoint?: string | string[];

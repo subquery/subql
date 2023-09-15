@@ -27,6 +27,7 @@ export class GithubReader implements Reader {
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
+    // Github reader not support ts manifest.
     const projectYaml = await this.getFile(DEFAULT_MANIFEST);
     if (projectYaml === undefined) {
       throw new Error('Fetch project from github got undefined');
