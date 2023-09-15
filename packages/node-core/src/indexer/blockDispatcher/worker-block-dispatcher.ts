@@ -191,8 +191,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     });
   }
 
-  //assuming all workers have same constraints, distribute load by
-  //round-robin based on number of blocks already loaded to ensure even distribution
   private async getNextWorkerIndex(): Promise<number> {
     this.currentWorkerIndex = (this.currentWorkerIndex + 1) % this.workers.length;
     const memLeft = await this.workers[this.currentWorkerIndex].getMemoryLeft();
