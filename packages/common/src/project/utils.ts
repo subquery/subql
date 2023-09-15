@@ -23,6 +23,7 @@ import {RUNNER_ERROR_REGEX} from '../constants';
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MANIFEST = 'project.yaml';
 export const DEFAULT_TS_MANIFEST = 'project.ts';
+export const DEFAULT_PKG = 'package.json';
 
 export function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
