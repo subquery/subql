@@ -227,7 +227,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     'disable-historical': {
       demandOption: false,
-      default: false,
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
@@ -403,7 +402,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     'unfinalized-blocks': {
       demandOption: false,
-      default: false,
       describe: 'Enable to fetch and index unfinalized blocks',
       type: 'boolean',
     },

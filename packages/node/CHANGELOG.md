@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix yargs default override runner nodeOptions (#166)
+
 ## [2.12.5] - 2023-09-12
 ### Fixed
 - Fix nestjs-prometheus dependency issue (#163)
