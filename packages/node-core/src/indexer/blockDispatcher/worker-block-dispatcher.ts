@@ -42,6 +42,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   protected workers: W[] = [];
   private numWorkers: number;
   private isShutdown = false;
+  private currentWorkerIndex = 0;
 
   protected abstract fetchBlock(worker: W, height: number): Promise<void>;
 
@@ -190,22 +191,15 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     });
   }
 
+  //assuming all workers have same constraints, distribute load by
+  //round-robin based on number of blocks already loaded to ensure even distribution
   private async getNextWorkerIndex(): Promise<number> {
-    return Promise.all(this.workers.map((worker) => worker.getBlocksLoaded())).then((blocksLoaded) => {
-      const minBlocks = Math.min(...blocksLoaded);
-
-      // Collect all indices with minimum blocks loaded
-      const minIndices = [];
-      for (let i = 0; i < blocksLoaded.length; i++) {
-        if (blocksLoaded[i] === minBlocks) {
-          minIndices.push(i);
-        }
-      }
-
-      // Return a random index among the minIndices
-      const randomIndex = Math.floor(Math.random() * minIndices.length);
-      return minIndices[randomIndex];
-    });
+    this.currentWorkerIndex = (this.currentWorkerIndex + 1) % this.workers.length;
+    const memLeft = await this.workers[this.currentWorkerIndex].getMemoryLeft();
+    if (memLeft < this.minimumHeapLimit) {
+      return this.getNextWorkerIndex();
+    }
+    return this.currentWorkerIndex;
   }
 
   private async maxBatchSize(workerIdx: number): Promise<number> {
