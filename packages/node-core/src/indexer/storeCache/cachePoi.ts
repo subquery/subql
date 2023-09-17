@@ -3,20 +3,20 @@
 
 import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
-import {Mutex} from 'async-mutex';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../poi/poiModel';
+import {Cacheable} from './cacheable';
 import {ICachedModelControl} from './types';
 const logger = getLogger('PoiCache');
 
-export class CachePoiModel implements ICachedModelControl, PoiInterface {
+export class CachePoiModel extends Cacheable implements ICachedModelControl, PoiInterface {
   private setCache: Record<number, ProofOfIndex> = {};
   flushableRecordCounter = 0;
   private plainPoiModel: PlainPoiModel;
-  private mutex = new Mutex();
 
   constructor(readonly model: PoiRepo) {
+    super();
     this.plainPoiModel = new PlainPoiModel(model);
   }
 
@@ -64,31 +64,17 @@ export class CachePoiModel implements ICachedModelControl, PoiInterface {
     return this.plainPoiModel.getFirst();
   }
 
-  async flush(tx: Transaction): Promise<void> {
-    const release = await this.mutex.acquire();
-    try {
-      tx.afterCommit(() => {
-        release();
-      });
-      logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
-      const pendingFlush = Promise.all([
-        this.model.bulkCreate(Object.values(this.setCache), {
-          transaction: tx,
-          updateOnDuplicate: ['hash', 'parentHash'],
-        }),
-      ]);
-
-      // Don't await DB operations to complete before clearing.
-      // This allows new data to be cached while flushing
-      this.clear();
-      await pendingFlush;
-    } catch (e) {
-      release();
-      throw e;
-    }
+  protected async runFlush(tx: Transaction): Promise<void> {
+    logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
+    await Promise.all([
+      this.model.bulkCreate(Object.values(this.setCache), {
+        transaction: tx,
+        updateOnDuplicate: ['hash', 'parentHash'],
+      }),
+    ]);
   }
 
-  private clear(): void {
+  protected clear(): void {
     this.setCache = {};
     this.flushableRecordCounter = 0;
   }
