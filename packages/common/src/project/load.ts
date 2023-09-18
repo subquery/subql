@@ -3,8 +3,10 @@
 
 import fs from 'fs';
 import path from 'path';
-import {loadProjectFromScript} from '@subql/common';
+import {CommonProjectManifestV1_0_0Impl, loadProjectFromScript} from '@subql/common';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
+import {plainToClass} from 'class-transformer';
+import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
@@ -87,5 +89,16 @@ export function getFileContent(path: string, identifier: string): string {
   } catch (error) {
     const err_msg = `Failed to load ${identifier} file, ${error}`;
     throw new Error(err_msg);
+  }
+}
+
+//  Validate generic/common section for project manifest
+export function validateCommonProjectManifest(raw: unknown): void {
+  const projectManifest = plainToClass<CommonProjectManifestV1_0_0Impl, unknown>(CommonProjectManifestV1_0_0Impl, raw);
+  const errors = validateSync(projectManifest, {whitelist: true, forbidNonWhitelisted: true});
+  if (errors?.length) {
+    // TODO: print error details
+    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    throw new Error(`project validation failed.\n${errorMsgs}`);
   }
 }

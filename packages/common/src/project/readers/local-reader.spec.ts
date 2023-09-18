@@ -26,16 +26,16 @@ describe('LocalReader', () => {
 });
 
 describe(' Load ts/js project', () => {
-  it('could resolve ts project', () => {
+  it('could resolve ts project', async () => {
     const root = path.join(__dirname, '../../../test/sandbox');
     const entry = './project.ts';
-    const result = loadProjectFromScript(entry, root);
+    const result = await loadProjectFromScript(entry, root);
     expect((result as any).name).toBe('tsProject');
   });
-  it('could resolve js project, could read chainTypes', () => {
+  it('could resolve js project, could read chainTypes', async () => {
     const root = path.join(__dirname, '../../../test/sandbox');
     const entry = './project.js';
-    const result = loadProjectFromScript(entry, root);
+    const result = await loadProjectFromScript(entry, root);
     expect((result as any).name).toBe('tsProject');
     expect((result as any).network.chainTypes).toStrictEqual({file: './dist/chaintypes.js'});
   });

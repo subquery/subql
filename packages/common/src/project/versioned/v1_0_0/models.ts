@@ -1,8 +1,17 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {BlockFilter, NodeOptions, NodeSpec, ParentProject, QuerySpec} from '@subql/types-core';
-import {Type} from 'class-transformer';
+import {
+  BlockFilter,
+  CommonSubqueryProject,
+  IProjectNetworkConfig,
+  NodeOptions,
+  NodeSpec,
+  ParentProject,
+  QuerySpec,
+  RunnerSpecs,
+} from '@subql/types-core';
+import {Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
   IsBoolean,
@@ -13,8 +22,11 @@ import {
   IsInt,
   Validate,
   ValidateNested,
+  IsArray,
+  IsNotEmpty,
 } from 'class-validator';
 import {SemverVersionValidator} from '../../utils';
+import {FileType, ProjectManifestBaseImpl} from '../base';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
@@ -68,4 +80,68 @@ export class ParentProjectModel implements ParentProject {
   block: number;
   @IsString()
   reference: string;
+}
+
+// Use for generic project validation only
+export class CommonProjectManifestV1_0_0Impl<D extends object = any>
+  extends ProjectManifestBaseImpl<D>
+  implements CommonSubqueryProject
+{
+  @Equals('1.0.0')
+  specVersion: string;
+  // To be validated in specific manifest type
+  @IsArray()
+  dataSources: any[];
+  @ValidateNested()
+  @Type(() => CommonProjectNetworkV1_0_0)
+  network: IProjectNetworkConfig;
+  @IsString()
+  name: string;
+  @IsString()
+  version: string;
+  @ValidateNested()
+  @Type(() => FileType)
+  schema: FileType;
+  @IsOptional()
+  @IsArray()
+  templates?: any[];
+  @IsObject()
+  @ValidateNested()
+  @Type(() => CommonRunnerSpecsImpl)
+  runner: RunnerSpecs;
+  @IsOptional()
+  @IsObject()
+  @Type(() => ParentProjectModel)
+  parent?: ParentProject;
+  readonly deployment: D;
+}
+
+export class CommonRunnerSpecsImpl implements RunnerSpecs {
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RunnerNodeImpl)
+  node: NodeSpec;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RunnerQueryBaseModel)
+  query: QuerySpec;
+}
+
+export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfig {
+  @IsString({each: true})
+  @IsOptional()
+  endpoint: string | string[];
+  @IsString()
+  @IsOptional()
+  dictionary?: string;
+  @IsNotEmpty()
+  @Transform(({value}: TransformFnParams) => value.trim())
+  @IsString()
+  chainId: string;
+  @ValidateNested()
+  @IsOptional()
+  chaintypes?: C;
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: (number | `${number}-${number}`)[];
 }

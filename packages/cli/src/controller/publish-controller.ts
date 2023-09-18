@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_WRITE_ENDPOINT, isFileReference} from '@subql/common';
+import {ReaderFactory, IPFS_WRITE_ENDPOINT, isFileReference, validateCommonProjectManifest} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
@@ -53,6 +53,8 @@ export async function uploadToIpfs(
   for (const project in projectToReader) {
     const reader = projectToReader[project];
     const schema = await reader.getProjectSchema();
+
+    validateCommonProjectManifest(schema);
 
     const parsingFunctions = [
       parseSubstrateProjectManifest,

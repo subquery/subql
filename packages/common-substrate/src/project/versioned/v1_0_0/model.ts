@@ -8,6 +8,7 @@ import {
   RunnerNodeImpl,
   RunnerQueryBaseModel,
   validateObject,
+  CommonProjectNetworkV1_0_0,
 } from '@subql/common';
 import {
   SubstrateCustomDatasource,
@@ -76,6 +77,7 @@ export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
   query: QuerySpec;
 }
 
+// ChainTypes is different with other network
 export class ProjectNetworkDeploymentV1_0_0 {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
@@ -90,13 +92,10 @@ export class ProjectNetworkDeploymentV1_0_0 {
   bypassBlocks?: (number | string)[];
 }
 
-export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
-  @IsString({each: true})
+export class ProjectNetworkV1_0_0 extends CommonProjectNetworkV1_0_0<FileType> {
+  @Type(() => FileType)
   @IsOptional()
-  endpoint?: string | string[];
-  @IsString()
-  @IsOptional()
-  dictionary?: string;
+  chaintypes?: FileType;
 }
 
 export class DeploymentV1_0_0 {

@@ -6,7 +6,11 @@ import ts from 'typescript';
 import {NodeVM, VMScript} from 'vm2';
 
 // Support .js .ts manifest
-export function loadProjectFromScript(filePath: string, requireRoot?: string, unsafe?: boolean): unknown {
+export async function loadProjectFromScript(
+  filePath: string,
+  requireRoot?: string,
+  unsafe?: boolean
+): Promise<unknown> {
   const {base, ext} = path.parse(filePath);
   const root = requireRoot ?? path.dirname(filePath);
   const vm = new NodeVM({
@@ -36,7 +40,7 @@ export function loadProjectFromScript(filePath: string, requireRoot?: string, un
     `,
       path.join(root, 'sandbox')
     ).compile();
-    rawContent = vm.run(script) as unknown;
+    rawContent = (await vm.run(script)) as unknown;
   } catch (err) {
     throw new Error(`\n NodeVM error: ${err}`);
   }

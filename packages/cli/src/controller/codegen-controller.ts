@@ -228,20 +228,22 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
-  const plainManifests = fileNames.map((fileName) => {
-    let project;
-    const {ext} = path.parse(fileName);
-    if (extensionIsTs(ext)) {
-      project = loadProjectFromScript(getManifestPath(projectPath, fileName), path.resolve(projectPath));
-    } else {
-      project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName));
-    }
-    return project as {
-      specVersion: string;
-      templates?: TemplateKind[];
-      dataSources: DatasourceKind[];
-    };
-  });
+  const plainManifests = await Promise.all(
+    fileNames.map(async (fileName) => {
+      let project;
+      const {ext} = path.parse(fileName);
+      if (extensionIsTs(ext)) {
+        project = await loadProjectFromScript(getManifestPath(projectPath, fileName), path.resolve(projectPath));
+      } else {
+        project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName));
+      }
+      return project as {
+        specVersion: string;
+        templates?: TemplateKind[];
+        dataSources: DatasourceKind[];
+      };
+    })
+  );
 
   const expectKeys = ['datasources', 'templates'];
 
