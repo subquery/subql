@@ -83,10 +83,7 @@ export class ParentProjectModel implements ParentProject {
 }
 
 // Use for generic project validation only
-export class CommonProjectManifestV1_0_0Impl<D extends object = any>
-  extends ProjectManifestBaseImpl<D>
-  implements CommonSubqueryProject
-{
+export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements CommonSubqueryProject {
   @Equals('1.0.0')
   specVersion: string;
   // To be validated in specific manifest type
