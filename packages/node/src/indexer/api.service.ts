@@ -49,7 +49,6 @@ export class ApiService
   private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
   private currentBlockHash: string;
   private currentBlockNumber: number;
-  networkMeta: NetworkMetadataPayload;
 
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,

@@ -34,12 +34,15 @@ export class TestingService extends BaseTestingService<
   }
 
   async getTestRunner(): Promise<
-    TestRunner<
-      ApiPromise,
-      ApiAt,
-      BlockContent,
-      SubqlProjectDs<SubstrateDatasource>
-    >
+    [
+      close: () => Promise<void>,
+      runner: TestRunner<
+        ApiPromise,
+        ApiAt,
+        BlockContent,
+        SubqlProjectDs<SubstrateDatasource>
+      >,
+    ]
   > {
     const testContext = await NestFactory.createApplicationContext(
       TestingModule,
@@ -50,14 +53,14 @@ export class TestingService extends BaseTestingService<
 
     await testContext.init();
 
-    const projectService: ProjectService = testContext.get(ProjectService);
+    const projectService: ProjectService = testContext.get('IProjectService');
     const apiService = testContext.get(ApiService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
     await apiService.init();
     await projectService.init();
 
-    return testContext.get(TestRunner);
+    return [testContext.close.bind(testContext), testContext.get(TestRunner)];
   }
 
   async indexBlock(
