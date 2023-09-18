@@ -66,7 +66,10 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   }
 
   async beforeApplicationShutdown(): Promise<void> {
-    this.schedulerRegistry.deleteInterval(this.intervalName);
+    // Check the interval exists, it might not with the testing framework
+    if (this.schedulerRegistry.doesExist('interval', this.intervalName)) {
+      this.schedulerRegistry.deleteInterval(this.intervalName);
+    }
     await timeout(this.flushCache(true), 5);
     this.logger.info(`Force flush cache successful!`);
   }

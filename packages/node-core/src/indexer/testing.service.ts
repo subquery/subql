@@ -53,7 +53,7 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
     this.tests = this.testSandboxes.map((sandbox) => sandbox.getTests());
   }
 
-  abstract getTestRunner(): Promise<TestRunner<A, SA, B, DS>>; // TestRunner will be create with a new app instance
+  abstract getTestRunner(): Promise<[close: () => Promise<void>, runner: TestRunner<A, SA, B, DS>]>; // TestRunner will be create with a new app instance
 
   async indexBlock(
     block: B,
@@ -106,18 +106,22 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
   private async runTest(test: SubqlTest, sandbox: TestSandbox) {
     logger.info(`Starting test: ${test.name}`);
 
-    const testRunner = await this.getTestRunner();
+    const [close, testRunner] = await this.getTestRunner();
 
-    const {failedTestSummary, failedTests, passedTests} = await testRunner.runTest(
-      test,
-      sandbox,
-      this.indexBlock.bind(this)
-    );
+    try {
+      const {failedTestSummary, failedTests, passedTests} = await testRunner.runTest(
+        test,
+        sandbox,
+        this.indexBlock.bind(this)
+      );
 
-    failedTests > 0 ? this.totalFailedTests++ : this.totalPassedTests++;
+      failedTests > 0 ? this.totalFailedTests++ : this.totalPassedTests++;
 
-    if (failedTestSummary) {
-      this.failedTestsSummary.push(failedTestSummary);
+      if (failedTestSummary) {
+        this.failedTestsSummary.push(failedTestSummary);
+      }
+    } finally {
+      await close();
     }
   }
 

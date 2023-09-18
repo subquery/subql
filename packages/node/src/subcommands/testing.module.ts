@@ -10,6 +10,7 @@ import {
   DbModule,
   NodeConfig,
   PoiService,
+  StoreCacheService,
   StoreService,
   TestRunner,
 } from '@subql/node-core';
@@ -17,16 +18,15 @@ import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { FetchModule } from '../indexer/fetch.module';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { MetaModule } from '../meta/meta.module';
 
 @Module({
   providers: [
     StoreService,
+    StoreCacheService,
     EventEmitter2,
     PoiService,
     SandboxService,
@@ -51,8 +51,6 @@ import { MetaModule } from '../meta/meta.module';
       useClass: IndexerManager,
     },
   ],
-
-  imports: [MetaModule, FetchModule],
   controllers: [],
   exports: [TestRunner],
 })
