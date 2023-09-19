@@ -252,6 +252,28 @@ export function notifyUpdates(pjson: Package, logger: Pino.Logger): void {
   }
 }
 
+export function toJsonObject(object: unknown): unknown {
+  // When using plainToInstance or plainToClass, Map types will need to be converted to a JSON object
+  // https://github.com/typestack/class-transformer/issues/1256#issuecomment-1175153352
+  return JSON.parse(
+    JSON.stringify(object, (_, value: unknown) => {
+      if (value instanceof Map) {
+        return mapToObject(value);
+      }
+      return value;
+    })
+  );
+}
+
+export function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
+  // XXX can use Object.entries with newer versions of node.js
+  const assetsObj: Record<string, unknown> = {};
+  for (const key of map.keys()) {
+    assetsObj[key] = map.get(key);
+  }
+  return assetsObj;
+}
+
 @ValidatorConstraint({name: 'isFileReference', async: false})
 export class FileReferenceImp<T> implements ValidatorConstraintInterface {
   validate(value: Map<string, T>): boolean {

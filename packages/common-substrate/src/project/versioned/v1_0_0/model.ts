@@ -146,10 +146,14 @@ export class DeploymentV1_0_0 {
   parent?: ParentProject;
 }
 
-export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
-  extends ProjectManifestBaseImpl<D>
+export class ProjectManifestV1_0_0Impl
+  extends ProjectManifestBaseImpl<DeploymentV1_0_0>
   implements SubstrateProjectManifestV1_0_0
 {
+  constructor() {
+    super(DeploymentV1_0_0);
+  }
+
   @Equals('1.0.0')
   specVersion: string;
   @Type(() => SubstrateCustomDataSourceImpl, {
@@ -184,18 +188,9 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
   runner: RunnerSpecs;
-  protected _deployment: D;
 
   @IsOptional()
   @IsObject()
   @Type(() => ParentProjectModel)
   parent?: ParentProject;
-
-  get deployment(): D {
-    if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV1_0_0, this) as unknown as D;
-      validateSync(this._deployment, {whitelist: true});
-    }
-    return this._deployment;
-  }
 }

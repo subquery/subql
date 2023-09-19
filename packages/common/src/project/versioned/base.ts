@@ -1,9 +1,10 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {toJsonObject} from '@subql/common';
 import {FileReference, Processor} from '@subql/types-core';
+import {plainToInstance} from 'class-transformer';
 import {Allow, IsObject, IsOptional, IsString, validateSync} from 'class-validator';
-import yaml from 'js-yaml';
 
 export abstract class ProjectManifestBaseImpl<D extends object> {
   @Allow()
@@ -15,15 +16,16 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   @IsString()
   specVersion: string;
 
-  abstract readonly deployment: D;
+  protected _deployment: D;
 
-  toDeployment(): string {
-    // plainToClass was used but ran into issues
-    // We convert it to a plain object to get Maps converted to Records/Objects
-    return yaml.dump(JSON.parse(JSON.stringify(this.deployment)), {
-      sortKeys: true,
-      condenseFlow: true,
-    });
+  protected constructor(private readonly _deploymentClass: new () => D) {}
+
+  get deployment(): D {
+    if (!this._deployment) {
+      this._deployment = plainToInstance(this._deploymentClass, toJsonObject(this));
+      validateSync(this._deployment, {whitelist: true});
+    }
+    return this._deployment;
   }
 
   validate(): void {
