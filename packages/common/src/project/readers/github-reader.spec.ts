@@ -22,18 +22,3 @@ describe('GithubReader', () => {
     expect(data.repository).toBe('https://github.com/subquery/subql-examples');
   });
 });
-
-describe('GithubReader with ts manifest', () => {
-  let reader: Reader;
-
-  beforeAll(() => {
-    const key = 'jiqiang90/subql-starter';
-    reader = new GithubReader(key);
-  });
-
-  it('should return the project schema object', async () => {
-    const data: any = await reader.getProjectSchema();
-    console.log(data.name);
-    expect(data.name).toBe('tsProject');
-  }, 500000); // load ts project with dependencies require sometime
-});

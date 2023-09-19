@@ -6470,7 +6470,6 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
-    typescript: ^4.9.5
     update-notifier: 5.1.0
   languageName: unknown
   linkType: soft

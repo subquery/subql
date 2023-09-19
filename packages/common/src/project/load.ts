@@ -3,14 +3,14 @@
 
 import fs from 'fs';
 import path from 'path';
-import {CommonProjectManifestV1_0_0Impl, loadProjectFromScript} from '@subql/common';
+import {CommonProjectManifestV1_0_0Impl} from '@subql/common';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, extensionIsYamlOrJSON} from './utils';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsYamlOrJSON} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (!extensionIsYamlOrJSON(ext)) {
@@ -40,15 +40,9 @@ export function getManifestPath(manifestDir: string, fileName?: string): string 
 }
 
 export function getSchemaPath(manifestDir: string, fileName?: string): string {
-  let rawProject: unknown;
-  const {ext} = path.parse(fileName);
-  if (extensionIsTs(ext)) {
-    rawProject = loadProjectFromScript(getManifestPath(manifestDir, fileName), path.resolve(manifestDir));
-  } else {
-    const rawProject = loadFromJsonOrYaml(getManifestPath(manifestDir, fileName));
-    if ((rawProject as any).specVersion === '0.0.1') {
-      return path.join(manifestDir, (rawProject as any).schema);
-    }
+  const rawProject = loadFromJsonOrYaml(getManifestPath(manifestDir, fileName));
+  if ((rawProject as any).specVersion === '0.0.1') {
+    return path.join(manifestDir, (rawProject as any).schema);
   }
   const project = rawProject as ProjectManifestV1_0_0;
   if (!project.schema) {

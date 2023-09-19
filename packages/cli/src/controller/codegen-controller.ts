@@ -2,14 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {
-  DEFAULT_MANIFEST,
-  extensionIsTs,
-  getManifestPath,
-  getSchemaPath,
-  loadFromJsonOrYaml,
-  loadProjectFromScript,
-} from '@subql/common';
+import {DEFAULT_MANIFEST, extensionIsTs, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -228,22 +221,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
-  const plainManifests = await Promise.all(
-    fileNames.map(async (fileName) => {
-      let project;
-      const {ext} = path.parse(fileName);
-      if (extensionIsTs(ext)) {
-        project = await loadProjectFromScript(getManifestPath(projectPath, fileName), path.resolve(projectPath));
-      } else {
-        project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName));
-      }
-      return project as {
-        specVersion: string;
-        templates?: TemplateKind[];
-        dataSources: DatasourceKind[];
-      };
-    })
-  );
+  const plainManifests = fileNames.map((fileName) => {
+    const project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName));
+    return project as {
+      specVersion: string;
+      templates?: TemplateKind[];
+      dataSources: DatasourceKind[];
+    };
+  });
 
   const expectKeys = ['datasources', 'templates'];
 

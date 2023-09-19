@@ -13,7 +13,7 @@ import {fileExistsSync} from 'tsconfig-paths/lib/filesystem';
 import {runWebpack} from '../controller/build-controller';
 import {resolveToAbsolutePath} from '../utils';
 
-const requireScriptWrapper2 = (scriptPath: string, outputPath: string): string =>
+const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `
   import yaml from 'js-yaml';
   import {lstatSync, readFileSync,existsSync,writeFileSync} from 'fs';
@@ -124,7 +124,7 @@ export default class Build extends Command {
     try {
       await util.promisify(execFile)(
         'ts-node',
-        ['-e', requireScriptWrapper2(projectManifestEntry, projectYamlPath)],
+        ['-e', requireScriptWrapper(projectManifestEntry, projectYamlPath)],
         {}
       );
     } catch (error) {

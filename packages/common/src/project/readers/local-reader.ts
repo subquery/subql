@@ -6,8 +6,7 @@ import * as path from 'path';
 import {Reader} from '@subql/types-core';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
-import {extensionIsTs, extensionIsYamlOrJSON} from '../../project';
-import {loadProjectFromScript} from './readerSandbox';
+import {extensionIsYamlOrJSON} from '../../project';
 
 export class LocalReader implements Reader {
   constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
@@ -25,9 +24,7 @@ export class LocalReader implements Reader {
       return Promise.resolve(undefined);
     }
     const {ext} = path.parse(this.manifestPath);
-    if (extensionIsTs(ext)) {
-      return loadProjectFromScript(this.manifestPath, this.root);
-    } else if (extensionIsYamlOrJSON(ext)) {
+    if (extensionIsYamlOrJSON(ext)) {
       return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
     }
   }
