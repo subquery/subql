@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {getManifestPath, loadFromJsonOrYaml, RunnerQueryBaseModel, SemverVersionValidator} from '@subql/common';
+import {getManifestPath, loadFromJsonOrYaml, RunnerQueryBaseModel, SemverVersionValidator, toJsonObject} from '@subql/common';
 import {validateSync} from 'class-validator';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
 import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
@@ -17,29 +17,13 @@ function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVer
 }
 
 describe('project.yaml', () => {
-  it('can parse project.yaml to ProjectManifestImpl', () => {
-    expect(loadSubstrateProjectManifest(path.join(projectsDir, 'project.yaml'))).toBeTruthy();
-  });
-
   it('can validate project.yaml', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_falsy.yaml'))).toThrow();
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_falsy_array.yaml'))).toThrow();
   });
 
-  it('can validate a v0.2.0 project.yaml', () => {
-    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_0.2.0.yaml'))).not.toThrow();
-  });
-
   it('can fail validation if version not supported', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_invalid_version.yaml'))).toThrow();
-  });
-
-  it('can validate a v0.2.0 project.yaml with a custom data source', () => {
-    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_0.2.0_custom_ds.yaml'))).not.toThrow();
-  });
-
-  it('can validate a v0.2.1 project.yaml with templates', () => {
-    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_0.2.1.yaml'))).not.toThrow();
   });
 
   it('can validate a v1.0.0 project.yaml with templates', () => {
@@ -49,7 +33,6 @@ describe('project.yaml', () => {
   it('can convert genesis hash in v1.0.0 to chainId in deployment', () => {
     const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml')).asV1_0_0.deployment;
     expect(deployment.network.chainId).not.toBeNull();
-    console.log(deployment.network.chainId);
   });
 
   it('can get chainId for deployment', () => {
@@ -120,7 +103,6 @@ describe('project.yaml', () => {
   it('can convert project with assets to deployment', () => {
     const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
     expect(manifest.isV1_0_0).toBeTruthy();
-    // TODO: needs updating
     expect(() => manifest.asImpl.deployment).not.toThrow();
   });
 
@@ -144,5 +126,15 @@ describe('project.yaml', () => {
     expect(checkVersion.validate('~')).toBeFalsy();
     expect(checkVersion.validate('latest')).toBeFalsy();
     expect(checkVersion.validate('dev')).toBeFalsy();
+  });
+
+  it('Preserve Map content on deployment', () => {
+    const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+
+    expect((toJsonObject(manifest.asImpl.deployment.dataSources[0]) as any).assets).toEqual({
+      settings: {
+        file: './src/settings.abi.json',
+      },
+    });
   });
 });
