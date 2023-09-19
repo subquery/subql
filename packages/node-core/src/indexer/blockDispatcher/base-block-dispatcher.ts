@@ -164,19 +164,17 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
   // Is called directly after a block is processed
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
-    const operationHash = this.storeService.getOperationMerkleRoot();
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
-
-    this.createPOI(height, blockHash, operationHash);
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
     } else {
       this.updateStoreMetadata(height);
-      if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
-        await this.poiService.ensureGenesisPoi(height);
-      }
+
+      const operationHash = this.storeService.getOperationMerkleRoot();
+      this.createPOI(height, blockHash, operationHash);
+
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);
       }
@@ -202,20 +200,23 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // First creation of POI
-  private createPOI(height: number, blockHash: string, operationHash: Uint8Array): void {
+  private async createPOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
     if (!this.nodeConfig.proofOfIndex) {
       return;
     }
-    if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-      const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
-      // This is the first creation of POI
-      this.poi.bulkUpsert([poiBlock]);
-      this.storeCacheService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}]);
-      this.eventEmitter.emit(PoiEvent.PoiTarget, {
-        height,
-        timestamp: Date.now(),
-      });
+    if (isNullMerkelRoot(operationHash)) {
+      return;
     }
+    const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
+    // This is the first creation of POI
+    this.poi.bulkUpsert([poiBlock]);
+    this.storeCacheService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}]);
+    this.eventEmitter.emit(PoiEvent.PoiTarget, {
+      height,
+      timestamp: Date.now(),
+    });
+
+    await this.poiService.ensureGenesisPoi(height);
   }
 
   private updateStoreMetadata(height: number, updateProcessed = true): void {
