@@ -125,7 +125,7 @@ export default class Build extends Command {
         {}
       );
     } catch (error) {
-      throw new Error(`When build, failed to execute project script ${projectManifestEntry}: ${error}`);
+      throw new Error(`Failed to build ${projectManifestEntry}: ${error}`);
     }
   }
 }
