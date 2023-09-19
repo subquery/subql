@@ -6,7 +6,7 @@ import {lstatSync, readFileSync, existsSync} from 'fs';
 import util from 'node:util';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_TS_MANIFEST, extensionIsTs} from '@subql/common';
+import {DEFAULT_TS_MANIFEST, extensionIsTs, tsProjectYamlPath} from '@subql/common';
 import glob from 'glob';
 import * as inquirer from 'inquirer';
 import {fileExistsSync} from 'tsconfig-paths/lib/filesystem';
@@ -105,15 +105,12 @@ export default class Build extends Command {
     }
   }
   private async generateManifestFromTs(projectManifestEntry: string): Promise<void> {
-    const projectYamlPath = path.join(
-      path.dirname(projectManifestEntry),
-      `${path.basename(projectManifestEntry, path.extname(projectManifestEntry))}.yaml`
-    );
+    const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
     if (fileExistsSync(projectYamlPath)) {
       const outputExist = await inquirer.prompt([
         {
           name: 'replaceCurrentManifest',
-          message: `Current project manifest already exist at (${projectYamlPath}), continue process to replace current file?`,
+          message: `Current project manifest already exist (${projectYamlPath}), replace current file and continue ?`,
           type: 'confirm',
         },
       ]);

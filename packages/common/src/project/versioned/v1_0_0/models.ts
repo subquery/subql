@@ -24,9 +24,10 @@ import {
   ValidateNested,
   IsArray,
   IsNotEmpty,
+  Allow,
 } from 'class-validator';
 import {SemverVersionValidator} from '../../utils';
-import {FileType, ProjectManifestBaseImpl} from '../base';
+import {FileType} from '../base';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
@@ -84,6 +85,12 @@ export class ParentProjectModel implements ParentProject {
 
 // Use for generic project validation only
 export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements CommonSubqueryProject {
+  @Allow()
+  definitions: object;
+  @IsString()
+  description: string;
+  @IsString()
+  repository: string;
   @Equals('1.0.0')
   specVersion: string;
   // To be validated in specific manifest type
@@ -135,7 +142,6 @@ export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfi
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
   chainId: string;
-  @ValidateNested()
   @IsOptional()
   chaintypes?: C;
   @IsOptional()

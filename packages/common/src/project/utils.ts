@@ -17,13 +17,13 @@ import detectPort from 'detect-port';
 import * as yaml from 'js-yaml';
 import Pino from 'pino';
 import {lt, prerelease, satisfies, valid, validRange} from 'semver';
+import {fileExistsSync} from 'tsconfig-paths/lib/filesystem';
 import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
 
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MANIFEST = 'project.yaml';
 export const DEFAULT_TS_MANIFEST = 'project.ts';
-export const DEFAULT_PKG = 'package.json';
 
 export function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
@@ -71,10 +71,7 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
   if (stats.isDirectory()) {
     project.root = subquery;
 
-    // Check for 'project.ts' first , then 'project.yaml'
-    if (fs.existsSync(path.resolve(subquery, DEFAULT_TS_MANIFEST))) {
-      project.manifests.push(path.resolve(subquery, DEFAULT_TS_MANIFEST));
-    } else if (fs.existsSync(path.resolve(subquery, DEFAULT_MANIFEST))) {
+    if (fs.existsSync(path.resolve(subquery, DEFAULT_MANIFEST))) {
       project.manifests.push(path.resolve(subquery, DEFAULT_MANIFEST));
     }
     // Then check for a 'multichain manifest'
@@ -98,8 +95,15 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
     }
     project.root = dir;
     if (extensionIsTs(ext)) {
-      project.manifests.push(subquery);
+      const projectYamlPath = tsProjectYamlPath(subquery);
+      if (!fileExistsSync(projectYamlPath)) {
+        throw new Error(
+          `Could not find manifest ${projectYamlPath}, if pointint to a typescript manifest, please ensure build successfully`
+        );
+      }
+      project.manifests.push(projectYamlPath);
     } else {
+      // when file path is yaml
       const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
       if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
         addMultichainManifestProjects(dir, multichainManifestContent, project);
@@ -264,3 +268,6 @@ export class FileReferenceImp<T> implements ValidatorConstraintInterface {
     return typeof fileReference === 'object' && 'file' in fileReference && typeof fileReference.file === 'string';
   }
 }
+
+export const tsProjectYamlPath = (tsManifestEntry: string) =>
+  path.join(path.dirname(tsManifestEntry), `${path.basename(tsManifestEntry, path.extname(tsManifestEntry))}.yaml`);
