@@ -110,7 +110,7 @@ export default class Build extends Command {
       const outputExist = await inquirer.prompt([
         {
           name: 'replaceCurrentManifest',
-          message: `Current project manifest already exist (${projectYamlPath}), replace current file and continue ?`,
+          message: `Current project manifest already exists (${projectYamlPath}), replace current file and continue?`,
           type: 'confirm',
         },
       ]);
