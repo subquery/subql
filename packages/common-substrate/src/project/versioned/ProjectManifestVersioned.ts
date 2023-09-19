@@ -43,6 +43,10 @@ export class SubstrateProjectManifestVersioned implements ISubstrateProjectManif
     return this._impl as ProjectManifestV1_0_0Impl;
   }
 
+  toDeployment(): string | undefined {
+    return this._impl.deployment.toYaml();
+  }
+
   validate(): void {
     return this._impl.validate();
   }

@@ -3,10 +3,11 @@
 
 import {toJsonObject} from '@subql/common';
 import {FileReference, Processor} from '@subql/types-core';
-import {plainToInstance} from 'class-transformer';
-import {Allow, IsObject, IsOptional, IsString, validateSync} from 'class-validator';
+import {plainToInstance, Type} from 'class-transformer';
+import {Allow, Equals, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
+import yaml from 'js-yaml';
 
-export abstract class ProjectManifestBaseImpl<D extends object> {
+export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   @Allow()
   definitions: object;
   @IsString()
@@ -17,6 +18,7 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   specVersion: string;
 
   protected _deployment: D;
+  abstract toYaml(): string;
 
   protected constructor(private readonly _deploymentClass: new () => D) {}
 
@@ -36,6 +38,10 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
       throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
     }
   }
+
+  toDeployment(): string {
+    return this.deployment.toYaml();
+  }
 }
 
 export class FileType implements FileReference {
@@ -47,4 +53,22 @@ export class ProcessorImpl<O = any> extends FileType implements Processor<O> {
   @IsOptional()
   @IsObject()
   options?: O;
+}
+
+export class BaseDeploymentV1_0_0 {
+  @Equals('1.0.0')
+  @IsString()
+  specVersion: string;
+  @ValidateNested()
+  @Type(() => FileType)
+  schema: FileType;
+
+  toYaml(): string {
+    // plainToClass was used but ran into issues
+    // We convert it to a plain object to get Maps converted to Records/Objects
+    return yaml.dump(toJsonObject(this), {
+      sortKeys: true,
+      condenseFlow: true,
+    });
+  }
 }

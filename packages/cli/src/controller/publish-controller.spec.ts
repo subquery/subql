@@ -137,8 +137,8 @@ describe('Cli publish', () => {
   it('convert to deployment and removed descriptive field', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
     const reader = await ReaderFactory.create(projectDir);
-    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
-    const deployment = manifest.deployment;
+    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema());
+    const deployment = manifest.toDeployment();
     expect(deployment).not.toContain('author');
     expect(deployment).not.toContain('endpoint');
     expect(deployment).not.toContain('dictionary');

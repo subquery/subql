@@ -13,7 +13,7 @@ export class RequireValidRunner implements Rule {
     const schema = ctx.data.schema;
     if (schema.isV1_0_0) {
       try {
-        schema.asImpl.deployment;
+        schema.toDeployment();
       } catch (e) {
         return false;
       }

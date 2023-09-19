@@ -13,7 +13,6 @@ import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {Reader} from '@subql/types-core';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
-import yaml from 'js-yaml';
 
 const PIN_SERVICE = 'onfinality';
 
@@ -84,11 +83,9 @@ export async function uploadToIpfs(
     const deployment = await replaceFileReferences(reader.root, manifest.deployment, authToken, ipfs);
 
     // Use JSON.* to convert Map to Object
-    const deploymentStr = yaml.dump(deployment, {sortKeys: true, condenseFlow: true});
-
     contents.push({
       path: path.join(directory ?? '', path.basename(project)),
-      content: deploymentStr,
+      content: deployment.toYaml(),
     });
   }
 

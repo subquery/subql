@@ -25,7 +25,9 @@ describe('project.yaml', () => {
   it('can fail validation if version not supported', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_invalid_version.yaml'))).toThrow();
   });
-
+  it('can validate a v1.0.0 project.yaml with a custom data source', () => {
+    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_custom_ds.yaml'))).not.toThrow();
+  });
   it('can validate a v1.0.0 project.yaml with templates', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'))).not.toThrow();
   });
@@ -103,7 +105,7 @@ describe('project.yaml', () => {
   it('can convert project with assets to deployment', () => {
     const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
     expect(manifest.isV1_0_0).toBeTruthy();
-    expect(() => manifest.asImpl.deployment).not.toThrow();
+    expect(() => manifest.toDeployment()).not.toThrow();
   });
 
   it('validate versions', () => {

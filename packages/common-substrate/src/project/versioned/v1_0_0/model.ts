@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  BaseDeploymentV1_0_0,
   FileType,
   ParentProjectModel,
   ProjectManifestBaseImpl,
@@ -18,17 +19,8 @@ import {
   SubstrateProjectManifestV1_0_0,
 } from '@subql/types';
 import {BaseMapping, NodeSpec, ParentProject, QuerySpec, RunnerSpecs} from '@subql/types-core';
-import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
-import {
-  Equals,
-  IsArray,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-  validateSync,
-} from 'class-validator';
+import {plainToInstance, Transform, TransformFnParams, Type} from 'class-transformer';
+import {Equals, IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
@@ -98,26 +90,20 @@ export class ProjectNetworkV1_0_0 extends CommonProjectNetworkV1_0_0<FileType> {
   chaintypes?: FileType;
 }
 
-export class DeploymentV1_0_0 {
+export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @Transform((params) => {
     if (params.value.genesisHash && !params.value.chainId) {
       params.value.chainId = params.value.genesisHash;
     }
-    return plainToClass(ProjectNetworkDeploymentV1_0_0, params.value);
+    return plainToInstance(ProjectNetworkDeploymentV1_0_0, params.value);
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
   network: ProjectNetworkDeploymentV1_0_0;
-  @Equals('1.0.0')
-  @IsString()
-  specVersion: string;
   @IsObject()
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
   runner: RunnerSpecs;
-  @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => SubstrateCustomDataSourceImpl, {
@@ -152,6 +138,10 @@ export class ProjectManifestV1_0_0Impl
 {
   constructor() {
     super(DeploymentV1_0_0);
+  }
+
+  toYaml(): string {
+    return this.deployment.toYaml();
   }
 
   @Equals('1.0.0')

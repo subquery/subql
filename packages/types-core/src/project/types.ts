@@ -113,6 +113,7 @@ export interface IProjectManifest<D> {
   description: string;
   repository: string;
   dataSources: D[];
+  toDeployment(): string;
   validate(): void;
 }
 
