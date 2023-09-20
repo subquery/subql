@@ -18,14 +18,14 @@ const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   const project = (require('${scriptPath}')).default;
   // serializing map object
   for(const d of project.dataSources){
-    if(d?.assets){
+    if(d.assets){
       const assetsObject = Object.fromEntries(d.assets); 
       d.assets = assetsObject
     }
   }
   if(project.templates){
     for(const t of project.templates){
-      if(t?.assets){
+      if(t.assets){
         const assetsObject = Object.fromEntries(t.assets); 
         t.assets = assetsObject
       }
