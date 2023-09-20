@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.3] - 2023-09-20
 ### Changed
 - Downgrade `subql/common` due to breaking changes (#176)
 
@@ -257,7 +259,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.3..HEAD
+[2.10.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.1...node-cosmos/2.10.3
 [2.10.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.0...node-cosmos/2.10.1
 [2.10.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.8.0...node-cosmos/2.10.0
 [2.8.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.5.3...node-cosmos/2.8.0
