@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { isMainThread } from 'worker_threads';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -42,9 +43,10 @@ export class BlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
-    storeService: StoreService,
+    @Inject(isMainThread ? StoreService : 'Null') storeService: StoreService,
+    @Inject(isMainThread ? StoreCacheService : 'Null')
     storeCacheService: StoreCacheService,
-    poiService: PoiService,
+    @Inject(isMainThread ? PoiService : 'Null') poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
   ) {

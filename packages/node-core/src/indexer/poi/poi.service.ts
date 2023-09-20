@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {isMainThread} from 'worker_threads';
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_FETCH_RANGE, delay, POI_AWAIT_TIME} from '@subql/common';
@@ -100,7 +101,7 @@ export class PoiService implements OnApplicationShutdown {
       const tableName = this.poiRepo.model.getTableName().toString();
       const checkAttributesQuery = `SELECT
         (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "operationHashRoot" IS NOT NULL)) AS operationHashRoot_nullable,
-        (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "chainBlockHash" IS NOT NULL)) AS chainBlockHash_nullable,    
+        (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "chainBlockHash" IS NOT NULL)) AS chainBlockHash_nullable,
         (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "hash" IS NOT NULL)) AS hash_nullable,
         (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "parentHash" IS NOT NULL)) AS parent_nullable,
         (EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = '_poi' AND column_name = 'mmrRoot' AND table_schema = '${schema}' )) AS mmr_exists;`;

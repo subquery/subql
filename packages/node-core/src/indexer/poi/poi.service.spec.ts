@@ -27,7 +27,7 @@ function createPoiService(): PoiService {
   const eventEmitter = new EventEmitter2();
   const storeCache = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
 
-  storeCache.setRepos({} as any, undefined);
+  storeCache.init(true, false, {} as any, undefined);
   storeCache.flushCache = jest.fn();
   return new PoiService(storeCache, eventEmitter, {id: 'testId'} as ISubqueryProject);
 }

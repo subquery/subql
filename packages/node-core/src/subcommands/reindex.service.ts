@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {isMainThread} from 'worker_threads';
 import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';

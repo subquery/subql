@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {getHeapStatistics} from 'v8';
-import {OnApplicationShutdown} from '@nestjs/common';
+import {isMainThread} from 'worker_threads';
+import {Inject, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';

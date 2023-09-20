@@ -260,7 +260,7 @@ describe('Store Cache flush with order', () => {
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, true);
+    storeService.init(false, true, {} as any, undefined);
   });
 
   it('when set/remove multiple model entities, operation index should added to record in sequential order', () => {
@@ -292,12 +292,12 @@ describe('Store Cache flush with order', () => {
 describe('Store Cache flush with non-historical', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, false);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService.init(false, false, {} as any, undefined);
   });
 
   it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
@@ -327,7 +327,7 @@ describe('Store Cache flush with non-historical', () => {
     );
 
     //simulate flush here
-    const tx = await sequilize.transaction();
+    const tx = await sequelize.transaction();
     await (entity1Model as any).flush(tx, 5);
 
     const sequelizeModel1 = (entity1Model as any).model;
@@ -355,7 +355,7 @@ describe('Store cache upper threshold', () => {
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, false);
+    storeService.init(false, false, {} as any, undefined);
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {

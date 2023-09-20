@@ -116,15 +116,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
         await this.storeService.storeCache.flushCache(true);
         void this.poiService.syncPoi(undefined, this.nodeConfig.debug);
       }
-    } else {
-      this._schema = await this.getExistingProjectSchema();
-
-      await this.sequelize.sync();
-
-      assert(this._schema, 'Schema should be created in main thread');
-      await this.storeService.initCoreTables(this._schema);
-      await this.initUpgradeService();
-      await this.initDbSchema();
     }
 
     // Used to load assets into DS-processor, has to be done in any thread
@@ -156,6 +147,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   private async initHotSchemaReload(): Promise<void> {
     await initHotSchemaReload(this.schema, this.storeService);
   }
+
   private async initDbSchema(): Promise<void> {
     await initDbSchema(this.project, this.schema, this.storeService);
   }
