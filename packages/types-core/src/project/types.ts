@@ -15,29 +15,29 @@ export interface CommonSubqueryProject<
   T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>
 > {
   /**
-   * The version of the SubQuery project.
+   * The version string of your SubQuery project.
    * @type {string}
    * @default "1.0.0"
    */
   version?: string;
   /**
-   * The name of the SubQuery project.
+   * The name of your SubQuery project.
    * @type {string}
    */
   name?: string;
   /**
-   * The specVersion of the SubQuery project, latest is 1.0.0
+   * The specVersion of the SubQuery project manifest file, the latest and suggested is 1.0.0
    * @type {string}
    * @default "1.0.0"
    */
   specVersion: string;
   /**
-   * A description of the SubQuery project.
+   * A description of your SubQuery project.
    * @type {string}
    */
   description?: string;
   /**
-   * The graphql schema reference to a file.
+   * The location of your GraphQL schema file.
    * @type {FileReference}
    */
   schema: FileReference;
@@ -48,13 +48,14 @@ export interface CommonSubqueryProject<
    */
   readonly runner?: RunnerSpecs;
   /**
-   * The parent project of current project.
+   * The parent manifest of current project.
    * @readonly
    * @type {ParentProject}
    */
   readonly parent?: ParentProject;
   /**
    * The network configuration for the SubQuery project.
+   * 
    * This defines what network you are wanting to index as well as the details on how to conect to it.
    * @readonly
    * @type {N}
@@ -70,6 +71,7 @@ export interface CommonSubqueryProject<
   readonly dataSources: DS[];
   /**
    * An array of project templates associated with the project.
+   * 
    * These are the same as datasources but instead of having a startBlock they have a unique name.
    * These are used to dynamically create data sources, this is useful when you don't know the start block.
    * e.g When a factory creates a new instance of a contract you can initialize a datasource from a template in your mapping function.
@@ -86,12 +88,16 @@ export interface CommonSubqueryProject<
  */
 export interface IProjectNetworkConfig extends ProjectNetworkConfig {
   /**
-   * The identity of the chain.
+   * The unique identity of the chain.
+   * 
+   * This differs for different blockchain ecosystems, please refer to our documentation
    * @type {string}
+   * @example
+   * chainId: '1' // Ethereum
    * @example
    * chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' // Polkadot
    * @example
-   * chainId: '1' // Ethereum
+   * chainId: 'juno-1' // Cosmos Juno
    * */
   chainId: string;
 }
@@ -124,12 +130,20 @@ export interface IProjectManifest<D> {
 export interface ProjectNetworkConfig {
   /**
    * The endpoint(s) for the network connection, which can be a single string or an array of strings.
+   * 
+   * Endpoints ideally should non-pruned archive nodes (so you have access for the entire chain state)
+   * We recommend providing more than one endpoint for improved reliability, performance, and uptime.
+   * Public nodes may be rate limited, which can affect indexing speed
+   * When developing your project we suggest adding a private API key
+   * 
    * @type {string | string[]}
    */
   endpoint: string | string[];
 
   /**
-   * The subquery network dictionary (optional).
+   * The SubQuery network dictionary endpoint (optional).
+   * This significantly speeds up indexing of your project.
+   * 
    * @type {string}
    */
   dictionary?: string;
@@ -149,7 +163,7 @@ export interface ProjectNetworkConfig {
  */
 export interface FileReference {
   /**
-   * The path or name of the referenced file.
+   * The path or name of the referenced file from the root of this project.
    * @type {string}
    */
   file: string;

@@ -42,7 +42,7 @@ export interface NodeSpec {
   name: string;
 
   /**
-   * The version of the indexer node.
+   * The version number of the indexer node.
    * @type {string}
    * @default "*"
    */
@@ -67,7 +67,7 @@ export interface QuerySpec {
    */
   name: string;
   /**
-   * The version of the query service.
+   * The version number of the query service.
    * @type {string}
    * @default "*"
    */
@@ -80,20 +80,30 @@ export interface QuerySpec {
  */
 export interface NodeOptions {
   /**
-   * Indicates whether historical data is enabled for the indexer (optional).
+   * Indicates whether historical state tracking is enabled for the indexer (optional).
    * @type {boolean}
+   * @default "true"
    */
   historical?: boolean;
 
   /**
    * Indicates whether unsafe mode are allowed for the indexer (optional).
+   * 
+   * Unsafe mode controls various features that compromise the determinsm of a SubQuery project.
+   * Unsafe allows any imports which greatly increases functionality with the tradeoff of decreased security
    * @type {boolean}
+   * @default "false"
    */
   unsafe?: boolean;
 
   /**
    * Indicates whether unfinalized blocks are supported by the indexer (optional).
+   * 
+   * This allows you to index blocks before they become finalized.
+   * It can be very useful if you want the most up-to-date data possible.
+   * It will detect any forks and remove any blocks that don't become finalized.
    * @type {boolean}
+   * @default "false"
    */
   unfinalizedBlocks?: boolean;
 
