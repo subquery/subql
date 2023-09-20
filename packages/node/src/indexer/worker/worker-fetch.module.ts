@@ -5,33 +5,32 @@ import { isMainThread } from 'worker_threads';
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  StoreService,
-  PoiService,
   ConnectionPoolService,
-  StoreCacheService,
   WorkerDynamicDsService,
   WorkerConnectionPoolStateManager,
   ConnectionPoolStateManager,
   NodeConfig,
 } from '@subql/node-core';
-import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from './api.service';
-import { ApiPromiseConnection } from './apiPromise.connection';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { IndexerManager } from './indexer.manager';
-import { ProjectService } from './project.service';
-import { WorkerRuntimeService } from './runtime/workerRuntimeService';
-import { SandboxService } from './sandbox.service';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-import { WorkerService } from './worker/worker.service';
-import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlocks.service';
+import { SubqueryProject } from '../../configure/SubqueryProject';
+import { ApiService } from '../api.service';
+import { ApiPromiseConnection } from '../apiPromise.connection';
+import { DsProcessorService } from '../ds-processor.service';
+import { DynamicDsService } from '../dynamic-ds.service';
+import { IndexerManager } from '../indexer.manager';
+import { ProjectService } from '../project.service';
+import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
+import { SandboxService } from '../sandbox.service';
+import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
+import { WorkerService } from './worker.service';
+import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.service';
+
+/**
+ * The alternative version of FetchModule for worker
+ */
 
 @Module({
   providers: [
     IndexerManager,
-    StoreCacheService,
-    StoreService,
     {
       provide: ConnectionPoolStateManager,
       useFactory: () => {
@@ -77,12 +76,10 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         return new WorkerDynamicDsService((global as any).host);
       },
     },
-    PoiService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
-    WorkerService,
     {
       provide: UnfinalizedBlocksService,
       useFactory: () => {
@@ -92,8 +89,9 @@ import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlock
         return new WorkerUnfinalizedBlocksService((global as any).host);
       },
     },
+    WorkerService,
     WorkerRuntimeService,
   ],
-  exports: [StoreService],
+  exports: [],
 })
-export class IndexerModule {}
+export class WorkerFetchModule {}

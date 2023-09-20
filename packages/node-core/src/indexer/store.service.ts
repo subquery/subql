@@ -169,8 +169,7 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach);
-    this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
+    this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
 
     this._metadataModel = this.storeCache.metadata;
 

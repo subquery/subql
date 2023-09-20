@@ -434,7 +434,7 @@ export class CachedModel<
       const numValues = newValue.getValues().length;
       if (numValues) {
         newCounter += numValues;
-        acc[key] = value.fromAboveHeight(blockHeight);
+        acc[key] = newValue;
       }
       return acc;
     }, {} as SetData<T>);

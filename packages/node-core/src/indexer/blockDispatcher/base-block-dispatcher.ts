@@ -5,11 +5,10 @@ import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
-import {NodeConfig} from '../../configure';
-import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
+import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
-import {IQueue} from '../../utils';
+import {IQueue, mainThreadOnly} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiBlock, PoiService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
@@ -129,6 +128,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   //  Compare it with current indexing number, if last corrected is already indexed
   //  rewind, also flush queued blocks, drop current indexing transaction, set last processed to correct block too
   //  if rollback is greater than current index flush queue only
+  @mainThreadOnly()
   async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
       logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
@@ -146,6 +146,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // Is called directly before a block is processed
+  @mainThreadOnly()
   protected async preProcessBlock(height: number): Promise<void> {
     this.storeService.setBlockHeight(height);
 
@@ -159,6 +160,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // Is called directly after a block is processed
+  @mainThreadOnly()
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
     const operationHash = this.storeService.getOperationMerkleRoot();
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
@@ -198,6 +200,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // First creation of POI
+  @mainThreadOnly()
   private createPOI(height: number, blockHash: string, operationHash: Uint8Array): void {
     if (!this.nodeConfig.proofOfIndex) {
       return;
@@ -214,6 +217,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     }
   }
 
+  @mainThreadOnly()
   private updateStoreMetadata(height: number, updateProcessed = true): void {
     const meta = this.storeCacheService.metadata;
     // Update store metadata
