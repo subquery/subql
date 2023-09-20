@@ -125,11 +125,6 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
     keepDiscriminatorProperty: true,
   })
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
-
-  @IsOptional()
-  @IsObject()
-  @Type(() => ParentProjectModel)
-  parent?: ParentProject;
 }
 
 export class ProjectManifestV1_0_0Impl
@@ -138,10 +133,6 @@ export class ProjectManifestV1_0_0Impl
 {
   constructor() {
     super(DeploymentV1_0_0);
-  }
-
-  toYaml(): string {
-    return this.deployment.toYaml();
   }
 
   @Equals('1.0.0')

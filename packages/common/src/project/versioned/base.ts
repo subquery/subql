@@ -1,11 +1,12 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {toJsonObject} from '@subql/common';
-import {FileReference, Processor} from '@subql/types-core';
+import {FileReference, ParentProject, Processor} from '@subql/types-core';
 import {plainToInstance, Type} from 'class-transformer';
 import {Allow, Equals, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
+import {toJsonObject} from '../utils';
+import {ParentProjectModel} from './v1_0_0/models';
 
 export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   @Allow()
@@ -18,7 +19,6 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   specVersion: string;
 
   protected _deployment: D;
-  abstract toYaml(): string;
 
   protected constructor(private readonly _deploymentClass: new () => D) {}
 
@@ -62,6 +62,10 @@ export class BaseDeploymentV1_0_0 {
   @ValidateNested()
   @Type(() => FileType)
   schema: FileType;
+  @IsOptional()
+  @IsObject()
+  @Type(() => ParentProjectModel)
+  parent?: ParentProject;
 
   toYaml(): string {
     // plainToClass was used but ran into issues
