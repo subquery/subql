@@ -8,8 +8,6 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {DEFAULT_TS_MANIFEST, extensionIsTs, tsProjectYamlPath} from '@subql/common';
 import glob from 'glob';
-import * as inquirer from 'inquirer';
-import {fileExistsSync} from 'tsconfig-paths/lib/filesystem';
 import {runWebpack} from '../controller/build-controller';
 import {resolveToAbsolutePath} from '../utils';
 
@@ -19,19 +17,14 @@ const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   import {lstatSync, readFileSync,existsSync,writeFileSync} from 'fs';
   const project = require('${scriptPath}');
   const yamlOutput = yaml.dump(project.default);
-  writeFileSync('${outputPath}', yamlOutput);
-  console.log(\`Project manifest generated to ${outputPath}\`);
+  writeFileSync('${outputPath}', \`# // Auto-generated , DO NOT EDIT\n\${yamlOutput}\`);
   `;
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
 
   static flags = {
-    location: Flags.string({char: 'l', description: 'local folder to run build'}),
-    file: Flags.string({
-      char: 'f',
-      description: 'build with specify manifest file path (will overwrite -l if both used)',
-    }),
+    location: Flags.string({char: 'f', description: 'local folder or manifest file to run build'}),
     output: Flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
     mode: Flags.string({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
     silent: Flags.boolean({char: 's', description: 'silent mode'}),
@@ -40,15 +33,29 @@ export default class Build extends Command {
   async run(): Promise<void> {
     try {
       const {flags} = await this.parse(Build);
-      const directory = flags.file
-        ? path.dirname(flags.file)
-        : flags.location
-        ? resolveToAbsolutePath(flags.location)
-        : process.cwd();
+      const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
       const isDev = flags.mode === 'development' || flags.mode === 'dev';
 
-      if (!lstatSync(directory).isDirectory()) {
-        this.error('Argument `location` is not a valid directory');
+      let directory: string;
+      let projectManifestEntry: string;
+      // lstatSync will throw if location not exist
+      if (lstatSync(location).isDirectory()) {
+        directory = location;
+        projectManifestEntry = path.join(directory, DEFAULT_TS_MANIFEST);
+      } else if (lstatSync(location).isFile()) {
+        directory = path.dirname(location);
+        projectManifestEntry = location;
+      } else {
+        this.error('Argument `location` is not a valid directory or file');
+      }
+
+      // Only build projectManifestEntry is in typescript
+      if (existsSync(projectManifestEntry) && extensionIsTs(path.extname(projectManifestEntry))) {
+        try {
+          await this.generateManifestFromTs(projectManifestEntry);
+        } catch (e) {
+          throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
+        }
       }
 
       // Get the output location from the project package.json main field
@@ -60,15 +67,6 @@ export default class Build extends Command {
       let buildEntries: Record<string, string> = {
         index: defaultEntry,
       };
-
-      const projectManifestEntry = flags.file ?? path.join(directory, DEFAULT_TS_MANIFEST);
-      if (existsSync(projectManifestEntry) && extensionIsTs(path.extname(projectManifestEntry))) {
-        try {
-          await this.generateManifestFromTs(projectManifestEntry);
-        } catch (e) {
-          throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
-        }
-      }
       glob.sync(path.join(directory, 'src/test/**/*.test.ts')).forEach((testFile) => {
         const testName = path.basename(testFile).replace('.ts', '');
         buildEntries[`test/${testName}`] = testFile;
@@ -106,24 +104,13 @@ export default class Build extends Command {
   }
   private async generateManifestFromTs(projectManifestEntry: string): Promise<void> {
     const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
-    if (fileExistsSync(projectYamlPath)) {
-      const outputExist = await inquirer.prompt([
-        {
-          name: 'replaceCurrentManifest',
-          message: `Current project manifest already exist (${projectYamlPath}), replace current file and continue ?`,
-          type: 'confirm',
-        },
-      ]);
-      if (outputExist.replaceCurrentManifest === false) {
-        return;
-      }
-    }
     try {
       await util.promisify(execFile)(
         'ts-node',
         ['-e', requireScriptWrapper(projectManifestEntry, projectYamlPath)],
         {}
       );
+      this.log(`Project manifest generated to ${projectYamlPath}`);
     } catch (error) {
       throw new Error(`When build, failed to execute project script ${projectManifestEntry}: ${error}`);
     }

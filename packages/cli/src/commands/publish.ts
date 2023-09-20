@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {extensionIsTs, getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
+import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
 import {resolveToAbsolutePath} from '../utils';
 import Build from './build';
@@ -18,44 +18,24 @@ export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
-    file: Flags.string({
-      char: 'f',
-      description: 'from specify manifest file path (will overwrite -l if both used)',
-    }),
-    location: Flags.string({char: 'l', description: 'from project folder'}),
+    location: Flags.string({char: 'f', description: 'from project folder or specify manifest file'}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
     output: Flags.boolean({char: 'o', description: 'Output IPFS CID', required: false}),
   };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Publish);
+    const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
 
-    let hasBuilt: boolean;
-    if (flags.file) {
-      const {dir, ext} = path.parse(flags.file);
-      if (extensionIsTs(ext)) {
-        // build in advance to generate project yaml file
-        await Build.run(['--file', flags.file, '-s']);
-        hasBuilt = true;
-      }
+    try {
+      await Build.run(['--location', location, '-s']);
+    } catch (e) {
+      this.log(e);
+      this.error('Failed to build project');
     }
-    // This can be a file path or dir path
-    const location = flags.file
-      ? resolveToAbsolutePath(flags.file)
-      : flags.location
-      ? resolveToAbsolutePath(flags.location)
-      : process.cwd();
+
+    // Make sure build first, generated project yaml could be added to the project (instead of ts)
     const project = getProjectRootAndManifest(location);
-
-    // Ensure that the project is built
-    if (!hasBuilt) {
-      try {
-        await Build.run(['--location', project.root, '-s']);
-      } catch (e) {
-        this.log(e);
-        this.error('Failed to build project');
-      }
-    }
 
     let authToken: string;
 

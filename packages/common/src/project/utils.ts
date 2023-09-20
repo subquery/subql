@@ -98,14 +98,17 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       const projectYamlPath = tsProjectYamlPath(subquery);
       if (!fileExistsSync(projectYamlPath)) {
         throw new Error(
-          `Could not find manifest ${projectYamlPath}, if pointint to a typescript manifest, please ensure build successfully`
+          `Could not find manifest ${projectYamlPath}, if pointing to a typescript manifest, please ensure build successfully`
         );
       }
       project.manifests.push(projectYamlPath);
     } else {
       // when file path is yaml
       const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
-      if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
+      // The project manifest could be empty
+      if (multichainManifestContent === null) {
+        throw new Error(`Read manifest content is null, ${subquery}`);
+      } else if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
         addMultichainManifestProjects(dir, multichainManifestContent, project);
       } else {
         project.manifests.push(subquery);
@@ -269,5 +272,4 @@ export class FileReferenceImp<T> implements ValidatorConstraintInterface {
   }
 }
 
-export const tsProjectYamlPath = (tsManifestEntry: string) =>
-  path.join(path.dirname(tsManifestEntry), `${path.basename(tsManifestEntry, path.extname(tsManifestEntry))}.yaml`);
+export const tsProjectYamlPath = (tsManifestEntry: string) => tsManifestEntry.replace('.ts', '.yaml');
