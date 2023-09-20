@@ -6,6 +6,7 @@ import {getLogger} from '@subql/node-core/logger';
 import {Transaction} from '@subql/x-sequelize';
 import {hasValue} from '../../utils';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
+import {Cacheable} from './cacheable';
 import {ICachedModelControl} from './types';
 
 type MetadataKey = keyof MetadataKeys;
@@ -13,7 +14,7 @@ const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCou
 
 const logger = getLogger('CacheMetadataModel');
 
-export class CacheMetadataModel implements ICachedModelControl {
+export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
@@ -21,7 +22,9 @@ export class CacheMetadataModel implements ICachedModelControl {
 
   flushableRecordCounter = 0;
 
-  constructor(readonly model: MetadataRepo) {}
+  constructor(readonly model: MetadataRepo) {
+    super();
+  }
 
   async find<K extends MetadataKey>(key: K, fallback?: MetadataKeys[K]): Promise<MetadataKeys[K] | undefined> {
     if (!this.getCache[key]) {
@@ -97,12 +100,11 @@ export class CacheMetadataModel implements ICachedModelControl {
     return !!Object.keys(this.setCache).length;
   }
 
-  async flush(tx: Transaction, blockHeight?: number): Promise<void> {
+  async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
       .filter(([key]) => !incrementKeys.includes(key as MetadataKey))
       .map(([key, value]) => ({key, value} as Metadata));
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
-    let skipLastProcessedHeight = true;
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {
       const lastProcessedHeight = Number(ops[lastProcessedHeightIdx].value);
       assert(blockHeight <= lastProcessedHeight, 'flush inprocessing data');
@@ -110,10 +112,9 @@ export class CacheMetadataModel implements ICachedModelControl {
         // need to overwrite the lastProcessedHeight value to blockHeight
         logger.debug(`metadata cache flush: lastProcessedHeight is ahead of flushing height`);
         ops.splice(lastProcessedHeightIdx, 1, {key: 'lastProcessedHeight', value: blockHeight});
-        skipLastProcessedHeight = false;
       }
     }
-    const pendingFlush = Promise.all([
+    await Promise.all([
       this.model.bulkCreate(ops, {
         transaction: tx,
         updateOnDuplicate: ['key', 'value'],
@@ -123,11 +124,6 @@ export class CacheMetadataModel implements ICachedModelControl {
         .filter(Boolean),
       this.model.destroy({where: {key: this.removeCache}}),
     ]);
-    // Don't await DB operations to complete before clearing.
-    // This allows new data to be cached while flushing
-    this.clear(skipLastProcessedHeight);
-
-    await pendingFlush;
   }
 
   // This is current only use for migrate Poi
@@ -140,10 +136,10 @@ export class CacheMetadataModel implements ICachedModelControl {
     }
   }
 
-  private clear(skipLastProcessedHeight: boolean): void {
+  protected clear(blockHeight?: number): void {
     const newSetCache: Partial<MetadataKeys> = {};
     this.flushableRecordCounter = 0;
-    if (!skipLastProcessedHeight) {
+    if (blockHeight !== undefined) {
       newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
       this.flushableRecordCounter = 1;
     }
