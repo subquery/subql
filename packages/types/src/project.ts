@@ -43,7 +43,7 @@ export enum SubstrateHandlerKind {
   Block = 'substrate/BlockHandler',
 
   /**
-   * Handler for Substrate calls.
+   * Handler for Substrate extrinsic calls.
    */
   Call = 'substrate/CallHandler',
 
