@@ -242,7 +242,7 @@ describe('UnfinalizedBlocksService', () => {
       new SchedulerRegistry()
     );
 
-    storeCache.setRepos({} as any, undefined);
+    storeCache.init(true, false, {} as any, undefined);
 
     storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,

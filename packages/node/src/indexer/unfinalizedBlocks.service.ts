@@ -5,7 +5,9 @@ import { Injectable } from '@nestjs/common';
 import { Header as SubstrateHeader } from '@polkadot/types/interfaces';
 import {
   BaseUnfinalizedBlocksService,
+  getLogger,
   Header,
+  mainThreadOnly,
   NodeConfig,
   StoreCacheService,
 } from '@subql/node-core';
@@ -20,6 +22,8 @@ export function substrateHeaderToHeader(header: SubstrateHeader): Header {
   };
 }
 
+const logger = getLogger('unfinalized-service');
+
 @Injectable()
 export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
   BlockContent | LightBlockContent
@@ -32,10 +36,12 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
     super(nodeConfig, storeCache);
   }
 
+  @mainThreadOnly()
   protected blockToHeader(block: BlockContent): Header {
     return substrateHeaderToHeader(block.block.block.header);
   }
 
+  @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
     return substrateHeaderToHeader(
       await this.apiService.api.rpc.chain.getHeader(
@@ -44,12 +50,15 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
     );
   }
 
+  // TODO: add cache here
+  @mainThreadOnly()
   protected async getHeaderForHash(hash: string): Promise<Header> {
     return substrateHeaderToHeader(
       await this.apiService.api.rpc.chain.getHeader(hash),
     );
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHeight(height: number): Promise<Header> {
     const hash = await this.apiService.api.rpc.chain.getBlockHash(height);
     return this.getHeaderForHash(hash.toHex());

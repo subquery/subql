@@ -157,7 +157,7 @@ function createIndexerManager(
   connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
   nodeConfig: NodeConfig,
 ): IndexerManager {
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const eventEmitter = new EventEmitter2();
   const apiService = new ApiService(
     project,
@@ -169,13 +169,13 @@ function createIndexerManager(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const storeCache = new StoreCacheService(
-    sequilize,
+    sequelize,
     nodeConfig,
     eventEmitter,
     new SchedulerRegistry(),
   );
   const storeService = new StoreService(
-    sequilize,
+    sequelize,
     nodeConfig,
     storeCache,
     project,
@@ -198,7 +198,7 @@ function createIndexerManager(
     dsProcessorService,
     apiService,
     poiService,
-    sequilize,
+    sequelize,
     project,
     projectUpgradeService,
     storeService,

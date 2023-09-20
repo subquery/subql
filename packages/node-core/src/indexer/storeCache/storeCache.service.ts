@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {isMainThread} from 'worker_threads';
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
@@ -50,23 +51,19 @@ export class StoreCacheService extends BaseCacheService {
     }
   }
 
-  init(historical: boolean, useCockroachDb: boolean): void {
+  init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void {
     this._useCockroachDb = useCockroachDb;
     this._historical = historical;
+    this.metadataRepo = meta;
+    this.poiRepo = poi;
+    // Add flush interval after repos been set,
+    // otherwise flush could not find lastProcessHeight from metadata
+    this.setupInterval(INTERVAL_NAME, this.config.storeFlushInterval);
   }
 
   getNextStoreOperationIndex(): number {
     this._storeOperationIndex += 1;
     return this._storeOperationIndex;
-  }
-
-  setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
-    this.metadataRepo = meta;
-    this.poiRepo = poi;
-
-    // Add flush interval after repos been set,
-    // otherwise flush could not find lastProcessHeight from metadata
-    this.setupInterval(INTERVAL_NAME, this.config.storeFlushInterval);
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
@@ -79,7 +76,7 @@ export class StoreCacheService extends BaseCacheService {
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
-      const cacheModel = new CachedModel(
+      this.cachedModels[entity] = new CachedModel(
         model,
         this._historical,
         this.config,
@@ -87,7 +84,6 @@ export class StoreCacheService extends BaseCacheService {
         () => this.flushCache(true),
         this._useCockroachDb
       );
-      this.cachedModels[entity] = cacheModel;
     }
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
   }
