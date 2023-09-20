@@ -23,9 +23,9 @@ function createPoiService(): PoiService {
     proofOfIndex: true,
   } as NodeConfig;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const eventEmitter = new EventEmitter2();
-  const storeCache = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+  const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
 
   storeCache.init(true, false, {} as any, undefined);
   storeCache.flushCache = jest.fn();

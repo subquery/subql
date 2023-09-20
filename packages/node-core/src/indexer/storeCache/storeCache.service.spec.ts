@@ -61,11 +61,11 @@ type Apple = {
 describe('Store Cache Service historical', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
   });
 
   it('could init store cache service and init cache for models', () => {
@@ -255,11 +255,11 @@ describe('Store Cache Service historical', () => {
 describe('Store Cache flush with order', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
     storeService.init(false, true, {} as any, undefined);
   });
 
@@ -347,14 +347,14 @@ describe('Store Cache flush with non-historical', () => {
 describe('Store cache upper threshold', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig = {
     storeCacheThreshold: 2,
     storeCacheUpperLimit: 10,
   } as NodeConfig;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
     storeService.init(false, false, {} as any, undefined);
   });
 
