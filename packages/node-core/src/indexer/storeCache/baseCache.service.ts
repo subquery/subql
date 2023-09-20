@@ -47,8 +47,11 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
 
     return this.queuedFlush;
   }
-
+  async resetCache(): Promise<void> {
+    await this._resetCache();
+  }
   abstract _flushCache(flushAll?: boolean): Promise<void>;
+  abstract _resetCache(): Promise<void> | void;
   abstract isFlushable(): boolean;
   abstract get flushableRecords(): number;
 

@@ -751,6 +751,7 @@ group by
       });
       this.metadataModel.set('lastCreatedPoiHeight', targetBlockHeight);
     }
+    await this.metadataModel.flush(transaction, targetBlockHeight);
   }
 
   isIndexed(entity: string, field: string): boolean {

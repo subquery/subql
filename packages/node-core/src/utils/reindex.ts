@@ -43,8 +43,8 @@ export async function reindex(
     try {
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(),
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(),
+        unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
         dynamicDsService.resetDynamicDatasource(targetBlockHeight),
       ]);
       if (latestSyncedPoiHeight !== undefined && latestSyncedPoiHeight > targetBlockHeight) {

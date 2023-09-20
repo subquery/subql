@@ -158,6 +158,10 @@ export class StoreCacheService extends BaseCacheService {
     }
   }
 
+  _resetCache(): void {
+    this.cachedModels = {};
+  }
+
   async flushAndWaitForCapacity(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
     const flushableRecords = this.flushableRecords;
 
