@@ -45,6 +45,11 @@ export function getWorkerService<S extends BaseWorkerService<any, any>>(): S {
   return workerService as S;
 }
 // eslint-disable-next-line @typescript-eslint/require-await
+async function getBlocksLoaded(): Promise<number> {
+  return workerService.numFetchedBlocks + workerService.numFetchingBlocks;
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
 async function getMemoryLeft(): Promise<number> {
   const totalHeap = getHeapStatistics().heap_size_limit;
   const heapUsed = process.memoryUsage().heapUsed;
@@ -97,6 +102,7 @@ type NumFetchedBlocks = typeof numFetchedBlocks;
 type NumFetchingBlocks = typeof numFetchingBlocks;
 type GetWorkerStatus = typeof getStatus;
 type GetMemoryLeft = typeof getMemoryLeft;
+type GetBlocksLoaded = typeof getBlocksLoaded;
 type WaitForWorkerBatchSize = typeof waitForWorkerBatchSize;
 
 export type IBaseIndexerWorker = {
@@ -106,6 +112,7 @@ export type IBaseIndexerWorker = {
   numFetchingBlocks: NumFetchingBlocks;
   getStatus: GetWorkerStatus;
   getMemoryLeft: GetMemoryLeft;
+  getBlocksLoaded: GetBlocksLoaded;
   waitForWorkerBatchSize: WaitForWorkerBatchSize;
 };
 
@@ -116,6 +123,7 @@ export const baseWorkerFunctions: (keyof IBaseIndexerWorker)[] = [
   'numFetchingBlocks',
   'getStatus',
   'getMemoryLeft',
+  'getBlocksLoaded',
   'waitForWorkerBatchSize',
 ];
 
@@ -144,6 +152,7 @@ export function createWorkerHost<
       numFetchingBlocks,
       getStatus,
       getMemoryLeft,
+      getBlocksLoaded,
       waitForWorkerBatchSize,
     },
     logger

@@ -5,21 +5,17 @@ import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
-import {
-  DynamicDsService,
-  IProjectService,
-  ISubqueryProject,
-  PoiBlock,
-  PoiService,
-  StoreCacheService,
-  SmartBatchService,
-  StoreService,
-} from '..';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';
+import {DynamicDsService} from '../dynamic-ds.service';
+import {PoiBlock, PoiService} from '../poi';
+import {SmartBatchService} from '../smartBatch.service';
+import {StoreService} from '../store.service';
+import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
+import {IProjectService, ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
