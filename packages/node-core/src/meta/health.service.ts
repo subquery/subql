@@ -1,8 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {isMainThread} from 'worker_threads';
-import {Inject, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
 import {NodeConfig} from '../configure';
@@ -23,10 +22,7 @@ export class HealthService {
   private healthTimeout: number;
   private indexerHealthy?: boolean;
 
-  constructor(
-    protected nodeConfig: NodeConfig,
-    @Inject(isMainThread ? StoreService : 'Null') private storeService: StoreService
-  ) {
+  constructor(protected nodeConfig: NodeConfig, private storeService: StoreService) {
     this.healthTimeout = Math.max(DEFAULT_TIMEOUT, this.nodeConfig.timeout * 1000);
     this.blockTime = Math.max(DEFAULT_BLOCK_TIME, this.nodeConfig.blockTime);
   }

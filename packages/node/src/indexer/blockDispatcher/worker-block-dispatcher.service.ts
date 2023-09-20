@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import { isMainThread } from 'worker_threads';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {

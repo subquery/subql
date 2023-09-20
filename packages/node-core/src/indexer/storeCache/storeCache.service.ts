@@ -56,6 +56,8 @@ export class StoreCacheService extends BaseCacheService {
     this._historical = historical;
     this.metadataRepo = meta;
     this.poiRepo = poi;
+    // Add flush interval after repos been set,
+    // otherwise flush could not find lastProcessHeight from metadata
     this.setupInterval(INTERVAL_NAME, this.config.storeFlushInterval);
   }
 
@@ -125,6 +127,7 @@ export class StoreCacheService extends BaseCacheService {
 
   @profiler()
   async _flushCache(flushAll?: boolean): Promise<void> {
+    this.logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
       deferrable: this._historical || this._useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
