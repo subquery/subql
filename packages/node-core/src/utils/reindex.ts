@@ -9,7 +9,7 @@ import {ForceCleanService} from '../subcommands';
 const logger = getLogger('Reindex');
 
 /**
- * Reindex the project to ${targetBlockHeight}
+ * Reindex the project to ${targetBlockHeight} (continue indexing after this height)
  * reset project if ${targetBlockHeight} <= startHeight
  * - storeCache is handled first, flush cached content before the actual rewind starts
  * - rewind is usually triggered by signal from unfinalizedBlockService, so some state cleanup is required there. FIXME
@@ -18,7 +18,7 @@ const logger = getLogger('Reindex');
  * - in the end, update metadata to targetHeight
  * @param startHeight
  * @param blockOffset
- * @param targetBlockHeight
+ * @param targetBlockHeight !IMPORTANT! this height is exclusive in the reindex operation
  * @param lastProcessedHeight
  * @param storeService
  * @param unfinalizedBlockService
