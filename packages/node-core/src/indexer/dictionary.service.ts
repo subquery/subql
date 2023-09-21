@@ -41,6 +41,8 @@ const logger = getLogger('dictionary');
 
 const distinctErrorEscaped = `Unknown argument \\"distinct\\"`;
 const startHeightEscaped = `Cannot query field \\"startHeight\\"`;
+const cursorEscaped = `Cannot query field \\"cursor\\"`;
+const pageInfoEscaped = `Cannot query field \\"pageInfo\\"`;
 
 export function getGqlType(value: any): string {
   switch (typeof value) {
@@ -115,12 +117,17 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
 function buildCursorDictQueryFragment(
   entity: string,
   startBlock: number,
-  endBlock: number,
   conditions: DictionaryQueryCondition[][],
   useDistinct: boolean,
   afterCursor?: string
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
+
+  gqlVars.push({
+    name: 'start_block',
+    gqlType: 'BigFloat',
+    value: startBlock,
+  });
 
   const node: GqlNode = {
     entity,
@@ -128,7 +135,6 @@ function buildCursorDictQueryFragment(
       {
         entity: 'edges',
         project: [
-          'cursor',
           {
             entity: 'node',
             project: ['blockHeight'],
@@ -144,8 +150,7 @@ function buildCursorDictQueryFragment(
       filter: {
         ...filter,
         blockHeight: {
-          greaterThanOrEqualTo: `"${startBlock}"`,
-          lessThan: `"${endBlock}"`,
+          greaterThanOrEqualTo: '$start_block',
         },
       },
       orderBy: 'BLOCK_HEIGHT_ASC',
@@ -153,8 +158,8 @@ function buildCursorDictQueryFragment(
   };
 
   if (afterCursor) {
-    //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    node.args!.after = afterCursor;
+    assert(node.args, 'Args should be defined in the above definition of node');
+    node.args.after = `"${afterCursor}"`;
   }
 
   if (useDistinct) {
@@ -176,6 +181,18 @@ function buildDictQueryFragment(
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
 
+  gqlVars.push({
+    name: 'start_block',
+    gqlType: 'BigFloat',
+    value: startBlock,
+  });
+
+  gqlVars.push({
+    name: 'end_block',
+    gqlType: 'BigFloat',
+    value: queryEndBlock,
+  });
+
   const node: GqlNode = {
     entity,
     project: [
@@ -188,8 +205,8 @@ function buildDictQueryFragment(
       filter: {
         ...filter,
         blockHeight: {
-          greaterThanOrEqualTo: `"${startBlock}"`,
-          lessThan: `"${queryEndBlock}"`,
+          greaterThanOrEqualTo: '$start_block',
+          lessThan: '$end_block',
         },
       },
       orderBy: 'BLOCK_HEIGHT_ASC',
@@ -217,6 +234,7 @@ export class DictionaryService {
 
   private metadataValid?: boolean;
   private supportsCursor = true;
+  private afterCursor?: string;
 
   constructor(
     readonly dictionaryEndpoint: string | undefined,
@@ -229,6 +247,7 @@ export class DictionaryService {
     let link: ApolloLink;
 
     if (this.nodeConfig.dictionaryResolver) {
+      this.supportsCursor = false;
       const authHttpLink = dictHttpLink({
         authUrl: this.nodeConfig.dictionaryResolver,
         chainId,
@@ -308,44 +327,48 @@ export class DictionaryService {
     const blockHeightSet = new Set<number>();
     const entityEndBlock: {[entity: string]: number} = {};
 
-    let hasNextPage = true;
-    let afterCursor: string | undefined;
-
     try {
-      let _metadata: MetaData;
+      const {query, variables} = this.dictionaryQuery(
+        startBlock,
+        queryEndBlock,
+        batchSize,
+        conditions,
+        this.afterCursor
+      );
+      const resp = await timeout(
+        this.client.query({
+          query: gql(query),
+          variables: {...variables},
+        }),
+        this.nodeConfig.dictionaryTimeout
+      );
 
-      do {
-        const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions, afterCursor);
-
-        const resp = await timeout(
-          this.client.query({
-            query: gql(query),
-            variables: {...variables, afterCursor},
-          }),
-          this.nodeConfig.dictionaryTimeout
-        );
-
+      if (this.supportsCursor) {
         for (const entity of Object.keys(resp.data)) {
-          if (entity !== '_metadata') {
-            const data = this.supportsCursor ? resp.data[entity].edges : resp.data[entity].nodes;
-            for (const item of data) {
-              const node = this.supportsCursor ? item.node : item;
+          if (entity !== '_metadata' && resp.data[entity].edges.length > 0) {
+            for (const edge of resp.data[entity].edges) {
+              blockHeightSet.add(Number(edge.node.blockHeight));
+              entityEndBlock[entity] = Number(edge.node.blockHeight);
+            }
+            this.afterCursor = resp.data[entity].pageInfo.endCursor;
+          }
+        }
+      } else {
+        for (const entity of Object.keys(resp.data)) {
+          if (entity !== '_metadata' && resp.data[entity].nodes.length > 0) {
+            for (const node of resp.data[entity].nodes) {
               blockHeightSet.add(Number(node.blockHeight));
               entityEndBlock[entity] = Number(node.blockHeight);
             }
-            if (this.supportsCursor) {
-              hasNextPage = resp.data[entity].pageInfo.hasNextPage;
-              afterCursor = resp.data[entity].pageInfo.endCursor;
-            }
           }
         }
+      }
 
-        _metadata = resp.data._metadata;
+      const _metadata = resp.data._metadata;
 
-        if (!this.dictionaryValidation(_metadata, startBlock)) {
-          return undefined;
-        }
-      } while (this.supportsCursor && hasNextPage);
+      if (!this.dictionaryValidation(_metadata, startBlock)) {
+        return undefined;
+      }
 
       const endBlock = Math.min(...Object.values(entityEndBlock).map((height) => (isNaN(height) ? Infinity : height)));
       const batchBlocks = Array.from(blockHeightSet)
@@ -358,11 +381,8 @@ export class DictionaryService {
       };
     } catch (err: any) {
       // If server doesn't support cursor-based queries, fallback to non cursor-based
-      if (
-        JSON.stringify(err).includes('Cannot query field "cursor"') ||
-        JSON.stringify(err).includes('Cannot query field "pageInfo"')
-      ) {
-        logger.warn(`Dictionary does not support cursor paginatino, falling back to default pagination`);
+      if (JSON.stringify(err).includes(cursorEscaped) || JSON.stringify(err).includes(pageInfoEscaped)) {
+        logger.warn(`Dictionary does not support cursor pagination, falling back to default pagination`);
         this.supportsCursor = false;
         return this.getDictionary(startBlock, queryEndBlock, batchSize, conditions);
       }
@@ -394,14 +414,7 @@ export class DictionaryService {
     ];
     for (const entity of Object.keys(mapped)) {
       const [pVars, node] = this.supportsCursor
-        ? buildCursorDictQueryFragment(
-            entity,
-            startBlock,
-            startBlock + batchSize,
-            mapped[entity],
-            this.useDistinct,
-            afterCursor
-          )
+        ? buildCursorDictQueryFragment(entity, startBlock, mapped[entity], this.useDistinct, afterCursor)
         : buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize, this.useDistinct);
       nodes.push(node);
       vars.push(...pVars);
