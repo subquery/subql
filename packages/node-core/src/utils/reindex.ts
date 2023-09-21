@@ -36,9 +36,12 @@ export async function reindex(
       logger.error('ForceCleanService not provided, cannot force clean');
       process.exit(1);
     }
+    await storeService.storeCache.resetCache();
     await forceCleanService.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    await storeService.storeCache.flushCache(true, false);
+    await storeService.storeCache.resetCache();
     const transaction = await sequelize.transaction();
     try {
       await Promise.all([

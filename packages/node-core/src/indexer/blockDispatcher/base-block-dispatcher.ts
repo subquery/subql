@@ -165,8 +165,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
-      await this.storeCacheService.flushCache(true, false);
-      await this.storeCacheService.resetCache();
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
       return;
