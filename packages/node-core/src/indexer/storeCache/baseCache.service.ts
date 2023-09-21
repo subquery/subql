@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {BeforeApplicationShutdown, Injectable} from '@nestjs/common';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import Pino from 'pino';
 import {getLogger} from '../../logger';
 import {profiler} from '../../profiler';
@@ -14,11 +13,7 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   private queuedFlush?: Promise<void>;
   protected logger: Pino.Logger;
 
-  protected constructor(
-    readonly schedulerRegistry: SchedulerRegistry,
-    private intervalName: string,
-    private loggerName: string
-  ) {
+  protected constructor(private loggerName: string) {
     this.logger = getLogger(loggerName);
   }
 
@@ -47,29 +42,15 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
 
     return this.queuedFlush;
   }
-
+  async resetCache(): Promise<void> {
+    await this._resetCache();
+  }
   abstract _flushCache(flushAll?: boolean): Promise<void>;
+  abstract _resetCache(): Promise<void> | void;
   abstract isFlushable(): boolean;
   abstract get flushableRecords(): number;
 
-  setupInterval(intervalName: string, interval: number) {
-    if (this.schedulerRegistry.doesExist('interval', intervalName)) {
-      return;
-    }
-    this.schedulerRegistry.addInterval(
-      intervalName,
-      setInterval(
-        () => void this.flushCache(true),
-        interval * 1000 // Convert to miliseconds
-      )
-    );
-  }
-
   async beforeApplicationShutdown(): Promise<void> {
-    // Check the interval exists, it might not with the testing framework
-    if (this.schedulerRegistry.doesExist('interval', this.intervalName)) {
-      this.schedulerRegistry.deleteInterval(this.intervalName);
-    }
     await timeout(this.flushCache(true), 5);
     this.logger.info(`Force flush cache successful!`);
   }

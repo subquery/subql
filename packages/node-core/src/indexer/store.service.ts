@@ -751,6 +751,7 @@ group by
       });
       this.metadataModel.set('lastCreatedPoiHeight', targetBlockHeight);
     }
+    // metadataModel will be flushed in reindex.ts#reindex()
   }
 
   isIndexed(entity: string, field: string): boolean {

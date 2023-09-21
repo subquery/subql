@@ -167,11 +167,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
+      return;
     } else {
       this.updateStoreMetadata(height);
 
       const operationHash = this.storeService.getOperationMerkleRoot();
-      this.createPOI(height, blockHash, operationHash);
+      await this.createPOI(height, blockHash, operationHash);
 
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);

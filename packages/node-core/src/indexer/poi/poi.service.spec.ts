@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from '../storeCache';
@@ -25,7 +24,7 @@ function createPoiService(): PoiService {
 
   const sequelize = new Sequelize();
   const eventEmitter = new EventEmitter2();
-  const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+  const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
 
   storeCache.init(true, false, {} as any, undefined);
   storeCache.flushCache = jest.fn();

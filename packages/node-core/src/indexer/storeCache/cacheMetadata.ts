@@ -139,7 +139,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
   protected clear(blockHeight?: number): void {
     const newSetCache: Partial<MetadataKeys> = {};
     this.flushableRecordCounter = 0;
-    if (blockHeight !== undefined) {
+    if (blockHeight !== undefined && blockHeight !== this.setCache.lastProcessedHeight) {
       newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
       this.flushableRecordCounter = 1;
     }
