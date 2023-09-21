@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {isMainThread} from 'worker_threads';
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {DatabaseError, Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
@@ -18,8 +16,6 @@ import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
-
-const INTERVAL_NAME = 'cacheFlushInterval';
 
 const logger = getLogger('StoreCacheService');
 
@@ -34,16 +30,13 @@ export class StoreCacheService extends BaseCacheService {
   private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
+  private _lastFlushTs: Date;
 
-  constructor(
-    private sequelize: Sequelize,
-    private config: NodeConfig,
-    protected eventEmitter: EventEmitter2,
-    schedulerRegistry: SchedulerRegistry
-  ) {
-    super(schedulerRegistry, INTERVAL_NAME, 'StoreCache');
+  constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
+    super('StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
     this.cacheUpperLimit = config.storeCacheUpperLimit;
+    this._lastFlushTs = new Date();
 
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
       logger.error('Store cache threshold must be less than the store cache upper limit');
@@ -56,9 +49,6 @@ export class StoreCacheService extends BaseCacheService {
     this._historical = historical;
     this.metadataRepo = meta;
     this.poiRepo = poi;
-    // Add flush interval after repos been set,
-    // otherwise flush could not find lastProcessHeight from metadata
-    this.setupInterval(INTERVAL_NAME, this.config.storeFlushInterval);
   }
 
   getNextStoreOperationIndex(): number {
@@ -156,6 +146,7 @@ export class StoreCacheService extends BaseCacheService {
       await tx.rollback();
       throw e;
     }
+    this._lastFlushTs = new Date();
   }
 
   _resetCache(): void {
@@ -182,6 +173,7 @@ export class StoreCacheService extends BaseCacheService {
     this.eventEmitter.emit(IndexerEvent.StoreCacheRecordsSize, {
       value: numOfRecords,
     });
-    return numOfRecords >= this.storeCacheThreshold;
+    const timeBasedFlush = new Date().getTime() - this._lastFlushTs.getTime() > this.config.storeFlushInterval * 1000;
+    return numOfRecords >= this.storeCacheThreshold || timeBasedFlush;
   }
 }
