@@ -703,6 +703,13 @@ group by
     return rows.map((result) => camelCaseObjectKey(result)) as IndexField[];
   }
 
+  /**
+   * rollback db that is newer than ${targetBlockHeight} (exclusive)
+   * set metadata
+   * since transaction is handled outside, metadata cache flushing and tx is done there.
+   * @param targetBlockHeight
+   * @param transaction
+   */
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     if (!this.historical) {
       throw new Error('Unable to reindex, historical state not enabled');

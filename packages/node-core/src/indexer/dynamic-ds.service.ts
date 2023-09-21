@@ -48,6 +48,10 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     return this._metadata;
   }
 
+  /**
+   * remove dynamic ds that is created after this height
+   * @param targetHeight this height is exclusive
+   */
   async resetDynamicDatasource(targetHeight: number): Promise<void> {
     const dynamicDs = await this.getDynamicDatasourceParams();
     if (dynamicDs.length !== 0) {
