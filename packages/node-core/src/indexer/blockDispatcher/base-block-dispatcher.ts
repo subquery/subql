@@ -5,17 +5,8 @@ import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
-import {
-  DynamicDsService,
-  IProjectService,
-  PoiBlock,
-  PoiService,
-  StoreCacheService,
-  SmartBatchService,
-  StoreService,
-} from '..';
 import {NodeConfig} from '../../configure';
-import {IProjectUpgradeService, NodeConfig} from '../../configure/ProjectUpgrade.service';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';
