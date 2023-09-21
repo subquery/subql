@@ -110,7 +110,7 @@ export interface SubstrateEventFilter extends SubstrateBaseHandlerFilter {
   module?: string;
 
   /**
-   * The method name for filtering events calls (optional).
+   * The method name for filtering events calls (case-insensitive) (optional).
    * @type {string}
    * @example
    * method: 'Transfer'
