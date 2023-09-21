@@ -168,12 +168,7 @@ function createIndexerManager(
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
-  const storeCache = new StoreCacheService(
-    sequelize,
-    nodeConfig,
-    eventEmitter,
-    new SchedulerRegistry(),
-  );
+  const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
   const storeService = new StoreService(
     sequelize,
     nodeConfig,
