@@ -15,22 +15,8 @@ const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `
   import yaml from 'js-yaml';
   import {writeFileSync} from 'fs';
-  const project = (require('${scriptPath}')).default;
-  // serializing map object
-  for(const d of project.dataSources){
-    if(d.assets){
-      const assetsObject = Object.fromEntries(d.assets); 
-      d.assets = assetsObject
-    }
-  }
-  if(project.templates){
-    for(const t of project.templates){
-      if(t.assets){
-        const assetsObject = Object.fromEntries(t.assets); 
-        t.assets = assetsObject
-      }
-    }
-  }
+  import {toJsonObject} from '@subql/common'
+  const project = toJsonObject((require('${scriptPath}')).default);
   const yamlOutput = yaml.dump(project);
   writeFileSync('${outputPath}', \`# // Auto-generated , DO NOT EDIT\n\${yamlOutput}\`);
   `;
