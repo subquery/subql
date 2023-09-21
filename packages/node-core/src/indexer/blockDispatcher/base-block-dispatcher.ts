@@ -128,7 +128,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
    * rewind() is called from this.postProcessBlock(),
    * it handles runtime status like compare it with current indexing number, if last corrected is already indexed
    * then dispatch to projectService.reindex()
-   * if rollback is greater than current index flush queue only
+   * not likely happen but if rewind to future block, flush queue only
    * @param lastCorrectHeight
    */
   @mainThreadOnly()
