@@ -6,7 +6,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {ReaderFactory} from '@subql/common';
+import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
 import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
@@ -137,7 +137,7 @@ describe('Cli publish', () => {
   it('convert to deployment and removed descriptive field', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
     const reader = await ReaderFactory.create(projectDir);
-    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
+    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema());
     const deployment = manifest.toDeployment();
     expect(deployment).not.toContain('author');
     expect(deployment).not.toContain('endpoint');
@@ -148,5 +148,17 @@ describe('Cli publish', () => {
     expect(deployment).toContain('chainId');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
+  });
+
+  it('convert js object to JSON object', () => {
+    const mockMap = new Map<number | string, string>([
+      [1, 'aaa'],
+      ['2', 'bbb'],
+    ]);
+    expect(toJsonObject({map: mockMap, obj: {abc: 111}})).toStrictEqual({
+      map: {'1': 'aaa', '2': 'bbb'},
+      obj: {abc: 111},
+    });
+    expect(mapToObject(mockMap)).toStrictEqual({'1': 'aaa', '2': 'bbb'});
   });
 });

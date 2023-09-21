@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_WRITE_ENDPOINT, isFileReference, validateCommonProjectManifest} from '@subql/common';
+import {ReaderFactory, IPFS_WRITE_ENDPOINT, isFileReference, validateCommonProjectManifest, mapToObject} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
@@ -13,7 +13,6 @@ import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {Reader} from '@subql/types-core';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
-import yaml from 'js-yaml';
 
 const PIN_SERVICE = 'onfinality';
 
@@ -80,14 +79,13 @@ export async function uploadToIpfs(
       throw new Error('Unable to parse project manifest');
     }
 
+    // the JSON object conversion must occur on manifest.deployment
     const deployment = await replaceFileReferences(reader.root, manifest.deployment, authToken, ipfs);
 
     // Use JSON.* to convert Map to Object
-    const deploymentStr = yaml.dump(JSON.parse(JSON.stringify(deployment)), {sortKeys: true, condenseFlow: true});
-
     contents.push({
       path: path.join(directory ?? '', path.basename(project)),
-      content: deploymentStr,
+      content: deployment.toYaml(),
     });
   }
 
@@ -234,13 +232,4 @@ export async function uploadFile(
   }
 
   return cid;
-}
-
-function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
-  // XXX can use Object.entries with newer versions of node.js
-  const assetsObj: Record<string, unknown> = {};
-  for (const key of map.keys()) {
-    assetsObj[key] = map.get(key);
-  }
-  return assetsObj;
 }
