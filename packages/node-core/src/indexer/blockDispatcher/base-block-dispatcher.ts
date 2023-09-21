@@ -36,7 +36,6 @@ export interface IBlockDispatcher {
 
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
-  rewind(height: number): Promise<void>;
 }
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -125,11 +124,15 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     });
   }
 
-  //  Compare it with current indexing number, if last corrected is already indexed
-  //  rewind, also flush queued blocks, drop current indexing transaction, set last processed to correct block too
-  //  if rollback is greater than current index flush queue only
+  /**
+   * rewind() is called from this.postProcessBlock(),
+   * it handles runtime status like compare it with current indexing number, if last corrected is already indexed
+   * then dispatch to projectService.reindex()
+   * if rollback is greater than current index flush queue only
+   * @param lastCorrectHeight
+   */
   @mainThreadOnly()
-  async rewind(lastCorrectHeight: number): Promise<void> {
+  protected async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
       logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
       await this.projectService.reindex(lastCorrectHeight);
