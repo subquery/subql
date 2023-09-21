@@ -135,6 +135,7 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
   // force convert to updated ds
   return Promise.all(
     _dataSources.map(async (dataSource) => {
+      dataSource.startBlock = dataSource.startBlock ?? 1;
       const entryScript = await loadDataSourceScript(reader, dataSource.mapping.file);
       const file = await updateDataSourcesEntry(reader, dataSource.mapping.file, root, entryScript);
       if (isCustomDs(dataSource)) {

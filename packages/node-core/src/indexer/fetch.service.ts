@@ -234,11 +234,15 @@ export abstract class BaseFetchService<
         continue;
       }
 
-      if (this.useDictionary && startBlockHeight >= this.dictionaryService.startHeight) {
+      if (
+        this.useDictionary &&
+        startBlockHeight >= this.dictionaryService.startHeight &&
+        startBlockHeight < this.latestFinalizedHeight
+      ) {
         /* queryEndBlock needs to be limited by the latest height.
          * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
          */
-        const queryEndBlock = Math.min(startBlockHeight + DICTIONARY_MAX_QUERY_SIZE, latestHeight);
+        const queryEndBlock = Math.min(startBlockHeight + DICTIONARY_MAX_QUERY_SIZE, this.latestFinalizedHeight);
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,

@@ -22,7 +22,7 @@ if ((global as any).__TEST__) {
 }
 
 export function getLogger(category: string): Pino.Logger {
-  return logger.getLogger(category);
+  return logger.getLogger(`${category}${isMainThread ? '' : `-#${threadId}`}`);
 }
 
 export function setLevel(level: Pino.LevelWithSilent): void {
@@ -30,7 +30,7 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 }
 
 export class NestLogger implements LoggerService {
-  private logger = logger.getLogger(`nestjs${isMainThread ? '-0' : `-#${threadId}`}`);
+  private logger = logger.getLogger(`nestjs${isMainThread ? '' : `-#${threadId}`}`);
 
   constructor(private readonly debugLevel = false) {}
 

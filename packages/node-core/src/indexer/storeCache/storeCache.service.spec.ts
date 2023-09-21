@@ -46,10 +46,8 @@ jest.mock('@subql/x-sequelize', () => {
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
+    ...actualSequelize,
     Sequelize: jest.fn(() => mSequelize),
-    DataTypes: actualSequelize.DataTypes,
-    QueryTypes: actualSequelize.QueryTypes,
-    Deferrable: actualSequelize.Deferrable,
   };
 });
 
@@ -63,11 +61,11 @@ type Apple = {
 describe('Store Cache Service historical', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
   });
 
   it('could init store cache service and init cache for models', () => {
@@ -257,12 +255,12 @@ describe('Store Cache Service historical', () => {
 describe('Store Cache flush with order', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, true);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService.init(false, true, {} as any, undefined);
   });
 
   it('when set/remove multiple model entities, operation index should added to record in sequential order', () => {
@@ -294,15 +292,15 @@ describe('Store Cache flush with order', () => {
 describe('Store Cache flush with non-historical', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, false);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService.init(false, false, {} as any, undefined);
   });
 
-  it.only('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
+  it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
     const entity1Model = storeService.getModel('entity1');
 
     //create Id 1
@@ -329,7 +327,7 @@ describe('Store Cache flush with non-historical', () => {
     );
 
     //simulate flush here
-    const tx = await sequilize.transaction();
+    const tx = await sequelize.transaction();
     await (entity1Model as any).flush(tx, 5);
 
     const sequelizeModel1 = (entity1Model as any).model;
@@ -349,15 +347,15 @@ describe('Store Cache flush with non-historical', () => {
 describe('Store cache upper threshold', () => {
   let storeService: StoreCacheService;
 
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const nodeConfig = {
     storeCacheThreshold: 2,
     storeCacheUpperLimit: 10,
   } as NodeConfig;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequilize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, false);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeService.init(false, false, {} as any, undefined);
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {

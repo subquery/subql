@@ -103,7 +103,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     metadata: CacheMetadataModel,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
-    assert(!this.#metadata, `ProjectUpgradeService has already been initialized`);
+    if (this.#metadata) {
+      logger.warn(`ProjectUpgradeService has already been initialized, this is a no-op`);
+    }
     this.#metadata = metadata;
     this.onProjectUpgrade = onProjectUpgrade;
 

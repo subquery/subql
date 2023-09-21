@@ -20,15 +20,15 @@ describe('SetValueModel', () => {
     expect(model.fromBelowHeight(5).getValues()).toEqual(model.getValues());
 
     expect(model.fromBelowHeight(2).getValues()).toEqual([
-      {data: '0', startHeight: 0, endHeight: 1, operationIndex: 0},
-      {data: '1', startHeight: 1, endHeight: null, operationIndex: 1},
+      {data: '0', startHeight: 0, endHeight: 1, operationIndex: 0, removed: false},
+      {data: '1', startHeight: 1, endHeight: null, operationIndex: 1, removed: false},
     ]);
   });
 
   it('fromAboveHeight works', () => {
     expect(model.fromAboveHeight(6).getValues()).toEqual([]);
     expect(model.fromAboveHeight(3).getValues()).toEqual([
-      {data: '4', startHeight: 4, endHeight: null, operationIndex: 4},
+      {data: '4', startHeight: 4, endHeight: null, operationIndex: 4, removed: false},
     ]);
   });
 });

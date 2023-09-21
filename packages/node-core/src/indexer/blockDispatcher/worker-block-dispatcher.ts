@@ -25,6 +25,7 @@ type Worker = {
   processBlock: (height: number) => Promise<any>;
   getStatus: () => Promise<any>;
   getMemoryLeft: () => Promise<number>;
+  getBlocksLoaded: () => Promise<number>;
   waitForWorkerBatchSize: (heapSizeInBytes: number) => Promise<void>;
   terminate: () => Promise<number>;
 };
@@ -41,6 +42,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   protected workers: W[] = [];
   private numWorkers: number;
   private isShutdown = false;
+  private currentWorkerIndex = 0;
 
   protected abstract fetchBlock(worker: W, height: number): Promise<void>;
 
@@ -190,9 +192,20 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   }
 
   private async getNextWorkerIndex(): Promise<number> {
-    return Promise.all(this.workers.map((worker) => worker.getMemoryLeft())).then((memoryLeftValues) => {
-      return memoryLeftValues.indexOf(Math.max(...memoryLeftValues));
-    });
+    const startIndex = this.currentWorkerIndex;
+    do {
+      this.currentWorkerIndex = (this.currentWorkerIndex + 1) % this.workers.length;
+      const memLeft = await this.workers[this.currentWorkerIndex].getMemoryLeft();
+      if (memLeft >= this.minimumHeapLimit) {
+        return this.currentWorkerIndex;
+      }
+    } while (this.currentWorkerIndex !== startIndex);
+
+    // All workers have been tried and none have enough memory left.
+    // wait for any worker to free the memory before calling getNextWorkerIndex again
+    await Promise.race(this.workers.map((worker) => worker.waitForWorkerBatchSize(this.minimumHeapLimit)));
+
+    return this.getNextWorkerIndex();
   }
 
   private async maxBatchSize(workerIdx: number): Promise<number> {

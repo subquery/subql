@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {ProjectNetworkConfig} from '@subql/types-core';
 import {ApiConnectionError, ApiErrorType} from './api.connection.error';
@@ -17,7 +18,7 @@ export interface IApi<A = any, SA = any, B extends Array<any> = any[]> {
   fetchBlocks(heights: number[], ...args: any): Promise<B>;
   safeApi(height: number): SA;
   unsafeApi: A;
-  networkMeta: NetworkMetadataPayload;
+  readonly networkMeta: NetworkMetadataPayload;
 }
 
 export interface IApiConnectionSpecific<A = any, SA = any, B extends Array<any> = any[]> extends IApi<A, SA, B> {
@@ -32,7 +33,12 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     protected eventEmitter: EventEmitter2
   ) {}
 
-  abstract networkMeta: NetworkMetadataPayload;
+  private _networkMeta?: NetworkMetadataPayload;
+
+  get networkMeta(): NetworkMetadataPayload {
+    assert(this._networkMeta, 'ApiService has not been init');
+    return this._networkMeta;
+  }
 
   private timeouts: Record<string, NodeJS.Timeout | undefined> = {};
 
@@ -89,8 +95,8 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
           postConnectedHook(connection, endpoint, i);
         }
 
-        if (!this.networkMeta) {
-          this.networkMeta = connection.networkMeta;
+        if (!this._networkMeta) {
+          this._networkMeta = connection.networkMeta;
         }
 
         const chainId = await getChainId(connection);
@@ -133,7 +139,7 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     index: number,
     endpoint: string,
     postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
-  ) {
+  ): Promise<void> {
     const connection = await createConnection(endpoint);
     const chainId = await getChainId(connection);
 

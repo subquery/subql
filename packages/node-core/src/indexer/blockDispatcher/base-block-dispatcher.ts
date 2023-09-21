@@ -15,12 +15,17 @@ import {
   StoreService,
 } from '..';
 import {NodeConfig} from '../../configure';
-import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
+import {IProjectUpgradeService, NodeConfig} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
-import {IQueue} from '../../utils';
+import {IQueue, mainThreadOnly} from '../../utils';
+import {DynamicDsService} from '../dynamic-ds.service';
+import {PoiBlock, PoiService} from '../poi';
+import {SmartBatchService} from '../smartBatch.service';
+import {StoreService} from '../store.service';
+import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
-import {ISubqueryProject} from '../types';
+import {IProjectService, ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
@@ -133,6 +138,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   //  Compare it with current indexing number, if last corrected is already indexed
   //  rewind, also flush queued blocks, drop current indexing transaction, set last processed to correct block too
   //  if rollback is greater than current index flush queue only
+  @mainThreadOnly()
   async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
       logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
@@ -150,6 +156,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // Is called directly before a block is processed
+  @mainThreadOnly()
   protected async preProcessBlock(height: number): Promise<void> {
     this.storeService.setBlockHeight(height);
 
@@ -163,20 +170,19 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // Is called directly after a block is processed
+  @mainThreadOnly()
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
-    const operationHash = this.storeService.getOperationMerkleRoot();
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
-
-    this.createPOI(height, blockHash, operationHash);
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
     } else {
       this.updateStoreMetadata(height);
-      if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
-        await this.poiService.ensureGenesisPoi(height);
-      }
+
+      const operationHash = this.storeService.getOperationMerkleRoot();
+      this.createPOI(height, blockHash, operationHash);
+
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);
       }
@@ -202,22 +208,26 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   }
 
   // First creation of POI
-  private createPOI(height: number, blockHash: string, operationHash: Uint8Array): void {
+  private async createPOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
     if (!this.nodeConfig.proofOfIndex) {
       return;
     }
-    if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-      const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
-      // This is the first creation of POI
-      this.poi.bulkUpsert([poiBlock]);
-      this.storeCacheService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}]);
-      this.eventEmitter.emit(PoiEvent.PoiTarget, {
-        height,
-        timestamp: Date.now(),
-      });
+    if (isNullMerkelRoot(operationHash)) {
+      return;
     }
+    const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
+    // This is the first creation of POI
+    this.poi.bulkUpsert([poiBlock]);
+    this.storeCacheService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}]);
+    this.eventEmitter.emit(PoiEvent.PoiTarget, {
+      height,
+      timestamp: Date.now(),
+    });
+
+    await this.poiService.ensureGenesisPoi(height);
   }
 
+  @mainThreadOnly()
   private updateStoreMetadata(height: number, updateProcessed = true): void {
     const meta = this.storeCacheService.metadata;
     // Update store metadata

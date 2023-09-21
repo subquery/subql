@@ -48,9 +48,8 @@ jest.mock('@subql/x-sequelize', () => {
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
+    ...actualSequelize,
     Sequelize: jest.fn(() => mSequelize),
-    DataTypes: actualSequelize.DataTypes,
-    QueryTypes: actualSequelize.QueryTypes,
   };
 });
 
@@ -127,6 +126,7 @@ function testSubqueryProject_2(): SubqueryProject {
   );
 }
 
+// eslint-disable-next-line jest/no-export
 export function mockProjectUpgradeService(
   project: SubqueryProject,
 ): IProjectUpgradeService<SubqueryProject> {
@@ -154,7 +154,7 @@ function createIndexerManager(
   connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
   nodeConfig: NodeConfig,
 ): IndexerManager {
-  const sequilize = new Sequelize();
+  const sequelize = new Sequelize();
   const eventEmitter = new EventEmitter2();
   const apiService = new ApiService(
     project,
@@ -166,13 +166,13 @@ function createIndexerManager(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const storeCache = new StoreCacheService(
-    sequilize,
+    sequelize,
     nodeConfig,
     eventEmitter,
     new SchedulerRegistry(),
   );
   const storeService = new StoreService(
-    sequilize,
+    sequelize,
     nodeConfig,
     storeCache,
     project,
@@ -195,7 +195,7 @@ function createIndexerManager(
     dsProcessorService,
     apiService,
     poiService,
-    sequilize,
+    sequelize,
     project,
     projectUpgradeService,
     storeService,
@@ -226,7 +226,7 @@ describe('IndexerManager', () => {
     (indexerManager as any)?.fetchService.onApplicationShutdown();
   });
 
-  xit('should be able to start the manager (v0.0.1)', async () => {
+  it.skip('should be able to start the manager (v0.0.1)', async () => {
     indexerManager = createIndexerManager(
       testSubqueryProject_1(),
       new ConnectionPoolService<ApiPromiseConnection>(
@@ -240,7 +240,7 @@ describe('IndexerManager', () => {
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
-  xit('should be able to start the manager (v0.2.0)', async () => {
+  it.skip('should be able to start the manager (v0.2.0)', async () => {
     indexerManager = createIndexerManager(
       testSubqueryProject_2(),
       new ConnectionPoolService<ApiPromiseConnection>(

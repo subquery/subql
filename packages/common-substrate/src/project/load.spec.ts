@@ -11,6 +11,6 @@ describe('load', () => {
   });
 
   it.skip('can load yaml and json format chain types', () => {
-    expect(parseChainTypes(jsChainTypesScript)).not.toThrowError();
+    expect(parseChainTypes(jsChainTypesScript)).not.toThrow();
   });
 });

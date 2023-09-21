@@ -87,9 +87,7 @@ describe('ConnectionPoolService', () => {
       expect(mockApiConnection.apiConnect).toHaveBeenCalledTimes(5);
       expect(connectionPoolService.numConnections).toBe(0);
     }, 50000);
-  });
 
-  describe('handleApiDisconnects', () => {
     it('should call handleApiDisconnects only once when multiple connection errors are triggered', async () => {
       // Mock apiConnection.apiConnect() to not resolve for a considerable time
       (mockApiConnection.apiConnect as any).mockImplementation(

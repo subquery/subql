@@ -6,29 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- fix crashes when intialization fails for one of the endpoint (#1970)
+- Fix crashes when intialization fails for one of the endpoint (#1970)
 - Remove `@willsoto/nestjs-prometheus` from dependency as it is already added in node-core (#2012)
-
-### Changed
-- Move code to node-core (#1797)
-
-### Added
-- Project upgrades feature which allows upgrading projects at specific heights (#1797)
-- Support for skipBlock and LightBlock (#1968)
-
-### Fixed
-- Project node runner options being overwritten by yargs defaults (#1967)
-
-### Changed
-- Move code to node-core (#1797)
-
-### Added
-- Project upgrades feature which allows upgrading projects at specific heights (#1797)
-- Support for skipBlock and LightBlock (#1968)
-
-### Fixed
 - Project node runner options being overwritten by yargs defaults (#1967)
 - Sync with node-core, fix dictionary resolver failed to get token issue
+
+### Changed
+- Move code to node-core (#1797)
+
+### Added
+- Project upgrades feature which allows upgrading projects at specific heights (#1797)
+- Support for skipBlock and LightBlock (#1968)
 
 ## [2.12.2] - 2023-08-17
 ### Fixed

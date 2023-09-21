@@ -5,9 +5,9 @@ import assert from 'assert';
 import {FieldOperators, FieldsExpression} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
-import {Mutex} from 'async-mutex';
 import {flatten, includes, isEqual, uniq, cloneDeep} from 'lodash';
 import {NodeConfig} from '../../configure';
+import {Cacheable} from './cacheable';
 import {SetValueModel} from './setValueModel';
 import {
   ICachedModelControl,
@@ -33,15 +33,19 @@ const operatorsMap: Record<FieldOperators, any> = {
 };
 
 export class CachedModel<
-  T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
-> implements ICachedModel<T>, ICachedModelControl
+    T extends {id: string; __block_range?: (number | null)[] | Fn} = {
+      id: string;
+      __block_range?: (number | null)[] | Fn;
+    }
+  >
+  extends Cacheable
+  implements ICachedModel<T>, ICachedModelControl
 {
   // Null value indicates its not defined in the db
   private getCache: GetData<T>;
   private setCache: SetData<T> = {};
   private removeCache: Record<string, RemoveValue> = {};
   readonly hasAssociations: boolean = false;
-  private mutex = new Mutex();
 
   flushableRecordCounter = 0;
 
@@ -54,6 +58,7 @@ export class CachedModel<
     private flushAll: () => Promise<void>,
     private readonly useCockroachDb = false
   ) {
+    super();
     // In case, this might be want to be 0
     if (config.storeGetCacheSize !== undefined) {
       getCacheOptions.max = config.storeGetCacheSize;
@@ -282,70 +287,58 @@ export class CachedModel<
     return !!Object.keys(this.setCache).length || !!Object.keys(this.removeCache).length;
   }
 
-  async flush(tx: Transaction, blockHeight?: number): Promise<void> {
-    const release = await this.mutex.acquire();
+  async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
+    // Get records relevant to the block height
+    const {removeRecords, setRecords} = blockHeight
+      ? this.filterRecordsWithHeight(blockHeight)
+      : {removeRecords: this.removeCache, setRecords: this.setCache};
+    // Filter non-historical could return undefined due to it been removed
+    let records = this.applyBlockRange(setRecords).filter((r) => !!r);
+    let dbOperation: Promise<unknown>;
+    if (this.historical) {
+      dbOperation = Promise.all([
+        // set, bulkCreate, bulkUpdate & remove close previous records
+        this.historicalMarkPreviousHeightRecordsBatch(tx, setRecords, removeRecords),
+        // bulkCreate all new records for this entity,
+        // include(set, bulkCreate, bulkUpdate)
+        this.model.bulkCreate(records, {
+          transaction: tx,
+        }),
+      ]);
+    } else {
+      // We need to check within the same model if there is multiple operations (set/remove) to the same id
+      // we don't have to consider the order in setCache, as we are using getLatest()?.data;
+      // also in removeCache only store last remove operation too.
 
-    try {
-      tx.afterCommit(() => release());
-      // Get records relevant to the block height
-      const {removeRecords, setRecords} = blockHeight
-        ? this.filterRecordsWithHeight(blockHeight)
-        : {removeRecords: this.removeCache, setRecords: this.setCache};
-      // Filter non-historical could return undefined due to it been removed
-      let records = this.applyBlockRange(setRecords).filter((r) => !!r);
-      let dbOperation: Promise<unknown>;
-      if (this.historical) {
-        dbOperation = Promise.all([
-          // set, bulkCreate, bulkUpdate & remove close previous records
-          this.historicalMarkPreviousHeightRecordsBatch(tx, setRecords, removeRecords),
-          // bulkCreate all new records for this entity,
-          // include(set, bulkCreate, bulkUpdate)
-          this.model.bulkCreate(records, {
-            transaction: tx,
-          }),
-        ]);
-      } else {
-        // We need to check within the same model if there is multiple operations (set/remove) to the same id
-        // we don't have to consider the order in setCache, as we are using getLatest()?.data;
-        // also in removeCache only store last remove operation too.
-
-        // If same Id exist in both set and remove records, we only need to pick the last operation for this ID,
-        // As both cache in final status, so we can compare their operation index
-        for (const v of Object.values(setRecords)) {
-          const latestSet = v.getLatest();
-          if (latestSet !== undefined && removeRecords[latestSet.data.id]) {
-            if (removeRecords[latestSet.data.id].operationIndex > latestSet.operationIndex) {
-              records = records.filter((r) => r.id !== latestSet.data.id);
-            } else if (removeRecords[latestSet.data.id].operationIndex < latestSet.operationIndex) {
-              delete removeRecords[latestSet.data.id];
-            } else {
-              throw new Error(
-                `Cache entity ${this.model.name} Id ${latestSet.data.id} has same Operation Indexes in remove and set cache `
-              );
-            }
+      // If same Id exist in both set and remove records, we only need to pick the last operation for this ID,
+      // As both cache in final status, so we can compare their operation index
+      for (const v of Object.values(setRecords)) {
+        const latestSet = v.getLatest();
+        if (latestSet !== undefined && removeRecords[latestSet.data.id]) {
+          if (removeRecords[latestSet.data.id].operationIndex > latestSet.operationIndex) {
+            records = records.filter((r) => r.id !== latestSet.data.id);
+          } else if (removeRecords[latestSet.data.id].operationIndex < latestSet.operationIndex) {
+            delete removeRecords[latestSet.data.id];
+          } else {
+            throw new Error(
+              `Cache entity ${this.model.name} Id ${latestSet.data.id} has same Operation Indexes in remove and set cache `
+            );
           }
         }
-
-        dbOperation = Promise.all([
-          records.length &&
-            this.model.bulkCreate(records, {
-              transaction: tx,
-              updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
-            }),
-          Object.keys(removeRecords).length &&
-            this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
-        ]);
       }
 
-      // Don't await DB operations to complete before clearing.
-      // This allows new data to be cached while flushing
-      this.clear(blockHeight);
-
-      await dbOperation;
-    } catch (e) {
-      release();
-      throw e;
+      dbOperation = Promise.all([
+        records.length &&
+          this.model.bulkCreate(records, {
+            transaction: tx,
+            updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+          }),
+        Object.keys(removeRecords).length &&
+          this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
+      ]);
     }
+
+    await dbOperation;
   }
 
   // Flush relation model in operationIndex order with non-historical db
@@ -418,7 +411,7 @@ export class CachedModel<
     ) as unknown as CreationAttributes<Model<T, T>>[];
   }
 
-  private clear(blockHeight?: number): void {
+  protected clear(blockHeight?: number): void {
     if (!blockHeight) {
       this.setCache = {};
       this.removeCache = {};
@@ -434,7 +427,7 @@ export class CachedModel<
       const numValues = newValue.getValues().length;
       if (numValues) {
         newCounter += numValues;
-        acc[key] = value.fromAboveHeight(blockHeight);
+        acc[key] = newValue;
       }
       return acc;
     }, {} as SetData<T>);

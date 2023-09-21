@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Infinite recursion in setValueModel with arrays (#1993)
 - Fix health checks for Networks that produce batched blocks (#2005)
 - Update `@willsoto/nestjs-prometheus` version to `5.4.0` (#2012)
+- scaleBatchSize referring to itself instead of config (#2018)
+- set default startBlock of datasources to 1 (#2019)
+- use round-robin worker load balancing with memory constraint consideration (#2029)
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)

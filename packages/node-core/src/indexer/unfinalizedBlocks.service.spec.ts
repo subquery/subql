@@ -242,7 +242,7 @@ describe('UnfinalizedBlocksService', () => {
       new SchedulerRegistry()
     );
 
-    storeCache.setRepos({} as any, undefined);
+    storeCache.init(true, false, {} as any, undefined);
 
     storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,
@@ -259,7 +259,7 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService2.init(reindex);
 
-    expect(reindex).toBeCalledWith(90);
+    expect(reindex).toHaveBeenCalledWith(90);
     expect((unfinalizedBlocksService2 as any).lastCheckedBlockHeight).toBe(90);
   });
 });

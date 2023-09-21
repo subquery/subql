@@ -1,12 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   PoiService,
   BaseProjectService,
   StoreService,
+  mainThreadOnly,
   NodeConfig,
   IProjectUpgradeService,
 } from '@subql/node-core';
@@ -32,12 +34,12 @@ export class ProjectService extends BaseProjectService<
   constructor(
     dsProcessorService: DsProcessorService,
     apiService: ApiService,
-    poiService: PoiService,
-    sequelize: Sequelize,
+    @Inject(isMainThread ? PoiService : 'Null') poiService: PoiService,
+    @Inject(isMainThread ? Sequelize : 'Null') sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IProjectUpgradeService')
     protected readonly projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
-    storeService: StoreService,
+    @Inject(isMainThread ? StoreService : 'Null') storeService: StoreService,
     nodeConfig: NodeConfig,
     dynamicDsService: DynamicDsService,
     eventEmitter: EventEmitter2,
@@ -63,6 +65,7 @@ export class ProjectService extends BaseProjectService<
     return getTimestamp(block);
   }
 
+  @mainThreadOnly()
   protected onProjectChange(project: SubqueryProject): void | Promise<void> {
     this.apiService.updateBlockFetching();
   }

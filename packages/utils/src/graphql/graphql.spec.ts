@@ -335,7 +335,7 @@ describe('utils that handle schema.graphql', () => {
     expect(() => getAllEntitiesRelations(schema)).toThrow(/not found within entity/);
   });
 
-  it('will throw when found duplicate composite index ', () => {
+  it('will throw when found duplicate composite index', () => {
     const graphqlSchema = gql`
       type StarterEntity
         @entity
@@ -350,7 +350,7 @@ describe('utils that handle schema.graphql', () => {
     expect(() => getAllEntitiesRelations(schema)).toThrow(/Found duplicate composite indexes/);
   });
 
-  it('will throw if number of composite indexes excess limit ', () => {
+  it('will throw if number of composite indexes excess limit', () => {
     const graphqlSchema = gql`
       type StarterEntity @entity @compositeIndexes(fields: [["id", "field1", "field2", "field3"]]) {
         id: ID!
