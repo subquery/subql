@@ -46,7 +46,7 @@ export async function reindex(
   }
 
   // if startHeight is greater than the targetHeight, just force clean
-  if (targetBlockHeight <= startHeight) {
+  if (targetBlockHeight < startHeight) {
     logger.info(
       `targetHeight: ${targetBlockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
