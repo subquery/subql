@@ -217,10 +217,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     }
   }
 
-  protected async getMetadataBlockOffset(): Promise<number | undefined> {
-    return this.storeService.storeCache.metadata.find('blockOffset');
-  }
-
   protected async getLastProcessedHeight(): Promise<number | undefined> {
     return this.storeService.storeCache.metadata.find('lastProcessedHeight');
   }
@@ -348,7 +344,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
     return reindex(
       this.getStartBlockFromDataSources(),
-      await this.getMetadataBlockOffset(),
       targetBlockHeight,
       lastProcessedHeight,
       this.storeService,

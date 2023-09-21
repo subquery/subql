@@ -72,14 +72,6 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     return this.metadataRepo.find('latestSyncedPoiHeight');
   }
 
-  private async getMetadataBlockOffset(): Promise<number | undefined> {
-    return this.metadataRepo.find('blockOffset');
-  }
-
-  private async getMetadataSpecName(): Promise<string | undefined> {
-    return this.metadataRepo.find('specName');
-  }
-
   private getStartBlockFromDataSources() {
     const datasources = this.project.dataSources;
 
@@ -103,7 +95,6 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
     await reindex(
       startHeight,
-      await this.getMetadataBlockOffset(),
       targetBlockHeight,
       lastProcessedHeight,
       this.storeService,

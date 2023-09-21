@@ -10,7 +10,6 @@ const logger = getLogger('Reindex');
 
 export async function reindex(
   startHeight: number,
-  blockOffset: number | undefined,
   targetBlockHeight: number,
   lastProcessedHeight: number,
   storeService: StoreService,
