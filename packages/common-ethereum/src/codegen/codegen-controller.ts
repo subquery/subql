@@ -10,9 +10,12 @@ import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {CUSTOM_EVM_HANDLERS} from './constants';
 import {loadReadAbi} from './utils';
 
+const RECONSTRUCTED_FACTORIES_TS = path.resolve(__dirname, '../../templates/factories-index.ts.ejs');
+const RECONSTRUCTED_CONTRACTS_TS = path.resolve(__dirname, '../../templates/contracts-index.ts.ejs');
 const ABI_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../../templates/abi-interface.ts.ejs');
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
 const CONTRACTS_DIR = 'src/types/contracts'; //generated
+const FACTORIES_DIR = path.join(CONTRACTS_DIR, 'factories'); // generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
 export interface abiRenderProps {
@@ -126,6 +129,12 @@ export function prepareAbiJob(
   return renderInterfaceJobs;
 }
 
+export function getAbiNames(files: string[]): string[] {
+  return files
+    .filter((filename) => filename !== 'index.ts')
+    .map((fileName) => path.parse(fileName).name.replace('__factory', ''));
+}
+
 export async function generateAbis(
   datasources: SubqlRuntimeDatasource[],
   projectPath: string,
@@ -156,6 +165,20 @@ export async function generateAbis(
         })
       )
     );
+    const factoryFiles = fs.readdirSync(path.join(projectPath, FACTORIES_DIR));
+    const abiNames = getAbiNames(factoryFiles);
+    // factories index
+    await Promise.all([
+      // Restructure factories/index.ts
+      renderTemplate(RECONSTRUCTED_FACTORIES_TS, path.join(projectPath, FACTORIES_DIR, 'index.ts'), {
+        props: {abiNames},
+      }),
+      // Restructure contracts/index.ts
+      renderTemplate(RECONSTRUCTED_CONTRACTS_TS, path.join(projectPath, CONTRACTS_DIR, 'index.ts'), {
+        props: {abiNames},
+      }),
+    ]);
+
     // Iterate here as we have to make sure type chain generated successful,
     // also avoid duplicate generate same abi interfaces
     const renderAbiJobs = prepareAbiJob(sortedAssets, projectPath, loadReadAbi);
