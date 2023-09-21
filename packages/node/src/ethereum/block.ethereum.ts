@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'node:assert';
 import {
   EthereumBlock,
   EthereumTransactionFilter,
@@ -30,7 +31,7 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
     this._logs.forEach((l) => {
       const tx = this._txs.find((tx) => tx.hash === l.transactionHash);
 
-      if (!tx) return;
+      assert(tx, `Unable to match log to transaction ${l.transactionHash}`);
       tx.logs = tx.logs ? [...tx.logs, l] : [l];
     });
   }
