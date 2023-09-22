@@ -17,7 +17,6 @@ import detectPort from 'detect-port';
 import * as yaml from 'js-yaml';
 import Pino from 'pino';
 import {lt, prerelease, satisfies, valid, validRange} from 'semver';
-import {fileExistsSync} from 'tsconfig-paths/lib/filesystem';
 import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
 
@@ -96,7 +95,7 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
     project.root = dir;
     if (extensionIsTs(ext)) {
       const projectYamlPath = tsProjectYamlPath(subquery);
-      if (!fileExistsSync(projectYamlPath)) {
+      if (!fs.existsSync(projectYamlPath)) {
         throw new Error(
           `Could not find manifest ${projectYamlPath}, if pointing to a typescript manifest, please ensure build successfully`
         );

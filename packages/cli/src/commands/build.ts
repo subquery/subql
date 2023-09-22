@@ -11,15 +11,16 @@ import glob from 'glob';
 import {runWebpack} from '../controller/build-controller';
 import {resolveToAbsolutePath} from '../utils';
 
+// We use common-js for js-yaml and fs, avoid there dev dependencies types are missing
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `
-  import yaml from 'js-yaml';
-  import {writeFileSync} from 'fs';
   import {toJsonObject} from '@subql/common'
+  const {writeFileSync} =  require('fs');
+  const yaml = require('js-yaml');
   const project = toJsonObject((require('${scriptPath}')).default);
   const yamlOutput = yaml.dump(project);
   writeFileSync('${outputPath}', \`# // Auto-generated , DO NOT EDIT\n\${yamlOutput}\`);
-  `;
+`;
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
@@ -107,9 +108,9 @@ export default class Build extends Command {
     const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
     try {
       await util.promisify(execFile)(
-        'ts-node',
-        ['-e', requireScriptWrapper(projectManifestEntry, projectYamlPath)],
-        {}
+        'npx',
+        ['ts-node', '-e', requireScriptWrapper(projectManifestEntry, projectYamlPath)],
+        {cwd: path.dirname(projectManifestEntry)}
       );
       this.log(`Project manifest generated to ${projectYamlPath}`);
     } catch (error) {
