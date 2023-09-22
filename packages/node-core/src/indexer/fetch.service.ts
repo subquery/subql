@@ -202,7 +202,6 @@ export abstract class BaseFetchService<
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    let cachedDictBlocks: number[] = [];
     const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)];
 
     const getStartBlockHeight = (): number => {
@@ -233,14 +232,6 @@ export abstract class BaseFetchService<
 
       if (this.blockDispatcher.freeSize < scaledBatchSize || startBlockHeight > latestHeight) {
         await delay(1);
-        continue;
-      }
-
-      if (cachedDictBlocks.length > 0) {
-        const maxBlockSize = Math.min(cachedDictBlocks.length, this.blockDispatcher.freeSize);
-        const enqueueBlocks = cachedDictBlocks.slice(0, maxBlockSize);
-        cachedDictBlocks = cachedDictBlocks.slice(maxBlockSize); // remove used blocks from cache
-        await this.enqueueBlocks(enqueueBlocks);
         continue;
       }
 
@@ -280,8 +271,6 @@ export abstract class BaseFetchService<
               const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
               const enqueueBlocks = batchBlocks.slice(0, maxBlockSize);
 
-              //cache the blocks that are not enqueued so they don't have to be fetched again.
-              cachedDictBlocks.push(...batchBlocks.slice(maxBlockSize));
               await this.enqueueBlocks(enqueueBlocks);
             }
             continue; // skip nextBlockRange() way

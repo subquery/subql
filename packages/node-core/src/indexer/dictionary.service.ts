@@ -119,6 +119,7 @@ function buildCursorDictQueryFragment(
   startBlock: number,
   conditions: DictionaryQueryCondition[][],
   useDistinct: boolean,
+  batchSize: number,
   afterCursor?: string
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
@@ -154,6 +155,7 @@ function buildCursorDictQueryFragment(
         },
       },
       orderBy: 'BLOCK_HEIGHT_ASC',
+      first: batchSize.toString(),
     },
   };
 
@@ -338,27 +340,25 @@ export class DictionaryService {
       const resp = await timeout(
         this.client.query({
           query: gql(query),
-          variables: {...variables},
+          variables,
         }),
         this.nodeConfig.dictionaryTimeout
       );
 
-      if (this.supportsCursor) {
-        for (const entity of Object.keys(resp.data)) {
-          if (entity !== '_metadata' && resp.data[entity].edges.length > 0) {
-            for (const edge of resp.data[entity].edges) {
-              blockHeightSet.add(Number(edge.node.blockHeight));
-              entityEndBlock[entity] = Number(edge.node.blockHeight);
+      for (const entity of Object.keys(resp.data)) {
+        if (entity !== '_metadata') {
+          const items = this.supportsCursor ? resp.data[entity].edges : resp.data[entity].nodes;
+
+          if (items && items.length > 0) {
+            for (const item of items) {
+              const blockHeight = this.supportsCursor ? Number(item.node.blockHeight) : Number(item.blockHeight);
+
+              blockHeightSet.add(blockHeight);
+              entityEndBlock[entity] = blockHeight;
             }
-            this.afterCursor = resp.data[entity].pageInfo.endCursor;
-          }
-        }
-      } else {
-        for (const entity of Object.keys(resp.data)) {
-          if (entity !== '_metadata' && resp.data[entity].nodes.length > 0) {
-            for (const node of resp.data[entity].nodes) {
-              blockHeightSet.add(Number(node.blockHeight));
-              entityEndBlock[entity] = Number(node.blockHeight);
+
+            if (this.supportsCursor) {
+              this.afterCursor = resp.data[entity].pageInfo.endCursor;
             }
           }
         }
@@ -380,6 +380,14 @@ export class DictionaryService {
         batchBlocks,
       };
     } catch (err: any) {
+      // Check if the error is about distinct argument and disable distinct if so
+      if (JSON.stringify(err).includes(distinctErrorEscaped)) {
+        this.useDistinct = false;
+        logger.warn(`Dictionary doesn't support distinct query.`);
+        // Rerun the query now with distinct disabled
+        return this.getDictionary(startBlock, queryEndBlock, batchSize, conditions);
+      }
+
       // If server doesn't support cursor-based queries, fallback to non cursor-based
       if (JSON.stringify(err).includes(cursorEscaped) || JSON.stringify(err).includes(pageInfoEscaped)) {
         logger.warn(`Dictionary does not support cursor pagination, falling back to default pagination`);
@@ -414,7 +422,7 @@ export class DictionaryService {
     ];
     for (const entity of Object.keys(mapped)) {
       const [pVars, node] = this.supportsCursor
-        ? buildCursorDictQueryFragment(entity, startBlock, mapped[entity], this.useDistinct, afterCursor)
+        ? buildCursorDictQueryFragment(entity, startBlock, mapped[entity], this.useDistinct, batchSize, afterCursor)
         : buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize, this.useDistinct);
       nodes.push(node);
       vars.push(...pVars);
