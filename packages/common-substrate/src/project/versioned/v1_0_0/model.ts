@@ -149,7 +149,7 @@ export class ProjectManifestV1_0_0Impl
   network: ProjectNetworkV1_0_0;
   @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
   @IsString()
   version: string;
   @ValidateNested()

@@ -13,10 +13,10 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   definitions: object;
   @IsOptional()
   @IsString()
-  description: string;
+  description?: string;
   @IsOptional()
   @IsString()
-  repository: string;
+  repository?: string;
   @IsString()
   specVersion: string;
 
