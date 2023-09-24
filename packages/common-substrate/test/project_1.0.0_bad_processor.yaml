@@ -1,8 +1,15 @@
-specVersion: 0.2.1
+specVersion: 1.0.0
 name: subquery-query-registry-project
 version: 1.0.0
 description: ''
 repository: ''
+runner:
+  node:
+    name: '@subql/node'
+    version: '0.28.0'
+  query:
+    name: '@subql/query'
+    version: '^0.12.0'
 schema:
   file: ./schema.graphql
 network:
@@ -18,6 +25,8 @@ dataSources:
     startBlock: 1358833
     processor:
       file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
+      something:
+        unexpected: 'should throw'
       options:
         abi: settings
         address: '0xde030fC2b42AE2438B32506ECf63B2f3c1665579'

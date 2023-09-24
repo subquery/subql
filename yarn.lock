@@ -6498,6 +6498,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
+    "@subql/types-core": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/detect-port": ^1
     "@types/fs-extra": ^9.0.13
@@ -6640,7 +6641,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/testing@workspace:packages/testing"
   dependencies:
-    "@subql/types": "workspace:^"
+    "@subql/types-core": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -6661,6 +6662,14 @@ __metadata:
   checksum: 3dc6dc0f000fe07fa6e155a06a865bbe8979bf1c0fe4885701f0621bbf3cb7d2b6188faa03b92910cdd4eafb654a63c79902d3f09b644090d9e12f1e4cd79616
   languageName: node
   linkType: hard
+
+"@subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+  version: 0.0.0-use.local
+  resolution: "@subql/types-core@workspace:packages/types-core"
+  dependencies:
+    package-json-type: ^1.0.3
+  languageName: unknown
+  linkType: soft
 
 "@subql/types-cosmos@npm:2.2.2-0":
   version: 2.2.2-0
@@ -6738,11 +6747,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types@workspace:*, @subql/types@workspace:^, @subql/types@workspace:packages/types":
+"@subql/types@workspace:*, @subql/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
     "@polkadot/api": ^10
+    "@subql/types-core": "workspace:*"
   peerDependencies:
     "@polkadot/api": ^10
   languageName: unknown

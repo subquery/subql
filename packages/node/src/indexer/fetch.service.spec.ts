@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  DictionaryQueryEntry,
   SubstrateBlockHandler,
   SubstrateCallHandler,
   SubstrateCustomDatasource,
@@ -13,6 +12,7 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandler,
 } from '@subql/types';
+import { DictionaryQueryEntry } from '@subql/types-core';
 import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 import { ProjectService } from './project.service';
@@ -173,7 +173,6 @@ describe('FetchSevice', () => {
       const result1 = fetchService.buildDictionaryQueryEntries([
         {
           kind: 'substrate/Jsonfy',
-          name: '',
           processor: { file: '' },
           assets: new Map(),
           mapping: {
@@ -206,7 +205,6 @@ describe('FetchSevice', () => {
       const result2 = fetchService.buildDictionaryQueryEntries([
         {
           kind: 'substrate/Jsonfy',
-          name: '',
           processor: { file: '' },
           assets: new Map(),
           mapping: {

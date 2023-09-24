@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {u8aConcat} from '@polkadot/util';
+import {Reader} from '@subql/types-core';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
 import {IPFS_NODE_ENDPOINT} from '../../constants';
-import {Reader} from './reader';
 
 const CIDv0 = new RegExp(/Qm[1-9A-Za-z]{44}[^OIl]/i);
 const CIDv1 = new RegExp(

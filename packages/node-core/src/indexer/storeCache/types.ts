@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FieldsExpression} from '@subql/types';
+import {FieldsExpression} from '@subql/types-core';
 import {Transaction} from '@subql/x-sequelize';
 import LRUCache from 'lru-cache';
 import {SetValueModel} from './setValueModel';

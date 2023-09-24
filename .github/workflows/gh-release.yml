@@ -19,10 +19,21 @@ jobs:
 
       - run: yarn install
 
-      #Create github releases
+      # Create github releases
+
       - uses: ./.github/actions/create-release
         with:
-          package-path: packages/cli
+          package-path: packages/utils
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types-core
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release
@@ -35,6 +46,10 @@ jobs:
           package-path: packages/common-substrate
           repo-token: ${{ secrets.REPO_TOKEN }}
 
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/cli
+          repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release
         with:
@@ -53,17 +68,7 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
-          package-path: packages/types
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
           package-path: packages/testing
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/utils
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release

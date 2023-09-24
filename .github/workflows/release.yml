@@ -36,6 +36,17 @@ jobs:
           node-version: 18
 
     #Identify changes
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-utils
+        with:
+          paths: packages/utils
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types-core
+        with:
+          paths: packages/types-core
+
       - uses: marceloprado/has-changed-path@v1
         id: changed-types
         with:
@@ -72,11 +83,6 @@ jobs:
           paths: packages/query
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-utils
-        with:
-          paths: packages/utils
-
-      - uses: marceloprado/has-changed-path@v1
         id: changed-validator
         with:
           paths: packages/validator
@@ -97,6 +103,14 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/utils
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Types-core
+        if: steps.changed-types.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types-core
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

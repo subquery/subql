@@ -9,9 +9,9 @@ import {
   IPFS_NODE_ENDPOINT,
   LocalReader,
   makeTempDir,
-  Reader,
   ReaderFactory,
 } from '@subql/common';
+import { Reader } from '@subql/types-core';
 import { SubqueryProject } from './SubqueryProject';
 
 // eslint-disable-next-line jest/no-export

@@ -5,7 +5,7 @@ import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
-import {IProjectUpgradeService, NodeConfig} from '../../configure';
+import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';

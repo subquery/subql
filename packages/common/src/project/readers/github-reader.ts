@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
+import {Reader} from '@subql/types-core';
 import axios, {AxiosInstance} from 'axios';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
 import {DEFAULT_MANIFEST} from '../utils';
-import {Reader} from './reader';
 
 export class GithubReader implements Reader {
   private readonly api: AxiosInstance;
@@ -27,6 +27,7 @@ export class GithubReader implements Reader {
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
+    // Github reader not support ts manifest.
     const projectYaml = await this.getFile(DEFAULT_MANIFEST);
     if (projectYaml === undefined) {
       throw new Error('Fetch project from github got undefined');
@@ -38,7 +39,6 @@ export class GithubReader implements Reader {
     try {
       const branch = await this.getDefaultBranch();
       const {data} = await this.api.get(path.join(branch, fileName));
-
       return data;
     } catch (err) {
       return undefined;

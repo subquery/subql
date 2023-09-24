@@ -3,7 +3,8 @@
 
 import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {DictionaryQueryEntry, SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
+import {SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
+import {DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
 import {NodeConfig} from '../configure';
 import {BlockHeightMap} from '../utils/blockHeightMap';

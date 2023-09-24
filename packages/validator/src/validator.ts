@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {getProjectNetwork, NETWORK_FAMILY, Reader, ReaderFactory, ReaderOptions} from '@subql/common';
+import {getProjectNetwork, NETWORK_FAMILY, ReaderFactory} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
@@ -9,6 +9,7 @@ import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/
 import {parseNearProjectManifest} from '@subql/common-near';
 import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
+import {Reader, ReaderOptions} from '@subql/types-core';
 
 import {Context} from './context';
 import {Rule, RuleType} from './rules';
@@ -57,14 +58,6 @@ export class Validator {
     switch (networkFamily) {
       case NETWORK_FAMILY.substrate:
         schema = parseSubstrateProjectManifest(rawSchema);
-        if (schema.isV0_0_1) {
-          reports.push({
-            name: 'package-json-file',
-            description: 'A valid `package.json` file must exist in the root directory of the project',
-            valid: !!pkg,
-            skipped: false,
-          });
-        }
         break;
       case NETWORK_FAMILY.cosmos:
         schema = parseCosmosProjectManifest(rawSchema);

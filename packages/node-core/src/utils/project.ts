@@ -4,17 +4,8 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {
-  BaseCustomDataSource,
-  BaseDataSource,
-  DEFAULT_PORT,
-  findAvailablePort,
-  GithubReader,
-  IPFSReader,
-  LocalReader,
-  Reader,
-  TemplateBase,
-} from '@subql/common';
+import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} from '@subql/common';
+import {BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import Cron from 'cron-converter';

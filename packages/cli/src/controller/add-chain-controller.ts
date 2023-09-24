@@ -3,14 +3,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  DEFAULT_MULTICHAIN_MANIFEST,
-  MultichainProjectManifest,
-  ProjectManifestV1_0_0,
-  getProjectRootAndManifest,
-  getSchemaPath,
-  loadFromJsonOrYaml,
-} from '@subql/common';
+import {DEFAULT_MULTICHAIN_MANIFEST, getProjectRootAndManifest, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {MultichainProjectManifest, ProjectManifestV1_0_0} from '@subql/types-core';
 import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';
 
 const nodeToDockerImage: Record<string, string> = {

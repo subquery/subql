@@ -1,12 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {classToPlain} from 'class-transformer';
-import {Allow, IsString, validateSync} from 'class-validator';
+import {FileReference, ParentProject, Processor} from '@subql/types-core';
+import {plainToInstance, Type} from 'class-transformer';
+import {Allow, Equals, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
-import {FileReference} from '../types';
+import {toJsonObject} from '../utils';
+import {ParentProjectModel} from './v1_0_0/models';
 
-export abstract class ProjectManifestBaseImpl<D extends object> {
+export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   @Allow()
   definitions: object;
   @IsString()
@@ -16,15 +18,16 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   @IsString()
   specVersion: string;
 
-  abstract readonly deployment: D;
+  protected _deployment: D;
 
-  toDeployment(): string {
-    // plainToClass was used but ran into issues
-    // We convert it to a plain object to get Maps converted to Records/Objects
-    return yaml.dump(JSON.parse(JSON.stringify(this.deployment)), {
-      sortKeys: true,
-      condenseFlow: true,
-    });
+  protected constructor(private readonly _deploymentClass: new () => D) {}
+
+  get deployment(): D {
+    if (!this._deployment) {
+      this._deployment = plainToInstance(this._deploymentClass, toJsonObject(this));
+      validateSync(this._deployment, {whitelist: true});
+    }
+    return this._deployment;
   }
 
   validate(): void {
@@ -35,35 +38,41 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
       throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
     }
   }
+
+  toDeployment(): string {
+    return this.deployment.toYaml();
+  }
 }
 
-export interface BaseDataSource<
-  F = any,
-  H extends BaseHandler<F> = BaseHandler<F>,
-  T extends BaseMapping<F, H> = BaseMapping<F, H>
-> {
-  name?: string;
-  kind: string;
-  startBlock?: number;
-  mapping: T;
-}
-
-export interface BaseCustomDataSource<
-  F = any,
-  H extends BaseHandler<F> = BaseHandler<F>,
-  T extends BaseMapping<F, H> = BaseMapping<F, H>
-> extends BaseDataSource<F, H, T> {
-  processor: FileReference;
-  assets: Map<string, FileReference>;
-}
-
-export interface BaseMapping<F, T extends BaseHandler<F>> {
+export class FileType implements FileReference {
+  @IsString()
   file: string;
-  handlers: T[];
 }
 
-export interface BaseHandler<T> {
-  handler: string;
-  kind: string;
-  filter?: T;
+export class ProcessorImpl<O = any> extends FileType implements Processor<O> {
+  @IsOptional()
+  @IsObject()
+  options?: O;
+}
+
+export class BaseDeploymentV1_0_0 {
+  @Equals('1.0.0')
+  @IsString()
+  specVersion: string;
+  @ValidateNested()
+  @Type(() => FileType)
+  schema: FileType;
+  @IsOptional()
+  @IsObject()
+  @Type(() => ParentProjectModel)
+  parent?: ParentProject;
+
+  toYaml(): string {
+    // plainToClass was used but ran into issues
+    // We convert it to a plain object to get Maps converted to Records/Objects
+    return yaml.dump(toJsonObject(this), {
+      sortKeys: true,
+      condenseFlow: true,
+    });
+  }
 }

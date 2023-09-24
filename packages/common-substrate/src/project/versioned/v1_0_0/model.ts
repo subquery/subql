@@ -2,33 +2,26 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  BaseMapping,
+  BaseDeploymentV1_0_0,
   FileType,
-  NodeSpec,
-  ParentProject,
   ParentProjectModel,
   ProjectManifestBaseImpl,
-  QuerySpec,
   RunnerNodeImpl,
   RunnerQueryBaseModel,
-  RunnerSpecs,
   validateObject,
+  CommonProjectNetworkV1_0_0,
 } from '@subql/common';
-import {SubstrateCustomDatasource, SubstrateNetworkFilter, SubstrateRuntimeDatasource} from '@subql/types';
-import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
-  Equals,
-  IsArray,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsString,
-  Validate,
-  ValidateNested,
-  validateSync,
-} from 'class-validator';
+  SubstrateCustomDatasource,
+  SubstrateRuntimeDatasource,
+  CustomDatasourceTemplate,
+  RuntimeDatasourceTemplate,
+  SubstrateProjectManifestV1_0_0,
+} from '@subql/types';
+import {BaseMapping, NodeSpec, ParentProject, QuerySpec, RunnerSpecs} from '@subql/types-core';
+import {plainToInstance, Transform, TransformFnParams, Type} from 'class-transformer';
+import {Equals, IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
-import {CustomDatasourceTemplate, RuntimeDatasourceTemplate, SubstrateProjectManifestV1_0_0} from './types';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
 
@@ -45,11 +38,10 @@ export class SubstrateRuntimeDataSourceImpl extends RuntimeDataSourceBase implem
 
 export class SubstrateCustomDataSourceImpl<
     K extends string = string,
-    T extends SubstrateNetworkFilter = SubstrateNetworkFilter,
     M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
   >
-  extends CustomDataSourceBase<K, T, M>
-  implements SubstrateCustomDatasource<K, T, M>
+  extends CustomDataSourceBase<K, M>
+  implements SubstrateCustomDatasource<K, M>
 {
   validate(): void {
     return validateObject(this, 'failed to validate custom datasource.');
@@ -77,6 +69,7 @@ export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
   query: QuerySpec;
 }
 
+// ChainTypes is different with other network
 export class ProjectNetworkDeploymentV1_0_0 {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
@@ -91,35 +84,26 @@ export class ProjectNetworkDeploymentV1_0_0 {
   bypassBlocks?: (number | string)[];
 }
 
-export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
-  @IsString({each: true})
+export class ProjectNetworkV1_0_0 extends CommonProjectNetworkV1_0_0<FileType> {
+  @Type(() => FileType)
   @IsOptional()
-  endpoint?: string | string[];
-  @IsString()
-  @IsOptional()
-  dictionary?: string;
+  chaintypes?: FileType;
 }
 
-export class DeploymentV1_0_0 {
+export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @Transform((params) => {
     if (params.value.genesisHash && !params.value.chainId) {
       params.value.chainId = params.value.genesisHash;
     }
-    return plainToClass(ProjectNetworkDeploymentV1_0_0, params.value);
+    return plainToInstance(ProjectNetworkDeploymentV1_0_0, params.value);
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
   network: ProjectNetworkDeploymentV1_0_0;
-  @Equals('1.0.0')
-  @IsString()
-  specVersion: string;
   @IsObject()
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
   runner: RunnerSpecs;
-  @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => SubstrateCustomDataSourceImpl, {
@@ -141,17 +125,16 @@ export class DeploymentV1_0_0 {
     keepDiscriminatorProperty: true,
   })
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
-
-  @IsOptional()
-  @IsObject()
-  @Type(() => ParentProjectModel)
-  parent?: ParentProject;
 }
 
-export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
-  extends ProjectManifestBaseImpl<D>
+export class ProjectManifestV1_0_0Impl
+  extends ProjectManifestBaseImpl<DeploymentV1_0_0>
   implements SubstrateProjectManifestV1_0_0
 {
+  constructor() {
+    super(DeploymentV1_0_0);
+  }
+
   @Equals('1.0.0')
   specVersion: string;
   @Type(() => SubstrateCustomDataSourceImpl, {
@@ -186,18 +169,9 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
   runner: RunnerSpecs;
-  protected _deployment: D;
 
   @IsOptional()
   @IsObject()
   @Type(() => ParentProjectModel)
   parent?: ParentProject;
-
-  get deployment(): D {
-    if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV1_0_0, this) as unknown as D;
-      validateSync(this._deployment, {whitelist: true});
-    }
-    return this._deployment;
-  }
 }

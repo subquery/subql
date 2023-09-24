@@ -4,7 +4,7 @@
 import {existsSync, readFileSync} from 'fs';
 import path from 'path';
 import {SubqlTest} from '@subql/testing';
-import {Store} from '@subql/types';
+import {Store} from '@subql/types-core';
 import {levelFilter} from '@subql/utils';
 import {last, merge} from 'lodash';
 import {SourceMapConsumer, NullableMappedPosition} from 'source-map';

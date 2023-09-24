@@ -1,8 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Reader} from '@subql/types-core';
 import {GithubReader} from './github-reader';
-import {Reader} from './reader';
 
 describe('GithubReader', () => {
   let reader: Reader;

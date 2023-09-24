@@ -4,6 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import {FileReference, MultichainProjectManifest, ProjectRootAndManifest} from '@subql/types-core';
 import {
   registerDecorator,
   validateSync,
@@ -18,10 +19,14 @@ import Pino from 'pino';
 import {lt, prerelease, satisfies, valid, validRange} from 'semver';
 import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
-import {MultichainProjectManifest} from '../multichain';
 
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MANIFEST = 'project.yaml';
+export const DEFAULT_TS_MANIFEST = 'project.ts';
+
+export function isFileReference(value: any): value is FileReference {
+  return value?.file && typeof value.file === 'string';
+}
 
 // Input manifest here, we might need to handler other error later on
 export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger) {
@@ -54,11 +59,6 @@ export async function findAvailablePort(startPort: number, range = 10): Promise<
   return null;
 }
 
-export interface ProjectRootAndManifest {
-  root: string;
-  manifests: string[];
-}
-
 export function getProjectRootAndManifest(subquery: string): ProjectRootAndManifest {
   const project: ProjectRootAndManifest = {
     root: '',
@@ -70,7 +70,6 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
   if (stats.isDirectory()) {
     project.root = subquery;
 
-    // Check for 'project.yaml' first
     if (fs.existsSync(path.resolve(subquery, DEFAULT_MANIFEST))) {
       project.manifests.push(path.resolve(subquery, DEFAULT_MANIFEST));
     }
@@ -89,17 +88,30 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       throw new Error(`Unable to resolve manifest file from given directory: ${subquery}`);
     }
   } else if (stats.isFile()) {
-    const {ext} = path.parse(subquery);
-    if (!extensionIsYamlOrJSON(ext)) {
+    const {dir, ext} = path.parse(subquery);
+    if (!extensionIsTs(ext) && !extensionIsYamlOrJSON(ext)) {
       throw new Error(`Extension ${ext} not supported for project ${subquery}`);
     }
-    const {dir} = path.parse(subquery);
     project.root = dir;
-    const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
-    if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
-      addMultichainManifestProjects(dir, multichainManifestContent, project);
+    if (extensionIsTs(ext)) {
+      const projectYamlPath = tsProjectYamlPath(subquery);
+      if (!fs.existsSync(projectYamlPath)) {
+        throw new Error(
+          `Could not find manifest ${projectYamlPath}, if pointing to a typescript manifest, please ensure build successfully`
+        );
+      }
+      project.manifests.push(projectYamlPath);
     } else {
-      project.manifests.push(subquery);
+      // when file path is yaml
+      const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
+      // The project manifest could be empty
+      if (multichainManifestContent === null) {
+        throw new Error(`Read manifest content is null, ${subquery}`);
+      } else if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
+        addMultichainManifestProjects(dir, multichainManifestContent, project);
+      } else {
+        project.manifests.push(subquery);
+      }
     }
   }
 
@@ -197,6 +209,10 @@ export function validateObject(object: any, errorMessage = 'failed to validate o
   }
 }
 
+export function extensionIsTs(ext: string): boolean {
+  return ext === '.ts';
+}
+
 export function extensionIsYamlOrJSON(ext: string): boolean {
   return ext === '.yaml' || ext === '.yml' || ext === '.json';
 }
@@ -238,6 +254,28 @@ export function notifyUpdates(pjson: Package, logger: Pino.Logger): void {
   }
 }
 
+export function toJsonObject(object: unknown): unknown {
+  // When using plainToInstance or plainToClass, Map types will need to be converted to a JSON object
+  // https://github.com/typestack/class-transformer/issues/1256#issuecomment-1175153352
+  return JSON.parse(
+    JSON.stringify(object, (_, value: unknown) => {
+      if (value instanceof Map) {
+        return mapToObject(value);
+      }
+      return value;
+    })
+  );
+}
+
+export function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
+  // XXX can use Object.entries with newer versions of node.js
+  const assetsObj: Record<string, unknown> = {};
+  for (const key of map.keys()) {
+    assetsObj[key] = map.get(key);
+  }
+  return assetsObj;
+}
+
 @ValidatorConstraint({name: 'isFileReference', async: false})
 export class FileReferenceImp<T> implements ValidatorConstraintInterface {
   validate(value: Map<string, T>): boolean {
@@ -254,3 +292,5 @@ export class FileReferenceImp<T> implements ValidatorConstraintInterface {
     return typeof fileReference === 'object' && 'file' in fileReference && typeof fileReference.file === 'string';
   }
 }
+
+export const tsProjectYamlPath = (tsManifestEntry: string) => tsManifestEntry.replace('.ts', '.yaml');

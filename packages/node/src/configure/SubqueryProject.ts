@@ -4,31 +4,29 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { RegisteredTypes } from '@polkadot/types/types';
+import { validateSemver } from '@subql/common';
 import {
-  ParentProject,
-  Reader,
-  RunnerSpecs,
-  validateSemver,
-} from '@subql/common';
-import {
-  SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
   ProjectManifestV1_0_0Impl,
   SubstrateBlockFilter,
   isRuntimeDs,
   SubstrateHandlerKind,
   isCustomDs,
-  RuntimeDatasourceTemplate,
-  CustomDatasourceTemplate,
 } from '@subql/common-substrate';
 import {
   insertBlockFiltersCronSchedules,
-  ISubqueryProject,
   loadProjectTemplates,
   SubqlProjectDs,
   updateDataSourcesV1_0_0,
+  ISubqueryProject,
 } from '@subql/node-core';
-import { SubstrateDatasource } from '@subql/types';
+import {
+  SubstrateDatasource,
+  RuntimeDatasourceTemplate,
+  CustomDatasourceTemplate,
+  SubstrateNetworkConfig,
+} from '@subql/types';
+import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
@@ -52,9 +50,6 @@ const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);
 };
 
-// This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
-type NetworkConfig = SubstrateProjectNetworkConfig & { chainId: string };
-
 @Injectable()
 export class SubqueryProject implements ISubqueryProject {
   #dataSources: SubstrateProjectDs[];
@@ -62,7 +57,7 @@ export class SubqueryProject implements ISubqueryProject {
   constructor(
     readonly id: string,
     readonly root: string,
-    readonly network: NetworkConfig,
+    readonly network: SubstrateNetworkConfig,
     dataSources: SubstrateProjectDs[],
     readonly schema: GraphQLSchema,
     readonly templates: SubqlProjectDsTemplate[],
@@ -93,7 +88,7 @@ export class SubqueryProject implements ISubqueryProject {
     rawManifest: unknown,
     reader: Reader,
     root: string, // If project local then directory otherwise temp directory
-    networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+    networkOverrides?: Partial<SubstrateNetworkConfig>,
   ): Promise<SubqueryProject> {
     // rawManifest and reader can be reused here.
     // It has been pre-fetched and used for rebase manifest runner options with args
@@ -122,7 +117,7 @@ export class SubqueryProject implements ISubqueryProject {
   }
 }
 
-function processChainId(network: any): NetworkConfig {
+function processChainId(network: any): SubstrateNetworkConfig {
   if (network.chainId && network.genesisHash) {
     throw new Error('Please only provide one of chainId and genesisHash');
   } else if (network.genesisHash && !network.chainId) {
@@ -139,7 +134,7 @@ async function loadProjectFromManifestBase(
   reader: Reader,
   path: string,
   root: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<SubstrateNetworkConfig>,
 ): Promise<SubqueryProject> {
   if (typeof projectManifest.network.endpoint === 'string') {
     projectManifest.network.endpoint = [projectManifest.network.endpoint];

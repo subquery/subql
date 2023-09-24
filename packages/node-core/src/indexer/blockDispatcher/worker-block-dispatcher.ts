@@ -16,7 +16,7 @@ import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
-import {IProjectService, ISubqueryProject} from '../types';
+import {ISubqueryProject, IProjectService} from '../types';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');

@@ -1,10 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {getManifestPath, loadFromJsonOrYaml} from '@subql/common';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
-// import {NodeVM, VMScript} from 'vm2';
 import {ChainTypes} from './models';
 import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
@@ -14,12 +12,6 @@ export function parseSubstrateProjectManifest(raw: unknown): SubstrateProjectMan
   return projectManifest;
 }
 
-export function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVersioned {
-  const doc = loadFromJsonOrYaml(getManifestPath(file));
-  const projectManifest = new SubstrateProjectManifestVersioned(doc as VersionedProjectManifest);
-  projectManifest.validate();
-  return projectManifest;
-}
 export function parseChainTypes(raw: unknown): ChainTypes {
   const chainTypes = plainToClass(ChainTypes, raw);
   if (

@@ -23,7 +23,8 @@ import {
   storeHostFunctions,
   dynamicDsHostFunctions,
 } from '@subql/node-core';
-import { Store, SubstrateDatasource } from '@subql/types';
+import { SubstrateDatasource } from '@subql/types';
+import { Store } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';
 import { DynamicDsService } from '../dynamic-ds.service';

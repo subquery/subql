@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {FieldOperators, FieldsExpression} from '@subql/types';
+import {FieldOperators, FieldsExpression} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
 import {flatten, includes, isEqual, uniq, cloneDeep} from 'lodash';

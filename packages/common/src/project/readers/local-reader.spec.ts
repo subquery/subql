@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import * as path from 'path';
+import {Reader} from '@subql/types-core';
 import {LocalReader} from './local-reader';
-import {Reader} from './reader';
 
 describe('LocalReader', () => {
   let reader: Reader;

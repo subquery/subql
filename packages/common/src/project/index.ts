@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './load';
-export * from './types';
 export * from './versioned';
 export * from './readers';
 export * from './database';

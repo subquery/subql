@@ -19,7 +19,8 @@
     "@polkadot/api": "^10"
   },
   "devDependencies": {
-    "@polkadot/api": "^10"
+    "@polkadot/api": "^10",
+    "@subql/types-core": "workspace:*"
   },
   "stableVersion": "2.2.1-0"
 }

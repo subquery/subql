@@ -3,23 +3,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import {IPackageJson} from 'package-json-type';
+import {Reader, ReaderOptions} from '@subql/types-core';
 import {IPFS_REGEX} from '../../constants';
 import {getProjectRootAndManifest} from '../../project';
 import {GithubReader} from './github-reader';
 import {IPFSReader} from './ipfs-reader';
 import {LocalReader} from './local-reader';
-
-export type ReaderOptions = {
-  ipfs?: string;
-};
-
-export interface Reader {
-  getProjectSchema(): Promise<unknown | undefined>;
-  getPkg(): Promise<IPackageJson | undefined>;
-  getFile(file: string): Promise<string | undefined>;
-  root: string | undefined;
-}
 
 export class ReaderFactory {
   // eslint-disable-next-line @typescript-eslint/require-await

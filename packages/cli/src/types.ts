@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {RunnerSpecs} from '@subql/common';
+import {RunnerSpecs} from '@subql/types-core';
 
 export interface ProjectSpecBase {
   name: string;

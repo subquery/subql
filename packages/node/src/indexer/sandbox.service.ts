@@ -3,15 +3,14 @@
 
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
-import { BaseDataSource } from '@subql/common';
 import {
   hostStoreToStore,
   IndexerSandbox,
-  ISubqueryProject,
   NodeConfig,
   StoreService,
+  ISubqueryProject,
 } from '@subql/node-core';
-import { Store } from '@subql/types';
+import { BaseDataSource, Store } from '@subql/types-core';
 import { ApiService } from './api.service';
 
 /* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */

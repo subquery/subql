@@ -3,8 +3,7 @@
 
 export * from './interfaces';
 
-import {Entity} from '@subql/types';
-import {HandlerFunction} from './interfaces';
+import {Entity} from '@subql/types-core';
 
 // Register test functions to a global array
 export function subqlTest(

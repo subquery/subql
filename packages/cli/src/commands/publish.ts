@@ -18,7 +18,7 @@ export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
-    location: Flags.string({char: 'f', description: 'from project or manifest path'}),
+    location: Flags.string({char: 'f', description: 'from project folder or specify manifest file'}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
     output: Flags.boolean({char: 'o', description: 'Output IPFS CID', required: false}),
   };
@@ -26,15 +26,16 @@ export default class Publish extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Publish);
     const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
-    const project = getProjectRootAndManifest(location);
 
-    // Ensure that the project is built
     try {
-      await Build.run(['--location', project.root, '-s']);
+      await Build.run(['--location', location, '-s']);
     } catch (e) {
       this.log(e);
       this.error('Failed to build project');
     }
+
+    // Make sure build first, generated project yaml could be added to the project (instead of ts)
+    const project = getProjectRootAndManifest(location);
 
     let authToken: string;
 

@@ -1,11 +1,29 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {BaseDataSource, ParentProject, ProjectNetworkConfig, RunnerSpecs} from '@subql/common';
-import {Entity} from '@subql/types';
+import {
+  BaseDataSource,
+  BaseTemplateDataSource,
+  CommonSubqueryProject,
+  Entity,
+  IProjectNetworkConfig,
+} from '@subql/types-core';
 import {GraphQLSchema} from 'graphql';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {ProcessBlockResponse} from './blockDispatcher';
+
+export interface ISubqueryProject<
+  N extends IProjectNetworkConfig = IProjectNetworkConfig,
+  DS extends BaseDataSource = BaseDataSource,
+  T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>,
+  C = unknown
+> extends Omit<CommonSubqueryProject<N, DS, T>, 'schema' | 'version' | 'name' | 'specVersion' | 'description'> {
+  readonly schema: GraphQLSchema;
+  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date>) => Promise<void>;
+  readonly id: string;
+  chainTypes?: C; // The chainTypes after loaded
+  readonly root: string;
+}
 
 export enum OperationType {
   Set = 'Set',
@@ -17,29 +35,6 @@ export type OperationEntity = {
   entityType: string;
   data: Entity | string;
 };
-
-export interface IProjectNetworkConfig extends ProjectNetworkConfig {
-  chainId: string;
-}
-
-export interface ISubqueryProject<
-  N extends IProjectNetworkConfig = IProjectNetworkConfig,
-  DS extends BaseDataSource = BaseDataSource,
-  T = unknown,
-  C = unknown
-> {
-  readonly id: string;
-  readonly root: string;
-  readonly network: N;
-  readonly dataSources: DS[];
-  readonly schema: GraphQLSchema;
-  readonly templates: T[];
-  readonly chainTypes?: C;
-  readonly runner?: RunnerSpecs;
-  readonly parent?: ParentProject;
-
-  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date>) => Promise<void>;
-}
 
 export interface IIndexerManager<B, DS> {
   start(): Promise<void>;
@@ -54,11 +49,3 @@ export interface IProjectService<DS> {
   getStartBlockFromDataSources(): number;
   getDataSourcesMap(): BlockHeightMap<DS[]>;
 }
-
-// Equivalent to SubstrateDatasourceProcessor
-export type DsProcessor<DS> = {
-  kind: string;
-  validate: (ds: DS, assets: Record<string, string>) => void;
-  dsFilterProcessor: (ds: DS, api: any) => boolean;
-  handlerProcessors: Record<string, any>;
-};
