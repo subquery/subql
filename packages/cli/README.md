@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/3.6.2-9 linux-x64 node-v18.17.1
+@subql/cli/3.6.2-10 linux-x64 node-v18.17.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -45,7 +45,6 @@ USAGE
 - [`subql deployment:promote`](#subql-deploymentpromote)
 - [`subql help [COMMAND]`](#subql-help-command)
 - [`subql init [PROJECTNAME]`](#subql-init-projectname)
-- [`subql migrate`](#subql-migrate)
 - [`subql multi-chain:add`](#subql-multi-chainadd)
 - [`subql project`](#subql-project)
 - [`subql project:create-project`](#subql-projectcreate-project)
@@ -62,9 +61,9 @@ USAGE
   $ subql build [-f <value>] [-o <value>] [--mode production|prod|development|dev] [-s]
 
 FLAGS
-  -f, --location=<value>  local folder
+  -f, --location=<value>  local folder or manifest file to run build
   -o, --output=<value>    output folder of build e.g. dist
-  -s, --slient            silent mode
+  -s, --silent            silent mode
   --mode=<option>         [default: production]
                           <options: production|prod|development|dev>
 
@@ -72,7 +71,7 @@ DESCRIPTION
   Build this SubQuery project code
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -90,7 +89,7 @@ DESCRIPTION
   Generate schemas for graph node
 ```
 
-_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/codegen/index.js)_
+_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/codegen/index.js)_
 
 ## `subql codegen:generate`
 
@@ -113,7 +112,7 @@ DESCRIPTION
   Generate Project.yaml and mapping functions based on provided ABI
 ```
 
-_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/codegen/generate.js)_
+_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/codegen/generate.js)_
 
 ## `subql deployment`
 
@@ -156,7 +155,7 @@ DESCRIPTION
   Deploy to hosted service
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/deployment/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/deployment/index.js)_
 
 ## `subql deployment:delete`
 
@@ -175,7 +174,7 @@ DESCRIPTION
   Delete Deployment
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/deployment/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/deployment/delete.js)_
 
 ## `subql deployment:deploy`
 
@@ -215,7 +214,7 @@ DESCRIPTION
   Deployment to hosted service
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/deployment/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/deployment/deploy.js)_
 
 ## `subql deployment:promote`
 
@@ -234,7 +233,7 @@ DESCRIPTION
   Promote Deployment
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/deployment/promote.js)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/deployment/promote.js)_
 
 ## `subql help [COMMAND]`
 
@@ -278,26 +277,7 @@ DESCRIPTION
   Initialize a scaffold subquery project
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/init.js)_
-
-## `subql migrate`
-
-Migrate Subquery project manifest to v1.0.0
-
-```
-USAGE
-  $ subql migrate [-f] [--file <value>] [-l <value>]
-
-FLAGS
-  -f, --force
-  -l, --location=<value>  local folder to run migrate in
-  --file=<value>
-
-DESCRIPTION
-  Migrate Subquery project manifest to v1.0.0
-```
-
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/migrate.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/init.js)_
 
 ## `subql multi-chain:add`
 
@@ -316,7 +296,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain configuration
 ```
 
-_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/multi-chain/add.js)_
+_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/multi-chain/add.js)_
 
 ## `subql project`
 
@@ -342,7 +322,7 @@ DESCRIPTION
   Create/Delete project
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/project/index.js)_
 
 ## `subql project:create-project`
 
@@ -367,7 +347,7 @@ DESCRIPTION
   Create Project on Hosted Service
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/project/create-project.js)_
 
 ## `subql project:delete-project`
 
@@ -385,7 +365,7 @@ DESCRIPTION
   Delete Project on Hosted Service
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
@@ -396,7 +376,7 @@ USAGE
   $ subql publish [-f <value>] [--ipfs <value>] [-o]
 
 FLAGS
-  -f, --location=<value>  from project or manifest path
+  -f, --location=<value>  from project folder or specify manifest file
   -o, --output            Output IPFS CID
   --ipfs=<value>          IPFS gateway endpoint
 
@@ -404,7 +384,7 @@ DESCRIPTION
   Upload this SubQuery project to IPFS
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -426,6 +406,6 @@ DESCRIPTION
   Check a folder or github repo is a validate subquery project
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v3.6.2-9/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v3.6.2-10/lib/commands/validate.js)_
 
 <!-- commandsstop -->

@@ -1,6 +1,6 @@
 {
   "name": "@subql/testing",
-  "version": "2.0.2",
+  "version": "2.0.3-0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc -b"
@@ -14,5 +14,5 @@
   "dependencies": {
     "@subql/types-core": "workspace:^"
   },
-  "stableVersion": "2.0.1"
+  "stableVersion": "2.0.2"
 }
