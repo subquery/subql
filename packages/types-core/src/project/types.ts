@@ -121,8 +121,8 @@ export interface ProjectRootAndManifest {
 
 export interface IProjectManifest<D> {
   specVersion: string;
-  description: string;
-  repository: string;
+  description?: string;
+  repository?: string;
   dataSources: D[];
   toDeployment(): string;
   validate(): void;
