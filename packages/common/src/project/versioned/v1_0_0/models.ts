@@ -88,7 +88,9 @@ export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements 
   @Allow()
   definitions: object;
   @IsString()
+  @IsOptional()
   description: string;
+  @IsOptional()
   @IsString()
   repository: string;
   @Equals('1.0.0')
@@ -100,6 +102,7 @@ export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements 
   @Type(() => CommonProjectNetworkV1_0_0)
   network: IProjectNetworkConfig;
   @IsString()
+  @IsOptional()
   name: string;
   @IsString()
   version: string;

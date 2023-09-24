@@ -11,8 +11,10 @@ import {ParentProjectModel} from './v1_0_0/models';
 export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   @Allow()
   definitions: object;
+  @IsOptional()
   @IsString()
   description: string;
+  @IsOptional()
   @IsString()
   repository: string;
   @IsString()

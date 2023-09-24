@@ -15,6 +15,11 @@ export interface CommonSubqueryProject<
   T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>
 > {
   /**
+   * The repository of your SubQuery project.
+   * @type {string}
+   */
+  repository?: string;
+  /**
    * The version string of your SubQuery project.
    * @type {string}
    * @default "1.0.0"
@@ -55,7 +60,7 @@ export interface CommonSubqueryProject<
   readonly parent?: ParentProject;
   /**
    * The network configuration for the SubQuery project.
-   * 
+   *
    * This defines what network you are wanting to index as well as the details on how to conect to it.
    * @readonly
    * @type {N}
@@ -71,7 +76,7 @@ export interface CommonSubqueryProject<
   readonly dataSources: DS[];
   /**
    * An array of project templates associated with the project.
-   * 
+   *
    * These are the same as datasources but instead of having a startBlock they have a unique name.
    * These are used to dynamically create data sources, this is useful when you don't know the start block.
    * e.g When a factory creates a new instance of a contract you can initialize a datasource from a template in your mapping function.
@@ -89,7 +94,7 @@ export interface CommonSubqueryProject<
 export interface IProjectNetworkConfig extends ProjectNetworkConfig {
   /**
    * The unique identity of the chain.
-   * 
+   *
    * This differs for different blockchain ecosystems, please refer to our documentation
    * @type {string}
    * @example
@@ -130,12 +135,12 @@ export interface IProjectManifest<D> {
 export interface ProjectNetworkConfig {
   /**
    * The endpoint(s) for the network connection, which can be a single string or an array of strings.
-   * 
+   *
    * Endpoints ideally should non-pruned archive nodes (so you have access for the entire chain state)
    * We recommend providing more than one endpoint for improved reliability, performance, and uptime.
    * Public nodes may be rate limited, which can affect indexing speed
    * When developing your project we suggest adding a private API key
-   * 
+   *
    * @type {string | string[]}
    */
   endpoint: string | string[];
@@ -143,7 +148,7 @@ export interface ProjectNetworkConfig {
   /**
    * The SubQuery network dictionary endpoint (optional).
    * This significantly speeds up indexing of your project.
-   * 
+   *
    * @type {string}
    */
   dictionary?: string;
