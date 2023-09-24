@@ -88,7 +88,7 @@ export interface NodeOptions {
 
   /**
    * Indicates whether unsafe mode are allowed for the indexer (optional).
-   * 
+   *
    * Unsafe mode controls various features that compromise the determinsm of a SubQuery project.
    * Unsafe allows any imports which greatly increases functionality with the tradeoff of decreased security
    * @type {boolean}
@@ -98,7 +98,7 @@ export interface NodeOptions {
 
   /**
    * Indicates whether unfinalized blocks are supported by the indexer (optional).
-   * 
+   *
    * This allows you to index blocks before they become finalized.
    * It can be very useful if you want the most up-to-date data possible.
    * It will detect any forks and remove any blocks that don't become finalized.
@@ -138,12 +138,12 @@ export interface ProjectManifestV1_0_0<
   D extends BaseDataSource = BaseDataSource,
   T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>
 > {
-  name: string;
+  name?: string;
   version: string;
   schema: {
     file: string;
   };
-  specVersion?: string;
+  specVersion: string;
   repository?: string;
   description?: string;
   templates?: T[];

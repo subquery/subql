@@ -88,9 +88,11 @@ export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements 
   @Allow()
   definitions: object;
   @IsString()
-  description: string;
+  @IsOptional()
+  description?: string;
+  @IsOptional()
   @IsString()
-  repository: string;
+  repository?: string;
   @Equals('1.0.0')
   specVersion: string;
   // To be validated in specific manifest type
@@ -100,7 +102,8 @@ export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements 
   @Type(() => CommonProjectNetworkV1_0_0)
   network: IProjectNetworkConfig;
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
   @IsString()
   version: string;
   @ValidateNested()
