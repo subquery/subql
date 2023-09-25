@@ -163,6 +163,19 @@ export interface ProjectManifestV1_0_0<
 }
 
 export interface BlockFilter {
+  /**
+   * The modulo value for filtering blocks (optional).
+   * @type {number}
+   * @example
+   * modulo: 5, // every 5 blocks will be indexed
+   */
   modulo?: number;
+
+  /**
+   * A cron expression will index blocks at an interval (optional).
+   * @type {string}
+   * @example
+   * timestamp: "\*\/5 * * * *"
+   */
   timestamp?: string;
 }

@@ -11,6 +11,7 @@ import {
   FileReference,
   Processor,
   ProjectManifestV1_0_0,
+  BlockFilter,
 } from '@subql/types-core';
 import {LightSubstrateEvent, SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
@@ -77,23 +78,7 @@ interface SubstrateBaseHandlerFilter {
  * @interface
  * @extends {SubstrateBaseHandlerFilter}
  */
-export interface SubstrateBlockFilter extends SubstrateBaseHandlerFilter {
-  /**
-   * The modulo value for filtering blocks (optional).
-   * @type {number}
-   * @example
-   * modulo: 5, // every 5 blocks will be indexed
-   */
-  modulo?: number;
-
-  /**
-   * A cron expression will index blocks at an interval (optional).
-   * @type {string}
-   * @example
-   * timestamp: "\*\/5 * * * *"
-   */
-  timestamp?: string;
-}
+export interface SubstrateBlockFilter extends SubstrateBaseHandlerFilter, BlockFilter {}
 
 /**
  * Represents a filter for Substrate events, extending SubstrateBaseHandlerFilter.
