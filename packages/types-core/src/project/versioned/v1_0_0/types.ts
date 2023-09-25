@@ -112,7 +112,7 @@ export interface NodeOptions {
    * If this is enabled and the project only contains event handlers then it wont fetch transactions reducing memory footprint and RPC requests. This can lead to faster indexing.
    * @type {boolean}
    */
-  skipTransaction?: boolean;
+  skipTransactions?: boolean;
 }
 
 /**

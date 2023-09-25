@@ -4,7 +4,7 @@
 import { IConfig, NodeConfig } from '@subql/node-core';
 
 export interface ISubstrateConfig extends IConfig {
-  skipTransaction: boolean;
+  skipTransactions: boolean;
 }
 
 export class SubstrateNodeConfig extends NodeConfig<ISubstrateConfig> {
@@ -24,7 +24,7 @@ export class SubstrateNodeConfig extends NodeConfig<ISubstrateConfig> {
     super((config as any)._config, (config as any)._isTest);
   }
 
-  get skipTransaction(): boolean {
-    return !!this._config.skipTransaction;
+  get skipTransactions(): boolean {
+    return !!this._config.skipTransactions;
   }
 }

@@ -12,7 +12,7 @@ export interface ArgvOverrideOptions {
   unsafe?: boolean;
   disableHistorical?: boolean;
   unfinalizedBlocks?: boolean;
-  skipTransaction?: boolean;
+  skipTransactions?: boolean;
 }
 
 export function defaultSubqueryName(config: Partial<IConfig>): MinConfig {

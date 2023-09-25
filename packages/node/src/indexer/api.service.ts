@@ -125,30 +125,30 @@ export class ApiService
 
   updateBlockFetching(): void {
     const onlyEventHandlers = isOnlyEventHandlers(this.project);
-    const skipTransaction =
-      this.nodeConfig.skipTransaction && onlyEventHandlers;
+    const skipTransactions =
+      this.nodeConfig.skipTransactions && onlyEventHandlers;
 
-    if (this.nodeConfig.skipTransaction) {
+    if (this.nodeConfig.skipTransactions) {
       if (onlyEventHandlers) {
         logger.info(
-          'skipTransaction is enabled, only events and block headers will be fetched.',
+          'skipTransactions is enabled, only events and block headers will be fetched.',
         );
       } else {
         logger.info(
-          `skipTransaction is disabled, the project contains handlers that aren't event handlers.`,
+          `skipTransactions is disabled, the project contains handlers that aren't event handlers.`,
         );
       }
     } else {
       if (onlyEventHandlers) {
         logger.warn(
-          'skipTransaction is disabled, the project contains only event handlers, it could be enabled to improve indexing performance.',
+          'skipTransactions is disabled, the project contains only event handlers, it could be enabled to improve indexing performance.',
         );
       } else {
-        logger.info(`skipTransaction is disabled.`);
+        logger.info(`skipTransactions is disabled.`);
       }
     }
 
-    const fetchFunc = skipTransaction
+    const fetchFunc = skipTransactions
       ? SubstrateUtil.fetchBlocksBatchesLight
       : SubstrateUtil.fetchBlocksBatches;
 

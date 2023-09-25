@@ -192,7 +192,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
             type: 'boolean',
             default: false,
           },
-          skipTransaction: {
+          skipTransactions: {
             demandOption: false,
             describe:
               'If the project contains only event handlers and only accesses the events or block header then you can enable this option to reduce RPC requests and have a slight performance increase. This will be automatically disabled if handlers other than EventHandlers are detected.',
