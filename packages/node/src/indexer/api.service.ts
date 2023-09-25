@@ -16,6 +16,7 @@ import {
   ConnectionPoolService,
   ApiService as BaseApiService,
 } from '@subql/node-core';
+import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
@@ -50,13 +51,16 @@ export class ApiService
   private currentBlockHash: string;
   private currentBlockNumber: number;
 
+  private nodeConfig: SubstrateNodeConfig;
+
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     eventEmitter: EventEmitter2,
-    private nodeConfig: NodeConfig,
+    nodeConfig: NodeConfig,
   ) {
     super(connectionPoolService, eventEmitter);
+    this.nodeConfig = new SubstrateNodeConfig(nodeConfig);
 
     this.updateBlockFetching();
   }
@@ -121,29 +125,30 @@ export class ApiService
 
   updateBlockFetching(): void {
     const onlyEventHandlers = isOnlyEventHandlers(this.project);
-    const skipBlock = this.nodeConfig.skipBlock && onlyEventHandlers;
+    const skipTransactions =
+      this.nodeConfig.skipTransactions && onlyEventHandlers;
 
-    if (this.nodeConfig.skipBlock) {
+    if (this.nodeConfig.skipTransactions) {
       if (onlyEventHandlers) {
         logger.info(
-          'skipBlock is enabled, only events and block headers will be fetched.',
+          'skipTransactions is enabled, only events and block headers will be fetched.',
         );
       } else {
         logger.info(
-          `skipBlock is disabled, the project contains handlers that aren't event handlers.`,
+          `skipTransactions is disabled, the project contains handlers that aren't event handlers.`,
         );
       }
     } else {
       if (onlyEventHandlers) {
         logger.warn(
-          'skipBlock is disabled, the project contains only event handlers, it could be enabled to improve indexing performance.',
+          'skipTransactions is disabled, the project contains only event handlers, it could be enabled to improve indexing performance.',
         );
       } else {
-        logger.info(`skipBlock is disabled.`);
+        logger.info(`skipTransactions is disabled.`);
       }
     }
 
-    const fetchFunc = skipBlock
+    const fetchFunc = skipTransactions
       ? SubstrateUtil.fetchBlocksBatchesLight
       : SubstrateUtil.fetchBlocksBatches;
 

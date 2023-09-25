@@ -12,7 +12,7 @@ export interface ArgvOverrideOptions {
   unsafe?: boolean;
   disableHistorical?: boolean;
   unfinalizedBlocks?: boolean;
-  skipBlock?: boolean;
+  skipTransactions?: boolean;
 }
 
 export function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
@@ -30,28 +30,26 @@ export function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   } as MinConfig;
 }
 
-function applyArgs(
-  argvs: ArgvOverrideOptions,
-  options: RunnerNodeOptionsModel,
-  key: keyof Omit<ArgvOverrideOptions, 'disableHistorical'>
-) {
-  if (argvs[key] === undefined && options[key] !== undefined) {
-    argvs[key] = options[key];
-  }
-}
-
 export function rebaseArgsWithManifest(argvs: ArgvOverrideOptions, rawManifest: unknown): void {
   const options = plainToClass(RunnerNodeOptionsModel, (rawManifest as any)?.runner?.node?.options);
   if (!options) {
     return;
   }
 
-  // we override them if they are not provided in args/flag
-  if (argvs.disableHistorical === undefined && options.historical !== undefined) {
-    // THIS IS OPPOSITE
-    argvs.disableHistorical = !options.historical;
-  }
-  applyArgs(argvs, options, 'unsafe');
-  applyArgs(argvs, options, 'unfinalizedBlocks');
-  applyArgs(argvs, options, 'skipBlock');
+  // Do this with any options as other SDKs might want to implement custom options
+  (Object.entries(options) as [keyof Omit<ArgvOverrideOptions, 'disableHistorical'> | 'historical', any][]).map(
+    ([key, value]) => {
+      // we override them if they are not provided in args/flag
+      if (key === 'historical') {
+        if (value !== undefined) {
+          // THIS IS OPPOSITE
+          argvs.disableHistorical = !value;
+        }
+        return;
+      }
+      if (value !== undefined && argvs[key] === undefined) {
+        argvs[key] = value;
+      }
+    }
+  );
 }

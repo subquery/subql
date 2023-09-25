@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Project upgrades feature which allows upgrading projects at specific heights (#1797)
-- Support for skipBlock and LightBlock (#1968)
+- Support for `skipTransactions` and LightBlock (#1968)
 
 ## [2.12.2] - 2023-08-17
 ### Fixed

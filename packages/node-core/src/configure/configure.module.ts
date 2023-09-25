@@ -103,7 +103,7 @@ export async function registerApp<P extends ISubqueryProject>(
     rawManifest = await reader.getProjectSchema();
     rebaseArgsWithManifest(argv, rawManifest);
     // use rebased argv generate config to override current config
-    config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv, nameMapping), isTest);
+    config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv, nameMapping));
   } else {
     if (!argv.subquery) {
       logger.error('Subquery path is missing in both cli options and config file');

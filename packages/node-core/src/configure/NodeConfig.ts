@@ -52,7 +52,6 @@ export interface IConfig {
   readonly storeFlushInterval: number;
   readonly isTest?: boolean;
   readonly root?: string;
-  readonly skipBlock?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -79,12 +78,11 @@ const DEFAULT_CONFIG = {
   storeGetCacheSize: 500,
   storeCacheAsync: true,
   storeFlushInterval: 5,
-  skipBlock: false,
 };
 
-export class NodeConfig implements IConfig {
-  private readonly _config: IConfig;
-  private readonly _isTest: boolean;
+export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
+  protected readonly _config: C;
+  protected readonly _isTest: boolean;
 
   static fromFile(filePath: string, configFromArgs?: Partial<IConfig>, isTest?: boolean): NodeConfig {
     if (!fs.existsSync(filePath)) {
@@ -102,13 +100,13 @@ export class NodeConfig implements IConfig {
     return new NodeConfig(config, isTest);
   }
 
-  static rebaseWithArgs(config: NodeConfig, configFromArgs?: Partial<IConfig>, isTest?: boolean): NodeConfig {
-    const _config = assign({}, (config as any)._config, configFromArgs) as IConfig;
-    return new NodeConfig(_config, isTest);
+  static rebaseWithArgs(config: NodeConfig, configFromArgs?: Partial<IConfig>): NodeConfig {
+    const _config = assign({}, (config as any)._config, configFromArgs);
+    return new NodeConfig(_config, (config as any)._isTest);
   }
 
   constructor(config: MinConfig, isTest?: boolean) {
-    this._config = assign({}, DEFAULT_CONFIG, config);
+    this._config = assign({}, DEFAULT_CONFIG, config) as C;
     this._isTest = isTest ?? false;
   }
 
@@ -258,10 +256,6 @@ export class NodeConfig implements IConfig {
 
   get scaleBatchSize(): boolean {
     return !!this._config.scaleBatchSize;
-  }
-
-  get skipBlock(): boolean {
-    return !!this._config.skipBlock;
   }
 
   get postgresCACert(): string | undefined {

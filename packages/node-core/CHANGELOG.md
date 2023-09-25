@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Project upgrades feature and many other changes to support it (#1797)
-- `skipBlock` option to NodeConfig (#1968)
+- `skipTransactions` option to NodeConfig (#1968)
 - `getByFields` to store (#1993)
 - `getPoiBlocksBefore` method to PoiModel so we can get recent blocks with operations (#2009)
 

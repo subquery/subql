@@ -64,7 +64,7 @@ export class RunnerNodeOptionsModel implements NodeOptions {
   unfinalizedBlocks?: boolean;
   @IsOptional()
   @IsBoolean()
-  skipBlock?: boolean;
+  skipTransactions?: boolean;
 }
 
 export class BlockFilterImpl implements BlockFilter {
