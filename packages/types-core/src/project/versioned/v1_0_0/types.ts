@@ -88,7 +88,7 @@ export interface NodeOptions {
 
   /**
    * Indicates whether unsafe mode are allowed for the indexer (optional).
-   * 
+   *
    * Unsafe mode controls various features that compromise the determinsm of a SubQuery project.
    * Unsafe allows any imports which greatly increases functionality with the tradeoff of decreased security
    * @type {boolean}
@@ -98,7 +98,7 @@ export interface NodeOptions {
 
   /**
    * Indicates whether unfinalized blocks are supported by the indexer (optional).
-   * 
+   *
    * This allows you to index blocks before they become finalized.
    * It can be very useful if you want the most up-to-date data possible.
    * It will detect any forks and remove any blocks that don't become finalized.
@@ -108,10 +108,11 @@ export interface NodeOptions {
   unfinalizedBlocks?: boolean;
 
   /**
-   * Indicates whether block skipping is enabled for the indexer (optional).
+   * Indicates whether transaction skipping is enabled for the indexer. (optional).
+   * If this is enabled and the project only contains event handlers then it wont fetch transactions reducing memory footprint and RPC requests. This can lead to faster indexing.
    * @type {boolean}
    */
-  skipBlock?: boolean;
+  skipTransaction?: boolean;
 }
 
 /**

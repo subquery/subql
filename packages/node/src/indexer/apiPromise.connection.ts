@@ -29,7 +29,7 @@ export type FetchFunc =
   | typeof SubstrateUtil.fetchBlocksBatches
   | typeof SubstrateUtil.fetchBlocksBatchesLight;
 
-// We use a function to get the fetch function because it can change depending on the skipBlocks feature
+// We use a function to get the fetch function because it can change depending on the skipTransactions feature
 export type GetFetchFunc = () => FetchFunc;
 
 export class ApiPromiseConnection
