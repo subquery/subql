@@ -107,15 +107,14 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       // Set the start height so the right project is used
       await this.projectUpgradeService.setCurrentHeight(this._startHeight);
 
-      // Flush any pending operations to set up DB
-      await this.storeService.storeCache.flushCache(true, true);
-
       if (this.nodeConfig.proofOfIndex) {
         await this.poiService.init(this.schema);
         // Flush cache to set up rest of POI related meta
-        await this.storeService.storeCache.flushCache(true, true);
         void this.poiService.syncPoi(undefined);
       }
+
+      // Flush any pending operations to set up DB
+      await this.storeService.storeCache.flushCache(true, true);
     }
 
     // Used to load assets into DS-processor, has to be done in any thread
@@ -327,10 +326,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
             process.exit(1);
           }
           logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
-          // We need to stop poi sync service before reindex
-          if (this.nodeConfig.proofOfIndex) {
-            await this.poiService.stopSync();
-          }
           await this.reindex(upgradePoint);
           return upgradePoint;
         }

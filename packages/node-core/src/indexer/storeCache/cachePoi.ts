@@ -3,6 +3,7 @@
 
 import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
+import {cloneDeep} from 'lodash';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../poi/poiModel';
@@ -81,7 +82,8 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
       return;
     }
     // Clear everything below the block height
-    for (const [n, p] of Object.entries(this.setCache)) {
+    const cloneSetCache = cloneDeep(this.setCache);
+    for (const [n, p] of Object.entries(cloneSetCache)) {
       if (Number(n) <= blockHeight) {
         delete this.setCache[Number(n)];
       }

@@ -37,7 +37,7 @@ export class Queue<T> implements IQueue {
   get freeSpace(): number | undefined {
     if (!this._capacity) return undefined;
 
-    return this._capacity - this.size;
+    return Math.max(0, this._capacity - this.size);
   }
 
   put(item: T): void {
