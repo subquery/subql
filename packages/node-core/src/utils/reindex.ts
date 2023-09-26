@@ -37,8 +37,7 @@ export async function reindex(
   dynamicDsService: DynamicDsService<any>,
   sequelize: Sequelize,
   poiService?: PoiService,
-  forceCleanService?: ForceCleanService,
-  latestSyncedPoiHeight?: number
+  forceCleanService?: ForceCleanService
 ): Promise<void> {
   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
     logger.warn(
@@ -71,9 +70,6 @@ export async function reindex(
         dynamicDsService.resetDynamicDatasource(targetBlockHeight),
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
-      if (latestSyncedPoiHeight !== undefined && latestSyncedPoiHeight > targetBlockHeight) {
-        storeService.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
-      }
       // Flush metadata changes from above Promise.all
       await storeService.storeCache.metadata.flush(transaction);
 

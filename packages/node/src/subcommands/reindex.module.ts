@@ -23,6 +23,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     StoreCacheService,
     StoreService,
     ReindexService,
+    PoiService,
     ForceCleanService,
     {
       provide: 'UnfinalizedBlocksService',

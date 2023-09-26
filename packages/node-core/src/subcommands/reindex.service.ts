@@ -43,6 +43,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     }
 
     await this.storeService.initCoreTables(schema);
+    await this.poiService.init(schema);
 
     await initDbSchema(this.project, schema, this.storeService);
 
@@ -86,10 +87,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {
-    const [startHeight, lastProcessedHeight, latestSyncedPoiHeight] = await Promise.all([
+    const [startHeight, lastProcessedHeight] = await Promise.all([
       this.getStartBlockFromDataSources(),
       this.getLastProcessedHeight(),
-      this.getSyncedPoiHeight(),
     ]);
 
     assert(lastProcessedHeight !== undefined, 'Cannot reindex without being able to get the lastProcessedHeight');
@@ -102,9 +102,8 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.unfinalizedBlocksService,
       this.dynamicDsService,
       this.sequelize,
-      undefined,
-      this.forceCleanService,
-      latestSyncedPoiHeight
+      this.poiService,
+      this.forceCleanService
     );
 
     await this.storeService.storeCache.flushCache(true, true);

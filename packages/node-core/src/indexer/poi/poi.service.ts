@@ -246,7 +246,7 @@ export class PoiService implements OnApplicationShutdown {
     if (lastSyncedPoiHeight !== undefined && lastSyncedPoiHeight > targetBlockHeight) {
       this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
     }
-    this.storeCache.metadata.set('lastCreatedPoiHeight', targetBlockHeight);
+    this.storeCache.metadata.bulkRemove(['lastCreatedPoiHeight']);
   }
 
   private setLatestSyncedPoi(poiBlock: ProofOfIndex): void {
