@@ -1,7 +1,6 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { isMainThread } from 'worker_threads';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
@@ -10,7 +9,6 @@ import { RuntimeVersion, Header } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import {
   IndexerEvent,
-  NetworkMetadataPayload,
   getLogger,
   NodeConfig,
   profilerWrap,

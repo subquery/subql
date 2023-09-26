@@ -265,7 +265,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
       // Nothing has been indexed
       if (!indexedEntries.length) {
-        return projectEntries[0][0];
+        return undefined;
       }
 
       // TODO do we need to compare heights?
