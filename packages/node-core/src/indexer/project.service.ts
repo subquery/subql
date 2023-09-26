@@ -115,6 +115,12 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
+    } else {
+      this._schema = await this.getExistingProjectSchema();
+
+      assert(this._schema, 'Schema should be created in main thread');
+      await this.storeService.initCoreTables(this._schema);
+      await this.initUpgradeService();
     }
 
     // Used to load assets into DS-processor, has to be done in any thread

@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {isMainThread} from 'node:worker_threads';
 import {Injectable} from '@nestjs/common';
 import {ApiErrorType} from '../../api.connection.error';
 import {IApiConnectionSpecific} from '../../api.service';
@@ -61,7 +62,11 @@ export function connectionPoolStateHostFunctions<T extends IApiConnectionSpecifi
 export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
   implements IConnectionPoolStateManager<T>
 {
-  constructor(private host: HostConnectionPoolState<any>) {}
+  constructor(private host: HostConnectionPoolState<any>) {
+    if (isMainThread) {
+      throw new Error('Expected to be worker thread');
+    }
+  }
 
   async getNextConnectedEndpoint(): Promise<string | undefined> {
     return this.host.hostGetNextConnectedEndpoint();

@@ -8,7 +8,6 @@ import {
   PoiService,
   BaseProjectService,
   StoreService,
-  mainThreadOnly,
   NodeConfig,
   IProjectUpgradeService,
 } from '@subql/node-core';
@@ -35,11 +34,11 @@ export class ProjectService extends BaseProjectService<
     dsProcessorService: DsProcessorService,
     apiService: ApiService,
     @Inject(isMainThread ? PoiService : 'Null') poiService: PoiService,
-    @Inject(isMainThread ? Sequelize : 'Null') sequelize: Sequelize,
+    sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IProjectUpgradeService')
     protected readonly projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
-    @Inject(isMainThread ? StoreService : 'Null') storeService: StoreService,
+    storeService: StoreService,
     nodeConfig: NodeConfig,
     dynamicDsService: DynamicDsService,
     eventEmitter: EventEmitter2,
@@ -65,7 +64,6 @@ export class ProjectService extends BaseProjectService<
     return getTimestamp(block);
   }
 
-  @mainThreadOnly()
   protected onProjectChange(project: SubqueryProject): void | Promise<void> {
     this.apiService.updateBlockFetching();
   }

@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {isMainThread} from 'node:worker_threads';
 import {Injectable} from '@nestjs/common';
 import {DatasourceParams, IDynamicDsService} from '../dynamic-ds.service';
 
@@ -16,7 +17,11 @@ export const hostDynamicDsKeys: (keyof HostDynamicDS<any>)[] = [
 
 @Injectable()
 export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
-  constructor(private host: HostDynamicDS<DS>) {}
+  constructor(private host: HostDynamicDS<DS>) {
+    if (isMainThread) {
+      throw new Error('Expected to be worker thread');
+    }
+  }
 
   get dynamicDatasources(): DS[] {
     throw new Error('Worker does not support this property. Use getDynamicDatasources instead');
