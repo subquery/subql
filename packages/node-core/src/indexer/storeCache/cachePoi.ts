@@ -3,6 +3,7 @@
 
 import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
+import {cloneDeep} from 'lodash';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../poi/poiModel';
@@ -64,7 +65,7 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     return this.plainPoiModel.getFirst();
   }
 
-  protected async runFlush(tx: Transaction): Promise<void> {
+  protected async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
     await Promise.all([
       this.model.bulkCreate(Object.values(this.setCache), {
@@ -74,8 +75,20 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     ]);
   }
 
-  protected clear(): void {
-    this.setCache = {};
-    this.flushableRecordCounter = 0;
+  clear(blockHeight?: number): void {
+    if (!blockHeight) {
+      this.setCache = {};
+      this.flushableRecordCounter = 0;
+      return;
+    }
+    // Clear everything below the block height
+    const cloneSetCache: Record<number, ProofOfIndex> = {};
+    for (const [n, p] of Object.entries(this.setCache)) {
+      if (Number(n) > blockHeight) {
+        cloneSetCache[Number(n)] = p;
+      }
+    }
+    this.setCache = cloneSetCache;
+    this.flushableRecordCounter = Object.entries(this.setCache).length;
   }
 }

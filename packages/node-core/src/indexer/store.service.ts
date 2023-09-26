@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-import {Entity, Store, IProjectNetworkConfig,FieldsExpression} from '@subql/types-core';
+import {Entity, Store, IProjectNetworkConfig, FieldsExpression} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   GraphQLModelsType,
@@ -746,18 +746,6 @@ group by
       }
     }
     this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
-    if (this.config.proofOfIndex) {
-      assert(this.poiRepo, new Error('Expected POI repo to exist'));
-      await this.poiRepo.destroy({
-        transaction,
-        where: {
-          id: {
-            [Op.gt]: targetBlockHeight,
-          },
-        },
-      });
-      this.metadataModel.set('lastCreatedPoiHeight', targetBlockHeight);
-    }
     // metadataModel will be flushed in reindex.ts#reindex()
   }
 

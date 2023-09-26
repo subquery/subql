@@ -6,7 +6,7 @@ import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
-import {CacheMetadataModel, IUnfinalizedBlocksService, StoreService, ISubqueryProject} from '../indexer';
+import {CacheMetadataModel, IUnfinalizedBlocksService, StoreService, ISubqueryProject, PoiService} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
@@ -22,6 +22,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
+    private readonly poiService: PoiService,
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
@@ -42,6 +43,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     }
 
     await this.storeService.initCoreTables(schema);
+    await this.poiService.init(schema);
 
     await initDbSchema(this.project, schema, this.storeService);
 
@@ -85,10 +87,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {
-    const [startHeight, lastProcessedHeight, latestSyncedPoiHeight] = await Promise.all([
+    const [startHeight, lastProcessedHeight] = await Promise.all([
       this.getStartBlockFromDataSources(),
       this.getLastProcessedHeight(),
-      this.getSyncedPoiHeight(),
     ]);
 
     assert(lastProcessedHeight !== undefined, 'Cannot reindex without being able to get the lastProcessedHeight');
@@ -101,8 +102,8 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.unfinalizedBlocksService,
       this.dynamicDsService,
       this.sequelize,
-      this.forceCleanService,
-      latestSyncedPoiHeight
+      this.poiService,
+      this.forceCleanService
     );
 
     await this.storeService.storeCache.flushCache(true, true);

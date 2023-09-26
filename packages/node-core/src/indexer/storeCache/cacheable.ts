@@ -7,7 +7,7 @@ import {Mutex} from 'async-mutex';
 export abstract class Cacheable {
   protected mutex = new Mutex();
 
-  protected abstract clear(blockHeight?: number): void;
+  abstract clear(blockHeight?: number): void;
   protected abstract runFlush(tx: Transaction, blockHeight?: number): Promise<void>;
 
   async flush(tx: Transaction, blockHeight?: number): Promise<void> {

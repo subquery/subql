@@ -411,7 +411,7 @@ export class CachedModel<
     ) as unknown as CreationAttributes<Model<T, T>>[];
   }
 
-  protected clear(blockHeight?: number): void {
+  clear(blockHeight?: number): void {
     if (!blockHeight) {
       this.setCache = {};
       this.removeCache = {};

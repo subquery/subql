@@ -30,6 +30,11 @@ export interface ICachedModelControl {
   flushableRecordCounter: number;
   flush(tx: Transaction, blockHeight?: number): Promise<void>;
   flushOperation?(i: number, tx: Transaction): Promise<void>;
+  /**
+   *
+   * @param blockHeight if present, clear data that <= ${blockHeight}
+   */
+  clear: (blockHeight?: number) => void;
 }
 
 export type FilteredHeightRecords<T> = {
