@@ -327,6 +327,10 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
             process.exit(1);
           }
           logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
+          // We need to stop poi sync service before reindex
+          if (this.nodeConfig.proofOfIndex) {
+            await this.poiService.stopSync();
+          }
           await this.reindex(upgradePoint);
           return upgradePoint;
         }
