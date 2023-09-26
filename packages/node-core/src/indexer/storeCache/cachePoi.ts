@@ -82,12 +82,13 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
       return;
     }
     // Clear everything below the block height
-    const cloneSetCache = cloneDeep(this.setCache);
-    for (const [n, p] of Object.entries(cloneSetCache)) {
-      if (Number(n) <= blockHeight) {
-        delete this.setCache[Number(n)];
+    const cloneSetCache: Record<number, ProofOfIndex> = {};
+    for (const [n, p] of Object.entries(this.setCache)) {
+      if (Number(n) > blockHeight) {
+        cloneSetCache[Number(n)] = p;
       }
     }
+    this.setCache = cloneSetCache;
     this.flushableRecordCounter = Object.entries(this.setCache).length;
   }
 }
