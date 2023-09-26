@@ -137,6 +137,7 @@ export function mockProjectUpgradeService(
   let currentHeight = startBlock;
   return {
     init: jest.fn(),
+    initWorker: jest.fn(),
     updateIndexedDeployments: jest.fn(),
     currentHeight: currentHeight,
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -212,7 +213,6 @@ function createIndexerManager(
     dsProcessorService,
     dynamicDsService,
     unfinalizedBlocksService,
-    projectService,
   );
 }
 
@@ -227,30 +227,28 @@ describe('IndexerManager', () => {
   });
 
   it.skip('should be able to start the manager (v0.0.1)', async () => {
-    indexerManager = createIndexerManager(
-      testSubqueryProject_1(),
-      new ConnectionPoolService<ApiPromiseConnection>(
-        nodeConfig,
-        new ConnectionPoolStateManager(),
-      ),
-      nodeConfig,
-    );
-    await expect(indexerManager.start()).resolves.toBe(undefined);
-
-    expect(Object.keys((indexerManager as any).vms).length).toBe(1);
+    // indexerManager = createIndexerManager(
+    //   testSubqueryProject_1(),
+    //   new ConnectionPoolService<ApiPromiseConnection>(
+    //     nodeConfig,
+    //     new ConnectionPoolStateManager(),
+    //   ),
+    //   nodeConfig,
+    // );
+    // await expect(indexerManager.start()).resolves.toBe(undefined);
+    // expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
   it.skip('should be able to start the manager (v0.2.0)', async () => {
-    indexerManager = createIndexerManager(
-      testSubqueryProject_2(),
-      new ConnectionPoolService<ApiPromiseConnection>(
-        nodeConfig,
-        new ConnectionPoolStateManager(),
-      ),
-      nodeConfig,
-    );
-    await expect(indexerManager.start()).resolves.toBe(undefined);
-
-    expect(Object.keys((indexerManager as any).vms).length).toBe(1);
+    // indexerManager = createIndexerManager(
+    //   testSubqueryProject_2(),
+    //   new ConnectionPoolService<ApiPromiseConnection>(
+    //     nodeConfig,
+    //     new ConnectionPoolStateManager(),
+    //   ),
+    //   nodeConfig,
+    // );
+    // await expect(indexerManager.start()).resolves.toBe(undefined);
+    // expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 });

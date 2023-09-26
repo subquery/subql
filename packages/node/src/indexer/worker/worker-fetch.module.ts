@@ -9,8 +9,6 @@ import {
   WorkerConnectionPoolStateManager,
   ConnectionPoolStateManager,
   NodeConfig,
-  StoreService,
-  StoreCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -32,8 +30,6 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
 @Module({
   providers: [
     IndexerManager,
-    StoreService,
-    StoreCacheService,
     {
       provide: ConnectionPoolStateManager,
       useFactory: () =>
@@ -82,6 +78,6 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
     WorkerService,
     WorkerRuntimeService,
   ],
-  exports: [StoreService],
+  exports: [],
 })
 export class WorkerFetchModule {}

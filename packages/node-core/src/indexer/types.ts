@@ -37,12 +37,12 @@ export type OperationEntity = {
 };
 
 export interface IIndexerManager<B, DS> {
-  start(): Promise<void>;
   indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
 }
 
 export interface IProjectService<DS> {
   blockOffset: number | undefined;
+  startHeight: number;
   reindex(lastCorrectHeight: number): Promise<void>;
   getAllDataSources(): DS[];
   getDataSources(blockHeight?: number): Promise<DS[]>;

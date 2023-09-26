@@ -42,7 +42,6 @@ export abstract class BaseIndexerManager<
   HandlerInputMap extends HandlerInputTypeMap<FilterMap>
 > implements IIndexerManager<B, DS>
 {
-  abstract start(): Promise<void>;
   abstract indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
   abstract getBlockHeight(block: B): number;
   abstract getBlockHash(block: B): string;

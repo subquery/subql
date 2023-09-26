@@ -27,13 +27,13 @@ import {
   IBaseIndexerWorker,
 } from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
-import { IndexerManager } from '../indexer.manager';
+import { ProjectService } from '../project.service';
 import { WorkerModule } from './worker.module';
 import { WorkerService } from './worker.service';
 
 const logger = getLogger(`worker #${threadId}`);
 
-async function initWorker(): Promise<void> {
+async function initWorker(startHeight: number): Promise<void> {
   try {
     const app = await NestFactory.create(WorkerModule, {
       logger: new NestLogger(argv.debug), // TIP: If the worker is crashing comment out this line for better logging
@@ -41,9 +41,9 @@ async function initWorker(): Promise<void> {
 
     await app.init();
 
-    const indexerManager = app.get(IndexerManager);
+    const projectService: ProjectService = app.get('IProjectService');
     // Initialise async services, we do this here rather than in factories so we can capture one off events
-    await indexerManager.start();
+    await projectService.init(startHeight);
 
     const workerService = app.get(WorkerService);
 

@@ -78,7 +78,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
-  async init(): Promise<void> {
+  async init(startHeight?: number): Promise<void> {
     for await (const [, project] of this.projectUpgradeService.projects) {
       await project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
     }
@@ -116,11 +116,11 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
     } else {
-      this._schema = await this.getExistingProjectSchema();
+      assert(startHeight, 'ProjectService must be initalized with a start height in workers');
+      this.projectUpgradeService.initWorker(startHeight, this.handleProjectChange.bind(this));
 
-      assert(this._schema, 'Schema should be created in main thread');
-      await this.storeService.initCoreTables(this._schema);
-      await this.initUpgradeService();
+      // Called to allow handling the first project
+      await this.onProjectChange(this.project);
     }
 
     // Used to load assets into DS-processor, has to be done in any thread
@@ -300,16 +300,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   private async initUpgradeService(): Promise<number | undefined> {
     const metadata = this.storeService.storeCache.metadata;
 
-    const upgradePoint = await this.projectUpgradeService.init(metadata, async () => {
-      // Apply any migrations to the schema
-      await this.initDbSchema();
-
-      // Reload the dynamic ds with new project
-      // TODO are we going to run into problems with this being non blocking
-      await this.dynamicDsService.getDynamicDatasources(true);
-
-      await this.onProjectChange(this.project);
-    });
+    const upgradePoint = await this.projectUpgradeService.init(metadata, this.handleProjectChange.bind(this));
 
     // Called to allow handling the first project
     await this.onProjectChange(this.project);
@@ -338,6 +329,18 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       }
     }
     return undefined;
+  }
+
+  private async handleProjectChange(): Promise<void> {
+    // Apply any migrations to the schema
+    if (isMainThread) {
+      await this.initDbSchema();
+    }
+
+    // Reload the dynamic ds with new project
+    await this.dynamicDsService.getDynamicDatasources(true);
+
+    await this.onProjectChange(this.project);
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {

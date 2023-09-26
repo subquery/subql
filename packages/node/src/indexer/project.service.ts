@@ -34,11 +34,11 @@ export class ProjectService extends BaseProjectService<
     dsProcessorService: DsProcessorService,
     apiService: ApiService,
     @Inject(isMainThread ? PoiService : 'Null') poiService: PoiService,
-    sequelize: Sequelize,
+    @Inject(isMainThread ? Sequelize : 'Null') sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IProjectUpgradeService')
     protected readonly projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
-    storeService: StoreService,
+    @Inject(isMainThread ? StoreService : 'Null') storeService: StoreService,
     nodeConfig: NodeConfig,
     dynamicDsService: DynamicDsService,
     eventEmitter: EventEmitter2,
