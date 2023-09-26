@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {getLogger} from '@subql/node-core/logger';
 import {Transaction} from '@subql/x-sequelize';
 import {hasValue} from '../../utils';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
@@ -11,8 +10,6 @@ import {ICachedModelControl} from './types';
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
-
-const logger = getLogger('CacheMetadataModel');
 
 export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {IProjectUpgradeService, NodeConfig} from '@subql/node-core/configure';
+import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
