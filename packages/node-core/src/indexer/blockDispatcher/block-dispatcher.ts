@@ -117,7 +117,7 @@ export abstract class BlockDispatcher<B, DS>
       while (!this.isShutdown) {
         // Wait for blocks or capacity to fetch blocks
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (!this.queue.size || !this.fetchQueue.freeSpace) {
+        if (!this.queue.size || !this.fetchQueue.freeSpace!) {
           await delay(1);
           continue;
         }
