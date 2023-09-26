@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {DynamicDsService, IUnfinalizedBlocksService, StoreService} from '../indexer';
+import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService} from '../indexer';
 import {getLogger} from '../logger';
 import {ForceCleanService} from '../subcommands';
 
@@ -24,6 +24,7 @@ const logger = getLogger('Reindex');
  * @param unfinalizedBlockService
  * @param dynamicDsService
  * @param sequelize
+ * @param PoiService
  * @param forceCleanService
  * @param latestSyncedPoiHeight
  */
@@ -35,6 +36,7 @@ export async function reindex(
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
   sequelize: Sequelize,
+  poiService?: PoiService,
   forceCleanService?: ForceCleanService,
   latestSyncedPoiHeight?: number
 ): Promise<void> {
@@ -67,6 +69,7 @@ export async function reindex(
         unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
         unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
         dynamicDsService.resetDynamicDatasource(targetBlockHeight),
+        poiService?.rewind(targetBlockHeight, transaction),
       ]);
       if (latestSyncedPoiHeight !== undefined && latestSyncedPoiHeight > targetBlockHeight) {
         storeService.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);

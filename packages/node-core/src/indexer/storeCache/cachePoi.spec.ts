@@ -148,4 +148,28 @@ describe('CachePoi', () => {
       expect(res2?.chainBlockHash).toBe('0x5678');
     });
   });
+
+  describe('clear poi', () => {
+    it('should clear all if blockHeight not provided', () => {
+      cachePoi.bulkUpsert([
+        {id: 5, chainBlockHash: '0x1234'},
+        {id: 30, chainBlockHash: '0x5678'},
+        {id: 120, chainBlockHash: '0x91011'},
+      ] as any);
+      cachePoi.clear();
+      expect(cachePoi.flushableRecordCounter).toBe(0);
+      expect((cachePoi as any).setCache).toStrictEqual({});
+    });
+
+    it('should clear with blockHeight', () => {
+      cachePoi.bulkUpsert([
+        {id: 5, chainBlockHash: '0x1234'},
+        {id: 30, chainBlockHash: '0x5678'},
+        {id: 120, chainBlockHash: '0x91011'},
+      ] as any);
+      cachePoi.clear(30);
+      expect(cachePoi.flushableRecordCounter).toBe(1);
+      expect(cachePoi.getPoiById(120)).toBeDefined();
+    });
+  });
 });

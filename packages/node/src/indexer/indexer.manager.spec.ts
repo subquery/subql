@@ -172,7 +172,12 @@ function createIndexerManager(
     storeCache,
     project,
   );
-  const poiService = new PoiService(storeCache, eventEmitter, project);
+  const poiService = new PoiService(
+    nodeConfig,
+    storeCache,
+    eventEmitter,
+    project,
+  );
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,

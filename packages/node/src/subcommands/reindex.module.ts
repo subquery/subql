@@ -10,6 +10,7 @@ import {
   StoreCacheService,
   ReindexService,
   StoreService,
+  PoiService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';

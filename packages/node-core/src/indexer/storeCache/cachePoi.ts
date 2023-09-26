@@ -64,7 +64,7 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     return this.plainPoiModel.getFirst();
   }
 
-  protected async runFlush(tx: Transaction): Promise<void> {
+  protected async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     logger.debug(`Flushing ${this.flushableRecordCounter} items from cache`);
     await Promise.all([
       this.model.bulkCreate(Object.values(this.setCache), {
@@ -74,8 +74,18 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     ]);
   }
 
-  protected clear(): void {
-    this.setCache = {};
-    this.flushableRecordCounter = 0;
+  clear(blockHeight?: number): void {
+    if (!blockHeight) {
+      this.setCache = {};
+      this.flushableRecordCounter = 0;
+      return;
+    }
+    // Clear everything below the block height
+    for (const [n, p] of Object.entries(this.setCache)) {
+      if (Number(n) <= blockHeight) {
+        delete this.setCache[Number(n)];
+      }
+    }
+    this.flushableRecordCounter = Object.entries(this.setCache).length;
   }
 }

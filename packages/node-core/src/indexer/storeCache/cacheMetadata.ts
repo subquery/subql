@@ -107,12 +107,11 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {
       const lastProcessedHeight = Number(ops[lastProcessedHeightIdx].value);
-      assert(blockHeight <= lastProcessedHeight, 'flush inprocessing data');
-      if (blockHeight < lastProcessedHeight) {
-        // need to overwrite the lastProcessedHeight value to blockHeight
-        logger.debug(`metadata cache flush: lastProcessedHeight is ahead of flushing height`);
-        ops.splice(lastProcessedHeightIdx, 1, {key: 'lastProcessedHeight', value: blockHeight});
-      }
+      // Before flush, lastProcessedHeight was obtained from metadata
+      // During the flush, we are expecting metadata not being updated. Therefore, we exit here to ensure data accuracy and integrity.
+      // This is unlikely happened. However, we need to observe how often this occurs, we need to adjust this logic if frequently.
+      // Current challenge is we don't know how to handle `lastCreatedPoiHeight` with flush height, as it could be discontinuous.
+      assert(blockHeight === lastProcessedHeight, 'metadata was updated before getting flushed');
     }
     await Promise.all([
       this.model.bulkCreate(ops, {
@@ -136,13 +135,9 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     }
   }
 
-  protected clear(blockHeight?: number): void {
+  clear(blockHeight?: number): void {
     const newSetCache: Partial<MetadataKeys> = {};
     this.flushableRecordCounter = 0;
-    if (blockHeight !== undefined && blockHeight !== this.setCache.lastProcessedHeight) {
-      newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
-      this.flushableRecordCounter = 1;
-    }
     this.setCache = newSetCache;
   }
 }

@@ -5,7 +5,8 @@ import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_FETCH_RANGE, delay, POI_AWAIT_TIME} from '@subql/common';
 import {hexToU8a} from '@subql/utils';
-import {QueryTypes} from '@subql/x-sequelize';
+import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
+import {NodeConfig} from '../../configure';
 import {PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
@@ -32,6 +33,7 @@ export class PoiService implements OnApplicationShutdown {
   private isSyncing = false;
 
   constructor(
+    protected readonly nodeConfig: NodeConfig,
     private storeCache: StoreCacheService,
     private eventEmitter: EventEmitter2,
     @Inject('ISubqueryProject') private project: ISubqueryProject
@@ -67,14 +69,14 @@ export class PoiService implements OnApplicationShutdown {
     }
   }
 
-  async init(schema: string): Promise<void> {
-    this._poiRepo = this.storeCache.poi ?? undefined;
+  async syncLatestSyncedPoiFromDb(): Promise<void> {
+    // Need to re-fetch after rewind, because reindex targetHeight ! == latestSyncedPoiHeight
     const latestSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
     if (latestSyncedPoiHeight !== undefined) {
       const recordedPoi = await this.poiRepo.getPoiById(latestSyncedPoiHeight);
       if (recordedPoi) {
         if (isSyncedProofOfIndex(recordedPoi)) {
-          await this.setLatestSyncedPoi(recordedPoi);
+          this.setLatestSyncedPoi(recordedPoi);
         } else {
           throw new Error(`Found synced poi at height ${latestSyncedPoiHeight} is not valid, please check DB`);
         }
@@ -83,6 +85,11 @@ export class PoiService implements OnApplicationShutdown {
         throw new Error(`Can not find latestSyncedPoiHeight ${latestSyncedPoiHeight}`);
       }
     }
+  }
+
+  async init(schema: string): Promise<void> {
+    this._poiRepo = this.storeCache.poi ?? undefined;
+    await this.syncLatestSyncedPoiFromDb();
     await this.migratePoi(schema);
   }
 
@@ -166,7 +173,7 @@ export class PoiService implements OnApplicationShutdown {
     // we try to find the first height from current poi table. and set for once
     const genesisPoi = await this.poiRepo.getFirst();
     if (genesisPoi && (genesisPoi.hash === null || genesisPoi.parentHash === null)) {
-      await this.createGenesisPoi(genesisPoi);
+      this.createGenesisPoi(genesisPoi);
     }
   }
 
@@ -178,10 +185,10 @@ export class PoiService implements OnApplicationShutdown {
     if (poiBlock === undefined) {
       throw new Error(`Ensure genesis poi failed, could not find poi ${height}`);
     }
-    await this.createGenesisPoi(poiBlock);
+    this.createGenesisPoi(poiBlock);
   }
 
-  async syncPoi(exitHeight?: number, logging?: boolean): Promise<void> {
+  async syncPoi(exitHeight?: number): Promise<void> {
     if (this.isSyncing) return;
     this.isSyncing = true;
     try {
@@ -197,7 +204,7 @@ export class PoiService implements OnApplicationShutdown {
             break;
           }
           if (poiBlocks.length !== 0) {
-            await this.syncPoiJob(poiBlocks, logging);
+            this.syncPoiJob(poiBlocks);
           }
           if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
             await delay(POI_AWAIT_TIME);
@@ -212,7 +219,37 @@ export class PoiService implements OnApplicationShutdown {
     }
   }
 
-  private async setLatestSyncedPoi(poiBlock: ProofOfIndex, flush?: boolean): Promise<void> {
+  async stopSync(): Promise<void> {
+    this.isShutdown = true;
+    return new Promise((resolve) => {
+      const id = setInterval(() => {
+        if (!this.isSyncing) {
+          resolve();
+          clearInterval(id);
+        }
+      }, 200);
+    });
+  }
+
+  async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
+    this._latestSyncedPoi = undefined;
+    await this.poiRepo.model.destroy({
+      transaction,
+      where: {
+        id: {
+          [Op.gt]: targetBlockHeight,
+        },
+      },
+    });
+
+    const lastSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
+    if (lastSyncedPoiHeight !== undefined && lastSyncedPoiHeight > targetBlockHeight) {
+      this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
+    }
+    this.storeCache.metadata.set('lastCreatedPoiHeight', targetBlockHeight);
+  }
+
+  private setLatestSyncedPoi(poiBlock: ProofOfIndex): void {
     if (this._latestSyncedPoi !== undefined && this.latestSyncedPoi.id >= poiBlock.id) {
       throw new Error(
         `Set latest synced poi out of order, current height ${this.latestSyncedPoi.id}, new height ${poiBlock.id} `
@@ -224,12 +261,9 @@ export class PoiService implements OnApplicationShutdown {
       height: poiBlock.id,
       timestamp: Date.now(),
     });
-    if (flush) {
-      await this.storeCache.flushCache(true);
-    }
   }
 
-  private async createGenesisPoi(genesisPoi: ProofOfIndex): Promise<void> {
+  private createGenesisPoi(genesisPoi: ProofOfIndex): void {
     const poiBlock = PoiBlock.create(
       genesisPoi.id,
       genesisPoi.chainBlockHash,
@@ -238,11 +272,11 @@ export class PoiService implements OnApplicationShutdown {
       GENESIS_PARENT_HASH
     );
     this.poiRepo.bulkUpsert([poiBlock]);
-    await this.setLatestSyncedPoi(poiBlock, true);
+    this.setLatestSyncedPoi(poiBlock);
     logger.info(`Genesis Poi created at height ${poiBlock.id}!`);
   }
 
-  private async syncPoiJob(poiBlocks: ProofOfIndex[], logging?: boolean): Promise<void> {
+  private syncPoiJob(poiBlocks: ProofOfIndex[]): void {
     const appendedBlocks: ProofOfIndex[] = [];
     for (let i = 0; i < poiBlocks.length; i++) {
       const nextBlock = poiBlocks[i];
@@ -263,10 +297,10 @@ export class PoiService implements OnApplicationShutdown {
         this.latestSyncedPoi.hash
       );
       appendedBlocks.push(syncedPoiBlock);
-      await this.setLatestSyncedPoi(syncedPoiBlock);
+      this.setLatestSyncedPoi(syncedPoiBlock);
     }
     if (appendedBlocks.length) {
-      if (logging) {
+      if (this.nodeConfig.debug) {
         syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
       }
       this.poiRepo?.bulkUpsert(appendedBlocks);

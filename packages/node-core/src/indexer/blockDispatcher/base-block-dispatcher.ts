@@ -168,8 +168,16 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
+      if (this.nodeConfig.proofOfIndex) {
+        await this.poiService.stopSync();
+      }
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
+      // Bring poi sync back to sync again.
+      if (this.nodeConfig.proofOfIndex) {
+        await this.poiService.syncLatestSyncedPoiFromDb();
+        void this.poiService.syncPoi();
+      }
       return;
     } else {
       this.updateStoreMetadata(height);

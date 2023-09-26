@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {delay} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from '../storeCache';
@@ -20,6 +21,7 @@ jest.mock('@subql/x-sequelize', () => {
 function createPoiService(): PoiService {
   const nodeConfig = {
     proofOfIndex: true,
+    debug: false,
   } as NodeConfig;
 
   const sequelize = new Sequelize();
@@ -28,7 +30,7 @@ function createPoiService(): PoiService {
 
   storeCache.init(true, false, {} as any, undefined);
   storeCache.flushCache = jest.fn();
-  return new PoiService(storeCache, eventEmitter, {id: 'testId'} as ISubqueryProject);
+  return new PoiService(nodeConfig, storeCache, eventEmitter, {id: 'testId'} as ISubqueryProject);
 }
 
 async function createGenesisPoi(poiService: PoiService) {
@@ -225,7 +227,7 @@ describe('Poi Service sync', () => {
         operationHashRoot: new Uint8Array(),
       },
     ]);
-    await expect(
+    expect(() =>
       (poiService as any).syncPoiJob([
         {
           id: 103,
@@ -234,6 +236,44 @@ describe('Poi Service sync', () => {
           operationHashRoot: new Uint8Array(),
         },
       ])
-    ).rejects.toThrow(/Sync poi block out of order, latest synced poi height/);
+    ).toThrow(/Sync poi block out of order, latest synced poi height/);
   }, 50000);
+
+  it('could stop sync', async () => {
+    await createGenesisPoi(poiService);
+    poiService.poiRepo.bulkUpsert = jest.fn();
+
+    // mock existing poi blocks data
+    poiService.poiRepo.getPoiBlocksByRange = jest.fn().mockImplementation(() => [
+      {
+        id: 101,
+        chainBlockHash: new Uint8Array(),
+        parentHash: null,
+        operationHashRoot: new Uint8Array(),
+      },
+      {
+        id: 102,
+        chainBlockHash: new Uint8Array(),
+        parentHash: null,
+        operationHashRoot: new Uint8Array(),
+      },
+      {
+        id: 105,
+        chainBlockHash: new Uint8Array(),
+        parentHash: null,
+        operationHashRoot: new Uint8Array(),
+      },
+    ]);
+    void poiService.syncPoi();
+    await delay(2);
+    // Assumed reindex happened, and rollback to 101
+    await poiService.stopSync();
+
+    // Service still exist, and data should be last one synced
+    expect(poiService).toBeTruthy();
+    expect((poiService as any).latestSyncedPoi.id).toBe(105);
+
+    expect((poiService as any).isSyncing).toBeFalsy();
+    expect((poiService as any).isShutdown).toBeTruthy();
+  }, 500000);
 });
