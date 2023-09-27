@@ -118,4 +118,28 @@ describe('AutoQueue', () => {
     const end2 = new Date();
     expect(end2.getTime() - start2.getTime()).toBeLessThanOrEqual(300);
   });
+
+  it('includes running tasks in the size and free space', /*async*/ () => {
+    const autoQueue = new AutoQueue<void>(10, 2);
+
+    let resolveFn: () => void = () => {
+      /* Nothing */
+    };
+    const pendingPromise = new Promise<void>((resolve) => {
+      resolveFn = resolve;
+    });
+
+    const task = async () => {
+      await pendingPromise;
+    };
+
+    void autoQueue.put(task);
+
+    expect(autoQueue.size).toEqual(1);
+    expect(autoQueue.freeSpace).toEqual(9);
+    expect(autoQueue.size + (autoQueue.freeSpace ?? 0)).toEqual(autoQueue.capacity);
+
+    // Assertions done, complete the task
+    resolveFn();
+  });
 });

@@ -121,7 +121,7 @@ export class AutoQueue<T> implements IQueue {
   }
 
   get size(): number {
-    return this.queue.size + this.runningTasks.length;
+    return this.queue.size + this.runningTasks.length + Object.keys(this.outOfOrderTasks).length;
   }
 
   get capacity(): number | undefined {
@@ -129,7 +129,8 @@ export class AutoQueue<T> implements IQueue {
   }
 
   get freeSpace(): number | undefined {
-    return this.queue.freeSpace;
+    if (!this.capacity) return undefined;
+    return this.capacity - this.size;
   }
 
   /*

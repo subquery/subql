@@ -5,6 +5,7 @@ import {getHeapStatistics} from 'v8';
 import {isMainThread} from 'worker_threads';
 import {Inject, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {Interval} from '@nestjs/schedule';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
@@ -108,6 +109,14 @@ export abstract class BlockDispatcher<B, DS>
     return this.smartBatchService.heapMemoryLimit() - getHeapStatistics().used_heap_size;
   }
 
+  @Interval(10000)
+  queueStats(stat: 'size' | 'freeSpace' = 'freeSpace'): void {
+    // NOTE: If the free space of the process queue is low it means that processing is the limiting factor. If it is large then fetching blocks is the limitng factor.
+    logger.debug(
+      `QUEUE INFO ${stat}: Block numbers: ${this.queue[stat]}, fetch: ${this.fetchQueue[stat]}, process: ${this.processQueue[stat]}`
+    );
+  }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
 
@@ -115,9 +124,9 @@ export abstract class BlockDispatcher<B, DS>
 
     try {
       while (!this.isShutdown) {
-        // Wait for blocks or capacity to fetch blocks
+        // Wait for blocks or capacity in queues. There needs to be a check that the output of the fetch queue has capacity to go to the process queue
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (!this.queue.size || !this.fetchQueue.freeSpace!) {
+        if (!this.queue.size || !this.fetchQueue.freeSpace! || this.fetchQueue.size >= this.processQueue.freeSpace!) {
           await delay(1);
           continue;
         }
@@ -186,6 +195,7 @@ export abstract class BlockDispatcher<B, DS>
             });
           })
           .catch((e) => {
+            logger.warn(e, 'Failed to enqueue fetched block to process');
             process.exit(1);
           });
 
