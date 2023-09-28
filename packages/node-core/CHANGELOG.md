@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ## [5.0.1] - 2023-09-28
 ### Fixed
 - Update apollo-links to 1.0.2, fix dictionary resolver failed to get token issue
