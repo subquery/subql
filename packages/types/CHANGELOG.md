@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.0] - 2023-09-28
+### Changed
+- Move non-specific types to types-core package
+
 ### Added
 - New LightBlock type (#1968)
 - `getByFields` function to store interface (#1993)
@@ -187,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/2.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/3.0.0...HEAD
+[3.0.0]: https://github.com/subquery/subql/compare/types/2.2.0...types/3.0.0
 [2.2.0]: https://github.com/subquery/subql/compare/types/2.1.4...types/2.2.0
 [2.1.4]: https://github.com/subquery/subql/compare/types/2.1.3...types/2.1.4
 [2.1.3]: https://github.com/subquery/subql/compare/types/2.1.2...types/2.1.3

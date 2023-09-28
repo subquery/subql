@@ -5,17 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.0.0] - 2023-09-28
 ### Fixed
 - Update apollo-links to 1.0.2, fix dictionary resolver failed to get token issue
 - Use test runs as unit for tests instead of entity checks (#1957)
-- handle APIs in connection pool whose initialization failed (#1970)
+- Handle APIs in connection pool whose initialization failed (#1970)
 - Fix generated operation hash with single entity, buffer did not get hashed issue.
 - Infinite recursion in setValueModel with arrays (#1993)
 - Fix health checks for Networks that produce batched blocks (#2005)
 - Update `@willsoto/nestjs-prometheus` version to `5.4.0` (#2012)
-- scaleBatchSize referring to itself instead of config (#2018)
-- set default startBlock of datasources to 1 (#2019)
-- use round-robin worker load balancing with memory constraint consideration (#2029)
+- `scaleBatchSize` referring to itself instead of config (#2018)
+- Set default startBlock of datasources to 1 (#2019)
+- Use round-robin worker load balancing with memory constraint consideration (#2029)
 
 ### Changed
 - Move more code from node to node-core. Including configure module, workers (#1797)
@@ -397,7 +399,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/4.2.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/5.0.0...HEAD
+[5.0.0]: https://github.com/subquery/subql/compare/node-core/4.2.3...node-core/5.0.0
 [4.2.3]: https://github.com/subquery/subql/compare/node-core/4.2.2...node-core/4.2.3
 [4.2.2]: https://github.com/subquery/subql/compare/node-core/4.2.1...node-core/4.2.2
 [4.2.1]: https://github.com/subquery/subql/compare/node-core/4.2.0...node-core/4.2.1
