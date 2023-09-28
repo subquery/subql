@@ -9,7 +9,6 @@ import { RuntimeVersion, Header } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import {
   IndexerEvent,
-  NetworkMetadataPayload,
   getLogger,
   NodeConfig,
   profilerWrap,

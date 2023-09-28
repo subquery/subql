@@ -2,16 +2,21 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {isMainThread} from 'worker_threads';
 import {findLast, last} from 'lodash';
 import {CacheMetadataModel, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
-import {getStartHeight} from '../utils';
+import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
 
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
-  init: (metadata: CacheMetadataModel, onProjectUpgrade: OnProjectUpgradeCallback<P>) => Promise<number | undefined>;
+  init: (metadata: CacheMetadataModel, onProjectUpgrade?: OnProjectUpgradeCallback<P>) => Promise<number | undefined>;
+  /**
+   * This should only be called from within a worker thread as they dont have access to the store
+   * */
+  initWorker(currentHeight: number, onProjectUpgrade?: OnProjectUpgradeCallback<P>): void;
   updateIndexedDeployments: (id: string, blockHeight: number) => Promise<void>;
   readonly currentHeight: number;
   setCurrentHeight: (newHeight: number) => Promise<void>;
@@ -80,6 +85,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   #metadata?: CacheMetadataModel;
 
+  #initialized = false;
+
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
 
   private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
@@ -103,9 +110,11 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     metadata: CacheMetadataModel,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
-    if (this.#metadata) {
+    if (this.#initialized) {
       logger.warn(`ProjectUpgradeService has already been initialized, this is a no-op`);
+      return;
     }
+    this.#initialized = true;
     this.#metadata = metadata;
     this.onProjectUpgrade = onProjectUpgrade;
 
@@ -119,6 +128,13 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
 
     return lastProjectChange;
+  }
+
+  initWorker(currentHeight: number, onProjectUpgrade?: OnProjectUpgradeCallback<P>): void {
+    assert(!this.onProjectUpgrade, `onProjectUpgrade callback has already been set`);
+    this.#currentHeight = currentHeight;
+    this.#currentProject = this.getProject(this.#currentHeight);
+    this.onProjectUpgrade = onProjectUpgrade;
   }
 
   get projects(): Map<number, P> {
@@ -144,12 +160,14 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#currentProject = newProject;
 
     if (hasChanged) {
-      try {
-        // Use the project start height here for when resuming indexing at an arbitrary height
-        await this.updateIndexedDeployments(newProject.id, startHeight);
-      } catch (e: any) {
-        logger.error(e, 'Failed to update deployment metadata');
-        process.exit(1);
+      if (isMainThread) {
+        try {
+          // Use the project start height here for when resuming indexing at an arbitrary height
+          await this.updateIndexedDeployments(newProject.id, startHeight);
+        } catch (e: any) {
+          logger.error(e, 'Failed to update deployment metadata');
+          process.exit(1);
+        }
       }
 
       try {
@@ -247,7 +265,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
       // Nothing has been indexed
       if (!indexedEntries.length) {
-        return projectEntries[0][0];
+        return undefined;
       }
 
       // TODO do we need to compare heights?
@@ -275,6 +293,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     return JSON.parse(deploymentsRaw);
   }
 
+  @mainThreadOnly()
   async updateIndexedDeployments(id: string, blockHeight: number): Promise<void> {
     assert(this.#metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
     const deployments = await this.getDeploymentsMetadata();

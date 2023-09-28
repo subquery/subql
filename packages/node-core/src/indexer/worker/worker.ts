@@ -129,7 +129,7 @@ export const baseWorkerFunctions: (keyof IBaseIndexerWorker)[] = [
 
 export function createWorkerHost<
   T extends AsyncMethods,
-  H extends AsyncMethods & {initWorker: () => Promise<void>},
+  H extends AsyncMethods & {initWorker: (height?: number) => Promise<void>},
   ApiConnection /* ApiPromiseConnection*/,
   DS extends BaseDataSource = BaseDataSource
 >(extraWorkerFns: (keyof T)[], extraHostFns: H): WorkerHost<DefaultWorkerFunctions<ApiConnection, DS> & T> {

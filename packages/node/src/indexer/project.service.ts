@@ -8,7 +8,6 @@ import {
   PoiService,
   BaseProjectService,
   StoreService,
-  mainThreadOnly,
   NodeConfig,
   IProjectUpgradeService,
 } from '@subql/node-core';
@@ -65,7 +64,6 @@ export class ProjectService extends BaseProjectService<
     return getTimestamp(block);
   }
 
-  @mainThreadOnly()
   protected onProjectChange(project: SubqueryProject): void | Promise<void> {
     this.apiService.updateBlockFetching();
   }
