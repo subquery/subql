@@ -311,7 +311,7 @@ describe('Project Upgrades', () => {
     });
 
     it('succeeds with no indexed data', () => {
-      expect(upgradeService.validateIndexedData({})).toEqual(1);
+      expect(upgradeService.validateIndexedData({})).toEqual(undefined);
     });
 
     it('succeeds with upgraded projects before the upgraded feature', () => {
