@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0] - 2023-09-28
 ### Changed
-- Move non-specific types to types-core package
+- Move non-specific types to types-core package, add `SubstrateProject` type to define project manifest in typescript. (#2011)
 
 ### Added
 - New LightBlock type (#1968)
