@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.0] - 2023-09-29
+## [0.0.1] - 2023-09-29
 ### Added
 - Initial release of new package containing types common to all chains
 
-[0.0.0]: https://github.com/subquery/subql/tag/types-core/0.0.0
+[0.0.1]: https://github.com/subquery/subql/tag/types-core/0.0.1
