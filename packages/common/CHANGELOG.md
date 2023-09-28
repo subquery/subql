@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2023-09-28
+## [3.0.1] - 2023-09-28
 ### Changed
 - Re-release of 2.7.0 which was a breaking change
 
@@ -315,7 +315,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - init commit
 
 [Unreleased]: https://github.com/subquery/subql/compare/common/3.0.0...HEAD
-[3.0.0]: https://github.com/subquery/subql/compare/common/2.7.0...common/3.0.0
+[3.0.1]: https://github.com/subquery/subql/compare/common/2.7.0...common/3.0.1
 [2.7.0]: https://github.com/subquery/subql/compare/common/2.6.0...common/2.7.0
 [2.6.0]: https://github.com/subquery/subql/compare/common/2.5.0...common/2.6.0
 [2.5.0]: https://github.com/subquery/subql/compare/common/2.4.0...common/2.5.0
