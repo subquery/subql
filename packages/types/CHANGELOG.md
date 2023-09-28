@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2023-09-28
+## [3.0.1] - 2023-09-28
 ### Changed
 - Move non-specific types to types-core package, add `SubstrateProject` type to define project manifest in typescript. (#2011)
 
@@ -193,7 +193,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support block handler
 
 [Unreleased]: https://github.com/subquery/subql/compare/types/3.0.0...HEAD
-[3.0.0]: https://github.com/subquery/subql/compare/types/2.2.0...types/3.0.0
+[3.0.1]: https://github.com/subquery/subql/compare/types/2.2.0...types/3.0.1
 [2.2.0]: https://github.com/subquery/subql/compare/types/2.1.4...types/2.2.0
 [2.1.4]: https://github.com/subquery/subql/compare/types/2.1.3...types/2.1.4
 [2.1.3]: https://github.com/subquery/subql/compare/types/2.1.2...types/2.1.3
