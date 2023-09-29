@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { initLogger } from '@subql/node-core/logger';
+import { boolean } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -63,127 +64,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       return reindexInit(argv.targetHeight);
     },
   })
-  .command({
-    command: 'mmr-regen',
-    describe:
-      'Re-generate mmr between Filebased/Postgres mmr and Proof of index',
-    builder: (yargs) =>
-      yargs.options({
-        probe: {
-          type: 'boolean',
-          description:
-            'Fetch latest mmr height information from file based/postgres DB and Poi table',
-          demandOption: false,
-          default: false,
-        },
-        targetHeight: {
-          type: 'number',
-          description: 'Re-genrate mmr value from this block height',
-          demandOption: false,
-        },
-        resetOnly: {
-          type: 'boolean',
-          description:
-            'Only reset the mmr value in both POI and file based/postgres DB to target height',
-          demandOption: false,
-          default: false,
-        },
-        unsafe: {
-          type: 'boolean',
-          description: 'Allow sync mmr from Poi table to file or a postgres DB',
-          demandOption: false,
-          default: false,
-        },
-        'mmr-store-type': {
-          demandOption: false,
-          describe:
-            'When regenerate MMR store in either a file or a postgres DB',
-          type: 'string',
-          choices: ['file', 'postgres'],
-          default: 'postgres',
-        },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe:
-            'File based only : local path of the merkle mountain range (.mmr) file',
-          type: 'string',
-        },
-        'db-schema': {
-          demandOption: false,
-          describe: 'Db schema name of the project',
-          type: 'string',
-        },
-        subquery: {
-          alias: 'f',
-          demandOption: true,
-          default: process.cwd(),
-          describe: 'Local path or IPFS cid of the subquery project',
-          type: 'string',
-        },
-      }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrRegenerateInit } = require('./subcommands/mmrRegenerate.init');
-      return mmrRegenerateInit(
-        argv.probe,
-        argv.resetOnly,
-        argv.unsafe,
-        argv.targetHeight,
-      );
-    },
-  })
-  .command({
-    command: 'mmr-migrate',
-    describe: 'Migrate MMR data from storage file to postgres DB',
-    builder: (yargs) =>
-      yargs.options({
-        direction: {
-          type: 'string',
-          description: 'set direction of migration (file -> DB or DB -> file)',
-          demandOption: false,
-          choices: ['dbToFile', 'fileToDb'],
-          default: 'dbToFile',
-        },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe: 'Local path of the merkle mountain range (.mmr) file',
-          type: 'string',
-        },
-        'db-schema': {
-          demandOption: false,
-          describe: 'Db schema name of the project',
-          type: 'string',
-        },
-        subquery: {
-          alias: 'f',
-          demandOption: true,
-          default: process.cwd(),
-          describe: 'Local path or IPFS cid of the subquery project',
-          type: 'string',
-        },
-      }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as boolean,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
-      return mmrMigrateInit(argv.direction);
-    },
-  })
   .options({
     'batch-size': {
       demandOption: false,
@@ -229,6 +109,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe: 'Disable storing historical state entities',
       type: 'boolean',
+      // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
     },
     ipfs: {
       demandOption: false,
@@ -246,12 +127,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify log level to print. Ignored when --debug is used',
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
-    },
-    'mmr-path': {
-      alias: 'm',
-      demandOption: false,
-      describe: 'Local path of the merkle mountain range (.mmr) file',
-      type: 'string',
     },
     'multi-chain': {
       demandOption: false,
@@ -300,13 +175,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Enable/disable proof of index',
       type: 'boolean',
       default: false,
-    },
-    'mmr-store-type': {
-      demandOption: false,
-      describe: 'Store MMR in either a file or a postgres DB',
-      type: 'string',
-      choices: ['file', 'postgres'],
-      default: 'postgres',
     },
     'query-limit': {
       demandOption: false,
@@ -389,6 +257,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
     },
+    skipTransactions: {
+      demandOption: false,
+      describe: `If the project contains only event handlers and doesn't require transaction information then this can be used to skip fetching transactions reducing bandwith and memory. This will be automatically disabled if handlers other than EventHandlers are detected.`,
+      type: 'boolean',
+      // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
+    },
     timeout: {
       demandOption: false,
       describe: 'Timeout for indexer sandbox to execute the mapping functions',
@@ -404,11 +278,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe: 'Enable to fetch and index unfinalized blocks',
       type: 'boolean',
+      // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
     },
     unsafe: {
       type: 'boolean',
       demandOption: false,
       describe: 'Allows usage of any built-in module within the sandbox',
+      // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
     },
     workers: {
       alias: 'w',

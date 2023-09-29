@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { LocalReader, Reader } from '@subql/common';
+import { LocalReader } from '@subql/common';
 import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,
@@ -11,10 +11,15 @@ import {
   EthereumHandlerKind,
   SubqlEthereumHandlerKind,
   isCustomDs,
+  isRuntimeDs,
 } from '@subql/common-ethereum';
 import { retryOnFail, updateDataSourcesV1_0_0 } from '@subql/node-core';
+import { Reader } from '@subql/types-core';
 import { EthereumDatasourceKind, SubqlDatasource } from '@subql/types-ethereum';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import {
+  EthereumProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 
 export function isBaseHandler(
   handler: SubqlHandler,
@@ -37,7 +42,9 @@ export async function retryOnFailEth<T>(
   return retryOnFail(request, (e) => !!errors.find((t) => t === e?.reason));
 }
 
-export function onlyHasLogDataSources(dataSources: SubqlProjectDs[]): boolean {
+export function onlyHasLogDataSources(
+  dataSources: EthereumProjectDs[],
+): boolean {
   for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
       if (
@@ -56,7 +63,7 @@ export async function updateDatasourcesFlare(
   _dataSources: SubqlDatasource[],
   reader: Reader,
   root: string,
-): Promise<SubqlProjectDs[]> {
+): Promise<EthereumProjectDs[]> {
   // Cast to any to make types happy
   const partialUpdate = await Promise.all(
     _dataSources.map(async (dataSource) => {
@@ -105,4 +112,27 @@ export async function updateDatasourcesFlare(
   );
 
   return updateDataSourcesV1_0_0(partialUpdate, reader, root, isCustomDs);
+}
+
+function dsContainsNonEventHandlers(ds: EthereumProjectDs): boolean {
+  if (isRuntimeDs(ds)) {
+    return !!ds.mapping.handlers.find(
+      (handler) => handler.kind !== EthereumHandlerKind.Event,
+    );
+  } else if (isCustomDs(ds)) {
+    // TODO this can be improved upon in the future.
+    return true;
+  }
+  return true;
+}
+
+export function isOnlyEventHandlers(project: SubqueryProject): boolean {
+  const hasNonEventHandler = !!project.dataSources.find((ds) =>
+    dsContainsNonEventHandlers(ds),
+  );
+  const hasNonEventTemplate = !!project.templates.find((ds) =>
+    dsContainsNonEventHandlers(ds as EthereumProjectDs),
+  );
+
+  return !hasNonEventHandler && !hasNonEventTemplate;
 }

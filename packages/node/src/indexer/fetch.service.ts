@@ -17,21 +17,23 @@ import {
   BaseFetchService,
   ApiService,
   getLogger,
+  getModulos,
 } from '@subql/node-core';
-import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
+import {
+  DictionaryQueryCondition,
+  DictionaryQueryEntry,
+} from '@subql/types-core';
 import { SubqlDatasource } from '@subql/types-ethereum';
-import { MetaData } from '@subql/utils';
-import { groupBy, sortBy, uniqBy } from 'lodash';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApi, EthereumApiService } from '../ethereum';
-import SafeEthProvider from '../ethereum/safe-api';
+import { groupBy, partition, sortBy, uniqBy } from 'lodash';
+import { SubqueryProject } from '../configure/SubqueryProject';
+import { EthereumApi } from '../ethereum';
 import { calcInterval } from '../ethereum/utils.ethereum';
 import { eventToTopic, functionToSighash } from '../utils/string';
 import { yargsOptions } from '../yargs';
 import { IEthereumBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
-import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
 import {
   blockToHeader,
   UnfinalizedBlocksService,
@@ -163,22 +165,15 @@ function callFilterToQueryEntry(
   };
 }
 
-type GroupedSubqlProjectDs = SubqlDatasource & {
+type GroupedEthereumProjectDs = SubqlDatasource & {
   groupedOptions?: SubqlEthereumProcessorOptions[];
 };
 export function buildDictionaryQueryEntries(
-  dataSources: GroupedSubqlProjectDs[],
-  startBlock: number,
+  dataSources: GroupedEthereumProjectDs[],
 ): DictionaryQueryEntry[] {
   const queryEntries: DictionaryQueryEntry[] = [];
 
-  // Only run the ds that is equal or less than startBlock
-  // sort array from lowest ds.startBlock to highest
-  const filteredDs = dataSources
-    .filter((ds) => ds.startBlock <= startBlock)
-    .sort((a, b) => a.startBlock - b.startBlock);
-
-  for (const ds of filteredDs) {
+  for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
       // No filters, cant use dictionary
       if (!handler.filter) return [];
@@ -228,31 +223,29 @@ export function buildDictionaryQueryEntries(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  ApiService,
   SubqlDatasource,
   IEthereumBlockDispatcher,
   DictionaryService
 > {
   constructor(
-    apiService: ApiService,
+    private apiService: ApiService,
     nodeConfig: NodeConfig,
+    @Inject('IProjectService') projectService: ProjectService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: IEthereumBlockDispatcher,
     dictionaryService: DictionaryService,
-    dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
   ) {
     super(
-      apiService,
       nodeConfig,
-      project,
+      projectService,
+      project.network,
       blockDispatcher,
       dictionaryService,
-      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
@@ -263,10 +256,23 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
-  buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
-    const groupdDynamicDs: GroupedSubqlProjectDs[] = Object.values(
-      groupBy(this.templateDynamicDatasouces, (ds) => ds.name),
-    ).map((grouped: SubqlProjectDs[]) => {
+  protected buildDictionaryQueryEntries(
+    // Add name to dataousrces as templates have this set
+    dataSources: (SubqlDatasource & { name?: string })[],
+  ): DictionaryQueryEntry[] {
+    const [normalDataSources, templateDataSources] = partition(
+      dataSources,
+      (ds) => !ds.name,
+    );
+
+    // Group templ
+    const groupedDataSources = Object.values(
+      groupBy(templateDataSources, (ds) => ds.name),
+    ).map((grouped) => {
+      if (grouped.length === 1) {
+        return grouped[0];
+      }
+
       const options = grouped.map((ds) => ds.options);
       const ref = grouped[0];
 
@@ -276,12 +282,9 @@ export class FetchService extends BaseFetchService<
       };
     });
 
-    // Only run the ds that is equal or less than startBlock
-    // sort array from lowest ds.startBlock to highest
-    const filteredDs: GroupedSubqlProjectDs[] =
-      this.project.dataSources.concat(groupdDynamicDs);
+    const filteredDs = [...normalDataSources, ...groupedDataSources];
 
-    return buildDictionaryQueryEntries(filteredDs, startBlock);
+    return buildDictionaryQueryEntries(filteredDs);
   }
 
   protected async getFinalizedHeight(): Promise<number> {
@@ -304,42 +307,16 @@ export class FetchService extends BaseFetchService<
     return Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
   }
 
-  protected async getChainId(): Promise<string> {
-    return Promise.resolve(this.api.getChainId().toString());
-  }
-
   protected getModulos(): number[] {
-    const modulos: number[] = [];
-    for (const ds of this.project.dataSources) {
-      if (isCustomDs(ds)) {
-        continue;
-      }
-      for (const handler of ds.mapping.handlers) {
-        if (
-          handler.kind === EthereumHandlerKind.Block &&
-          handler.filter &&
-          handler.filter.modulo
-        ) {
-          modulos.push(handler.filter.modulo);
-        }
-      }
-    }
-    return modulos;
+    return getModulos(
+      this.projectService.getAllDataSources(),
+      isCustomDs,
+      EthereumHandlerKind.Block,
+    );
   }
 
   protected async initBlockDispatcher(): Promise<void> {
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
-  }
-
-  protected async validatateDictionaryMeta(
-    metaData: MetaData,
-  ): Promise<boolean> {
-    return Promise.resolve(
-      // When alias is not used
-      metaData.genesisHash !== this.api.getGenesisHash() &&
-        // Case when an alias is used
-        metaData.genesisHash !== this.dictionaryService.chainId,
-    );
   }
 
   protected async preLoopHook(): Promise<void> {

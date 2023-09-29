@@ -1,20 +1,50 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {BlockWrapper} from '../interfaces';
+import {BlockFilter} from '@subql/types-core';
 
-export interface EthereumBlockFilter {
-  modulo?: number;
-  timestamp?: string;
-}
+export type EthereumBlockFilter = BlockFilter;
 
+/**
+ * Represents a filter for Ethereum Transactions
+ * @interface
+ * @extends {EthereumTransactionFilter}
+ */
 export interface EthereumTransactionFilter {
+  /**
+   * The address of sender of the transaction
+   * @example
+   * from: '0x220866B1A2219f40e72f5c628B65D54268cA3A9D',
+   * */
   from?: string;
+  /**
+   * The to address field within a transaction. This is either the contract address or the recipient if it is an ether transfer.
+   * @example
+   * to: '0x220866B1A2219f40e72f5c628B65D54268cA3A9D',
+   **/
   to?: string;
+  /**
+   * The function sighash or function signature of the call. This is the first 32bytes of the data field
+   * @example
+   * function: 'setminimumStakingAmount(uint256 amount)',
+   * */
   function?: string;
 }
 
+/**
+ * Represents a filter for Ethereum logs
+ * @interface
+ * @extends {EthereumLogFilter}
+ */
 export interface EthereumLogFilter {
+  /**
+   * You can filter by the topics in a log.
+   * These can be an address, event signature, null, '!null' or undefined
+   * @example
+   * topics: ['Transfer(address, address, uint256)'],
+   * @example
+   * topics: ['Transfer(address, address, uint256)', undefined, '0x220866B1A2219f40e72f5c628B65D54268cA3A9D']
+   */
   topics?: Array<string | null | undefined>;
 }
 
@@ -118,10 +148,14 @@ export type EthereumLog<T extends EthereumResult = EthereumResult> = {
 
 export type FlareLog<T extends FlareResult = FlareResult> = EthereumLog<T>;
 
-export type EthereumBlockWrapper = BlockWrapper<
-  EthereumBlock,
-  EthereumTransaction,
-  EthereumLog,
-  EthereumTransactionFilter,
-  EthereumLogFilter
->;
+export type LightEthereumLog<T extends EthereumResult = EthereumResult> = Omit<
+  EthereumLog<T>,
+  'transaction' | 'block'
+> & {
+  block: LightEthereumBlock;
+};
+
+export type LightEthereumBlock = Omit<EthereumBlock, 'transactions' | 'logs'> & {
+  logs: LightEthereumLog[];
+  transactions: string[];
+};

@@ -7,12 +7,13 @@ import {
   ApiService,
   BaseUnfinalizedBlocksService,
   Header,
+  mainThreadOnly,
   NodeConfig,
   StoreCacheService,
 } from '@subql/node-core';
-import { BlockWrapper, EthereumBlock } from '@subql/types-ethereum';
+import { BlockContent } from './types';
 
-export function blockToHeader(block: EthereumBlock | Block): Header {
+export function blockToHeader(block: BlockContent | Block): Header {
   return {
     blockHeight: block.number,
     blockHash: block.hash,
@@ -21,7 +22,7 @@ export function blockToHeader(block: EthereumBlock | Block): Header {
 }
 
 @Injectable()
-export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockWrapper> {
+export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockContent> {
   constructor(
     private readonly apiService: ApiService,
     nodeConfig: NodeConfig,
@@ -30,20 +31,24 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
     super(nodeConfig, storeCache);
   }
 
-  protected blockToHeader(block: BlockWrapper): Header {
-    return blockToHeader(block.block);
+  @mainThreadOnly()
+  protected blockToHeader(block: BlockContent): Header {
+    return blockToHeader(block);
   }
 
+  @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
     const finalizedBlock = await this.apiService.api.getFinalizedBlock();
     return blockToHeader(finalizedBlock);
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHash(hash: string): Promise<Header> {
     const block = await this.apiService.api.getBlockByHeightOrHash(hash);
     return blockToHeader(block);
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHeight(height: number): Promise<Header> {
     const block = await this.apiService.api.getBlockByHeightOrHash(height);
     return blockToHeader(block);

@@ -1,7 +1,6 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { NodeConfig } from '@subql/node-core';
 import {
   EthereumDatasourceKind,
   EthereumHandlerKind,
@@ -9,15 +8,13 @@ import {
 } from '@subql/types-ethereum';
 import { GraphQLSchema } from 'graphql';
 import {
-  SubqlProjectDsTemplate,
+  EthereumProjectDsTemplate,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { buildDictionaryQueryEntries, FetchService } from './fetch.service';
 
 const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
-const mockTempDs: SubqlProjectDsTemplate[] = [
+const mockTempDs: EthereumProjectDsTemplate[] = [
   {
     name: 'ERC721',
     kind: EthereumDatasourceKind.Runtime,
@@ -73,7 +70,7 @@ function testSubqueryProject(
     root: './',
     schema: new GraphQLSchema({}),
     templates: mockTempDs as any,
-  };
+  } as any;
 }
 
 describe('Dictionary queries', () => {
@@ -105,7 +102,7 @@ describe('Dictionary queries', () => {
           ],
         },
       };
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
 
       expect(result).toEqual([
         {
@@ -153,7 +150,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
 
       expect(result).toEqual([
         {
@@ -186,7 +183,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -202,7 +199,7 @@ describe('Dictionary queries', () => {
       ]);
     });
 
-    it('If ds option and filter both provide contract address, it should use ds options one ', () => {
+    it('If ds option and filter both provide contract address, it should use ds options one', () => {
       const ds: SubqlRuntimeDatasource = {
         kind: EthereumDatasourceKind.Runtime,
         assets: new Map(),
@@ -226,7 +223,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -242,7 +239,7 @@ describe('Dictionary queries', () => {
       ]);
     });
 
-    it('If ds option provide contract address, it should use ds options "address" ', () => {
+    it('If ds option provide contract address, it should use ds options "address"', () => {
       const ds: SubqlRuntimeDatasource = {
         kind: EthereumDatasourceKind.Runtime,
         assets: new Map(),
@@ -265,7 +262,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -281,7 +278,7 @@ describe('Dictionary queries', () => {
       ]);
     });
 
-    it('If filter  provide contract address, it should use filter "to" ', () => {
+    it('If filter  provide contract address, it should use filter "to"', () => {
       const ds: SubqlRuntimeDatasource = {
         kind: EthereumDatasourceKind.Runtime,
         assets: new Map(),
@@ -304,7 +301,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -341,7 +338,7 @@ describe('Dictionary queries', () => {
           ],
         },
       };
-      const result = buildDictionaryQueryEntries([ds], 1);
+      const result = buildDictionaryQueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmLogs',
@@ -357,11 +354,7 @@ describe('Dictionary queries', () => {
       ]);
     });
 
-    it('Build dictionary query for multiple dictionary queries', async () => {
-      const nodeConfig = new NodeConfig({
-        subquery: '',
-        subqueryName: '',
-      });
+    it('Builds a groupded query for multiple dynamic ds', () => {
       const ds: SubqlRuntimeDatasource = {
         kind: EthereumDatasourceKind.Runtime,
         assets: new Map(),
@@ -382,52 +375,38 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const project = testSubqueryProject(HTTP_ENDPOINT, ds, mockTempDs);
+      const duplicateDataSources = [
+        { ...mockTempDs[0], options: { address: 'address1' } },
+        { ...mockTempDs[0], options: { address: 'address2' } },
+        { ...mockTempDs[1], options: { address: 'address3' } },
+      ];
 
-      const dsProcessService = new DsProcessorService(project, nodeConfig);
+      const dataSources = [ds, ...duplicateDataSources];
 
-      const dynamicDsService = new DynamicDsService(dsProcessService, project);
+      const project = testSubqueryProject(
+        HTTP_ENDPOINT,
+        dataSources,
+        mockTempDs,
+      );
+
       const fetchService = new FetchService(
+        null,
         null,
         null,
         project,
         null,
         null,
-        dsProcessService,
-        dynamicDsService,
+        null,
         null,
         null,
         null,
       );
-      const mockMetadataDS = [
-        {
-          templateName: 'ERC721',
-          args: { address: '0xc9aeee58550328a2462f758c8d47022ec53589c2' },
-          startBlock: 1,
-        },
-        {
-          templateName: 'ERC1155',
-          args: { address: '0x63228048121877a9e0f52020834a135074e8207c' },
-          startBlock: 1,
-        },
-      ];
 
-      jest
-        .spyOn(dynamicDsService as any, 'getDynamicDatasourceParams')
-        .mockResolvedValue(mockMetadataDS);
+      const queryEntry = (fetchService as any).buildDictionaryQueryEntries(
+        dataSources,
+      );
 
-      (dynamicDsService as any).project.templates = mockTempDs;
-      const loadedDSResult = await (
-        dynamicDsService as any
-      ).getDynamicDatasources(); // mocks params to mockMetadataDS
-
-      (fetchService as any).project.dataSources = [ds];
-      (fetchService as any).templateDynamicDatasouces = loadedDSResult;
-
-      const dictionaryQueries = (
-        fetchService as any
-      ).buildDictionaryQueryEntries(1);
-      expect(dictionaryQueries).toEqual([
+      expect(queryEntry).toEqual([
         {
           entity: 'evmLogs',
           conditions: [
@@ -444,7 +423,8 @@ describe('Dictionary queries', () => {
           conditions: [
             {
               field: 'address',
-              value: ['0xc9aeee58550328a2462f758c8d47022ec53589c2'],
+              // This is what we're looking to happen with multiple instances of template
+              value: ['address1', 'address2'],
               matcher: 'in',
             },
             {
@@ -458,10 +438,11 @@ describe('Dictionary queries', () => {
         {
           entity: 'evmLogs',
           conditions: [
+            // This condition should not be grouped because there is a single instance of the tamplate
             {
               field: 'address',
-              value: ['0x63228048121877a9e0f52020834a135074e8207c'],
-              matcher: 'in',
+              value: 'address3',
+              matcher: 'equalTo',
             },
             {
               field: 'topics0',

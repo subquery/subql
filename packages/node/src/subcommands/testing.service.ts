@@ -7,24 +7,26 @@ import { NestFactory } from '@nestjs/core';
 import {
   NodeConfig,
   TestingService as BaseTestingService,
-  ApiService,
   NestLogger,
   TestRunner,
 } from '@subql/node-core';
-import { EthereumBlockWrapper } from '@subql/types-ethereum';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  EthereumProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
+import { BlockContent } from '../indexer/types';
 import { TestingModule } from './testing.module';
 
 @Injectable()
 export class TestingService extends BaseTestingService<
   EthereumApi,
   SafeEthProvider,
-  EthereumBlockWrapper,
-  SubqlProjectDs
+  BlockContent,
+  EthereumProjectDs
 > {
   constructor(
     nodeConfig: NodeConfig,
@@ -34,34 +36,34 @@ export class TestingService extends BaseTestingService<
   }
 
   async getTestRunner(): Promise<
-    TestRunner<
-      EthereumApi,
-      SafeEthProvider,
-      EthereumBlockWrapper,
-      SubqlProjectDs
-    >
+    [
+      close: () => Promise<void>,
+      runner: TestRunner<
+        EthereumApi,
+        SafeEthProvider,
+        BlockContent,
+        EthereumProjectDs
+      >,
+    ]
   > {
     const testContext = await NestFactory.createApplicationContext(
       TestingModule,
       {
-        logger: new NestLogger(),
+        logger: new NestLogger(this.nodeConfig.debug),
       },
     );
 
     await testContext.init();
 
-    const projectService: ProjectService = testContext.get(ProjectService);
-    const apiService = testContext.get(EthereumApi);
+    const projectService: ProjectService = testContext.get('IProjectService');
 
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await apiService.init();
     await projectService.init();
 
-    return testContext.get(TestRunner);
+    return [testContext.close.bind(testContext), testContext.get(TestRunner)];
   }
 
   async indexBlock(
-    block: EthereumBlockWrapper,
+    block: BlockContent,
     handler: string,
     indexerManager: IndexerManager,
   ): Promise<void> {

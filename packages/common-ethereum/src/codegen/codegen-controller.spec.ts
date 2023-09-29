@@ -8,7 +8,7 @@ import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/types-ethereum
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
-import {abiInterface, getAbiNames, joinInputAbiName, prepareAbiJob, prepareSortedAssets} from './codegen-controller';
+import {AbiInterface, getAbiNames, joinInputAbiName, prepareAbiJob, prepareSortedAssets} from './codegen-controller';
 
 describe('Codegen spec', () => {
   const PROJECT_PATH = path.join(__dirname, '../../test/abiTest');
@@ -23,7 +23,7 @@ describe('Codegen spec', () => {
           type: 'STRING',
         },
       ],
-    } as abiInterface;
+    } as AbiInterface;
     expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_');
   });
   it('should replace [] in input abi name', () => {
@@ -48,7 +48,7 @@ describe('Codegen spec', () => {
           type: 'address[]',
         },
       ],
-    } as abiInterface;
+    } as AbiInterface;
     expect(joinInputAbiName(mockAbiInterface)).toMatch('initialize_string_string_string_address_arr_');
   });
 
@@ -58,9 +58,7 @@ describe('Codegen spec', () => {
     };
 
     expect(() =>
-      prepareAbiJob(artifactAssetObj, PROJECT_PATH, (filePath) =>
-        require(path.join(PROJECT_PATH, './abis/bad-erc20.json'))
-      )
+      prepareAbiJob(artifactAssetObj, PROJECT_PATH, () => require(path.join(PROJECT_PATH, './abis/bad-erc20.json')))
     ).toThrow('Provided ABI is not a valid ABI or Artifact');
   });
   it('Empty abi json, should throw', () => {
@@ -70,7 +68,7 @@ describe('Codegen spec', () => {
       artifact: './artifact.json',
     };
 
-    expect(() => prepareAbiJob(artifactAssetObj, projectPath, (filePath) => [])).toThrow(
+    expect(() => prepareAbiJob(artifactAssetObj, projectPath, () => [])).toThrow(
       'Invalid abi is provided at asset: artifact'
     );
   });
@@ -110,8 +108,8 @@ describe('Codegen spec', () => {
     const a = path.join(projectPath, './abis/erc20.json');
     const b = path.join(projectPath, './abis/Erc20.sol/Erc20.json');
 
-    const abisRendered = prepareAbiJob(abisAssetObj, projectPath, (filePath) => require(a));
-    const artifactRendered = prepareAbiJob(artifactAssetObj, projectPath, (filePath) => require(b));
+    const abisRendered = prepareAbiJob(abisAssetObj, projectPath, () => require(a));
+    const artifactRendered = prepareAbiJob(artifactAssetObj, projectPath, () => require(b));
 
     // exclude name field
     artifactRendered.map((e) => {
@@ -141,12 +139,15 @@ describe('Codegen spec', () => {
       '// SPDX-License-Identifier: Apache-2.0\n' +
       '\n' +
       '// Auto-generated , DO NOT EDIT\n' +
-      'import {EthereumLog, EthereumTransaction} from "@subql/types-ethereum";\n' +
+      'import {EthereumLog, EthereumTransaction, LightEthereumLog} from "@subql/types-ethereum";\n' +
       '\n' +
       "import {ApprovalEvent, Erc20} from '../contracts/Erc20'\n" +
       '\n' +
       '\n' +
       'export type ApprovalLog = EthereumLog<ApprovalEvent["args"]>\n' +
+      '\n' +
+      '\n' +
+      'export type LightApprovalLog = LightEthereumLog<ApprovalEvent["args"]>\n' +
       '\n' +
       '\n' +
       "export type Transaction = EthereumTransaction<Parameters<Erc20['functions']['approve']>>";

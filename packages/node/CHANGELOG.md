@@ -5,9 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Fixed
+- Fix reindex also start index service (#155)
+- Fix warning for filter address (#154)
+- Fetching logs via block height resulting in invalid results. Block hash is now used to ensure
+  correct results. (#156)
+- Node runner options being overwritten by yargs defaults (#148)
 - Fix yargs default override runner nodeOptions (#166)
+
+### Added
+- skipTransactions feature to avoid fetching transactions (#170)
 
 ## [2.12.5] - 2023-09-12
 ### Fixed
@@ -41,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Custom provider for Celo (#147)
+
+### Changed
+- Update node-core and add support for project upgrades feature (#148)
 
 ## [2.11.1] - 2023-08-14
 ### Changed

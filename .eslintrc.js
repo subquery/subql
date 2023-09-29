@@ -29,6 +29,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:jest/recommended',
   ],
   rules: {
     // rules turned off in upstream project (also required when recommended-requiring-type-checking is extended)

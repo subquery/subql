@@ -16,17 +16,17 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getLogger, timeout } from '@subql/node-core';
 import {
   ApiWrapper,
-  EthereumBlockWrapper,
+  EthereumBlock,
   EthereumTransaction,
   EthereumResult,
   EthereumLog,
   SubqlRuntimeDatasource,
+  LightEthereumBlock,
+  LightEthereumLog,
 } from '@subql/types-ethereum';
 import CacheableLookup from 'cacheable-lookup';
 import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
-import { yargsOptions } from '../yargs';
-import { EthereumBlockWrapped } from './block.ethereum';
 import { CeloJsonRpcBatchProvider } from './ethers/celo/celo-json-rpc-batch-provider';
 import { CeloJsonRpcProvider } from './ethers/celo/celo-json-rpc-provider';
 import { CeloWsProvider } from './ethers/celo/celo-ws-provider';
@@ -87,7 +87,7 @@ function getHttpAgents() {
   };
 }
 
-export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
+export class EthereumApi implements ApiWrapper {
   private client: JsonRpcProvider;
 
   // This is used within the sandbox when HTTP is used
@@ -99,9 +99,17 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   // Ethereum POS
   private supportsFinalization = true;
-  private blockConfirmations = yargsOptions.argv['block-confirmations'];
 
-  constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
+  /**
+   * @param {string} endpoint - The endpoint of the RPC provider
+   * @param {number} blockConfirmations - Used to determine how many blocks behind the head a block is considered finalized. Not used if the network has a concrete finalization mechanism.
+   * @param {object} eventEmitter - Used to monitor the number of RPC requests
+   */
+  constructor(
+    private endpoint: string,
+    private blockConfirmations: number,
+    private eventEmitter: EventEmitter2,
+  ) {
     const { hostname, protocol, searchParams } = new URL(endpoint);
 
     const protocolStr = protocol.replace(':', '');
@@ -260,28 +268,27 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     );
   }
 
-  async fetchBlock(
-    blockNumber: number,
-    includeTx?: boolean,
-  ): Promise<EthereumBlockWrapped> {
+  async fetchBlock(blockNumber: number): Promise<EthereumBlock> {
     try {
-      const block = await this.getBlockPromise(blockNumber, includeTx);
-      const logs = await this.client.getLogs({ blockHash: block.hash });
+      const block = await this.getBlockPromise(blockNumber, true);
+      const logsRaw = await this.client.getLogs({ blockHash: block.hash });
 
-      const ret = new EthereumBlockWrapped(
-        block,
-        includeTx
-          ? block.transactions.map((tx) => ({
-              ...formatTransaction(tx, block),
-              // TODO memoise
-              receipt: () =>
-                this.getTransactionReceipt(tx.hash).then((r) =>
-                  formatReceipt(r, block),
-                ),
-            }))
-          : [],
-        logs.map((l) => formatLog(l, block)),
-      );
+      const logs = logsRaw.map((l) => formatLog(l, block));
+      const transactions = block.transactions.map((tx) => ({
+        ...formatTransaction(tx, block),
+        receipt: () =>
+          this.getTransactionReceipt(tx.hash).then((r) =>
+            formatReceipt(r, block),
+          ),
+        logs: logs.filter((l) => l.transactionHash === tx.hash),
+      }));
+
+      const ret = {
+        ...block,
+        transactions,
+        logs,
+      };
+
       this.eventEmitter.emit('fetchBlock');
       return ret;
     } catch (e) {
@@ -289,9 +296,28 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     }
   }
 
-  async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {
+  private async fetchLightBlock(
+    blockNumber: number,
+  ): Promise<LightEthereumBlock> {
+    const block = await this.getBlockPromise(blockNumber, false);
+    const logs = await this.client.getLogs({ blockHash: block.hash });
+
+    return {
+      ...block,
+      logs: logs.map((l) => formatLog(l, block)),
+    };
+  }
+
+  async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlock[]> {
+    return Promise.all(bufferBlocks.map(async (num) => this.fetchBlock(num)));
+  }
+
+  async fetchBlocksLight(
+    bufferBlocks: number[],
+  ): Promise<LightEthereumBlock[]> {
+    console.log('FETCH BLOCKS LIGHT');
     return Promise.all(
-      bufferBlocks.map(async (num) => this.fetchBlock(num, true)),
+      bufferBlocks.map(async (num) => this.fetchLightBlock(num)),
     );
   }
 
@@ -342,9 +368,11 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async parseLog<T extends EthereumResult = EthereumResult>(
-    log: EthereumLog,
+    log: EthereumLog | LightEthereumLog,
     ds: SubqlRuntimeDatasource,
-  ): Promise<EthereumLog<T> | EthereumLog> {
+  ): Promise<
+    EthereumLog | LightEthereumLog | EthereumLog<T> | LightEthereumLog<T>
+  > {
     try {
       if (!ds?.options?.abi) {
         logger.warn('No ABI provided for datasource');
@@ -377,9 +405,9 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
       transaction.logs =
         transaction.logs &&
-        (await Promise.all(
+        ((await Promise.all(
           transaction.logs.map(async (log) => this.parseLog(log, ds)),
-        ));
+        )) as Array<EthereumLog | EthereumLog<T>>);
 
       return {
         ...transaction,

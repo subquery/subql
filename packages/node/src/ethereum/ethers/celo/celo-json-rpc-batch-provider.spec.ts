@@ -9,7 +9,9 @@ describe('CeloJsonRpcProvider', () => {
   let provider: CeloJsonRpcBatchProvider;
 
   beforeEach(() => {
-    provider = new CeloJsonRpcBatchProvider('https://forno.celo.org');
+    provider = new CeloJsonRpcBatchProvider(
+      'https://celo.api.onfinality.io/public',
+    );
   });
 
   // Test if gasLimit is correctly set for blocks before the hard fork
@@ -26,11 +28,8 @@ describe('CeloJsonRpcProvider', () => {
   // Test if gasLimit is correctly set for blocks after the hard fork
   it('should not set gasLimit to zero for blocks after the hard fork', async () => {
     const block = formatBlock(
-      await provider.send('eth_getBlockByNumber', [
-        utils.hexValue(21055596),
-        true,
-      ]),
+      await provider.send('eth_getBlockByNumber', ['latest', true]),
     );
-    expect(BigNumber.from(block.gasLimit)).toEqual(BigNumber.from(0x1312d00));
+    expect(BigNumber.from(block.gasLimit)).toEqual(BigNumber.from(0x01e84800));
   });
 });

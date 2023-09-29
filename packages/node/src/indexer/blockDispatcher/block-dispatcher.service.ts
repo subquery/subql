@@ -13,21 +13,22 @@ import {
   BlockDispatcher,
   ProcessBlockResponse,
   ApiService,
+  IProjectUpgradeService,
 } from '@subql/node-core';
-import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import {
-  SubqlProjectDs,
+  EthereumProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
+import { BlockContent } from '../types';
 
 /**
  * @description Intended to behave the same as WorkerBlockDispatcherService but doesn't use worker threads or any parallel processing
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<EthereumBlockWrapper, SubqlProjectDs>
+  extends BlockDispatcher<BlockContent, EthereumProjectDs>
   implements OnApplicationShutdown
 {
   constructor(
@@ -35,7 +36,10 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
+    @Inject('IProjectService')
+    projectService: IProjectService<EthereumProjectDs>,
+    @Inject('IProjectUpgradeService')
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -47,6 +51,7 @@ export class BlockDispatcherService
       nodeConfig,
       eventEmitter,
       projectService,
+      projectUpgradeService,
       smartBatchService,
       storeService,
       storeCacheService,
@@ -57,16 +62,16 @@ export class BlockDispatcherService
     );
   }
 
-  protected getBlockHeight(block: EthereumBlockWrapper): number {
-    return block.blockHeight;
+  protected getBlockHeight(block: BlockContent): number {
+    return block.number;
   }
 
   protected async indexBlock(
-    block: EthereumBlockWrapper,
+    block: BlockContent,
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getAllDataSources(this.getBlockHeight(block)),
+      await this.projectService.getDataSources(this.getBlockHeight(block)),
     );
   }
 }

@@ -1,7 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
@@ -14,25 +15,25 @@ const CHAIN_ALIASES_URL =
   'https://raw.githubusercontent.com/subquery/templates/main/chainAliases.json5';
 
 @Injectable()
-export class DictionaryService
-  extends CoreDictionaryService
-  implements OnApplicationShutdown
-{
+export class DictionaryService extends CoreDictionaryService {
   private constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
     chainId?: string,
   ) {
     super(
       project.network.dictionary,
       chainId ?? project.network.chainId,
       nodeConfig,
+      eventEmitter,
     );
   }
 
   static async create(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
   ): Promise<DictionaryService> {
     /*Some dictionarys for EVM are built with other SDKs as they are chains with an EVM runtime
      * we maintain a list of aliases so we can map the evmChainId to the genesis hash of the other SDKs
@@ -41,7 +42,7 @@ export class DictionaryService
     const chainAliases = await this.getEvmChainId();
     const chainAlias = chainAliases[project.network.chainId];
 
-    return new DictionaryService(project, nodeConfig, chainAlias);
+    return new DictionaryService(project, nodeConfig, eventEmitter, chainAlias);
   }
 
   private static async getEvmChainId(): Promise<Record<string, string>> {

@@ -3,10 +3,10 @@
 
 import fs from 'fs';
 import path from 'path';
-import {isCustomDs, isRuntimeDs} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource} from '@subql/types-ethereum';
 import {Data} from 'ejs';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
+import {isCustomDs, isRuntimeDs} from '../project';
 import {CUSTOM_EVM_HANDLERS} from './constants';
 import {loadReadAbi} from './utils';
 
@@ -18,12 +18,12 @@ const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const FACTORIES_DIR = path.join(CONTRACTS_DIR, 'factories'); // generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
-export interface abiRenderProps {
+export interface AbiRenderProps {
   name: string;
   events: string[];
   functions: {typeName: string; functionName: string}[];
 }
-export interface abiInterface {
+export interface AbiInterface {
   name: string;
   type: 'event' | 'function';
   inputs: {
@@ -37,7 +37,7 @@ function validateCustomDsDs(d: {kind: string}): boolean {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
 }
 
-export function joinInputAbiName(abiObject: abiInterface): string {
+export function joinInputAbiName(abiObject: AbiInterface): string {
   // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
   const inputToSnake = abiObject.inputs.map((obj) => obj.type.replace(/\[\]/g, '_arr').toLowerCase()).join('_');
   return `${abiObject.name}_${inputToSnake}_`;
@@ -70,17 +70,17 @@ export function prepareSortedAssets(
 export function prepareAbiJob(
   sortedAssets: Record<string, string>,
   projectPath: string,
-  loadReadAbi: (filePath: string) => abiInterface[] | {abi: abiInterface[]}
-): abiRenderProps[] {
-  const renderInterfaceJobs: abiRenderProps[] = [];
+  loadReadAbi: (filePath: string) => AbiInterface[] | {abi: AbiInterface[]}
+): AbiRenderProps[] {
+  const renderInterfaceJobs: AbiRenderProps[] = [];
   Object.entries(sortedAssets).forEach(([key, value]) => {
-    const renderProps: abiRenderProps = {name: key, events: [], functions: []};
+    const renderProps: AbiRenderProps = {name: key, events: [], functions: []};
     const readAbi = loadReadAbi(path.join(projectPath, value));
     // We need to use for loop instead of map, due to events/function name could be duplicate,
     // because they have different input, and following ether typegen rules, name also changed
     // we need to find duplicates, and update its name rather than just unify them.
 
-    let abiArray: abiInterface[] = [];
+    let abiArray: AbiInterface[] = [];
 
     if (!Array.isArray(readAbi)) {
       if (!readAbi.abi) {
@@ -92,7 +92,7 @@ export function prepareAbiJob(
     }
 
     if (!abiArray.length) {
-      throw new Error(`Invalid abi is provided at asset: ${key}, ${value}, ${(readAbi as any).length}`);
+      throw new Error(`Invalid abi is provided at asset: ${key}, ${value}, ${abiArray.length}`);
     }
 
     const duplicateEventNames = abiArray

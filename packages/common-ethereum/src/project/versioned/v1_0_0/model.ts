@@ -2,17 +2,23 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  BaseMapping,
+  BaseDeploymentV1_0_0,
   FileType,
-  NodeSpec,
+  ParentProjectModel,
   ProjectManifestBaseImpl,
-  QuerySpec,
   RunnerNodeImpl,
   RunnerQueryBaseModel,
-  RunnerSpecs,
 } from '@subql/common';
-import {SubqlCustomDatasource, SubqlMapping, SubqlRuntimeDatasource} from '@subql/types-ethereum';
-import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
+import {BaseMapping, NodeSpec, RunnerSpecs, QuerySpec, ParentProject} from '@subql/types-core';
+import {
+  CustomDatasourceTemplate,
+  EthereumProjectManifestV1_0_0,
+  RuntimeDatasourceTemplate,
+  SubqlCustomDatasource,
+  SubqlMapping,
+  SubqlRuntimeDatasource,
+} from '@subql/types-ethereum';
+import {plainToInstance, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
   IsArray,
@@ -21,21 +27,14 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Validate,
   ValidateNested,
   validateSync,
 } from 'class-validator';
-import {CustomDataSourceBase, EthereumMapping, RuntimeDataSourceBase} from '../../models';
+import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {SubqlEthereumDataSource, SubqlRuntimeHandler} from '../../types';
-import {CustomDatasourceTemplate, EthereumProjectManifestV1_0_0, RuntimeDatasourceTemplate} from './types';
 
 const Ethereum_NODE_NAME = `@subql/node-ethereum`;
 const Flare_NODE_NAME = `@subql/node-flare`;
-
-export class EthereumProjectMapping extends EthereumMapping {
-  @IsString()
-  file: string;
-}
 
 export class EthereumRunnerNodeImpl extends RunnerNodeImpl {
   @IsIn([Ethereum_NODE_NAME, Flare_NODE_NAME], {
@@ -117,26 +116,20 @@ export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
   dictionary?: string;
 }
 
-export class DeploymentV1_0_0 {
+export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @Transform((params) => {
     if (params.value.genesisHash && !params.value.chainId) {
       params.value.chainId = params.value.genesisHash;
     }
-    return plainToClass(ProjectNetworkDeploymentV1_0_0, params.value);
+    return plainToInstance(ProjectNetworkDeploymentV1_0_0, params.value);
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
   network: ProjectNetworkDeploymentV1_0_0;
-  @Equals('1.0.0')
-  @IsString()
-  specVersion: string;
   @IsObject()
   @ValidateNested()
   @Type(() => EthereumRunnerSpecsImpl)
   runner: RunnerSpecs;
-  @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => EthereumCustomDataSourceImpl, {
@@ -166,10 +159,14 @@ export class DeploymentV1_0_0 {
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
 }
 
-export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
-  extends ProjectManifestBaseImpl<D>
+export class ProjectManifestV1_0_0Impl
+  extends ProjectManifestBaseImpl<DeploymentV1_0_0>
   implements EthereumProjectManifestV1_0_0
 {
+  constructor() {
+    super(DeploymentV1_0_0);
+  }
+
   @Equals('1.0.0')
   specVersion: string;
   @Type(() => EthereumCustomDataSourceImpl, {
@@ -210,14 +207,9 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @ValidateNested()
   @Type(() => EthereumRunnerSpecsImpl)
   runner: RunnerSpecs;
-  protected _deployment: D;
 
-  get deployment(): D {
-    if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV1_0_0, this) as unknown as D;
-      //validateSync(this._deployment.)
-      validateSync(this._deployment, {whitelist: true});
-    }
-    return this._deployment;
-  }
+  @IsOptional()
+  @IsObject()
+  @Type(() => ParentProjectModel)
+  parent?: ParentProject;
 }

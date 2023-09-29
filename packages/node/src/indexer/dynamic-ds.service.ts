@@ -14,11 +14,14 @@ import {
 import { plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { cloneDeep } from 'lodash';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  EthereumProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 
 @Injectable()
-export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
+export class DynamicDsService extends BaseDynamicDsService<EthereumProjectDs> {
   constructor(
     private readonly dsProcessorService: DsProcessorService,
     @Inject('ISubqueryProject') private readonly project: SubqueryProject,
@@ -28,7 +31,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
 
   protected async getDatasource(
     params: DatasourceParams,
-  ): Promise<SubqlProjectDs> {
+  ): Promise<EthereumProjectDs> {
     const template = cloneDeep(
       this.project.templates?.find((t) => t.name === params.templateName),
     );
@@ -42,7 +45,7 @@ export class DynamicDsService extends BaseDynamicDsService<SubqlProjectDs> {
     const dsObj = {
       ...template,
       startBlock: params.startBlock,
-    } as SubqlProjectDs;
+    } as EthereumProjectDs;
     try {
       if (isCustomDs(dsObj)) {
         dsObj.processor.options = {

@@ -3,104 +3,86 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectNetworkV1_0_0 } from '@subql/common-ethereum';
 import {
   ApiService,
   ConnectionPoolService,
-  NetworkMetadataPayload,
   getLogger,
   NodeConfig,
-  IndexerEvent,
+  profilerWrap,
 } from '@subql/node-core';
-import { EthereumBlockWrapper } from '@subql/types-ethereum';
+import { EthereumBlock, EthereumNetworkConfig, LightEthereumBlock } from '@subql/types-ethereum';
+import { EthereumNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApiConnection } from './api.connection';
+import { isOnlyEventHandlers } from '../utils/project';
+import {
+  EthereumApiConnection,
+  FetchFunc,
+  GetFetchFunc,
+} from './api.connection';
 import { EthereumApi } from './api.ethereum';
 import SafeEthProvider from './safe-api';
 
 const logger = getLogger('api');
 
-const MAX_RECONNECT_ATTEMPTS = 5;
-
 @Injectable()
 export class EthereumApiService extends ApiService<
   EthereumApi,
   SafeEthProvider,
-  EthereumBlockWrapper
+  EthereumBlock[] | LightEthereumBlock[]
 > {
+  private fetchBlocksFunction: FetchFunc;
+  private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
+  private nodeConfig: EthereumNodeConfig;
+
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
-    private eventEmitter: EventEmitter2,
-    private nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
+    nodeConfig: NodeConfig,
   ) {
-    super(connectionPoolService);
-  }
+    super(connectionPoolService, eventEmitter);
+    this.nodeConfig = new EthereumNodeConfig(nodeConfig);
 
-  networkMeta: NetworkMetadataPayload;
+    this.updateBlockFetching();
+  }
 
   async init(): Promise<EthereumApiService> {
+    let network: EthereumNetworkConfig;
     try {
-      let network: ProjectNetworkV1_0_0;
-      try {
-        network = this.project.network;
-      } catch (e) {
-        logger.error(Object.keys(e));
-        process.exit(1);
-      }
-
-      const endpoints = Array.isArray(network.endpoint)
-        ? network.endpoint
-        : [network.endpoint];
-
-      if (this.nodeConfig.primaryNetworkEndpoint) {
-        endpoints.push(this.nodeConfig.primaryNetworkEndpoint);
-      }
-
-      const endpointToApiIndex: Record<string, EthereumApiConnection> = {};
-
-      for await (const [i, endpoint] of endpoints.entries()) {
-        const connection = await EthereumApiConnection.create(
-          endpoint,
-          this.fetchBlockBatches,
-          this.eventEmitter,
-        );
-
-        const api = connection.unsafeApi;
-
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 1,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-
-        if (!this.networkMeta) {
-          this.networkMeta = connection.networkMeta;
-        }
-
-        if (network.chainId !== api.getChainId().toString()) {
-          throw this.metadataMismatchError(
-            'ChainId',
-            network.chainId,
-            api.getChainId().toString(),
-          );
-        }
-
-        endpointToApiIndex[endpoint] = connection;
-      }
-
-      await this.connectionPoolService.addBatchToConnections(
-        endpointToApiIndex,
-      );
-
-      return this;
+      network = this.project.network;
     } catch (e) {
-      logger.error(e, 'Failed to init api service');
+      logger.error(Object.keys(e));
       process.exit(1);
     }
+
+    const endpoints = Array.isArray(network.endpoint)
+      ? network.endpoint
+      : [network.endpoint];
+
+    if (this.nodeConfig.primaryNetworkEndpoint) {
+      endpoints.push(this.nodeConfig.primaryNetworkEndpoint);
+    }
+
+    await this.createConnections(
+      network,
+      (endpoint) =>
+        EthereumApiConnection.create(
+          endpoint,
+          this.nodeConfig.blockConfirmations,
+          this.fetchBlocksBatches,
+          this.eventEmitter,
+        ),
+      //eslint-disable-next-line @typescript-eslint/require-await
+      async (connection: EthereumApiConnection) => {
+        const api = connection.unsafeApi;
+        return api.getChainId().toString();
+      },
+    );
+
+    return this;
   }
 
-  private metadataMismatchError(
+  protected metadataMismatchError(
     metadata: string,
     expected: string,
     actual: string,
@@ -169,10 +151,57 @@ export class EthereumApiService extends ApiService<
     return new Proxy(this.unsafeApi.getSafeApi(height), handler);
   }
 
-  private async fetchBlockBatches(
+  private async fetchFullBlocksBatch(
     api: EthereumApi,
     batch: number[],
-  ): Promise<EthereumBlockWrapper[]> {
+  ): Promise<EthereumBlock[]> {
     return api.fetchBlocks(batch);
+  }
+
+  private async fetchLightBlocksBatch(
+    api: EthereumApi,
+    batch: number[],
+  ): Promise<LightEthereumBlock[]> {
+    return api.fetchBlocksLight(batch);
+  }
+
+  updateBlockFetching(): void {
+    const onlyEventHandlers = isOnlyEventHandlers(this.project);
+    const skipTransactions =
+      this.nodeConfig.skipTransactions && onlyEventHandlers;
+
+    if (this.nodeConfig.skipTransactions) {
+      if (onlyEventHandlers) {
+        logger.info(
+          'skipTransactions is enabled, only events and block headers will be fetched.',
+        );
+      } else {
+        logger.info(
+          `skipTransactions is disabled, the project contains handlers that aren't event handlers.`,
+        );
+      }
+    } else {
+      if (onlyEventHandlers) {
+        logger.warn(
+          'skipTransactions is disabled, the project contains only event handlers, it could be enabled to improve indexing performance.',
+        );
+      } else {
+        logger.info(`skipTransactions is disabled.`);
+      }
+    }
+
+    const fetchFunc = skipTransactions
+      ? this.fetchLightBlocksBatch.bind(this)
+      : this.fetchFullBlocksBatch.bind(this);
+
+    if (this.nodeConfig?.profiler) {
+      this.fetchBlocksFunction = profilerWrap(
+        fetchFunc,
+        'SubstrateUtil',
+        'fetchBlocksBatches',
+      );
+    } else {
+      this.fetchBlocksFunction = fetchFunc;
+    }
   }
 }
