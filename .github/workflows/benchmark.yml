@@ -75,7 +75,7 @@ jobs:
         id: prepare-network-endpoint
         run: |
           if [ "${{ github.event.inputs.use-network-api-key }}" = "true" ]; then
-            NETWORK_ENDPOINT="${{ github.event.inputs.network-endpoint }}${{ secrets.NETWORK_API_KEY }}"
+            NETWORK_ENDPOINT="${{ github.event.inputs.network-endpoint }}${{ secrets.BENCHMARK_ONF_API_KEY }}"
           else
             NETWORK_ENDPOINT="${{ github.event.inputs.network-endpoint }}"
           fi
