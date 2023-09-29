@@ -36,10 +36,7 @@ export class SubstrateRuntimeDataSourceImpl extends RuntimeDataSourceBase implem
   }
 }
 
-export class SubstrateCustomDataSourceImpl<
-    K extends string = string,
-    M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
-  >
+export class SubstrateCustomDataSourceImpl<K extends string = string, M extends BaseMapping<any> = BaseMapping<any>>
   extends CustomDataSourceBase<K, M>
   implements SubstrateCustomDatasource<K, M>
 {

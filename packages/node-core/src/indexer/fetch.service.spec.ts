@@ -24,7 +24,7 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   modulos: number[] = [];
 
   protected buildDictionaryQueryEntries(
-    dataSources: BaseDataSource<any, BaseHandler<any>, BaseMapping<any, BaseHandler<any>>>[]
+    dataSources: BaseDataSource<BaseHandler<any>, BaseMapping<BaseHandler<any>>>[]
   ): DictionaryQueryEntry[] {
     return [];
   }

@@ -12,6 +12,10 @@ import {
   Processor,
   ProjectManifestV1_0_0,
   BlockFilter,
+  BaseDataSource,
+  BaseHandler,
+  BaseMapping,
+  BaseCustomDataSource,
 } from '@subql/types-core';
 import {LightSubstrateEvent, SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
@@ -152,7 +156,8 @@ export type SubstrateEventHandler = SubstrateCustomHandler<SubstrateHandlerKind.
  * @template K - The kind of the handler (default: string).
  * @template F - The filter type for the handler (default: Record<string, unknown>).
  */
-export interface SubstrateCustomHandler<K extends string = string, F = Record<string, unknown>> {
+export interface SubstrateCustomHandler<K extends string = string, F = Record<string, unknown>>
+  extends BaseHandler<F, K> {
   /**
    * The kind of handler. For `substrate/Runtime` datasources this is either `Block`, `Call` or `Event` kinds.
    * The value of this will determine the filter options as well as the data provided to your handler function
@@ -164,15 +169,6 @@ export interface SubstrateCustomHandler<K extends string = string, F = Record<st
    */
   kind: K;
   /**
-   * The name of your handler function. This must be defined and exported from your code.
-   * @type {string}
-   * @example
-   * handler: 'handleBlock'
-   */
-  handler: string;
-  /**
-   * The filter for the handler. The handler kind will determine the possible filters (optional).
-   *
    * @type {F}
    * @example
    * filter: {
@@ -207,9 +203,8 @@ export type SubstrateRuntimeHandlerFilter = SubstrateBlockFilter | SubstrateCall
  * @interface
  * @extends {FileReference}
  */
-export interface SubstrateMapping<T extends SubstrateHandler = SubstrateHandler> extends FileReference {
+export interface SubstrateMapping<T extends SubstrateHandler = SubstrateHandler> extends BaseMapping<T> {
   /**
-   * An array of handlers associated with the mapping.
    * @type {T[]}
    * @example
    * handlers: [{
@@ -230,27 +225,7 @@ export interface SubstrateMapping<T extends SubstrateHandler = SubstrateHandler>
  * @interface
  * @template M - The mapping type for the datasource.
  */
-interface ISubstrateDatasource<M extends SubstrateMapping> {
-  /**
-   * The kind of the datasource.
-   * @type {string}
-   */
-  kind: string;
-
-  /**
-   * The starting block number for the datasource. If not specified, 1 will be used (optional).
-   * @type {number}
-   * @default 1
-   */
-  startBlock?: number;
-
-  /**
-   * The mapping associated with the datasource.
-   * This contains the handlers.
-   * @type {M}
-   */
-  mapping: M;
-}
+type ISubstrateDatasource<M extends SubstrateMapping> = BaseDataSource<SubstrateHandler, M>;
 
 /**
  * Represents a runtime datasource for Substrate.
@@ -285,7 +260,7 @@ export interface SubstrateCustomDatasource<
   K extends string = string,
   M extends SubstrateMapping = SubstrateMapping<SubstrateCustomHandler>,
   O = any
-> extends ISubstrateDatasource<M> {
+> extends BaseCustomDataSource<SubstrateHandler, M> {
   /**
    * The kind of the custom datasource. This should follow the pattern `substrate/*`.
    * @type {K}
@@ -295,14 +270,6 @@ export interface SubstrateCustomDatasource<
   kind: K;
 
   /**
-   * A map of custom datasource assets. These typically include ABIs or other files used to decode data.
-   * @type {Map<string, CustomDataSourceAsset>}
-   */
-  assets: Map<string, CustomDataSourceAsset>;
-
-  /**
-   * The processor used for the custom datasource.
-   * @type {Processor<O>}
    * @example
    * processor: {
    *    file: './node_modules/@subql/frontier-evm-processor/dist/bundle.js',
@@ -431,5 +398,3 @@ export type SubstrateProject<DS extends SubstrateDatasource = SubstrateRuntimeDa
   SubstrateRuntimeDatasource | DS,
   BaseTemplateDataSource<SubstrateRuntimeDatasource> | BaseTemplateDataSource<DS>
 >;
-
-export type CustomDataSourceAsset = FileReference;
