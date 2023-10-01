@@ -15,9 +15,7 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeDatasource,
   SubstrateRuntimeHandler,
-  SubstrateRuntimeHandlerFilter,
   SubstrateCustomDatasource,
-  CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
 } from '@subql/types';
 import {BaseMapping, FileReference, Processor} from '@subql/types-core';
 import {plainToClass, Transform, Type} from 'class-transformer';
@@ -119,7 +117,7 @@ export class CustomHandler implements SubstrateCustomHandler {
   filter?: Record<string, unknown>;
 }
 
-export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler> {
+export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandler> {
   @Transform((params) => {
     const handlers: SubstrateRuntimeHandler[] = params.value;
     return handlers.map((handler) => {
@@ -142,7 +140,7 @@ export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandlerFilter
   file: string;
 }
 
-export class CustomMapping implements BaseMapping<Record<string, unknown>, SubstrateCustomHandler> {
+export class CustomMapping implements BaseMapping<SubstrateCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
@@ -180,7 +178,7 @@ export class CustomDataSourceBase<K extends string, M extends CustomMapping, O =
   startBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: Map<string, SubstrateCustomDataSourceAsset>;
+  assets: Map<string, FileReference>;
   @Type(() => ProcessorImpl)
   @IsObject()
   @ValidateNested()
