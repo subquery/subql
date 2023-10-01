@@ -202,6 +202,11 @@ export class FetchService extends BaseFetchService<
     return header.blockHeight;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
+  protected async getGenesisHash(): Promise<string> {
+    return this.api.genesisHash.toString();
+  }
+
   protected async getBestHeight(): Promise<number> {
     const bestHeader = await this.api.rpc.chain.getHeader();
     return bestHeader.number.toNumber();

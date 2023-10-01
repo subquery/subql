@@ -13,7 +13,7 @@ import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {profiler} from '../profiler';
-import {timeout} from '../utils';
+import {delay, timeout} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
 export type SpecVersion = {
@@ -159,6 +159,7 @@ export class DictionaryService {
   private useDistinct = true;
   private useStartHeight = true;
   protected _startHeight?: number;
+  protected _genesisHash?: string;
 
   private metadataValid?: boolean;
 
@@ -203,9 +204,29 @@ export class DictionaryService {
     return (!!this.dictionaryEndpoint || !!this.nodeConfig.dictionaryResolver) && !!this.metadataValid;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async initValidation(): Promise<boolean> {
     const metadata = await this.getMetadata();
     return this.dictionaryValidation(metadata);
+  }
+
+  // As we have multiple endpoints, an invalid endpoint could lead dictionary invalid.
+  // Pass a fetch method rather than a result, so we can keep retry until able to process validation.
+  async setGenesisHash(fetchGenesisHash: () => Promise<string | undefined>): Promise<void> {
+    if (this._genesisHash !== undefined) {
+      return;
+    }
+    let genesisHash: string | undefined;
+    while (!genesisHash) {
+      genesisHash = await fetchGenesisHash();
+      if (!genesisHash) {
+        logger.warn(`Dictionary waiting for endpoint to validate genesisHash `);
+        // Wait for 2 seconds before trying again
+        await delay(2);
+      }
+      this._genesisHash = genesisHash;
+      break;
+    }
   }
 
   private setDictionaryStartHeight(start: number | undefined): void {
@@ -221,6 +242,11 @@ export class DictionaryService {
       throw new Error('Dictionary start height is not set');
     }
     return this._startHeight;
+  }
+
+  get endpointGenesisHash(): string {
+    assert(this._genesisHash, new Error('Genesis hash is not set'));
+    return this._genesisHash;
   }
 
   protected get client(): ApolloClient<NormalizedCacheObject> {
@@ -398,8 +424,13 @@ export class DictionaryService {
     }
   }
 
-  protected validateChainId(metaData: MetaData): boolean {
-    return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;
+  // Base validation is required, and specific validation for each network should be implemented accordingly
+  protected validateChainMeta(metaData: MetaData): boolean {
+    return (
+      metaData.chain === this.chainId ||
+      metaData.genesisHash === this.chainId ||
+      this.endpointGenesisHash === metaData.genesisHash
+    );
   }
 
   private dictionaryValidation(metaData?: MetaData, startBlockHeight?: number): boolean {
@@ -408,7 +439,7 @@ export class DictionaryService {
         return false;
       }
       // Some dictionaries rely on chain others rely on genesisHash
-      if (!this.validateChainId(metaData)) {
+      if (!this.validateChainMeta(metaData)) {
         logger.error(
           'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
         );

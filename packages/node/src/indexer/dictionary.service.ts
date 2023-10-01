@@ -41,6 +41,14 @@ export class DictionaryService extends CoreDictionaryService {
     );
   }
 
+  protected validateChainMeta(metaData: MetaData): boolean {
+    // validate both manifest chainId (genesisHash is deprecated) and endpoint genesisHash with metadata
+    return (
+      this.endpointGenesisHash === metaData.genesisHash &&
+      this.project.network.chainId === metaData.genesisHash
+    );
+  }
+
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
     if (raw === undefined) {
       return [];
