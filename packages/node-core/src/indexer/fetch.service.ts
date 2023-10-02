@@ -118,7 +118,7 @@ export abstract class BaseFetchService<
     if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
       this.updateDictionary();
       // We pass in genesis hash in order validate dictionary metadata
-      // GenesisHash should be always exist in apiService.
+      // GenesisHash should always exist in apiService.
       this.dictionaryService.apiGenesisHash = this.getGenesisHash();
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core

@@ -13,7 +13,7 @@ import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {profiler} from '../profiler';
-import {delay, timeout} from '../utils';
+import {timeout} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
 export type SpecVersion = {
@@ -204,14 +204,13 @@ export class DictionaryService {
     return (!!this.dictionaryEndpoint || !!this.nodeConfig.dictionaryResolver) && !!this.metadataValid;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async initValidation(): Promise<boolean> {
     const metadata = await this.getMetadata();
     return this.dictionaryValidation(metadata);
   }
 
   private setDictionaryStartHeight(start: number | undefined): void {
-    // Since not all dictionary has adopt start height, if it is not set, we just consider it is 1.
+    // Since not all dictionary has adopted start height, if it is not set, we just consider it is 1.
     if (this._startHeight !== undefined) {
       return;
     }
