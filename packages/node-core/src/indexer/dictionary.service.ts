@@ -159,6 +159,7 @@ export class DictionaryService {
   private useDistinct = true;
   private useStartHeight = true;
   protected _startHeight?: number;
+  protected _genesisHash?: string;
 
   private metadataValid?: boolean;
 
@@ -203,13 +204,14 @@ export class DictionaryService {
     return (!!this.dictionaryEndpoint || !!this.nodeConfig.dictionaryResolver) && !!this.metadataValid;
   }
 
-  async initValidation(): Promise<boolean> {
+  async initValidation(genesisHash: string): Promise<boolean> {
+    this._genesisHash = genesisHash;
     const metadata = await this.getMetadata();
     return this.dictionaryValidation(metadata);
   }
 
   private setDictionaryStartHeight(start: number | undefined): void {
-    // Since not all dictionary has adopt start height, if it is not set, we just consider it is 1.
+    // Since not all dictionary has adopted start height, if it is not set, we just consider it is 1.
     if (this._startHeight !== undefined) {
       return;
     }
@@ -221,6 +223,11 @@ export class DictionaryService {
       throw new Error('Dictionary start height is not set');
     }
     return this._startHeight;
+  }
+
+  get apiGenesisHash(): string {
+    assert(this._genesisHash, new Error('Endpoint genesis hash is not set in dictionary'));
+    return this._genesisHash;
   }
 
   protected get client(): ApolloClient<NormalizedCacheObject> {
@@ -398,8 +405,13 @@ export class DictionaryService {
     }
   }
 
-  protected validateChainId(metaData: MetaData): boolean {
-    return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;
+  // Base validation is required, and specific validation for each network should be implemented accordingly
+  protected validateChainMeta(metaData: MetaData): boolean {
+    return (
+      metaData.chain === this.chainId ||
+      metaData.genesisHash === this.chainId ||
+      this.apiGenesisHash === metaData.genesisHash
+    );
   }
 
   private dictionaryValidation(metaData?: MetaData, startBlockHeight?: number): boolean {
@@ -408,7 +420,7 @@ export class DictionaryService {
         return false;
       }
       // Some dictionaries rely on chain others rely on genesisHash
-      if (!this.validateChainId(metaData)) {
+      if (!this.validateChainMeta(metaData)) {
         logger.error(
           'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
         );

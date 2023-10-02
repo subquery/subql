@@ -202,6 +202,10 @@ export class FetchService extends BaseFetchService<
     return header.blockHeight;
   }
 
+  protected getGenesisHash(): string {
+    return this.apiService.networkMeta.genesisHash;
+  }
+
   protected async getBestHeight(): Promise<number> {
     const bestHeader = await this.api.rpc.chain.getHeader();
     return bestHeader.number.toNumber();

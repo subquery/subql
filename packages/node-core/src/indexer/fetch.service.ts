@@ -38,6 +38,9 @@ export abstract class BaseFetchService<
   protected abstract getFinalizedHeight(): Promise<number>;
   protected abstract getBestHeight(): Promise<number>;
 
+  // Genesis hash is required for dictionary validation
+  protected abstract getGenesisHash(): string;
+
   // The rough interval at which new blocks are produced
   protected abstract getChainInterval(): Promise<number>;
   protected abstract getModulos(): number[];
@@ -60,12 +63,12 @@ export abstract class BaseFetchService<
   ) {}
 
   private get latestBestHeight(): number {
-    assert(this._latestBestHeight, new Error('Latest Best Height is not avaialble'));
+    assert(this._latestBestHeight, new Error('Latest Best Height is not available'));
     return this._latestBestHeight;
   }
 
   private get latestFinalizedHeight(): number {
-    assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not avaialble'));
+    assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not available'));
     return this._latestFinalizedHeight;
   }
 
@@ -114,9 +117,10 @@ export abstract class BaseFetchService<
 
     if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
       this.updateDictionary();
+      //  We pass in genesis hash in order validate dictionary metadata, genesisHash should always exist in apiService.
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
-      await this.dictionaryService.initValidation();
+      await this.dictionaryService.initValidation(this.getGenesisHash());
     }
 
     await this.preLoopHook({startHeight});
