@@ -167,9 +167,7 @@ describe('DictionaryService', () => {
 
     dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, 'INAVLID CHAIN ID', nodeConfig, new EventEmitter2());
     // Falsy endpoint should throw
-    await expect(
-      dictionaryService.initValidation('0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3')
-    ).resolves.toBe(false);
+    await expect(dictionaryService.initValidation('INAVLID CHAIN GENESIS HASH')).resolves.toBe(false);
     expect(dictionaryService.useDictionary).toBeFalsy();
   });
 
