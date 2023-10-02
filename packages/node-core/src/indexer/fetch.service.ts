@@ -39,7 +39,7 @@ export abstract class BaseFetchService<
   protected abstract getBestHeight(): Promise<number>;
 
   // Genesis hash is required for dictionary validation
-  protected abstract getGenesisHash(): Promise<string>;
+  protected abstract getGenesisHash(): string;
 
   // The rough interval at which new blocks are produced
   protected abstract getChainInterval(): Promise<number>;
@@ -118,8 +118,8 @@ export abstract class BaseFetchService<
     if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
       this.updateDictionary();
       // We pass in genesis hash in order validate dictionary metadata
-      // This doesn't block any further process, as GenesisHash should be always ready for further fetch steps.
-      await this.dictionaryService.setGenesisHash(this.getGenesisHash.bind(this));
+      // GenesisHash should be always exist in apiService.
+      this.dictionaryService.apiGenesisHash = this.getGenesisHash();
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
       await this.dictionaryService.initValidation();

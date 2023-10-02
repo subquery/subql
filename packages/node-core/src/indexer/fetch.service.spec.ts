@@ -29,8 +29,8 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   ): DictionaryQueryEntry[] {
     return [];
   }
-  async getGenesisHash(): Promise<string> {
-    return Promise.resolve(genesisHash);
+  getGenesisHash(): string {
+    return genesisHash;
   }
   async getFinalizedHeight(): Promise<number> {
     return Promise.resolve(this.finalizedHeight);

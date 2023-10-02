@@ -202,9 +202,8 @@ export class FetchService extends BaseFetchService<
     return header.blockHeight;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  protected async getGenesisHash(): Promise<string> {
-    return this.api.genesisHash.toString();
+  protected getGenesisHash(): string {
+    return this.apiService.networkMeta.genesisHash;
   }
 
   protected async getBestHeight(): Promise<number> {

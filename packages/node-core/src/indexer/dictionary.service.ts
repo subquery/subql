@@ -210,25 +210,6 @@ export class DictionaryService {
     return this.dictionaryValidation(metadata);
   }
 
-  // As we have multiple endpoints, an invalid endpoint could lead dictionary invalid.
-  // Pass a fetch method rather than a result, so we can keep retry until able to process validation.
-  async setGenesisHash(fetchGenesisHash: () => Promise<string | undefined>): Promise<void> {
-    if (this._genesisHash !== undefined) {
-      return;
-    }
-    let genesisHash: string | undefined;
-    while (!genesisHash) {
-      genesisHash = await fetchGenesisHash();
-      if (!genesisHash) {
-        logger.warn(`Dictionary waiting for endpoint to validate genesisHash `);
-        // Wait for 2 seconds before trying again
-        await delay(2);
-      }
-      this._genesisHash = genesisHash;
-      break;
-    }
-  }
-
   private setDictionaryStartHeight(start: number | undefined): void {
     // Since not all dictionary has adopt start height, if it is not set, we just consider it is 1.
     if (this._startHeight !== undefined) {
@@ -244,8 +225,12 @@ export class DictionaryService {
     return this._startHeight;
   }
 
-  get endpointGenesisHash(): string {
-    assert(this._genesisHash, new Error('Genesis hash is not set'));
+  set apiGenesisHash(genesisHash: string) {
+    this._genesisHash = genesisHash;
+  }
+
+  get apiGenesisHash(): string {
+    assert(this._genesisHash, new Error('Endpoint genesis hash is not set in dictionary'));
     return this._genesisHash;
   }
 
@@ -429,7 +414,7 @@ export class DictionaryService {
     return (
       metaData.chain === this.chainId ||
       metaData.genesisHash === this.chainId ||
-      this.endpointGenesisHash === metaData.genesisHash
+      this.apiGenesisHash === metaData.genesisHash
     );
   }
 
