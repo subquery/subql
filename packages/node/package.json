@@ -36,7 +36,7 @@
     "eventemitter2": "^6.4.5",
     "lodash": "^4.17.21",
     "pg": "^8.7.1",
-    "protobufjs": "^6.11.2",
+    "protobufjs": "^6.11.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
