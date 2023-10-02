@@ -1,4 +1,0 @@
-undecided:
-  - "@subql/common-substrate"
-  - "@subql/types"
-  - "@subql/types-core"
