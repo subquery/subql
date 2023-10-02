@@ -5,14 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.0] - 2023-10-03
 ### Fixed
 - Missing imports for multi abi `codegen` (#169)
+
 ### Added
 - Parent field to manifest for project upgrades (#148)
 - Light Log types to codegen (#170)
+
 ### Changed
 - Update model with `types-core`
-
 
 ## [2.3.0] - 2023-09-12
 ### Changed
@@ -78,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.0.0...HEAD
+[3.0.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.3.0...common-ethereum/3.0.0
 [2.3.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.5...common-ethereum/2.3.0
 [2.2.5]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.4...common-ethereum/2.2.5
 [2.2.4]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/2.2.3...common-ethereum/2.2.4

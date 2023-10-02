@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.0] - 2023-10-03
 ### Added
 - Light types for block and logs (#170)
+
 ### Changed
 - Version bump with `types-core`
 
@@ -64,8 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/2.2.5...HEAD
-[2.2.5]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/2.2.4...types-ethereum/2.2.5
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/3.0.0...HEAD
+[3.0.0]: https://github.com/subquery/subql-ethereum/compare/types/2.2.5...types/3.0.0
+[2.2.5]: https://github.com/subquery/subql-ethereum/compare/types/2.2.4...types/2.2.5
 [2.2.4]: https://github.com/subquery/subql-ethereum/compare/types/2.2.3...types/2.2.4
 [2.2.3]: https://github.com/subquery/subql-ethereum/compare/types/2.2.2...types/2.2.3
 [2.2.2]: https://github.com/subquery/subql-ethereum/compare/types/2.2.1...types/2.2.2
