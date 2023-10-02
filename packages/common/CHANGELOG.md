@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-10-02
+### Changed
+- Version bump with `types-core` 0.1.0
 
 ## [3.0.1] - 2023-09-28
 ### Changed

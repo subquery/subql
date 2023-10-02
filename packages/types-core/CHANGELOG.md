@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2023-10-02
+### Changed
+- Update `BaseDataSource` and `BaseCustomDataSource` with JSDoc (#2056)
+
 ## [0.0.1] - 2023-09-29
 ### Added
 - Initial release of new package containing types common to all chains
