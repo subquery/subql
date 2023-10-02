@@ -7,6 +7,7 @@ import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
 } from '@subql/node-core';
+import { MetaData } from '@subql/utils';
 import JSON5 from 'json5';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -43,6 +44,11 @@ export class DictionaryService extends CoreDictionaryService {
     const chainAlias = chainAliases[project.network.chainId];
 
     return new DictionaryService(project, nodeConfig, eventEmitter, chainAlias);
+  }
+
+  protected validateChainMeta(metaData: MetaData): boolean {
+    // Due to dictionary metadata doesn't include chainId, in here we only validate endpoint genesisHash with metadata
+    return this.apiGenesisHash === metaData.genesisHash;
   }
 
   private static async getEvmChainId(): Promise<Record<string, string>> {

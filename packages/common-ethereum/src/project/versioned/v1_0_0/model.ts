@@ -60,10 +60,7 @@ export class EthereumRuntimeDataSourceImpl
   }
 }
 
-export class EthereumCustomDataSourceImpl<
-    K extends string = string,
-    M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
-  >
+export class EthereumCustomDataSourceImpl<K extends string = string, M extends BaseMapping<any> = BaseMapping<any>>
   extends CustomDataSourceBase<K, M>
   implements SubqlCustomDatasource<K, M>
 {

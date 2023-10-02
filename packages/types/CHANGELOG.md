@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Light types for block and logs (#170)
+### Changed
+- Version bump with `types-core`
 
 ## [2.2.5] - 2023-09-04
 ### Fixed

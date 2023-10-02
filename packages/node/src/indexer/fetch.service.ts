@@ -287,6 +287,10 @@ export class FetchService extends BaseFetchService<
     return buildDictionaryQueryEntries(filteredDs);
   }
 
+  protected getGenesisHash(): string {
+    return this.apiService.networkMeta.genesisHash;
+  }
+
   protected async getFinalizedHeight(): Promise<number> {
     const block = await this.api.getFinalizedBlock();
 

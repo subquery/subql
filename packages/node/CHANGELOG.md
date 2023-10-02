@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- Fix dictionary metadata validation failed
+- Improve get finalized block error logging
 - Fix reindex also start index service (#155)
 - Fix warning for filter address (#154)
 - Fetching logs via block height resulting in invalid results. Block hash is now used to ensure

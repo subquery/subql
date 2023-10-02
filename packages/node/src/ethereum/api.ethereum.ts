@@ -208,7 +208,14 @@ export class EthereumApi implements ApiWrapper {
     const height = this.supportsFinalization
       ? 'finalized'
       : (await this.getBestBlockHeight()) - this.blockConfirmations;
-    return this.client.getBlock(height);
+
+    const block = await this.client.getBlock(height);
+    // The finalized block could sometimes fail to fetch,
+    // due to some nodes on the network falling behind the synced node.
+    if (!block) {
+      throw new Error(`get finalized block "${height}" failed `);
+    }
+    return block;
   }
 
   async getFinalizedBlockHeight(): Promise<number> {
