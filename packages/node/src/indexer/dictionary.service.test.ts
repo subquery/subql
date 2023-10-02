@@ -59,7 +59,8 @@ describe('DictionaryService', () => {
           startHeight: 1,
         };
       });
-    dictionaryService.apiGenesisHash = '0xfake';
-    await expect(dictionaryService.initValidation()).resolves.toBe(false);
+    await expect(dictionaryService.initValidation('0xfake')).resolves.toBe(
+      false,
+    );
   });
 });

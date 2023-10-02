@@ -204,7 +204,8 @@ export class DictionaryService {
     return (!!this.dictionaryEndpoint || !!this.nodeConfig.dictionaryResolver) && !!this.metadataValid;
   }
 
-  async initValidation(): Promise<boolean> {
+  async initValidation(genesisHash: string): Promise<boolean> {
+    this._genesisHash = genesisHash;
     const metadata = await this.getMetadata();
     return this.dictionaryValidation(metadata);
   }
@@ -222,10 +223,6 @@ export class DictionaryService {
       throw new Error('Dictionary start height is not set');
     }
     return this._startHeight;
-  }
-
-  set apiGenesisHash(genesisHash: string) {
-    this._genesisHash = genesisHash;
   }
 
   get apiGenesisHash(): string {

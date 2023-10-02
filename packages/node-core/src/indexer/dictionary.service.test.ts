@@ -161,11 +161,15 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('correctly runs initialValidation', async () => {
-    await expect(dictionaryService.initValidation()).resolves.toBe(true);
+    await expect(
+      dictionaryService.initValidation('0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3')
+    ).resolves.toBe(true);
 
     dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, 'INAVLID CHAIN ID', nodeConfig, new EventEmitter2());
-
-    await expect(dictionaryService.initValidation()).resolves.toBe(false);
+    // Falsy endpoint should throw
+    await expect(
+      dictionaryService.initValidation('0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3')
+    ).resolves.toBe(false);
     expect(dictionaryService.useDictionary).toBeFalsy();
   });
 
