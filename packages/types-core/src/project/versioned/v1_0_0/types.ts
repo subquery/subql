@@ -137,9 +137,9 @@ export interface ParentProject {
 }
 
 export interface ProjectManifestV1_0_0<
-  C extends IProjectNetworkConfig,
   D extends BaseDataSource = BaseDataSource,
-  T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>
+  T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>,
+  C extends IProjectNetworkConfig = IProjectNetworkConfig
 > {
   name?: string;
   version: string;
