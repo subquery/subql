@@ -43,8 +43,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     }
 
     await this.storeService.initCoreTables(schema);
-    await this.poiService.init(schema);
-
+    if (this.nodeConfig.proofOfIndex) {
+      await this.poiService.init(schema);
+    }
     await initDbSchema(this.project, schema, this.storeService);
 
     this._metadataRepo = this.storeService.storeCache.metadata;
@@ -102,7 +103,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.unfinalizedBlocksService,
       this.dynamicDsService,
       this.sequelize,
-      this.poiService,
+      this.nodeConfig.proofOfIndex ? this.poiService : undefined,
       this.forceCleanService
     );
 
