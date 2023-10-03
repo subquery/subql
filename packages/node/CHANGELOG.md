@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2023-10-04
+### Fixed
+- Fix reindex service without poi feature with `node-core`
+
+### Changed
+- Version bump with `types-ethereum` and `common-ethereum`
+
 ## [3.0.1] - 2023-10-03
 ### Fixed
 - Empty string causing main command to not run, this happened with the default docker compose in starters
@@ -253,7 +260,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.2...HEAD
+[3.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...node-ethereum/3.0.2
 [3.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.0...node-ethereum/3.0.1
 [3.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.5...node-ethereum/3.0.0
 [2.12.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.4...node-ethereum/2.12.5

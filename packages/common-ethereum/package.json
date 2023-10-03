@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-ethereum",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -13,7 +13,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/common": "3.1.0",
+    "@subql/common": "3.1.1",
     "@subql/types-ethereum": "workspace:*",
     "@typechain/ethers-v5": "^11.1.1",
     "js-yaml": "^4.1.0",
