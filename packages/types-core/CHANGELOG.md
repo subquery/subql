@@ -18,4 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
+
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.1.1...HEAD
+[0.1.1]: https://github.com/subquery/subql/compare/types-core/0.1.0...types-core/0.1.1
+[0.1.0]: https://github.com/subquery/subql/compare/types-core/0.0.1...types-core/0.1.0
 [0.0.1]: https://github.com/subquery/subql/tag/types-core/0.0.1

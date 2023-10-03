@@ -322,7 +322,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/3.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/3.1.1...HEAD
+[3.1.1]: https://github.com/subquery/subql/compare/common/3.1.0...common/3.1.1
+[3.1.0]: https://github.com/subquery/subql/compare/common/3.0.1...common/3.1.0
 [3.0.1]: https://github.com/subquery/subql/compare/common/2.7.0...common/3.0.1
 [2.7.0]: https://github.com/subquery/subql/compare/common/2.6.0...common/2.7.0
 [2.6.0]: https://github.com/subquery/subql/compare/common/2.5.0...common/2.6.0

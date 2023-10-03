@@ -112,7 +112,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.1.1...HEAD
+[3.1.1]: https://github.com/subquery/subql/compare/common-substrate/3.1.0...common-substrate/3.1.1
+[3.1.0]: https://github.com/subquery/subql/compare/common-substrate/3.0.1...common-substrate/3.1.0
 [3.0.1]: https://github.com/subquery/subql/compare/common-substrate/2.4.0...common-substrate/3.0.1
 [2.4.0]: https://github.com/subquery/subql/compare/common-substrate/2.3.0...common-substrate/2.4.0
 [2.3.0]: https://github.com/subquery/subql/compare/common-substrate/2.2.1...common-substrate/2.3.0
