@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2023-10-03
+### Fixed
+- Empty string causing main command to not run, this happened with the default docker compose in starters
+
 ## [3.0.0] - 2023-10-03
 ### Fixed
 - Fix dictionary metadata validation failed
@@ -249,7 +253,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...HEAD
+[3.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.0...node-ethereum/3.0.1
 [3.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.5...node-ethereum/3.0.0
 [2.12.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.4...node-ethereum/2.12.5
 [2.12.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.3...node-ethereum/2.12.4
