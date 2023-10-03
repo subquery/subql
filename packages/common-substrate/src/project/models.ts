@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
-import {BlockFilterImpl, ProcessorImpl} from '@subql/common';
+import {BlockFilterImpl, IsEndBlockGreater, ProcessorImpl} from '@subql/common';
 import {
   SubstrateBlockFilter,
   SubstrateBlockHandler,
@@ -29,6 +29,7 @@ import {
   IsString,
   IsObject,
   ValidateNested,
+  Validate,
 } from 'class-validator';
 
 export class BlockFilter extends BlockFilterImpl implements SubstrateBlockFilter {
@@ -158,6 +159,10 @@ export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
   @IsOptional()
   @IsInt()
   startBlock?: number;
+  @Validate(IsEndBlockGreater)
+  @IsOptional()
+  @IsInt()
+  endBlock?: number;
 }
 
 export class FileReferenceImpl implements FileReference {
@@ -176,6 +181,10 @@ export class CustomDataSourceBase<K extends string, M extends CustomMapping, O =
   @IsOptional()
   @IsInt()
   startBlock?: number;
+  @Validate(IsEndBlockGreater)
+  @IsOptional()
+  @IsInt()
+  endBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, FileReference>;

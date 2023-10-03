@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {FileReference, MultichainProjectManifest, ProjectRootAndManifest} from '@subql/types-core';
+import {BaseDataSource, FileReference, MultichainProjectManifest, ProjectRootAndManifest} from '@subql/types-core';
 import {
   registerDecorator,
   validateSync,
@@ -294,3 +294,17 @@ export class FileReferenceImp<T> implements ValidatorConstraintInterface {
 }
 
 export const tsProjectYamlPath = (tsManifestEntry: string) => tsManifestEntry.replace('.ts', '.yaml');
+
+@ValidatorConstraint({async: false})
+export class IsEndBlockGreater implements ValidatorConstraintInterface {
+  validate(endBlock: number, args: ValidationArguments) {
+    const object = args.object as BaseDataSource;
+    return object.startBlock !== undefined && object.endBlock !== undefined
+      ? object.endBlock >= object.startBlock
+      : true;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'End block must be greater than or equal to start block';
+  }
+}

@@ -207,6 +207,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       // Flush all data from cache and wait
       await this.storeCacheService.flushCache(false, true);
     }
+
+    if (!(await this.projectService.hasDataSourceWithEndBlockGreaterThan(height))) {
+      logger.info(`No data sources found with endBlock greater than the block number ${height}`);
+      await this.storeCacheService.flushCache(false, true);
+      process.exit(0);
+    }
   }
 
   // First creation of POI

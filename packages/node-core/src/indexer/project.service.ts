@@ -256,13 +256,24 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return [...dataSources, ...dynamicDs];
   }
 
+  async hasDataSourceWithEndBlockGreaterThan(height: number): Promise<boolean> {
+    const dataSources = this.project.dataSources;
+    const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+
+    return [...dataSources, ...dynamicDs].some((ds) => ds.endBlock !== undefined && ds.endBlock > height);
+  }
+
   // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
   async getDataSources(blockHeight?: number): Promise<DS[]> {
     const dataSources = this.project.dataSources;
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
 
     return [...dataSources, ...dynamicDs].filter(
-      (ds) => blockHeight === undefined || (ds.startBlock !== undefined && ds.startBlock <= blockHeight)
+      (ds) =>
+        blockHeight === undefined ||
+        (ds.startBlock !== undefined &&
+          ds.startBlock <= blockHeight &&
+          (ds.endBlock === undefined || ds.endBlock >= blockHeight))
     );
   }
 
