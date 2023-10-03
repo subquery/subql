@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {IProjectNetworkConfig} from '../../types';
 import {BaseDataSource, BaseTemplateDataSource} from '../base';
 
 /**
@@ -137,7 +138,8 @@ export interface ParentProject {
 
 export interface ProjectManifestV1_0_0<
   D extends BaseDataSource = BaseDataSource,
-  T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>
+  T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>,
+  C extends IProjectNetworkConfig = IProjectNetworkConfig
 > {
   name?: string;
   version: string;
@@ -150,15 +152,7 @@ export interface ProjectManifestV1_0_0<
   templates?: T[];
   dataSources: D[];
   runner: RunnerSpecs;
-  network: {
-    chainId: string;
-    endpoint?: string | string[];
-    dictionary?: string;
-    bypassBlocks?: (number | string)[];
-    chaintypes?: {
-      file: string;
-    };
-  };
+  network: C;
   parent?: ParentProject;
 }
 
