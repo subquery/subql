@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubqlCosmosMessageFilter } from '@subql/common-cosmos';
 import { NodeConfig } from '@subql/node-core';
 import { DictionaryService } from './dictionary.service';
@@ -14,7 +15,7 @@ type DictionaryServicePrivate = DictionaryService & {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['https://rpc.juno-1.api.onfinality.io'],
+  networkEndpoint: ['https://rpc-juno.itastakers.com/'],
   dictionaryTimeout: 10,
 });
 
@@ -26,6 +27,7 @@ function mockDictionaryService(url: string): DictionaryServicePrivate {
       },
     } as any,
     nodeConfig,
+    new EventEmitter2(),
   ) as DictionaryServicePrivate;
 }
 

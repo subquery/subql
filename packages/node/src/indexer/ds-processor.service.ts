@@ -15,7 +15,7 @@ import {
 
 export function isSecondLayerHandlerProcessor_0_0_0<
   K extends SubqlCosmosHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
 >(
@@ -29,7 +29,7 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 
 export function isSecondLayerHandlerProcessor_1_0_0<
   K extends SubqlCosmosHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
 >(
@@ -42,7 +42,7 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 
 export function asSecondLayerHandlerProcessor_1_0_0<
   K extends SubqlCosmosHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
 >(
@@ -74,7 +74,7 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 export class DsProcessorService extends BaseDsProcessorService<
   SubqlCosmosDatasource,
   SubqlCosmosCustomDatasource<string>,
-  SubqlCosmosDatasourceProcessor<string, undefined>
+  SubqlCosmosDatasourceProcessor<string, Record<string, unknown>>
 > {
   protected isCustomDs = isCustomCosmosDs;
 }

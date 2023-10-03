@@ -12,28 +12,27 @@ import {
   StoreService,
   TestRunner,
 } from '@subql/node-core';
+import { StoreCacheService } from '@subql/node-core/dist';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { CosmosClientConnection } from '../indexer/cosmosClient.connection';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { FetchModule } from '../indexer/fetch.module';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { MetaModule } from '../meta/meta.module';
 
 @Module({
   providers: [
     StoreService,
+    StoreCacheService,
     EventEmitter2,
     PoiService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
-    ProjectService,
     UnfinalizedBlocksService,
     ConnectionPoolStateManager,
     ConnectionPoolService,
@@ -46,12 +45,17 @@ import { MetaModule } from '../meta/meta.module';
       useFactory: async (
         project: SubqueryProject,
         connectionPoolService: ConnectionPoolService<CosmosClientConnection>,
+        eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new ApiService(project, connectionPoolService);
+        const apiService = new ApiService(
+          project,
+          connectionPoolService,
+          eventEmitter,
+        );
         await apiService.init();
         return apiService;
       },
-      inject: ['ISubqueryProject', ConnectionPoolService],
+      inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
     },
     SchedulerRegistry,
     TestRunner,
@@ -65,7 +69,6 @@ import { MetaModule } from '../meta/meta.module';
     },
   ],
 
-  imports: [MetaModule, FetchModule],
   controllers: [],
 })
 export class TestingFeatureModule {}

@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IProjectManifest, ProjectNetworkConfig} from '@subql/common';
+import {IProjectManifest, ProjectNetworkConfig} from '@subql/types-core';
 import {SubqlCosmosDatasource, CustomModule} from '@subql/types-cosmos';
 import {Root} from 'protobufjs';
 
@@ -26,7 +26,6 @@ export type ICosmosProjectManifest = IProjectManifest<SubqlCosmosDatasource>;
 
 export interface CosmosProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
-  bypassBlocks?: (number | string)[];
 }
 
 export type CosmosChainType = CustomModule & {

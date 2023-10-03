@@ -2,11 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {getManifestPath, loadFromJsonOrYaml} from '@subql/common';
 import {validateCosmosManifest} from '../codegen/util';
-import {loadCosmosProjectManifest} from './load';
+import {CosmosProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 const projectsDir = path.join(__dirname, '../../test');
+
+function loadCosmosProjectManifest(file: string): CosmosProjectManifestVersioned {
+  const doc = loadFromJsonOrYaml(getManifestPath(file));
+  const projectManifest = new CosmosProjectManifestVersioned(doc as VersionedProjectManifest);
+  projectManifest.validate();
+  return projectManifest;
+}
 
 describe('project.yaml', () => {
   it('can validate a v1.0.0 project.yaml', () => {

@@ -1,6 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {ProcessorImpl} from '@subql/common';
+import {FileReference, Processor} from '@subql/types-core';
 import {
   SubqlCosmosEventFilter,
   SubqlCosmosHandlerKind,
@@ -11,7 +13,6 @@ import {
   SubqlCosmosRuntimeDatasource,
   SubqlCosmosDatasourceKind,
   SubqlCosmosCustomDatasource,
-  FileReference,
   CustomDataSourceAsset,
   SubqlCosmosBlockFilter,
   SubqlCosmosBlockHandler,
@@ -217,9 +218,9 @@ export class CosmosCustomDataSourceBase<
   @Type(() => CosmosFileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, CustomDataSourceAsset>;
-  @Type(() => CosmosFileReferenceImpl)
+  @Type(() => ProcessorImpl)
   @IsObject()
-  processor: FileReference;
+  processor: Processor<O>;
   @Type(() => CosmosCustomModuleImpl)
   @ValidateNested({each: true})
   chainTypes: Map<string, CustomModule>;

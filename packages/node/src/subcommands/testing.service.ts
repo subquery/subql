@@ -9,7 +9,7 @@ import {
   TestingService as BaseTestingService,
   TestRunner,
 } from '@subql/node-core';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { CosmosProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { CosmosClient, CosmosSafeClient } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
@@ -21,7 +21,7 @@ export class TestingService extends BaseTestingService<
   CosmosClient,
   CosmosSafeClient,
   BlockContent,
-  SubqlProjectDs
+  CosmosProjectDs
 > {
   constructor(
     nodeConfig: NodeConfig,
@@ -31,7 +31,15 @@ export class TestingService extends BaseTestingService<
   }
 
   async getTestRunner(): Promise<
-    TestRunner<CosmosClient, CosmosSafeClient, BlockContent, SubqlProjectDs>
+    [
+      close: () => Promise<void>,
+      runner: TestRunner<
+        CosmosClient,
+        CosmosSafeClient,
+        BlockContent,
+        CosmosProjectDs
+      >,
+    ]
   > {
     const testContext = await NestFactory.createApplicationContext(
       TestingModule,
@@ -42,10 +50,10 @@ export class TestingService extends BaseTestingService<
 
     await testContext.init();
 
-    const projectService: ProjectService = testContext.get(ProjectService);
+    const projectService: ProjectService = testContext.get('IProjectService');
     await projectService.init();
 
-    return testContext.get(TestRunner);
+    return [testContext.close.bind(testContext), testContext.get(TestRunner)];
   }
 
   async indexBlock(

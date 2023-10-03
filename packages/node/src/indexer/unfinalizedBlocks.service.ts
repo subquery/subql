@@ -7,6 +7,7 @@ import {
   Header,
   NodeConfig,
   StoreCacheService,
+  mainThreadOnly,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
 import { BlockContent } from './types';
@@ -33,18 +34,22 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
     super(nodeConfig, storeCache);
   }
 
+  @mainThreadOnly()
   protected blockToHeader(block: BlockContent): Header {
     return cosmosBlockToHeader(block.block.header.height);
   }
 
+  @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
     return this.getHeaderForHeight(await this.apiService.api.getHeight());
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHash(hash: string): Promise<Header> {
     return this.getHeaderForHeight(parseInt(hash, 10));
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHeight(height: number): Promise<Header> {
     return Promise.resolve(cosmosBlockToHeader(height));
   }

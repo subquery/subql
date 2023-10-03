@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NestFactory } from '@nestjs/core';
-import { getLogger } from '@subql/node-core';
+import { getLogger, ReindexService } from '@subql/node-core';
 import { ReindexModule } from './reindex.module';
-import { ReindexService } from './reindex.service';
 
 const logger = getLogger('CLI-Reindex');
 export async function reindexInit(targetHeight: number): Promise<void> {

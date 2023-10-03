@@ -28,7 +28,7 @@ import {
   SubqlCosmosCustomDatasource,
   SubqlCosmosDatasource,
 } from '@subql/types-cosmos';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { CosmosProjectDs } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
 import { ApiService, CosmosClient, CosmosSafeClient } from './api.service';
 import {
@@ -36,7 +36,6 @@ import {
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
@@ -66,7 +65,6 @@ export class IndexerManager extends BaseIndexerManager<
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
-    @Inject('IProjectService') private projectService: ProjectService,
   ) {
     super(
       apiService,
@@ -78,11 +76,6 @@ export class IndexerManager extends BaseIndexerManager<
       FilterTypeMap,
       ProcessorTypeMap,
     );
-  }
-
-  async start(): Promise<void> {
-    await this.projectService.init();
-    logger.info('indexer manager started');
   }
 
   @profiler()
@@ -110,8 +103,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   protected async indexBlockData(
     blockContent: BlockContent,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: CosmosProjectDs[],
+    getVM: (d: CosmosProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(blockContent, dataSources, getVM);
 
@@ -142,8 +135,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexBlockContent(
     block: BlockContent,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: CosmosProjectDs[],
+    getVM: (d: CosmosProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(
@@ -157,8 +150,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexTransaction(
     tx: CosmosTransaction,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: CosmosProjectDs[],
+    getVM: (d: CosmosProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(SubqlCosmosHandlerKind.Transaction, tx, ds, getVM);
@@ -167,8 +160,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexMessage(
     message: CosmosMessage,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: CosmosProjectDs[],
+    getVM: (d: CosmosProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(SubqlCosmosHandlerKind.Message, message, ds, getVM);
@@ -177,8 +170,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexEvent(
     event: CosmosEvent,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: CosmosProjectDs[],
+    getVM: (d: CosmosProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(SubqlCosmosHandlerKind.Event, event, ds, getVM);

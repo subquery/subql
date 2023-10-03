@@ -29,7 +29,7 @@ type FetchFunc = (
 
 export class CosmosClientConnection
   implements
-    IApiConnectionSpecific<CosmosClient, CosmosSafeClient, BlockContent>
+    IApiConnectionSpecific<CosmosClient, CosmosSafeClient, BlockContent[]>
 {
   private tmClient: Tendermint37Client;
   private registry: Registry;

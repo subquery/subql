@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  BaseDeploymentV1_0_0,
+  CommonProjectNetworkV1_0_0,
   FileType,
-  NodeSpec,
+  ParentProjectModel,
   ProjectManifestBaseImpl,
-  QuerySpec,
   RunnerNodeImpl,
   RunnerQueryBaseModel,
-  RunnerSpecs,
   validateObject,
 } from '@subql/common';
+import {NodeSpec, ParentProject, QuerySpec, RunnerSpecs} from '@subql/types-core';
 import {
   CustomModule,
   SubqlCosmosCustomDatasource,
@@ -18,8 +19,11 @@ import {
   SubqlCosmosMapping,
   SubqlCosmosRuntimeDatasource,
   SubqlCosmosRuntimeHandler,
+  RuntimeDatasourceTemplate,
+  CustomDatasourceTemplate,
+  CosmosProjectManifestV1_0_0,
 } from '@subql/types-cosmos';
-import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
+import {Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
   IsObject,
@@ -31,7 +35,6 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import {CosmosCustomDataSourceBase, CosmosCustomModuleImpl, CosmosRuntimeDataSourceBase} from '../../models';
-import {CosmosProjectManifestV1_0_0, CustomDatasourceTemplate, RuntimeDatasourceTemplate} from './types';
 
 const COSMOS_NODE_NAME = `@subql/node-cosmos`;
 
@@ -66,22 +69,16 @@ export class CosmosProjectNetworkDeployment {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   chainId: string;
-  @Type(() => CosmosCustomModuleImpl)
-  @IsOptional()
-  @ValidateNested({each: true})
-  chainTypes?: Map<string, CustomModule>;
   @IsOptional()
   @IsArray()
   bypassBlocks?: (number | string)[];
 }
 
-export class CosmosProjectNetwork extends CosmosProjectNetworkDeployment {
-  @IsString({each: true})
+export class CosmosProjectNetwork extends CommonProjectNetworkV1_0_0<FileType> {
+  @Type(() => CosmosCustomModuleImpl)
   @IsOptional()
-  endpoint?: string | string[];
-  @IsString()
-  @IsOptional()
-  dictionary?: string;
+  @ValidateNested({each: true})
+  chainTypes?: Map<string, CustomModule>;
 }
 
 export class RuntimeDatasourceTemplateImpl extends CosmosRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
@@ -105,10 +102,7 @@ export class CosmosRunnerSpecsImpl implements RunnerSpecs {
   query: QuerySpec;
 }
 
-export class DeploymentV1_0_0 {
-  @Equals('1.0.0')
-  @IsString()
-  specVersion: string;
+export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @ValidateNested()
   @Type(() => CosmosProjectNetworkDeployment)
   network: CosmosProjectNetworkDeployment;
@@ -116,9 +110,6 @@ export class DeploymentV1_0_0 {
   @ValidateNested()
   @Type(() => CosmosRunnerSpecsImpl)
   runner: RunnerSpecs;
-  @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => CosmosCustomDataSourceImpl, {
@@ -146,7 +137,11 @@ export class ProjectManifestV1_0_0Impl
   extends ProjectManifestBaseImpl<DeploymentV1_0_0>
   implements CosmosProjectManifestV1_0_0
 {
-  @Equals('0.3.0')
+  constructor() {
+    super(DeploymentV1_0_0);
+  }
+
+  @Equals('1.0.0')
   specVersion: string;
   @IsString()
   name: string;
@@ -184,13 +179,9 @@ export class ProjectManifestV1_0_0Impl
   @ValidateNested()
   @Type(() => CosmosRunnerSpecsImpl)
   runner: RunnerSpecs;
-  protected _deployment: DeploymentV1_0_0;
 
-  get deployment(): DeploymentV1_0_0 {
-    if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV1_0_0, this);
-      validateSync(this._deployment, {whitelist: true});
-    }
-    return this._deployment;
-  }
+  @IsOptional()
+  @IsObject()
+  @Type(() => ParentProjectModel)
+  parent?: ParentProject;
 }

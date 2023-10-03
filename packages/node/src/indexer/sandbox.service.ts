@@ -3,7 +3,6 @@
 
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
-import { BaseDataSource } from '@subql/common';
 import {
   NodeConfig,
   StoreService,
@@ -11,7 +10,7 @@ import {
   hostStoreToStore,
   ISubqueryProject,
 } from '@subql/node-core';
-import { Store } from '@subql/types';
+import { Store, BaseDataSource } from '@subql/types-core';
 import { ApiService, CosmosSafeClient } from './api.service';
 
 /* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */
@@ -21,6 +20,7 @@ export class SandboxService<Api extends CosmosSafeClient> {
 
   constructor(
     private readonly apiService: ApiService,
+    @Inject(isMainThread ? StoreService : 'Null')
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject,

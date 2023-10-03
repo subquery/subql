@@ -1,18 +1,19 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {FileReference} from '@subql/types-core';
 import {
-  FileReference,
   SecondLayerHandlerProcessor,
   SubqlCosmosCustomDatasource,
   SubqlCosmosDatasource,
   SubqlCosmosDatasourceKind,
   SubqlCosmosHandlerKind,
   SubqlCosmosRuntimeDatasource,
+  CustomDatasourceTemplate,
+  RuntimeDatasourceTemplate,
 } from '@subql/types-cosmos';
 import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import {gte} from 'semver';
-import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from './versioned';
 
 export function isCustomCosmosDs(ds: SubqlCosmosDatasource): ds is SubqlCosmosCustomDatasource<string> {
   return ds.kind !== SubqlCosmosDatasourceKind.Runtime && !!(ds as SubqlCosmosCustomDatasource<string>).processor;

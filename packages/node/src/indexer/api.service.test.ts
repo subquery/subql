@@ -32,7 +32,7 @@ function testCosmosProject(): SubqueryProject {
     root: './',
     schema: new GraphQLSchema({}),
     templates: [],
-  };
+  } as SubqueryProject;
 }
 
 jest.setTimeout(200000);

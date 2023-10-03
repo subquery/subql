@@ -12,9 +12,10 @@ import {
   PoiService,
   BlockDispatcher,
   ProcessBlockResponse,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import {
-  SubqlProjectDs,
+  CosmosProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -27,7 +28,7 @@ import { BlockContent } from '../types';
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<BlockContent, SubqlProjectDs>
+  extends BlockDispatcher<BlockContent, CosmosProjectDs>
   implements OnApplicationShutdown
 {
   constructor(
@@ -35,7 +36,9 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
+    @Inject('IProjectService') projectService: IProjectService<CosmosProjectDs>,
+    @Inject('IProjectUpgradeService')
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -47,6 +50,7 @@ export class BlockDispatcherService
       nodeConfig,
       eventEmitter,
       projectService,
+      projectUpgradeService,
       smartBatchService,
       storeService,
       storeCacheService,
@@ -76,7 +80,7 @@ export class BlockDispatcherService
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getAllDataSources(this.getBlockHeight(block)),
+      await this.projectService.getDataSources(this.getBlockHeight(block)),
     );
   }
 }

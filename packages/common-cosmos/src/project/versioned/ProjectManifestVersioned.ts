@@ -44,7 +44,7 @@ export class CosmosProjectManifestVersioned implements ICosmosProjectManifest {
   }
 
   toDeployment(): string | undefined {
-    return this._impl.toDeployment();
+    return this._impl.deployment.toYaml();
   }
 
   validate(): void {

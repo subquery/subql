@@ -16,8 +16,11 @@ import {
   CosmosCustomHandler,
 } from '@subql/common-cosmos';
 
-import { NodeConfig, BaseFetchService } from '@subql/node-core';
-import { DictionaryQueryEntry, DictionaryQueryCondition } from '@subql/types';
+import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
+import {
+  DictionaryQueryEntry,
+  DictionaryQueryCondition,
+} from '@subql/types-core';
 
 import {
   SubqlCosmosEventHandler,
@@ -26,7 +29,6 @@ import {
   SubqlCosmosBlockFilter,
   SubqlCosmosDatasource,
 } from '@subql/types-cosmos';
-import { MetaData } from '@subql/utils';
 import { setWith, sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
@@ -36,6 +38,7 @@ import { ICosmosBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
 import {
   cosmosBlockToHeader,
   UnfinalizedBlocksService,
@@ -108,31 +111,30 @@ export function messageFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  ApiService,
   SubqlCosmosDatasource,
   ICosmosBlockDispatcher,
   DictionaryService
 > {
   constructor(
-    apiService: ApiService,
+    private apiService: ApiService,
     nodeConfig: NodeConfig,
+    @Inject('IProjectService') projectService: ProjectService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: ICosmosBlockDispatcher,
     dictionaryService: DictionaryService,
-    dsProcessorService: DsProcessorService,
+    private dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
   ) {
     super(
-      apiService,
       nodeConfig,
-      project,
+      projectService,
+      project.network,
       blockDispatcher,
       dictionaryService,
-      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
@@ -143,17 +145,12 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
-  buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
+  buildDictionaryQueryEntries(
+    dataSources: SubqlCosmosDatasource[],
+  ): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    // Only run the ds that is equal or less than startBlock
-    // sort array from lowest ds.startBlock to highest
-    const filteredDs = this.project.dataSources
-      .concat(this.templateDynamicDatasouces)
-      .filter((ds) => ds.startBlock <= startBlock)
-      .sort((a, b) => a.startBlock - b.startBlock);
-
-    for (const ds of filteredDs) {
+    for (const ds of dataSources) {
       const plugin = isCustomCosmosDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
@@ -227,6 +224,11 @@ export class FetchService extends BaseFetchService<
     );
   }
 
+  protected getGenesisHash(): string {
+    /* This funciton is for dictionary validation but is unused for cosmos. */
+    return this.apiService.networkMeta.genesisHash;
+  }
+
   protected async getFinalizedHeight(): Promise<number> {
     // Cosmos has instant finalization
     const height = await this.api.getHeight();
@@ -247,27 +249,12 @@ export class FetchService extends BaseFetchService<
     return Math.min(BLOCK_TIME_VARIANCE, chainInterval);
   }
 
-  protected async getChainId(): Promise<string> {
-    return this.api.getChainId();
-  }
-
   protected getModulos(): number[] {
-    const modulos: number[] = [];
-    for (const ds of this.project.dataSources) {
-      if (isCustomCosmosDs(ds)) {
-        continue;
-      }
-      for (const handler of ds.mapping.handlers) {
-        if (
-          handler.kind === SubqlCosmosHandlerKind.Block &&
-          handler.filter &&
-          handler.filter.modulo
-        ) {
-          modulos.push(handler.filter.modulo);
-        }
-      }
-    }
-    return modulos;
+    return getModulos(
+      this.projectService.getAllDataSources(),
+      isCustomCosmosDs,
+      SubqlCosmosHandlerKind.Block,
+    );
   }
 
   protected async initBlockDispatcher(): Promise<void> {
@@ -277,16 +264,6 @@ export class FetchService extends BaseFetchService<
   protected async preLoopHook(): Promise<void> {
     // Cosmos doesn't need to do anything here
     return Promise.resolve();
-  }
-
-  protected async validatateDictionaryMeta(
-    metaData: MetaData,
-  ): Promise<boolean> {
-    const chain = await this.api.getChainId().catch();
-    return (
-      metaData.chain !== chain &&
-      !DICTIONARY_VALIDATION_EXCEPTIONS.find((ele) => ele === chain)
-    );
   }
 
   private getBaseHandlerKind(
