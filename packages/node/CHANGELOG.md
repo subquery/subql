@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.3] - 2023-10-05
+### Changed
+- Version bump with `@subql/types-ethereum` 3.0.2
+
 ## [3.0.2] - 2023-10-04
 ### Fixed
 - Fix reindex service without poi feature with `node-core`
@@ -260,7 +264,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...HEAD
+[3.0.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.2...node-ethereum/3.0.3
 [3.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...node-ethereum/3.0.2
 [3.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.0...node-ethereum/3.0.1
 [3.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/2.12.5...node-ethereum/3.0.0

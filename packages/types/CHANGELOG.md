@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.2] - 2023-10-05
 ### Fixed
 - Fixed RuntimeDatasourceTemplate's generic typing (#177)
 
@@ -73,7 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/3.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/3.0.2...HEAD
+[3.0.2]: https://github.com/subquery/subql-ethereum/compare/types/3.0.1...types/3.0.2
 [3.0.1]: https://github.com/subquery/subql-ethereum/compare/types/3.0.0...types/3.0.1
 [3.0.0]: https://github.com/subquery/subql-ethereum/compare/types/2.2.5...types/3.0.0
 [2.2.5]: https://github.com/subquery/subql-ethereum/compare/types/2.2.4...types/2.2.5
