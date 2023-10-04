@@ -34,5 +34,5 @@ export type CosmosChainType = CustomModule & {
 
 export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
   chainId: string;
-  chainTypes: Map<string, CosmosChainType> & {protoRoot: protobuf.Root};
+  chaintypes: Map<string, CosmosChainType> & {protoRoot: protobuf.Root};
 };

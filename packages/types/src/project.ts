@@ -37,7 +37,7 @@ export interface CustomModule extends FileReference {
   messages: string[];
 }
 
-export type CosmosChainTypes = Map<string, CustomModule>;
+export type CosmosChaintypes = Map<string, CustomModule>;
 
 export type CustomDataSourceAsset = FileReference;
 
@@ -93,7 +93,7 @@ export type CosmosNetworkConfig = IProjectNetworkConfig & {
    * If filters do not pick up these message types they don't need to be added.
    * The key needs to be a unique value, it's good to have the same key as the package but if there are multiple files with the same package then change the name.
    * @example
-   * chainTypes: {
+   * chaintypes: {
       ethermint.evm.v1: {
         file: "./proto/ethermint/evm/v1/tx.proto",
         messages: [
@@ -105,7 +105,7 @@ export type CosmosNetworkConfig = IProjectNetworkConfig & {
       }
     }
    * */
-  chainTypes?: CosmosChainTypes;
+  chaintypes?: CosmosChaintypes;
 };
 
 export type SubqlCosmosBlockFilter = BlockFilter;

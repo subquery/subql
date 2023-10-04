@@ -17,7 +17,7 @@ network:
   endpoint:
     - https://osmosis.api.onfinality.io/public
   dictionary: 'https://api.subquery.network/sq/subquery/cosmos-osmosis-dictionary'
-  chainTypes:
+  chaintypes:
     osmosis.gamm.v1beta1:
       file: './proto/osmosis/gamm/v1beta1/tx.proto'
       messages:

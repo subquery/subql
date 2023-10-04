@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Added `cosmwasm` messages types (#168)
+### Changed
+- Updated NetworkConfig to use `chaintypes` instead of `chainTypes` (#180)
 
 ## [2.2.1] - 2023-07-31
 ### Changed

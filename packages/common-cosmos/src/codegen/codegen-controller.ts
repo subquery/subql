@@ -6,7 +6,7 @@ import path from 'path';
 import telescope from '@cosmology/telescope';
 import cosmwasmCodegen from '@cosmwasm/ts-codegen';
 import {makeTempDir} from '@subql/common';
-import {CosmosChainTypes, CustomModule, SubqlCosmosRuntimeDatasource} from '@subql/types-cosmos';
+import {CosmosChaintypes, CustomModule, SubqlCosmosRuntimeDatasource} from '@subql/types-cosmos';
 import {Data} from 'ejs';
 import {copySync} from 'fs-extra';
 import {IDLObject} from 'wasm-ast-types';
@@ -29,7 +29,7 @@ interface ProtobufRenderProps {
   messageNames: string[]; // all messages
   path: string; // should process the file Path and concat with PROTO dir
 }
-type CosmosChainTypeDataType = CosmosChainTypes | Record<string, CustomModule>;
+type CosmosChainTypeDataType = CosmosChaintypes | Record<string, CustomModule>;
 
 interface CosmwasmRenderJobType {
   contract: string;
@@ -144,14 +144,14 @@ export async function generateCosmwasm(
 }
 
 export function prepareProtobufRenderProps(
-  chainTypes: (CosmosChainTypeDataType | undefined)[] | undefined,
+  chaintypes: (CosmosChainTypeDataType | undefined)[] | undefined,
   projectPath: string
 ): ProtobufRenderProps[] {
-  if (!chainTypes) {
+  if (!chaintypes) {
     return [];
   }
-  return chainTypes.filter(Boolean).flatMap((chainType) => {
-    return Object.entries(chainType).map(([key, value]) => {
+  return chaintypes.filter(Boolean).flatMap((chaintype) => {
+    return Object.entries(chaintype).map(([key, value]) => {
       const filePath = path.join(projectPath, value.file);
       if (!fs.existsSync(filePath)) {
         throw new Error(`Error: chainType ${key}, file ${value.file} does not exist`);
@@ -193,7 +193,7 @@ export async function tempProtoDir(projectPath: string): Promise<string> {
 }
 
 export async function generateProto(
-  chainTypes: CosmosChainTypeDataType[],
+  chaintypes: CosmosChainTypeDataType[],
   projectPath: string,
   prepareDirPath: (path: string, recreate: boolean) => Promise<void>,
   renderTemplate: (templatePath: string, outputPath: string, templateData: Data) => Promise<void>,
@@ -203,7 +203,7 @@ export async function generateProto(
   let tmpPath: string;
   try {
     tmpPath = await mkdirProto(projectPath);
-    const protobufRenderProps = prepareProtobufRenderProps(chainTypes, projectPath);
+    const protobufRenderProps = prepareProtobufRenderProps(chaintypes, projectPath);
     const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
     await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
 

@@ -57,7 +57,7 @@ export class ApiService
   }
 
   private async buildRegistry(): Promise<Registry> {
-    const chainTypes = await this.getChainType(this.project.network);
+    const chaintypes = await this.getChainType(this.project.network);
 
     const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
       ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
@@ -70,8 +70,8 @@ export class ApiService
 
     const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
 
-    for (const typeurl in chainTypes) {
-      registry.register(typeurl, chainTypes[typeurl]);
+    for (const typeurl in chaintypes) {
+      registry.register(typeurl, chaintypes[typeurl]);
     }
 
     return registry;
@@ -116,7 +116,7 @@ export class ApiService
   async getChainType(
     network: Partial<CosmosProjectNetConfig>,
   ): Promise<Record<string, GeneratedType>> {
-    if (!network.chainTypes) {
+    if (!network.chaintypes) {
       return {};
     }
 
@@ -124,11 +124,11 @@ export class ApiService
     for (const [
       userPackageName,
       { messages, packageName },
-    ] of network.chainTypes) {
+    ] of network.chaintypes) {
       const pkgName = packageName ?? userPackageName;
       for (const msg of messages) {
         logger.info(`Registering chain message type "/${pkgName}.${msg}"`);
-        const msgObj = network.chainTypes.protoRoot.lookupTypeOrEnum(
+        const msgObj = network.chaintypes.protoRoot.lookupTypeOrEnum(
           `${pkgName}.${msg}`,
         );
         res[`/${pkgName}.${msg}`] = msgObj;

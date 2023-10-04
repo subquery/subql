@@ -35,24 +35,24 @@ export async function processNetworkConfig(
   }
   delete network.genesisHash;
 
-  const chainTypes = new Map<string, CosmosChainType>() as Map<
+  const chaintypes = new Map<string, CosmosChainType>() as Map<
     string,
     CosmosChainType
   > & { protoRoot: protobuf.Root };
-  if (!network.chainTypes) {
-    network.chainTypes = chainTypes;
+  if (!network.chaintypes) {
+    network.chaintypes = chaintypes;
     return network;
   }
 
   const protoRoot = new protobuf.Root();
-  for (const [key, value] of network.chainTypes) {
+  for (const [key, value] of network.chaintypes) {
     const [packageName, proto] = await loadNetworkChainType(reader, value.file);
-    chainTypes.set(key, { ...value, packageName, proto });
+    chaintypes.set(key, { ...value, packageName, proto });
 
     protoRoot.add(proto);
   }
-  chainTypes.protoRoot = protoRoot;
-  network.chainTypes = chainTypes;
+  chaintypes.protoRoot = protoRoot;
+  network.chaintypes = chaintypes;
   return network;
 }
 

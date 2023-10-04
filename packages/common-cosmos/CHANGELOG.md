@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed Missing chainTypes on deployment (#175)
 
+### Changed
+- Updated NetworkConfig to use `chaintypes` instead of `chainTypes` (#180)
+
 ## [2.5.1] - 2023-09-20
 ### Changed
 - Downgrade `subql/common` due to breaking changes (#176)

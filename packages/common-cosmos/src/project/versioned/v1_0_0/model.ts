@@ -21,7 +21,7 @@ import {
   RuntimeDatasourceTemplate,
   CustomDatasourceTemplate,
   CosmosProjectManifestV1_0_0,
-  CosmosChainTypes,
+  CosmosChaintypes,
 } from '@subql/types-cosmos';
 import {Transform, TransformFnParams, Type} from 'class-transformer';
 import {Equals, IsObject, IsString, ValidateNested, IsOptional, IsArray, IsNotEmpty} from 'class-validator';
@@ -66,14 +66,14 @@ export class CosmosProjectNetworkDeployment {
   @IsOptional()
   @Type(() => CosmosCustomModuleImpl)
   @ValidateNested({each: true})
-  chainTypes?: Map<string, CosmosCustomModuleImpl>;
+  chaintypes?: Map<string, CosmosCustomModuleImpl>;
 }
 
-export class CosmosProjectNetwork extends CommonProjectNetworkV1_0_0<CosmosChainTypes> {
+export class CosmosProjectNetwork extends CommonProjectNetworkV1_0_0<CosmosChaintypes> {
   @Type(() => CosmosCustomModuleImpl)
   @IsOptional()
   @ValidateNested({each: true})
-  chainTypes?: Map<string, CosmosCustomModuleImpl>;
+  chaintypes?: Map<string, CosmosCustomModuleImpl>;
 }
 
 export class RuntimeDatasourceTemplateImpl extends CosmosRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
