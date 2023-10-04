@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [3.0.0] - 2023-10-04
 ### Fixed
 - Fixed Missing chainTypes on deployment (#175)
 
@@ -81,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.0.0...HEAD
+[3.0.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.5.1...common-cosmos/3.0.0
 [2.5.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.5.0...common-cosmos/2.5.1
 [2.5.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.4.1...common-cosmos/2.5.0
 [2.4.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.4.0...common-cosmos/2.4.1
