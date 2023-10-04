@@ -21,7 +21,7 @@ import {
 } from './ethereum';
 import {ApiWrapper} from './interfaces';
 
-export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubqlDatasource>;
+export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubqlRuntimeDatasource>;
 export type CustomDatasourceTemplate = BaseTemplateDataSource<SubqlCustomDatasource>;
 
 export type EthereumProjectManifestV1_0_0 = ProjectManifestV1_0_0<SubqlRuntimeDatasource | SubqlCustomDatasource>;
