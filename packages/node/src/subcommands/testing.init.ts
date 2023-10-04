@@ -12,11 +12,9 @@ import { TestingService } from './testing.service';
 const logger = getLogger('Testing');
 export async function testingInit(): Promise<void> {
   try {
-    const { config, project } = await ConfigureModule.getInstance();
-    const subqueryProject = await project();
+    const { nodeConfig, project } = await ConfigureModule.getInstance();
 
-    const testingService = new TestingService(config, subqueryProject);
-    await testingService.init();
+    const testingService = new TestingService(nodeConfig, project);
     await testingService.run();
   } catch (e) {
     logger.error(e, 'Testing failed');

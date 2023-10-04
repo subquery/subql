@@ -27,7 +27,7 @@ export class StellarApiConnection
     IApiConnectionSpecific<
       StellarApi,
       SafeStellarProvider,
-      StellarBlockWrapper
+      StellarBlockWrapper[]
     >
 {
   readonly networkMeta: NetworkMetadataPayload;

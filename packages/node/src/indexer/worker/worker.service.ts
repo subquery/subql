@@ -3,17 +3,18 @@
 
 import { threadId } from 'node:worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
+import { SubqlStellarDataSource } from '@subql/common-stellar';
 import {
   NodeConfig,
   getLogger,
-  AutoQueue,
-  memoryLock,
   IProjectService,
   ProcessBlockResponse,
   ApiService,
+  BaseWorkerService,
+  IProjectUpgradeService,
 } from '@subql/node-core';
-import { BlockWrapper, StellarBlockWrapper } from '@subql/types-stellar';
-import { SubqlProjectDs } from '../../configure/SubqueryProject';
+import { BlockWrapper } from '@subql/types-stellar';
+import { StellarProjectDs } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
 
 export type FetchBlockResponse = { parentHash: string } | undefined;
@@ -28,79 +29,41 @@ export type WorkerStatusResponse = {
 const logger = getLogger(`Worker Service #${threadId}`);
 
 @Injectable()
-export class WorkerService {
-  private fetchedBlocks: Record<string, BlockWrapper> = {};
-  private _isIndexing = false;
-
-  private queue: AutoQueue<FetchBlockResponse>;
-
+export class WorkerService extends BaseWorkerService<
+  BlockWrapper,
+  FetchBlockResponse,
+  SubqlStellarDataSource,
+  {}
+> {
   constructor(
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     @Inject('IProjectService')
-    private projectService: IProjectService<SubqlProjectDs>,
+    projectService: IProjectService<StellarProjectDs>,
+    @Inject('IProjectUpgradeService')
+    projectUpgradeService: IProjectUpgradeService,
     nodeConfig: NodeConfig,
   ) {
-    this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
+    super(projectService, projectUpgradeService, nodeConfig);
+  }
+  protected async fetchChainBlock(
+    heights: number,
+    extra: {},
+  ): Promise<BlockWrapper> {
+    const [block] = await this.apiService.fetchBlocks([heights]);
+    return block;
   }
 
-  async fetchBlock(height: number): Promise<FetchBlockResponse> {
-    try {
-      return await this.queue.put(async () => {
-        // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
-        if (!this.fetchedBlocks[height]) {
-          if (memoryLock.isLocked()) {
-            const start = Date.now();
-            await memoryLock.waitForUnlock();
-            const end = Date.now();
-            logger.debug(`memory lock wait time: ${end - start}ms`);
-          }
-
-          const [block] = await this.apiService.fetchBlocks([height]);
-          this.fetchedBlocks[height] = block;
-        }
-
-        // Return info to get the runtime version, this lets the worker thread know
-        return undefined;
-      });
-    } catch (e) {
-      logger.error(/*e, */ `Failed to fetch block ${height}`);
-      throw e;
-    }
+  protected toBlockResponse(block: BlockWrapper): { parentHash: string } {
+    return {
+      parentHash: block.block.prev_hash,
+    };
   }
 
-  async processBlock(height: number): Promise<ProcessBlockResponse> {
-    try {
-      this._isIndexing = true;
-      const block = this.fetchedBlocks[height] as StellarBlockWrapper;
-
-      if (!block) {
-        throw new Error(`Block ${height} has not been fetched`);
-      }
-
-      delete this.fetchedBlocks[height];
-
-      return await this.indexerManager.indexBlock(
-        block,
-        await this.projectService.getAllDataSources(height),
-      );
-    } catch (e) {
-      logger.error(e, `Failed to index block ${height}: ${e.stack}`);
-      throw e;
-    } finally {
-      this._isIndexing = false;
-    }
-  }
-
-  get numFetchedBlocks(): number {
-    return Object.keys(this.fetchedBlocks).length;
-  }
-
-  get numFetchingBlocks(): number {
-    return this.queue.size;
-  }
-
-  get isIndexing(): boolean {
-    return this._isIndexing;
+  protected async processFetchedBlock(
+    block: BlockWrapper,
+    dataSources: SubqlStellarDataSource[],
+  ): Promise<ProcessBlockResponse> {
+    return this.indexerManager.indexBlock(block, dataSources);
   }
 }

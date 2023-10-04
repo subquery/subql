@@ -21,11 +21,15 @@ import {
   HostConnectionPoolState,
   ConnectionPoolStateManager,
   connectionPoolStateHostFunctions,
+  baseWorkerFunctions,
+  storeHostFunctions,
+  dynamicDsHostFunctions,
+  IProjectUpgradeService,
+  HostUnfinalizedBlocks,
 } from '@subql/node-core';
-import { Store } from '@subql/types-stellar';
-import chalk from 'chalk';
+import { Store } from '@subql/types-core';
 import {
-  SubqlProjectDs,
+  StellarProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
 import { StellarApiConnection } from '../../stellar/api.connection';
@@ -33,7 +37,6 @@ import { StellarBlockWrapped } from '../../stellar/block.stellar';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
-import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -43,39 +46,21 @@ type IndexerWorker = IIndexerWorker & {
 
 async function createIndexerWorker(
   store: Store,
-  dynamicDsService: IDynamicDsService<SubqlProjectDs>,
+  dynamicDsService: IDynamicDsService<StellarProjectDs>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<StellarBlockWrapped>,
   connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
   root: string,
+  startHeight: number,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubqlProjectDs> & HostStore & HostUnfinalizedBlocks
+    HostDynamicDS<StellarProjectDs> & HostStore & HostUnfinalizedBlocks
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
-    [
-      'initWorker',
-      'processBlock',
-      'fetchBlock',
-      'numFetchedBlocks',
-      'numFetchingBlocks',
-      'getStatus',
-      'getMemoryLeft',
-      'waitForWorkerBatchSize',
-    ],
+    [...baseWorkerFunctions, 'initWorker'],
     {
-      storeGet: store.get.bind(store),
-      storeGetByField: store.getByField.bind(store),
-      storeGetOneByField: store.getOneByField.bind(store),
-      storeSet: store.set.bind(store),
-      storeBulkCreate: store.bulkCreate.bind(store),
-      storeBulkUpdate: store.bulkUpdate.bind(store),
-      storeRemove: store.remove.bind(store),
-      storeBulkRemove: store.bulkRemove.bind(store),
-      dynamicDsCreateDynamicDatasource:
-        dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
-      dynamicDsGetDynamicDatasources:
-        dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
+      ...storeHostFunctions(store),
+      ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess:
         unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
           unfinalizedBlocksService,
@@ -85,20 +70,23 @@ async function createIndexerWorker(
     root,
   );
 
-  await indexerWorker.initWorker();
+  await indexerWorker.initWorker(startHeight);
 
   return indexerWorker;
 }
 
 @Injectable()
 export class WorkerBlockDispatcherService
-  extends WorkerBlockDispatcher<SubqlProjectDs, IndexerWorker>
+  extends WorkerBlockDispatcher<StellarProjectDs, IndexerWorker>
   implements OnApplicationShutdown
 {
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
+    @Inject('IProjectService')
+    projectService: IProjectService<StellarProjectDs>,
+    @Inject('IProjectUpgradeService')
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -112,6 +100,7 @@ export class WorkerBlockDispatcherService
       nodeConfig,
       eventEmitter,
       projectService,
+      projectUpgradeService,
       smartBatchService,
       storeService,
       storeCacheService,
@@ -125,6 +114,7 @@ export class WorkerBlockDispatcherService
           unfinalizedBlocksSevice,
           connectionPoolState,
           project.root,
+          projectService.startHeight,
         ),
     );
   }
@@ -134,18 +124,7 @@ export class WorkerBlockDispatcherService
     height: number,
   ): Promise<void> {
     const start = new Date();
-    await worker.fetchBlock(height);
+    await worker.fetchBlock(height, null);
     const end = new Date();
-
-    // const waitTime = end.getTime() - start.getTime();
-    // if (waitTime > 1000) {
-    //   logger.info(
-    //     `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
-    //   );
-    // } else if (waitTime > 200) {
-    //   logger.info(
-    //     `Waiting to fetch block ${height}: ${chalk.yellow(`${waitTime}ms`)}`,
-    //   );
-    // }
   }
 }

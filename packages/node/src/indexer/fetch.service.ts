@@ -8,25 +8,28 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   StellarHandlerKind,
   SubqlStellarProcessorOptions,
+  isCustomDs,
 } from '@subql/common-stellar';
 import {
   NodeConfig,
   BaseFetchService,
   ApiService,
   getLogger,
+  getModulos,
 } from '@subql/node-core';
-import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
+import {
+  DictionaryQueryEntry,
+  DictionaryQueryCondition,
+} from '@subql/types-core';
 import {
   SorobanEventFilter,
-  StellarBlock,
   StellarEffectFilter,
   StellarOperationFilter,
   StellarTransactionFilter,
   SubqlDatasource,
 } from '@subql/types-stellar';
-import { MetaData } from '@subql/utils';
-import { groupBy, sortBy, uniqBy } from 'lodash';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { groupBy, partition, sortBy, uniqBy } from 'lodash';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
 import { calcInterval } from '../stellar/utils.stellar';
 import { yargsOptions } from '../yargs';
@@ -34,6 +37,7 @@ import { IStellarBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
 import {
   blockToHeader,
   UnfinalizedBlocksService,
@@ -174,17 +178,10 @@ type GroupedSubqlProjectDs = SubqlDatasource & {
 };
 export function buildDictionaryQueryEntries(
   dataSources: GroupedSubqlProjectDs[],
-  startBlock: number,
 ): DictionaryQueryEntry[] {
   const queryEntries: DictionaryQueryEntry[] = [];
 
-  // Only run the ds that is equal or less than startBlock
-  // sort array from lowest ds.startBlock to highest
-  const filteredDs = dataSources
-    .filter((ds) => ds.startBlock <= startBlock)
-    .sort((a, b) => a.startBlock - b.startBlock);
-
-  for (const ds of filteredDs) {
+  for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
       // No filters, cant use dictionary
       if (!handler.filter) return [];
@@ -262,31 +259,30 @@ export function buildDictionaryQueryEntries(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  ApiService,
   SubqlDatasource,
   IStellarBlockDispatcher,
   DictionaryService
 > {
   constructor(
-    apiService: ApiService,
+    private apiService: ApiService,
     nodeConfig: NodeConfig,
+    @Inject('IProjectService') projectService: ProjectService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: IStellarBlockDispatcher,
     dictionaryService: DictionaryService,
-    dsProcessorService: DsProcessorService,
+    private dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
   ) {
     super(
-      apiService,
       nodeConfig,
-      project,
+      projectService,
+      project.network,
       blockDispatcher,
       dictionaryService,
-      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
@@ -297,10 +293,25 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
-  buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
-    const groupdDynamicDs: GroupedSubqlProjectDs[] = Object.values(
-      groupBy(this.templateDynamicDatasouces, (ds) => ds.name),
-    ).map((grouped: SubqlProjectDs[]) => {
+  protected getGenesisHash(): string {
+    return this.apiService.networkMeta.genesisHash;
+  }
+
+  protected buildDictionaryQueryEntries(
+    dataSources: (SubqlDatasource & { name?: string })[],
+  ): DictionaryQueryEntry[] {
+    const [normalDataSources, templateDataSources] = partition(
+      dataSources,
+      (ds) => !ds.name,
+    );
+
+    // Group templ
+    const groupedDataSources = Object.values(
+      groupBy(templateDataSources, (ds) => ds.name),
+    ).map((grouped) => {
+      if (grouped.length === 1) {
+        return grouped[0];
+      }
       const options = grouped.map((ds) => ds.options);
       const ref = grouped[0];
 
@@ -310,12 +321,9 @@ export class FetchService extends BaseFetchService<
       };
     });
 
-    // Only run the ds that is equal or less than startBlock
-    // sort array from lowest ds.startBlock to highest
-    const filteredDs: GroupedSubqlProjectDs[] =
-      this.project.dataSources.concat(groupdDynamicDs);
+    const filteredDs = [...normalDataSources, ...groupedDataSources];
 
-    return buildDictionaryQueryEntries(filteredDs, startBlock);
+    return buildDictionaryQueryEntries(filteredDs);
   }
 
   protected async getFinalizedHeight(): Promise<number> {
@@ -342,49 +350,20 @@ export class FetchService extends BaseFetchService<
     return Promise.resolve(this.api.getChainId().toString());
   }
 
-  /*
   protected getModulos(): number[] {
-    const modulos: number[] = [];
-    for (const ds of this.project.dataSources) {
-      if (isCustomDs(ds)) {
-        continue;
-      }
-      for (const handler of ds.mapping.handlers) {
-        if (
-          handler.kind === StellarHandlerKind.Block &&
-          handler.filter &&
-          handler.filter.modulo
-        ) {
-          modulos.push(handler.filter.modulo);
-        }
-      }
-    }
-    return modulos;
+    return getModulos(
+      this.projectService.getAllDataSources(),
+      isCustomDs,
+      StellarHandlerKind.Block,
+    );
   }
-  */
 
   protected async initBlockDispatcher(): Promise<void> {
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
   }
 
-  protected async validatateDictionaryMeta(
-    metaData: MetaData,
-  ): Promise<boolean> {
-    return Promise.resolve(
-      // When alias is not used
-      metaData.genesisHash !== this.api.getGenesisHash() &&
-        // Case when an alias is used
-        metaData.genesisHash !== this.dictionaryService.chainId,
-    );
-  }
-
   protected async preLoopHook(): Promise<void> {
     // Stellar doesn't need to do anything here
     return Promise.resolve();
-  }
-
-  protected getModulos(): number[] {
-    //block handler not implemented yet
-    return [];
   }
 }

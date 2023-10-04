@@ -6,7 +6,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DbModule } from '@subql/node-core';
 import { ConfigureModule } from '../../configure/configure.module';
-import { IndexerModule } from '../indexer.module';
+import { WorkerFetchModule } from './worker-fetch.module';
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { IndexerModule } from '../indexer.module';
     EventEmitterModule.forRoot(),
     ConfigureModule.register(),
     ScheduleModule.forRoot(),
-    IndexerModule,
+    WorkerFetchModule,
   ],
   controllers: [],
 })

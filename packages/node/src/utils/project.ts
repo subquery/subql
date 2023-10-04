@@ -6,10 +6,8 @@ import {
   SubqlCustomHandler,
   SubqlHandler,
   StellarHandlerKind,
-  isCustomDs,
 } from '@subql/common-stellar';
 import { retryOnFail } from '@subql/node-core';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export function isBaseHandler(
   handler: SubqlHandler,

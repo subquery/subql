@@ -9,8 +9,11 @@ import {
   TestRunner,
   NestLogger,
 } from '@subql/node-core';
-import { StellarBlockWrapper } from '@subql/types-stellar';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { BlockWrapper, StellarBlockWrapper } from '@subql/types-stellar';
+import {
+  StellarProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import { ProjectService } from '../indexer/project.service';
 import { StellarApi, StellarApiService } from '../stellar';
 import SafeStellarProvider from '../stellar/safe-api';
@@ -20,7 +23,7 @@ export class TestingService extends BaseTestingService<
   StellarApi,
   SafeStellarProvider,
   StellarBlockWrapper,
-  SubqlProjectDs
+  StellarProjectDs
 > {
   constructor(
     nodeConfig: NodeConfig,
@@ -30,12 +33,15 @@ export class TestingService extends BaseTestingService<
   }
 
   async getTestRunner(): Promise<
-    TestRunner<
-      StellarApi,
-      SafeStellarProvider,
-      StellarBlockWrapper,
-      SubqlProjectDs
-    >
+    [
+      close: () => Promise<void>,
+      runner: TestRunner<
+        StellarApi,
+        SafeStellarProvider,
+        BlockWrapper,
+        StellarProjectDs
+      >,
+    ]
   > {
     const testContext = await NestFactory.createApplicationContext(
       TestingModule,
@@ -46,13 +52,9 @@ export class TestingService extends BaseTestingService<
 
     await testContext.init();
 
-    const projectService: ProjectService = testContext.get(ProjectService);
-    const apiService = testContext.get(StellarApiService);
-
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await apiService.init();
+    const projectService: ProjectService = testContext.get('IProjectService');
     await projectService.init();
 
-    return testContext.get(TestRunner);
+    return [testContext.close.bind(testContext), testContext.get(TestRunner)];
   }
 }

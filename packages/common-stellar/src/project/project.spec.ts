@@ -1,13 +1,34 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import path from 'path';
-import {RunnerQueryBaseModel} from '@subql/common';
+import {RunnerQueryBaseModel, loadFromJsonOrYaml} from '@subql/common';
 import {validateSync} from 'class-validator';
 import {DeploymentV1_0_0, StellarRunnerNodeImpl, StellarRunnerSpecsImpl} from '../project/versioned/v1_0_0';
-import {loadStellarProjectManifest} from './load';
+import {StellarProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 const projectsDir = path.join(__dirname, '../../test');
+
+function loadStellarProjectManifest(file: string): StellarProjectManifestVersioned {
+  let manifestPath = file;
+  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
+    const yamlFilePath = path.join(file, 'project.yaml');
+    const jsonFilePath = path.join(file, 'project.json');
+    if (fs.existsSync(yamlFilePath)) {
+      manifestPath = yamlFilePath;
+    } else if (fs.existsSync(jsonFilePath)) {
+      manifestPath = jsonFilePath;
+    } else {
+      throw new Error(`Could not find project manifest under dir ${file}`);
+    }
+  }
+
+  const doc = loadFromJsonOrYaml(manifestPath);
+  const projectManifest = new StellarProjectManifestVersioned(doc as VersionedProjectManifest);
+  projectManifest.validate();
+  return projectManifest;
+}
 
 describe('project.yaml', () => {
   it('can validate project.yaml', () => {

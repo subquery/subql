@@ -26,7 +26,7 @@ describe('buildDictionaryQueryEntries', () => {
         ],
       },
     };
-    const result = buildDictionaryQueryEntries([ds], 1);
+    const result = buildDictionaryQueryEntries([ds]);
     expect(result).toEqual([
       {
         entity: 'transactions',
@@ -59,7 +59,7 @@ describe('buildDictionaryQueryEntries', () => {
         ],
       },
     };
-    const result = buildDictionaryQueryEntries([ds], 1);
+    const result = buildDictionaryQueryEntries([ds]);
     expect(result).toEqual([
       {
         entity: 'operations',
@@ -97,7 +97,7 @@ describe('buildDictionaryQueryEntries', () => {
         ],
       },
     };
-    const result = buildDictionaryQueryEntries([ds], 1);
+    const result = buildDictionaryQueryEntries([ds]);
     expect(result).toEqual([
       {
         entity: 'effects',
@@ -132,7 +132,7 @@ describe('buildDictionaryQueryEntries', () => {
         ],
       },
     };
-    const result = buildDictionaryQueryEntries([ds], 1);
+    const result = buildDictionaryQueryEntries([ds]);
     expect(result).toEqual([]);
   });
 });

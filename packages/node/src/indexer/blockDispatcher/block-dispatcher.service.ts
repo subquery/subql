@@ -13,10 +13,11 @@ import {
   BlockDispatcher,
   ProcessBlockResponse,
   ApiService,
+  IProjectUpgradeService,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import {
-  SubqlProjectDs,
+  StellarProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
 import { DynamicDsService } from '../dynamic-ds.service';
@@ -27,7 +28,7 @@ import { IndexerManager } from '../indexer.manager';
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<StellarBlockWrapper, SubqlProjectDs>
+  extends BlockDispatcher<StellarBlockWrapper, StellarProjectDs>
   implements OnApplicationShutdown
 {
   constructor(
@@ -35,7 +36,10 @@ export class BlockDispatcherService
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    @Inject('IProjectService') projectService: IProjectService<SubqlProjectDs>,
+    @Inject('IProjectService')
+    projectService: IProjectService<StellarProjectDs>,
+    @Inject('IProjectUpgradeService')
+    projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -47,6 +51,7 @@ export class BlockDispatcherService
       nodeConfig,
       eventEmitter,
       projectService,
+      projectUpgradeService,
       smartBatchService,
       storeService,
       storeCacheService,
@@ -66,7 +71,7 @@ export class BlockDispatcherService
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getAllDataSources(this.getBlockHeight(block)),
+      await this.projectService.getDataSources(this.getBlockHeight(block)),
     );
   }
 }

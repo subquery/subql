@@ -6,17 +6,16 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   PoiBenchmarkService,
   IndexingBenchmarkService,
-  MmrService,
   StoreService,
   PoiService,
   ApiService,
   ConnectionPoolService,
   SmartBatchService,
   StoreCacheService,
-  PgMmrCacheService,
-  MmrQueryService,
   ConnectionPoolStateManager,
   NodeConfig,
+  IProjectUpgradeService,
+  ProjectUpgradeSevice,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiConnection } from '../stellar/api.connection';
@@ -42,18 +41,25 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
+        projectUpgradeService: ProjectUpgradeSevice,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
         const apiService = new StellarApiService(
           project,
+          projectUpgradeService,
           connectionPoolService,
           eventEmitter,
         );
         await apiService.init();
         return apiService;
       },
-      inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
+      inject: [
+        'ISubqueryProject',
+        'IProjectUpgradeService',
+        ConnectionPoolService,
+        EventEmitter2,
+      ],
     },
     IndexerManager,
     ConnectionPoolService,
@@ -71,7 +77,8 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
-        apiService: StellarApiService,
+        projectUpgradeService: IProjectUpgradeService,
+        apiService: ApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
         storeService: StoreService,
@@ -87,6 +94,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               nodeConfig,
               eventEmitter,
               projectService,
+              projectUpgradeService,
               smartBatchService,
               storeService,
               storeCacheService,
@@ -102,6 +110,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               indexerManager,
               eventEmitter,
               projectService,
+              projectUpgradeService,
               smartBatchService,
               storeService,
               storeCacheService,
@@ -113,6 +122,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         NodeConfig,
         EventEmitter2,
         'IProjectService',
+        'IProjectUpgradeService',
         ApiService,
         IndexerManager,
         SmartBatchService,
@@ -133,15 +143,12 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DsProcessorService,
     DynamicDsService,
     PoiService,
-    MmrService,
-    MmrQueryService,
-    PgMmrCacheService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',
     },
     UnfinalizedBlocksService,
   ],
-  exports: [StoreService, MmrService, StoreCacheService, MmrQueryService],
+  exports: [StoreService, StoreCacheService],
 })
 export class FetchModule {}

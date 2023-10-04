@@ -37,21 +37,16 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
     private eventEmitter: EventEmitter2,
     private sorobanClient?: SorobanServer,
   ) {
-    const { hostname, protocol, searchParams } = new URL(endpoint);
+    const { hostname, protocol, searchParams } = new URL(this.endpoint);
 
     const protocolStr = protocol.replace(':', '');
 
     logger.info(`Api host: ${hostname}, method: ${protocolStr}`);
     if (protocolStr === 'https' || protocolStr === 'http') {
       const options: Server.Options = {
-        //headers: {
-        //  'User-Agent': `Subquery-Node ${packageVersion}`,
-        //},
         allowHttp: protocolStr === 'http',
       };
-      //searchParams.forEach((value, name, searchParams) => {
-      //  (connection.headers as any)[name] = value;
-      //});
+
       this.stellarClient = new StellarServer(endpoint, options);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);

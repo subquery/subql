@@ -32,7 +32,7 @@ dataSources:
         - handler: handleOperation
           kind: stellar/OperationHandler
           filter:
-            source_account: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
+            sourceAccount: 'GAKNXHJ5PCZYFIBNBWB4RCQHH6GDEO7Z334N74BOQUQCHKOURQEPMXCH'
             type: 'account_merge'
         - handler: handleEffect
           kind: stellar/EffectHandler

@@ -1,8 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { Reader, RunnerSpecs, validateSemver } from '@subql/common';
+import { validateSemver } from '@subql/common';
 import {
   StellarProjectNetworkConfig,
   parseStellarProjectManifest,
@@ -12,17 +13,28 @@ import {
   StellarHandlerKind,
   isRuntimeDs,
 } from '@subql/common-stellar';
-import { getProjectRoot, updateDataSourcesV1_0_0 } from '@subql/node-core';
+import {
+  insertBlockFiltersCronSchedules,
+  ISubqueryProject,
+  loadProjectTemplates,
+  SubqlProjectDs,
+  updateDataSourcesV1_0_0,
+} from '@subql/node-core';
+import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
+import {
+  CustomDatasourceTemplate,
+  RuntimeDatasourceTemplate,
+} from '@subql/types-stellar';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 
-export type SubqlProjectDs = SubqlStellarDataSource & {
-  mapping: SubqlStellarDataSource['mapping'] & { entryScript: string };
-};
+const { version: packageVersion } = require('../../package.json');
 
-export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
-  name: string;
-};
+export type StellarProjectDs = SubqlProjectDs<SubqlStellarDataSource>;
+
+export type StellarProjectDsTemplate =
+  | SubqlProjectDs<RuntimeDatasourceTemplate>
+  | SubqlProjectDs<CustomDatasourceTemplate>;
 
 const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);
@@ -32,21 +44,32 @@ const NOT_SUPPORT = (name: string) => {
 type NetworkConfig = StellarProjectNetworkConfig & { chainId: string };
 
 @Injectable()
-export class SubqueryProject {
-  id: string;
-  root: string;
-  network: NetworkConfig;
-  dataSources: SubqlProjectDs[];
-  schema: GraphQLSchema;
-  templates: SubqlProjectDsTemplate[];
-  runner?: RunnerSpecs;
+export class SubqueryProject implements ISubqueryProject {
+  #dataSources: StellarProjectDs[];
+
+  constructor(
+    readonly id: string,
+    readonly root: string,
+    readonly network: NetworkConfig,
+    dataSources: StellarProjectDs[],
+    readonly schema: GraphQLSchema,
+    readonly templates: StellarProjectDsTemplate[],
+    readonly runner?: RunnerSpecs,
+    readonly parent?: ParentProject,
+  ) {
+    this.#dataSources = dataSources;
+  }
+
+  get dataSources(): StellarProjectDs[] {
+    return this.#dataSources;
+  }
 
   static async create(
     path: string,
     rawManifest: unknown,
     reader: Reader,
-    networkOverrides?: Partial<StellarProjectNetworkConfig>,
     root?: string,
+    networkOverrides?: Partial<StellarProjectNetworkConfig>,
   ): Promise<SubqueryProject> {
     // rawManifest and reader can be reused here.
     // It has been pre-fetched and used for rebase manifest runner options with args
@@ -60,16 +83,27 @@ export class SubqueryProject {
     const manifest = parseStellarProjectManifest(rawManifest);
 
     if (manifest.isV1_0_0) {
-      return loadProjectFromManifest1_0_0(
+      return loadProjectFromManifestBase(
         manifest.asV1_0_0,
         reader,
         path,
-        networkOverrides,
         root,
+        networkOverrides,
       );
     } else {
       NOT_SUPPORT(manifest.specVersion);
     }
+  }
+
+  async applyCronTimestamps(
+    getTimestamp: (height: number) => Promise<Date>,
+  ): Promise<void> {
+    this.#dataSources = await insertBlockFiltersCronSchedules(
+      this.dataSources,
+      getTimestamp,
+      isRuntimeDs,
+      StellarHandlerKind.Block,
+    );
   }
 }
 
@@ -89,11 +123,9 @@ async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
+  root: string,
   networkOverrides?: Partial<StellarProjectNetworkConfig>,
-  root?: string,
 ): Promise<SubqueryProject> {
-  root = root ?? (await getProjectRoot(reader));
-
   if (typeof projectManifest.network.endpoint === 'string') {
     projectManifest.network.endpoint = [projectManifest.network.endpoint];
   }
@@ -126,78 +158,35 @@ async function loadProjectFromManifestBase(
     isCustomDs,
   );
 
-  const templates = await loadProjectTemplates(projectManifest, root, reader);
+  const templates = await loadProjectTemplates(
+    projectManifest.templates,
+    root,
+    reader,
+    isCustomDs,
+  );
 
-  if (
-    dsHasSorobanEventHandler([
-      ...dataSources,
-      ...(templates as SubqlProjectDs[]),
-    ]) &&
-    !network.sorobanEndpoint
-  ) {
-    throw new Error(
-      `Soroban network endpoint must be provided for network. chainId="${network.chainId}"`,
-    );
-  }
+  const runner = projectManifest.runner;
+  assert(
+    validateSemver(packageVersion, runner.node.version),
+    new Error(
+      `Runner require node version ${runner.node.version}, current node ${packageVersion}`,
+    ),
+  );
 
-  return {
-    id: reader.root ? reader.root : path, //TODO, need to method to get project_id
+  return new SubqueryProject(
+    reader.root ? reader.root : path, //TODO, need to method to get project_id
     root,
     network,
     dataSources,
     schema,
     templates,
-  };
-}
-
-const { version: packageVersion } = require('../../package.json');
-
-async function loadProjectFromManifest1_0_0(
-  projectManifest: ProjectManifestV1_0_0Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<StellarProjectNetworkConfig>,
-  root?: string,
-): Promise<SubqueryProject> {
-  const project = await loadProjectFromManifestBase(
-    projectManifest,
-    reader,
-    path,
-    networkOverrides,
-    root,
+    runner,
+    projectManifest.parent,
   );
-  project.runner = projectManifest.runner;
-  if (!validateSemver(packageVersion, project.runner.node.version)) {
-    throw new Error(
-      `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
-    );
-  }
-  return project;
-}
-
-async function loadProjectTemplates(
-  projectManifest: ProjectManifestV1_0_0Impl,
-  root: string,
-  reader: Reader,
-): Promise<SubqlProjectDsTemplate[]> {
-  if (!projectManifest.templates || !projectManifest.templates.length) {
-    return [];
-  }
-  const dsTemplates = await updateDataSourcesV1_0_0(
-    projectManifest.templates,
-    reader,
-    root,
-    isCustomDs,
-  );
-
-  return dsTemplates.map((ds, index) => ({
-    ...ds,
-    name: projectManifest.templates[index].name,
-  }));
 }
 
 export function dsHasSorobanEventHandler(
-  dataSources: SubqlProjectDs[],
+  dataSources: StellarProjectDs[],
 ): boolean {
   return (
     dataSources.findIndex(function (ds) {
@@ -210,55 +199,3 @@ export function dsHasSorobanEventHandler(
     }) !== -1
   );
 }
-
-/*
-// eslint-disable-next-line @typescript-eslint/require-await
-export async function generateTimestampReferenceForBlockFilters(
-  dataSources: SubqlProjectDs[],
-  api: StellarApi,
-): Promise<SubqlProjectDs[]> {
-  const cron = new Cron();
-
-  dataSources = await Promise.all(
-    dataSources.map(async (ds) => {
-      if (isRuntimeDs(ds)) {
-        const startBlock = ds.startBlock ?? 1;
-        let block: Block;
-        let timestampReference: Date;
-
-        ds.mapping.handlers = await Promise.all(
-          ds.mapping.handlers.map(async (handler) => {
-            if (handler.kind === StellarHandlerKind.Block) {
-              if (handler.filter?.timestamp) {
-                if (!block) {
-                  block = await api.getBlockByHeightOrHash(startBlock);
-                  timestampReference = new Date(block.timestamp * 1000); // Add millis
-                }
-                try {
-                  cron.fromString(handler.filter.timestamp);
-                } catch (e) {
-                  throw new Error(
-                    `Invalid Cron string: ${handler.filter.timestamp}`,
-                  );
-                }
-
-                const schedule = cron.schedule(timestampReference);
-                (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
-                  schedule: schedule,
-                  get next() {
-                    return Date.parse(this.schedule.next().format());
-                  },
-                };
-              }
-            }
-            return handler;
-          }),
-        );
-      }
-      return ds;
-    }),
-  );
-
-  return dataSources;
-}
-*/

@@ -3,16 +3,24 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectNetworkV1_0_0 } from '@subql/common-stellar';
+import {
+  StellarProjectNetwork,
+  StellarProjectNetworkConfig,
+} from '@subql/common-stellar';
 import {
   ApiService,
   ConnectionPoolService,
   NetworkMetadataPayload,
   getLogger,
   IndexerEvent,
+  ProjectUpgradeSevice,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import {
+  StellarProjectDs,
+  SubqueryProject,
+  dsHasSorobanEventHandler,
+} from '../configure/SubqueryProject';
 import { StellarApiConnection } from './api.connection';
 import { StellarApi } from './api.stellar';
 import SafeStellarProvider from './safe-api';
@@ -26,88 +34,72 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 export class StellarApiService extends ApiService<
   StellarApi,
   SafeStellarProvider,
-  StellarBlockWrapper
+  StellarBlockWrapper[]
 > {
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
+    @Inject('IProjectUpgradeService')
+    private projectUpgradeService: ProjectUpgradeSevice,
     connectionPoolService: ConnectionPoolService<StellarApiConnection>,
-    private eventEmitter: EventEmitter2,
+    eventEmitter: EventEmitter2,
   ) {
-    super(connectionPoolService);
+    super(connectionPoolService, eventEmitter);
   }
 
-  networkMeta: NetworkMetadataPayload;
-
   async init(): Promise<StellarApiService> {
+    let network: StellarProjectNetworkConfig;
     try {
-      let network: ProjectNetworkV1_0_0;
-      try {
-        network = this.project.network;
-      } catch (e) {
-        logger.error(Object.keys(e));
-        process.exit(1);
-      }
+      network = this.project.network;
+    } catch (e) {
+      logger.error(Object.keys(e));
+      process.exit(1);
+    }
 
-      const sorobanClient = network.soroban
-        ? new SorobanServer(network.soroban)
-        : undefined;
+    const sorobanEndpoint: string | undefined =
+      network.sorobanEndpoint ??
+      (
+        this.projectUpgradeService.getProject(Number.MAX_SAFE_INTEGER)
+          .network as StellarProjectNetwork
+      ).soroban;
 
-      const endpoints = Array.isArray(network.endpoint)
-        ? network.endpoint
-        : [network.endpoint];
+    if (!network.sorobanEndpoint && sorobanEndpoint) {
+      //update sorobanEndpoint from parent project
+      this.project.network.sorobanEndpoint = sorobanEndpoint;
+    }
 
-      const endpointToApiIndex: Record<string, StellarApiConnection> = {};
+    if (
+      dsHasSorobanEventHandler([
+        ...this.project.dataSources,
+        ...(this.project.templates as StellarProjectDs[]),
+      ]) &&
+      !sorobanEndpoint
+    ) {
+      throw new Error(
+        `Soroban network endpoint must be provided for network. chainId="${this.project.network.chainId}"`,
+      );
+    }
 
-      for await (const [i, endpoint] of endpoints.entries()) {
-        const connection = await StellarApiConnection.create(
+    const sorobanClient = sorobanEndpoint
+      ? new SorobanServer(sorobanEndpoint)
+      : undefined;
+
+    await this.createConnections(
+      network,
+      (endpoint) =>
+        StellarApiConnection.create(
           endpoint,
           this.fetchBlockBatches,
           this.eventEmitter,
           sorobanClient,
-        );
-
+        ),
+      //eslint-disable-next-line @typescript-eslint/require-await
+      async (connection: StellarApiConnection) => {
         const api = connection.unsafeApi;
-
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 1,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-
-        if (!this.networkMeta) {
-          this.networkMeta = connection.networkMeta;
-        }
-
-        if (network.chainId !== api.getChainId().toString()) {
-          throw this.metadataMismatchError(
-            'ChainId',
-            network.chainId,
-            api.getChainId().toString(),
-          );
-        }
-
-        endpointToApiIndex[endpoint] = connection;
-      }
-
-      this.connectionPoolService.addBatchToConnections(endpointToApiIndex);
-
-      return this;
-    } catch (e) {
-      logger.error(e, 'Failed to init api service');
-      throw e;
-    }
-  }
-
-  private metadataMismatchError(
-    metadata: string,
-    expected: string,
-    actual: string,
-  ): Error {
-    return Error(
-      `Value of ${metadata} does not match across all endpoints. Please check that your endpoints are for the same network.\n
-       Expected: ${expected}
-       Actual: ${actual}`,
+        return api.getChainId();
+      },
     );
+
+    return this;
   }
 
   get api(): StellarApi {

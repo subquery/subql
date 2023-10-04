@@ -2,18 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  BaseMapping,
   FileType,
-  NodeSpec,
   ProjectManifestBaseImpl,
-  QuerySpec,
+  ParentProjectModel,
   RunnerNodeImpl,
   RunnerQueryBaseModel,
-  RunnerSpecs,
   validateObject,
+  CommonProjectNetworkV1_0_0,
+  BaseDeploymentV1_0_0,
 } from '@subql/common';
-import {SubqlCustomDatasource, SubqlMapping, SubqlRuntimeDatasource} from '@subql/types-stellar';
-import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
+import {BaseMapping, NodeSpec, ParentProject, QuerySpec, RunnerSpecs} from '@subql/types-core';
+import {
+  CustomDatasourceTemplate,
+  RuntimeDatasourceTemplate,
+  StellarProjectManifestV1_0_0,
+  SubqlCustomDatasource,
+  SubqlMapping,
+  SubqlRuntimeDatasource,
+} from '@subql/types-stellar';
+import {plainToInstance, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
   IsArray,
@@ -27,7 +34,6 @@ import {
 } from 'class-validator';
 import {CustomDataSourceBase, StellarMapping, RuntimeDataSourceBase} from '../../models';
 import {SubqlStellarDataSource, SubqlRuntimeHandler} from '../../types';
-import {CustomDatasourceTemplate, StellarProjectManifestV1_0_0, RuntimeDatasourceTemplate} from './types';
 
 const Stellar_NODE_NAME = `@subql/node-stellar`;
 
@@ -52,10 +58,7 @@ export class StellarRuntimeDataSourceImpl
   }
 }
 
-export class StellarCustomDataSourceImpl<
-    K extends string = string,
-    M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
-  >
+export class StellarCustomDataSourceImpl<K extends string = string, M extends BaseMapping<any> = BaseMapping<any>>
   extends CustomDataSourceBase<K, M>
   implements SubqlCustomDatasource<K, M>
 {
@@ -90,47 +93,32 @@ export class ProjectNetworkDeploymentV1_0_0 {
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
   chainId: string;
-  @ValidateNested()
-  @Type(() => FileType)
-  @IsOptional()
-  chaintypes?: FileType;
+
   @IsOptional()
   @IsArray()
   bypassBlocks?: (number | string)[];
 }
 
-export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
-  @IsString({each: true})
-  @IsOptional()
-  endpoint?: string | string[];
+export class StellarProjectNetwork extends CommonProjectNetworkV1_0_0<FileType> {
   @IsString()
   @IsOptional()
   soroban?: string;
-  @IsString()
-  @IsOptional()
-  dictionary?: string;
 }
 
-export class DeploymentV1_0_0 {
+export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @Transform((params) => {
     if (params.value.genesisHash && !params.value.chainId) {
       params.value.chainId = params.value.genesisHash;
     }
-    return plainToClass(ProjectNetworkDeploymentV1_0_0, params.value);
+    return plainToInstance(ProjectNetworkDeploymentV1_0_0, params.value);
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
   network: ProjectNetworkDeploymentV1_0_0;
-  @Equals('1.0.0')
-  @IsString()
-  specVersion: string;
   @IsObject()
   @ValidateNested()
   @Type(() => StellarRunnerSpecsImpl)
   runner: RunnerSpecs;
-  @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => StellarCustomDataSourceImpl, {
@@ -155,9 +143,13 @@ export class DeploymentV1_0_0 {
 }
 
 export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
-  extends ProjectManifestBaseImpl<D>
+  extends ProjectManifestBaseImpl<DeploymentV1_0_0>
   implements StellarProjectManifestV1_0_0
 {
+  constructor() {
+    super(DeploymentV1_0_0);
+  }
+
   @Equals('1.0.0')
   specVersion: string;
   @Type(() => StellarCustomDataSourceImpl, {
@@ -168,8 +160,8 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
     keepDiscriminatorProperty: true,
   })
   dataSources: SubqlStellarDataSource[];
-  @Type(() => ProjectNetworkV1_0_0)
-  network: ProjectNetworkV1_0_0;
+  @Type(() => StellarProjectNetwork)
+  network: StellarProjectNetwork;
   @IsString()
   name: string;
   @IsString()
@@ -192,14 +184,9 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @ValidateNested()
   @Type(() => StellarRunnerSpecsImpl)
   runner: RunnerSpecs;
-  protected _deployment: D;
 
-  get deployment(): D {
-    if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV1_0_0, this) as unknown as D;
-      //validateSync(this._deployment.)
-      validateSync(this._deployment, {whitelist: true});
-    }
-    return this._deployment;
-  }
+  @IsOptional()
+  @IsObject()
+  @Type(() => ParentProjectModel)
+  parent?: ParentProject;
 }

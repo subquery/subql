@@ -39,7 +39,7 @@ import {
   SorobanEvent,
   SorobanEventFilter,
 } from '@subql/types-stellar';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { StellarProjectDs } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from '../stellar/safe-api';
@@ -124,8 +124,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   protected async indexBlockData(
     { block, effects, operations, transactions }: StellarBlockWrapper,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: StellarProjectDs[],
+    getVM: (d: StellarProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
@@ -148,8 +148,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexBlockContent(
     block: StellarBlock,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: StellarProjectDs[],
+    getVM: (d: StellarProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(StellarHandlerKind.Block, block, ds, getVM);
@@ -158,8 +158,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexTransaction(
     transaction: StellarTransaction,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: StellarProjectDs[],
+    getVM: (d: StellarProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(
@@ -186,8 +186,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexOperation(
     operation: StellarOperation,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: StellarProjectDs[],
+    getVM: (d: StellarProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(StellarHandlerKind.Operation, operation, ds, getVM);
@@ -196,8 +196,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexEffect(
     effect: StellarEffect,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: StellarProjectDs[],
+    getVM: (d: StellarProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(StellarHandlerKind.Effects, effect, ds, getVM);
@@ -206,8 +206,8 @@ export class IndexerManager extends BaseIndexerManager<
 
   private async indexEvent(
     event: SorobanEvent,
-    dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
+    dataSources: StellarProjectDs[],
+    getVM: (d: StellarProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
       await this.indexData(StellarHandlerKind.Event, event, ds, getVM);

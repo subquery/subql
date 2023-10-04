@@ -16,13 +16,13 @@ import { StellarBlockWrapped } from './block.stellar';
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
 const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
 
-export function testSubqueryProject(
+function testSubqueryProject(
   endpoint: string,
   sorobanEndpoint: string,
 ): SubqueryProject {
   return {
     network: {
-      endpoint,
+      endpoint: [endpoint],
       sorobanEndpoint,
       chainId: 'Test SDF Future Network ; October 2022',
     },
@@ -31,10 +31,10 @@ export function testSubqueryProject(
     root: './',
     schema: new GraphQLSchema({}),
     templates: [],
-  };
+  } as unknown as SubqueryProject;
 }
 
-export const prepareApiService = async (
+const prepareApiService = async (
   endpoint: string = HTTP_ENDPOINT,
   soroban: string = SOROBAN_ENDPOINT,
   project?: SubqueryProject,
@@ -43,6 +43,10 @@ export const prepareApiService = async (
     providers: [
       ConnectionPoolService,
       ConnectionPoolStateManager,
+      {
+        provide: 'IProjectUpgradeService',
+        useFactory: () => ({}),
+      },
       {
         provide: NodeConfig,
         useFactory: () => ({}),
@@ -97,7 +101,11 @@ describe('StellarApiService', () => {
     };
 
     await expect(
-      prepareApiService(HTTP_ENDPOINT, SOROBAN_ENDPOINT, faultyProject),
+      prepareApiService(
+        HTTP_ENDPOINT,
+        SOROBAN_ENDPOINT,
+        faultyProject as unknown as SubqueryProject,
+      ),
     ).rejects.toThrow();
   });
 

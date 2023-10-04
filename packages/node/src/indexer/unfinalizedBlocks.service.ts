@@ -9,6 +9,7 @@ import {
   NodeConfig,
   StoreCacheService,
   getLogger,
+  mainThreadOnly,
 } from '@subql/node-core';
 import { BlockWrapper } from '@subql/types-stellar';
 
@@ -32,19 +33,23 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
     super(nodeConfig, storeCache);
   }
 
+  @mainThreadOnly()
   protected blockToHeader(block: BlockWrapper): Header {
     return blockToHeader(block.block.sequence);
   }
 
+  @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
     const finalizedHeight = await this.apiService.api.getFinalizedBlockHeight();
     return blockToHeader(finalizedHeight);
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHash(hash: string): Promise<Header> {
     return this.getHeaderForHeight(parseInt(hash, 10));
   }
 
+  @mainThreadOnly()
   protected async getHeaderForHeight(height: number): Promise<Header> {
     return Promise.resolve(blockToHeader(height));
   }

@@ -8,27 +8,29 @@ import {
   ApiService,
   DbModule,
   ForceCleanService,
-  MmrService,
-  PgMmrCacheService,
   StoreCacheService,
   StoreService,
+  ReindexService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { ReindexService } from './reindex.service';
 
 @Module({
   providers: [
     StoreCacheService,
     StoreService,
     ReindexService,
-    MmrService,
-    PgMmrCacheService,
     ForceCleanService,
-    UnfinalizedBlocksService,
-    DynamicDsService,
+    {
+      provide: 'UnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
+    },
+    {
+      provide: 'DynamicDsService',
+      useClass: DynamicDsService,
+    },
     DsProcessorService,
     {
       // Used to work with DI for unfinalizedBlocksService but not used with reindex

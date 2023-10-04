@@ -7,9 +7,10 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import {
   ApiService,
   ConnectionPoolService,
+  ConnectionPoolStateManager,
   DbModule,
-  NodeConfig,
   PoiService,
+  ProjectUpgradeSevice,
   StoreService,
   TestRunner,
 } from '@subql/node-core';
@@ -17,12 +18,10 @@ import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { FetchModule } from '../indexer/fetch.module';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
 import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
-import { MetaModule } from '../meta/meta.module';
 import { StellarApiService } from '../stellar';
 import { StellarApiConnection } from '../stellar/api.connection';
 import { TestingService } from './testing.service';
@@ -37,8 +36,8 @@ import { TestingService } from './testing.service';
     DsProcessorService,
     DynamicDsService,
     UnfinalizedBlocksService,
-    ProjectService,
     ConnectionPoolService,
+    ConnectionPoolStateManager,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
@@ -47,18 +46,25 @@ import { TestingService } from './testing.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
+        projectUpgradeService: ProjectUpgradeSevice,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
         const apiService = new StellarApiService(
           project,
+          projectUpgradeService,
           connectionPoolService,
           eventEmitter,
         );
         await apiService.init();
         return apiService;
       },
-      inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2],
+      inject: [
+        'ISubqueryProject',
+        'IProjectUpgradeService',
+        ConnectionPoolService,
+        EventEmitter2,
+      ],
     },
     TestRunner,
     {
@@ -73,7 +79,6 @@ import { TestingService } from './testing.service';
     SchedulerRegistry,
   ],
 
-  imports: [MetaModule, FetchModule],
   controllers: [],
   exports: [TestRunner],
 })

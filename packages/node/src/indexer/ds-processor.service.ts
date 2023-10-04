@@ -18,7 +18,7 @@ import {
 
 export function isSecondLayerHandlerProcessor_0_0_0<
   K extends StellarHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   DS extends SubqlCustomDatasource = SubqlStellarCustomDataSource,
 >(
@@ -32,7 +32,7 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 
 export function isSecondLayerHandlerProcessor_1_0_0<
   K extends StellarHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   DS extends SubqlStellarCustomDataSource = SubqlStellarCustomDataSource,
 >(
@@ -45,7 +45,7 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 
 export function asSecondLayerHandlerProcessor_1_0_0<
   K extends StellarHandlerKind,
-  F,
+  F extends Record<string, unknown>,
   E,
   DS extends SubqlStellarCustomDataSource = SubqlStellarCustomDataSource,
 >(
@@ -77,7 +77,7 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 export class DsProcessorService extends BaseDsProcessorService<
   SubqlStellarDataSource,
   SubqlStellarCustomDataSource<string>,
-  SubqlDatasourceProcessor<string, unknown>
+  SubqlDatasourceProcessor<string, Record<string, unknown>>
 > {
   protected isCustomDs = isCustomDs;
 }
