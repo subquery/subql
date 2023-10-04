@@ -15,11 +15,13 @@
     "src/global.d.ts",
     "/dist"
   ],
+  "dependencies": {
+    "@subql/types-core": "workspace:*"
+  },
   "peerDependencies": {
     "@polkadot/api": "^10"
   },
   "devDependencies": {
-    "@polkadot/api": "^10",
-    "@subql/types-core": "workspace:*"
+    "@polkadot/api": "^10"
   }
 }
