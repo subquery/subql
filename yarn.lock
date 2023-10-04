@@ -4221,7 +4221,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.1.0, @subql/types-core@npm:^0.1.0":
+"@subql/types-core@npm:0.1.0":
   version: 0.1.0
   resolution: "@subql/types-core@npm:0.1.0"
   dependencies:
@@ -4236,6 +4236,15 @@ __metadata:
   dependencies:
     package-json-type: ^1.0.3
   checksum: e37e0df66471d763200baa00cf2bea526cdf0a5ee81b496473675e5404fe9553d56a6f7ebb6a6a22916981f6a2a2e2d303c538d8d3120fcd81267cc4703a88d2
+  languageName: node
+  linkType: hard
+
+"@subql/types-core@npm:^0.1.0":
+  version: 0.1.1
+  resolution: "@subql/types-core@npm:0.1.1"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: 6a88547e5091795d2f9f24b5373ce531066bc04602b18f05cad77c5d1953523be479801447cd85e4f03468997e988b8c853fdb409631f8a396525cc723978afa
   languageName: node
   linkType: hard
 

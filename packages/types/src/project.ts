@@ -23,7 +23,9 @@ export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosDataso
 export type CustomDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosCustomDatasource>;
 
 export type CosmosProjectManifestV1_0_0 = ProjectManifestV1_0_0<
-  SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource
+  SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource,
+  RuntimeDatasourceTemplate | CustomDatasourceTemplate,
+  CosmosNetworkConfig
 >;
 
 export interface CustomModule extends FileReference {
@@ -34,6 +36,8 @@ export interface CustomModule extends FileReference {
    * */
   messages: string[];
 }
+
+export type CosmosChainTypes = Map<string, CustomModule>;
 
 export type CustomDataSourceAsset = FileReference;
 
@@ -101,7 +105,7 @@ export type CosmosNetworkConfig = IProjectNetworkConfig & {
       }
     }
    * */
-  chainTypes?: Map<string, CustomModule>;
+  chainTypes?: CosmosChainTypes;
 };
 
 export type SubqlCosmosBlockFilter = BlockFilter;

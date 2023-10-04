@@ -12,7 +12,6 @@ export {
   SubqlCosmosHandler,
   SubqlCosmosHandlerKind,
   SubqlCosmosDatasource as SubqlCosmosDataSource,
-  SubqlCosmosCustomDatasource as SubqlCosmosCustomDataSource,
   SubqlCosmosBlockFilter,
   SubqlCosmosMessageFilter,
   SubqlCosmosEventFilter,

@@ -6,7 +6,7 @@ import path from 'path';
 import telescope from '@cosmology/telescope';
 import cosmwasmCodegen from '@cosmwasm/ts-codegen';
 import {makeTempDir} from '@subql/common';
-import {CustomModule, SubqlCosmosRuntimeDatasource} from '@subql/types-cosmos';
+import {CosmosChainTypes, CustomModule, SubqlCosmosRuntimeDatasource} from '@subql/types-cosmos';
 import {Data} from 'ejs';
 import {copySync} from 'fs-extra';
 import {IDLObject} from 'wasm-ast-types';
@@ -29,7 +29,7 @@ interface ProtobufRenderProps {
   messageNames: string[]; // all messages
   path: string; // should process the file Path and concat with PROTO dir
 }
-type CosmosChainTypeDataType = Map<string, CustomModule> | Record<string, CustomModule>;
+type CosmosChainTypeDataType = CosmosChainTypes | Record<string, CustomModule>;
 
 interface CosmwasmRenderJobType {
   contract: string;

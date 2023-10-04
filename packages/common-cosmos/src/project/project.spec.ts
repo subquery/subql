@@ -4,6 +4,7 @@
 import path from 'path';
 import {getManifestPath, loadFromJsonOrYaml} from '@subql/common';
 import {validateCosmosManifest} from '../codegen/util';
+import {parseCosmosProjectManifest} from './load';
 import {CosmosProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 const projectsDir = path.join(__dirname, '../../test');
@@ -38,5 +39,16 @@ describe('project.yaml', () => {
     const ethManifest = loadFromJsonOrYaml(path.join(projectsDir, 'project_1.0.0_bad_runner.yaml')) as any;
     expect(validateCosmosManifest(cosmosManifest)).toBe(true);
     expect(validateCosmosManifest(ethManifest)).toBe(false);
+  });
+  it('Validate incorrect chaintypes', () => {
+    const cosmosManifest = loadFromJsonOrYaml(
+      path.join(projectsDir, './protoTest1', 'bad-chaintypes-project.yaml')
+    ) as any;
+    expect(() => parseCosmosProjectManifest(cosmosManifest)).toThrow('failed to parse project.yaml');
+  });
+  it('Ensure chainTypes existence on manifest deployment', () => {
+    const cosmosManifest = loadFromJsonOrYaml(path.join(projectsDir, './protoTest1', 'project.yaml')) as any;
+    const manifest = parseCosmosProjectManifest(cosmosManifest);
+    expect(manifest.asImpl.network.chainTypes.size).toBeGreaterThan(0);
   });
 });

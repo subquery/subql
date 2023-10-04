@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SubqlCosmosDatasource} from '@subql/types-cosmos';
-import {plainToClass} from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 import {ICosmosProjectManifest} from '../types';
 import {ProjectManifestV1_0_0Impl} from './v1_0_0';
 
@@ -28,7 +28,7 @@ export class CosmosProjectManifestVersioned implements ICosmosProjectManifest {
     if (!klass) {
       throw new Error('specVersion not supported for project manifest file');
     }
-    this._impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
+    this._impl = plainToInstance<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
   }
 
   get asImpl(): ProjectManifestImpls {

@@ -176,9 +176,6 @@ export class CosmosRuntimeDataSourceBase<M extends SubqlCosmosMapping<SubqlCosmo
   mapping: M;
   @IsInt()
   startBlock: number;
-  @Type(() => CosmosCustomModuleImpl)
-  @ValidateNested({each: true})
-  chainTypes: Map<string, CustomModule>;
   @IsOptional()
   @Validate(FileReferenceImp)
   assets?: Map<string, FileReference>;
@@ -221,7 +218,4 @@ export class CosmosCustomDataSourceBase<
   @Type(() => ProcessorImpl)
   @IsObject()
   processor: Processor<O>;
-  @Type(() => CosmosCustomModuleImpl)
-  @ValidateNested({each: true})
-  chainTypes: Map<string, CustomModule>;
 }
