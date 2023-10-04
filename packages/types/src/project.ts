@@ -19,7 +19,7 @@ import {
 } from '@subql/types-core';
 import {CosmosBlock, CosmosTransaction, CosmosMessage, CosmosEvent} from './interfaces';
 
-export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosDatasource>;
+export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosRuntimeDatasource>;
 export type CustomDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosCustomDatasource>;
 
 export type CosmosProjectManifestV1_0_0 = ProjectManifestV1_0_0<
