@@ -258,7 +258,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
   async hasDataSourcesAfterHeight(height: number): Promise<boolean> {
     const dataSources = await this.getDataSources();
-    return dataSources.some((ds) => ds.endBlock !== undefined && ds.endBlock > height);
+    return dataSources.some((ds) => ds.endBlock === undefined || ds.endBlock > height);
   }
 
   async maxEndBlockHeight(): Promise<number> {
