@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-cosmos",
-  "version": "2.5.2-1",
+  "version": "2.5.2-2",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -45,5 +45,5 @@
     "lodash": "4.17.21",
     "rimraf": "^3.0.2"
   },
-  "stableVersion": "2.5.2-0"
+  "stableVersion": "2.5.2-1"
 }
