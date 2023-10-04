@@ -146,7 +146,7 @@ export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfi
   @IsString()
   chainId: string;
   @IsOptional()
-  chaintypes?: C;
+  chainTypes?: C;
   @IsOptional()
   @IsArray()
   bypassBlocks?: (number | `${number}-${number}`)[];
