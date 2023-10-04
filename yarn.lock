@@ -6220,7 +6220,7 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-algorand": ^3.0.0
-    "@subql/common-cosmos": ^2.5.0
+    "@subql/common-cosmos": ^3.0.0
     "@subql/common-ethereum": ^3.0.1
     "@subql/common-flare": ^3.0.1
     "@subql/common-near": ^3.0.0
@@ -6305,7 +6305,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^2.5.0, @subql/common-cosmos@npm:latest":
+"@subql/common-cosmos@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@subql/common-cosmos@npm:3.0.0"
+  dependencies:
+    "@cosmology/telescope": ^0.104.0
+    "@cosmwasm/ts-codegen": ^0.35.3
+    "@protobufs/cosmos": ^0.1.0
+    "@protobufs/cosmos_proto": ^0.0.10
+    "@protobufs/cosmwasm": ^0.1.1
+    "@protobufs/gogoproto": ^0.0.10
+    "@protobufs/google": ^0.0.10
+    "@protobufs/ibc": ^0.1.0
+    "@protobufs/tendermint": ^0.0.10
+    "@subql/common": ^3.1.0
+    "@subql/types-cosmos": 3.0.0
+    fs-extra: ^11.1.1
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+  peerDependencies:
+    class-transformer: "*"
+    class-validator: "*"
+    ejs: "*"
+  checksum: 765bca524279a93393203c7d1815371faa8f6c6fb1630ea6f1b208f04f2409eb89a83cab1dc127d0c81d1da35e4127ed2390df2b664ee9e465b7df02bc7d5c7f
+  languageName: node
+  linkType: hard
+
+"@subql/common-cosmos@npm:latest":
   version: 2.5.0
   resolution: "@subql/common-cosmos@npm:2.5.0"
   dependencies:
@@ -6462,7 +6488,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.1.1, @subql/common@npm:^3.1.1":
+"@subql/common@npm:3.1.1, @subql/common@npm:^3.1.0, @subql/common@npm:^3.1.1":
   version: 3.1.1
   resolution: "@subql/common@npm:3.1.1"
   dependencies:
@@ -6668,7 +6694,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@0.1.1, @subql/types-core@^0.1.1, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+"@subql/types-core@0.1.1, @subql/types-core@^0.1.0, @subql/types-core@^0.1.1, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:
@@ -6684,6 +6710,18 @@ __metadata:
     "@cosmjs/proto-signing": ^0.30.1
     "@cosmjs/stargate": ^0.30.1
   checksum: a35986e71df04e70f95d5def473fb5d491546f6ad8e68c2ee10423cf3ace998ebac1abdd64a69b0c8467087d4c1cf8af44b6481d273bb7df2d7d6cb4d8dd5556
+  languageName: node
+  linkType: hard
+
+"@subql/types-cosmos@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@subql/types-cosmos@npm:3.0.0"
+  dependencies:
+    "@cosmjs/cosmwasm-stargate": ^0.30.1
+    "@cosmjs/proto-signing": ^0.30.1
+    "@cosmjs/stargate": ^0.30.1
+    "@subql/types-core": ^0.1.0
+  checksum: 577a1268bbe2228a140dbb6eaa31c56d596d7d9bec25adb9f1e03a6adbf5248f5351232523ec64a496914dfaf70d2e3e9016eea4adcd6a718def5e36731cf16c
   languageName: node
   linkType: hard
 

@@ -12,7 +12,7 @@
     "@oclif/plugin-help": "^3.2.3",
     "@subql/common": "workspace:*",
     "@subql/common-algorand": "^3.0.0",
-    "@subql/common-cosmos": "^2.5.0",
+    "@subql/common-cosmos": "^3.0.0",
     "@subql/common-ethereum": "^3.0.1",
     "@subql/common-flare": "^3.0.1",
     "@subql/common-near": "^3.0.0",
