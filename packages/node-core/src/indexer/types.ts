@@ -48,5 +48,6 @@ export interface IProjectService<DS> {
   getDataSources(blockHeight?: number): Promise<DS[]>;
   getStartBlockFromDataSources(): number;
   getDataSourcesMap(): BlockHeightMap<DS[]>;
-  hasDataSourceWithEndBlockGreaterThan(height: number): Promise<boolean>;
+  hasDataSourcesAfterHeight(height: number): Promise<boolean>;
+  maxEndBlockHeight(): Promise<number>;
 }

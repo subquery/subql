@@ -208,7 +208,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       await this.storeCacheService.flushCache(false, true);
     }
 
-    if (!(await this.projectService.hasDataSourceWithEndBlockGreaterThan(height))) {
+    if (!(await this.projectService.hasDataSourcesAfterHeight(height))) {
       logger.info(`All data sources have been processed up to block number ${height}. Exiting gracefully...`);
       await this.storeCacheService.flushCache(false, true);
       process.exit(0);

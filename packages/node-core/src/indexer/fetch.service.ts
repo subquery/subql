@@ -243,10 +243,15 @@ export abstract class BaseFetchService<
         startBlockHeight >= this.dictionaryService.startHeight &&
         startBlockHeight < this.latestFinalizedHeight
       ) {
-        /* queryEndBlock needs to be limited by the latest height.
+        /* queryEndBlock needs to be limited by the latest height or the maximum value of endBlock in datasources.
          * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
          */
-        const queryEndBlock = Math.min(startBlockHeight + DICTIONARY_MAX_QUERY_SIZE, this.latestFinalizedHeight);
+        const maxEndBlock = await this.projectService.maxEndBlockHeight();
+        const queryEndBlock = Math.min(
+          startBlockHeight + DICTIONARY_MAX_QUERY_SIZE,
+          this.latestFinalizedHeight,
+          maxEndBlock
+        );
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
