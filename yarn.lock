@@ -6219,11 +6219,11 @@ __metadata:
     "@oclif/core": ^2.15.0
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
-    "@subql/common-algorand": ^2.4.0
+    "@subql/common-algorand": ^3.0.0
     "@subql/common-cosmos": ^2.5.0
-    "@subql/common-ethereum": ^2.3.0
-    "@subql/common-flare": ^2.2.5
-    "@subql/common-near": ^2.4.0
+    "@subql/common-ethereum": ^3.0.1
+    "@subql/common-flare": ^3.0.1
+    "@subql/common-near": ^3.0.0
     "@subql/common-stellar": ^2.2.1-1
     "@subql/common-substrate": "workspace:*"
     "@subql/utils": "workspace:*"
@@ -6265,13 +6265,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-algorand@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@subql/common-algorand@npm:2.4.0"
+"@subql/common-algorand@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@subql/common-algorand@npm:3.0.0"
   dependencies:
-    "@subql/common": ^2.4.0
-    "@subql/types-algorand": 2.2.0
-    class-transformer: 0.4.0
+    "@subql/common": ^3.1.1
+    "@subql/types-algorand": 3.0.0
+    class-transformer: ^0.5.1
     class-validator: ^0.13.2
     fs-extra: ^10.1.0
     ipfs-http-client: ^52.0.3
@@ -6281,7 +6281,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 56bba886d77be37a2c5151c1366548fe57de7b65eab885549a4034cc1ccf486ba8d1fc0186f2ea610af18eff8884ab410a87d0e204bdcf899bccbd492c94b355
+  checksum: 2847b6c03efdfb909e3f302d26de64eef542f505f70587f32ffca9554bb5f708f930a49d50a05f34bc7c43ec41903b73f85e16d672ff5795140f63c169483883
   languageName: node
   linkType: hard
 
@@ -6331,12 +6331,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "@subql/common-ethereum@npm:2.3.0"
+"@subql/common-ethereum@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@subql/common-ethereum@npm:3.0.1"
   dependencies:
-    "@subql/common": 2.6.0
-    "@subql/types-ethereum": 2.2.5
+    "@subql/common": 3.1.1
+    "@subql/types-ethereum": 3.0.1
     "@typechain/ethers-v5": ^11.1.1
     js-yaml: ^4.1.0
     pino: ^6.13.3
@@ -6345,7 +6345,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 1d99b18023d5b9e229981a82584bda7604384be5383da5d9c44477ffa71e04a19a6a0732e362900312ba5dcc527296c8ec38a20304d062b7ac8d928ed1de5922
+  checksum: 191d9af6e4a781f44299694b9618caf891695f9b27a73ac6d8a9c48b58b6c16e866da1c4a451128041c4dfd6ee497cafd7c00851b46a7cb717fb4aae445d6d4b
   languageName: node
   linkType: hard
 
@@ -6365,19 +6365,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-flare@npm:^2.2.5":
-  version: 2.2.5
-  resolution: "@subql/common-flare@npm:2.2.5"
+"@subql/common-flare@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@subql/common-flare@npm:3.0.1"
   dependencies:
-    "@subql/common": 2.6.0
-    "@subql/types-flare": 2.2.5
+    "@subql/common": 3.1.1
+    "@subql/types-flare": 3.0.1
+    "@typechain/ethers-v5": ^11.1.1
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
+    typechain: ^8.3.1
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: c53c793b099c5c3e5c8657add23d75624c5447cd5324105e241c0f3742225c1c74e3353f64bae65460d399383b01f92bcc99cc01fdc40b3880502f1ee07a9129
+  checksum: 07fb1d8a496eb9ef5fc1ffd5b5742b1ec8ee94ec4e444a53987e038c9e5f6d9caf60030abde1b37504ecb4f12319d1a552422ada628fee67ddc5751eac452657
   languageName: node
   linkType: hard
 
@@ -6397,18 +6399,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-near@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@subql/common-near@npm:2.4.0"
+"@subql/common-near@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@subql/common-near@npm:3.0.0"
   dependencies:
-    "@subql/common": ^2.4.0
-    "@subql/types-near": 2.1.2
+    "@subql/common": ^3.1.1
+    "@subql/types-near": 3.0.0
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 652f71e39d2cc0391acc4a52e8c0364616b065a470bdcdecced8d7b7769138558cce6163c56046c206aea8104f8493c6ff060338853f42685ee5c777b7102bc9
+  checksum: 6107acbfcd074bed144a195064f7d433d11af76aff90dc727e2601817666a03563864c18508f439ae463d97593d41bd961f31be8e464eab6320ac8e98509fea0
   languageName: node
   linkType: hard
 
@@ -6460,10 +6462,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@subql/common@npm:2.6.0"
+"@subql/common@npm:3.1.1, @subql/common@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@subql/common@npm:3.1.1"
   dependencies:
+    "@subql/types-core": 0.1.1
     axios: ^0.27.2
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
@@ -6473,7 +6476,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: 7d57b39108c7036f94fe00acbe7265bda317095ac364e1f90b3ebe3d7ae44f20779511dd6f58ac0c8c077205a4c1dcc935e360d946032cd8315c8f6b7f885ec0
+  checksum: 1d1e3070f0a2f2368a7ba24f9b98012ca88362d51e7e53ed146026aa8c2844e8d58335496a19341facf4422aa2cac89b05e87860b0a4f73e542ca91f8240cdd0
   languageName: node
   linkType: hard
 
@@ -6654,16 +6657,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-algorand@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@subql/types-algorand@npm:2.2.0"
+"@subql/types-algorand@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@subql/types-algorand@npm:3.0.0"
+  dependencies:
+    "@subql/types-core": ^0.1.1
   peerDependencies:
     algosdk: ^2.2.0
-  checksum: 3dc6dc0f000fe07fa6e155a06a865bbe8979bf1c0fe4885701f0621bbf3cb7d2b6188faa03b92910cdd4eafb654a63c79902d3f09b644090d9e12f1e4cd79616
+  checksum: ffa8e31e1c0aaa3f549d23f6063364fb6d5d114e20d0da7faec6cb4d2db86360fcc80e36c9b44333b1baa1a708d34ff9da5026b57d9a17c2467ef919f5d76b89
   languageName: node
   linkType: hard
 
-"@subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+"@subql/types-core@0.1.1, @subql/types-core@^0.1.1, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:
@@ -6691,12 +6696,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:2.2.5":
-  version: 2.2.5
-  resolution: "@subql/types-ethereum@npm:2.2.5"
+"@subql/types-ethereum@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@subql/types-ethereum@npm:3.0.1"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-  checksum: 58f4f5b25e5f59f6a137046808f2fd0169b550d518ad4793aa6b6ee54cafc5a23994e270d6e52673ede952ef53e4391bc3a1c8d3304777eacdecafc86c11877d
+    "@subql/types-core": 0.1.1
+  checksum: f8337c9773e8bf113c7619b45de62d1a6b5b2d9af1fa011f33a3fc1e693a1aaeeb0c2d1b5674e89bb476ceb7cbff83662d694354504cf851e2d6cc94eb03829a
   languageName: node
   linkType: hard
 
@@ -6709,12 +6715,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-flare@npm:2.2.5":
-  version: 2.2.5
-  resolution: "@subql/types-flare@npm:2.2.5"
+"@subql/types-flare@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@subql/types-flare@npm:3.0.1"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-  checksum: 38d3b98e0086b609137bb3289f26c56a0ffe855c7cc09b435d93910a4eb485831f8b5fa9b91f6d40a2ecff753106a6bad4f92b5dc9060e2f34851a44bea2a0d1
+    "@subql/types-core": 0.1.1
+  checksum: e7ac487299b857f40658f05b08fe196d150f520ff6693c70fa4aceaba4c8af7fb6a88bc9f82fe122cc108904910b72084785bcfdf60124f2d4bf489d6a8197fc
   languageName: node
   linkType: hard
 
@@ -6728,13 +6735,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-near@npm:2.1.2":
-  version: 2.1.2
-  resolution: "@subql/types-near@npm:2.1.2"
+"@subql/types-near@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@subql/types-near@npm:3.0.0"
   dependencies:
+    "@subql/types-core": ^0.1.1
     bn.js: 5.2.1
     near-api-js: ^1.1.0
-  checksum: 92c15088a38332751120517e7645ba11209d7deb976e0c70d871597166eb304aaa6c8f08a72ab38c066fc4fa66bbd4fc517ccced9d94c4107f045118c8217cb5
+  checksum: c8d1dd4d6f351d7d24a3aa8bf715a6bdfa279605cb4628b366d51b9ac3a69a2e5f4f6a182d46ac5cff6318c586b39db757f61810a4f2fe524ad7eba1c1089021
   languageName: node
   linkType: hard
 

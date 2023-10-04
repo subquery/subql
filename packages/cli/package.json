@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "3.6.2-12",
+  "version": "4.0.0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -11,11 +11,11 @@
     "@oclif/core": "^2.15.0",
     "@oclif/plugin-help": "^3.2.3",
     "@subql/common": "workspace:*",
-    "@subql/common-algorand": "^2.4.0",
+    "@subql/common-algorand": "^3.0.0",
     "@subql/common-cosmos": "^2.5.0",
-    "@subql/common-ethereum": "^2.3.0",
-    "@subql/common-flare": "^2.2.5",
-    "@subql/common-near": "^2.4.0",
+    "@subql/common-ethereum": "^3.0.1",
+    "@subql/common-flare": "^3.0.1",
+    "@subql/common-near": "^3.0.0",
     "@subql/common-stellar": "^2.2.1-1",
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
@@ -90,6 +90,5 @@
   "types": "lib/index.d.ts",
   "resolutions": {
     "node-fetch": "2.6.7"
-  },
-  "stableVersion": "3.6.2-10"
+  }
 }
