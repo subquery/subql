@@ -6220,8 +6220,8 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-algorand": ^3.0.0
-    "@subql/common-cosmos": ^3.0.0
-    "@subql/common-ethereum": ^3.0.1
+    "@subql/common-cosmos": ^3.0.1
+    "@subql/common-ethereum": ^3.0.2
     "@subql/common-flare": ^3.0.1
     "@subql/common-near": ^3.0.0
     "@subql/common-stellar": ^2.2.1-1
@@ -6305,9 +6305,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@subql/common-cosmos@npm:3.0.0"
+"@subql/common-cosmos@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@subql/common-cosmos@npm:3.0.1"
   dependencies:
     "@cosmology/telescope": ^0.104.0
     "@cosmwasm/ts-codegen": ^0.35.3
@@ -6319,7 +6319,7 @@ __metadata:
     "@protobufs/ibc": ^0.1.0
     "@protobufs/tendermint": ^0.0.10
     "@subql/common": ^3.1.0
-    "@subql/types-cosmos": 3.0.0
+    "@subql/types-cosmos": 3.0.1
     fs-extra: ^11.1.1
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
@@ -6327,7 +6327,7 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
     ejs: "*"
-  checksum: 765bca524279a93393203c7d1815371faa8f6c6fb1630ea6f1b208f04f2409eb89a83cab1dc127d0c81d1da35e4127ed2390df2b664ee9e465b7df02bc7d5c7f
+  checksum: 01f03a112a37dbc6274886894adc413f87c2e4fe325881f5fc205ddd5f31eb6696a048a29c69c0ffe32bb3a47145a3582ded63f236ea6e6a0be5b89eb3379090
   languageName: node
   linkType: hard
 
@@ -6357,12 +6357,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@subql/common-ethereum@npm:3.0.1"
+"@subql/common-ethereum@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@subql/common-ethereum@npm:3.0.2"
   dependencies:
     "@subql/common": 3.1.1
-    "@subql/types-ethereum": 3.0.1
+    "@subql/types-ethereum": 3.0.2
     "@typechain/ethers-v5": ^11.1.1
     js-yaml: ^4.1.0
     pino: ^6.13.3
@@ -6371,7 +6371,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 191d9af6e4a781f44299694b9618caf891695f9b27a73ac6d8a9c48b58b6c16e866da1c4a451128041c4dfd6ee497cafd7c00851b46a7cb717fb4aae445d6d4b
+  checksum: 4b4463b2a3e6d260e446caea7f5cf27baee8b3d6d9c2fc9a43781c8221c2c319541cc8cbd3b71e8a9d3ddd1df240b2924bf9d442fa03f6ca318e3a7f37028173
   languageName: node
   linkType: hard
 
@@ -6713,15 +6713,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-cosmos@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@subql/types-cosmos@npm:3.0.0"
+"@subql/types-cosmos@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@subql/types-cosmos@npm:3.0.1"
   dependencies:
     "@cosmjs/cosmwasm-stargate": ^0.30.1
     "@cosmjs/proto-signing": ^0.30.1
     "@cosmjs/stargate": ^0.30.1
     "@subql/types-core": ^0.1.0
-  checksum: 577a1268bbe2228a140dbb6eaa31c56d596d7d9bec25adb9f1e03a6adbf5248f5351232523ec64a496914dfaf70d2e3e9016eea4adcd6a718def5e36731cf16c
+  checksum: 5c6f232c6c1e53e1189df9226a90a5035465ac8d5bfb154acd638e432ee8af6d8940d9b552404bf41573d908240e511919e21fe96fc53c71aa7ba37d612ac9cb
   languageName: node
   linkType: hard
 
@@ -6734,13 +6734,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:3.0.1":
-  version: 3.0.1
-  resolution: "@subql/types-ethereum@npm:3.0.1"
+"@subql/types-ethereum@npm:3.0.2":
+  version: 3.0.2
+  resolution: "@subql/types-ethereum@npm:3.0.2"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
     "@subql/types-core": 0.1.1
-  checksum: f8337c9773e8bf113c7619b45de62d1a6b5b2d9af1fa011f33a3fc1e693a1aaeeb0c2d1b5674e89bb476ceb7cbff83662d694354504cf851e2d6cc94eb03829a
+  checksum: 14deeee44b26c8e5884cb46b3ba49be7af3321ab7d99f519186d4171267330b3c422ba675b0bf76e1fa1afce70b053d3d67b969cf41a9a2be93452ca6082a86f
   languageName: node
   linkType: hard
 
