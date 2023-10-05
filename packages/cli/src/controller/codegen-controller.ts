@@ -18,12 +18,7 @@ import {
   generateAbis,
 } from '@subql/common-ethereum';
 import {isCustomDs as isCustomNearDs, isRuntimeDs as isRuntimeNearDs} from '@subql/common-near';
-import {
-  isCustomDs as isCustomStellarDs,
-  isRuntimeDs as isRuntimeStellarDs,
-  RuntimeDatasourceTemplate as StellarDsTemplate,
-  CustomDatasourceTemplate as StellarCustomDsTemplate,
-} from '@subql/common-stellar';
+import {isCustomDs as isCustomStellarDs, isRuntimeDs as isRuntimeStellarDs} from '@subql/common-stellar';
 import {isCustomDs as isCustomSubstrateDs, SubstrateCustomDataSource} from '@subql/common-substrate';
 import {
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
@@ -44,6 +39,10 @@ import {
   RuntimeDatasourceTemplate as NearDsTemplate,
   CustomDatasourceTemplate as NearCustomDsTemplate,
 } from '@subql/types-near';
+import {
+  RuntimeDatasourceTemplate as StellarDsTemplate,
+  CustomDatasourceTemplate as StellarCustomDsTemplate,
+} from '@subql/types-stellar';
 import {
   getAllEntitiesRelations,
   getAllJsonObjects,
