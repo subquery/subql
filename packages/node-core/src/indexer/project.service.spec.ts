@@ -52,20 +52,6 @@ describe('BaseProjectService', () => {
     expect(result).toBe(true);
   });
 
-  test('maxEndBlockHeight', async () => {
-    service.getDataSources = jest.fn().mockResolvedValue([{endBlock: 100}, {endBlock: 200}, {endBlock: 300}]);
-
-    const result = await service.maxEndBlockHeight();
-    expect(result).toBe(300);
-  });
-
-  test('maxEndBlockHeight - undefined endBlock', async () => {
-    service.getDataSources = jest.fn().mockResolvedValue([{endBlock: 100}, {endBlock: 200}, {endBlock: undefined}]);
-
-    const result = await service.maxEndBlockHeight();
-    expect(result).toBe(Number.MAX_SAFE_INTEGER);
-  });
-
   test('getDataSources', async () => {
     (service as any).project.dataSources = [
       {startBlock: 100, endBlock: 200},

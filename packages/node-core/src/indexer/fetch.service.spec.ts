@@ -152,7 +152,9 @@ describe('Fetch Service', () => {
   const enableDictionary = () => {
     // Mock the remainder of dictionary service so it works
     (dictionaryService as any).useDictionary = true;
-    dictionaryService.queriesMap = new BlockHeightMap(new Map([[1, [{entity: 'mock', conditions: []}]]]));
+    dictionaryService.queriesMap = new BlockHeightMap(
+      new Map([[1, {query: [{entity: 'mock', conditions: []}], maxDsEndBlock: 1000}]])
+    );
     dictionaryService.scopedDictionaryEntries = (start, end, batch) => {
       return Promise.resolve({
         batchBlocks: [2, 4, 6, 8, 10],

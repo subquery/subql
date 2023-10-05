@@ -15,6 +15,7 @@ import {getLogger} from '../logger';
 import {profiler} from '../profiler';
 import {timeout} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
+import {maxEndBlockHeight} from '../utils/endBlock';
 
 export type SpecVersion = {
   id: string;
@@ -155,7 +156,10 @@ function buildDictQueryFragment(
 export class DictionaryService {
   private _client?: ApolloClient<NormalizedCacheObject>;
 
-  queriesMap?: BlockHeightMap<DictionaryQueryEntry[]>;
+  queriesMap?: BlockHeightMap<{
+    query: DictionaryQueryEntry[];
+    maxDsEndBlock: number; //maximum value of endBlock obtained from datasources for current project
+  }>;
   private useDistinct = true;
   private useStartHeight = true;
   protected _startHeight?: number;
@@ -341,7 +345,11 @@ export class DictionaryService {
     dataSources: BlockHeightMap<DS[]>,
     buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
   ): void {
-    this.queriesMap = dataSources.map((dataSources) => buildDictionaryQueryEntries(dataSources));
+    this.queriesMap = dataSources.map((dataSources) => {
+      const query = buildDictionaryQueryEntries(dataSources);
+      const maxDsEndBlock = maxEndBlockHeight(dataSources);
+      return {query, maxDsEndBlock};
+    });
   }
 
   async scopedDictionaryEntries(
@@ -350,12 +358,16 @@ export class DictionaryService {
     scaledBatchSize: number
   ): Promise<(Dictionary & {queryEndBlock: number}) | undefined> {
     const queryDetails = this.queriesMap?.getDetails(startBlockHeight);
-    const queryEntry: DictionaryQueryEntry[] = queryDetails?.value ?? [];
+    const queryEntry: DictionaryQueryEntry[] = queryDetails?.value.query ?? [];
 
     // Update end block if query changes
-    if (queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock) {
-      queryEndBlock = queryDetails?.endHeight;
-    }
+    queryEndBlock =
+      queryDetails?.value.maxDsEndBlock && queryDetails?.value?.maxDsEndBlock < queryEndBlock
+        ? queryDetails.value.maxDsEndBlock
+        : queryEndBlock;
+
+    queryEndBlock =
+      queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock ? queryDetails.endHeight : queryEndBlock;
 
     const dict = await this.getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize, queryEntry);
 
