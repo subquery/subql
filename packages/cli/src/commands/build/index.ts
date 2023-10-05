@@ -6,8 +6,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import glob from 'glob';
 import {runWebpack} from '../../controller/build-controller';
-import {resolveToAbsolutePath} from '../../utils';
-import {buildManifestFromLocation} from './utils';
+import {resolveToAbsolutePath, buildManifestFromLocation} from '../../utils';
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
