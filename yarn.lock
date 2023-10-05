@@ -6505,7 +6505,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.1.1, @subql/common@npm:^3.1.0, @subql/common@npm:^3.1.1":
+"@subql/common@^3.1.0, @subql/common@^3.1.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
+  version: 0.0.0-use.local
+  resolution: "@subql/common@workspace:packages/common"
+  dependencies:
+    "@subql/types-core": "workspace:*"
+    "@types/bn.js": 4.11.6
+    "@types/detect-port": ^1
+    "@types/fs-extra": ^9.0.13
+    "@types/js-yaml": ^4.0.5
+    "@types/pino": ^6.3.12
+    "@types/semver": ^7.3.9
+    "@types/tar": ^6.1.1
+    "@types/update-notifier": ^6
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  languageName: unknown
+  linkType: soft
+
+"@subql/common@npm:3.1.1":
   version: 3.1.1
   resolution: "@subql/common@npm:3.1.1"
   dependencies:
@@ -6539,31 +6564,6 @@ __metadata:
   checksum: e592c68eb856b050a52be99a8eff6e5a4cac8a3635fda2a35cfc6a8d721c52f140fb90e488a5eb72c91de50eff3ea9e00cdcf7cd473a68a075064d302f9151e0
   languageName: node
   linkType: hard
-
-"@subql/common@workspace:*, @subql/common@workspace:packages/common":
-  version: 0.0.0-use.local
-  resolution: "@subql/common@workspace:packages/common"
-  dependencies:
-    "@subql/types-core": "workspace:*"
-    "@types/bn.js": 4.11.6
-    "@types/detect-port": ^1
-    "@types/fs-extra": ^9.0.13
-    "@types/js-yaml": ^4.0.5
-    "@types/pino": ^6.3.12
-    "@types/semver": ^7.3.9
-    "@types/tar": ^6.1.1
-    "@types/update-notifier": ^6
-    axios: ^0.27.2
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  languageName: unknown
-  linkType: soft
 
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
