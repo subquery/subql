@@ -1,26 +1,13 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {execFile} from 'child_process';
-import {lstatSync, readFileSync, existsSync} from 'fs';
-import util from 'node:util';
+import {readFileSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_TS_MANIFEST, extensionIsTs, tsProjectYamlPath} from '@subql/common';
 import glob from 'glob';
-import {runWebpack} from '../controller/build-controller';
-import {resolveToAbsolutePath} from '../utils';
-
-// We use common-js for js-yaml and fs, avoid there dev dependencies types are missing
-const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
-  `
-  import {toJsonObject} from '@subql/common'
-  const {writeFileSync} =  require('fs');
-  const yaml = require('js-yaml');
-  const project = toJsonObject((require('${scriptPath}')).default);
-  const yamlOutput = yaml.dump(project);
-  writeFileSync('${outputPath}', \`# // Auto-generated , DO NOT EDIT\n\${yamlOutput}\`);
-`;
+import {runWebpack} from '../../controller/build-controller';
+import {resolveToAbsolutePath} from '../../utils';
+import {buildManifestFromLocation} from './utils';
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
@@ -38,27 +25,7 @@ export default class Build extends Command {
       const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
       const isDev = flags.mode === 'development' || flags.mode === 'dev';
 
-      let directory: string;
-      let projectManifestEntry: string;
-      // lstatSync will throw if location not exist
-      if (lstatSync(location).isDirectory()) {
-        directory = location;
-        projectManifestEntry = path.join(directory, DEFAULT_TS_MANIFEST);
-      } else if (lstatSync(location).isFile()) {
-        directory = path.dirname(location);
-        projectManifestEntry = location;
-      } else {
-        this.error('Argument `location` is not a valid directory or file');
-      }
-
-      // Only build projectManifestEntry is in typescript
-      if (existsSync(projectManifestEntry) && extensionIsTs(path.extname(projectManifestEntry))) {
-        try {
-          await this.generateManifestFromTs(projectManifestEntry);
-        } catch (e) {
-          throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
-        }
-      }
+      const directory = await buildManifestFromLocation(location, this);
 
       // Get the output location from the project package.json main field
       const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
@@ -102,19 +69,6 @@ export default class Build extends Command {
       }
     } catch (e) {
       this.error(e);
-    }
-  }
-  private async generateManifestFromTs(projectManifestEntry: string): Promise<void> {
-    const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
-    try {
-      await util.promisify(execFile)(
-        'npx',
-        ['ts-node', '-e', requireScriptWrapper(projectManifestEntry, projectYamlPath)],
-        {cwd: path.dirname(projectManifestEntry)}
-      );
-      this.log(`Project manifest generated to ${projectYamlPath}`);
-    } catch (error) {
-      throw new Error(`Failed to build ${projectManifestEntry}: ${error}`);
     }
   }
 }
