@@ -6219,12 +6219,12 @@ __metadata:
     "@oclif/core": ^2.15.0
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
-    "@subql/common-algorand": ^2.4.0
-    "@subql/common-cosmos": ^2.5.0
-    "@subql/common-ethereum": ^2.3.0
-    "@subql/common-flare": ^2.2.5
-    "@subql/common-near": ^2.4.0
-    "@subql/common-stellar": ^2.2.1-1
+    "@subql/common-algorand": ^3.0.0
+    "@subql/common-cosmos": ^3.0.1
+    "@subql/common-ethereum": ^3.0.2
+    "@subql/common-flare": ^3.0.1
+    "@subql/common-near": ^3.0.0
+    "@subql/common-stellar": ^3.0.0
     "@subql/common-substrate": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/validator": "workspace:*"
@@ -6265,13 +6265,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-algorand@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@subql/common-algorand@npm:2.4.0"
+"@subql/common-algorand@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@subql/common-algorand@npm:3.0.0"
   dependencies:
-    "@subql/common": ^2.4.0
-    "@subql/types-algorand": 2.2.0
-    class-transformer: 0.4.0
+    "@subql/common": ^3.1.1
+    "@subql/types-algorand": 3.0.0
+    class-transformer: ^0.5.1
     class-validator: ^0.13.2
     fs-extra: ^10.1.0
     ipfs-http-client: ^52.0.3
@@ -6281,7 +6281,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 56bba886d77be37a2c5151c1366548fe57de7b65eab885549a4034cc1ccf486ba8d1fc0186f2ea610af18eff8884ab410a87d0e204bdcf899bccbd492c94b355
+  checksum: 2847b6c03efdfb909e3f302d26de64eef542f505f70587f32ffca9554bb5f708f930a49d50a05f34bc7c43ec41903b73f85e16d672ff5795140f63c169483883
   languageName: node
   linkType: hard
 
@@ -6305,7 +6305,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^2.5.0, @subql/common-cosmos@npm:latest":
+"@subql/common-cosmos@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@subql/common-cosmos@npm:3.0.1"
+  dependencies:
+    "@cosmology/telescope": ^0.104.0
+    "@cosmwasm/ts-codegen": ^0.35.3
+    "@protobufs/cosmos": ^0.1.0
+    "@protobufs/cosmos_proto": ^0.0.10
+    "@protobufs/cosmwasm": ^0.1.1
+    "@protobufs/gogoproto": ^0.0.10
+    "@protobufs/google": ^0.0.10
+    "@protobufs/ibc": ^0.1.0
+    "@protobufs/tendermint": ^0.0.10
+    "@subql/common": ^3.1.0
+    "@subql/types-cosmos": 3.0.1
+    fs-extra: ^11.1.1
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+  peerDependencies:
+    class-transformer: "*"
+    class-validator: "*"
+    ejs: "*"
+  checksum: 01f03a112a37dbc6274886894adc413f87c2e4fe325881f5fc205ddd5f31eb6696a048a29c69c0ffe32bb3a47145a3582ded63f236ea6e6a0be5b89eb3379090
+  languageName: node
+  linkType: hard
+
+"@subql/common-cosmos@npm:latest":
   version: 2.5.0
   resolution: "@subql/common-cosmos@npm:2.5.0"
   dependencies:
@@ -6331,12 +6357,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "@subql/common-ethereum@npm:2.3.0"
+"@subql/common-ethereum@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@subql/common-ethereum@npm:3.0.2"
   dependencies:
-    "@subql/common": 2.6.0
-    "@subql/types-ethereum": 2.2.5
+    "@subql/common": 3.1.1
+    "@subql/types-ethereum": 3.0.2
     "@typechain/ethers-v5": ^11.1.1
     js-yaml: ^4.1.0
     pino: ^6.13.3
@@ -6345,7 +6371,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 1d99b18023d5b9e229981a82584bda7604384be5383da5d9c44477ffa71e04a19a6a0732e362900312ba5dcc527296c8ec38a20304d062b7ac8d928ed1de5922
+  checksum: 4b4463b2a3e6d260e446caea7f5cf27baee8b3d6d9c2fc9a43781c8221c2c319541cc8cbd3b71e8a9d3ddd1df240b2924bf9d442fa03f6ca318e3a7f37028173
   languageName: node
   linkType: hard
 
@@ -6365,19 +6391,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-flare@npm:^2.2.5":
-  version: 2.2.5
-  resolution: "@subql/common-flare@npm:2.2.5"
+"@subql/common-flare@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@subql/common-flare@npm:3.0.1"
   dependencies:
-    "@subql/common": 2.6.0
-    "@subql/types-flare": 2.2.5
+    "@subql/common": 3.1.1
+    "@subql/types-flare": 3.0.1
+    "@typechain/ethers-v5": ^11.1.1
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
+    typechain: ^8.3.1
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: c53c793b099c5c3e5c8657add23d75624c5447cd5324105e241c0f3742225c1c74e3353f64bae65460d399383b01f92bcc99cc01fdc40b3880502f1ee07a9129
+  checksum: 07fb1d8a496eb9ef5fc1ffd5b5742b1ec8ee94ec4e444a53987e038c9e5f6d9caf60030abde1b37504ecb4f12319d1a552422ada628fee67ddc5751eac452657
   languageName: node
   linkType: hard
 
@@ -6397,18 +6425,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-near@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@subql/common-near@npm:2.4.0"
+"@subql/common-near@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@subql/common-near@npm:3.0.0"
   dependencies:
-    "@subql/common": ^2.4.0
-    "@subql/types-near": 2.1.2
+    "@subql/common": ^3.1.1
+    "@subql/types-near": 3.0.0
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 652f71e39d2cc0391acc4a52e8c0364616b065a470bdcdecced8d7b7769138558cce6163c56046c206aea8104f8493c6ff060338853f42685ee5c777b7102bc9
+  checksum: 6107acbfcd074bed144a195064f7d433d11af76aff90dc727e2601817666a03563864c18508f439ae463d97593d41bd961f31be8e464eab6320ac8e98509fea0
   languageName: node
   linkType: hard
 
@@ -6443,6 +6471,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/common-stellar@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@subql/common-stellar@npm:3.0.0"
+  dependencies:
+    "@subql/common": ^3.1.1
+    "@subql/types-stellar": 3.0.0
+    js-yaml: ^4.1.0
+    pino: ^6.13.3
+    reflect-metadata: ^0.1.13
+    stellar-sdk: ^10.4.1
+  peerDependencies:
+    class-transformer: "*"
+    class-validator: "*"
+  checksum: 29420299b3a5fab49a1636c501c21479cb37c06d7cefe99ab41cb939f98eb3b6235a66474a0ee037f467e799e7289a3930f11540d4c37ad25e7e9b4dd199d67b
+  languageName: node
+  linkType: hard
+
 "@subql/common-substrate@workspace:*, @subql/common-substrate@workspace:packages/common-substrate":
   version: 0.0.0-use.local
   resolution: "@subql/common-substrate@workspace:packages/common-substrate"
@@ -6460,41 +6505,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@subql/common@npm:2.6.0"
-  dependencies:
-    axios: ^0.27.2
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 7d57b39108c7036f94fe00acbe7265bda317095ac364e1f90b3ebe3d7ae44f20779511dd6f58ac0c8c077205a4c1dcc935e360d946032cd8315c8f6b7f885ec0
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:^2.2.1, @subql/common@npm:^2.3.1-1, @subql/common@npm:^2.4.0":
-  version: 2.7.0
-  resolution: "@subql/common@npm:2.7.0"
-  dependencies:
-    axios: ^0.27.2
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: e592c68eb856b050a52be99a8eff6e5a4cac8a3635fda2a35cfc6a8d721c52f140fb90e488a5eb72c91de50eff3ea9e00cdcf7cd473a68a075064d302f9151e0
-  languageName: node
-  linkType: hard
-
-"@subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@^3.1.0, @subql/common@^3.1.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -6518,6 +6529,41 @@ __metadata:
     update-notifier: 5.1.0
   languageName: unknown
   linkType: soft
+
+"@subql/common@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@subql/common@npm:3.1.1"
+  dependencies:
+    "@subql/types-core": 0.1.1
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: 1d1e3070f0a2f2368a7ba24f9b98012ca88362d51e7e53ed146026aa8c2844e8d58335496a19341facf4422aa2cac89b05e87860b0a4f73e542ca91f8240cdd0
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:^2.2.1, @subql/common@npm:^2.3.1-1, @subql/common@npm:^2.4.0":
+  version: 2.7.0
+  resolution: "@subql/common@npm:2.7.0"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: e592c68eb856b050a52be99a8eff6e5a4cac8a3635fda2a35cfc6a8d721c52f140fb90e488a5eb72c91de50eff3ea9e00cdcf7cd473a68a075064d302f9151e0
+  languageName: node
+  linkType: hard
 
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
@@ -6654,16 +6700,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-algorand@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@subql/types-algorand@npm:2.2.0"
+"@subql/types-algorand@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@subql/types-algorand@npm:3.0.0"
+  dependencies:
+    "@subql/types-core": ^0.1.1
   peerDependencies:
     algosdk: ^2.2.0
-  checksum: 3dc6dc0f000fe07fa6e155a06a865bbe8979bf1c0fe4885701f0621bbf3cb7d2b6188faa03b92910cdd4eafb654a63c79902d3f09b644090d9e12f1e4cd79616
+  checksum: ffa8e31e1c0aaa3f549d23f6063364fb6d5d114e20d0da7faec6cb4d2db86360fcc80e36c9b44333b1baa1a708d34ff9da5026b57d9a17c2467ef919f5d76b89
   languageName: node
   linkType: hard
 
-"@subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+"@subql/types-core@0.1.1, @subql/types-core@^0.1.0, @subql/types-core@^0.1.1, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:
@@ -6682,6 +6730,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-cosmos@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@subql/types-cosmos@npm:3.0.1"
+  dependencies:
+    "@cosmjs/cosmwasm-stargate": ^0.30.1
+    "@cosmjs/proto-signing": ^0.30.1
+    "@cosmjs/stargate": ^0.30.1
+    "@subql/types-core": ^0.1.0
+  checksum: 5c6f232c6c1e53e1189df9226a90a5035465ac8d5bfb154acd638e432ee8af6d8940d9b552404bf41573d908240e511919e21fe96fc53c71aa7ba37d612ac9cb
+  languageName: node
+  linkType: hard
+
 "@subql/types-ethereum@npm:2.2.2":
   version: 2.2.2
   resolution: "@subql/types-ethereum@npm:2.2.2"
@@ -6691,12 +6751,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:2.2.5":
-  version: 2.2.5
-  resolution: "@subql/types-ethereum@npm:2.2.5"
+"@subql/types-ethereum@npm:3.0.2":
+  version: 3.0.2
+  resolution: "@subql/types-ethereum@npm:3.0.2"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-  checksum: 58f4f5b25e5f59f6a137046808f2fd0169b550d518ad4793aa6b6ee54cafc5a23994e270d6e52673ede952ef53e4391bc3a1c8d3304777eacdecafc86c11877d
+    "@subql/types-core": 0.1.1
+  checksum: 14deeee44b26c8e5884cb46b3ba49be7af3321ab7d99f519186d4171267330b3c422ba675b0bf76e1fa1afce70b053d3d67b969cf41a9a2be93452ca6082a86f
   languageName: node
   linkType: hard
 
@@ -6709,12 +6770,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-flare@npm:2.2.5":
-  version: 2.2.5
-  resolution: "@subql/types-flare@npm:2.2.5"
+"@subql/types-flare@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@subql/types-flare@npm:3.0.1"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-  checksum: 38d3b98e0086b609137bb3289f26c56a0ffe855c7cc09b435d93910a4eb485831f8b5fa9b91f6d40a2ecff753106a6bad4f92b5dc9060e2f34851a44bea2a0d1
+    "@subql/types-core": 0.1.1
+  checksum: e7ac487299b857f40658f05b08fe196d150f520ff6693c70fa4aceaba4c8af7fb6a88bc9f82fe122cc108904910b72084785bcfdf60124f2d4bf489d6a8197fc
   languageName: node
   linkType: hard
 
@@ -6728,13 +6790,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-near@npm:2.1.2":
-  version: 2.1.2
-  resolution: "@subql/types-near@npm:2.1.2"
+"@subql/types-near@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@subql/types-near@npm:3.0.0"
   dependencies:
+    "@subql/types-core": ^0.1.1
     bn.js: 5.2.1
     near-api-js: ^1.1.0
-  checksum: 92c15088a38332751120517e7645ba11209d7deb976e0c70d871597166eb304aaa6c8f08a72ab38c066fc4fa66bbd4fc517ccced9d94c4107f045118c8217cb5
+  checksum: c8d1dd4d6f351d7d24a3aa8bf715a6bdfa279605cb4628b366d51b9ac3a69a2e5f4f6a182d46ac5cff6318c586b39db757f61810a4f2fe524ad7eba1c1089021
   languageName: node
   linkType: hard
 
@@ -6744,6 +6807,17 @@ __metadata:
   dependencies:
     soroban-client: 0.9.2
   checksum: 86292232151e78b1c04979686703d50ebd42d05059e6a595f24d5867f302670b367c7c68644f5cfcafd90e981ffd06adc5df7362e1cc581144d9986cdd1094ba
+  languageName: node
+  linkType: hard
+
+"@subql/types-stellar@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@subql/types-stellar@npm:3.0.0"
+  dependencies:
+    "@subql/types-core": 0.1.1
+    soroban-client: 0.9.2
+    stellar-sdk: ^10.4.1
+  checksum: f03cf8fce90757b940cb4ae0065a8374da2b865ec4ffdcec7499b223126fd188f0107b89bb66f0fe83898465bf10401aff70ab5b2fdf40a3cb8c12bad35b9c1d
   languageName: node
   linkType: hard
 
@@ -7206,6 +7280,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/eventsource@npm:^1.1.2":
+  version: 1.1.12
+  resolution: "@types/eventsource@npm:1.1.12"
+  checksum: 19039099c2dc8fb369517b248856ba30dca3c36cf58cb2d62137d7c907db40871c6c4e67b1960ebba2b6f84a6bba7add4c25dc647fefbb4a37cdb7ccfa3b3f15
+  languageName: node
+  linkType: hard
+
 "@types/expect@npm:^1.20.4":
   version: 1.20.4
   resolution: "@types/expect@npm:1.20.4"
@@ -7479,6 +7560,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:>= 8":
+  version: 20.8.2
+  resolution: "@types/node@npm:20.8.2"
+  checksum: 3da73e25d821bfcdb7de98589027e08bb4848e55408671c4a83ec0341e124b5313a0b20e1e4b4eff1168ea17a86f622ad73fcb04b761abd77496b9a27cbd5de5
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^10.1.0":
   version: 10.17.60
   resolution: "@types/node@npm:10.17.60"
@@ -7586,6 +7674,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/randombytes@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "@types/randombytes@npm:2.0.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: 3ff0e1f812cabafe2957d6633f5127119224f8d7c1765ab47a1c1b2427f3375c59356ed47b59e8e08796930cca50b23a8322e9d9420fc56d9614e9a0956cb539
+  languageName: node
+  linkType: hard
+
 "@types/range-parser@npm:*":
   version: 1.2.4
   resolution: "@types/range-parser@npm:1.2.4"
@@ -7676,6 +7773,13 @@ __metadata:
     "@types/configstore": "*"
     boxen: ^7.0.0
   checksum: f252960ce4c5a7c59668a5e486697e42b324a0404e9671614cef253614896f364b929b9005f8211309a5a69ca8242d4ef8f904d1fd543489dff800a7d7422b15
+  languageName: node
+  linkType: hard
+
+"@types/urijs@npm:^1.19.6":
+  version: 1.19.20
+  resolution: "@types/urijs@npm:1.19.20"
+  checksum: 9e2e0e5ba19a27bdb5bdd258518082e555500d7efe957f9b09d68d98d99c472d0efa7616ec6e55262514189d8e22e482175576229cbbcf539a72f1e1c20d1df1
   languageName: node
   linkType: hard
 
@@ -9003,6 +9107,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:0.25.0":
+  version: 0.25.0
+  resolution: "axios@npm:0.25.0"
+  dependencies:
+    follow-redirects: ^1.14.7
+  checksum: 2a8a3787c05f2a0c9c3878f49782357e2a9f38945b93018fb0c4fd788171c43dceefbb577988628e09fea53952744d1ecebde234b561f1e703aa43e0a598a3ad
+  languageName: node
+  linkType: hard
+
 "axios@npm:^0.21.2":
   version: 0.21.4
   resolution: "axios@npm:0.21.4"
@@ -9266,6 +9379,13 @@ __metadata:
   version: 5.2.2
   resolution: "big.js@npm:5.2.2"
   checksum: b89b6e8419b097a8fb4ed2399a1931a68c612bce3cfd5ca8c214b2d017531191070f990598de2fc6f3f993d91c0f08aa82697717f6b3b8732c9731866d233c9e
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^4.0.0":
+  version: 4.1.0
+  resolution: "bignumber.js@npm:4.1.0"
+  checksum: d6356def9af39048e4ce87ee6518e85a69e297c9a055df1e44633d8e3a6c2b4cf2d333462e1ab8a7c487c851adc45fb44bb5748d545d2416ac0f751bccd811c8
   languageName: node
   linkType: hard
 
@@ -9677,7 +9797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^5.5.0":
+"buffer@npm:^5.1.0, buffer@npm:^5.5.0":
   version: 5.7.1
   resolution: "buffer@npm:5.7.1"
   dependencies:
@@ -10751,6 +10871,15 @@ __metadata:
     long: ^4.0.0
     protobufjs: ~6.11.2
   checksum: 4a0b730a7f1ae8efa8bd044f9ebdd7921f26319ff2abf36ac7e2f93ef6f3e73d90c1775ce2325611d47c4ccc72a708a63e31e89d9d80ad75c1107c7228e09bc8
+  languageName: node
+  linkType: hard
+
+"crc@npm:^3.5.0":
+  version: 3.8.0
+  resolution: "crc@npm:3.8.0"
+  dependencies:
+    buffer: ^5.1.0
+  checksum: dabbc4eba223b206068b92ca82bb471d583eb6be2384a87f5c3712730cfd6ba4b13a45e8ba3ef62174d5a781a2c5ac5c20bf36cf37bba73926899bd0aa19186f
   languageName: node
   linkType: hard
 
@@ -12214,6 +12343,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eventsource@npm:^1.1.1":
+  version: 1.1.2
+  resolution: "eventsource@npm:1.1.2"
+  checksum: fe8f2ac3c70b1b63ee3cef5c0a28680cb00b5747bfda1d9835695fab3ed602be41c5c799b1fc997b34b02633573fead25b12b036bdf5212f23a6aa9f59212e9b
+  languageName: node
+  linkType: hard
+
 "eventsource@npm:^2.0.2":
   version: 2.0.2
   resolution: "eventsource@npm:2.0.2"
@@ -12666,6 +12802,16 @@ __metadata:
     debug:
       optional: true
   checksum: eaec81c3e0ae57aae2422e38ad3539d0e7279b3a63f9681eeea319bb683dea67502c4e097136b8ce9721542b4e236e092b6b49e34e326cdd7733c274f0a3f378
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.14.7":
+  version: 1.15.3
+  resolution: "follow-redirects@npm:1.15.3"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 584da22ec5420c837bd096559ebfb8fe69d82512d5585004e36a3b4a6ef6d5905780e0c74508c7b72f907d1fa2b7bd339e613859e9c304d0dc96af2027fd0231
   languageName: node
   linkType: hard
 
@@ -15493,6 +15639,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-xdr@npm:^1.1.3":
+  version: 1.3.0
+  resolution: "js-xdr@npm:1.3.0"
+  dependencies:
+    lodash: ^4.17.5
+    long: ^2.2.3
+  checksum: c9d2e340840b510b7de3d8d07da610a9feb65ece25195847737ddcd88f929490ee868354957e8d615be983ff524a2863fa9b3341d2f3b3fc950a6660e7dad6a0
+  languageName: node
+  linkType: hard
+
 "js-xdr@npm:^3.0.0":
   version: 3.0.0
   resolution: "js-xdr@npm:3.0.0"
@@ -16015,7 +16171,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:>=4 <5, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.12, lodash@npm:^4.17.15, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.3.0":
+"lodash@npm:>=4 <5, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.12, lodash@npm:^4.17.15, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.17.5, lodash@npm:^4.3.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -16048,6 +16204,13 @@ __metadata:
   version: 1.8.0
   resolution: "loglevel@npm:1.8.0"
   checksum: 41aeea17de24aba8dba68084a31fe9189648bce4f39c1277e021bb276c3c53a75b0d337395919cf271068ad40ecefabad0e4fdeb4a8f11908beee532b898f4a7
+  languageName: node
+  linkType: hard
+
+"long@npm:^2.2.3":
+  version: 2.4.0
+  resolution: "long@npm:2.4.0"
+  checksum: e24fd5e14be90ba6ec3faa43b3b0f1c4ac88bfdc52471d90f63e173572f6db27c45873e847f8af58283ca3140eb42d7ba11708102f3cc0956793b03305c737e0
   languageName: node
   linkType: hard
 
@@ -19915,6 +20078,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sodium-native@npm:^3.3.0":
+  version: 3.4.1
+  resolution: "sodium-native@npm:3.4.1"
+  dependencies:
+    node-gyp: latest
+    node-gyp-build: ^4.3.0
+  checksum: 88f2f8c9ecb3c7952098b667ee3803f24253d72a3b3874b126e0e36b2ac20432e12ad44bde3664024e6d0ae1bc6d24fdebc81273af161e735f2eec22f10d26dd
+  languageName: node
+  linkType: hard
+
 "sodium-native@npm:^4.0.1":
   version: 4.0.4
   resolution: "sodium-native@npm:4.0.4"
@@ -20135,6 +20308,49 @@ __metadata:
     sodium-native:
       optional: true
   checksum: dedc2c5a12b02ddf6877ee3cc3d2bf1ce4fcb407e475a044d82a820d76cf74434f2bba9ff619fd91c7b7dd4e875b7690d9bc1f8274babae874d8fac863ccbe6d
+  languageName: node
+  linkType: hard
+
+"stellar-base@npm:^8.2.2":
+  version: 8.2.2
+  resolution: "stellar-base@npm:8.2.2"
+  dependencies:
+    base32.js: ^0.1.0
+    bignumber.js: ^4.0.0
+    crc: ^3.5.0
+    js-xdr: ^1.1.3
+    lodash: ^4.17.21
+    sha.js: ^2.3.6
+    sodium-native: ^3.3.0
+    tweetnacl: ^1.0.3
+  dependenciesMeta:
+    sodium-native:
+      optional: true
+  checksum: 9dfbbeb048b359d819c080f18993c919b0f6717f14a24c68a1da07efea47b065d762c75f24def3c868a8b4914c15d34a044c7cb00d609d04fdbe98441a841f6e
+  languageName: node
+  linkType: hard
+
+"stellar-sdk@npm:^10.4.1":
+  version: 10.4.1
+  resolution: "stellar-sdk@npm:10.4.1"
+  dependencies:
+    "@types/eventsource": ^1.1.2
+    "@types/node": ">= 8"
+    "@types/randombytes": ^2.0.0
+    "@types/urijs": ^1.19.6
+    axios: 0.25.0
+    bignumber.js: ^4.0.0
+    detect-node: ^2.0.4
+    es6-promise: ^4.2.4
+    eventsource: ^1.1.1
+    lodash: ^4.17.21
+    randombytes: ^2.1.0
+    stellar-base: ^8.2.2
+    toml: ^2.3.0
+    tslib: ^1.10.0
+    urijs: ^1.19.1
+    utility-types: ^3.7.0
+  checksum: 2e407709ed56ace1514dcd32cc099be0946435021d92e9fdd3d97695f7670266264a5881b7d4086427e22915ca4fc319ea90d874f997842420dcda51dd6bc712
   languageName: node
   linkType: hard
 
@@ -20748,6 +20964,13 @@ __metadata:
   version: 1.0.1
   resolution: "toidentifier@npm:1.0.1"
   checksum: 952c29e2a85d7123239b5cfdd889a0dde47ab0497f0913d70588f19c53f7e0b5327c95f4651e413c74b785147f9637b17410ac8c846d5d4a20a5a33eb6dc3a45
+  languageName: node
+  linkType: hard
+
+"toml@npm:^2.3.0":
+  version: 2.3.6
+  resolution: "toml@npm:2.3.6"
+  checksum: e1be1ec9dad3049459d0c81e5b7b40ce8356ca5fc27d23cab101551447e22af7fe6d903d19162389ffd50cb3ff4e986374992d4c293da84166fa6307c7c1b5cf
   languageName: node
   linkType: hard
 
@@ -21519,6 +21742,13 @@ __metadata:
     is-typed-array: ^1.1.3
     which-typed-array: ^1.1.2
   checksum: 705e51f0de5b446f4edec10739752ac25856541e0254ea1e7e45e5b9f9b0cb105bc4bd415736a6210edc68245a7f903bf085ffb08dd7deb8a0e847f60538a38a
+  languageName: node
+  linkType: hard
+
+"utility-types@npm:^3.7.0":
+  version: 3.10.0
+  resolution: "utility-types@npm:3.10.0"
+  checksum: 8f274415c6196ab62883b8bd98c9d2f8829b58016e4269aaa1ebd84184ac5dda7dc2ca45800c0d5e0e0650966ba063bf9a412aaeaea6850ca4440a391283d5c8
   languageName: node
   linkType: hard
 
