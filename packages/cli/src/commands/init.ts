@@ -23,7 +23,7 @@ import {
   ExampleProjectInterface,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
-import {resolveToAbsolutePath} from '../utils';
+import {resolveToAbsolutePath, buildManifestFromLocation} from '../utils';
 import Generate from './codegen/generate';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
@@ -265,6 +265,7 @@ export default class Init extends Command {
     ]);
 
     this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
+    await buildManifestFromLocation(this.projectPath, this);
 
     await Generate.run([
       '-f',
