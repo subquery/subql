@@ -1,4 +1,4 @@
-FROM gitpod/workspace-node
+FROM gitpod/openvscode-server
 FROM postgres:16
 
 # Variables needed at runtime to configure postgres
