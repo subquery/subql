@@ -156,10 +156,7 @@ function buildDictQueryFragment(
 export class DictionaryService {
   private _client?: ApolloClient<NormalizedCacheObject>;
 
-  queriesMap?: BlockHeightMap<{
-    query: DictionaryQueryEntry[];
-    maxDsEndBlock: number; //maximum value of endBlock obtained from datasources for current project
-  }>;
+  queriesMap?: BlockHeightMap<DictionaryQueryEntry[]>;
   private useDistinct = true;
   private useStartHeight = true;
   protected _startHeight?: number;
@@ -345,11 +342,19 @@ export class DictionaryService {
     dataSources: BlockHeightMap<DS[]>,
     buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
   ): void {
-    this.queriesMap = dataSources.map((dataSources) => {
-      const query = buildDictionaryQueryEntries(dataSources);
-      const maxDsEndBlock = maxEndBlockHeight(dataSources);
-      return {query, maxDsEndBlock};
+    this.queriesMap = dataSources.map(buildDictionaryQueryEntries);
+    const newQueriesMap = this.queriesMap?.getAll() || new Map();
+
+    dataSources.getAll().forEach((ds, height) => {
+      const endBlock = maxEndBlockHeight(ds);
+      const queryDetails = this.queriesMap?.getDetails(height);
+
+      if (!queryDetails?.endHeight || queryDetails.endHeight > endBlock) {
+        newQueriesMap.set(endBlock + 1, []);
+      }
     });
+
+    this.queriesMap = new BlockHeightMap(newQueriesMap);
   }
 
   async scopedDictionaryEntries(
@@ -358,13 +363,7 @@ export class DictionaryService {
     scaledBatchSize: number
   ): Promise<(Dictionary & {queryEndBlock: number}) | undefined> {
     const queryDetails = this.queriesMap?.getDetails(startBlockHeight);
-    const queryEntry: DictionaryQueryEntry[] = queryDetails?.value.query ?? [];
-
-    // Update end block if query changes
-    queryEndBlock =
-      queryDetails?.value.maxDsEndBlock && queryDetails?.value?.maxDsEndBlock < queryEndBlock
-        ? queryDetails.value.maxDsEndBlock
-        : queryEndBlock;
+    const queryEntry: DictionaryQueryEntry[] = queryDetails?.value ?? [];
 
     queryEndBlock =
       queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock ? queryDetails.endHeight : queryEndBlock;

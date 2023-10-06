@@ -94,7 +94,7 @@ export abstract class BaseFetchService<
       this.dictionaryService.useDictionary &&
       !!this.dictionaryService.queriesMap?.get(
         this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
-      )?.query.length
+      )?.length
     );
   }
 
