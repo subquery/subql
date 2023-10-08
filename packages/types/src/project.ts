@@ -252,7 +252,6 @@ export type SubstrateDatasource = SubstrateRuntimeDatasource | SubstrateCustomDa
  * Represents a custom datasource for Substrate.
  * @interface
  * @template K - The kind of the datasource (default: string).
- * @template T - The filter type for the datasource (default: SubstrateNetworkFilter).
  * @template M - The mapping type for the datasource (default: SubstrateMapping<SubstrateCustomHandler>).
  * @template O - The processor options (default: any).
  */

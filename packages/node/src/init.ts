@@ -19,12 +19,11 @@ const logger = getLogger('subql-node');
 notifyUpdates(pjson, logger);
 
 export async function bootstrap(): Promise<void> {
-  const debug = argv.debug;
   const port = await getValidPort(argv.port);
 
   try {
     const app = await NestFactory.create(AppModule, {
-      logger: new NestLogger(debug),
+      logger: new NestLogger(!!argv.debug),
     });
     await app.init();
 

@@ -21,7 +21,7 @@ jest.mock('@subql/x-sequelize', () => {
 function createPoiService(): PoiService {
   const nodeConfig = {
     proofOfIndex: true,
-    debug: false,
+    debug: '',
   } as NodeConfig;
 
   const sequelize = new Sequelize();

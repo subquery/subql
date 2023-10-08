@@ -59,7 +59,8 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
 };
 
 const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): SequelizeOption => {
-  const logger = getLogger('db');
+  const logger = getLogger('SQL');
+
   return {
     ...option,
     dialect: 'postgres',
@@ -72,11 +73,9 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
         cert: nodeConfig.postgresClientCert,
       },
     },
-    logging: nodeConfig.debug
-      ? (sql: string, timing?: number) => {
-          logger.debug(sql);
-        }
-      : false,
+    logging: (sql: string, timing?: number) => {
+      logger.debug(sql);
+    },
   };
 };
 
@@ -102,7 +101,6 @@ export class DbModule {
   }
 
   static forRoot(option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
-    const logger = getLogger('db');
     return {
       module: DbModule,
       providers: [

@@ -257,6 +257,9 @@ export class DictionaryService {
     }
 
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
+
+    logger.debug(`query: ${query}`);
+    logger.debug(`variables: ${JSON.stringify(variables, null, 2)}`);
     try {
       const resp = await timeout(
         this.client.query({
