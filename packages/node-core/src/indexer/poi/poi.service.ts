@@ -101,6 +101,7 @@ export class PoiService implements OnApplicationShutdown {
       return;
     }
     try {
+      logger.info('Migrating POI table, this may take some time');
       // Remove and Change column from sequelize not work, it only applies to public schema
       // https://github.com/sequelize/sequelize/issues/13365
       // await this.poiRepo?.model.sequelize?.getQueryInterface().changeColumn(tableName,'mmrRoot',{})
@@ -175,6 +176,8 @@ export class PoiService implements OnApplicationShutdown {
     if (genesisPoi && (genesisPoi.hash === null || genesisPoi.parentHash === null)) {
       this.createGenesisPoi(genesisPoi);
     }
+
+    logger.info('Migrating POI completed.');
   }
 
   async ensureGenesisPoi(height: number) {
