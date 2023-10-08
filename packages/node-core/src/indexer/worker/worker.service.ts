@@ -40,7 +40,7 @@ export abstract class BaseWorkerService<
     private projectUpgradeService: IProjectUpgradeService,
     nodeConfig: NodeConfig
   ) {
-    this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
+    this.queue = new AutoQueue(undefined, nodeConfig.batchSize, nodeConfig.timeout);
   }
 
   async fetchBlock(height: number, extra: E): Promise<R | undefined> {

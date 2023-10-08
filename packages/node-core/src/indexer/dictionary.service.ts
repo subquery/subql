@@ -263,7 +263,12 @@ export class DictionaryService {
           query: gql(query),
           variables,
         }),
-        this.nodeConfig.dictionaryTimeout
+        this.nodeConfig.dictionaryTimeout,
+        `Dictionary query timeout in ${
+          this.nodeConfig.dictionaryTimeout
+        } seconds. Please increase --dictionary-timeout. ${
+          this.nodeConfig.debug ? `\n GraphQL: ${query}, \n Variables: ${variables}` : ''
+        }`
       );
       const blockHeightSet = new Set<number>();
       const entityEndBlock: {[entity: string]: number} = {};
@@ -386,7 +391,10 @@ export class DictionaryService {
         this.client.query({
           query: gql(query),
         }),
-        this.nodeConfig.dictionaryTimeout
+        this.nodeConfig.dictionaryTimeout,
+        `Dictionary metadata query timeout in ${
+          this.nodeConfig.dictionaryTimeout
+        } seconds. Please increase --dictionary-timeout. ${this.nodeConfig.debug ? `\n GraphQL: ${query}` : ''}`
       );
       const _metadata = resp.data._metadata;
 

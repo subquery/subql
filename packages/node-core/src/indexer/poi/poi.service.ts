@@ -9,6 +9,7 @@ import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {sqlIterator} from '../../utils';
 import {ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
@@ -134,34 +135,46 @@ export class PoiService implements OnApplicationShutdown {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "chainBlockHash" DROP NOT NULL;`);
           // keep existing chainBlockHash
           queries.push(
-            `CREATE UNIQUE INDEX IF NOT EXISTS "poi_chainBlockHash" ON ${tableName} ("hash") WHERE "hash" IS NOT NULL`
+            sqlIterator(
+              tableName,
+              `CREATE UNIQUE INDEX IF NOT EXISTS "poi_chainBlockHash" ON ${tableName} ("hash") WHERE "hash" IS NOT NULL`
+            )
           );
         }
         if (!checkResult.hash_nullable) {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "hash" DROP NOT NULL;`);
-          queries.push(`UPDATE ${tableName} SET hash = NULL;`);
           queries.push(
-            `CREATE UNIQUE INDEX IF NOT EXISTS "poi_hash" ON ${tableName} ("hash") WHERE "hash" IS NOT NULL`
+            sqlIterator(
+              tableName,
+              `CREATE UNIQUE INDEX IF NOT EXISTS "poi_hash" ON ${tableName} ("hash") WHERE "hash" IS NOT NULL`
+            )
           );
         }
         if (!checkResult.parent_nullable) {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "parentHash" DROP NOT NULL;`);
-          queries.push(`UPDATE ${tableName} SET "parentHash" = NULL;`);
           queries.push(
-            `CREATE UNIQUE INDEX IF NOT EXISTS "poi_parent_hash" ON ${tableName} ("parentHash") WHERE "parentHash" IS NOT NULL`
+            sqlIterator(
+              tableName,
+              `CREATE UNIQUE INDEX IF NOT EXISTS "poi_parent_hash" ON ${tableName} ("parentHash") WHERE "parentHash" IS NOT NULL`
+            )
           );
         }
       }
 
       if (queries.length) {
+        const tx = await this.poiRepo.model.sequelize?.transaction();
+        if (!tx) {
+          throw new Error(`Create transaction for poi migration got undefined!`);
+        }
         for (const query of queries) {
           try {
-            await this.poiRepo?.model.sequelize?.query(query, {type: QueryTypes.SELECT});
+            await this.poiRepo?.model.sequelize?.query(query, {type: QueryTypes.SELECT, transaction: tx});
           } catch (e) {
             logger.error(`Migration poi failed with query: ${query}`);
             throw e;
           }
         }
+        await tx.commit();
         logger.info(`Successful migrate Poi`);
         if (checkResult?.mmr_exists) {
           logger.info(`If file based mmr were used previously, it can be clean up mannually`);
@@ -173,7 +186,10 @@ export class PoiService implements OnApplicationShutdown {
     // Before migration `latestSyncedPoiHeight` haven't been record in Db meta
     // we try to find the first height from current poi table. and set for once
     const genesisPoi = await this.poiRepo.getFirst();
-    if (genesisPoi && (genesisPoi.hash === null || genesisPoi.parentHash === null)) {
+    // if (genesisPoi && (genesisPoi.hash === null || genesisPoi.parentHash === null)) {
+    //   this.createGenesisPoi(genesisPoi);
+    // }
+    if (genesisPoi) {
       this.createGenesisPoi(genesisPoi);
     }
 
@@ -303,9 +319,11 @@ export class PoiService implements OnApplicationShutdown {
       this.setLatestSyncedPoi(syncedPoiBlock);
     }
     if (appendedBlocks.length) {
-      if (this.nodeConfig.debug) {
-        syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
-      }
+      syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
+
+      // if (this.nodeConfig.debug) {
+      //   syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
+      // }
       this.poiRepo?.bulkUpsert(appendedBlocks);
     }
   }
