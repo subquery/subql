@@ -211,8 +211,10 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         events,
       };
 
+      const clonedOp = cloneDeep(wrappedOp);
+
       effects.forEach((effect) => {
-        effect.operation = cloneDeep(wrappedOp);
+        effect.operation = clonedOp;
         wrappedOp.effects.push(effect);
       });
 
@@ -236,6 +238,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         events: [] as SorobanEvent[],
       };
 
+      const clonedTx = cloneDeep(wrappedTx);
       const operations = this.wrapOperationsForTx(
         tx.id,
         index + 1,
@@ -244,13 +247,13 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         effectsForSequence,
         eventsForSequence,
       ).map((op) => {
-        op.transaction = cloneDeep(wrappedTx);
+        op.transaction = clonedTx;
         op.effects = op.effects.map((effect) => {
-          effect.transaction = cloneDeep(wrappedTx);
+          effect.transaction = clonedTx;
           return effect;
         });
         op.events = op.events.map((event) => {
-          event.transaction = cloneDeep(wrappedTx);
+          event.transaction = clonedTx;
           return event;
         });
         return op;
@@ -316,16 +319,18 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       eventsForSequence,
     );
 
+    const clonedLedger = cloneDeep(wrappedLedger);
+
     wrapperTxs.forEach((tx) => {
-      tx.ledger = cloneDeep(wrappedLedger);
+      tx.ledger = clonedLedger;
       tx.operations = tx.operations.map((op) => {
-        op.ledger = cloneDeep(wrappedLedger);
+        op.ledger = clonedLedger;
         op.effects = op.effects.map((effect) => {
-          effect.ledger = cloneDeep(wrappedLedger);
+          effect.ledger = clonedLedger;
           return effect;
         });
         op.events = op.events.map((event) => {
-          event.ledger = cloneDeep(wrappedLedger);
+          event.ledger = clonedLedger;
           return event;
         });
         return op;
