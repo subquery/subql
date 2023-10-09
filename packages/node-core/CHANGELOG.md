@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed Poi migration performance issue with `sqlIterator` 
+- Fixed AutoQueue timeout issue, align setting with nodeConfig.
+
 ## [5.0.3] - 2023-10-03
 ### Fixed
 - Fix reindex service without poi feature (2062)
