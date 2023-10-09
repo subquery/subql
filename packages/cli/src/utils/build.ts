@@ -9,14 +9,12 @@ import {Command} from '@oclif/core';
 import {DEFAULT_TS_MANIFEST, extensionIsTs, tsProjectYamlPath} from '@subql/common';
 
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
-  `
-  import {toJsonObject} from '@subql/common'
-  const {writeFileSync} =  require('fs');
-  const yaml = require('js-yaml');
-  const project = toJsonObject((require('${scriptPath}')).default);
-  const yamlOutput = yaml.dump(project);
-  writeFileSync('${outputPath}', \`# // Auto-generated , DO NOT EDIT\n\${yamlOutput}\`);
-`;
+  `import {toJsonObject} from '@subql/common';` +
+  `const {writeFileSync} = require('fs');` +
+  `const yaml = require('js-yaml');` +
+  `const project = toJsonObject((require('${scriptPath}')).default);` +
+  `const yamlOutput = yaml.dump(project);` +
+  `writeFileSync('${outputPath}', '# // Auto-generated , DO NOT EDIT\\n' + yamlOutput);`;
 
 export async function buildManifestFromLocation(location: string, command: Command): Promise<string> {
   let directory: string;
