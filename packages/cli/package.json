@@ -16,6 +16,7 @@
     "@subql/common-flare": "^3.0.1",
     "@subql/common-near": "^3.0.0",
     "@subql/common-stellar": "^3.0.0",
+    "@subql/common-concordium": "^3.0.0",
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
     "algosdk": "^1.19.0",
