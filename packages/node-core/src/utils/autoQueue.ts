@@ -114,9 +114,9 @@ export class AutoQueue<T> implements IQueue {
   /**
    * @param {number} capacity - The size limit of the queue, if undefined there is no limit
    * @param {number} [concurrency=1] - The number of parallel tasks that can be processed at any one time.
-   * @param {number} [taskTimeoutSec=60] - A timeout for tasks to complete in. Units are seconds.
+   * @param {number} [taskTimeoutSec=900] - A timeout for tasks to complete in. Units are seconds. Align with nodeConfig process timeout.
    * */
-  constructor(capacity?: number, public concurrency = 1, private taskTimeoutSec = 60) {
+  constructor(capacity?: number, public concurrency = 1, private taskTimeoutSec = 900) {
     this.queue = new Queue<Action<T>>(capacity);
   }
 
@@ -191,7 +191,11 @@ export class AutoQueue<T> implements IQueue {
 
       this.pendingPromise = true;
 
-      const p = timeout(Promise.resolve(action.task()), this.taskTimeoutSec)
+      const p = timeout(
+        Promise.resolve(action.task()),
+        this.taskTimeoutSec,
+        `Auto queue process task timeout in ${this.taskTimeoutSec} seconds. Please increase --timeout`
+      )
         .then((result) => {
           this.outOfOrderTasks[action.index] = {action, result};
         })

@@ -8,9 +8,9 @@ export async function delay(sec: number): Promise<void> {
   });
 }
 
-export async function timeout<T>(promise: Promise<T>, sec: number): Promise<T> {
+export async function timeout<T>(promise: Promise<T>, sec: number, errMsg = 'timeout'): Promise<T> {
   // so we can have a more comprehensive error stack
-  const err = new Error('timeout');
+  const err = new Error(errMsg);
   let timeout: NodeJS.Timeout;
   return Promise.race([
     promise.then(

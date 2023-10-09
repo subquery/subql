@@ -69,7 +69,11 @@ export class Sandbox extends NodeVM {
   }
 
   async runTimeout<T = unknown>(duration: number): Promise<T> {
-    return timeout(this.run(this.script), duration);
+    return timeout(
+      this.run(this.script),
+      duration,
+      `Sandbox execution timeout in ${duration} seconds. Please increase --timeout`
+    );
   }
 
   protected async convertStack(stackTrace: string | undefined): Promise<string | undefined> {
