@@ -204,6 +204,7 @@ export default class Init extends Command {
       default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
       required: false,
     });
+    // Should assume all project endpoints will be string[]
     if (Array.isArray(this.project.endpoint)) {
       if (!this.project.endpoint.includes(userInput)) {
         this.project.endpoint.push(userInput);
