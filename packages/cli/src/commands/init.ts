@@ -210,10 +210,10 @@ export default class Init extends Command {
       required: true,
     });
 
-    this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
+    // this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
 
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
-    this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
+    // this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
     this.project.description = await cli
       .prompt('Description', {
         required: false,
@@ -223,8 +223,8 @@ export default class Init extends Command {
         return description === descriptionHint ? defaultDescription : description;
       });
 
-    this.project.version = await cli.prompt('Version', {required: true, default: defaultVersion});
-    this.project.license = await cli.prompt('License', {required: true, default: defaultLicense});
+    // this.project.version = await cli.prompt('Version', {required: true, default: defaultVersion});
+    // this.project.license = await cli.prompt('License', {required: true, default: defaultLicense});
 
     cli.action.start('Preparing project');
     await prepare(this.projectPath, this.project);

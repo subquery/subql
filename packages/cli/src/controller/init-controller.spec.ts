@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
+import {extractDefaults, findReplace} from '@subql/common';
 import git from 'simple-git';
 import {
   cloneProjectGit,
@@ -60,5 +61,22 @@ describe('Cli can create project (mocked)', () => {
   });
   it('fetch example projects', async () => {
     expect((await fetchExampleProjects('evm', '1')).length).toBeGreaterThan(0);
+  });
+  it('readDefaults using regex', async () => {
+    const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
+    expect(extractDefaults(manifest)).toStrictEqual({
+      specVersion: '1.0.0',
+      endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws', 'wss://acala-rpc-0.aca-api.network'],
+    });
+  });
+  it('findReplace using regex', async () => {
+    const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
+    const v = findReplace(
+      manifest,
+      /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
+      "endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']"
+    );
+
+    console.log(v);
   });
 });

@@ -294,3 +294,36 @@ export class FileReferenceImp<T> implements ValidatorConstraintInterface {
 }
 
 export const tsProjectYamlPath = (tsManifestEntry: string) => tsManifestEntry.replace('.ts', '.yaml');
+
+export function findReplace(manifest: string, replacer: RegExp, value: string): string {
+  return manifest.replace(replacer, value);
+}
+
+// export function finder(manifest: string, reg: RegExp): string {
+//   return manifest.match(reg)
+// }
+export function extractDefaults(manifest: string): {[key: string]: string | string[] | null} {
+  const patterns: {[key: string]: RegExp} = {
+    specVersion: /specVersion:\s*["'](.*?)["']/, // this should always be 1.0.0
+    // repository: /repository:\s*["'](.*?)["']/,
+    // author will also be moved to package.json
+    // description: /description:\s*["'](.*?)["']/, should be from package.json
+    endpoint: /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
+  };
+
+  const result: {[key: string]: string | string[] | null} = {};
+
+  for (const key in patterns) {
+    const match = manifest.match(patterns[key]);
+    if (key === 'endpoint' && match) {
+      result[key] = match[1]
+        .split(',')
+        .map((s) => s.trim().replace(/^"(.+?)"$/, '$1'))
+        .filter(Boolean);
+    } else {
+      result[key] = match ? match[1] : null;
+    }
+  }
+
+  return result;
+}
