@@ -316,11 +316,9 @@ export class PoiService implements OnApplicationShutdown {
       this.setLatestSyncedPoi(syncedPoiBlock);
     }
     if (appendedBlocks.length) {
-      syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
-
-      // if (this.nodeConfig.debug) {
-      //   syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
-      // }
+      if (this.nodeConfig.debug) {
+        syncingMsg(appendedBlocks[0].id, appendedBlocks[appendedBlocks.length - 1].id, appendedBlocks.length);
+      }
       this.poiRepo?.bulkUpsert(appendedBlocks);
     }
   }
