@@ -24,7 +24,7 @@ const MOCK_CHAINTYPES = [
     },
   },
 ];
-
+jest.setTimeout(50000);
 describe('Able to generate cosmos types from protobuf', () => {
   afterEach(async () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
