@@ -186,9 +186,6 @@ export class PoiService implements OnApplicationShutdown {
     // Before migration `latestSyncedPoiHeight` haven't been record in Db meta
     // we try to find the first height from current poi table. and set for once
     const genesisPoi = await this.poiRepo.getFirst();
-    // if (genesisPoi && (genesisPoi.hash === null || genesisPoi.parentHash === null)) {
-    //   this.createGenesisPoi(genesisPoi);
-    // }
     if (genesisPoi) {
       this.createGenesisPoi(genesisPoi);
     }
