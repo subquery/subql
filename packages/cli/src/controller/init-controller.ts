@@ -12,9 +12,9 @@ import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLSeq} from 'yaml';
-import {BASE_TEMPLATE_URl} from '../constants';
+import {BASE_TEMPLATE_URl, ENDPOINT_REG, SPEC_VERSION_REG} from '../constants';
 import {ProjectSpecBase} from '../types';
-import {errorHandle, extractFromTs, findReplace, prepareDirPath} from '../utils';
+import {errorHandle, extractFromTs, findReplace, prepareDirPath, validateEthereumTsManifest} from '../utils';
 
 export interface ExampleProjectInterface {
   name: string;
@@ -127,7 +127,7 @@ export async function cloneProjectTemplate(
   //use sparse-checkout to clone project to temp directory
   await git(tempPath).init().addRemote('origin', selectedProject.remote);
   await git(tempPath).raw('sparse-checkout', 'set', `${selectedProject.path}`);
-  await git(tempPath).raw('pull', 'origin', 'main');
+  await git(tempPath).raw('pull', 'origin', '7600e6cd7c275f37418b07bf854f606fb5f35796');
   // Copy content to project path
   copySync(path.join(tempPath, `${selectedProject.path}`), projectPath);
   // Clean temp folder
@@ -141,17 +141,10 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
   const tsPath = path.join(`${projectPath}`, `project.ts`);
   const manifest = await fs.promises.readFile(tsPath, 'utf8');
   const currentProject = extractFromTs(manifest, {
-    specVersion: /specVersion:\s*["'](.*?)["']/,
-    endpoint: /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
+    specVersion: SPEC_VERSION_REG,
+    endpoint: ENDPOINT_REG,
   });
-  return [
-    currentProject.specVersion,
-    currentProject.endpoint,
-    currentPackage.author,
-    currentPackage.version,
-    currentPackage.description,
-    currentPackage.license,
-  ];
+  return [currentProject.specVersion, currentProject.endpoint, currentPackage.author, currentPackage.description];
 }
 
 export async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
@@ -230,10 +223,10 @@ export async function prepareProjectScaffold(projectPath: string): Promise<void>
   fs.truncateSync(path.join(projectPath, 'src/index.ts'), 0);
 }
 
-export function validateEthereumProjectManifest(projectPath: string): boolean {
-  const doc = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
+export async function validateEthereumProjectManifest(projectPath: string): Promise<boolean> {
+  const manifest = await fs.promises.readFile(path.join(projectPath, 'project.ts'), 'utf8');
   try {
-    return !!parseEthereumProjectManifest(doc);
+    return validateEthereumTsManifest(manifest.toString());
   } catch (e) {
     return false;
   }

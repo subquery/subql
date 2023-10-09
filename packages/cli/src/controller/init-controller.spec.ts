@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
 import git from 'simple-git';
+import {ENDPOINT_REG, SPEC_VERSION_REG} from '../constants';
 import {extractFromTs, findReplace} from '../utils';
 import {
   cloneProjectGit,
@@ -88,18 +89,39 @@ describe('Cli can create project (mocked)', () => {
   });
   it('Ensure prepareManifest and preparePackage correctness for project.ts', async () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest/');
+    const originalManifest = await fs.promises.readFile(`${projectPath}/project.ts`);
+    const originalPackage = await fs.promises.readFile(`${projectPath}/package.json`);
+
     const project = {
       name: 'test-1',
       endpoint: ['https://zzz', 'https://bbb'],
       author: 'bz888',
       specVersion: '1.0.0',
+      description: 'tester project',
     };
 
     await prepareManifest(projectPath, project);
     await preparePackage(projectPath, project);
-    // extract endpoint and specVersion
-    // require from package.json to ensure data is correct
 
-    // backwards compatibility
+    const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
+    const projectPackage = JSON.parse(packageData.toString());
+
+    expect(projectPackage.name).toBe(project.name);
+    expect(projectPackage.description).toBe(project.description);
+    expect(projectPackage.author).toBe(project.author);
+
+    const updatedManifest = await fs.promises.readFile(`${projectPath}/project.ts`);
+    const extractedValues = extractFromTs(updatedManifest.toString(), {
+      specVersion: SPEC_VERSION_REG,
+      endpoint: ENDPOINT_REG,
+    });
+    expect(extractedValues.endpoint).toStrictEqual(project.endpoint);
+    expect(extractedValues.specVersion).toBe(project.specVersion);
+    expect(originalManifest).not.toBe(updatedManifest.toString());
+    expect(originalPackage).not.toBe(packageData.toString());
+
+    // resort original after the test
+    await fs.promises.writeFile(path.join(projectPath, 'project.ts'), originalManifest);
+    await fs.promises.writeFile(path.join(projectPath, 'package.json'), originalPackage);
   });
 });

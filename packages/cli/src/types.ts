@@ -7,8 +7,7 @@ export interface ProjectSpecBase {
   name: string;
   author: string;
   description?: string;
-  endpoint: string[];
-  specVersion: string;
+  endpoint: string[] | string;
 }
 
 export interface QueryAdvancedOpts {

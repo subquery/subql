@@ -170,7 +170,7 @@ export default class Init extends Command {
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedProject);
     await this.setupProject(flags);
 
-    if (validateEthereumProjectManifest(this.projectPath)) {
+    if (await validateEthereumProjectManifest(this.projectPath)) {
       const {loadAbi} = await inquirer.prompt([
         {
           type: 'confirm',
@@ -192,29 +192,25 @@ export default class Init extends Command {
   }
 
   async setupProject(flags: any): Promise<void> {
-    const [
-      defaultSpecVersion,
-      // defaultRepository,
-      defaultEndpoint,
-      defaultAuthor,
-      // defaultVersion,
-      defaultDescription,
-      // defaultLicense,
-    ] = await readDefaults(this.projectPath);
+    const [defaultSpecVersion, defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(
+      this.projectPath
+    );
 
     // Should use template specVersion as default, otherwise use user provided
     flags.specVersion = defaultSpecVersion ?? flags.specVersion;
 
-    // older project may not be using endpoint in array format
-    // but this shouldnt be valid for init as all new project going forward are using the new format
-    this.project.endpoint = Array.isArray(defaultEndpoint) ? defaultEndpoint : [defaultEndpoint];
+    this.project.endpoint = defaultEndpoint;
     const userInput = await cli.prompt('RPC endpoint:', {
       default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
       required: false,
     });
-    this.project.endpoint.push(userInput);
-
-    // this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
+    if (Array.isArray(this.project.endpoint)) {
+      if (!this.project.endpoint.includes(userInput)) {
+        this.project.endpoint.push(userInput);
+      }
+    } else {
+      this.project.endpoint = [userInput];
+    }
 
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});

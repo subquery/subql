@@ -109,7 +109,6 @@ export function isValidEnum<T extends Record<string, string>>(enumType: T, input
 }
 
 export function findReplace(manifest: string, replacer: RegExp, value: string): string {
-  console.log(manifest.replace(replacer, value));
   return manifest.replace(replacer, value);
 }
 
@@ -132,4 +131,10 @@ export function extractFromTs(
   }
 
   return result;
+}
+
+// Cold validate on ts manifest, for generate scaffold command
+export function validateEthereumTsManifest(manifest: string): boolean {
+  const pattern = /"@subql\/types-ethereum"/;
+  return !!pattern.test(manifest);
 }

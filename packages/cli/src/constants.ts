@@ -10,3 +10,7 @@ export const ROOT_API_URL_PROD = 'https://api.subquery.network';
 export const BASE_PROJECT_URL = 'https://project.subquery.network';
 
 export const BASE_TEMPLATE_URl = 'https://templates.subquery.network';
+
+// Regex for cold tsManifest
+export const ENDPOINT_REG = /endpoint:\s*\[\s*([\s\S]*?)\s*\]/;
+export const SPEC_VERSION_REG = /specVersion:\s*["'](.*?)["']/;
