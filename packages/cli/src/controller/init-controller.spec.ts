@@ -4,13 +4,15 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {extractDefaults, findReplace} from '@subql/common';
 import git from 'simple-git';
+import {extractFromTs, findReplace} from '../utils';
 import {
   cloneProjectGit,
   fetchExampleProjects,
   fetchNetworks,
   fetchTemplates,
+  prepareManifest,
+  preparePackage,
   validateEthereumProjectManifest,
 } from './init-controller';
 
@@ -64,7 +66,12 @@ describe('Cli can create project (mocked)', () => {
   });
   it('readDefaults using regex', async () => {
     const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
-    expect(extractDefaults(manifest)).toStrictEqual({
+    expect(
+      extractFromTs(manifest, {
+        specVersion: /specVersion:\s*["'](.*?)["']/,
+        endpoint: /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
+      })
+    ).toStrictEqual({
       specVersion: '1.0.0',
       endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws', 'wss://acala-rpc-0.aca-api.network'],
     });
@@ -78,5 +85,21 @@ describe('Cli can create project (mocked)', () => {
     );
 
     console.log(v);
+  });
+  it('Ensure prepareManifest and preparePackage correctness for project.ts', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest/');
+    const project = {
+      name: 'test-1',
+      endpoint: ['https://zzz', 'https://bbb'],
+      author: 'bz888',
+      specVersion: '1.0.0',
+    };
+
+    await prepareManifest(projectPath, project);
+    await preparePackage(projectPath, project);
+    // extract endpoint and specVersion
+    // require from package.json to ensure data is correct
+
+    // backwards compatibility
   });
 });

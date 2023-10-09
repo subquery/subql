@@ -19,35 +19,26 @@ import {uploadFile, uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
   name: 'mocked_starter',
-  repository: '',
   endpoint: 'wss://rpc.polkadot.io/public-ws',
   author: 'jay',
   description: 'this is test for init controller',
-  version: '',
-  license: '',
 };
 
 const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
   name: 'mocked_starter',
-  repository: '',
   genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
   endpoint: 'wss://rpc.polkadot.io/public-ws',
   author: 'jay',
   description: 'this is test for init controller',
-  version: '',
-  license: '',
 };
 
 // eslint-disable-next-line jest/no-export
 export const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
   name: 'mocked_starter',
-  repository: '',
   chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
   endpoint: 'wss://rpc.polkadot.io/public-ws',
   author: 'jay',
   description: 'this is test for init controller',
-  version: '',
-  license: '',
   runner: {
     node: {
       name: '@subql/node',

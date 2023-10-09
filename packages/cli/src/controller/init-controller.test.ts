@@ -7,7 +7,7 @@ import {promisify} from 'util';
 import {makeTempDir} from '@subql/common';
 import rimraf from 'rimraf';
 import {parseDocument, Document} from 'yaml';
-import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
+import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase, ProjectSpecV1_0_0} from '../types';
 import {
   cloneProjectGit,
   cloneProjectTemplate,
@@ -24,7 +24,6 @@ async function testYAML(projectPath: string, project: ProjectSpecBase): Promise<
 
   const clonedData = data.clone();
   clonedData.set('description', project.description ?? data.get('description'));
-  clonedData.set('repository', project.repository ?? '');
 
   // network type should be collection
   const network: any = clonedData.get('network');
@@ -56,14 +55,11 @@ jest.setTimeout(30000);
 
 const projectSpec = {
   name: 'mocked_starter',
-  repository: '',
-  endpoint: 'wss://rpc.polkadot.io/public-ws',
+  endpoint: ['wss://rpc.polkadot.io/public-ws'],
   specVersion: '1.0.0',
   author: 'jay',
   description: 'this is test for init controller',
   chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-  version: '',
-  license: '',
 };
 
 describe('Cli can create project', () => {
@@ -115,14 +111,11 @@ describe('Cli can create project', () => {
       projects.find((p) => p.name === 'Polkadot-starter')
     );
     await prepare(projectPath, projectSpec);
-    const [specVersion, repository, endpoint, author, version, description, license] = await readDefaults(projectPath);
+    const [specVersion, endpoint, author, description] = await readDefaults(projectPath);
     expect(projectSpec.specVersion).toEqual(specVersion);
-    expect(projectSpec.repository).toEqual(repository);
     expect(projectSpec.endpoint).toEqual(endpoint);
     expect(projectSpec.author).toEqual(author);
-    expect(projectSpec.version).toEqual(version);
     expect(projectSpec.description).toEqual(description);
-    expect(projectSpec.license).toEqual(license);
   });
 
   it('allow git from sub directory', async () => {

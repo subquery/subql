@@ -194,26 +194,30 @@ export default class Init extends Command {
   async setupProject(flags: any): Promise<void> {
     const [
       defaultSpecVersion,
-      defaultRepository,
+      // defaultRepository,
       defaultEndpoint,
       defaultAuthor,
-      defaultVersion,
+      // defaultVersion,
       defaultDescription,
-      defaultLicense,
+      // defaultLicense,
     ] = await readDefaults(this.projectPath);
 
     // Should use template specVersion as default, otherwise use user provided
     flags.specVersion = defaultSpecVersion ?? flags.specVersion;
 
-    this.project.endpoint = await cli.prompt('RPC endpoint:', {
-      default: defaultEndpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
-      required: true,
+    // older project may not be using endpoint in array format
+    // but this shouldnt be valid for init as all new project going forward are using the new format
+    this.project.endpoint = Array.isArray(defaultEndpoint) ? defaultEndpoint : [defaultEndpoint];
+    const userInput = await cli.prompt('RPC endpoint:', {
+      default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
+      required: false,
     });
+    this.project.endpoint.push(userInput);
 
     // this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
 
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
-    // this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
+    this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
     this.project.description = await cli
       .prompt('Description', {
         required: false,
@@ -222,9 +226,6 @@ export default class Init extends Command {
       .then((description) => {
         return description === descriptionHint ? defaultDescription : description;
       });
-
-    // this.project.version = await cli.prompt('Version', {required: true, default: defaultVersion});
-    // this.project.license = await cli.prompt('License', {required: true, default: defaultLicense});
 
     cli.action.start('Preparing project');
     await prepare(this.projectPath, this.project);

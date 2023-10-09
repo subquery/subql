@@ -35,7 +35,7 @@ const project: SubstrateProject = {
      * You can get them from OnFinality for free https://app.onfinality.io
      * https://documentation.onfinality.io/support/the-enhanced-api-service
      */
-    endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws', 'wss://acala-rpc-0.aca-api.network'],
+    endpoint: ['https://zzz', 'https://bbb'],
     dictionary: 'https://api.subquery.network/sq/subquery/acala-dictionary',
     chaintypes: {
       file: './dist/chaintypes.js',

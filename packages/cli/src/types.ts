@@ -5,12 +5,10 @@ import {RunnerSpecs} from '@subql/types-core';
 
 export interface ProjectSpecBase {
   name: string;
-  repository?: string;
   author: string;
   description?: string;
-  version: string;
-  license: string;
-  endpoint: string;
+  endpoint: string[];
+  specVersion: string;
 }
 
 export interface QueryAdvancedOpts {

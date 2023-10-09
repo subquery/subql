@@ -5,17 +5,16 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {extractDefaults, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
+import {loadFromJsonOrYaml, makeTempDir} from '@subql/common';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
-import {ProjectManifestV1_0_0} from '@subql/types-core';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
-import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
+import {parseDocument, YAMLSeq} from 'yaml';
 import {BASE_TEMPLATE_URl} from '../constants';
-import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
-import {errorHandle, prepareDirPath} from '../utils';
+import {ProjectSpecBase} from '../types';
+import {errorHandle, extractFromTs, findReplace, prepareDirPath} from '../utils';
 
 export interface ExampleProjectInterface {
   name: string;
@@ -136,31 +135,15 @@ export async function cloneProjectTemplate(
   return projectPath;
 }
 
-const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
-  `import {toJsonObject} from '@subql/common';` +
-  `const {writeFileSync} = require('fs');` +
-  `const yaml = require('js-yaml');` +
-  `const project = toJsonObject((require('${scriptPath}')).default);` +
-  `const yamlOutput = yaml.dump(project);` +
-  `writeFileSync('${outputPath}', '# // Auto-generated , DO NOT EDIT\\n' + yamlOutput);`;
-
-export function findEndpointValue(manifest: string): string[] | null {
-  // Regular expression to capture the value of endpoint
-  const reg = /endpoint: \[\s*(.*?)\s*\],/s;
-
-  // Extract the matched value
-  const match = manifest.match(reg);
-
-  // If a match was found, split the values by comma and return them
-  return match ? match[1].split(',').map((s) => s.trim().replace(/"/g, '')) : null;
-}
-
 export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
   const tsPath = path.join(`${projectPath}`, `project.ts`);
   const manifest = await fs.promises.readFile(tsPath, 'utf8');
-  const currentProject = extractDefaults(manifest);
+  const currentProject = extractFromTs(manifest, {
+    specVersion: /specVersion:\s*["'](.*?)["']/,
+    endpoint: /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
+  });
   return [
     currentProject.specVersion,
     currentProject.endpoint,
@@ -189,43 +172,27 @@ export async function prepare(projectPath: string, project: ProjectSpecBase): Pr
   }
 }
 
-async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
+export async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
   //load and write package.json
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
   currentPackage.name = project.name;
-  currentPackage.version = project.version;
   currentPackage.description = project.description ?? currentPackage.description;
   currentPackage.author = project.author;
-  currentPackage.license = project.license;
   const newPackage = JSON.stringify(currentPackage, null, 2);
   await fs.promises.writeFile(`${projectPath}/package.json`, newPackage, 'utf8');
 }
 
-async function prepareManifest(projectPath: string, project: ProjectSpecBase): Promise<void> {
-  //load and write manifest(project.yaml)
-  const yamlPath = path.join(`${projectPath}`, `project.yaml`);
-  const manifest = await fs.promises.readFile(yamlPath, 'utf8');
+export async function prepareManifest(projectPath: string, project: ProjectSpecBase): Promise<void> {
+  //load and write manifest(project.ts)
+  const tsPath = path.join(`${projectPath}`, `project.ts`);
+  const manifest = (await fs.promises.readFile(tsPath, 'utf8')).toString();
 
-  // const data = parseDocument(manifest);
-  // const clonedData = data.clone();
+  const formattedEndpoint = `[ ${JSON.stringify(project.endpoint).slice(1, -1)} ]`;
 
-  // clonedData.set('description', project.description ?? data.get('description'));
-  // clonedData.set('repository', project.repository ?? '');
+  const v = findReplace(manifest, /endpoint:\s*\[\s*([\s\S]*?)\s*\]/, `endpoint: ${formattedEndpoint}`);
 
-  // const network = clonedData.get('network') as YAMLMap;
-  // network.set('endpoint', project.endpoint);
-  // clonedData.set('version', project.version);
-  // clonedData.set('name', project.name);
-
-  // i think this can go, its pretty much deprecated
-  // if (isProjectSpecV1_0_0(project)) {
-  //   network.set('chainId', project.chainId);
-  // } else if (isProjectSpecV0_2_0(project)) {
-  //   network.set('genesisHash', project.genesisHash);
-  // }
-
-  // await fs.promises.writeFile(yamlPath, clonedData.toString(), 'utf8');
+  await fs.promises.writeFile(tsPath, v, 'utf8');
 }
 
 export function installDependencies(projectPath: string, useNpm?: boolean): void {

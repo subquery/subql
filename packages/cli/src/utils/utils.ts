@@ -107,3 +107,29 @@ export function resolveToAbsolutePath(inputPath: string): string {
 export function isValidEnum<T extends Record<string, string>>(enumType: T, input: string): input is T[keyof T] {
   return Object.values(enumType).includes(input);
 }
+
+export function findReplace(manifest: string, replacer: RegExp, value: string): string {
+  console.log(manifest.replace(replacer, value));
+  return manifest.replace(replacer, value);
+}
+
+export function extractFromTs(
+  manifest: string,
+  patterns: {[key: string]: RegExp}
+): {[key: string]: string | string[] | null} {
+  const result: {[key: string]: string | string[] | null} = {};
+
+  for (const key in patterns) {
+    const match = manifest.match(patterns[key]);
+    if (key === 'endpoint' && match) {
+      result[key] = match[1]
+        .split(',')
+        .map((s) => s.trim().replace(/['"]/g, ''))
+        .filter(Boolean);
+    } else {
+      result[key] = match ? match[1] : null;
+    }
+  }
+
+  return result;
+}
