@@ -1,0 +1,29 @@
+specVersion: 1.0.0
+name: axelar-subql-starter
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node-cosmos'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: >-
+  This project can be use as a starting point for developing your Cosmos (Axelar) based SubQuery project
+repository: 'https://github.com/subquery/cosmos-subql-starter'
+schema:
+  file: ./schema.graphql
+network:
+  chainId: axelar-dojo-1
+  endpoint: ['https://axelar-archrpc.chainode.tech/']
+  chaintypes: {}
+dataSources:
+  - kind: cosmos/Runtime
+    startBlock: 5262 # The first deposit event occurs on this block
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: cosmos/EventHandler
+          filter:
+            type: 'depositConfirmation'
