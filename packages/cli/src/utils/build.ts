@@ -29,17 +29,11 @@ export async function buildManifestFromLocation(location: string, command: Comma
   } else {
     command.error('Argument `location` is not a valid directory or file');
   }
-  // Only build when ProjectYamlPath not exist and projectManifestEntry is in typescript
-  if (
-    !existsSync(tsProjectYamlPath(projectManifestEntry)) &&
-    existsSync(projectManifestEntry) &&
-    extensionIsTs(path.extname(projectManifestEntry))
-  ) {
-    try {
-      await generateManifestFromTs(projectManifestEntry, command);
-    } catch (e) {
-      throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
-    }
+  // We compile from TypeScript every time, even if the current YAML file exists, to ensure that the YAML file remains up-to-date with the latest changes
+  try {
+    await generateManifestFromTs(projectManifestEntry, command);
+  } catch (e) {
+    throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
   }
   return directory;
 }
