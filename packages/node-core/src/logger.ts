@@ -8,11 +8,16 @@ import Pino from 'pino';
 
 let logger: Logger;
 
-export function initLogger(debug = false, outputFmt?: 'json' | 'colored', logLevel?: string): void {
+export function initLogger(
+  debug: string | undefined = undefined,
+  outputFmt?: 'json' | 'colored',
+  logLevel?: string
+): void {
   logger = new Logger({
-    level: debug ? 'debug' : logLevel,
+    level: debug === '*' ? 'debug' : logLevel,
     outputFormat: outputFmt,
     nestedKey: 'payload',
+    debugFilter: !debug || debug === '*' ? undefined : debug.split(','),
   });
 }
 
@@ -27,6 +32,13 @@ export function getLogger(category: string): Pino.Logger {
 
 export function setLevel(level: Pino.LevelWithSilent): void {
   logger.setLevel(level);
+}
+
+export function setDebugFilter(debug: string | undefined): void {
+  if (debug === '*') {
+    logger.setLevel('debug');
+  }
+  logger.setDebugFilter(!debug || debug === '*' ? [] : debug.split(','));
 }
 
 export class NestLogger implements LoggerService {

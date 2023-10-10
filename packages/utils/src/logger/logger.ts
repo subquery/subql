@@ -1,7 +1,6 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
 import path from 'path';
 import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
@@ -13,13 +12,20 @@ export interface LoggerOption {
   rotate?: boolean;
   nestedKey?: string;
   outputFormat?: 'json' | 'colored';
+  /**
+   * Set the debug level for specific child loggers
+   * */
+  debugFilter?: string[];
 }
 
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
+  private debugFilter: string[];
 
-  constructor({filepath, level: logLevel = 'info', nestedKey, outputFormat, rotate}: LoggerOption) {
+  constructor({filepath, level: logLevel = 'info', nestedKey, outputFormat, rotate, debugFilter = []}: LoggerOption) {
+    this.debugFilter = debugFilter;
+
     const options = {
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
@@ -101,11 +107,27 @@ export class Logger {
   getLogger(category: string): Pino.Logger {
     if (!this.childLoggers[category]) {
       this.childLoggers[category] = this.pino.child({category});
+
+      this.applyChildDebug(category);
     }
     return this.childLoggers[category];
   }
 
   setLevel(level: LevelWithSilent): void {
     this.pino.level = level;
+
+    Object.keys(this.childLoggers).map((key) => this.applyChildDebug(key));
+  }
+
+  setDebugFilter(debugFilter: string[]): void {
+    this.debugFilter = debugFilter;
+    Object.keys(this.childLoggers).map((key) => this.applyChildDebug(key));
+  }
+
+  private applyChildDebug(category: string) {
+    if (this.debugFilter.includes(category) && this.childLoggers[category].level) {
+      this.pino.info(`Debug logging is enabled for ${category}`);
+      this.childLoggers[category].level = 'debug';
+    }
   }
 }
