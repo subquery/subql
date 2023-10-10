@@ -128,7 +128,7 @@ export async function cloneProjectTemplate(
   //use sparse-checkout to clone project to temp directory
   await git(tempPath).init().addRemote('origin', selectedProject.remote);
   await git(tempPath).raw('sparse-checkout', 'set', `${selectedProject.path}`);
-  await git(tempPath).raw('pull', 'origin', '682792813917d5274d2619136b74219fa976ab2f');
+  await git(tempPath).raw('pull', 'origin', 'main');
   // Copy content to project path
   copySync(path.join(tempPath, `${selectedProject.path}`), projectPath);
   // Clean temp folder
