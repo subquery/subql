@@ -90,5 +90,6 @@
   "types": "lib/index.d.ts",
   "resolutions": {
     "node-fetch": "2.6.7"
-  }
+  },
+  "stableVersion": "4.0.1"
 }
