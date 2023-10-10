@@ -122,23 +122,19 @@ export function extractFromTs(
     const match = manifest.match(patterns[key]);
 
     if (key === 'endpoint' && match) {
-      const cleanedMatch = match[1].trim().replace(/['"]/g, '');
-
-      if (cleanedMatch.startsWith('[')) {
-        result[key] = cleanedMatch
+      if (match[1].startsWith('[')) {
+        result[key] = match[1]
           .slice(1, -1)
           .split(',')
           .map((s) => s.trim().replace(/['"]/g, ''))
           .filter(Boolean);
       } else {
-        result[key] = [cleanedMatch];
+        result[key] = [match[1].trim().replace(/['"]/g, '')];
       }
     } else {
       result[key] = match ? match[1] : null;
     }
   }
-
-  return result;
 
   return result;
 }
