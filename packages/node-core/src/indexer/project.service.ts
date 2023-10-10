@@ -4,6 +4,7 @@
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {PoiSyncService} from '@subql/node-core/indexer/poi';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
@@ -40,6 +41,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     private readonly dsProcessorService: BaseDsProcessorService,
     protected readonly apiService: API,
     private readonly poiService: PoiService,
+    private readonly poiSyncService: PoiSyncService,
     protected readonly sequelize: Sequelize,
     protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
     protected readonly projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
@@ -108,9 +110,11 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       await this.projectUpgradeService.setCurrentHeight(this._startHeight);
 
       if (this.nodeConfig.proofOfIndex) {
+        // Prepare for poi migration and creation
         await this.poiService.init(this.schema);
-        // Flush cache to set up rest of POI related meta
-        void this.poiService.syncPoi(undefined);
+        // Sync poi from createdPoi to syncedPoi
+        await this.poiSyncService.init(this.schema);
+        void this.poiSyncService.syncPoi(undefined);
       }
 
       // Flush any pending operations to set up DB

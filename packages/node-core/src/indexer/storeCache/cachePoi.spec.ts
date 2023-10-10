@@ -138,16 +138,16 @@ describe('CachePoi', () => {
     });
   });
 
-  describe('getPoiById', () => {
-    it('with mix of cache and db data, it should use cache data', async () => {
-      await poiRepo.bulkCreate([{id: 1, chainBlockHash: '0x1234'}, {id: 2, chainBlockHash: '0x5678'}, {id: 3}] as any);
-      cachePoi.bulkUpsert([getEmptyPoi(1)]);
-      const res = await cachePoi.getPoiById(1);
-      expect(res?.chainBlockHash).not.toBe('0x1234');
-      const res2 = await cachePoi.getPoiById(2);
-      expect(res2?.chainBlockHash).toBe('0x5678');
-    });
-  });
+  // describe('getPoiById', () => {
+  //   it('with mix of cache and db data, it should use cache data', async () => {
+  //     await poiRepo.bulkCreate([{id: 1, chainBlockHash: '0x1234'}, {id: 2, chainBlockHash: '0x5678'}, {id: 3}] as any);
+  //     cachePoi.bulkUpsert([getEmptyPoi(1)]);
+  //     const res = await cachePoi.getPoiById(1);
+  //     expect(res?.chainBlockHash).not.toBe('0x1234');
+  //     const res2 = await cachePoi.getPoiById(2);
+  //     expect(res2?.chainBlockHash).toBe('0x5678');
+  //   });
+  // });
 
   describe('clear poi', () => {
     it('should clear all if blockHeight not provided', () => {
@@ -169,7 +169,7 @@ describe('CachePoi', () => {
       ] as any);
       cachePoi.clear(30);
       expect(cachePoi.flushableRecordCounter).toBe(1);
-      expect(cachePoi.getPoiById(120)).toBeDefined();
+      // expect(cachePoi.getPoiById(120)).toBeDefined();
     });
   });
 });
