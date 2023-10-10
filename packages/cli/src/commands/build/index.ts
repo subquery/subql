@@ -7,7 +7,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import glob from 'glob';
 import {runWebpack} from '../../controller/build-controller';
-import {resolveToAbsolutePath, buildManifestFromLocation} from '../../utils';
+import {resolveToAbsolutePath, buildManifestFromLocation, checkForTsManifest} from '../../utils';
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
@@ -27,6 +27,10 @@ export default class Build extends Command {
 
       assert(existsSync(location), 'Argument `location` is not a valid directory or file');
       const directory = lstatSync(location).isDirectory() ? location : path.dirname(location);
+
+      if (checkForTsManifest(location)) {
+        await buildManifestFromLocation(location, this);
+      }
 
       // Get the output location from the project package.json main field
       const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
