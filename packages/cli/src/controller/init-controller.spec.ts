@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import git from 'simple-git';
 import {ENDPOINT_REG, SPEC_VERSION_REG} from '../constants';
-import {extractFromTs, findReplace} from '../utils';
+import {extractFromTs, findReplace, validateEthereumTsManifest} from '../utils';
 import {
   cloneProjectGit,
   fetchExampleProjects,
@@ -43,6 +43,19 @@ const projectSpec = {
 };
 
 describe('Cli can create project (mocked)', () => {
+  const projectPath = path.join(__dirname, '../../test/schemaTest/');
+  let originalManifest: string;
+  let originalPackage: string;
+  beforeAll(async () => {
+    originalManifest = (await fs.promises.readFile(`${projectPath}/project.ts`)).toString();
+    originalPackage = (await fs.promises.readFile(`${projectPath}/package.json`)).toString();
+  });
+
+  afterAll(async () => {
+    // resort original after the test
+    await fs.promises.writeFile(path.join(projectPath, 'project.ts'), originalManifest);
+    await fs.promises.writeFile(path.join(projectPath, 'package.json'), originalPackage);
+  });
   it('throw error when git clone failed', async () => {
     const tempPath = await makeTempDir();
     (git().clone as jest.Mock).mockImplementationOnce((cb) => {
@@ -52,9 +65,10 @@ describe('Cli can create project (mocked)', () => {
       /Failed to clone starter template from git/
     );
   });
-  it('validate ethereum project manifest', () => {
-    const projectPath = path.join(__dirname, '../../test/abiTest1');
-    expect(validateEthereumProjectManifest(projectPath)).toBe(true);
+  it('validate ethereum project manifest', async () => {
+    const projectPath_eth = path.join(__dirname, '../../test/abiTest1');
+    await expect(validateEthereumProjectManifest(projectPath_eth)).resolves.toBe(true);
+    await expect(validateEthereumProjectManifest(projectPath)).resolves.toBe(false);
   });
   it('fetch templates', async () => {
     expect((await fetchTemplates()).length).toBeGreaterThan(0);
@@ -69,8 +83,8 @@ describe('Cli can create project (mocked)', () => {
     const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
     expect(
       extractFromTs(manifest, {
-        specVersion: /specVersion:\s*["'](.*?)["']/,
-        endpoint: /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
+        specVersion: SPEC_VERSION_REG,
+        endpoint: ENDPOINT_REG,
       })
     ).toStrictEqual({
       specVersion: '1.0.0',
@@ -79,19 +93,26 @@ describe('Cli can create project (mocked)', () => {
   });
   it('findReplace using regex', async () => {
     const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
-    const v = findReplace(
-      manifest,
-      /endpoint:\s*\[\s*([\s\S]*?)\s*\]/,
-      "endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']"
-    );
+    const v = findReplace(manifest, ENDPOINT_REG, "endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']");
+
+    expect(
+      extractFromTs(v, {
+        endpoint: ENDPOINT_REG,
+      })
+    ).toStrictEqual({endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']});
+  });
+  it('findReplace with string endpoints', async () => {
+    const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
+    const v = findReplace(manifest, ENDPOINT_REG, "endpoint: 'wss://acala-polkadot.api.onfinality.io/public-ws'");
 
     console.log(v);
+    // expect(extractFromTs(v, {
+    //   endpoint: ENDPOINT_REG
+    // })).toStrictEqual(
+    //     {endpoint: ["wss://acala-polkadot.api.onfinality.io/public-ws"]}
+    // )
   });
   it('Ensure prepareManifest and preparePackage correctness for project.ts', async () => {
-    const projectPath = path.join(__dirname, '../../test/schemaTest/');
-    const originalManifest = await fs.promises.readFile(`${projectPath}/project.ts`);
-    const originalPackage = await fs.promises.readFile(`${projectPath}/package.json`);
-
     const project = {
       name: 'test-1',
       endpoint: ['https://zzz', 'https://bbb'],
@@ -119,9 +140,21 @@ describe('Cli can create project (mocked)', () => {
     expect(extractedValues.specVersion).toBe(project.specVersion);
     expect(originalManifest).not.toBe(updatedManifest.toString());
     expect(originalPackage).not.toBe(packageData.toString());
-
-    // resort original after the test
-    await fs.promises.writeFile(path.join(projectPath, 'project.ts'), originalManifest);
-    await fs.promises.writeFile(path.join(projectPath, 'package.json'), originalPackage);
+  });
+  it('Validate validateEthereumTsManifest', () => {
+    const passingManifest = `import {
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+  SubstrateProject,
+} from '@subql/types-ethereum';
+  runner:{ node: '@subql/node-ethereum' }`;
+    const failingManifest = `import {
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+  SubstrateProject,
+} from '@subql/types';
+  runner:{ node: '@subql/node' }`;
+    expect(validateEthereumTsManifest(passingManifest)).toBe(true);
+    expect(validateEthereumTsManifest(failingManifest)).toBe(false);
   });
 });

@@ -5,9 +5,11 @@ import * as fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
 import {makeTempDir} from '@subql/common';
+import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
+import git from 'simple-git';
 import {parseDocument, Document} from 'yaml';
-import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase, ProjectSpecV1_0_0} from '../types';
+import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 import {
   cloneProjectGit,
   cloneProjectTemplate,
@@ -91,15 +93,25 @@ describe('Cli can create project', () => {
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}/.git`))).rejects.toThrow();
   });
   it('YAML contains comments', async () => {
+    const localPath = await makeTempDir();
     const tempPath = await makeTempDir();
+
+    // to pull from a commit that still uses project.yaml
     const projects = await fetchExampleProjects('polkadot', 'polkadot');
-    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, projects[0]);
-    const output = await testYAML(projectPath, projectSpec);
+    const projectPath = path.join(localPath, projectSpec.name);
+    await git(tempPath).init().addRemote('origin', projects[0].remote);
+    await git(tempPath).raw('sparse-checkout', 'set', `${projects[0].path}`);
+    await git(tempPath).raw('pull', 'origin', 'd2868e9e46371f0ce45e52acae2ace6cb97296a0');
+
+    copySync(path.join(tempPath, `${projects[0].path}`), projectPath);
+    fs.rmSync(tempPath, {recursive: true, force: true});
+
+    const output = await testYAML(path.join(localPath, projectSpec.name), projectSpec);
     expect(output.new.toJS().network.chainId).toBe('random chainId');
     expect(output.new).not.toEqual(output.old);
     expect(output.new.toString()).toContain('# The genesis hash of the network (hash of block 0)');
 
-    await promisify(rimraf)(tempPath);
+    await promisify(rimraf)(localPath);
   });
 
   it('prepare correctly applies project details', async () => {
@@ -112,10 +124,12 @@ describe('Cli can create project', () => {
     );
     await prepare(projectPath, projectSpec);
     const [specVersion, endpoint, author, description] = await readDefaults(projectPath);
+
     expect(projectSpec.specVersion).toEqual(specVersion);
     expect(projectSpec.endpoint).toEqual(endpoint);
     expect(projectSpec.author).toEqual(author);
     expect(projectSpec.description).toEqual(description);
+    await promisify(rimraf)(tempPath);
   });
 
   it('allow git from sub directory', async () => {

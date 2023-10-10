@@ -120,21 +120,32 @@ export function extractFromTs(
 
   for (const key in patterns) {
     const match = manifest.match(patterns[key]);
+
     if (key === 'endpoint' && match) {
-      result[key] = match[1]
-        .split(',')
-        .map((s) => s.trim().replace(/['"]/g, ''))
-        .filter(Boolean);
+      const cleanedMatch = match[1].trim().replace(/['"]/g, '');
+
+      if (cleanedMatch.startsWith('[')) {
+        result[key] = cleanedMatch
+          .slice(1, -1)
+          .split(',')
+          .map((s) => s.trim().replace(/['"]/g, ''))
+          .filter(Boolean);
+      } else {
+        result[key] = [cleanedMatch];
+      }
     } else {
       result[key] = match ? match[1] : null;
     }
   }
 
   return result;
+
+  return result;
 }
 
 // Cold validate on ts manifest, for generate scaffold command
 export function validateEthereumTsManifest(manifest: string): boolean {
-  const pattern = /"@subql\/types-ethereum"/;
-  return !!pattern.test(manifest);
+  const typePattern = /@subql\/types-ethereum/;
+  const nodePattern = /@subql\/node-ethereum/;
+  return !!typePattern.test(manifest) && !!nodePattern.test(manifest);
 }

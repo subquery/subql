@@ -168,6 +168,7 @@ export default class Init extends Command {
         }
       });
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedProject);
+
     await this.setupProject(flags);
 
     if (await validateEthereumProjectManifest(this.projectPath)) {
