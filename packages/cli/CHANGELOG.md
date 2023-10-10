@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.0.1] - 2023-10-10
 ### Fixed
 - Fix `codegen` logic for Cosmos Manifests (#2073)
+- Error when generating manifest from ts (#2075)
 
 ## [4.0.0] - 2023-10-04
 ### Fixed
@@ -462,7 +465,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.1...HEAD
+[4.0.1]: https://github.com/subquery/subql/compare/cli/4.0.0...cli/4.0.1
 [4.0.0]: https://github.com/subquery/subql/compare/cli/3.6.1...cli/4.0.0
 [3.6.1]: https://github.com/subquery/subql/compare/cli/3.6.0...cli/3.6.1
 [3.6.0]: https://github.com/subquery/subql/compare/cli/3.5.1...cli/3.6.0
