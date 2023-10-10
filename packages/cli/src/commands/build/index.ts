@@ -1,7 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {readFileSync} from 'fs';
+import assert from 'assert';
+import {existsSync, lstatSync, readFileSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import glob from 'glob';
@@ -24,7 +25,8 @@ export default class Build extends Command {
       const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
       const isDev = flags.mode === 'development' || flags.mode === 'dev';
 
-      const directory = await buildManifestFromLocation(location, this);
+      assert(existsSync(location), 'Argument `location` is not a valid directory or file');
+      const directory = lstatSync(location).isDirectory() ? location : path.dirname(location);
 
       // Get the output location from the project package.json main field
       const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
