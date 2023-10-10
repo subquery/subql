@@ -89,24 +89,40 @@ describe('Cli can create project (mocked)', () => {
       endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws', 'wss://acala-rpc-0.aca-api.network'],
     });
   });
-  it('readDefaults using regex single endpoint', () => {
+  it('Ensure regex correctness for ENDPOINT_REG', () => {
+    expect(
+      extractFromTs(`endpoint: 'wss://acala-polkadot.api.onfinality.io/public-ws'`, {
+        endpoint: ENDPOINT_REG,
+      })
+    ).toStrictEqual({
+      endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws'],
+    });
+    expect(
+      extractFromTs('endpoint: `wss://acala-polkadot.api.onfinality.io/public-ws`', {
+        endpoint: ENDPOINT_REG,
+      })
+    ).toStrictEqual({
+      endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws'],
+    });
+    expect(
+      extractFromTs('endpoint: [`wss://acala-polkadot.api.onfinality.io/public-ws`]', {
+        endpoint: ENDPOINT_REG,
+      })
+    ).toStrictEqual({
+      endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws'],
+    });
     expect(
       extractFromTs(
-        `
-      network: {
-    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    endpoint: 'wss://acala-polkadot.api.onfinality.io/public-ws',
-    dictionary: 'https://api.subquery.network/sq/subquery/acala-dictionary',
-    chaintypes: {
-      file: './dist/chaintypes.js',
-    },
-  },`,
+        "endpoint: [`wss://acala-polkadot.api.onfinality.io/public-ws`, 'wss://acala-polkadot.api.onfinality.io/public-ws']",
         {
           endpoint: ENDPOINT_REG,
         }
       )
     ).toStrictEqual({
-      endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws'],
+      endpoint: [
+        'wss://acala-polkadot.api.onfinality.io/public-ws',
+        'wss://acala-polkadot.api.onfinality.io/public-ws',
+      ],
     });
   });
   it('findReplace using regex', async () => {
