@@ -105,12 +105,21 @@ describe('Cli can create project (mocked)', () => {
     const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
     const v = findReplace(manifest, ENDPOINT_REG, "endpoint: 'wss://acala-polkadot.api.onfinality.io/public-ws'");
 
-    console.log(v);
-    // expect(extractFromTs(v, {
-    //   endpoint: ENDPOINT_REG
-    // })).toStrictEqual(
-    //     {endpoint: ["wss://acala-polkadot.api.onfinality.io/public-ws"]}
-    // )
+    expect(
+      extractFromTs(v, {
+        endpoint: ENDPOINT_REG,
+      })
+    ).toStrictEqual({endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']});
+  });
+  it('able to extract string endpoints', () => {
+    expect(
+      extractFromTs(
+        `
+      endpoint: 'wss://aaa'
+    `,
+        {endpoint: ENDPOINT_REG}
+      )
+    ).toStrictEqual({endpoint: ['wss://aaa']});
   });
   it('Ensure prepareManifest and preparePackage correctness for project.ts', async () => {
     const project = {
