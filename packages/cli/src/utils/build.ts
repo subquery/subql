@@ -51,3 +51,16 @@ async function generateManifestFromTs(projectManifestEntry: string, command: Com
     throw new Error(`Failed to build ${projectManifestEntry}: ${error}`);
   }
 }
+
+export function checkForTsManifest(location: string): boolean {
+  let projectManifestEntry: string;
+  if (lstatSync(location).isDirectory()) {
+    projectManifestEntry = path.join(location, DEFAULT_TS_MANIFEST);
+  } else if (lstatSync(location).isFile()) {
+    projectManifestEntry = location;
+  } else {
+    throw new Error('Argument `location` is not a valid directory or file');
+  }
+
+  return existsSync(projectManifestEntry) && projectManifestEntry.endsWith('.ts');
+}
