@@ -165,7 +165,7 @@ export async function prepare(projectPath: string, project: ProjectSpecBase): Pr
   try {
     await prepareManifest(projectPath, project);
   } catch (e) {
-    throw new Error('Failed to prepare read or write manifest while preparing the project' + `${e}`);
+    throw new Error('Failed to prepare read or write manifest while preparing the project');
   }
   try {
     await preparePackage(projectPath, project);
