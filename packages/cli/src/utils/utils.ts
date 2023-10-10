@@ -9,6 +9,7 @@ import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
 import inquirer, {Inquirer} from 'inquirer';
+import JSON5 from 'json5';
 import rimraf from 'rimraf';
 
 export async function delay(sec: number): Promise<void> {
@@ -122,15 +123,9 @@ export function extractFromTs(
     const match = manifest.match(patterns[key]);
 
     if (key === 'endpoint' && match) {
-      if (match[1].startsWith('[')) {
-        result[key] = match[1]
-          .slice(1, -1)
-          .split(',')
-          .map((s) => s.trim().replace(/['"]/g, ''))
-          .filter(Boolean);
-      } else {
-        result[key] = [match[1].trim().replace(/['"]/g, '')];
-      }
+      const inputStr = match[1].replace(/`/g, '"');
+      const jsonOutput = JSON5.parse(inputStr);
+      result[key] = Array.isArray(jsonOutput) ? jsonOutput : [jsonOutput];
     } else {
       result[key] = match ? match[1] : null;
     }

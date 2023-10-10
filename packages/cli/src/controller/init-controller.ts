@@ -13,7 +13,7 @@ import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
-import {BASE_TEMPLATE_URl, ENDPOINT_REG, SPEC_VERSION_REG} from '../constants';
+import {BASE_TEMPLATE_URl, ENDPOINT_REG} from '../constants';
 import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 import {errorHandle, extractFromTs, findReplace, prepareDirPath, validateEthereumTsManifest} from '../utils';
 
@@ -139,26 +139,21 @@ export async function cloneProjectTemplate(
 export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
-  let specVersion: string;
   let endpoint: string | string[];
 
   if (fs.existsSync(path.join(projectPath, 'project.ts'))) {
     const tsManifest = await fs.promises.readFile(path.join(projectPath, 'project.ts'), 'utf8');
     const extractedTsValues = extractFromTs(tsManifest.toString(), {
-      specVersion: SPEC_VERSION_REG,
       endpoint: ENDPOINT_REG,
     });
-    specVersion = extractedTsValues.specVersion as string;
     endpoint = extractedTsValues.endpoint;
-    console.log(extractedTsValues);
   } else {
     const yamlManifest = await fs.promises.readFile(path.join(projectPath, 'project.yaml'), 'utf8');
     const extractedYamlValues = parseDocument(yamlManifest).toJS() as ProjectManifestV1_0_0;
-    specVersion = extractedYamlValues.specVersion;
     endpoint = extractedYamlValues.network.endpoint;
   }
 
-  return [specVersion, endpoint, currentPackage.author, currentPackage.description];
+  return [endpoint, currentPackage.author, currentPackage.description];
 }
 
 export async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
@@ -200,10 +195,7 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
 
   if (isTs) {
     const tsManifest = (await fs.promises.readFile(tsPath, 'utf8')).toString();
-    const formattedEndpoint =
-      typeof project.endpoint === 'string'
-        ? JSON.stringify(project.endpoint)
-        : `[ ${JSON.stringify(project.endpoint).slice(1, -1)} ]`;
+    const formattedEndpoint = `[ ${JSON.stringify(project.endpoint).slice(1, -1)} ]`;
     manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint}`);
   } else {
     //load and write manifest(project.yaml)

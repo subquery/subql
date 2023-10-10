@@ -27,7 +27,7 @@ const project: SubstrateProject = {
   },
   network: {
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws', 'wss://acala-rpc-0.aca-api.network'],
+    endpoint: [`wss://acala-polkadot.api.onfinality.io/public-ws`, 'wss://acala-rpc-0.aca-api.network'],
     dictionary: 'https://api.subquery.network/sq/subquery/acala-dictionary',
     chaintypes: {
       file: './dist/chaintypes.js',

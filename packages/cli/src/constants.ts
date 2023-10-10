@@ -13,5 +13,7 @@ export const BASE_TEMPLATE_URl = 'https://templates.subquery.network';
 
 // Regex for cold tsManifest
 // export const ENDPOINT_REG = /endpoint:\s*(?:\[)?\s*['"]([\s\S]+?)['"]\s*(?:\])?/;
-export const ENDPOINT_REG = /endpoint:\s*((?:\[\s*['"][^'"]+['"]\s*(?:,\s*['"][^'"]+['"]\s*)*\])|['"][^'"]+['"])/;
-export const SPEC_VERSION_REG = /specVersion:\s*["'](.*?)["']/;
+// eslint-disable-next-line no-useless-backreference
+// export const ENDPOINT_REG = /endpoint:\s*((?:\[\s*("|'|`)(\S*)\1(?:,\s*(("|'|`)(\S*)\1)\s*)*\])|("|'|`)(\S*)\1)/;
+// export const ENDPOINT_REG = /endpoint:\s*((?:\[.*?\])|(['"`].*?['"`]))/;
+export const ENDPOINT_REG = /endpoint:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;

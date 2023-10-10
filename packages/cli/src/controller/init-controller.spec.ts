@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
 import git from 'simple-git';
-import {ENDPOINT_REG, SPEC_VERSION_REG} from '../constants';
+import {ENDPOINT_REG} from '../constants';
 import {extractFromTs, findReplace, validateEthereumTsManifest} from '../utils';
 import {
   cloneProjectGit,
@@ -83,11 +83,9 @@ describe('Cli can create project (mocked)', () => {
     const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
     expect(
       extractFromTs(manifest, {
-        specVersion: SPEC_VERSION_REG,
         endpoint: ENDPOINT_REG,
       })
     ).toStrictEqual({
-      specVersion: '1.0.0',
       endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws', 'wss://acala-rpc-0.aca-api.network'],
     });
   });
@@ -146,7 +144,6 @@ describe('Cli can create project (mocked)', () => {
       name: 'test-1',
       endpoint: ['https://zzz', 'https://bbb'],
       author: 'bz888',
-      specVersion: '1.0.0',
       description: 'tester project',
     };
 
@@ -162,11 +159,9 @@ describe('Cli can create project (mocked)', () => {
 
     const updatedManifest = await fs.promises.readFile(`${projectPath}/project.ts`);
     const extractedValues = extractFromTs(updatedManifest.toString(), {
-      specVersion: SPEC_VERSION_REG,
       endpoint: ENDPOINT_REG,
     });
     expect(extractedValues.endpoint).toStrictEqual(project.endpoint);
-    expect(extractedValues.specVersion).toBe(project.specVersion);
     expect(originalManifest).not.toBe(updatedManifest.toString());
     expect(originalPackage).not.toBe(packageData.toString());
   });

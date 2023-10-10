@@ -193,27 +193,20 @@ export default class Init extends Command {
   }
 
   async setupProject(flags: any): Promise<void> {
-    const [defaultSpecVersion, defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(
-      this.projectPath
-    );
+    const [defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(this.projectPath);
 
-    // Should use template specVersion as default, otherwise use user provided
-    flags.specVersion = defaultSpecVersion ?? flags.specVersion;
-
-    this.project.endpoint = defaultEndpoint;
+    this.project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
     const userInput = await cli.prompt('RPC endpoint:', {
       default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
       required: false,
     });
     // Should assume all project endpoints will be string[]
-    if (Array.isArray(this.project.endpoint)) {
-      if (!this.project.endpoint.includes(userInput)) {
-        this.project.endpoint.push(userInput);
-      }
-    } else {
+    if (!Array.isArray(this.project.endpoint)) {
       this.project.endpoint = [userInput];
     }
-
+    if (!this.project.endpoint.includes(userInput)) {
+      this.project.endpoint.push(userInput);
+    }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
     this.project.description = await cli
