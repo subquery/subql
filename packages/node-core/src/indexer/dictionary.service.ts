@@ -15,7 +15,6 @@ import {getLogger} from '../logger';
 import {profiler} from '../profiler';
 import {timeout} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
-import {maxEndBlockHeight} from '../utils/endBlock';
 
 export type SpecVersion = {
   id: string;
