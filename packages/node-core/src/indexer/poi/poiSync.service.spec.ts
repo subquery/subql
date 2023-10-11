@@ -3,9 +3,10 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {delay} from '@subql/common';
-import {MetadataFactory, PlainPoiModel, PoiFactory, Queue} from '@subql/node-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
+import {MetadataFactory, PlainPoiModel, PoiFactory} from '../../indexer';
+import {Queue} from '../../utils';
 import {ISubqueryProject} from '../types';
 import {PoiSyncService} from './poiSync.service';
 

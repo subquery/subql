@@ -4,7 +4,6 @@
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {PoiSyncService} from '@subql/node-core/indexer/poi';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
@@ -15,6 +14,7 @@ import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHo
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
+import {PoiSyncService} from './poi';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
 import {ISubqueryProject, IProjectService} from './types';
