@@ -6,12 +6,14 @@ import {isMainThread} from 'worker_threads';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
+import {cloneDeep} from 'lodash';
 import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
+import {maxEndBlockHeight} from '../utils/endBlock';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {PoiService} from './poi/poi.service';
@@ -278,12 +280,9 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   getDataSourcesMap(): BlockHeightMap<DS[]> {
     assert(isMainThread, 'This method is only avaiable on the main thread');
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
-
     const dsMap = new Map<number, DS[]>();
 
-    // Loop through all projects
     for (const [height, project] of this.projectUpgradeService.projects) {
-      // Iterate all the DS at the project height
       [...project.dataSources, ...dynamicDs]
         .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
         .sort((a, b) => a.startBlock - b.startBlock)
@@ -292,7 +291,16 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
         });
     }
 
-    return new BlockHeightMap(dsMap);
+    const newDsMap = cloneDeep(dsMap);
+    [...dsMap.entries()].forEach(([height, ds], i, arr) => {
+      const nextStart = arr[i + 1]?.[0];
+      const endBlock = maxEndBlockHeight(ds);
+      if (endBlock < Number.MAX_SAFE_INTEGER && (nextStart === undefined || nextStart > endBlock + 1)) {
+        newDsMap.set(endBlock + 1, []);
+      }
+    });
+
+    return new BlockHeightMap(newDsMap);
   }
 
   private async initUnfinalized(): Promise<number | undefined> {

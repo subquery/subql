@@ -343,18 +343,6 @@ export class DictionaryService {
     buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
   ): void {
     this.queriesMap = dataSources.map(buildDictionaryQueryEntries);
-    const newQueriesMap = this.queriesMap?.getAll() || new Map();
-
-    dataSources.getAll().forEach((ds, height) => {
-      const endBlock = maxEndBlockHeight(ds);
-      const queryDetails = this.queriesMap?.getDetails(height);
-
-      if (!queryDetails?.endHeight || queryDetails.endHeight > endBlock) {
-        newQueriesMap.set(endBlock + 1, []);
-      }
-    });
-
-    this.queriesMap = new BlockHeightMap(newQueriesMap);
   }
 
   async scopedDictionaryEntries(
