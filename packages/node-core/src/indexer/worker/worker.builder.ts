@@ -176,7 +176,6 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     super(worker, workerFns as string[], hostFns, getLogger(`worker: ${worker.threadId}`));
 
     this.worker.on('error', (error) => {
-      console.log('WORKRE ERRIR', error);
       this.logger.error(error, 'Worker error');
     });
 
