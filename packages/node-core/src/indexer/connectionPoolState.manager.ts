@@ -187,6 +187,9 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   //eslint-disable-next-line @typescript-eslint/require-await
   async removeFromConnections(endpoint: string): Promise<void> {
     delete this.pool[endpoint];
+    if (Object.keys(this.pool).length === 0) {
+      process.exit(1);
+    }
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
@@ -198,7 +201,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async handleApiError(endpoint: string, errorType: ApiErrorType): Promise<void> {
-    if (this.pool[endpoint].failed || this.pool[endpoint].rateLimited) {
+    if (Object.keys(this.pool).length === 1 || this.pool[endpoint].failed || this.pool[endpoint].rateLimited) {
       //if this api was used again then it must be in the same batch of blocks
       return;
     }
