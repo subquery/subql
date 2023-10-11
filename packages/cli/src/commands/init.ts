@@ -201,11 +201,11 @@ export default class Init extends Command {
       required: false,
     });
     // Should assume all project endpoints will be string[]
-    if (!Array.isArray(this.project.endpoint)) {
-      this.project.endpoint = [userInput];
-    }
+    // if (!Array.isArray(this.project.endpoint)) {
+    //   this.project.endpoint = [userInput];
+    // }
     if (!this.project.endpoint.includes(userInput)) {
-      this.project.endpoint.push(userInput);
+      (this.project.endpoint as string[]).push(userInput);
     }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});

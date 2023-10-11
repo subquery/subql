@@ -6,7 +6,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
+import {DEFAULT_MANIFEST, mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
 import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
@@ -109,7 +109,7 @@ describe('Cli publish', () => {
 
   it('upload project from a manifest', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const manifestPath = path.resolve(projectDir, DEFAULT_MANIFEST);
     const testManifestPath = path.resolve(projectDir, 'test.yaml');
     fs.renameSync(manifestPath, testManifestPath);
     await expect(Publish.run(['-f', testManifestPath])).resolves.not.toThrow();

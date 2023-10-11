@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
+import {DEFAULT_TS_MANIFEST} from '@subql/common';
 import git from 'simple-git';
 import {ENDPOINT_REG} from '../constants';
 import {extractFromTs, findReplace, validateEthereumTsManifest} from '../utils';
@@ -47,13 +48,13 @@ describe('Cli can create project (mocked)', () => {
   let originalManifest: string;
   let originalPackage: string;
   beforeAll(async () => {
-    originalManifest = (await fs.promises.readFile(`${projectPath}/project.ts`)).toString();
+    originalManifest = (await fs.promises.readFile(`${projectPath}/${DEFAULT_TS_MANIFEST}`)).toString();
     originalPackage = (await fs.promises.readFile(`${projectPath}/package.json`)).toString();
   });
 
   afterAll(async () => {
     // resort original after the test
-    await fs.promises.writeFile(path.join(projectPath, 'project.ts'), originalManifest);
+    await fs.promises.writeFile(path.join(projectPath, DEFAULT_TS_MANIFEST), originalManifest);
     await fs.promises.writeFile(path.join(projectPath, 'package.json'), originalPackage);
   });
   it('throw error when git clone failed', async () => {
@@ -80,7 +81,9 @@ describe('Cli can create project (mocked)', () => {
     expect((await fetchExampleProjects('evm', '1')).length).toBeGreaterThan(0);
   });
   it('readDefaults using regex', async () => {
-    const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
+    const manifest = (
+      await fs.promises.readFile(path.join(__dirname, `../../test/schemaTest/${DEFAULT_TS_MANIFEST}`))
+    ).toString();
     expect(
       extractFromTs(manifest, {
         endpoint: ENDPOINT_REG,
@@ -126,7 +129,9 @@ describe('Cli can create project (mocked)', () => {
     });
   });
   it('findReplace using regex', async () => {
-    const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
+    const manifest = (
+      await fs.promises.readFile(path.join(__dirname, `../../test/schemaTest/${DEFAULT_TS_MANIFEST}`))
+    ).toString();
     const v = findReplace(manifest, ENDPOINT_REG, "endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']");
 
     expect(
@@ -136,7 +141,9 @@ describe('Cli can create project (mocked)', () => {
     ).toStrictEqual({endpoint: ['wss://acala-polkadot.api.onfinality.io/public-ws']});
   });
   it('findReplace with string endpoints', async () => {
-    const manifest = (await fs.promises.readFile(path.join(__dirname, '../../test/schemaTest/project.ts'))).toString();
+    const manifest = (
+      await fs.promises.readFile(path.join(__dirname, `../../test/schemaTest/${DEFAULT_TS_MANIFEST}`))
+    ).toString();
     const v = findReplace(manifest, ENDPOINT_REG, "endpoint: 'wss://acala-polkadot.api.onfinality.io/public-ws'");
 
     expect(
@@ -173,7 +180,7 @@ describe('Cli can create project (mocked)', () => {
     expect(projectPackage.description).toBe(project.description);
     expect(projectPackage.author).toBe(project.author);
 
-    const updatedManifest = await fs.promises.readFile(`${projectPath}/project.ts`);
+    const updatedManifest = await fs.promises.readFile(`${projectPath}/${DEFAULT_TS_MANIFEST}`);
     const extractedValues = extractFromTs(updatedManifest.toString(), {
       endpoint: ENDPOINT_REG,
     });
