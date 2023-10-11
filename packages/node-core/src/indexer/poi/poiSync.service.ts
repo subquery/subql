@@ -4,12 +4,12 @@
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_FETCH_RANGE, delay, POI_AWAIT_TIME} from '@subql/common';
-import {establishNewSequelize} from '@subql/node-core/db';
-import {Metadata, MetadataFactory, MetadataRepo, PlainPoiModel, PoiFactory} from '@subql/node-core/indexer';
 import {hexToU8a} from '@subql/utils';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
+import {establishNewSequelize} from '../../db';
 import {PoiEvent} from '../../events';
+import {Metadata, MetadataFactory, MetadataRepo, PlainPoiModel, PoiFactory} from '../../indexer';
 import {getLogger} from '../../logger';
 import {hasValue, Queue} from '../../utils';
 import {ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';

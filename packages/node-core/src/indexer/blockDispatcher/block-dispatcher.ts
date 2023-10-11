@@ -2,15 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {getHeapStatistics} from 'v8';
-import {isMainThread} from 'worker_threads';
-import {Inject, OnApplicationShutdown} from '@nestjs/common';
+import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
-import {PoiSyncService} from '@subql/node-core/indexer';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
+import {PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize} from '../../utils';
