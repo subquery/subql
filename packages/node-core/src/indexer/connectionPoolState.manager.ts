@@ -91,6 +91,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
 
       if (rateLimitedEndpoints.length === 0) {
         // If no rate-limited endpoints found, return undefined
+        // FIXME: We better block the promise until one endpoint is recovered from suspension
         return undefined;
       }
 
