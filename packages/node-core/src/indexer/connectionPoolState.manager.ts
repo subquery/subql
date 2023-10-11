@@ -8,7 +8,7 @@ import {IApiConnectionSpecific} from '../api.service';
 import {getLogger} from '../logger';
 import {errorTypeToScoreAdjustment} from './connectionPool.service';
 
-const RETRY_DELAY = 10 * 1000;
+const RETRY_DELAY = 60 * 1000;
 const MAX_FAILURES = 5;
 const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
