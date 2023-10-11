@@ -273,7 +273,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   const chainTypes = plainManifests
     .filter((m) => validateCosmosManifest(m))
     .map((m) => (m as CosmosManifest).network.chaintypes)
-    .filter((value) => value && value.size);
+    .filter((value) => value && Object.keys(value).length !== 0);
 
   if (chainTypes.length) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
