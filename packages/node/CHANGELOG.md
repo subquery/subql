@@ -12,11 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with node-core. 
   - Fixed Poi migration performance issue.
   - Fixed AutoQueue timeout issue.
-
-### Fixed
-- Sync with node-core. 
-  - Fixed Poi migration performance issue.
-  - Fixed AutoQueue timeout issue.
+  - Fixed Poi sync could block DB IO and drop connection issue.
 
 ## [3.0.4] - 2023-10-03
 ### Changed
