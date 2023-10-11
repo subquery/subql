@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Store operations failing with workers when options are provided (#2092)
 
 ## [6.0.0] - 2023-10-11
 ### Changed
@@ -423,7 +425,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
 [Unreleased]: https://github.com/subquery/subql/compare/node-core/6.0.0...HEAD
-[5.0.4]: https://github.com/subquery/subql/compare/node-core/5.0.3...node-core/6.0.0
+[6.0.0]: https://github.com/subquery/subql/compare/node-core/5.0.3...node-core/6.0.0
 [5.0.3]: https://github.com/subquery/subql/compare/node-core/5.0.2...node-core/5.0.3
 [5.0.2]: https://github.com/subquery/subql/compare/node-core/5.0.1...node-core/5.0.2
 [5.0.1]: https://github.com/subquery/subql/compare/node-core/4.2.3...node-core/5.0.1
