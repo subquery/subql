@@ -99,7 +99,7 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
               if (await this.poolStateManager.getFieldValue(endpoint, 'rateLimited')) {
                 logger.info('throtling on ratelimited endpoint');
                 const backoffDelay = await this.poolStateManager.getFieldValue(endpoint, 'backoffDelay');
-                await delay(backoffDelay);
+                await delay(backoffDelay / 1000);
               }
 
               const start = Date.now();
