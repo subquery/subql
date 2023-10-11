@@ -15,6 +15,7 @@ import {
   SmartBatchService,
   StoreCacheService,
   IProjectUpgradeService,
+  PoiSyncService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from '../ethereum/api.connection';
@@ -90,6 +91,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         storeService: StoreService,
         storeCacheService: StoreCacheService,
         poiService: PoiService,
+        poiSyncService: PoiSyncService,
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
         unfinalizedBlocks: UnfinalizedBlocksService,
@@ -105,6 +107,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               storeService,
               storeCacheService,
               poiService,
+              poiSyncService,
               project,
               dynamicDsService,
               unfinalizedBlocks,
@@ -121,6 +124,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               storeService,
               storeCacheService,
               poiService,
+              poiSyncService,
               project,
               dynamicDsService,
             ),
@@ -135,6 +139,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         StoreService,
         StoreCacheService,
         PoiService,
+        PoiSyncService,
         'ISubqueryProject',
         DynamicDsService,
         UnfinalizedBlocksService,
@@ -165,6 +170,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DsProcessorService,
     DynamicDsService,
     PoiService,
+    PoiSyncService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',

@@ -14,6 +14,7 @@ import {
   ProcessBlockResponse,
   ApiService,
   IProjectUpgradeService,
+  PoiSyncService,
 } from '@subql/node-core';
 import {
   EthereumProjectDs,
@@ -44,6 +45,7 @@ export class BlockDispatcherService
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
+    poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
   ) {
@@ -56,6 +58,7 @@ export class BlockDispatcherService
       storeService,
       storeCacheService,
       poiService,
+      poiSyncService,
       project,
       dynamicDsService,
       apiService.fetchBlocks.bind(apiService),

@@ -3017,7 +3017,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": 3.1.1
+    "@subql/common": 3.1.2
     "@subql/types-ethereum": "workspace:*"
     "@typechain/ethers-v5": ^11.1.1
     "@types/ejs": ^3.1.2
@@ -3037,9 +3037,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.1.1":
-  version: 3.1.1
-  resolution: "@subql/common@npm:3.1.1"
+"@subql/common@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@subql/common@npm:3.1.2"
   dependencies:
     "@subql/types-core": 0.1.1
     axios: ^0.27.2
@@ -3051,23 +3051,23 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: 1d1e3070f0a2f2368a7ba24f9b98012ca88362d51e7e53ed146026aa8c2844e8d58335496a19341facf4422aa2cac89b05e87860b0a4f73e542ca91f8240cdd0
+  checksum: e979fac54089276de67a3a498bdf53396ac3726542d9f38350bced06f45921ab937a885a9c6cf183f3f5e7c82877c8ce9e27a5a5bf1f6fae6113baf68b4b3e55
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:5.0.3":
-  version: 5.0.3
-  resolution: "@subql/node-core@npm:5.0.3"
+"@subql/node-core@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@subql/node-core@npm:6.0.0"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
     "@subql/apollo-links": ^1.0.2
-    "@subql/common": 3.1.1
+    "@subql/common": 3.1.2
     "@subql/testing": 2.0.3-0
-    "@subql/types": 3.1.1
-    "@subql/utils": 2.4.4-1
+    "@subql/types": 3.1.3-0
+    "@subql/utils": 2.4.4
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
@@ -3082,7 +3082,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 8c620eb056436da207f079fd38fe34a599022417ca174187ee26e6b65e9442ea917ea1118920edbad5eb6dce88820124c1c5492333164e9b4c8edfba488d0154
+  checksum: 818205b56c63c0e6ae31de4e0afe2c9b8597c4cb7679ea47107f55505e54b48877b0403057ba0f058c91f4f8ce41a358ddf4fb2367504489dca2853179af0e21
   languageName: node
   linkType: hard
 
@@ -3098,11 +3098,10 @@ __metadata:
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
-    "@subql/common": 3.1.1
+    "@subql/common": 3.1.2
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": 5.0.3
+    "@subql/node-core": 6.0.0
     "@subql/testing": ^2.0.2
-    "@subql/types": ^3.1.1
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -3177,12 +3176,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types@npm:3.1.1, @subql/types@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "@subql/types@npm:3.1.1"
+"@subql/types@npm:3.1.3-0":
+  version: 3.1.3-0
+  resolution: "@subql/types@npm:3.1.3-0"
+  dependencies:
+    "@subql/types-core": 0.1.1
   peerDependencies:
     "@polkadot/api": ^10
-  checksum: 0b1765dfea7e180366cb846b6e8c398bb30be762d79823508c0e4a2953be6785316858f0efe67469cbb693f0bf3db0a81c625b7265cdcc095bd449df75e60d63
+  checksum: 80f5d4b0e509fc7824149be027c387cee64c68f3edbda359e3bd9da1f5372b5d512eafda438efd2e26f3aed3b4b1e3e4060069b3c41b56e31f2cc9ddb45787f6
   languageName: node
   linkType: hard
 
@@ -3195,9 +3196,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.4.4-1":
-  version: 2.4.4-1
-  resolution: "@subql/utils@npm:2.4.4-1"
+"@subql/utils@npm:2.4.4":
+  version: 2.4.4
+  resolution: "@subql/utils@npm:2.4.4"
   dependencies:
     "@polkadot/util": ^12.2.1
     "@polkadot/util-crypto": ^12.2.1
@@ -3214,7 +3215,7 @@ __metadata:
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
     tar: ^6.1.11
-  checksum: f80fac522d9739a493b8afe8f69029996b1e597241a60c8e2641a6192da1a03300c76738f9bcdaedc973f208ed60c6e9608483e60dd8711b0d0843d42b647b42
+  checksum: 1b0a4a4435bddc2bb058283a4417611be5b8c0248a99dc9f5ea32a1255b60beb64217e49e6bf1c99fef14625e9fa561bdf5a481e3208229093cdca8dfd59a71f
   languageName: node
   linkType: hard
 

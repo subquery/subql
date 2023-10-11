@@ -14,7 +14,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     builder: {},
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
@@ -31,7 +31,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     builder: {},
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
@@ -90,10 +90,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     debug: {
       demandOption: false,
-      describe:
-        'Show debug information to console output. will forcefully set log level to debug',
-      type: 'boolean',
-      default: false,
+      describe: `Enable debug logging for specific scopes, this will override log-level. "*" will enable debug everywhere, or comma separated strings for specific scopes. e.g. "SQL,dictionary"`,
+      type: 'string',
     },
     'dictionary-resolver': {
       demandOption: false,
