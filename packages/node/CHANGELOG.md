@@ -5,14 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.5] - 2023-10-11
 ### Changed
 - debug has changed from a boolean to a string to allow scoping debug log level (#2077)
 
 ### Fixed
-- Sync with node-core. 
+- Sync with node-core.
   - Fixed Poi migration performance issue.
-  - Fixed AutoQueue timeout issue.
-  - Fixed Poi sync could block DB IO and drop connection issue.
+  - Fixed AutoQueue timeout issue. (#2081)
+  - Fixed Poi sync could block DB IO and drop connection issue.(#2086)
 
 ## [3.0.4] - 2023-10-03
 ### Changed
@@ -1001,7 +1003,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.5...HEAD
+[3.0.5]: https://github.com/subquery/subql/compare/node/3.0.4...node/3.0.5
 [3.0.4]: https://github.com/subquery/subql/compare/node/3.0.3...node/3.0.4
 [3.0.3]: https://github.com/subquery/subql/compare/node/3.0.2...node/3.0.3
 [3.0.2]: https://github.com/subquery/subql/compare/node/3.0.1...node/3.0.2
