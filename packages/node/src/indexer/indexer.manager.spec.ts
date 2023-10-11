@@ -10,6 +10,7 @@ import {
 import {
   StoreService,
   PoiService,
+  PoiSyncService,
   NodeConfig,
   ConnectionPoolService,
   StoreCacheService,
@@ -179,6 +180,8 @@ function createIndexerManager(
     eventEmitter,
     project,
   );
+
+  const poiSyncService = new PoiSyncService(nodeConfig, eventEmitter, project);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
@@ -196,6 +199,7 @@ function createIndexerManager(
     dsProcessorService,
     apiService,
     poiService,
+    poiSyncService,
     sequelize,
     project,
     projectUpgradeService,

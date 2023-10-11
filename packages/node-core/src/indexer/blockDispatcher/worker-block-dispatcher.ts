@@ -5,6 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {PoiSyncService} from '@subql/node-core/indexer';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
@@ -55,6 +56,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
+    poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     dynamicDsService: DynamicDsService<DS>,
     private createIndexerWorker: () => Promise<W>
@@ -70,6 +72,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       storeService,
       storeCacheService,
       poiService,
+      poiSyncService,
       dynamicDsService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call

@@ -4,7 +4,7 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiService} from '../poi';
+import {PoiService, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -36,6 +36,7 @@ describe('WorkerBlockDispatcher', () => {
       null as unknown as StoreService,
       null as unknown as StoreCacheService,
       null as unknown as PoiService,
+      null as unknown as PoiSyncService,
       null as unknown as ISubqueryProject,
       null as unknown as DynamicDsService<any>,
       null as unknown as () => Promise<any>
