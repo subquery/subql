@@ -3,13 +3,12 @@
 
 import {OnApplicationShutdown} from '@nestjs/common';
 import chalk from 'chalk';
-import {toNumber} from 'lodash';
 import {ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
 import {getLogger} from '../logger';
 import {errorTypeToScoreAdjustment} from './connectionPool.service';
 
-const RETRY_DELAY = 60 * 1000;
+const RETRY_DELAY = 60; // second
 const MAX_FAILURES = 5;
 const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
