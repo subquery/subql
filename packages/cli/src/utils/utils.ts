@@ -9,6 +9,7 @@ import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
 import inquirer, {Inquirer} from 'inquirer';
+import JSON5 from 'json5';
 import rimraf from 'rimraf';
 
 export async function delay(sec: number): Promise<void> {
@@ -106,4 +107,36 @@ export function resolveToAbsolutePath(inputPath: string): string {
 
 export function isValidEnum<T extends Record<string, string>>(enumType: T, input: string): input is T[keyof T] {
   return Object.values(enumType).includes(input);
+}
+
+export function findReplace(manifest: string, replacer: RegExp, value: string): string {
+  return manifest.replace(replacer, value);
+}
+
+export function extractFromTs(
+  manifest: string,
+  patterns: {[key: string]: RegExp}
+): {[key: string]: string | string[] | null} {
+  const result: {[key: string]: string | string[] | null} = {};
+
+  for (const key in patterns) {
+    const match = manifest.match(patterns[key]);
+
+    if (key === 'endpoint' && match) {
+      const inputStr = match[1].replace(/`/g, '"');
+      const jsonOutput = JSON5.parse(inputStr);
+      result[key] = Array.isArray(jsonOutput) ? jsonOutput : [jsonOutput];
+    } else {
+      result[key] = match ? match[1] : null;
+    }
+  }
+
+  return result;
+}
+
+// Cold validate on ts manifest, for generate scaffold command
+export function validateEthereumTsManifest(manifest: string): boolean {
+  const typePattern = /@subql\/types-ethereum/;
+  const nodePattern = /@subql\/node-ethereum/;
+  return !!typePattern.test(manifest) && !!nodePattern.test(manifest);
 }
