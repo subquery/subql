@@ -35,16 +35,6 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     }
   }
 
-  async getFirst(): Promise<ProofOfIndex | undefined> {
-    await this.mutex.waitForUnlock();
-    return this.plainPoiModel.getFirst();
-  }
-
-  async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
-    await this.mutex.waitForUnlock();
-    return this.plainPoiModel.getPoiBlocksByRange(startHeight);
-  }
-
   get isFlushable(): boolean {
     return !!Object.entries(this.setCache).length;
   }

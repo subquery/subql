@@ -9,11 +9,6 @@ import {PoiRepo, ProofOfIndex} from '../entities';
 export interface PoiInterface {
   model: PoiRepo;
   bulkUpsert(proofs: ProofOfIndex[], tx?: Transaction): Promise<void> | void;
-  /**
-   * Gets the first 100 blocks >= the startHeight.
-   * */
-  getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]>;
-  getFirst(): Promise<ProofOfIndex | undefined>;
 }
 
 // When using cockroach db, poi id is store in bigint format, and sequelize toJSON() can not convert id correctly (to string)

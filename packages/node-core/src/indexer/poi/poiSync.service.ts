@@ -142,6 +142,7 @@ export class PoiSyncService implements OnApplicationShutdown {
           if (poiBlocks.length !== 0) {
             await this.syncPoiJob(poiBlocks);
           }
+          // Slows down getPoiBlocksByRange when almost catch up last created poi
           if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
             await delay(POI_AWAIT_TIME);
           }

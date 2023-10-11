@@ -50,15 +50,6 @@ const mockPoiRepo = (): PoiRepo => {
   } as any as PoiRepo;
 };
 
-const getEmptyPoi = (id: number): ProofOfIndex => {
-  return {
-    id,
-    chainBlockHash: new Uint8Array(),
-    hash: new Uint8Array(),
-    parentHash: new Uint8Array(),
-  } as ProofOfIndex;
-};
-
 jest.mock('@subql/x-sequelize', () => {
   let data: Record<string, any> = {};
 
@@ -72,31 +63,6 @@ jest.mock('@subql/x-sequelize', () => {
       create: (input: any) => input,
     }),
     query: () => [{nextval: 1}],
-    showAllSchemas: () => ['subquery_1'],
-    model: (entity: string) => ({
-      getTableName: () => 'table1',
-      sequelize: {
-        escape: (key: any) => key,
-        query: (sql: string, option?: any) => jest.fn(),
-        fn: jest.fn().mockImplementation(() => {
-          return {fn: 'int8range', args: [41204769, null]};
-        }),
-      },
-      upsert: jest.fn(),
-      associations: [{}, {}],
-      count: 5,
-      findAll: jest.fn().mockImplementation(async (limit, order, where) => {
-        console.log(``);
-        await delay(5);
-      }),
-      findOne: jest.fn(({transaction, where: {id}}) => ({
-        toJSON: () => (transaction ? pendingData[id] ?? data[id] : data[id]),
-      })),
-      bulkCreate: jest.fn((records: {id: string}[]) => {
-        records.map((r) => (pendingData[r.id] = r));
-      }),
-      destroy: jest.fn(),
-    }),
     sync: jest.fn(),
     transaction: () => ({
       commit: jest.fn(async () => {
@@ -128,26 +94,6 @@ describe('CachePoi', () => {
     sequelize = new Sequelize();
     cachePoi = new CachePoiModel(poiRepo);
   });
-
-  describe('getPoiBlocksByRange', () => {
-    it('getPoiBlocksByRange only db data', async () => {
-      await poiRepo.bulkCreate([{id: 1}, {id: 2}, {id: 3}] as any);
-
-      const res = await cachePoi.getPoiBlocksByRange(2);
-      expect(res.map((d) => d.id)).toEqual([2, 3]);
-    });
-  });
-
-  // describe('getPoiById', () => {
-  //   it('with mix of cache and db data, it should use cache data', async () => {
-  //     await poiRepo.bulkCreate([{id: 1, chainBlockHash: '0x1234'}, {id: 2, chainBlockHash: '0x5678'}, {id: 3}] as any);
-  //     cachePoi.bulkUpsert([getEmptyPoi(1)]);
-  //     const res = await cachePoi.getPoiById(1);
-  //     expect(res?.chainBlockHash).not.toBe('0x1234');
-  //     const res2 = await cachePoi.getPoiById(2);
-  //     expect(res2?.chainBlockHash).toBe('0x5678');
-  //   });
-  // });
 
   describe('clear poi', () => {
     it('should clear all if blockHeight not provided', () => {
