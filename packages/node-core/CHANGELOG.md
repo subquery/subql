@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.0.4] - 2023-10-11
+## [6.0.0] - 2023-10-11
 ### Changed
 - Support scoped debug logging (#2077)
 
@@ -422,8 +422,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/5.0.4...HEAD
-[5.0.4]: https://github.com/subquery/subql/compare/node-core/5.0.3...node-core/5.0.4
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.0.0...HEAD
+[5.0.4]: https://github.com/subquery/subql/compare/node-core/5.0.3...node-core/6.0.0
 [5.0.3]: https://github.com/subquery/subql/compare/node-core/5.0.2...node-core/5.0.3
 [5.0.2]: https://github.com/subquery/subql/compare/node-core/5.0.1...node-core/5.0.2
 [5.0.1]: https://github.com/subquery/subql/compare/node-core/4.2.3...node-core/5.0.1

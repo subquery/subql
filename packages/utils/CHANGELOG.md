@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.4.4] - 2023-10-11
 ### Added
 - Option to set debug level for child loggers
+
+### Fixed
+- fix undefined ts type for unsupported field type (#2003)
 
 ## [2.4.3] - 2023-07-31
 ### Fixed
@@ -86,7 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/v2.4.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v2.4.4...HEAD
+[2.4.4]: https://github.com/subquery/subql/compare/v2.4.3...v2.4.4
 [2.4.3]: https://github.com/subquery/subql/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/subquery/subql/compare/utils/2.4.1...utils/2.4.2
 [2.4.1]: https://github.com/subquery/subql/compare/utils/2.4.0...utils/2.4.1
