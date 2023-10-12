@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.6] - 2023-10-12
+### Changed
+- Update node-core
+
 ## [3.0.5] - 2023-10-11
 ### Changed
 - debug has changed from a boolean to a string to allow scoping debug log level (#2077)
@@ -1003,7 +1007,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.6...HEAD
+[3.0.6]: https://github.com/subquery/subql/compare/node/3.0.5...node/3.0.6
 [3.0.5]: https://github.com/subquery/subql/compare/node/3.0.4...node/3.0.5
 [3.0.4]: https://github.com/subquery/subql/compare/node/3.0.3...node/3.0.4
 [3.0.3]: https://github.com/subquery/subql/compare/node/3.0.2...node/3.0.3
