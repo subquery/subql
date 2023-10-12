@@ -44,5 +44,6 @@
   },
   "devDependencies": {
     "@types/async-lock": "^1"
-  }
+  },
+  "stableVersion": "6.0.1"
 }
