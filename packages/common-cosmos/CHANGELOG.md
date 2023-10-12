@@ -6,11 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2023-10-12
 ### Changed
 - Version bump with `@subql/common` 3.1.2
 
 ## [3.0.1] - 2023-10-05
-### Update
+### Changed
 - Bump `subql/types-cosmos`
 
 ## [3.0.0] - 2023-10-04
@@ -29,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for cosmwasm contract abi to ts `codegen` (#168)
 
 ## [2.4.1] - 2023-08-24
-### Updated
+### Changed
 - Updated `telescope` config for codegen optimisation(#166)
 
 ## [2.4.0] - 2023-08-24
@@ -90,7 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.0.2...HEAD
+[3.0.2]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.0.1...common-cosmos/3.0.2
 [3.0.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.0.0...common-cosmos/3.0.1
 [3.0.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.5.1...common-cosmos/3.0.0
 [2.5.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/2.5.0...common-cosmos/2.5.1

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2023-10-12
+### Changed
+- Bump with `@subql/types-core` 0.1.1 (#186)
+
 ## [3.0.1] - 2023-10-05
 ### Fixed
 - Fixed RuntimeDatasourceTemplate's generic typing (#182)
@@ -73,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/3.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/3.0.2...HEAD
+[3.0.2]: https://github.com/subquery/subql-cosmos/compare/types/3.0.1...types/3.0.2
 [3.0.1]: https://github.com/subquery/subql-cosmos/compare/types/3.0.0...types/3.0.1
 [3.0.0]: https://github.com/subquery/subql-cosmos/compare/types/2.2.0...types/3.0.0
 [2.2.1]: https://github.com/subquery/subql-cosmos/compare/types/2.2.0...types/2.2.1
