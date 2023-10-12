@@ -34,7 +34,7 @@ const logger = getLogger(`worker #${threadId}`);
 async function initWorker(startHeight: number): Promise<void> {
   try {
     const app = await NestFactory.create(WorkerModule, {
-      logger: new NestLogger(argv.debug), // TIP: If the worker is crashing comment out this line for better logging
+      logger: new NestLogger(!!argv.debug), // TIP: If the worker is crashing comment out this line for better logging
     });
 
     await app.init();

@@ -13,7 +13,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     builder: {},
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
@@ -30,7 +30,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     builder: {},
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
@@ -53,7 +53,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       }),
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
@@ -124,7 +124,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       }),
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
@@ -173,7 +173,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       }),
     handler: (argv) => {
       initLogger(
-        argv.debug as boolean,
+        argv.debug as string,
         argv.outputFmt as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
