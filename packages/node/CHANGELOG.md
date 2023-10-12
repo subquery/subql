@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.4] - 2023-10-12
 ### Changed
 - debug has changed from a boolean to a string to allow scoping debug log level (#2077)
 
@@ -273,7 +274,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.4...HEAD
+[3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
 [3.0.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.2...node-ethereum/3.0.3
 [3.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...node-ethereum/3.0.2
 [3.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.0...node-ethereum/3.0.1
