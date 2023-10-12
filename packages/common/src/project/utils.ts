@@ -21,6 +21,7 @@ import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
 
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
+export const DEFAULT_MULTICHAIN_TS_MANIFEST = 'subquery-multichain.ts';
 export const DEFAULT_MANIFEST = 'project.yaml';
 export const DEFAULT_TS_MANIFEST = 'project.ts';
 
@@ -93,25 +94,25 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
       throw new Error(`Extension ${ext} not supported for project ${subquery}`);
     }
     project.root = dir;
+    let projectYamlPath = subquery;
+
     if (extensionIsTs(ext)) {
-      const projectYamlPath = tsProjectYamlPath(subquery);
+      projectYamlPath = tsProjectYamlPath(subquery);
       if (!fs.existsSync(projectYamlPath)) {
         throw new Error(
           `Could not find manifest ${projectYamlPath}, if pointing to a typescript manifest, please ensure build successfully`
         );
       }
-      project.manifests.push(projectYamlPath);
+    }
+
+    const multichainManifestContent = yaml.load(fs.readFileSync(projectYamlPath, 'utf8')) as MultichainProjectManifest;
+    // The project manifest could be empty
+    if (multichainManifestContent === null) {
+      throw new Error(`Read manifest content is null, ${projectYamlPath}`);
+    } else if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
+      addMultichainManifestProjects(dir, multichainManifestContent, project);
     } else {
-      // when file path is yaml
-      const multichainManifestContent = yaml.load(fs.readFileSync(subquery, 'utf8')) as MultichainProjectManifest;
-      // The project manifest could be empty
-      if (multichainManifestContent === null) {
-        throw new Error(`Read manifest content is null, ${subquery}`);
-      } else if (multichainManifestContent.projects && Array.isArray(multichainManifestContent.projects)) {
-        addMultichainManifestProjects(dir, multichainManifestContent, project);
-      } else {
-        project.manifests.push(subquery);
-      }
+      project.manifests.push(projectYamlPath);
     }
   }
 
