@@ -3,6 +3,7 @@
 
 import * as util from 'util';
 import {Store, FieldsExpression} from '@subql/types-core';
+import {instanceToPlain} from 'class-transformer';
 
 /**
  * Proxy objects aren't serializable between worker threads.
@@ -14,7 +15,7 @@ function unwrapProxy<T = any>(input: T): T {
     return input;
   }
 
-  return {...input};
+  return instanceToPlain(input) as T;
 }
 
 /* Unwraps any arguments to a function that are proxy objects */
