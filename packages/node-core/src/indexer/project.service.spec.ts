@@ -28,6 +28,7 @@ describe('BaseProjectService', () => {
       null as unknown as any,
       null as unknown as any,
       null as unknown as any,
+      null as unknown as any,
       {dataSources: []} as unknown as ISubqueryProject<any>,
       null as unknown as any,
       null as unknown as any,
