@@ -67,4 +67,70 @@ describe('BaseProjectService', () => {
       {startBlock: 150, endBlock: 250},
     ]);
   });
+
+  test('getDatasourceMap', () => {
+    (service as any).dynamicDsService.dynamicDatasources = [];
+    (service as any).projectUpgradeService = {
+      projects: [
+        [
+          1,
+          {
+            dataSources: [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 10, endBlock: 20},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 50, endBlock: 200},
+              {startBlock: 500},
+            ],
+          },
+        ],
+      ],
+    } as any;
+
+    const result = service.getDataSourcesMap();
+    expect(result.getAll()).toEqual(
+      new Map([
+        [
+          1,
+          [
+            {startBlock: 1, endBlock: 300},
+            {startBlock: 1, endBlock: 100},
+          ],
+        ],
+        [
+          10,
+          [
+            {startBlock: 1, endBlock: 300},
+            {startBlock: 1, endBlock: 100},
+            {startBlock: 10, endBlock: 20},
+          ],
+        ],
+        [
+          21,
+          [
+            {startBlock: 1, endBlock: 300},
+            {startBlock: 1, endBlock: 100},
+          ],
+        ],
+        [
+          50,
+          [
+            {startBlock: 1, endBlock: 300},
+            {startBlock: 1, endBlock: 100},
+            {startBlock: 50, endBlock: 200},
+          ],
+        ],
+        [
+          101,
+          [
+            {startBlock: 1, endBlock: 300},
+            {startBlock: 50, endBlock: 200},
+          ],
+        ],
+        [201, [{startBlock: 1, endBlock: 300}]],
+        [301, []],
+        [500, [{startBlock: 500}]],
+      ])
+    );
+  });
 });

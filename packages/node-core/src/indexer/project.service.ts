@@ -6,14 +6,12 @@ import {isMainThread} from 'worker_threads';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
-import {cloneDeep} from 'lodash';
 import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
-import {maxEndBlockHeight} from '../utils/endBlock';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {PoiService} from './poi/poi.service';
@@ -278,29 +276,48 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   }
 
   getDataSourcesMap(): BlockHeightMap<DS[]> {
-    assert(isMainThread, 'This method is only avaiable on the main thread');
+    assert(isMainThread, 'This method is only available on the main thread');
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
     const dsMap = new Map<number, DS[]>();
+    const activeDataSources = new Set<DS>();
+    //events denote addition or deletion of datasources from height-datasource map entries at the specified block height
+    const events: {
+      block: number; //block height at which addition or deletion of datasource should take place
+      start: boolean; //if start=TRUE, add the datasource. otherwise remove the datasource.
+      ds: DS;
+    }[] = [];
 
     for (const [height, project] of this.projectUpgradeService.projects) {
-      [...project.dataSources, ...dynamicDs]
-        .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
-        .sort((a, b) => a.startBlock - b.startBlock)
-        .forEach((ds, index, dataSources) => {
-          dsMap.set(Math.max(height, ds.startBlock), dataSources.slice(0, index + 1));
-        });
+      const dataSources = [...project.dataSources, ...dynamicDs].filter(
+        (ds): ds is DS & {startBlock: number} => !!ds.startBlock
+      );
+
+      dataSources.forEach((ds) => {
+        const startBlock = Math.max(height, ds.startBlock);
+
+        //ds is to be added at startBlock
+        events.push({block: startBlock, start: true, ds});
+        if (ds.endBlock) {
+          const endBlock = ds.endBlock + 1;
+          //ds is to be removed at endBlock
+          events.push({block: endBlock, start: false, ds});
+        }
+      });
     }
 
-    const newDsMap = cloneDeep(dsMap);
-    [...dsMap.entries()].forEach(([height, ds], i, arr) => {
-      const nextStart = arr[i + 1]?.[0];
-      const endBlock = maxEndBlockHeight(ds);
-      if (endBlock < Number.MAX_SAFE_INTEGER && (nextStart === undefined || nextStart > endBlock + 1)) {
-        newDsMap.set(endBlock + 1, []);
-      }
-    });
+    // sort events by block in ascending order, start events come before end events
+    events.sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start));
 
-    return new BlockHeightMap(newDsMap);
+    for (const event of events) {
+      if (event.start) {
+        activeDataSources.add(event.ds);
+      } else {
+        activeDataSources.delete(event.ds);
+      }
+      dsMap.set(event.block, Array.from(activeDataSources));
+    }
+
+    return new BlockHeightMap(dsMap);
   }
 
   private async initUnfinalized(): Promise<number | undefined> {
