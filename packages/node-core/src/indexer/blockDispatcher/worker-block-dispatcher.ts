@@ -9,6 +9,7 @@ import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
+import {PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
@@ -55,6 +56,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
+    poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     dynamicDsService: DynamicDsService<DS>,
     private createIndexerWorker: () => Promise<W>
@@ -70,6 +72,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       storeService,
       storeCacheService,
       poiService,
+      poiSyncService,
       dynamicDsService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call

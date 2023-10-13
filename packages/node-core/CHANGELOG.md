@@ -6,6 +6,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.2] - 2023-10-12
+### Fixed
+- Issues with using object destructing for store interface and workers (#2094)
+
+## [6.0.1] - 2023-10-12
+### Fixed
+- Store operations failing with workers when options are provided (#2092)
+- skip managing connection pool for single endpoint (#2091)
+
+## [6.0.0] - 2023-10-11
+### Changed
+- Support scoped debug logging (#2077)
+
+### Added
+- Debug logging for dictionary queries (#2077)
+
+### Fixed
+- Fixed Poi migration performance issue with `sqlIterator`
+- Fixed AutoQueue timeout issue, align setting with nodeConfig. (#2081)
+- Fixed Poi sync could block DB IO and drop connection issue (#2086)
+
+## [5.0.3] - 2023-10-03
+### Fixed
+- Fix reindex service without poi feature (2062)
+
+### Changed
+- Version bump with `types-core` 0.1.1
+
 ## [5.0.2] - 2023-10-02
 ### Fixed
 - Fix dictionary metadata validation (#2057)
@@ -403,7 +431,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/5.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.0.2...HEAD
+[6.0.2]: https://github.com/subquery/subql/compare/node-core/6.0.1...node-core/6.0.2
+[6.0.1]: https://github.com/subquery/subql/compare/node-core/6.0.0...node-core/6.0.1
+[6.0.0]: https://github.com/subquery/subql/compare/node-core/5.0.3...node-core/6.0.0
+[5.0.3]: https://github.com/subquery/subql/compare/node-core/5.0.2...node-core/5.0.3
+[5.0.2]: https://github.com/subquery/subql/compare/node-core/5.0.1...node-core/5.0.2
 [5.0.1]: https://github.com/subquery/subql/compare/node-core/4.2.3...node-core/5.0.1
 [4.2.3]: https://github.com/subquery/subql/compare/node-core/4.2.2...node-core/4.2.3
 [4.2.2]: https://github.com/subquery/subql/compare/node-core/4.2.1...node-core/4.2.2

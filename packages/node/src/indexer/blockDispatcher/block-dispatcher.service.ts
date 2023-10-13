@@ -13,6 +13,7 @@ import {
   BlockDispatcher,
   ProcessBlockResponse,
   IProjectUpgradeService,
+  PoiSyncService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -45,6 +46,7 @@ export class BlockDispatcherService
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
+    poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
   ) {
@@ -57,6 +59,7 @@ export class BlockDispatcherService
       storeService,
       storeCacheService,
       poiService,
+      poiSyncService,
       project,
       dynamicDsService,
       async (

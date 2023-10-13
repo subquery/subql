@@ -166,7 +166,13 @@ export class WorkerHost<T extends AsyncMethods> extends WorkerIO {
 export class Worker<T extends AsyncMethods> extends WorkerIO {
   private _reqCounter = 0;
 
-  private constructor(private worker: workers.Worker, workerFns: (keyof T)[], hostFns: AsyncMethods) {
+  /**
+   * @param worker - the nodejs worker
+   * @param workerFns - functions that the worker exposes to be called from the main thread
+   * @param hostFns - functions the host exposes to the worker
+   * @param exitMain - if true, when a worker exits the host will also exit
+   * */
+  private constructor(private worker: workers.Worker, workerFns: (keyof T)[], hostFns: AsyncMethods, exitMain = true) {
     super(worker, workerFns as string[], hostFns, getLogger(`worker: ${worker.threadId}`));
 
     this.worker.on('error', (error) => {
@@ -179,7 +185,9 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
 
     this.worker.on('exit', (code) => {
       this.logger.error(`Worker exited with code ${code}`);
-      process.exit(code);
+      if (exitMain) {
+        process.exit(code);
+      }
     });
   }
 
@@ -187,14 +195,16 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     path: string,
     workerFns: (keyof T)[],
     hostFns: H,
-    root: string
+    root: string,
+    exitMain = true
   ): Worker<T> & T {
     const worker = new Worker(
       new workers.Worker(path, {
         argv: [...process.argv, '--root', root],
       }),
       workerFns,
-      hostFns
+      hostFns,
+      exitMain
     );
 
     return worker as Worker<T> & T;

@@ -10,7 +10,7 @@ import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiBlock, PoiService} from '../poi';
+import {PoiBlock, PoiService, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -62,6 +62,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     protected storeService: StoreService,
     private storeCacheService: StoreCacheService,
     private poiService: PoiService,
+    private poiSyncService: PoiSyncService,
     protected dynamicDsService: DynamicDsService<any>
   ) {}
 
@@ -169,21 +170,21 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
 
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       if (this.nodeConfig.proofOfIndex) {
-        await this.poiService.stopSync();
+        await this.poiSyncService.stopSync();
+        this.poiSyncService.clear();
       }
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
-      // Bring poi sync back to sync again.
+      // Bring poi sync service back to sync again.
       if (this.nodeConfig.proofOfIndex) {
-        await this.poiService.syncLatestSyncedPoiFromDb();
-        void this.poiService.syncPoi();
+        void this.poiSyncService.syncPoi();
       }
       return;
     } else {
       this.updateStoreMetadata(height);
 
       const operationHash = this.storeService.getOperationMerkleRoot();
-      await this.createPOI(height, blockHash, operationHash);
+      this.createPOI(height, blockHash, operationHash);
 
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);
@@ -215,8 +216,15 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     }
   }
 
-  // First creation of POI
-  private async createPOI(height: number, blockHash: string, operationHash: Uint8Array): Promise<void> {
+  /**
+   * If index a block generate store operation, this will create a POI
+   * and this createdPoi will be upsert into CachedPoi
+   * @param height
+   * @param blockHash
+   * @param operationHash
+   * @private
+   */
+  private createPOI(height: number, blockHash: string, operationHash: Uint8Array): void {
     if (!this.nodeConfig.proofOfIndex) {
       return;
     }
@@ -231,8 +239,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       height,
       timestamp: Date.now(),
     });
-
-    await this.poiService.ensureGenesisPoi(height);
   }
 
   @mainThreadOnly()

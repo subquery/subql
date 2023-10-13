@@ -6,6 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.6] - 2023-10-12
+### Changed
+- Update node-core
+
+## [3.0.5] - 2023-10-11
+### Changed
+- debug has changed from a boolean to a string to allow scoping debug log level (#2077)
+
+### Fixed
+- Sync with node-core.
+  - Fixed Poi migration performance issue.
+  - Fixed AutoQueue timeout issue. (#2081)
+  - Fixed Poi sync could block DB IO and drop connection issue.(#2086)
+
+## [3.0.4] - 2023-10-03
+### Changed
+- Version bump with `types-core` 0.1.1
+
+## [3.0.3] - 2023-10-03
+### Fixed
+- Empty string causing main command to not run, this happened with the default docker compose in starters
+
 ## [3.0.2] - 2023-10-02
 ### Fixed
 - Use specific dictionary metadata validation for substrate (#2057)
@@ -985,7 +1007,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.6...HEAD
+[3.0.6]: https://github.com/subquery/subql/compare/node/3.0.5...node/3.0.6
+[3.0.5]: https://github.com/subquery/subql/compare/node/3.0.4...node/3.0.5
+[3.0.4]: https://github.com/subquery/subql/compare/node/3.0.3...node/3.0.4
+[3.0.3]: https://github.com/subquery/subql/compare/node/3.0.2...node/3.0.3
+[3.0.2]: https://github.com/subquery/subql/compare/node/3.0.1...node/3.0.2
 [3.0.1]: https://github.com/subquery/subql/compare/node/2.12.2...node/3.0.1
 [2.12.2]: https://github.com/subquery/subql/compare/node/2.12.1...node/2.12.2
 [2.12.1]: https://github.com/subquery/subql/compare/node/2.12.0...node/2.12.1

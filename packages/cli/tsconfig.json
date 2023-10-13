@@ -16,5 +16,6 @@
     {"path": "../utils"},
     {"path": "../validator"}
   ],
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["test/schemaTest/project.ts"]
 }

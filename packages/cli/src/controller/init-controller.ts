@@ -5,7 +5,7 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {loadFromJsonOrYaml, makeTempDir} from '@subql/common';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import axios from 'axios';
@@ -13,9 +13,9 @@ import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
-import {BASE_TEMPLATE_URl} from '../constants';
-import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
-import {errorHandle, prepareDirPath} from '../utils';
+import {BASE_TEMPLATE_URl, ENDPOINT_REG} from '../constants';
+import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
+import {errorHandle, extractFromTs, findReplace, prepareDirPath, validateEthereumTsManifest} from '../utils';
 
 export interface ExampleProjectInterface {
   name: string;
@@ -139,19 +139,21 @@ export async function cloneProjectTemplate(
 export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
+  let endpoint: string | string[];
 
-  const yamlPath = path.join(`${projectPath}`, `project.yaml`);
-  const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const currentProject = parseDocument(manifest).toJS() as ProjectManifestV1_0_0;
-  return [
-    currentProject.specVersion,
-    currentProject.repository,
-    currentProject.network.endpoint,
-    currentPackage.author,
-    currentPackage.version,
-    currentPackage.description,
-    currentPackage.license,
-  ];
+  if (fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST))) {
+    const tsManifest = await fs.promises.readFile(path.join(projectPath, DEFAULT_TS_MANIFEST), 'utf8');
+    const extractedTsValues = extractFromTs(tsManifest.toString(), {
+      endpoint: ENDPOINT_REG,
+    });
+    endpoint = extractedTsValues.endpoint;
+  } else {
+    const yamlManifest = await fs.promises.readFile(path.join(projectPath, DEFAULT_MANIFEST), 'utf8');
+    const extractedYamlValues = parseDocument(yamlManifest).toJS() as ProjectManifestV1_0_0;
+    endpoint = extractedYamlValues.network.endpoint;
+  }
+
+  return [endpoint, currentPackage.author, currentPackage.description];
 }
 
 export async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
@@ -172,40 +174,44 @@ export async function prepare(projectPath: string, project: ProjectSpecBase): Pr
   }
 }
 
-async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
+export async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
   //load and write package.json
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
   currentPackage.name = project.name;
-  currentPackage.version = project.version;
   currentPackage.description = project.description ?? currentPackage.description;
   currentPackage.author = project.author;
-  currentPackage.license = project.license;
   const newPackage = JSON.stringify(currentPackage, null, 2);
   await fs.promises.writeFile(`${projectPath}/package.json`, newPackage, 'utf8');
 }
 
-async function prepareManifest(projectPath: string, project: ProjectSpecBase): Promise<void> {
-  //load and write manifest(project.yaml)
-  const yamlPath = path.join(`${projectPath}`, `project.yaml`);
-  const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const data = parseDocument(manifest);
-  const clonedData = data.clone();
+export async function prepareManifest(projectPath: string, project: ProjectSpecBase): Promise<void> {
+  //load and write manifest(project.ts/project.yaml)
+  const tsPath = path.join(`${projectPath}`, DEFAULT_TS_MANIFEST);
+  const yamlPath = path.join(`${projectPath}`, DEFAULT_MANIFEST);
+  let manifestData: string;
 
-  clonedData.set('description', project.description ?? data.get('description'));
-  clonedData.set('repository', project.repository ?? '');
+  const isTs = fs.existsSync(tsPath);
 
-  const network = clonedData.get('network') as YAMLMap;
-  network.set('endpoint', project.endpoint);
-  clonedData.set('version', project.version);
-  clonedData.set('name', project.name);
-  if (isProjectSpecV1_0_0(project)) {
-    network.set('chainId', project.chainId);
-  } else if (isProjectSpecV0_2_0(project)) {
-    network.set('genesisHash', project.genesisHash);
+  if (isTs) {
+    const tsManifest = (await fs.promises.readFile(tsPath, 'utf8')).toString();
+    const formattedEndpoint = `[ ${JSON.stringify(project.endpoint).slice(1, -1)} ]`;
+    manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint}`);
+  } else {
+    //load and write manifest(project.yaml)
+    const yamlManifest = await fs.promises.readFile(yamlPath, 'utf8');
+    const data = parseDocument(yamlManifest);
+    const clonedData = data.clone();
+
+    const network = clonedData.get('network') as YAMLMap;
+    network.set('endpoint', project.endpoint);
+    clonedData.set('name', project.name);
+    if (isProjectSpecV1_0_0(project)) {
+      network.set('chainId', project.chainId);
+    }
+    manifestData = clonedData.toString();
   }
-
-  await fs.promises.writeFile(yamlPath, clonedData.toString(), 'utf8');
+  await fs.promises.writeFile(isTs ? tsPath : yamlPath, manifestData, 'utf8');
 }
 
 export function installDependencies(projectPath: string, useNpm?: boolean): void {
@@ -234,19 +240,25 @@ export async function prepareProjectScaffold(projectPath: string): Promise<void>
 
   // clean datasource
   const manifest = parseDocument(
-    (await fs.promises.readFile(path.join(projectPath, 'project.yaml'), 'utf8')) as string
+    (await fs.promises.readFile(path.join(projectPath, DEFAULT_MANIFEST), 'utf8')) as string
   );
   manifest.set('dataSources', new YAMLSeq());
-  await fs.promises.writeFile(path.join(projectPath, 'project.yaml'), manifest.toString(), 'utf8');
+  await fs.promises.writeFile(path.join(projectPath, DEFAULT_MANIFEST), manifest.toString(), 'utf8');
 
   // remove handler file from index.ts
   fs.truncateSync(path.join(projectPath, 'src/index.ts'), 0);
 }
 
-export function validateEthereumProjectManifest(projectPath: string): boolean {
-  const doc = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
+export async function validateEthereumProjectManifest(projectPath: string): Promise<boolean> {
+  let manifest: any;
+  const isTs = fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST));
+  if (isTs) {
+    manifest = (await fs.promises.readFile(path.join(projectPath, DEFAULT_TS_MANIFEST), 'utf8')).toString();
+  } else {
+    manifest = loadFromJsonOrYaml(path.join(projectPath, DEFAULT_MANIFEST));
+  }
   try {
-    return !!parseEthereumProjectManifest(doc);
+    return isTs ? validateEthereumTsManifest(manifest) : !!parseEthereumProjectManifest(manifest);
   } catch (e) {
     return false;
   }

@@ -23,7 +23,7 @@ import {
   ExampleProjectInterface,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
-import {resolveToAbsolutePath} from '../utils';
+import {resolveToAbsolutePath, buildManifestFromLocation} from '../utils';
 import Generate from './codegen/generate';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
@@ -168,9 +168,10 @@ export default class Init extends Command {
         }
       });
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedProject);
+
     await this.setupProject(flags);
 
-    if (validateEthereumProjectManifest(this.projectPath)) {
+    if (await validateEthereumProjectManifest(this.projectPath)) {
       const {loadAbi} = await inquirer.prompt([
         {
           type: 'confirm',
@@ -192,26 +193,16 @@ export default class Init extends Command {
   }
 
   async setupProject(flags: any): Promise<void> {
-    const [
-      defaultSpecVersion,
-      defaultRepository,
-      defaultEndpoint,
-      defaultAuthor,
-      defaultVersion,
-      defaultDescription,
-      defaultLicense,
-    ] = await readDefaults(this.projectPath);
+    const [defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(this.projectPath);
 
-    // Should use template specVersion as default, otherwise use user provided
-    flags.specVersion = defaultSpecVersion ?? flags.specVersion;
-
-    this.project.endpoint = await cli.prompt('RPC endpoint:', {
-      default: defaultEndpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
-      required: true,
+    this.project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
+    const userInput = await cli.prompt('RPC endpoint:', {
+      default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
+      required: false,
     });
-
-    this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
-
+    if (!this.project.endpoint.includes(userInput)) {
+      (this.project.endpoint as string[]).push(userInput);
+    }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
     this.project.description = await cli
@@ -222,9 +213,6 @@ export default class Init extends Command {
       .then((description) => {
         return description === descriptionHint ? defaultDescription : description;
       });
-
-    this.project.version = await cli.prompt('Version', {required: true, default: defaultVersion});
-    this.project.license = await cli.prompt('License', {required: true, default: defaultLicense});
 
     cli.action.start('Preparing project');
     await prepare(this.projectPath, this.project);
@@ -265,6 +253,7 @@ export default class Init extends Command {
     ]);
 
     this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
+    await buildManifestFromLocation(this.projectPath, this);
 
     await Generate.run([
       '-f',

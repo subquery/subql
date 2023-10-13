@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.0.3] - 2023-10-11
+### Fixed
+- Fixed yaml readers/writers on `init` command (#2082)
+
+## [4.0.2] - 2023-10-11
+### Fixed
+- Codegen expecting a ts manifest but not a yaml manifest (#2084)
+
+## [4.0.1] - 2023-10-10
+### Fixed
+- Fix `codegen` logic for Cosmos Manifests (#2073)
+- Error when generating manifest from ts (#2075)
+
+## [4.0.0] - 2023-10-04
 ### Fixed
 - Fix incorrect codegen on unstructured storage proxy contract abis (#1976)
 - Publish multichain projects file to a directory in ipfs (#1981)
@@ -19,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update model codegen to include `getByFields` and produce prettier code (#1993)
 - migrate from `oclif` v1 to v2
 - Move abi-codegen from `cli` to `common-ethereum` (#2010)
+- Update common dependencies from each SDK with latest changes
 
 ### Removed
 - replaced `oclif-dev` dependency with `oclif` due to v2 migration (#1998)
@@ -412,13 +428,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2021-04-19
 ### Added
-- `@index` annotation is now supported in `graphql.schema` (#255):
-    - Can be added on any field of any entity except primary or foreign keys
-    - `@subql/node` will recognise it and create table with additional indexes to speed querying
-    - Allow query by indexed field via `global.store` (#271)
-- `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
-    - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-    - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+-  annotation is now supported in 
+  - Can be added on any field of any entity except primary or foreign keys
+  - `@subql/node` will recognise it and create table with additional indexes to speed querying
+  - Allow query by indexed field via `global.store` (#271)
+-  annotation is now supported in 
+  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.8.0] - 2021-03-11
 ### Added
@@ -457,7 +473,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/3.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.3...HEAD
+[4.0.3]: https://github.com/subquery/subql/compare/cli/4.0.2...cli/4.0.3
+[4.0.2]: https://github.com/subquery/subql/compare/cli/4.0.1...cli/4.0.2
+[4.0.1]: https://github.com/subquery/subql/compare/cli/4.0.0...cli/4.0.1
+[4.0.0]: https://github.com/subquery/subql/compare/cli/3.6.1...cli/4.0.0
 [3.6.1]: https://github.com/subquery/subql/compare/cli/3.6.0...cli/3.6.1
 [3.6.0]: https://github.com/subquery/subql/compare/cli/3.5.1...cli/3.6.0
 [3.5.1]: https://github.com/subquery/subql/compare/cli/3.5.0...cli/3.5.1

@@ -3,4 +3,5 @@
 
 export * from './poiModel';
 export * from './poi.service';
+export * from './poiSync.service';
 export * from './PoiBlock';

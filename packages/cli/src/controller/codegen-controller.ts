@@ -6,40 +6,44 @@ import {DEFAULT_MANIFEST, extensionIsTs, getManifestPath, getSchemaPath, loadFro
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
-  RuntimeDatasourceTemplate as CosmosDsTemplate,
-  CustomDatasourceTemplate as CosmosCustomDsTemplate,
   generateProto,
   tempProtoDir,
   validateCosmosManifest,
   ProjectManifestImpls as CosmosManifest,
   generateCosmwasm,
+  CosmosCustomModuleImpl,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
   isRuntimeDs as isRuntimeEthereumDs,
-  RuntimeDatasourceTemplate as EthereumDsTemplate,
-  CustomDatasourceTemplate as EthereumCustomDsTemplate,
   generateAbis,
 } from '@subql/common-ethereum';
-import {
-  isCustomDs as isCustomNearDs,
-  isRuntimeDs as isRuntimeNearDs,
-  RuntimeDatasourceTemplate as NearDsTemplate,
-  CustomDatasourceTemplate as NearCustomDsTemplate,
-} from '@subql/common-near';
-import {
-  isCustomDs as isCustomStellarDs,
-  isRuntimeDs as isRuntimeStellarDs,
-  RuntimeDatasourceTemplate as StellarDsTemplate,
-  CustomDatasourceTemplate as StellarCustomDsTemplate,
-} from '@subql/common-stellar';
+import {isCustomDs as isCustomNearDs, isRuntimeDs as isRuntimeNearDs} from '@subql/common-near';
+import {isCustomDs as isCustomStellarDs, isRuntimeDs as isRuntimeStellarDs} from '@subql/common-stellar';
 import {isCustomDs as isCustomSubstrateDs, SubstrateCustomDataSource} from '@subql/common-substrate';
 import {
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
 } from '@subql/types';
 import {TemplateBase} from '@subql/types-core';
-import {SubqlRuntimeDatasource as EthereumDs, SubqlCustomDatasource as EthereumCustomDs} from '@subql/types-ethereum';
+import {
+  RuntimeDatasourceTemplate as CosmosDsTemplate,
+  CustomDatasourceTemplate as CosmosCustomDsTemplate,
+} from '@subql/types-cosmos';
+import {
+  RuntimeDatasourceTemplate as EthereumDsTemplate,
+  CustomDatasourceTemplate as EthereumCustomDsTemplate,
+  SubqlRuntimeDatasource as EthereumDs,
+  SubqlCustomDatasource as EthereumCustomDs,
+} from '@subql/types-ethereum';
+import {
+  RuntimeDatasourceTemplate as NearDsTemplate,
+  CustomDatasourceTemplate as NearCustomDsTemplate,
+} from '@subql/types-near';
+import {
+  RuntimeDatasourceTemplate as StellarDsTemplate,
+  CustomDatasourceTemplate as StellarCustomDsTemplate,
+} from '@subql/types-stellar';
 import {
   getAllEntitiesRelations,
   getAllJsonObjects,
@@ -267,11 +271,9 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     datasources = datasources.concat(customDatasources);
   }
 
-  const chainTypes = plainManifests
-    .filter((m) => validateCosmosManifest(m))
-    .map((m) => (m as CosmosManifest).network.chainTypes);
+  const chainTypes = getChaintypes(plainManifests);
 
-  if (chainTypes.length !== 0) {
+  if (chainTypes.length) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
   await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
@@ -290,6 +292,15 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     }
     console.log(`* Types index generated !`);
   }
+}
+
+export function getChaintypes(
+  manifest: {templates?: TemplateKind[]; dataSources: DatasourceKind[]}[]
+): Map<string, CosmosCustomModuleImpl>[] {
+  return manifest
+    .filter((m) => validateCosmosManifest(m))
+    .map((m) => (m as CosmosManifest).network.chaintypes)
+    .filter((value) => value && Object.keys(value).length !== 0);
 }
 
 export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {

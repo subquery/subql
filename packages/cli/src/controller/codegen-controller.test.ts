@@ -79,4 +79,9 @@ describe('Codegen can generate schema', () => {
     await codegen(projectPath, ['non-evm-project.yaml']);
     expect(fs.existsSync(`${projectPath}/src/types/abi-interfaces/`)).toBeFalsy();
   });
+  it('Should not generate proto-interfaces if no chaintypes are provided', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest');
+    await codegen(projectPath, ['project-cosmos.yaml']);
+    expect(fs.existsSync(`${projectPath}/src/types/proto-interfaces/`)).toBeFalsy();
+  });
 });

@@ -5,7 +5,7 @@ import {handleCreateSubqueryProjectError, LocalReader, makeTempDir, ReaderFactor
 import {Reader} from '@subql/types-core';
 import {camelCase, isNil, omitBy} from 'lodash';
 import {ISubqueryProject} from '../indexer';
-import {getLogger, setLevel} from '../logger';
+import {getLogger, setDebugFilter} from '../logger';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
 import {IConfig, NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
@@ -126,7 +126,7 @@ export async function registerApp<P extends ISubqueryProject>(
   }
 
   if (config.debug) {
-    setLevel('debug');
+    setDebugFilter(config.debug);
   }
 
   const project = await createProject(

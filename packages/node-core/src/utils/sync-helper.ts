@@ -200,3 +200,30 @@ export function enumNameToHash(enumName: string): string {
 export function getExistedIndexesQuery(schema: string): string {
   return `SELECT indexname FROM pg_indexes WHERE schemaname = '${schema}'`;
 }
+
+// SQL improvement
+const DEFAULT_SQL_EXE_BATCH = 2000;
+
+/**
+ * Improve SQL which could potentially increase DB IO significantly,
+ * this executes it by batch size, and in ASC id order
+ **/
+export const sqlIterator = (tableName: string, sql: string, batch: number = DEFAULT_SQL_EXE_BATCH) => {
+  return `
+  DO $$
+  DECLARE
+    start_id INT;
+    end_id INT;
+    batch_size INT := ${batch};
+    current_id INT;
+  BEGIN
+    SELECT MIN(id), MAX(id) INTO start_id, end_id FROM ${tableName};
+    
+    IF start_id IS NOT NULL AND end_id IS NOT NULL THEN
+        FOR current_id IN start_id..end_id BY batch_size LOOP
+            ${sql};
+        END LOOP;
+    END IF;
+  END $$
+  `;
+};

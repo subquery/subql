@@ -257,13 +257,21 @@ export class DictionaryService {
     }
 
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
+
+    logger.debug(`query: ${query}`);
+    logger.debug(`variables: ${JSON.stringify(variables, null, 2)}`);
     try {
       const resp = await timeout(
         this.client.query({
           query: gql(query),
           variables,
         }),
-        this.nodeConfig.dictionaryTimeout
+        this.nodeConfig.dictionaryTimeout,
+        `Dictionary query timeout in ${
+          this.nodeConfig.dictionaryTimeout
+        } seconds. Please increase --dictionary-timeout. ${
+          this.nodeConfig.debug ? `\n GraphQL: ${query}, \n Variables: ${variables}` : ''
+        }`
       );
       const blockHeightSet = new Set<number>();
       const entityEndBlock: {[entity: string]: number} = {};
@@ -384,7 +392,10 @@ export class DictionaryService {
         this.client.query({
           query: gql(query),
         }),
-        this.nodeConfig.dictionaryTimeout
+        this.nodeConfig.dictionaryTimeout,
+        `Dictionary metadata query timeout in ${
+          this.nodeConfig.dictionaryTimeout
+        } seconds. Please increase --dictionary-timeout. ${this.nodeConfig.debug ? `\n GraphQL: ${query}` : ''}`
       );
       const _metadata = resp.data._metadata;
 

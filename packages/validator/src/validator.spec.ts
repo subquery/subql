@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IPFS_NODE_ENDPOINT, NETWORK_FAMILY} from '@subql/common';
+import {IPFS_NODE_ENDPOINT} from '@subql/common';
 import {commonRules, deploymentRules} from './rules';
 import {Validator} from './validator';
 
@@ -14,6 +14,7 @@ describe('Validate project with manifest spec 1.0.0, auto identify network', () 
     expect(result.filter((r) => r.valid).length).toBe(result.length);
   });
 
+  // No longer supported ?
   it('should validate get reports', async () => {
     const url = 'https://github.com/subquery/tutorials-frontier-evm-starter';
     const v = await Validator.create(url);
