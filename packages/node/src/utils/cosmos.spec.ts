@@ -245,6 +245,92 @@ describe('CosmosUtils', () => {
     expect(result).toEqual(false);
   });
 
+  describe('filterMessageData function', () => {
+    const baseData = {
+      tx: {
+        tx: {
+          code: 0,
+        },
+      },
+      msg: {
+        typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+        decodedMsg: {
+          msg: {},
+        },
+      },
+    } as unknown as CosmosMessage;
+
+    describe('contractCall filtering', () => {
+      it('should return true for non-object contractCall in msg', () => {
+        const data = {
+          ...baseData,
+          msg: {
+            ...baseData.msg,
+            decodedMsg: {
+              msg: 'nonObjectContractCall',
+            },
+          },
+        };
+        const filter = {
+          type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          contractCall: 'nonObjectContractCall',
+        };
+
+        const result = filterMessageData(data, filter);
+        expect(result).toBe(true);
+      });
+
+      it('should return false for non-object contractCall not in msg', () => {
+        const data = {
+          ...baseData,
+          msg: {
+            ...baseData.msg,
+            decodedMsg: {
+              msg: 'nonObjectContractCall2',
+            },
+          },
+        };
+        const filter = {
+          type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          contractCall: 'nonObjectContractCall',
+        };
+
+        const result = filterMessageData(data, filter);
+        expect(result).toBe(false);
+      });
+
+      it('should return false for object contractCall not in msg', () => {
+        const filter = {
+          type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          contractCall: 'notInMsg',
+        };
+
+        const result = filterMessageData(baseData, filter);
+        expect(result).toBe(false);
+      });
+
+      it('should return true for object contractCall in msg', () => {
+        const contractCall = { inMsg: 'inMsg' };
+        const data = {
+          ...baseData,
+          msg: {
+            ...baseData.msg,
+            decodedMsg: {
+              msg: contractCall,
+            },
+          },
+        };
+        const filter = {
+          type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          contractCall: 'inMsg',
+        };
+
+        const result = filterMessageData(data, filter);
+        expect(result).toBe(true);
+      });
+    });
+  });
+
   afterEach(() => {
     api.disconnect();
   });
