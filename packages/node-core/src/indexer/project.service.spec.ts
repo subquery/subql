@@ -39,21 +39,21 @@ describe('BaseProjectService', () => {
     );
   });
 
-  test('hasDataSourcesAfterHeight', async () => {
+  it('hasDataSourcesAfterHeight', async () => {
     service.getDataSources = jest.fn().mockResolvedValue([{endBlock: 100}, {endBlock: 200}, {endBlock: 300}]);
 
     const result = await service.hasDataSourcesAfterHeight(150);
     expect(result).toBe(true);
   });
 
-  test('hasDataSourcesAfterHeight - undefined endBlock', async () => {
+  it('hasDataSourcesAfterHeight - undefined endBlock', async () => {
     service.getDataSources = jest.fn().mockResolvedValue([{endBlock: 100}, {endBlock: undefined}]);
 
     const result = await service.hasDataSourcesAfterHeight(150);
     expect(result).toBe(true);
   });
 
-  test('getDataSources', async () => {
+  it('getDataSources', async () => {
     (service as any).project.dataSources = [
       {startBlock: 100, endBlock: 200},
       {startBlock: 1, endBlock: 100},
@@ -69,69 +69,99 @@ describe('BaseProjectService', () => {
     ]);
   });
 
-  test('getDatasourceMap', () => {
-    (service as any).dynamicDsService.dynamicDatasources = [];
-    (service as any).projectUpgradeService = {
-      projects: [
-        [
-          1,
-          {
-            dataSources: [
+  describe('getDatasourceMap', () => {
+    it('should add endBlock heights correctly', () => {
+      (service as any).dynamicDsService.dynamicDatasources = [];
+      (service as any).projectUpgradeService = {
+        projects: [
+          [
+            1,
+            {
+              dataSources: [
+                {startBlock: 1, endBlock: 300},
+                {startBlock: 10, endBlock: 20},
+                {startBlock: 1, endBlock: 100},
+                {startBlock: 50, endBlock: 200},
+                {startBlock: 500},
+              ],
+            },
+          ],
+        ],
+      } as any;
+
+      const result = service.getDataSourcesMap();
+      expect(result.getAll()).toEqual(
+        new Map([
+          [
+            1,
+            [
               {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+            ],
+          ],
+          [
+            10,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
               {startBlock: 10, endBlock: 20},
+            ],
+          ],
+          [
+            21,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+            ],
+          ],
+          [
+            50,
+            [
+              {startBlock: 1, endBlock: 300},
               {startBlock: 1, endBlock: 100},
               {startBlock: 50, endBlock: 200},
-              {startBlock: 500},
             ],
-          },
-        ],
-      ],
-    } as any;
+          ],
+          [
+            101,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 50, endBlock: 200},
+            ],
+          ],
+          [201, [{startBlock: 1, endBlock: 300}]],
+          [301, []],
+          [500, [{startBlock: 500}]],
+        ])
+      );
+    });
 
-    const result = service.getDataSourcesMap();
-    expect(result.getAll()).toEqual(
-      new Map([
-        [
-          1,
+    it('should contain datasources from current project only', () => {
+      (service as any).dynamicDsService.dynamicDatasources = [];
+      (service as any).projectUpgradeService = {
+        projects: [
           [
-            {startBlock: 1, endBlock: 300},
-            {startBlock: 1, endBlock: 100},
+            1,
+            {
+              dataSources: [{startBlock: 1}],
+            },
+          ],
+          [
+            100,
+            {
+              dataSources: [{startBlock: 100}],
+            },
           ],
         ],
-        [
-          10,
-          [
-            {startBlock: 1, endBlock: 300},
-            {startBlock: 1, endBlock: 100},
-            {startBlock: 10, endBlock: 20},
-          ],
-        ],
-        [
-          21,
-          [
-            {startBlock: 1, endBlock: 300},
-            {startBlock: 1, endBlock: 100},
-          ],
-        ],
-        [
-          50,
-          [
-            {startBlock: 1, endBlock: 300},
-            {startBlock: 1, endBlock: 100},
-            {startBlock: 50, endBlock: 200},
-          ],
-        ],
-        [
-          101,
-          [
-            {startBlock: 1, endBlock: 300},
-            {startBlock: 50, endBlock: 200},
-          ],
-        ],
-        [201, [{startBlock: 1, endBlock: 300}]],
-        [301, []],
-        [500, [{startBlock: 500}]],
-      ])
-    );
+      } as any;
+
+      const result = service.getDataSourcesMap();
+      expect(result.getAll()).toEqual(
+        new Map([
+          [1, [{startBlock: 1}]],
+          [100, [{startBlock: 100}]],
+        ])
+      );
+    });
   });
 });

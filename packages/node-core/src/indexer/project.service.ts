@@ -10,7 +10,15 @@ import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {
+  getExistingProjectSchema,
+  getStartHeight,
+  hasValue,
+  initDbSchema,
+  initHotSchemaReload,
+  mainThreadOnly,
+  reindex,
+} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
@@ -279,46 +287,34 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     );
   }
 
+  @mainThreadOnly()
   getDataSourcesMap(): BlockHeightMap<DS[]> {
-    assert(isMainThread, 'This method is only available on the main thread');
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
     const dsMap = new Map<number, DS[]>();
-    const activeDataSources = new Set<DS>();
-    //events denote addition or deletion of datasources from height-datasource map entries at the specified block height
-    const events: {
-      block: number; //block height at which addition or deletion of datasource should take place
-      start: boolean; //if start=TRUE, add the datasource. otherwise remove the datasource.
-      ds: DS;
-    }[] = [];
 
     for (const [height, project] of this.projectUpgradeService.projects) {
-      const dataSources = [...project.dataSources, ...dynamicDs].filter(
-        (ds): ds is DS & {startBlock: number} => !!ds.startBlock
-      );
+      const activeDataSources = new Set<DS>();
+      //events denote addition or deletion of datasources from height-datasource map entries at the specified block height
+      const events: {
+        block: number; //block height at which addition or deletion of datasource should take place
+        start: boolean; //if start=TRUE, add the datasource. otherwise remove the datasource.
+        ds: DS;
+      }[] = [];
 
-      dataSources.forEach((ds) => {
-        const startBlock = Math.max(height, ds.startBlock);
+      [...project.dataSources, ...dynamicDs]
+        .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+        .forEach((ds) => {
+          events.push({block: Math.max(height, ds.startBlock), start: true, ds});
+          if (ds.endBlock) events.push({block: ds.endBlock + 1, start: false, ds});
+        });
 
-        //ds is to be added at startBlock
-        events.push({block: startBlock, start: true, ds});
-        if (ds.endBlock) {
-          const endBlock = ds.endBlock + 1;
-          //ds is to be removed at endBlock
-          events.push({block: endBlock, start: false, ds});
-        }
-      });
-    }
-
-    // sort events by block in ascending order, start events come before end events
-    events.sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start));
-
-    for (const event of events) {
-      if (event.start) {
-        activeDataSources.add(event.ds);
-      } else {
-        activeDataSources.delete(event.ds);
-      }
-      dsMap.set(event.block, Array.from(activeDataSources));
+      // sort events by block in ascending order, start events come before end events
+      events
+        .sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start))
+        .forEach((event) => {
+          event.start ? activeDataSources.add(event.ds) : activeDataSources.delete(event.ds);
+          dsMap.set(event.block, Array.from(activeDataSources));
+        });
     }
 
     return new BlockHeightMap(dsMap);
