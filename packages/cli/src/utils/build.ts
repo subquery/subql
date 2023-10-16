@@ -11,7 +11,6 @@ import {
   DEFAULT_MULTICHAIN_MANIFEST,
   DEFAULT_MULTICHAIN_TS_MANIFEST,
   DEFAULT_TS_MANIFEST,
-  extensionIsTs,
   tsProjectYamlPath,
 } from '@subql/common';
 import {MultichainProjectManifest} from '@subql/types-core';
@@ -57,7 +56,7 @@ export async function buildManifestFromLocation(location: string, command: Comma
   return directory;
 }
 
-async function generateManifestFromTs(projectManifestEntry: string, command: Command): Promise<string> {
+export async function generateManifestFromTs(projectManifestEntry: string, command: Command): Promise<string> {
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
   try {
@@ -97,9 +96,7 @@ export function getTsManifest(location: string, command: Command): string {
       }
     }
   } else if (lstatSync(location).isFile()) {
-    if (location.endsWith('.ts')) {
-      return location;
-    } else if (isMultichain(location)) {
+    if (location.endsWith('.ts') || isMultichain(location)) {
       return location;
     }
   }
