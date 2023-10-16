@@ -1,8 +1,27 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Store,FieldsExpression} from '@subql/types-core';
-import {classToPlain} from 'class-transformer';
+import * as util from 'util';
+import {Store, FieldsExpression} from '@subql/types-core';
+import {instanceToPlain} from 'class-transformer';
+
+/**
+ * Proxy objects aren't serializable between worker threads.
+ * VM2 Seems to have objects come out as proxy objects.
+ * NOTE do not use this on return types, if used on an entity it would strip all functions and have a plain object
+ * */
+function unwrapProxy<T = any>(input: T): T {
+  if (!util.types.isProxy(input)) {
+    return input;
+  }
+
+  return instanceToPlain(input) as T;
+}
+
+/* Unwraps any arguments to a function that are proxy objects */
+function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R): (...args: T) => R {
+  return (...args: T) => fn(...(args.map(unwrapProxy) as T));
+}
 
 export type HostStore = {
   // This matches the store interface
@@ -42,15 +61,15 @@ export const hostStoreKeys: (keyof HostStore)[] = [
 // We don't need the funcitons to be included
 export const hostStoreToStore = (host: HostStore): Store => {
   return {
-    get: host.storeGet,
-    getByField: host.storeGetByField,
-    getByFields: host.storeGetByFields,
-    getOneByField: host.storeGetOneByField,
-    set: (entity, id, data) => host.storeSet(entity, id, classToPlain(data)),
-    bulkCreate: (entity, data) => host.storeBulkCreate(entity, classToPlain(data) as any[]),
-    bulkUpdate: (entity, data, fields) => host.storeBulkUpdate(entity, classToPlain(data) as any[], fields),
-    remove: host.storeRemove,
-    bulkRemove: host.storeBulkRemove,
+    get: unwrapProxyArgs(host.storeGet),
+    getByField: unwrapProxyArgs(host.storeGetByField),
+    getByFields: unwrapProxyArgs(host.storeGetByFields),
+    getOneByField: unwrapProxyArgs(host.storeGetOneByField),
+    set: unwrapProxyArgs(host.storeSet),
+    bulkCreate: unwrapProxyArgs(host.storeBulkCreate),
+    bulkUpdate: unwrapProxyArgs(host.storeBulkUpdate),
+    remove: unwrapProxyArgs(host.storeRemove),
+    bulkRemove: unwrapProxyArgs(host.storeBulkRemove),
   };
 };
 
