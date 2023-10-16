@@ -7,17 +7,17 @@ import { BaseDsProcessorService } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
-  SubqlCosmosCustomDatasource,
-  SubqlCosmosDatasourceProcessor,
-  SubqlCosmosDatasource,
-  SubqlCosmosHandlerKind,
+  CosmosCustomDatasource,
+  CosmosDatasourceProcessor,
+  CosmosDatasource,
+  CosmosHandlerKind,
 } from '@subql/types-cosmos';
 
 export function isSecondLayerHandlerProcessor_0_0_0<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F extends Record<string, unknown>,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -28,10 +28,10 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 }
 
 export function isSecondLayerHandlerProcessor_1_0_0<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F extends Record<string, unknown>,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -41,10 +41,10 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 }
 
 export function asSecondLayerHandlerProcessor_1_0_0<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F extends Record<string, unknown>,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -72,9 +72,9 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 
 @Injectable()
 export class DsProcessorService extends BaseDsProcessorService<
-  SubqlCosmosDatasource,
-  SubqlCosmosCustomDatasource<string>,
-  SubqlCosmosDatasourceProcessor<string, Record<string, unknown>>
+  CosmosDatasource,
+  CosmosCustomDatasource<string>,
+  CosmosDatasourceProcessor<string, Record<string, unknown>>
 > {
   protected isCustomDs = isCustomCosmosDs;
 }

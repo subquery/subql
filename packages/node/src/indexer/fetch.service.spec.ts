@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqlCosmosMessageFilter } from '@subql/common-cosmos';
+import { CosmosMessageFilter } from '@subql/common-cosmos';
 import { NodeConfig } from '@subql/node-core';
 import { DictionaryService } from './dictionary.service';
 import { messageFilterToQueryEntry } from './fetch.service';
@@ -40,7 +40,7 @@ describe('Dictionary Queries', () => {
 
   describe('Message Filter Queries', () => {
     it('Basic wasm filter works', () => {
-      const filter: SubqlCosmosMessageFilter = {
+      const filter: CosmosMessageFilter = {
         type: '/cosmwasm.wasm.v1.MsgExecuteContract',
       };
 
@@ -60,7 +60,7 @@ describe('Dictionary Queries', () => {
     });
 
     it('Wasm with contract filter builds a valid query', () => {
-      const filter: SubqlCosmosMessageFilter = {
+      const filter: CosmosMessageFilter = {
         type: '/cosmwasm.wasm.v1.MsgExecuteContract',
         contractCall: 'vote',
         values: {
@@ -91,7 +91,7 @@ describe('Dictionary Queries', () => {
     });
 
     it('Wasm with nested filter works', () => {
-      const filter: SubqlCosmosMessageFilter = {
+      const filter: CosmosMessageFilter = {
         type: '/cosmwasm.wasm.v1.MsgExecuteContract',
         contractCall: 'swap',
         values: {
@@ -107,7 +107,7 @@ describe('Dictionary Queries', () => {
     });
 
     // it('Wasm with enum filter works', () => {
-    //   const filter: SubqlCosmosMessageFilter = {
+    //   const filter: CosmosMessageFilter = {
     //     type: '/cosmwasm.wasm.v1.MsgExecuteContract',
     //     contractCall: 'swap',
     //     values: {

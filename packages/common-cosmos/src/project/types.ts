@@ -2,26 +2,26 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {IProjectManifest, ProjectNetworkConfig} from '@subql/types-core';
-import {SubqlCosmosDatasource, CustomModule} from '@subql/types-cosmos';
+import {CosmosDatasource, CustomModule} from '@subql/types-cosmos';
 import {Root} from 'protobufjs';
 
 // All of these used to be redefined in this file, re-exporting for simplicity
 export {
-  SubqlCosmosRuntimeHandler,
-  SubqlCosmosCustomHandler,
-  SubqlCosmosHandler,
-  SubqlCosmosHandlerKind,
-  SubqlCosmosDatasource as SubqlCosmosDataSource,
-  SubqlCosmosBlockFilter,
-  SubqlCosmosMessageFilter,
-  SubqlCosmosEventFilter,
-  SubqlCosmosDatasourceProcessor,
-  SubqlCosmosHandlerFilter,
-  SubqlCosmosDatasourceKind,
+  CosmosRuntimeHandler,
+  CosmosCustomHandler,
+  CosmosHandler,
+  CosmosHandlerKind,
+  CosmosDatasource as CosmosDataSource,
+  CosmosBlockFilter,
+  CosmosMessageFilter,
+  CosmosEventFilter,
+  CosmosDatasourceProcessor,
+  CosmosHandlerFilter,
+  CosmosDatasourceKind,
   CosmosRuntimeHandlerInputMap as CosmosRuntimeHandlerInputMap,
 } from '@subql/types-cosmos';
 
-export type ICosmosProjectManifest = IProjectManifest<SubqlCosmosDatasource>;
+export type ICosmosProjectManifest = IProjectManifest<CosmosDatasource>;
 
 export interface CosmosProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;

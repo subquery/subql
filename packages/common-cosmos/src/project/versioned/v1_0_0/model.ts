@@ -13,11 +13,11 @@ import {
 } from '@subql/common';
 import {NodeSpec, ParentProject, QuerySpec, RunnerSpecs} from '@subql/types-core';
 import {
-  SubqlCosmosCustomDatasource,
-  SubqlCosmosCustomHandler,
-  SubqlCosmosMapping,
-  SubqlCosmosRuntimeDatasource,
-  SubqlCosmosRuntimeHandler,
+  CosmosCustomDatasource,
+  CosmosCustomHandler,
+  CosmosMapping,
+  CosmosRuntimeDatasource,
+  CosmosRuntimeHandler,
   RuntimeDatasourceTemplate,
   CustomDatasourceTemplate,
   CosmosProjectManifestV1_0_0,
@@ -35,8 +35,8 @@ export class CosmosRunnerNodeImpl extends RunnerNodeImpl {
 }
 
 export class CosmosRuntimeDataSourceImpl
-  extends CosmosRuntimeDataSourceBase<SubqlCosmosMapping<SubqlCosmosRuntimeHandler>>
-  implements SubqlCosmosRuntimeDatasource
+  extends CosmosRuntimeDataSourceBase<CosmosMapping<CosmosRuntimeHandler>>
+  implements CosmosRuntimeDatasource
 {
   validate(): void {
     return validateObject(this, 'failed to validate runtime datasource.');
@@ -45,10 +45,10 @@ export class CosmosRuntimeDataSourceImpl
 
 export class CosmosCustomDataSourceImpl<
     K extends string = string,
-    M extends SubqlCosmosMapping = SubqlCosmosMapping<SubqlCosmosCustomHandler>
+    M extends CosmosMapping = CosmosMapping<CosmosCustomHandler>
   >
   extends CosmosCustomDataSourceBase<K, M>
-  implements SubqlCosmosCustomDatasource<K, M>
+  implements CosmosCustomDatasource<K, M>
 {
   validate(): void {
     return validateObject(this, 'failed to validate custom datasource.');
@@ -114,7 +114,7 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource)[];
+  dataSources: (CosmosRuntimeDatasource | CosmosCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -158,7 +158,7 @@ export class ProjectManifestV1_0_0Impl
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource)[];
+  dataSources: (CosmosRuntimeDatasource | CosmosCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()

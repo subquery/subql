@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SubqlCosmosDatasource} from '@subql/types-cosmos';
+import {CosmosDatasource} from '@subql/types-cosmos';
 import {plainToInstance} from 'class-transformer';
 import {ICosmosProjectManifest} from '../types';
 import {ProjectManifestV1_0_0Impl} from './v1_0_0';
@@ -51,7 +51,7 @@ export class CosmosProjectManifestVersioned implements ICosmosProjectManifest {
     return this._impl.validate();
   }
 
-  get dataSources(): SubqlCosmosDatasource[] {
+  get dataSources(): CosmosDatasource[] {
     return this._impl.dataSources;
   }
 

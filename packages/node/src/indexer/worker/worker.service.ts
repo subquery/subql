@@ -11,7 +11,7 @@ import {
   BaseWorkerService,
   IProjectUpgradeService,
 } from '@subql/node-core';
-import { SubqlCosmosDatasource } from '@subql/types-cosmos';
+import { CosmosDatasource } from '@subql/types-cosmos';
 import { CosmosProjectDs } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
@@ -34,7 +34,7 @@ const logger = getLogger(`Worker Service #${threadId}`);
 export class WorkerService extends BaseWorkerService<
   BlockContent,
   FetchBlockResponse,
-  SubqlCosmosDatasource
+  CosmosDatasource
 > {
   constructor(
     private apiService: ApiService,
@@ -65,7 +65,7 @@ export class WorkerService extends BaseWorkerService<
 
   protected async processFetchedBlock(
     block: BlockContent,
-    dataSources: SubqlCosmosDatasource[],
+    dataSources: CosmosDatasource[],
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(block, dataSources);
   }

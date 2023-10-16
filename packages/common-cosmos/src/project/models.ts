@@ -4,24 +4,24 @@
 import {ProcessorImpl} from '@subql/common';
 import {FileReference, Processor} from '@subql/types-core';
 import {
-  SubqlCosmosEventFilter,
-  SubqlCosmosHandlerKind,
-  SubqlCosmosCustomHandler,
-  SubqlCosmosMapping,
-  SubqlCosmosHandler,
-  SubqlCosmosRuntimeHandler,
-  SubqlCosmosRuntimeDatasource,
-  SubqlCosmosDatasourceKind,
-  SubqlCosmosCustomDatasource,
+  CosmosEventFilter,
+  CosmosHandlerKind,
+  CosmosCustomHandler,
+  CosmosMapping,
+  CosmosHandler,
+  CosmosRuntimeHandler,
+  CosmosRuntimeDatasource,
+  CosmosDatasourceKind,
+  CosmosCustomDatasource,
   CustomDataSourceAsset,
-  SubqlCosmosBlockFilter,
-  SubqlCosmosBlockHandler,
-  SubqlCosmosEventHandler,
-  SubqlCosmosMessageFilter,
-  SubqlCosmosTransactionHandler,
-  SubqlCosmosMessageHandler,
+  CosmosBlockFilter,
+  CosmosBlockHandler,
+  CosmosEventHandler,
+  CosmosMessageFilter,
+  CosmosTransactionHandler,
+  CosmosMessageHandler,
   CustomModule,
-  SubqlCosmosTxFilter,
+  CosmosTxFilter,
   SubqlCosmosProcessorOptions,
 } from '@subql/types-cosmos';
 import {plainToClass, Transform, Type} from 'class-transformer';
@@ -39,7 +39,7 @@ import {
 } from 'class-validator';
 import {FileReferenceImp} from './utils';
 
-export class CosmosBlockFilter implements SubqlCosmosBlockFilter {
+export class BlockFilter implements CosmosBlockFilter {
   @IsOptional()
   @IsInt()
   modulo?: number;
@@ -48,13 +48,13 @@ export class CosmosBlockFilter implements SubqlCosmosBlockFilter {
   timestamp?: string;
 }
 
-export class CosmosTxFilter implements SubqlCosmosTxFilter {
+export class TxFilter implements CosmosTxFilter {
   @IsOptional()
   @IsBoolean()
   includeFailedTx?: boolean;
 }
 
-export class CosmosMessageFilter extends CosmosTxFilter implements SubqlCosmosMessageFilter {
+export class MessageFilter extends TxFilter implements CosmosMessageFilter {
   @IsString()
   type: string;
   @IsOptional()
@@ -66,57 +66,57 @@ export class CosmosMessageFilter extends CosmosTxFilter implements SubqlCosmosMe
   contractCall?: string;
 }
 
-export class CosmosEventFilter implements SubqlCosmosEventFilter {
+export class EventFilter implements CosmosEventFilter {
   @IsString()
   type: string;
   @IsOptional()
-  @Type(() => CosmosMessageFilter)
-  messageFilter?: SubqlCosmosMessageFilter;
+  @Type(() => MessageFilter)
+  messageFilter?: CosmosMessageFilter;
   @IsOptional()
   @IsObject()
   attributes?: Record<string, string | number>;
 }
 
-export class CosmosBlockHandler implements SubqlCosmosBlockHandler {
-  @IsEnum(SubqlCosmosHandlerKind, {groups: [SubqlCosmosHandlerKind.Block]})
-  kind: SubqlCosmosHandlerKind.Block;
+export class BlockHandler implements CosmosBlockHandler {
+  @IsEnum(CosmosHandlerKind, {groups: [CosmosHandlerKind.Block]})
+  kind: CosmosHandlerKind.Block;
   @IsString()
   handler: string;
   @IsOptional()
-  @Type(() => CosmosBlockFilter)
-  filter?: SubqlCosmosBlockFilter;
+  @Type(() => BlockFilter)
+  filter?: CosmosBlockFilter;
 }
 
-export class CosmosTransactionHandler implements SubqlCosmosTransactionHandler {
-  @IsEnum(SubqlCosmosHandlerKind, {groups: [SubqlCosmosHandlerKind.Transaction]})
-  kind: SubqlCosmosHandlerKind.Transaction;
+export class TransactionHandler implements CosmosTransactionHandler {
+  @IsEnum(CosmosHandlerKind, {groups: [CosmosHandlerKind.Transaction]})
+  kind: CosmosHandlerKind.Transaction;
   @IsString()
   handler: string;
 }
 
-export class CosmosMessageHandler implements SubqlCosmosMessageHandler {
-  @IsEnum(SubqlCosmosHandlerKind, {groups: [SubqlCosmosHandlerKind.Message]})
-  kind: SubqlCosmosHandlerKind.Message;
+export class MessageHandler implements CosmosMessageHandler {
+  @IsEnum(CosmosHandlerKind, {groups: [CosmosHandlerKind.Message]})
+  kind: CosmosHandlerKind.Message;
   @IsString()
   handler: string;
   @IsOptional()
   @ValidateNested()
-  @Type(() => CosmosMessageFilter)
+  @Type(() => MessageFilter)
   filter?: CosmosMessageFilter;
 }
 
-export class CosmosEventHandler implements SubqlCosmosEventHandler {
+export class EventHandler implements CosmosEventHandler {
   @IsOptional()
   @ValidateNested()
-  @Type(() => CosmosEventFilter)
-  filter?: SubqlCosmosEventFilter;
-  @IsEnum(SubqlCosmosHandlerKind, {groups: [SubqlCosmosHandlerKind.Event]})
-  kind: SubqlCosmosHandlerKind.Event;
+  @Type(() => EventFilter)
+  filter?: CosmosEventFilter;
+  @IsEnum(CosmosHandlerKind, {groups: [CosmosHandlerKind.Event]})
+  kind: CosmosHandlerKind.Event;
   @IsString()
   handler: string;
 }
 
-export class CosmosCustomHandler implements SubqlCosmosCustomHandler {
+export class CustomHandler implements CosmosCustomHandler {
   @IsString()
   kind: string;
   @IsString()
@@ -126,19 +126,19 @@ export class CosmosCustomHandler implements SubqlCosmosCustomHandler {
   filter?: Record<string, unknown>;
 }
 
-export class CosmosMapping implements SubqlCosmosMapping {
+export class RuntimeMapping implements CosmosMapping {
   @Transform((params) => {
-    const handlers: SubqlCosmosHandler[] = params.value;
+    const handlers: CosmosHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubqlCosmosHandlerKind.Event:
-          return plainToClass(CosmosEventHandler, handler);
-        case SubqlCosmosHandlerKind.Message:
-          return plainToClass(CosmosMessageHandler, handler);
-        case SubqlCosmosHandlerKind.Transaction:
-          return plainToClass(CosmosTransactionHandler, handler);
-        case SubqlCosmosHandlerKind.Block:
-          return plainToClass(CosmosBlockHandler, handler);
+        case CosmosHandlerKind.Event:
+          return plainToClass(EventHandler, handler);
+        case CosmosHandlerKind.Message:
+          return plainToClass(MessageHandler, handler);
+        case CosmosHandlerKind.Transaction:
+          return plainToClass(TransactionHandler, handler);
+        case CosmosHandlerKind.Block:
+          return plainToClass(BlockHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
       }
@@ -146,32 +146,32 @@ export class CosmosMapping implements SubqlCosmosMapping {
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubqlCosmosHandler[];
+  handlers: CosmosHandler[];
   @IsString()
   file: string;
 }
 
-export class CosmosCustomMapping implements SubqlCosmosMapping<SubqlCosmosCustomHandler> {
+export class CustomMapping implements CosmosMapping<CosmosCustomHandler> {
   @IsArray()
-  @Type(() => CosmosCustomHandler)
+  @Type(() => CustomHandler)
   @ValidateNested()
   handlers: CosmosCustomHandler[];
   @IsString()
   file: string;
 }
 
-export class CosmosProcessorOptions implements SubqlCosmosProcessorOptions {
+export class CosmosProcessorOptions implements CosmosProcessorOptions {
   @IsOptional()
   @IsString()
   abi?: string;
 }
 
-export class CosmosRuntimeDataSourceBase<M extends SubqlCosmosMapping<SubqlCosmosRuntimeHandler>>
-  implements SubqlCosmosRuntimeDatasource<M>
+export class CosmosRuntimeDataSourceBase<M extends CosmosMapping<CosmosRuntimeHandler>>
+  implements CosmosRuntimeDatasource<M>
 {
-  @IsEnum(SubqlCosmosDatasourceKind, {groups: [SubqlCosmosDatasourceKind.Runtime]})
-  kind: SubqlCosmosDatasourceKind.Runtime;
-  @Type(() => CosmosMapping)
+  @IsEnum(CosmosDatasourceKind, {groups: [CosmosDatasourceKind.Runtime]})
+  kind: CosmosDatasourceKind.Runtime;
+  @Type(() => RuntimeMapping)
   @ValidateNested()
   mapping: M;
   @IsInt()
@@ -200,13 +200,13 @@ export class CosmosCustomModuleImpl implements CustomModule {
 
 export class CosmosCustomDataSourceBase<
   K extends string,
-  M extends SubqlCosmosMapping = SubqlCosmosMapping<SubqlCosmosCustomHandler>,
+  M extends CosmosMapping = CosmosMapping<CosmosCustomHandler>,
   O = any
-> implements SubqlCosmosCustomDatasource<K, M, O>
+> implements CosmosCustomDatasource<K, M, O>
 {
   @IsString()
   kind: K;
-  @Type(() => CosmosCustomMapping)
+  @Type(() => CustomMapping)
   @ValidateNested()
   mapping: M;
   @IsOptional()

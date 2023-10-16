@@ -4,47 +4,47 @@
 import {FileReference} from '@subql/types-core';
 import {
   SecondLayerHandlerProcessor,
-  SubqlCosmosCustomDatasource,
-  SubqlCosmosDatasource,
-  SubqlCosmosDatasourceKind,
-  SubqlCosmosHandlerKind,
-  SubqlCosmosRuntimeDatasource,
+  CosmosCustomDatasource,
+  CosmosDatasource,
+  CosmosDatasourceKind,
+  CosmosHandlerKind,
+  CosmosRuntimeDatasource,
   CustomDatasourceTemplate,
   RuntimeDatasourceTemplate,
 } from '@subql/types-cosmos';
 import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import {gte} from 'semver';
 
-export function isCustomCosmosDs(ds: SubqlCosmosDatasource): ds is SubqlCosmosCustomDatasource<string> {
-  return ds.kind !== SubqlCosmosDatasourceKind.Runtime && !!(ds as SubqlCosmosCustomDatasource<string>).processor;
+export function isCustomCosmosDs(ds: CosmosDatasource): ds is CosmosCustomDatasource<string> {
+  return ds.kind !== CosmosDatasourceKind.Runtime && !!(ds as CosmosCustomDatasource<string>).processor;
 }
 
-export function isRuntimeCosmosDs(ds: SubqlCosmosDatasource): ds is SubqlCosmosRuntimeDatasource {
-  return ds.kind === SubqlCosmosDatasourceKind.Runtime;
+export function isRuntimeCosmosDs(ds: CosmosDatasource): ds is CosmosRuntimeDatasource {
+  return ds.kind === CosmosDatasourceKind.Runtime;
 }
 
 export function isBlockHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<SubqlCosmosHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Block, unknown, E> {
-  return hp.baseHandlerKind === SubqlCosmosHandlerKind.Block;
+  hp: SecondLayerHandlerProcessor<CosmosHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<CosmosHandlerKind.Block, unknown, E> {
+  return hp.baseHandlerKind === CosmosHandlerKind.Block;
 }
 
 export function isTransactionHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<SubqlCosmosHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Transaction, unknown, E> {
-  return hp.baseHandlerKind === SubqlCosmosHandlerKind.Transaction;
+  hp: SecondLayerHandlerProcessor<CosmosHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<CosmosHandlerKind.Transaction, unknown, E> {
+  return hp.baseHandlerKind === CosmosHandlerKind.Transaction;
 }
 
 export function isMessageHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<SubqlCosmosHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Message, unknown, E> {
-  return hp.baseHandlerKind === SubqlCosmosHandlerKind.Message;
+  hp: SecondLayerHandlerProcessor<CosmosHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<CosmosHandlerKind.Message, unknown, E> {
+  return hp.baseHandlerKind === CosmosHandlerKind.Message;
 }
 
 export function isEventHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<SubqlCosmosHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Event, unknown, E> {
-  return hp.baseHandlerKind === SubqlCosmosHandlerKind.Event;
+  hp: SecondLayerHandlerProcessor<CosmosHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<CosmosHandlerKind.Event, unknown, E> {
+  return hp.baseHandlerKind === CosmosHandlerKind.Event;
 }
 
 export function isCosmosTemplates(

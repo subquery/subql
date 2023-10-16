@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {SubqlCosmosRuntimeDatasource} from '@subql/types-cosmos';
+import {CosmosRuntimeDatasource} from '@subql/types-cosmos';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
@@ -119,7 +119,7 @@ describe('Codegen cosmos', () => {
             },
           ],
         },
-      } as SubqlCosmosRuntimeDatasource;
+      } as CosmosRuntimeDatasource;
       const expectedOutput = {cw20: path.join(PROJECT_PATH, 'cosmwasm-contract/cw20/schema/cw20.json')};
 
       expect(prepareSortedAssets([cosmosDs], PROJECT_PATH)).toStrictEqual(expectedOutput);

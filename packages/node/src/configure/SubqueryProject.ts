@@ -7,7 +7,7 @@ import { validateSemver } from '@subql/common';
 import {
   CosmosProjectNetworkConfig,
   parseCosmosProjectManifest,
-  SubqlCosmosDataSource,
+  CosmosDataSource,
   ProjectManifestV1_0_0Impl,
   isRuntimeCosmosDs,
   isCustomCosmosDs,
@@ -23,7 +23,7 @@ import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import {
   CustomDatasourceTemplate,
   RuntimeDatasourceTemplate,
-  SubqlCosmosHandlerKind,
+  CosmosHandlerKind,
 } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
@@ -32,7 +32,7 @@ import { processNetworkConfig } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
 
-export type CosmosProjectDs = SubqlProjectDs<SubqlCosmosDataSource>;
+export type CosmosProjectDs = SubqlProjectDs<CosmosDataSource>;
 
 export type CosmosProjectDsTemplate =
   | SubqlProjectDs<RuntimeDatasourceTemplate>
@@ -73,7 +73,7 @@ export class SubqueryProject implements ISubqueryProject {
       this.dataSources,
       getTimestamp,
       isRuntimeCosmosDs,
-      SubqlCosmosHandlerKind.Block,
+      CosmosHandlerKind.Block,
     );
   }
 

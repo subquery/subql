@@ -7,12 +7,12 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
-  SubqlCosmosMessageFilter,
-  SubqlCosmosEventFilter,
-  SubqlCosmosHandlerKind,
-  SubqlCosmosHandler,
-  SubqlCosmosDataSource,
-  SubqlCosmosHandlerFilter,
+  CosmosMessageFilter,
+  CosmosEventFilter,
+  CosmosHandlerKind,
+  CosmosHandler,
+  CosmosDataSource,
+  CosmosHandlerFilter,
   CosmosCustomHandler,
 } from '@subql/common-cosmos';
 
@@ -23,11 +23,11 @@ import {
 } from '@subql/types-core';
 
 import {
-  SubqlCosmosEventHandler,
-  SubqlCosmosMessageHandler,
-  SubqlCosmosRuntimeHandler,
-  SubqlCosmosBlockFilter,
-  SubqlCosmosDatasource,
+  CosmosEventHandler,
+  CosmosMessageHandler,
+  CosmosRuntimeHandler,
+  CosmosBlockFilter,
+  CosmosDatasource,
 } from '@subql/types-cosmos';
 import { setWith, sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -50,7 +50,7 @@ const INTERVAL_PERCENT = 0.9;
 const DICTIONARY_VALIDATION_EXCEPTIONS = ['juno-1'];
 
 export function eventFilterToQueryEntry(
-  filter: SubqlCosmosEventFilter,
+  filter: CosmosEventFilter,
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [
     {
@@ -78,7 +78,7 @@ export function eventFilterToQueryEntry(
 }
 
 export function messageFilterToQueryEntry(
-  filter: SubqlCosmosMessageFilter,
+  filter: CosmosMessageFilter,
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [
     {
@@ -111,7 +111,7 @@ export function messageFilterToQueryEntry(
 
 @Injectable()
 export class FetchService extends BaseFetchService<
-  SubqlCosmosDatasource,
+  CosmosDatasource,
   ICosmosBlockDispatcher,
   DictionaryService
 > {
@@ -146,7 +146,7 @@ export class FetchService extends BaseFetchService<
   }
 
   buildDictionaryQueryEntries(
-    dataSources: SubqlCosmosDatasource[],
+    dataSources: CosmosDatasource[],
   ): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
@@ -156,7 +156,7 @@ export class FetchService extends BaseFetchService<
         : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        let filterList: SubqlCosmosHandlerFilter[];
+        let filterList: CosmosHandlerFilter[];
         if (isCustomCosmosDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
@@ -169,29 +169,28 @@ export class FetchService extends BaseFetchService<
               continue;
             }
           }
-          filterList = this.getBaseHandlerFilters<SubqlCosmosHandlerFilter>(
+          filterList = this.getBaseHandlerFilters<CosmosHandlerFilter>(
             ds,
             handler.kind,
           );
         } else {
           filterList = [
-            (handler as SubqlCosmosEventHandler | SubqlCosmosMessageHandler)
-              .filter,
+            (handler as CosmosEventHandler | CosmosMessageHandler).filter,
           ];
         }
         // Filter out any undefined
         filterList = filterList.filter(Boolean);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
-          case SubqlCosmosHandlerKind.Block:
-            for (const filter of filterList as SubqlCosmosBlockFilter[]) {
+          case CosmosHandlerKind.Block:
+            for (const filter of filterList as CosmosBlockFilter[]) {
               if (filter.modulo === undefined) {
                 return [];
               }
             }
             break;
-          case SubqlCosmosHandlerKind.Message: {
-            for (const filter of filterList as SubqlCosmosMessageFilter[]) {
+          case CosmosHandlerKind.Message: {
+            for (const filter of filterList as CosmosMessageFilter[]) {
               if (filter.type !== undefined) {
                 queryEntries.push(messageFilterToQueryEntry(filter));
               } else {
@@ -200,8 +199,8 @@ export class FetchService extends BaseFetchService<
             }
             break;
           }
-          case SubqlCosmosHandlerKind.Event: {
-            for (const filter of filterList as SubqlCosmosEventFilter[]) {
+          case CosmosHandlerKind.Event: {
+            for (const filter of filterList as CosmosEventFilter[]) {
               if (filter.type !== undefined) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
@@ -253,7 +252,7 @@ export class FetchService extends BaseFetchService<
     return getModulos(
       this.projectService.getAllDataSources(),
       isCustomCosmosDs,
-      SubqlCosmosHandlerKind.Block,
+      CosmosHandlerKind.Block,
     );
   }
 
@@ -267,11 +266,11 @@ export class FetchService extends BaseFetchService<
   }
 
   private getBaseHandlerKind(
-    ds: SubqlCosmosDataSource,
-    handler: SubqlCosmosHandler,
-  ): SubqlCosmosHandlerKind {
+    ds: CosmosDataSource,
+    handler: CosmosHandler,
+  ): CosmosHandlerKind {
     if (isRuntimeCosmosDs(ds) && isBaseHandler(handler)) {
-      return (handler as SubqlCosmosRuntimeHandler).kind;
+      return (handler as CosmosRuntimeHandler).kind;
     } else if (isCustomCosmosDs(ds) && isCustomHandler(handler)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const baseHandler =
@@ -285,8 +284,8 @@ export class FetchService extends BaseFetchService<
     }
   }
 
-  private getBaseHandlerFilters<T extends SubqlCosmosHandlerFilter>(
-    ds: SubqlCosmosDataSource,
+  private getBaseHandlerFilters<T extends CosmosHandlerFilter>(
+    ds: CosmosDataSource,
     handlerKind: string,
   ): T[] {
     if (isCustomCosmosDs(ds)) {

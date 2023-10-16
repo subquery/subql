@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  SubqlCosmosRuntimeHandler,
-  SubqlCosmosCustomHandler,
-  SubqlCosmosHandler,
-  SubqlCosmosHandlerKind,
+  CosmosRuntimeHandler,
+  CosmosCustomHandler,
+  CosmosHandler,
+  CosmosHandlerKind,
   CosmosProjectNetConfig,
   CosmosChainType,
 } from '@subql/common-cosmos';
@@ -13,14 +13,14 @@ import { Reader } from '@subql/types-core';
 import * as protobuf from 'protobufjs';
 
 export function isBaseHandler(
-  handler: SubqlCosmosHandler,
-): handler is SubqlCosmosRuntimeHandler {
-  return Object.values<string>(SubqlCosmosHandlerKind).includes(handler.kind);
+  handler: CosmosHandler,
+): handler is CosmosRuntimeHandler {
+  return Object.values<string>(CosmosHandlerKind).includes(handler.kind);
 }
 
 export function isCustomHandler(
-  handler: SubqlCosmosHandler,
-): handler is SubqlCosmosCustomHandler {
+  handler: CosmosHandler,
+): handler is CosmosCustomHandler {
   return !isBaseHandler(handler);
 }
 

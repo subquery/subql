@@ -10,9 +10,8 @@ import {
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { longify } from '@cosmjs/stargate/build/queryclient';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
-import { CosmosMessageFilter } from '@subql/common-cosmos';
 import {
-  SubqlCosmosMessageFilter,
+  CosmosMessageFilter,
   CosmosBlock,
   CosmosTransaction,
   CosmosMessage,
@@ -36,7 +35,7 @@ const TEST_BLOCKNUMBER = 4136538;
 
 const TEST_FAILTX_BLOCKNUMBER = 4136536;
 
-const TEST_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
+const TEST_MESSAGE_FILTER_TRUE: CosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'swap',
   values: {
@@ -45,7 +44,7 @@ const TEST_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
   },
 };
 
-const TEST_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
+const TEST_MESSAGE_FILTER_FALSE: CosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'increment',
   values: {
@@ -54,7 +53,7 @@ const TEST_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
   },
 };
 
-const TEST_NESTED_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
+const TEST_NESTED_MESSAGE_FILTER_TRUE: CosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'swap',
   values: {
@@ -62,7 +61,7 @@ const TEST_NESTED_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
   },
 };
 
-const TEST_NESTED_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
+const TEST_NESTED_MESSAGE_FILTER_FALSE: CosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'swap',
   values: {
@@ -70,7 +69,7 @@ const TEST_NESTED_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
   },
 };
 
-const TEST_NESTED_MESSAGE_FILTER_INVALID_PATH: SubqlCosmosMessageFilter = {
+const TEST_NESTED_MESSAGE_FILTER_INVALID_PATH: CosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'swap',
   values: {
@@ -78,7 +77,7 @@ const TEST_NESTED_MESSAGE_FILTER_INVALID_PATH: SubqlCosmosMessageFilter = {
   },
 };
 
-const TEST_MESSAGE_FILTER_FALSE_2: SubqlCosmosMessageFilter = {
+const TEST_MESSAGE_FILTER_FALSE_2: CosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgStoreCode',
 };
 

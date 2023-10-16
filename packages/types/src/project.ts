@@ -19,11 +19,11 @@ import {
 } from '@subql/types-core';
 import {CosmosBlock, CosmosTransaction, CosmosMessage, CosmosEvent} from './interfaces';
 
-export type RuntimeDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosRuntimeDatasource>;
-export type CustomDatasourceTemplate = BaseTemplateDataSource<SubqlCosmosCustomDatasource>;
+export type RuntimeDatasourceTemplate = BaseTemplateDataSource<CosmosRuntimeDatasource>;
+export type CustomDatasourceTemplate = BaseTemplateDataSource<CosmosCustomDatasource>;
 
 export type CosmosProjectManifestV1_0_0 = ProjectManifestV1_0_0<
-  SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource,
+  CosmosRuntimeDatasource | CosmosCustomDatasource,
   RuntimeDatasourceTemplate | CustomDatasourceTemplate,
   CosmosNetworkConfig
 >;
@@ -41,7 +41,7 @@ export type CosmosChaintypes = Map<string, CustomModule>;
 
 export type CustomDataSourceAsset = FileReference;
 
-export enum SubqlCosmosDatasourceKind {
+export enum CosmosDatasourceKind {
   Runtime = 'cosmos/Runtime',
   Custom = 'cosmos/Custom',
 }
@@ -50,7 +50,7 @@ export enum SubqlCosmosDatasourceKind {
  * Enum representing the kind of Cosmos handler.
  * @enum {string}
  */
-export enum SubqlCosmosHandlerKind {
+export enum CosmosHandlerKind {
   /**
    * Handler for Cosmos blocks.
    */
@@ -70,17 +70,17 @@ export enum SubqlCosmosHandlerKind {
 }
 
 export type CosmosRuntimeHandlerInputMap = {
-  [SubqlCosmosHandlerKind.Block]: CosmosBlock;
-  [SubqlCosmosHandlerKind.Transaction]: CosmosTransaction;
-  [SubqlCosmosHandlerKind.Message]: CosmosMessage;
-  [SubqlCosmosHandlerKind.Event]: CosmosEvent;
+  [CosmosHandlerKind.Block]: CosmosBlock;
+  [CosmosHandlerKind.Transaction]: CosmosTransaction;
+  [CosmosHandlerKind.Message]: CosmosMessage;
+  [CosmosHandlerKind.Event]: CosmosEvent;
 };
 
 type CosmosRuntimeFilterMap = {
-  [SubqlCosmosHandlerKind.Block]: {};
-  [SubqlCosmosHandlerKind.Transaction]: {};
-  [SubqlCosmosHandlerKind.Message]: SubqlCosmosMessageFilter;
-  [SubqlCosmosHandlerKind.Event]: SubqlCosmosEventFilter;
+  [CosmosHandlerKind.Block]: {};
+  [CosmosHandlerKind.Transaction]: {};
+  [CosmosHandlerKind.Message]: CosmosMessageFilter;
+  [CosmosHandlerKind.Event]: CosmosEventFilter;
 };
 
 /**
@@ -108,9 +108,9 @@ export type CosmosNetworkConfig = IProjectNetworkConfig & {
   chaintypes?: CosmosChaintypes;
 };
 
-export type SubqlCosmosBlockFilter = BlockFilter;
+export type CosmosBlockFilter = BlockFilter;
 
-export interface SubqlCosmosTxFilter {
+export interface CosmosTxFilter {
   /**
    * Filter in failed transactions
    * @example
@@ -120,11 +120,11 @@ export interface SubqlCosmosTxFilter {
 }
 
 /**
- * Represents a filter for Cosmos messages, extending SubqlCosmosTxFilter.
+ * Represents a filter for Cosmos messages, extending CosmosTxFilter.
  * @interface
- * @extends {SubqlCosmosTxFilter}
+ * @extends {CosmosTxFilter}
  */
-export interface SubqlCosmosMessageFilter extends SubqlCosmosTxFilter {
+export interface CosmosMessageFilter extends CosmosTxFilter {
   /**
    * The type of message, this matches the protobuf message descriptor
    * @example
@@ -147,9 +147,9 @@ export interface SubqlCosmosMessageFilter extends SubqlCosmosTxFilter {
 /**
  * Represents a filter for Cosmos events.
  * @interface
- * @extends {SubqlCosmosEventFilter}
+ * @extends {CosmosEventFilter}
  */
-export interface SubqlCosmosEventFilter {
+export interface CosmosEventFilter {
   /**
    * The type of the event
    * @example
@@ -166,41 +166,35 @@ export interface SubqlCosmosEventFilter {
        }
      }
    * */
-  messageFilter?: SubqlCosmosMessageFilter;
+  messageFilter?: CosmosMessageFilter;
   /**
    * Attributes of the event to filter by
    * */
   attributes?: Record<string, string | number>;
 }
 
-export type SubqlCosmosHandlerFilter = SubqlCosmosEventFilter | SubqlCosmosMessageFilter;
+export type CosmosHandlerFilter = CosmosEventFilter | CosmosMessageFilter;
 
 /**
  * Represents a handler for Cosmos blocks.
- * @type {SubqlCosmosCustomHandler<SubqlCosmosHandlerKind.Block, SubqlCosmosBlockFilter>}
+ * @type {CosmosCustomHandler<CosmosHandlerKind.Block, CosmosBlockFilter>}
  */
-export type SubqlCosmosBlockHandler = SubqlCosmosCustomHandler<SubqlCosmosHandlerKind.Block, SubqlCosmosBlockFilter>;
+export type CosmosBlockHandler = CosmosCustomHandler<CosmosHandlerKind.Block, CosmosBlockFilter>;
 /**
  * Represents a handler for Cosmos transactions.
- * @type {SubqlCosmosCustomHandler<SubqlCosmosHandlerKind.Transaction, SubqlCosmosTxFilter>}
+ * @type {CosmosCustomHandler<CosmosHandlerKind.Transaction, CosmosTxFilter>}
  */
-export type SubqlCosmosTransactionHandler = SubqlCosmosCustomHandler<
-  SubqlCosmosHandlerKind.Transaction,
-  SubqlCosmosTxFilter
->;
+export type CosmosTransactionHandler = CosmosCustomHandler<CosmosHandlerKind.Transaction, CosmosTxFilter>;
 /**
  * Represents a handler for Cosmos messages.
- * @type {SubqlCosmosCustomHandler<SubqlCosmosHandlerKind.Message, SubqlCosmosMessageFilter>}
+ * @type {CosmosCustomHandler<CosmosHandlerKind.Message, CosmosMessageFilter>}
  */
-export type SubqlCosmosMessageHandler = SubqlCosmosCustomHandler<
-  SubqlCosmosHandlerKind.Message,
-  SubqlCosmosMessageFilter
->;
+export type CosmosMessageHandler = CosmosCustomHandler<CosmosHandlerKind.Message, CosmosMessageFilter>;
 /**
  * Represents a handler for Cosmos events.
- * @type {SubqlCosmosCustomHandler<SubqlCosmosHandlerKind.Event, SubqlCosmosEventFilter>}
+ * @type {CosmosCustomHandler<CosmosHandlerKind.Event, CosmosEventFilter>}
  */
-export type SubqlCosmosEventHandler = SubqlCosmosCustomHandler<SubqlCosmosHandlerKind.Event, SubqlCosmosEventFilter>;
+export type CosmosEventHandler = CosmosCustomHandler<CosmosHandlerKind.Event, CosmosEventFilter>;
 
 /**
  * Represents a generic custom handler for Cosmos.
@@ -208,14 +202,13 @@ export type SubqlCosmosEventHandler = SubqlCosmosCustomHandler<SubqlCosmosHandle
  * @template K - The kind of the handler (default: string).
  * @template F - The filter type for the handler (default: Record<string, unknown>).
  */
-export interface SubqlCosmosCustomHandler<K extends string = string, F = Record<string, unknown>>
-  extends BaseHandler<F, K> {
+export interface CosmosCustomHandler<K extends string = string, F = Record<string, unknown>> extends BaseHandler<F, K> {
   /**
    * The kind of handler. For `cosmos/Runtime` datasources this is either `Block`, `Transaction`, `Message` or `Event` kinds.
    * The value of this will determine the filter options as well as the data provided to your handler function
-   * @type {SubqlCosmosHandlerKind.Block | SubqlCosmosHandlerKind.Transaction | SubqlCosmosHandlerKind.Message | SubqlCosmosHandlerKind.Event | string }
+   * @type {CosmosHandlerKind.Block | CosmosHandlerKind.Transaction | CosmosHandlerKind.Message | CosmosHandlerKind.Event | string }
    * @example
-   * kind: SubqlCosmosHandlerKind.Block // Defined with an enum, this is used for runtime datasources
+   * kind: CosmosHandlerKind.Block // Defined with an enum, this is used for runtime datasources
    * @example
    * kind: 'cosmos/EthermintEvmEvent' // Defined with a string, this is used with custom datasources
    */
@@ -230,28 +223,28 @@ export interface SubqlCosmosCustomHandler<K extends string = string, F = Record<
 
 /**
  * Represents a runtime handler for Cosmos, which can be a block handler, transaction handler, message handler, or event handler.
- * @type {SubqlCosmosBlockHandler | SubqlCosmosTransactionHandler | SubqlCosmosMessageHandler | SubqlCosmosEventHandler}
+ * @type {CosmosBlockHandler | CosmosTransactionHandler | CosmosMessageHandler | CosmosEventHandler}
  */
-export type SubqlCosmosRuntimeHandler =
-  | SubqlCosmosBlockHandler
-  | SubqlCosmosTransactionHandler
-  | SubqlCosmosMessageHandler
-  | SubqlCosmosEventHandler;
+export type CosmosRuntimeHandler =
+  | CosmosBlockHandler
+  | CosmosTransactionHandler
+  | CosmosMessageHandler
+  | CosmosEventHandler;
 
-export type SubqlCosmosHandler = SubqlCosmosRuntimeHandler | SubqlCosmosCustomHandler;
+export type CosmosHandler = CosmosRuntimeHandler | CosmosCustomHandler;
 
 /**
  * Represents a mapping for Cosmos handlers, extending FileReference.
  * @interface
  * @extends {FileReference}
  */
-export interface SubqlCosmosMapping<T extends SubqlCosmosHandler = SubqlCosmosHandler> extends BaseMapping<T> {
+export interface CosmosMapping<T extends CosmosHandler = CosmosHandler> extends BaseMapping<T> {
   /**
    * An array of handlers associated with the mapping.
    * @type {T[]}
    * @example
    * handlers: [{
-        kind: SubqlCosmosHandlerKind.Call,
+        kind: CosmosHandlerKind.Call,
         handler: 'handleCall',
         filter: {
           type: "/cosmwasm.wasm.v1.MsgExecuteContract"
@@ -266,7 +259,7 @@ export interface SubqlCosmosMapping<T extends SubqlCosmosHandler = SubqlCosmosHa
  * @interface
  * @template M - The mapping type for the datasource.
  */
-type ISubqlCosmosDatasource<M extends SubqlCosmosMapping> = BaseDataSource<SubqlCosmosHandler, M>;
+type ICosmosDatasource<M extends CosmosMapping> = BaseDataSource<CosmosHandler, M>;
 
 export interface SubqlCosmosProcessorOptions {
   /**
@@ -281,16 +274,16 @@ export interface SubqlCosmosProcessorOptions {
 /**
  * Represents a runtime datasource for Cosmos.
  * @interface
- * @template M - The mapping type for the datasource (default: SubqlCosmosMapping<SubqlCosmosRuntimeHandler>).
+ * @template M - The mapping type for the datasource (default: CosmosMapping<CosmosRuntimeHandler>).
  */
-export interface SubqlCosmosRuntimeDatasource<
-  M extends SubqlCosmosMapping<SubqlCosmosRuntimeHandler> = SubqlCosmosMapping<SubqlCosmosRuntimeHandler>
-> extends ISubqlCosmosDatasource<M> {
+export interface CosmosRuntimeDatasource<
+  M extends CosmosMapping<CosmosRuntimeHandler> = CosmosMapping<CosmosRuntimeHandler>
+> extends ICosmosDatasource<M> {
   /**
    * The kind of the datasource, which is `cosmos/Runtime`.
-   * @type {SubqlCosmosDatasourceKind.Runtime}
+   * @type {CosmosDatasourceKind.Runtime}
    */
-  kind: SubqlCosmosDatasourceKind.Runtime;
+  kind: CosmosDatasourceKind.Runtime;
   /**
    * Options for this datasource, this includes the abi if its a cosmwasm datasource
    * @type {SubqlCosmosProcessorOptions}
@@ -306,9 +299,9 @@ export interface SubqlCosmosRuntimeDatasource<
 
 /**
  * Represents a Cosmos datasource, which can be either runtime or custom.
- * @type {SubqlCosmosDatasource}
+ * @type {CosmosDatasource}
  */
-export type SubqlCosmosDatasource = SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource;
+export type CosmosDatasource = CosmosRuntimeDatasource | CosmosCustomDatasource;
 
 export type CustomCosmosDataSourceAsset = FileReference;
 
@@ -316,14 +309,14 @@ export type CustomCosmosDataSourceAsset = FileReference;
  * Represents a custom datasource for Cosmos.
  * @interface
  * @template K - The kind of the datasource (default: string).
- * @template M - The mapping type for the datasource (default: SubqlCosmosMapping<SubqlCosmosCustomHandler>).
+ * @template M - The mapping type for the datasource (default: CosmosMapping<CosmosCustomHandler>).
  * @template O - The processor options (default: any).
  */
-export interface SubqlCosmosCustomDatasource<
+export interface CosmosCustomDatasource<
   K extends string = string,
-  M extends SubqlCosmosMapping = SubqlCosmosMapping<SubqlCosmosCustomHandler>,
+  M extends CosmosMapping = CosmosMapping<CosmosCustomHandler>,
   O = any
-> extends BaseCustomDataSource<SubqlCosmosHandler, M> {
+> extends BaseCustomDataSource<CosmosHandler, M> {
   /**
    * The kind of the custom datasource. This should follow the pattern `cosmos/*`.
    * @type {K}
@@ -347,18 +340,18 @@ export interface SubqlCosmosCustomDatasource<
 }
 
 export interface HandlerInputTransformer_0_0_0<
-  T extends SubqlCosmosHandlerKind,
+  T extends CosmosHandlerKind,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource
 > {
   (input: CosmosRuntimeHandlerInputMap[T], ds: DS, api: CosmWasmClient, assets?: Record<string, string>): Promise<E>;
 }
 
 export interface HandlerInputTransformer_1_0_0<
-  T extends SubqlCosmosHandlerKind,
+  T extends CosmosHandlerKind,
   F,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource
 > {
   (params: {
     input: CosmosRuntimeHandlerInputMap[T];
@@ -373,17 +366,17 @@ export type SecondLayerHandlerProcessorArray<
   K extends string,
   F,
   T,
-  DS extends SubqlCosmosCustomDatasource<K> = SubqlCosmosCustomDatasource<K>
+  DS extends CosmosCustomDatasource<K> = CosmosCustomDatasource<K>
 > =
-  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Block, F, T, DS>
-  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Transaction, F, T, DS>
-  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Message, F, T, DS>
-  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Event, F, T, DS>;
+  | SecondLayerHandlerProcessor<CosmosHandlerKind.Block, F, T, DS>
+  | SecondLayerHandlerProcessor<CosmosHandlerKind.Transaction, F, T, DS>
+  | SecondLayerHandlerProcessor<CosmosHandlerKind.Message, F, T, DS>
+  | SecondLayerHandlerProcessor<CosmosHandlerKind.Event, F, T, DS>;
 
-export interface SubqlCosmosDatasourceProcessor<
+export interface CosmosDatasourceProcessor<
   K extends string,
   F,
-  DS extends SubqlCosmosCustomDatasource<K> = SubqlCosmosCustomDatasource<K>,
+  DS extends CosmosCustomDatasource<K> = CosmosCustomDatasource<K>,
   P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>> = Record<
     string,
     SecondLayerHandlerProcessorArray<K, F, any, DS>
@@ -396,9 +389,9 @@ export interface SubqlCosmosDatasourceProcessor<
 }
 
 interface SecondLayerHandlerProcessorBase<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource
 > {
   baseHandlerKind: K;
   baseFilter: CosmosRuntimeFilterMap[K] | CosmosRuntimeFilterMap[K][];
@@ -407,10 +400,10 @@ interface SecondLayerHandlerProcessorBase<
 }
 
 export interface SecondLayerHandlerProcessor_0_0_0<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: undefined;
   transformer: HandlerInputTransformer_0_0_0<K, E, DS>;
@@ -418,10 +411,10 @@ export interface SecondLayerHandlerProcessor_0_0_0<
 }
 
 export interface SecondLayerHandlerProcessor_1_0_0<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
   transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
@@ -434,17 +427,17 @@ export interface SecondLayerHandlerProcessor_1_0_0<
 }
 
 export type SecondLayerHandlerProcessor<
-  K extends SubqlCosmosHandlerKind,
+  K extends CosmosHandlerKind,
   F,
   E,
-  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+  DS extends CosmosCustomDatasource = CosmosCustomDatasource
 > = SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>;
 
 /**
  * Represents a Cosmos project configuration based on the CommonSubqueryProject template.
  */
-export type CosmosProject<DS extends SubqlCosmosDatasource = SubqlCosmosRuntimeDatasource> = CommonSubqueryProject<
+export type CosmosProject<DS extends CosmosDatasource = CosmosRuntimeDatasource> = CommonSubqueryProject<
   CosmosNetworkConfig,
-  SubqlCosmosRuntimeDatasource | DS,
-  BaseTemplateDataSource<SubqlCosmosRuntimeDatasource> | BaseTemplateDataSource<DS>
+  CosmosRuntimeDatasource | DS,
+  BaseTemplateDataSource<CosmosRuntimeDatasource> | BaseTemplateDataSource<DS>
 >;

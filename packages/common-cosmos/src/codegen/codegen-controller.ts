@@ -6,7 +6,7 @@ import path from 'path';
 import telescope from '@cosmology/telescope';
 import cosmwasmCodegen from '@cosmwasm/ts-codegen';
 import {makeTempDir} from '@subql/common';
-import {CosmosChaintypes, CustomModule, SubqlCosmosRuntimeDatasource} from '@subql/types-cosmos';
+import {CosmosChaintypes, CustomModule, CosmosRuntimeDatasource} from '@subql/types-cosmos';
 import {Data} from 'ejs';
 import {copySync} from 'fs-extra';
 import {IDLObject} from 'wasm-ast-types';
@@ -77,7 +77,7 @@ export function prepareCosmwasmJobs(
 }
 
 export function prepareSortedAssets(
-  datasources: SubqlCosmosRuntimeDatasource[],
+  datasources: CosmosRuntimeDatasource[],
   projectPath: string
 ): Record<string, string> {
   const sortedAssets: Record<string, string> = {};
@@ -97,7 +97,7 @@ export function prepareSortedAssets(
 }
 
 export async function generateCosmwasm(
-  datasources: SubqlCosmosRuntimeDatasource[],
+  datasources: CosmosRuntimeDatasource[],
   projectPath: string,
   prepareDirPath: (path: string, recreate: boolean) => Promise<void>,
   upperFirst: (input?: string) => string,
