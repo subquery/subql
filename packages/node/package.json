@@ -1,8 +1,8 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "3.0.3-1",
+  "version": "3.0.3",
   "description": "",
-  "author": "Naveen Veluswamy",
+  "author": "SubQuery Pte Ltd",
   "license": "GPL-3.0",
   "scripts": {
     "prebuild": "rimraf dist",
@@ -10,10 +10,11 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nodemon",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"node-cosmos/\""
   },
-  "homepage": "https://github.com/subquery/subql",
-  "repository": "github:subquery/subql",
+  "homepage": "https://github.com/subquery/subql-cosmos",
+  "repository": "github:subquery/subql-cosmos",
   "bin": {
     "subql-node-cosmos": "./bin/run"
   },
@@ -29,7 +30,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^3.1.2",
     "@subql/common-cosmos": "workspace:*",
-    "@subql/node-core": "^6.0.1",
+    "@subql/node-core": "^6.0.2",
     "@subql/types-cosmos": "workspace:*",
     "cosmjs-types": "^0.7.0",
     "cron-converter": "^1.0.2",
@@ -61,6 +62,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "3.0.3-0"
+  ]
 }

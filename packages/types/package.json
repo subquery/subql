@@ -1,14 +1,15 @@
 {
   "name": "@subql/types-cosmos",
-  "version": "3.0.3-0",
+  "version": "3.0.3",
   "description": "",
-  "homepage": "https://github.com/subquery/subql",
-  "repository": "github:subquery/subql",
+  "homepage": "https://github.com/subquery/subql-cosmos",
+  "repository": "github:subquery/subql-cosmos",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist && tsc -b"
+    "build": "rm -rf dist && tsc -b",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"types-cosmos/\""
   },
-  "author": "Naveen Veluswamy",
+  "author": "SubQuery Pte Ltd",
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "files": [
@@ -19,6 +20,5 @@
     "@cosmjs/proto-signing": "^0.30.1",
     "@cosmjs/stargate": "^0.30.1",
     "@subql/types-core": "^0.1.1"
-  },
-  "stableVersion": "3.0.2"
+  }
 }

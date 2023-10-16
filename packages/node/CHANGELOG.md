@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.3] - 2023-10-17
 ### Changed
 - Update type names to be consistent with main SDK (#189)
+
 ### Fixed
 - Fix contractCall filtering issue on non-object calls (#188)
 
@@ -281,7 +284,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.3...HEAD
+[3.0.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.2...node-cosmos/3.0.3
 [3.0.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.1...node-cosmos/3.0.2
 [3.0.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.0...node-cosmos/3.0.1
 [3.0.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/2.10.3...node-cosmos/3.0.0

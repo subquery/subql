@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.3] - 2023-10-17
 ### Changed
 - Update type names to be consistent with main SDK (#189)
 
@@ -79,21 +81,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/3.0.2...HEAD
-[3.0.2]: https://github.com/subquery/subql-cosmos/compare/types/3.0.1...types/3.0.2
-[3.0.1]: https://github.com/subquery/subql-cosmos/compare/types/3.0.0...types/3.0.1
-[3.0.0]: https://github.com/subquery/subql-cosmos/compare/types/2.2.0...types/3.0.0
-[2.2.1]: https://github.com/subquery/subql-cosmos/compare/types/2.2.0...types/2.2.1
-[2.2.0]: https://github.com/subquery/subql-cosmos/compare/types/2.1.0...types/2.2.0
-[2.1.0]: https://github.com/subquery/subql-cosmos/compare/types/2.0.0...types/2.1.0
-[2.0.0]: https://github.com/subquery/subql-cosmos/compare/types/0.4.3...types/2.0.0
-[0.4.3]: https://github.com/subquery/subql-cosmos/compare/types/0.4.2...types/0.4.3
-[0.4.2]: https://github.com/subquery/subql-cosmos/compare/types/0.4.1...types/0.4.2
-[0.4.1]: https://github.com/subquery/subql-cosmos/compare/types/0.4.0...types/0.4.1
-[0.4.0]: https://github.com/subquery/subql-cosmos/compare/types/0.3.0...types/0.4.0
-[0.3.0]: https://github.com/subquery/subql-cosmos/compare/types/0.2.0...types/0.3.0
-[0.2.0]: https://github.com/subquery/subql-cosmos/compare/types/0.1.1...types/0.2.0
-[0.1.1]: https://github.com/subquery/subql-cosmos/compare/types/0.1.0...types/0.1.1
-[0.1.0]: https://github.com/subquery/subql-cosmos/compare/types/0.0.6...types/0.1.0
-[0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...types/0.0.6
-[0.0.5]: https://github.com/subquery/subql-cosmos/tag/types/0.0.5
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.0.3...HEAD
+[3.0.3]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.0.2...types-cosmos/3.0.3
+[3.0.2]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.0.1...types-cosmos/3.0.2
+[3.0.1]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.0.0...types-cosmos/3.0.1
+[3.0.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/2.2.0...types-cosmos/3.0.0
+[2.2.1]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/2.2.0...types-cosmos/2.2.1
+[2.2.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/2.1.0...types-cosmos/2.2.0
+[2.1.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/2.0.0...types-cosmos/2.1.0
+[2.0.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.4.3...types-cosmos/2.0.0
+[0.4.3]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.4.2...types-cosmos/0.4.3
+[0.4.2]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.4.1...types-cosmos/0.4.2
+[0.4.1]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.4.0...types-cosmos/0.4.1
+[0.4.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.3.0...types-cosmos/0.4.0
+[0.3.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.2.0...types-cosmos/0.3.0
+[0.2.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.1.1...types-cosmos/0.2.0
+[0.1.1]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.1.0...types-cosmos/0.1.1
+[0.1.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.0.6...types-cosmos/0.1.0
+[0.0.6]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/0.0.5...types-cosmos/0.0.6
+[0.0.5]: https://github.com/subquery/subql-cosmos/tag/types-cosmos/0.0.5

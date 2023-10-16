@@ -1,15 +1,16 @@
 {
   "name": "@subql/common-cosmos",
-  "version": "3.0.3-0",
+  "version": "3.0.3",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"common-cosmos/\""
   },
-  "homepage": "https://github.com/subquery/subql",
-  "repository": "github:subquery/subql",
-  "author": "Ian He",
+  "homepage": "https://github.com/subquery/subql-cosmos",
+  "repository": "github:subquery/subql-cosmos",
+  "author": "SubQuery Pte Ltd",
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
@@ -44,6 +45,5 @@
     "ejs": "3.1.7",
     "lodash": "4.17.21",
     "rimraf": "^3.0.2"
-  },
-  "stableVersion": "3.0.2"
+  }
 }
