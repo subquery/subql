@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "3.0.3-0",
+  "version": "3.0.3-1",
   "description": "",
   "author": "Naveen Veluswamy",
   "license": "GPL-3.0",
@@ -62,5 +62,5 @@
     "/dist",
     "/bin"
   ],
-  "stableVersion": "3.0.2"
+  "stableVersion": "3.0.3-0"
 }
