@@ -5,7 +5,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-ethereum\" --release-prefix=\"common-ethereum/\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",

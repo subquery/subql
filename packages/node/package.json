@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "3.0.5-0",
+  "version": "3.0.5",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -10,7 +10,8 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nodemon",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-ethereum\" --release-prefix=\"node-ethereum/\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -26,7 +27,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "3.1.2",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "^6.0.2",
+    "@subql/node-core": "^6.0.3",
     "@subql/testing": "^2.0.2",
     "@subql/types-ethereum": "workspace:*",
     "cacheable-lookup": "6",
@@ -64,6 +65,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "3.0.4"
+  ]
 }

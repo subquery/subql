@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.4] - 2023-10-12
+## [3.0.5] - 2023-10-17
 ### Fixed
-- Update `@subql/node-core` to fix issues with using object destructing for store interface and workers
+- Update `@subql/node-core` to fix:
+  - Dictionary validation error causing application exit (#2101)
+  - Auto queue flush getting the queue into a bad state (#2103)
+  - Fix getCache could not been cleared after reindex, and could have been re-used and lead to error, such as syncPoi
 
 ## [3.0.4] - 2023-10-12
 ### Changed
@@ -19,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed Poi migration performance issue.
   - Fixed AutoQueue timeout issue.
   - Fixed Poi sync could block DB IO and drop connection issue.
+
+## [3.0.4] - 2023-10-12
+### Fixed
+- Update `@subql/node-core` to fix issues with using object destructing for store interface and workers
 
 ## [3.0.3] - 2023-10-05
 ### Changed
@@ -278,7 +285,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.4...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.5...HEAD
+[3.0.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.4...node-ethereum/3.0.5
+[3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
 [3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
 [3.0.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.2...node-ethereum/3.0.3
 [3.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...node-ethereum/3.0.2
