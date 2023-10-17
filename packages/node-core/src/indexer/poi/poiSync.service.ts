@@ -113,6 +113,8 @@ export class PoiSyncService implements OnApplicationShutdown {
   async syncPoi(exitHeight?: number): Promise<void> {
     if (this.isSyncing) return;
     this.isSyncing = true;
+    // Enable this after rewind
+    this.isShutdown = false;
     try {
       while (!this.isShutdown) {
         if (!this._latestSyncedPoi) {
