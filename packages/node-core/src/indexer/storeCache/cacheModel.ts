@@ -414,7 +414,7 @@ export class CachedModel<
   clear(blockHeight?: number): void {
     if (!blockHeight) {
       this.setCache = {};
-      // avoid fetch data before rewind/reindex
+      // avoid fetch old data after rewind/reindex
       this.getCache = new GetData<T>(getCacheOptions);
       this.removeCache = {};
       this.flushableRecordCounter = 0;
