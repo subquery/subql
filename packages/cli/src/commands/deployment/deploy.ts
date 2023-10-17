@@ -181,7 +181,7 @@ export default class Deploy extends Command {
         queryAD,
         indexerAD,
         ROOT_API_URL_PROD
-      ).catch((e) => this.error(e));
+      );
       this.log(`Project: ${deploymentOutput.projectKey}
       \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}

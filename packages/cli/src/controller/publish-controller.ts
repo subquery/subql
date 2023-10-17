@@ -3,7 +3,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_WRITE_ENDPOINT, isFileReference, validateCommonProjectManifest, mapToObject} from '@subql/common';
+import {
+  ReaderFactory,
+  IPFS_WRITE_ENDPOINT,
+  isFileReference,
+  validateCommonProjectManifest,
+  mapToObject,
+} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
@@ -219,7 +225,7 @@ export async function uploadFile(
       }
     })
     .catch((e) => {
-      throw new Error(`Publish project to default failed, ${e}`);
+      throw new Error(`ipfs write Publish project to default failed, ${e}`);
     });
 
   fileMap.set(contents.path, pendingCid);

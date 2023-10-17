@@ -30,9 +30,7 @@ export default class Delete extends Command {
     deploymentID = await valueOrPrompt(deploymentID, 'Enter deployment ID', 'Deployment ID is required');
 
     this.log(`Removing deployment: ${deploymentID}`);
-    const delete_output = await deleteDeployment(org, project_name, authToken, +deploymentID, ROOT_API_URL_PROD).catch(
-      (e) => this.error(e)
-    );
+    const delete_output = await deleteDeployment(org, project_name, authToken, +deploymentID, ROOT_API_URL_PROD);
     this.log(`Removed deployment: ${delete_output}`);
   }
 }
