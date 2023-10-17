@@ -6,10 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- Dictionary validation error causing application exit (#2101)
 - Auto queue flush getting the queue into a bad state (#2103)
-
-
-### Fixed
 - Fix getCache could not been cleared after reindex, and could have been re-used and lead to error, such as syncPoi
 
 ## [6.0.2] - 2023-10-12

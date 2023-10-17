@@ -427,22 +427,27 @@ export class DictionaryService {
 
   private dictionaryValidation(metaData?: MetaData, startBlockHeight?: number): boolean {
     const validate = (): boolean => {
-      if (!metaData) {
-        return false;
-      }
-      // Some dictionaries rely on chain others rely on genesisHash
-      if (!this.validateChainMeta(metaData)) {
-        logger.error(
-          'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
-        );
-        return false;
-      }
+      try {
+        if (!metaData) {
+          return false;
+        }
+        // Some dictionaries rely on chain others rely on genesisHash
+        if (!this.validateChainMeta(metaData)) {
+          logger.error(
+            'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary'
+          );
+          return false;
+        }
 
-      if (startBlockHeight !== undefined && metaData.lastProcessedHeight < startBlockHeight) {
-        logger.warn(`Dictionary indexed block is behind current indexing block height`);
+        if (startBlockHeight !== undefined && metaData.lastProcessedHeight < startBlockHeight) {
+          logger.warn(`Dictionary indexed block is behind current indexing block height`);
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        logger.error(e, 'Unable to validate dictionary metadata');
         return false;
       }
-      return true;
     };
 
     const valid = validate();
