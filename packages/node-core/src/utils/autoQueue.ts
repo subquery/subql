@@ -197,9 +197,19 @@ export class AutoQueue<T> implements IQueue {
         `Auto queue process task timeout in ${this.taskTimeoutSec} seconds. Please increase --timeout`
       )
         .then((result) => {
+          // Queue was flushed while task was running, we ned to discard now
+          if (this.nextTask > action.index) {
+            action.reject(new TaskFlushedError());
+            return;
+          }
           this.outOfOrderTasks[action.index] = {action, result};
         })
         .catch((error) => {
+          // Queue was flushed while task was running, we ned to discard now
+          if (this.nextTask > action.index) {
+            action.reject(new TaskFlushedError());
+            return;
+          }
           this.outOfOrderTasks[action.index] = {action, error};
         })
         .finally(() => {
@@ -229,12 +239,15 @@ export class AutoQueue<T> implements IQueue {
     // Remove reference to runing tasks, they will still continue running but the result wont be used
     this.runningTasks = [];
 
+    // Set the next task to the index that would be used after flush
+    this.nextTask = this.nextIndex;
     // Clean up out of order tasks
     Object.entries(this.outOfOrderTasks).map(([id, task]) => {
       // Is this desired behaviour? The other option would be resolving undefined
       task.action.reject(new TaskFlushedError());
     });
     this.outOfOrderTasks = {};
+    this.pendingPromise = false;
   }
 
   abort(): void {
