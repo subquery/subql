@@ -198,7 +198,7 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
     //converting string endpoint to array of string.
     const formattedEndpoint = Array.isArray(project.endpoint)
       ? project.endpoint.toString()
-      : `[ ${JSON.stringify(project.endpoint)} ]`;
+      : `[ "${project.endpoint}" ]`;
     manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint},`);
   } else {
     //load and write manifest(project.yaml)
