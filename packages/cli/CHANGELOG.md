@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.4] - 2023-10-17
+### Fixed
+- handle error on generate command (#2095)
+
 ## [4.0.3] - 2023-10-11
 ### Fixed
 - Fixed yaml readers/writers on `init` command (#2082)
@@ -473,7 +477,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.4...HEAD
+[4.0.4]: https://github.com/subquery/subql/compare/cli/4.0.3...cli/4.0.4
 [4.0.3]: https://github.com/subquery/subql/compare/cli/4.0.2...cli/4.0.3
 [4.0.2]: https://github.com/subquery/subql/compare/cli/4.0.1...cli/4.0.2
 [4.0.1]: https://github.com/subquery/subql/compare/cli/4.0.0...cli/4.0.1

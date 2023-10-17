@@ -1,11 +1,12 @@
 {
   "name": "@subql/common",
-  "version": "3.1.2",
+  "version": "3.1.3-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"common/\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -33,5 +34,6 @@
     "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1",
     "@types/update-notifier": "^6"
-  }
+  },
+  "stableVersion": "3.1.2"
 }
