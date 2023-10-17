@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {existsSync, readFileSync} from 'fs';
+import {existsSync, readFileSync, writeFileSync} from 'fs';
 import path from 'path';
 import {Command} from '@oclif/core';
 import {MultichainProjectManifest} from '@subql/types-core';
@@ -68,6 +68,11 @@ describe('Manifest generation', () => {
     const multichainContent = yaml.load(
       readFileSync(path.join(projectPath, '../subquery-multichain4.yaml'), 'utf8')
     ) as MultichainProjectManifest;
-    multichainContent.projects.forEach((project) => project.endsWith('.yaml'));
+    multichainContent.projects.forEach((project) => expect(project.endsWith('.yaml')).toBe(true));
+
+    //revert yaml to ts
+    multichainContent.projects = multichainContent.projects.map((project) => project.replace('.yaml', '.ts'));
+
+    writeFileSync(path.join(projectPath, '../subquery-multichain4.yaml'), yaml.dump(multichainContent));
   }, 50000);
 });

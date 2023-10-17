@@ -3,5 +3,5 @@ query:
   name: '@subql/query'
   version: '*'
 projects:
-  - project1.yaml
-  - project2.yaml
+  - project1.ts
+  - project2.ts

@@ -9,7 +9,7 @@ import {
   filterExtrinsic,
 } from './substrate';
 
-const ENDPOINT_POLKADOT = 'wss://polkadot.api.onfinality.io/public-ws';
+const ENDPOINT_POLKADOT = 'wss://rpc.polkadot.io';
 const ENDPOINT_KARURA = 'wss://karura-rpc-0.aca-api.network';
 
 jest.setTimeout(100000);
