@@ -3,7 +3,8 @@
   "version": "2.0.3-0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist && tsc -b"
+    "build": "rm -rf dist && tsc -b",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"testing/\""
   },
   "main": "dist/index.js",
   "license": "GPL-3.0",
