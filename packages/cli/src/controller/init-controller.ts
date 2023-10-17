@@ -195,8 +195,11 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
 
   if (isTs) {
     const tsManifest = (await fs.promises.readFile(tsPath, 'utf8')).toString();
-    const formattedEndpoint = `[ ${JSON.stringify(project.endpoint).slice(1, -1)} ]`;
-    manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint}`);
+    //converting string endpoint to array of string.
+    const formattedEndpoint = Array.isArray(project.endpoint)
+      ? project.endpoint.toString()
+      : `[ ${JSON.stringify(project.endpoint)} ]`;
+    manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint},`);
   } else {
     //load and write manifest(project.yaml)
     const yamlManifest = await fs.promises.readFile(yamlPath, 'utf8');
