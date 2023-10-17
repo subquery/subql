@@ -199,7 +199,7 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
     const formattedEndpoint = Array.isArray(project.endpoint)
       ? project.endpoint.toString()
       : `[ "${project.endpoint}" ]`;
-    manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint},`);
+    manifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint}`);
   } else {
     //load and write manifest(project.yaml)
     const yamlManifest = await fs.promises.readFile(yamlPath, 'utf8');
