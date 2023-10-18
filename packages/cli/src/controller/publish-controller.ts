@@ -225,7 +225,7 @@ export async function uploadFile(
       }
     })
     .catch((e) => {
-      throw new Error(`ipfs write Publish project to default failed, ${e}`);
+      throw new Error(`Publish project to default failed, ${e}`);
     });
 
   fileMap.set(contents.path, pendingCid);
