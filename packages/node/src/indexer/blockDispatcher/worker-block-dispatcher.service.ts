@@ -21,11 +21,13 @@ import {
   DefaultWorkerFunctions,
   baseWorkerFunctions,
   storeHostFunctions,
+  cacheHostFunctions,
   dynamicDsHostFunctions,
   PoiSyncService,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { Store } from '@subql/types-core';
+import { Cache, Store } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
@@ -40,6 +42,7 @@ type IndexerWorker = IIndexerWorker & {
 
 async function createIndexerWorker(
   store: Store,
+  cache: Cache,
   dynamicDsService: IDynamicDsService<SubstrateDatasource>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
   connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
@@ -58,6 +61,7 @@ async function createIndexerWorker(
       'getSpecFromMap',
     ],
     {
+      ...cacheHostFunctions(cache),
       ...storeHostFunctions(store),
       ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess:
@@ -89,6 +93,7 @@ export class WorkerBlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgadeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
+    cacheService: InMemoryCacheService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
@@ -113,6 +118,7 @@ export class WorkerBlockDispatcherService
       () =>
         createIndexerWorker(
           storeService.getStore(),
+          cacheService.getCache(),
           dynamicDsService,
           unfinalizedBlocksSevice,
           connectionPoolState,

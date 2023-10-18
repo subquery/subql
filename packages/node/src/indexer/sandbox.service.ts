@@ -9,8 +9,10 @@ import {
   NodeConfig,
   StoreService,
   ISubqueryProject,
+  InMemoryCacheService,
+  hostCacheToCache,
 } from '@subql/node-core';
-import { BaseDataSource, Store } from '@subql/types-core';
+import { BaseDataSource, Cache, Store } from '@subql/types-core';
 import { ApiService } from './api.service';
 
 /* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */
@@ -22,6 +24,7 @@ export class SandboxService<Api> {
     private readonly apiService: ApiService,
     @Inject(isMainThread ? StoreService : 'Null')
     private readonly storeService: StoreService,
+    private readonly cacheService: InMemoryCacheService,
     private readonly nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject,
   ) {}
@@ -31,11 +34,16 @@ export class SandboxService<Api> {
       ? this.storeService.getStore()
       : hostStoreToStore((global as any).host); // Provided in worker.ts
 
+    const cache: Cache = isMainThread
+      ? this.cacheService.getCache()
+      : hostCacheToCache((global as any).host);
+
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
+          cache,
           store,
           root: this.project.root,
           entry,

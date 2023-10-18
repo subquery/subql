@@ -19,7 +19,7 @@ function unwrapProxy<T = any>(input: T): T {
 }
 
 /* Unwraps any arguments to a function that are proxy objects */
-function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R): (...args: T) => R {
+export function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R): (...args: T) => R {
   return (...args: T) => fn(...(args.map(unwrapProxy) as T));
 }
 

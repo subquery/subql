@@ -9,6 +9,7 @@ import {
   WorkerConnectionPoolStateManager,
   ConnectionPoolStateManager,
   NodeConfig,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -77,6 +78,7 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
     },
     WorkerService,
     WorkerRuntimeService,
+    InMemoryCacheService,
   ],
   exports: [],
 })
