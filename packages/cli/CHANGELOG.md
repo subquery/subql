@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.0.5] - 2023-10-18
 ### Changed
 - Update error handling on deployment commands (#2108)
 
@@ -434,13 +436,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2021-04-19
 ### Added
--  annotation is now supported in 
-  - Can be added on any field of any entity except primary or foreign keys
-  - `@subql/node` will recognise it and create table with additional indexes to speed querying
-  - Allow query by indexed field via `global.store` (#271)
--  annotation is now supported in 
-  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+- annotation is now supported in
+- Can be added on any field of any entity except primary or foreign keys
+- `@subql/node` will recognise it and create table with additional indexes to speed querying
+- Allow query by indexed field via `global.store` (#271)
+- annotation is now supported in
+- We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+- Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.8.0] - 2021-03-11
 ### Added
@@ -479,7 +481,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.5...HEAD
+[4.0.5]: https://github.com/subquery/subql/compare/cli/4.0.4...cli/4.0.5
 [4.0.4]: https://github.com/subquery/subql/compare/cli/4.0.3...cli/4.0.4
 [4.0.3]: https://github.com/subquery/subql/compare/cli/4.0.2...cli/4.0.3
 [4.0.2]: https://github.com/subquery/subql/compare/cli/4.0.1...cli/4.0.2
