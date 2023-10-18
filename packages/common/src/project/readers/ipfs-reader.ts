@@ -35,7 +35,7 @@ export class IPFSReader implements Reader {
   async getProjectSchema(): Promise<unknown | undefined> {
     const projectYaml = await this.getFile(this.cid);
     if (projectYaml === undefined) {
-      throw new Error(`Fetch project from ipfs ${this.cid} got undefined`);
+      throw new Error(`Failed to fetch project from IPFS: ${this.cid}`);
     }
     return yaml.load(projectYaml);
   }
@@ -46,9 +46,9 @@ export class IPFSReader implements Reader {
         const resolvedFileName = fileName.replace('ipfs://', '');
         this.cache[fileName] = this.resultToBuffer(this.ipfs.cat(resolvedFileName));
       }
-      return this.cache[fileName];
+      return await this.cache[fileName];
     } catch (e) {
-      console.error(`Reader get file failed`, e);
+      console.error(`Failed to fetch file from IPFS: ${fileName}`, e);
       return undefined;
     }
   }
