@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Inject in-memory cache from main thread to projects (#2110)
+- Inject in-memory cache to sandbox (#2110)
 
 ## [3.0.7] - 2023-10-17
 ### Changed
