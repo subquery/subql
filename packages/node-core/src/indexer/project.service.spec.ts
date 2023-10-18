@@ -143,7 +143,7 @@ describe('BaseProjectService', () => {
           [
             1,
             {
-              dataSources: [{startBlock: 1}],
+              dataSources: [{startBlock: 1}, {startBlock: 200}],
             },
           ],
           [

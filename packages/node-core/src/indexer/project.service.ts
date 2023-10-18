@@ -309,12 +309,18 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
         });
 
       // sort events by block in ascending order, start events come before end events
-      events
-        .sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start))
-        .forEach((event) => {
-          event.start ? activeDataSources.add(event.ds) : activeDataSources.delete(event.ds);
-          dsMap.set(event.block, Array.from(activeDataSources));
-        });
+      const sortedEvents = events.sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start));
+
+      // remove all dsMap entries after this height because it will be replaced by current project datasources
+      const minStartHeight = sortedEvents[0].block;
+      [...dsMap.entries()].forEach(([height, ds]) => {
+        if (height >= minStartHeight) dsMap.delete(height);
+      });
+
+      sortedEvents.forEach((event) => {
+        event.start ? activeDataSources.add(event.ds) : activeDataSources.delete(event.ds);
+        dsMap.set(event.block, Array.from(activeDataSources));
+      });
     }
 
     return new BlockHeightMap(dsMap);
