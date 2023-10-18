@@ -3172,7 +3172,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": 3.1.2
+    "@subql/common": 3.1.3
     "@subql/types-ethereum": "workspace:*"
     "@typechain/ethers-v5": ^11.1.1
     "@types/ejs": ^3.1.2
@@ -3192,27 +3192,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@subql/common@npm:3.1.2"
-  dependencies:
-    "@subql/types-core": 0.1.1
-    axios: ^0.27.2
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: e979fac54089276de67a3a498bdf53396ac3726542d9f38350bced06f45921ab937a885a9c6cf183f3f5e7c82877c8ce9e27a5a5bf1f6fae6113baf68b4b3e55
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:3.1.3-0":
-  version: 3.1.3-0
-  resolution: "@subql/common@npm:3.1.3-0"
+"@subql/common@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@subql/common@npm:3.1.3"
   dependencies:
     "@subql/types-core": 0.1.2-0
     axios: ^0.27.2
@@ -3224,20 +3206,20 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: 7feacfae6ce121162bcd034944182b53b0f2182e1d516cff80dffdb5ec5d4ad11ecae1b79662deebd125722a9c77bceba0aea67808875eacc4300f761de9391f
+  checksum: 2e5f145a44913dda9d8cd5d9cfe1bbda6be8e46ef74b278191f67310ffbfeea6ce76c4ff79c5b6b4a9e21a93d60994bc31db29e7bd198cdafe4203723b59893c
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "@subql/node-core@npm:6.0.3"
+"@subql/node-core@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@subql/node-core@npm:6.0.4"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
     "@subql/apollo-links": ^1.0.2
-    "@subql/common": 3.1.3-0
+    "@subql/common": 3.1.3
     "@subql/testing": 2.1.0
     "@subql/types": 3.1.3-1
     "@subql/utils": 2.4.5-0
@@ -3255,7 +3237,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 0ca10dfd76b3f451e0a6480dc737dbb90b30805ad5137b15d6ca82a6d01f0441be980e6f7efb42f1ce2238e65b919a5319efed0d8987c1952f3764184687822b
+  checksum: 164a25af46d3ad47573bb8fb5e037707fe0835be995f24dff0210e0edd38589d7f15774f20b824bf8671d5c9f52bdca4dbecf854a27b78cb02459bd3d07f7ea3
   languageName: node
   linkType: hard
 
@@ -3271,9 +3253,9 @@ __metadata:
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
-    "@subql/common": 3.1.2
+    "@subql/common": 3.1.3
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^6.0.3
+    "@subql/node-core": ^6.0.4
     "@subql/testing": ^2.0.2
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13

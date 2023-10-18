@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.6] - 2023-10-18
+### Fixed
+- Update node-core, additional fix for store bulk methods failing with workers
+
 ## [3.0.5] - 2023-10-17
 ### Fixed
 - Update `@subql/node-core` to fix:
@@ -16,16 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.4] - 2023-10-12
 ### Changed
 - debug has changed from a boolean to a string to allow scoping debug log level (#2077)
-
 ### Fixed
 - Sync with node-core.
+  - Fix issues with using object destructing for store interface and workers
   - Fixed Poi migration performance issue.
   - Fixed AutoQueue timeout issue.
   - Fixed Poi sync could block DB IO and drop connection issue.
-
-## [3.0.4] - 2023-10-12
-### Fixed
-- Update `@subql/node-core` to fix issues with using object destructing for store interface and workers
 
 ## [3.0.3] - 2023-10-05
 ### Changed
@@ -285,7 +285,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.6...HEAD
+[3.0.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.5...node-ethereum/3.0.6
 [3.0.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.4...node-ethereum/3.0.5
 [3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
 [3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
