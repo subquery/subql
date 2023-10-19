@@ -12,10 +12,17 @@ import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
-import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
+import {Document, ParsedNode, parseDocument, YAMLMap, YAMLSeq} from 'yaml';
 import {BASE_TEMPLATE_URl, ENDPOINT_REG} from '../constants';
 import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
-import {errorHandle, extractFromTs, findReplace, prepareDirPath, validateEthereumTsManifest} from '../utils';
+import {
+  errorHandle,
+  extractFromTs,
+  findReplace,
+  prepareDirPath,
+  replaceArrayValueInTsManifest,
+  validateEthereumTsManifest,
+} from '../utils';
 
 export interface ExampleProjectInterface {
   name: string;
@@ -241,13 +248,19 @@ export async function prepareProjectScaffold(projectPath: string): Promise<void>
   // remove all existing abis & handler files
   await prepareDirPath(path.join(projectPath, 'abis/'), false);
   await prepareDirPath(path.join(projectPath, 'src/mappings/'), true);
+  let manifest: Document.Parsed<ParsedNode, true> | string;
 
-  // clean datasource
-  const manifest = parseDocument(
-    (await fs.promises.readFile(path.join(projectPath, DEFAULT_MANIFEST), 'utf8')) as string
-  );
-  manifest.set('dataSources', new YAMLSeq());
-  await fs.promises.writeFile(path.join(projectPath, DEFAULT_MANIFEST), manifest.toString(), 'utf8');
+  if (fs.existsSync(path.join(projectPath, DEFAULT_MANIFEST))) {
+    // clean datasource
+    manifest = parseDocument(await fs.promises.readFile(path.join(projectPath, DEFAULT_MANIFEST), 'utf8'));
+    manifest.set('dataSources', new YAMLSeq());
+    await fs.promises.writeFile(path.join(projectPath, DEFAULT_MANIFEST), manifest.toString(), 'utf8');
+  } else {
+    // clean dataSources
+    manifest = await fs.promises.readFile(path.join(projectPath, DEFAULT_TS_MANIFEST), 'utf8');
+    const updateManifest = replaceArrayValueInTsManifest(manifest, 'dataSources', '[]');
+    await fs.promises.writeFile(path.join(projectPath, DEFAULT_TS_MANIFEST), updateManifest, 'utf8');
+  }
 
   // remove handler file from index.ts
   fs.truncateSync(path.join(projectPath, 'src/index.ts'), 0);

@@ -19,7 +19,15 @@ import * as inquirer from 'inquirer';
 import {upperFirst, difference, pickBy} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {renderTemplate, resolveToAbsolutePath} from '../utils';
+import {
+  extractArrayValueFromTsManifest,
+  extractFromTs,
+  renderTemplate,
+  replaceArrayValueInTsManifest,
+  resolveToAbsolutePath,
+  splitArrayString,
+  tsStringify,
+} from '../utils';
 
 interface HandlerPropType {
   name: string;
@@ -124,14 +132,14 @@ export function generateHandlerName(name: string, abiName: string, type: 'tx' | 
   return `handle${upperFirst(name)}${upperFirst(abiName)}${upperFirst(type)}`;
 }
 
-export function constructDatasources(userInput: UserInput): EthereumDs {
+export function constructDatasources(userInput: UserInput, isTs: boolean): EthereumDs | string {
   const abiName = parseContractPath(userInput.abiPath).name;
   const formattedHandlers: SubqlRuntimeHandler[] = [];
 
   userInput.functions.forEach((fn) => {
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(fn.name, abiName, 'tx'),
-      kind: EthereumHandlerKind.Call,
+      kind: isTs ? 'EthereumHandlerKind.Call' : (EthereumHandlerKind.Call as any),
       filter: {
         function: fn.method,
       },
@@ -142,7 +150,7 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
   userInput.events.forEach((event) => {
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(event.name, abiName, 'log'),
-      kind: EthereumHandlerKind.Event,
+      kind: isTs ? 'EthereumHandlerKind.Event' : (EthereumHandlerKind.Event as any),
       filter: {
         topics: [event.method],
       },
@@ -152,6 +160,23 @@ export function constructDatasources(userInput: UserInput): EthereumDs {
 
   const assets = new Map([[abiName, {file: userInput.abiPath}]]);
 
+  if (isTs) {
+    const handlersString = tsStringify(formattedHandlers as any);
+
+    return `{
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: ${userInput.startBlock},
+      options: {
+        abi: '${abiName}',
+        ${userInput.address && `address: '${userInput.address}',`}
+      },
+      assets: new Map([['${abiName}', {file: '${userInput.abiPath}'}]]),
+      mapping: {
+        file: '${DEFAULT_HANDLER_BUILD_PATH}',
+        handlers: ${handlersString}
+      }
+    }`;
+  }
   return {
     kind: EthereumDatasourceKind.Runtime,
     startBlock: userInput.startBlock,
@@ -224,7 +249,7 @@ function filterExistingFragments<T extends Fragment | ConstructorFragment>(
 export function filterExistingMethods(
   eventFragments: Record<string, EventFragment>,
   functionFragments: Record<string, FunctionFragment>,
-  dataSources: EthereumDs[],
+  dataSources: EthereumDs[] | string,
   address: string | undefined
 ): [Record<string, EventFragment>, Record<string, FunctionFragment>] {
   const existingEvents: string[] = [];
@@ -232,16 +257,38 @@ export function filterExistingMethods(
 
   const casedInputAddress = address && address.toLowerCase();
 
-  dataSources
-    .filter((d) => {
-      if (casedInputAddress && d.options.address) {
-        return casedInputAddress.toLowerCase() === d.options.address.toLowerCase();
-      }
-      return casedInputAddress === d.options.address || (!casedInputAddress && !d.options.address);
-    })
-    .forEach((ds) => {
-      ds.mapping.handlers.forEach((handler) => {
-        // if (casedInputAddress !== ds.options.address) return;
+  if (typeof dataSources === 'string') {
+    const addressRegex = /address\s*:\s*['"]([^'"]+)['"]/;
+    splitArrayString(dataSources)
+      .filter((d) => {
+        const match = d.match(addressRegex);
+        return match && match[1].toLowerCase() === casedInputAddress;
+      })
+      .forEach((d) => {
+        const topicsReg = /topics:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
+        const functionReg = /function\s*:\s*['"]([^'"]+)['"]/;
+        const z = extractArrayValueFromTsManifest(d, 'handlers');
+
+        const regResult = extractFromTs(z, {
+          topics: topicsReg,
+          function: functionReg,
+        });
+        if (regResult.topics !== null) {
+          existingEvents.push(regResult.topics[0]);
+        }
+        if (regResult.function !== null) {
+          existingFunctions.push(regResult.function as string);
+        }
+      });
+  } else {
+    dataSources
+      .filter((d: EthereumDs) => {
+        if (casedInputAddress && d.options.address) {
+          return casedInputAddress.toLowerCase() === d.options.address.toLowerCase();
+        }
+        return casedInputAddress === d.options.address || (!casedInputAddress && !d.options.address);
+      })
+      .forEach((handler: any) => {
         if ('topics' in handler.filter) {
           // topic[0] is the method
           existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
@@ -250,7 +297,7 @@ export function filterExistingMethods(
           existingFunctions.push((handler.filter as EthereumTransactionFilter).function);
         }
       });
-    });
+  }
 
   return [
     filterExistingFragments<EventFragment>(eventFragments, existingEvents),
@@ -258,28 +305,49 @@ export function filterExistingMethods(
   ];
 }
 
-export async function getManifestData(projectPath: string, manifestPath: string): Promise<Document> {
-  const existingManifest = (await fs.promises.readFile(path.join(projectPath, manifestPath), 'utf8')) as string;
+export async function getManifestData(manifestPath: string): Promise<Document> {
+  const existingManifest = await fs.promises.readFile(path.join(manifestPath), 'utf8');
   return parseDocument(existingManifest);
 }
 
+export function prependDatasources(dsStr: string, toPendStr: string): string {
+  if (dsStr.trim().startsWith('[') && dsStr.trim().endsWith(']')) {
+    // Insert the object string right after the opening '['
+    return dsStr.trim().replace('[', `[${toPendStr},`);
+  } else {
+    throw new Error('Input string is not a valid JSON array string');
+  }
+}
 export async function generateManifest(
-  projectPath: string,
   manifestPath: string,
   userInput: UserInput,
-  existingManifestData: Document
+  existingManifestData: Document | string
 ): Promise<void> {
-  const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
-  if (!dsNode || !dsNode.items.length) {
-    // To ensure output is in yaml format
-    const cleanDs = new YAMLSeq();
-    cleanDs.add(constructDatasources(userInput));
-    existingManifestData.set('dataSources', cleanDs);
-  } else {
-    dsNode.add(constructDatasources(userInput));
-  }
+  // if it is still using a yaml config
 
-  await fs.promises.writeFile(path.join(projectPath, manifestPath), existingManifestData.toString(), 'utf8');
+  let inputDs: EthereumDs | string;
+
+  if (typeof existingManifestData !== 'string') {
+    inputDs = constructDatasources(userInput, false);
+    const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
+    if (!dsNode || !dsNode.items.length) {
+      // To ensure output is in yaml format
+      const cleanDs = new YAMLSeq();
+      cleanDs.add(inputDs);
+      existingManifestData.set('dataSources', cleanDs);
+    } else {
+      dsNode.add(inputDs);
+    }
+    await fs.promises.writeFile(path.join(manifestPath), existingManifestData.toString(), 'utf8');
+  } else {
+    inputDs = constructDatasources(userInput, true);
+
+    const extractedDs = extractFromTs(existingManifestData, {dataSources: undefined});
+    const v = prependDatasources(extractedDs.dataSources as string, inputDs as string);
+    const updateManifest = replaceArrayValueInTsManifest(existingManifestData, 'dataSources', v);
+
+    await fs.promises.writeFile(manifestPath, updateManifest, 'utf8');
+  }
 }
 
 export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod[]], abiName: string): AbiPropType {

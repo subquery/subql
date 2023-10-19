@@ -1,14 +1,16 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {DEFAULT_TS_MANIFEST} from '@subql/common';
 import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {resolveToAbsolutePath} from '../utils';
+import {extractFromTs, resolveToAbsolutePath, splitArrayString} from '../utils';
 import {
   constructDatasources,
   constructHandlerProps,
@@ -83,7 +85,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    const constructedDs = constructDatasources(mockUserInput);
+    const constructedDs = constructDatasources(mockUserInput, true);
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
     expect(constructedDs).toStrictEqual({
@@ -342,5 +344,135 @@ describe('CLI codegen:generate', () => {
   it('if absolutePath regex should not do anything', () => {
     const absolutePath = '/root/Downloads/example.file';
     expect(resolveToAbsolutePath(absolutePath)).toBe(absolutePath);
+  });
+  it('read ds from ts-manifest', async () => {
+    const projectPath = path.join(__dirname, '../../test/ts-manifest', DEFAULT_TS_MANIFEST);
+    const m = await fs.promises.readFile(projectPath, 'utf8');
+    expect(
+      extractFromTs(m, {
+        dataSources: undefined,
+      })
+    ).toStrictEqual({
+      dataSources:
+        '[\n        {\n            kind: EthereumDatasourceKind.Runtime,\n            startBlock: 4719568,\n\n            options: {\n                // Must be a key of assets\n                abi:\'erc20\',\n                // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n                address:\'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\'\n            },\n            assets: new Map([[\'erc20\', { file: \'./abis/erc20.abi.json\' }]]),\n            mapping: {\n                file: "./dist/index.js",\n                handlers: [\n                    {\n                        kind: EthereumHandlerKind.Call,\n                        handler: "handleTransaction",\n                        filter: {\n                            /**\n                             * The function can either be the function fragment or signature\n                             * function: \'0x095ea7b3\'\n                             * function: \'0x7ff36ab500000000000000000000000000000000000000000000000000000000\'\n                             */\n                            function: "approve(address spender, uint256 rawAmount)",\n                        },\n                    },\n                    {\n                        kind: EthereumHandlerKind.Event,\n                        handler: "handleLog",\n                        filter: {\n                            /**\n                             * Follows standard log filters https://docs.ethers.io/v5/concepts/events/\n                             * address: "0x60781C2586D68229fde47564546784ab3fACA982"\n                             */\n                            topics: ["Transfer(address indexed from, address indexed to, uint256 amount)"],\n                        },\n                    },\n                ],\n            },\n        },\n    ]',
+    });
+  });
+  it('filter existing methods', () => {
+    const mockDsStr =
+      '' +
+      '[\n' +
+      '{\n' +
+      "                kind: 'EthereumDatasourceKind.Runtime',\n" +
+      '                startBlock: 4719568,\n' +
+      '    \n' +
+      '                options: {\n' +
+      '                    // Must be a key of assets\n' +
+      "                    abi:'erc20',\n" +
+      '                    // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+      "                    address:'0x60781C2586D68229fde47564546784ab3fACA982'\n" +
+      '                },\n' +
+      "                assets: \"new Map([['erc20', { file: './abis/erc20.abi.json' }]])\",\n" +
+      '                mapping: {\n' +
+      '                    file: "./dist/index.js",\n' +
+      '                    handlers: [\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Call',\n" +
+      '                            handler: "handleTransaction",\n' +
+      '                            filter: {\n' +
+      '                                function: "approve(address,uint256)",\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Event',\n" +
+      '                            handler: "handleLog",\n' +
+      '                            filter: {\n' +
+      '                                topics: ["Transfer(address,address,uint256)"],\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                    ],\n' +
+      '                },\n' +
+      '            },\n' +
+      '        ]';
+
+    const casedInputAddress = '0x60781C2586D68229fde47564546784ab3fACA982'.toLowerCase();
+
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      eventFragments,
+      functionFragments,
+      mockDsStr,
+      casedInputAddress
+    );
+    // should filter out approve fn and transfer event
+    expect(Object.keys(cleanEvents).includes('Transfer')).toBe(false);
+    expect(Object.keys(cleanFunctions).includes('approval')).toBe(false);
+  });
+  it('splitArrayString', () => {
+    const dsArr =
+      '' +
+      '[\n' +
+      '{\n' +
+      "                kind: 'EthereumDatasourceKind.Runtime',\n" +
+      '                startBlock: 4719568,\n' +
+      '    \n' +
+      '                options: {\n' +
+      '                    // Must be a key of assets\n' +
+      "                    abi:'erc20',\n" +
+      '                    // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+      "                    address:'0x60781C2586D68229fde47564546784ab3fACA982'\n" +
+      '                },\n' +
+      "                assets: \"new Map([['erc20', { file: './abis/erc20.abi.json' }]])\",\n" +
+      '                mapping: {\n' +
+      '                    file: "./dist/index.js",\n' +
+      '                    handlers: [\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Call',\n" +
+      '                            handler: "handleTransaction",\n' +
+      '                            filter: {\n' +
+      '                                function: "approve(address,uint256)",\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Event',\n" +
+      '                            handler: "handleLog",\n' +
+      '                            filter: {\n' +
+      '                                topics: ["Transfer(address,address,uint256)"],\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                    ],\n' +
+      '                },\n' +
+      '            },\n' +
+      '{\n' +
+      "                kind: 'EthereumDatasourceKind.Runtime',\n" +
+      '                startBlock: 4719568,\n' +
+      '    \n' +
+      '                options: {\n' +
+      '                    // Must be a key of assets\n' +
+      "                    abi:'erc20',\n" +
+      '                    // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+      "                    address:'0x60781C2586D68229fde47564546784ab3fACA982'\n" +
+      '                },\n' +
+      "                assets: \"new Map([['erc20', { file: './abis/erc20.abi.json' }]])\",\n" +
+      '                mapping: {\n' +
+      '                    file: "./dist/index.js",\n' +
+      '                    handlers: [\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Call',\n" +
+      '                            handler: "handleTransaction",\n' +
+      '                            filter: {\n' +
+      '                                function: "approve(address,uint256)",\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Event',\n" +
+      '                            handler: "handleLog",\n' +
+      '                            filter: {\n' +
+      '                                topics: ["Transfer(address,address,uint256)"],\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                    ],\n' +
+      '                },\n' +
+      '            },\n' +
+      '        ]';
+    expect(splitArrayString(dsArr).length).toBe(2);
   });
 });

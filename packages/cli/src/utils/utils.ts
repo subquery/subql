@@ -5,6 +5,7 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
+import {SubqlRuntimeHandler} from '@subql/common-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
@@ -113,25 +114,129 @@ export function findReplace(manifest: string, replacer: RegExp, value: string): 
   return manifest.replace(replacer, value);
 }
 
+export function replaceArrayValueInTsManifest(manifest: string, key: string, newValue: string): string {
+  const start = manifest.indexOf(`${key}:`);
+  if (start === -1) return manifest; // If the value is not found, return the original manifest
+
+  let openBrackets = 0;
+  let startIndex, endIndex;
+
+  for (let i = start; i < manifest.length; i++) {
+    if (manifest[i] === '[') {
+      if (openBrackets === 0) startIndex = i;
+      openBrackets++;
+    } else if (manifest[i] === ']') {
+      openBrackets--;
+      if (openBrackets === 0) {
+        endIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (openBrackets !== 0) return manifest; // Unbalanced brackets, return the original manifest
+
+  // Replace the old array with the new value
+  return manifest.slice(0, startIndex) + newValue + manifest.slice(endIndex + 1);
+}
+
+//  JavaScript's regex engine does not support recursive patterns like (?1).
+//  This regex would work in engines that support recursion, such as PCRE (Perl-Compatible Regular Expressions).
+export function extractArrayValueFromTsManifest(manifest: string, value: string): string | null {
+  const start = manifest.indexOf(`${value}:`);
+  if (start === -1) return null;
+
+  let openBrackets = 0;
+  let startIndex, endIndex;
+
+  for (let i = start; i < manifest.length; i++) {
+    if (manifest[i] === '[') {
+      if (openBrackets === 0) startIndex = i;
+      openBrackets++;
+    } else if (manifest[i] === ']') {
+      openBrackets--;
+      if (openBrackets === 0) {
+        endIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (openBrackets !== 0) return null; // Unbalanced brackets
+
+  return manifest.slice(startIndex, endIndex + 1);
+}
+
+export function tsStringify(obj: SubqlRuntimeHandler | string, indent = 2, currentIndent = 0): string {
+  if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj === 'string' && obj.includes('EthereumHandlerKind')) {
+      return obj; // Return the string as-is without quotes
+    }
+    return JSON.stringify(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    const items = obj.map((item) => tsStringify(item, indent, currentIndent + indent));
+    return `[\n${items.map((item) => ' '.repeat(currentIndent + indent) + item).join(',\n')}\n${' '.repeat(
+      currentIndent
+    )}]`;
+  }
+
+  const entries = Object.entries(obj);
+  const result = entries.map(([key, value]) => {
+    const valueStr = tsStringify(value, indent, currentIndent + indent);
+    return `${' '.repeat(currentIndent + indent)}${key}: ${valueStr}`;
+  });
+
+  return `{\n${result.join(',\n')}\n${' '.repeat(currentIndent)}}`;
+}
+
 export function extractFromTs(
   manifest: string,
-  patterns: {[key: string]: RegExp}
+  patterns: {[key: string]: RegExp | undefined}
 ): {[key: string]: string | string[] | null} {
   const result: {[key: string]: string | string[] | null} = {};
-
+  const arrKeys = ['endpoint', 'topics'];
   for (const key in patterns) {
-    const match = manifest.match(patterns[key]);
+    if (key !== 'dataSources') {
+      const match = manifest.match(patterns[key]);
 
-    if (key === 'endpoint' && match) {
-      const inputStr = match[1].replace(/`/g, '"');
-      const jsonOutput = JSON5.parse(inputStr);
-      result[key] = Array.isArray(jsonOutput) ? jsonOutput : [jsonOutput];
+      if (arrKeys.includes(key) && match) {
+        const inputStr = match[1].replace(/`/g, '"');
+        const jsonOutput = JSON5.parse(inputStr);
+        result[key] = Array.isArray(jsonOutput) ? jsonOutput : [jsonOutput];
+      } else {
+        result[key] = match ? match[1] : null;
+      }
     } else {
-      result[key] = match ? match[1] : null;
+      result[key] = extractArrayValueFromTsManifest(manifest, 'dataSources');
     }
   }
 
   return result;
+}
+
+export function splitArrayString(arrayStr: string): string[] {
+  // Remove the starting and ending square brackets
+  const content = arrayStr.trim().slice(1, -1).trim();
+
+  let openBraces = 0;
+  let startIndex = 0;
+  const components: string[] = [];
+
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === '{') {
+      if (openBraces === 0) startIndex = i;
+      openBraces++;
+    } else if (content[i] === '}') {
+      openBraces--;
+      if (openBraces === 0) {
+        components.push(content.slice(startIndex, i + 1).trim());
+      }
+    }
+  }
+
+  return components;
 }
 
 // Cold validate on ts manifest, for generate scaffold command

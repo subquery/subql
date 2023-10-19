@@ -1,13 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
+import fs, {lstatSync} from 'fs';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_TS_MANIFEST, getProjectRootAndManifest} from '@subql/common';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, getProjectRootAndManifest} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
+import {Document, Node} from 'yaml';
 import {
   constructMethod,
   filterExistingMethods,
@@ -19,6 +20,7 @@ import {
   prepareAbiDirectory,
   prepareInputFragments,
 } from '../../controller/generate-controller';
+import {extractFromTs} from '../../utils';
 
 export interface SelectedMethod {
   name: string;
@@ -47,12 +49,29 @@ export default class Generate extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
     const {abiPath, address, events, file, functions, startBlock} = flags;
+    let manifest: string;
+    let root: string;
+    let isTs: boolean;
 
     const projectPath = path.resolve(file ?? process.cwd());
-    if (fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST))) {
-      throw new Error('generate does not yet support ts manifest');
+
+    if (lstatSync(projectPath).isDirectory()) {
+      if (fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST))) {
+        manifest = path.join(projectPath, DEFAULT_TS_MANIFEST);
+        isTs = true;
+      } else {
+        manifest = path.join(projectPath, DEFAULT_MANIFEST);
+        isTs = false;
+      }
+      root = projectPath;
+    } else if (lstatSync(projectPath).isFile()) {
+      const {dir, ext} = path.parse(projectPath);
+      root = dir;
+      isTs = extensionIsTs(ext);
+      manifest = projectPath;
+    } else {
+      this.error('Invalid manifest path');
     }
-    const {manifests, root} = getProjectRootAndManifest(projectPath);
 
     const abiName = parseContractPath(abiPath).name;
 
@@ -68,10 +87,21 @@ export default class Generate extends Command {
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-    // if the handler file already exists, should throw
+    let existingManifest: Document<Node<unknown>, true> | string;
+    let existingDs: EthereumDs[] | string;
+    // ts check if the file is ts
+    if (isTs) {
+      existingManifest = await fs.promises.readFile(manifest, 'utf8');
 
-    const existingManifest = await getManifestData(root, manifests[0]);
-    const existingDs = ((existingManifest.get('dataSources') as any)?.toJSON() as EthereumDs[]) ?? [];
+      const extractedDatasources = extractFromTs(existingManifest, {
+        dataSources: undefined,
+      });
+      existingDs = extractedDatasources.dataSources as string;
+    } else {
+      // yaml
+      existingManifest = await getManifestData(manifest);
+      existingDs = ((existingManifest.get('dataSources') as any)?.toJSON() as EthereumDs[]) ?? [];
+    }
 
     const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
     const selectedFunctions = await prepareInputFragments('function', functions, functionFragments, abiName);
@@ -90,7 +120,7 @@ export default class Generate extends Command {
         address: address,
       };
 
-      await generateManifest(root, manifests[0], userInput, existingManifest);
+      await generateManifest(manifest, userInput, existingManifest);
       await generateHandlers([constructedEvents, constructedFunctions], root, abiName);
 
       this.log('-----------Generated-----------');
