@@ -53,7 +53,7 @@ export class PoiService implements OnApplicationShutdown {
     }
     const latestSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
     const poiDataExist = await this._poiRepo?.model.findOne();
-    if (latestSyncedPoiHeight === undefined && poiDataExist !== undefined && poiDataExist !== null) {
+    if (latestSyncedPoiHeight === undefined && !!poiDataExist) {
       await this.migratePoi(schema);
     }
   }
