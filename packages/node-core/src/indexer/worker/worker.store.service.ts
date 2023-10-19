@@ -1,27 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import * as util from 'util';
 import {Store, FieldsExpression} from '@subql/types-core';
-import {instanceToPlain} from 'class-transformer';
-
-/**
- * Proxy objects aren't serializable between worker threads.
- * VM2 Seems to have objects come out as proxy objects.
- * NOTE do not use this on return types, if used on an entity it would strip all functions and have a plain object
- * */
-function unwrapProxy<T = any>(input: T): T {
-  if (!util.types.isProxy(input)) {
-    return input;
-  }
-
-  return instanceToPlain(input) as T;
-}
-
-/* Unwraps any arguments to a function that are proxy objects */
-export function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R): (...args: T) => R {
-  return (...args: T) => fn(...(args.map(unwrapProxy) as T));
-}
+import {unwrapProxyArgs} from './utils';
 
 export type HostStore = {
   // This matches the store interface

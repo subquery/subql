@@ -10,9 +10,8 @@ import {
   StoreService,
   ISubqueryProject,
   InMemoryCacheService,
-  hostCacheToCache,
 } from '@subql/node-core';
-import { BaseDataSource, Cache, Store } from '@subql/types-core';
+import { BaseDataSource, Store } from '@subql/types-core';
 import { ApiService } from './api.service';
 
 /* It would be nice to move this to node core but need to find a way to inject other things into the sandbox */
@@ -34,10 +33,7 @@ export class SandboxService<Api> {
       ? this.storeService.getStore()
       : hostStoreToStore((global as any).host); // Provided in worker.ts
 
-    const cache: Cache = isMainThread
-      ? this.cacheService.getCache()
-      : hostCacheToCache((global as any).host);
-
+    const cache = this.cacheService.getCache();
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {

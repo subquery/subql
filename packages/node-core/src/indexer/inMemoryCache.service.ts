@@ -4,6 +4,11 @@
 import {Injectable} from '@nestjs/common';
 import {Cache} from '@subql/types-core';
 
+/**
+ * The `InMemoryCacheService` class provides an in-memory caching solution.
+ * It's designed to temporarily store data that doesn't need to be persisted in a database.
+ * The service is injectable and designed to be used within the sandbox
+ */
 @Injectable()
 export class InMemoryCacheService {
   private cache: Record<string, any> = {};

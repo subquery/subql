@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Cache} from '@subql/types-core';
-import {unwrapProxyArgs} from './worker.store.service';
+import {unwrapProxyArgs} from './utils';
 
 export type HostCache = {
   cacheSet(key: string, value: any): Promise<void>;
