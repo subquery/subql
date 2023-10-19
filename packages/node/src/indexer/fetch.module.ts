@@ -15,6 +15,7 @@ import {
   ConnectionPoolStateManager,
   IProjectUpgradeService,
   PoiSyncService,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -35,6 +36,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
   providers: [
+    InMemoryCacheService,
     StoreService,
     StoreCacheService,
     ApiService,
@@ -57,6 +59,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         apiService: ApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
+        cacheService: InMemoryCacheService,
         storeService: StoreService,
         storeCacheService: StoreCacheService,
         poiService: PoiService,
@@ -73,6 +76,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               projectService,
               projectUpgradeService,
               smartBatchService,
+              cacheService,
               storeService,
               storeCacheService,
               poiService,
@@ -105,6 +109,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ApiService,
         IndexerManager,
         SmartBatchService,
+        InMemoryCacheService,
         StoreService,
         StoreCacheService,
         PoiService,
