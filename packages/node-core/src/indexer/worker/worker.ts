@@ -10,6 +10,7 @@ import {getLogger} from '../../logger';
 import {waitForBatchSize} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {WorkerHost, AsyncMethods} from './worker.builder';
+import {HostCache, hostCacheKeys} from './worker.cache.service';
 import {HostConnectionPoolState, hostConnectionPoolStateKeys} from './worker.connectionPoolState.manager';
 import {HostDynamicDS, hostDynamicDsKeys} from './worker.dynamic-ds.service';
 import {BaseWorkerService, WorkerStatusResponse} from './worker.service';
@@ -19,7 +20,7 @@ import {HostUnfinalizedBlocks, hostUnfinalizedBlocksKeys} from './worker.unfinal
 export type DefaultWorkerFunctions<
   ApiConnection /* ApiPromiseConnection*/,
   DS extends BaseDataSource = BaseDataSource
-> = HostStore & HostDynamicDS<DS> & HostUnfinalizedBlocks & HostConnectionPoolState<ApiConnection>;
+> = HostCache & HostStore & HostDynamicDS<DS> & HostUnfinalizedBlocks & HostConnectionPoolState<ApiConnection>;
 
 let workerApp: INestApplication;
 let workerService: BaseWorkerService<any, any>;
@@ -139,6 +140,7 @@ export function createWorkerHost<
       // Have this first to not override the default functions
       ...extraWorkerFns,
       ...hostStoreKeys,
+      ...hostCacheKeys,
       ...hostDynamicDsKeys,
       ...hostUnfinalizedBlocksKeys,
       ...hostConnectionPoolStateKeys,
