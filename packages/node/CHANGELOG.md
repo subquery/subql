@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Inject in-memory cache to sandbox (#2110)
 
+## [3.0.8] - 2023-10-18
+### Fixed
+- Update node-core, fix store bulk methods failing with workers
+
 ## [3.0.7] - 2023-10-17
 ### Changed
 - Update with node-core 6.0.3
@@ -1013,7 +1017,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.7...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.8...HEAD
+[3.0.8]: https://github.com/subquery/subql/compare/node/3.0.7...node/3.0.8
 [3.0.7]: https://github.com/subquery/subql/compare/node/3.0.6...node/3.0.7
 [3.0.6]: https://github.com/subquery/subql/compare/node/3.0.5...node/3.0.6
 [3.0.5]: https://github.com/subquery/subql/compare/node/3.0.4...node/3.0.5

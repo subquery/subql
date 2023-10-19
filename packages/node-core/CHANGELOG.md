@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Added
 - Add in-memory cache to be used in sandbox #(2110)
 
+## [6.0.4] - 2023-10-18
+### Fixed
+- Store bulk methods failing with workers (#2107)
+
 ## [6.0.3] - 2023-10-17
 ### Fixed
 - Dictionary validation error causing application exit (#2101)
@@ -439,7 +443,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.0.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.0.4...HEAD
+[6.0.4]: https://github.com/subquery/subql/compare/node-core/6.0.3...node-core/6.0.4
 [6.0.3]: https://github.com/subquery/subql/compare/node-core/6.0.2...node-core/6.0.3
 [6.0.2]: https://github.com/subquery/subql/compare/node-core/6.0.1...node-core/6.0.2
 [6.0.1]: https://github.com/subquery/subql/compare/node-core/6.0.0...node-core/6.0.1

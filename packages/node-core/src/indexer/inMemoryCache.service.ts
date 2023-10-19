@@ -10,19 +10,18 @@ import {Cache} from '@subql/types-core';
  * The service is injectable and designed to be used within the sandbox
  */
 @Injectable()
-export class InMemoryCacheService {
-  private cache: Record<string, any> = {};
+export class InMemoryCacheService<T extends Record<string, any> = Record<string, any>> {
+  private cache: T = {} as T;
 
-  getCache(): Cache {
+  getCache(): Cache<T> {
     return {
       //eslint-disable-next-line @typescript-eslint/require-await
-      get: async <D = string>(key: string): Promise<D | undefined> => {
-        if (this.cache[key]) {
-          return this.cache[key] as D;
-        }
+      get: async (key: keyof T): Promise<T[keyof T] | undefined> => {
+        return this.cache[key];
       },
+
       //eslint-disable-next-line @typescript-eslint/require-await
-      set: async <D = string>(key: string, value: D): Promise<void> => {
+      set: async (key: keyof T, value: T[keyof T]): Promise<void> => {
         this.cache[key] = value;
       },
     };

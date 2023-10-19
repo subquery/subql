@@ -23,14 +23,14 @@ describe('InMemoryCacheService', () => {
     expect(fetched_string).toEqual('testValue');
 
     // Test with number
-    await cache.set<number>('testKey2', 123);
-    const fetched_number = await cache.get<number>('testKey2');
+    await cache.set('testKey2', 123);
+    const fetched_number = await cache.get('testKey2');
     expect(fetched_number).toEqual(123);
 
     // Test with object
     const obj = {prop: 'value'};
-    await cache.set<object>('testKey3', obj);
-    const fetched_object = await cache.get<object>('testKey3');
+    await cache.set('testKey3', obj);
+    const fetched_object = await cache.get('testKey3');
     expect(fetched_object).toEqual(obj);
   });
 
