@@ -140,12 +140,11 @@ export class PoiService implements OnApplicationShutdown {
           }
         }
         await tx.commit();
-        logger.info(`Successful migrate Poi`);
+        logger.info('Migrating POI completed.');
         if (checkResult?.mmr_exists) {
           logger.info(`If file based mmr were used previously, it can be clean up mannually`);
         }
       }
-      logger.info('Migrating POI completed.');
     } catch (e) {
       throw new Error(`Failed to migrate poi table. {e}`);
     }
