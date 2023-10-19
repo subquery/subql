@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed poi migration init check, and improve logging 
+
 ## [6.0.4] - 2023-10-18
 ### Fixed
 - Store bulk methods failing with workers (#2107)
