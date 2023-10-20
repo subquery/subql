@@ -6,13 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-10-20
+### Added
+- Inject in-memory cache to sandbox
+
+### Fixed
+- Bump with `@subq/node-core` 3.1.0 , fixed poi migration init check, and improve logging
+
 ## [3.0.6] - 2023-10-18
 ### Fixed
 - Update node-core, additional fix for store bulk methods failing with workers
 
 ## [3.0.5] - 2023-10-17
 ### Fixed
-- Update `@subql/node-core` to fix:
+- Update 
   - Dictionary validation error causing application exit (#2101)
   - Auto queue flush getting the queue into a bad state (#2103)
   - Fix getCache could not been cleared after reindex, and could have been re-used and lead to error, such as syncPoi
@@ -20,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.4] - 2023-10-12
 ### Changed
 - debug has changed from a boolean to a string to allow scoping debug log level (#2077)
+
 ### Fixed
 - Sync with node-core.
   - Fix issues with using object destructing for store interface and workers
@@ -285,10 +293,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.6...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.0...HEAD
+[3.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.6...node-ethereum/3.1.0
 [3.0.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.5...node-ethereum/3.0.6
 [3.0.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.4...node-ethereum/3.0.5
-[3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
 [3.0.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.3...node-ethereum/3.0.4
 [3.0.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.2...node-ethereum/3.0.3
 [3.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.1...node-ethereum/3.0.2

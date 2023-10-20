@@ -3210,9 +3210,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^6.0.4":
-  version: 6.0.4
-  resolution: "@subql/node-core@npm:6.0.4"
+"@subql/node-core@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "@subql/node-core@npm:6.1.0"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
@@ -3221,7 +3221,7 @@ __metadata:
     "@subql/apollo-links": ^1.0.2
     "@subql/common": 3.1.3
     "@subql/testing": 2.1.0
-    "@subql/types": 3.1.3-1
+    "@subql/types": 3.2.0
     "@subql/utils": 2.4.5-0
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@willsoto/nestjs-prometheus": ^5.4.0
@@ -3237,7 +3237,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 164a25af46d3ad47573bb8fb5e037707fe0835be995f24dff0210e0edd38589d7f15774f20b824bf8671d5c9f52bdca4dbecf854a27b78cb02459bd3d07f7ea3
+  checksum: 935abc9b53644eb7f2b87ae93764e07e03c3bfee00f90b922fc33224ce76c720d163b30d36b3f71f25ee62d085287b4df361d43744c4e682dc7a3ef29032343e
   languageName: node
   linkType: hard
 
@@ -3255,7 +3255,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": 3.1.3
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^6.0.4
+    "@subql/node-core": ^6.1.0
     "@subql/testing": ^2.0.2
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -3304,15 +3304,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.1.1":
-  version: 0.1.1
-  resolution: "@subql/types-core@npm:0.1.1"
-  dependencies:
-    package-json-type: ^1.0.3
-  checksum: 6a88547e5091795d2f9f24b5373ce531066bc04602b18f05cad77c5d1953523be479801447cd85e4f03468997e988b8c853fdb409631f8a396525cc723978afa
-  languageName: node
-  linkType: hard
-
 "@subql/types-core@npm:0.1.2-0, @subql/types-core@npm:^0.1.2-0":
   version: 0.1.2-0
   resolution: "@subql/types-core@npm:0.1.2-0"
@@ -3322,23 +3313,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-core@npm:0.2.0":
+  version: 0.2.0
+  resolution: "@subql/types-core@npm:0.2.0"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: ef538b84cb0c32f41269fdb6708e9e0657da9e7f0469ef24882e0b392a797eaf35364a7ef9368c0c89b799d6522a66cbf17781deae1edfdc8a17f9cd43aed95f
+  languageName: node
+  linkType: hard
+
 "@subql/types-ethereum@workspace:*, @subql/types-ethereum@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types-ethereum@workspace:packages/types"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-    "@subql/types-core": 0.1.1
+    "@subql/types-core": 0.2.0
   languageName: unknown
   linkType: soft
 
-"@subql/types@npm:3.1.3-1":
-  version: 3.1.3-1
-  resolution: "@subql/types@npm:3.1.3-1"
+"@subql/types@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@subql/types@npm:3.2.0"
   dependencies:
-    "@subql/types-core": 0.1.2-0
+    "@subql/types-core": 0.2.0
   peerDependencies:
     "@polkadot/api": ^10
-  checksum: ce803e2dac06e242ba4d5444eb4d665e0f9a63e94d964fcb283f2ffe0749567c7be8805c0ec26247f2523f901528da0b63da16efbddbe7443d204bf2869ff03a
+  checksum: dbd592a2b7322bcea301bbcd320e1706f0af67330f8a0bf7893f5de5d7df58e139a635a69b4d0a1fc14b7b54972d898ebe54c8303ae3a139db892d673f74cc02
   languageName: node
   linkType: hard
 

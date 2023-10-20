@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-10-20
+### Changed
+- Version bump with `types-core` 0.2.0
+
 ## [3.0.2] - 2023-10-05
 ### Fixed
 - Fixed RuntimeDatasourceTemplate's generic typing (#177)
@@ -75,7 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types/3.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.1.0...HEAD
+[3.1.0]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.0.2...types-ethereum/3.1.0
 [3.0.2]: https://github.com/subquery/subql-ethereum/compare/types/3.0.1...types/3.0.2
 [3.0.1]: https://github.com/subquery/subql-ethereum/compare/types/3.0.0...types/3.0.1
 [3.0.0]: https://github.com/subquery/subql-ethereum/compare/types/2.2.5...types/3.0.0

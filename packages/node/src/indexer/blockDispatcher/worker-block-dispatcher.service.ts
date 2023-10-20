@@ -21,12 +21,14 @@ import {
   connectionPoolStateHostFunctions,
   baseWorkerFunctions,
   storeHostFunctions,
+  cacheHostFunctions,
   dynamicDsHostFunctions,
   IProjectUpgradeService,
   HostUnfinalizedBlocks,
   PoiSyncService,
+  InMemoryCacheService,
 } from '@subql/node-core';
-import { Store } from '@subql/types-core';
+import { Cache, Store } from '@subql/types-core';
 import {
   EthereumProjectDs,
   SubqueryProject,
@@ -43,6 +45,7 @@ type IndexerWorker = IIndexerWorker & {
 
 async function createIndexerWorker(
   store: Store,
+  cache: Cache,
   dynamicDsService: IDynamicDsService<EthereumProjectDs>,
   unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
   connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
@@ -56,6 +59,7 @@ async function createIndexerWorker(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [...baseWorkerFunctions, 'initWorker'],
     {
+      ...cacheHostFunctions(cache),
       ...storeHostFunctions(store),
       ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess:
@@ -85,6 +89,7 @@ export class WorkerBlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgadeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
+    cacheService: InMemoryCacheService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
@@ -109,6 +114,7 @@ export class WorkerBlockDispatcherService
       () =>
         createIndexerWorker(
           storeService.getStore(),
+          cacheService.getCache(),
           dynamicDsService,
           unfinalizedBlocksSevice,
           connectionPoolState,

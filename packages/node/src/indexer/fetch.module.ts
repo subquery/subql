@@ -16,6 +16,7 @@ import {
   StoreCacheService,
   IProjectUpgradeService,
   PoiSyncService,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from '../ethereum/api.connection';
@@ -35,6 +36,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
   providers: [
+    InMemoryCacheService,
     StoreService,
     StoreCacheService,
     {
@@ -88,6 +90,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         apiService: EthereumApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
+        cacheService: InMemoryCacheService,
         storeService: StoreService,
         storeCacheService: StoreCacheService,
         poiService: PoiService,
@@ -104,6 +107,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               projectService,
               projectUpgradeService,
               smartBatchService,
+              cacheService,
               storeService,
               storeCacheService,
               poiService,
@@ -136,6 +140,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ApiService,
         IndexerManager,
         SmartBatchService,
+        InMemoryCacheService,
         StoreService,
         StoreCacheService,
         PoiService,
