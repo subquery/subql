@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Fixed
+### Added
 - ts-manifest compatibility with `codegen:generate` command (#2111)
 ### Changed
 - Removed `validate` command from cli, also removed from `@subql/validator` from dependencies (#2121)

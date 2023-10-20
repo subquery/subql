@@ -13,3 +13,4 @@ export const BASE_TEMPLATE_URl = 'https://templates.subquery.network';
 
 // Regex for cold tsManifest
 export const ENDPOINT_REG = /endpoint:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
+export const ADDRESS_REG = /address\s*:\s*['"]([^'"]+)['"]/;

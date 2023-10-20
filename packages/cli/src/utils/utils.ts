@@ -5,6 +5,7 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST} from '@subql/common';
 import {SubqlRuntimeHandler} from '@subql/common-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
@@ -114,12 +115,15 @@ export function findReplace(manifest: string, replacer: RegExp, value: string): 
   return manifest.replace(replacer, value);
 }
 
-export function replaceArrayValueInTsManifest(manifest: string, key: string, newValue: string): string {
+export function findArrayIndicesTsManifest(manifest: string, key: string): [number, number] {
+  //  JavaScript's regex engine does not support recursive patterns like (?1).
+  //  This regex would work in engines that support recursion, such as PCRE (Perl-Compatible Regular Expressions).
+
   const start = manifest.indexOf(`${key}:`);
-  if (start === -1) return manifest; // If the value is not found, return the original manifest
+  if (start === -1) throw new Error(`${key} not found`);
 
   let openBrackets = 0;
-  let startIndex, endIndex;
+  let startIndex: number, endIndex: number;
 
   for (let i = start; i < manifest.length; i++) {
     if (manifest[i] === '[') {
@@ -134,36 +138,16 @@ export function replaceArrayValueInTsManifest(manifest: string, key: string, new
     }
   }
 
-  if (openBrackets !== 0) return manifest; // Unbalanced brackets, return the original manifest
+  if (openBrackets !== 0) throw new Error(`${key} contains unbalanced brackets`);
 
-  // Replace the old array with the new value
+  return [startIndex, endIndex];
+}
+export function replaceArrayValueInTsManifest(manifest: string, key: string, newValue: string): string {
+  const [startIndex, endIndex] = findArrayIndicesTsManifest(manifest, key);
   return manifest.slice(0, startIndex) + newValue + manifest.slice(endIndex + 1);
 }
-
-//  JavaScript's regex engine does not support recursive patterns like (?1).
-//  This regex would work in engines that support recursion, such as PCRE (Perl-Compatible Regular Expressions).
-export function extractArrayValueFromTsManifest(manifest: string, value: string): string | null {
-  const start = manifest.indexOf(`${value}:`);
-  if (start === -1) return null;
-
-  let openBrackets = 0;
-  let startIndex, endIndex;
-
-  for (let i = start; i < manifest.length; i++) {
-    if (manifest[i] === '[') {
-      if (openBrackets === 0) startIndex = i;
-      openBrackets++;
-    } else if (manifest[i] === ']') {
-      openBrackets--;
-      if (openBrackets === 0) {
-        endIndex = i;
-        break;
-      }
-    }
-  }
-
-  if (openBrackets !== 0) return null; // Unbalanced brackets
-
+export function extractArrayValueFromTsManifest(manifest: string, key: string): string | null {
+  const [startIndex, endIndex] = findArrayIndicesTsManifest(manifest, key);
   return manifest.slice(startIndex, endIndex + 1);
 }
 
@@ -197,8 +181,9 @@ export function extractFromTs(
 ): {[key: string]: string | string[] | null} {
   const result: {[key: string]: string | string[] | null} = {};
   const arrKeys = ['endpoint', 'topics'];
+  const nestArr = ['dataSources', 'handlers'];
   for (const key in patterns) {
-    if (key !== 'dataSources') {
+    if (!nestArr.includes(key)) {
       const match = manifest.match(patterns[key]);
 
       if (arrKeys.includes(key) && match) {
@@ -209,7 +194,7 @@ export function extractFromTs(
         result[key] = match ? match[1] : null;
       }
     } else {
-      result[key] = extractArrayValueFromTsManifest(manifest, 'dataSources');
+      result[key] = extractArrayValueFromTsManifest(manifest, key);
     }
   }
 
@@ -244,4 +229,12 @@ export function validateEthereumTsManifest(manifest: string): boolean {
   const typePattern = /@subql\/types-ethereum/;
   const nodePattern = /@subql\/node-ethereum/;
   return !!typePattern.test(manifest) && !!nodePattern.test(manifest);
+}
+
+export function defaultYamlManifestPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_MANIFEST);
+}
+
+export function defaultTSManifestPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_TS_MANIFEST);
 }

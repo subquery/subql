@@ -12,10 +12,12 @@ import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
-import {Document, ParsedNode, parseDocument, YAMLMap, YAMLSeq} from 'yaml';
+import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
 import {BASE_TEMPLATE_URl, ENDPOINT_REG} from '../constants';
 import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 import {
+  defaultTSManifestPath,
+  defaultYamlManifestPath,
   errorHandle,
   extractFromTs,
   findReplace,
@@ -147,15 +149,17 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
   let endpoint: string | string[];
+  const defaultTsPath = defaultTSManifestPath(projectPath);
+  const defaultYamlPath = defaultYamlManifestPath(projectPath);
 
-  if (fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST))) {
-    const tsManifest = await fs.promises.readFile(path.join(projectPath, DEFAULT_TS_MANIFEST), 'utf8');
+  if (fs.existsSync(defaultTsPath)) {
+    const tsManifest = await fs.promises.readFile(defaultTsPath, 'utf8');
     const extractedTsValues = extractFromTs(tsManifest.toString(), {
       endpoint: ENDPOINT_REG,
     });
     endpoint = extractedTsValues.endpoint;
   } else {
-    const yamlManifest = await fs.promises.readFile(path.join(projectPath, DEFAULT_MANIFEST), 'utf8');
+    const yamlManifest = await fs.promises.readFile(defaultYamlPath, 'utf8');
     const extractedYamlValues = parseDocument(yamlManifest).toJS() as ProjectManifestV1_0_0;
     endpoint = extractedYamlValues.network.endpoint;
   }
@@ -194,8 +198,8 @@ export async function preparePackage(projectPath: string, project: ProjectSpecBa
 
 export async function prepareManifest(projectPath: string, project: ProjectSpecBase): Promise<void> {
   //load and write manifest(project.ts/project.yaml)
-  const tsPath = path.join(`${projectPath}`, DEFAULT_TS_MANIFEST);
-  const yamlPath = path.join(`${projectPath}`, DEFAULT_MANIFEST);
+  const tsPath = defaultTSManifestPath(projectPath);
+  const yamlPath = defaultYamlManifestPath(projectPath);
   let manifestData: string;
 
   const isTs = fs.existsSync(tsPath);
@@ -248,22 +252,35 @@ export async function prepareProjectScaffold(projectPath: string): Promise<void>
   // remove all existing abis & handler files
   await prepareDirPath(path.join(projectPath, 'abis/'), false);
   await prepareDirPath(path.join(projectPath, 'src/mappings/'), true);
-  let manifest: Document.Parsed<ParsedNode, true> | string;
 
-  if (fs.existsSync(path.join(projectPath, DEFAULT_MANIFEST))) {
-    // clean datasource
-    manifest = parseDocument(await fs.promises.readFile(path.join(projectPath, DEFAULT_MANIFEST), 'utf8'));
-    manifest.set('dataSources', new YAMLSeq());
-    await fs.promises.writeFile(path.join(projectPath, DEFAULT_MANIFEST), manifest.toString(), 'utf8');
-  } else {
-    // clean dataSources
-    manifest = await fs.promises.readFile(path.join(projectPath, DEFAULT_TS_MANIFEST), 'utf8');
-    const updateManifest = replaceArrayValueInTsManifest(manifest, 'dataSources', '[]');
-    await fs.promises.writeFile(path.join(projectPath, DEFAULT_TS_MANIFEST), updateManifest, 'utf8');
+  const defaultTsPath = defaultTSManifestPath(projectPath);
+
+  try {
+    //  clean dataSources
+    if (fs.existsSync(defaultTsPath)) {
+      // ts check should be first
+      await prepareProjectScaffoldTS(defaultTsPath);
+    } else {
+      await prepareProjectScaffoldYAML(defaultYamlManifestPath(projectPath));
+    }
+  } catch (e) {
+    throw new Error('Failed to prepare project scaffold');
   }
 
   // remove handler file from index.ts
   fs.truncateSync(path.join(projectPath, 'src/index.ts'), 0);
+}
+
+async function prepareProjectScaffoldTS(defaultTsPath: string): Promise<void> {
+  const manifest = await fs.promises.readFile(defaultTsPath, 'utf8');
+  const updateManifest = replaceArrayValueInTsManifest(manifest, 'dataSources', '[]');
+  await fs.promises.writeFile(defaultTsPath, updateManifest, 'utf8');
+}
+
+async function prepareProjectScaffoldYAML(defaultYamlPath: string): Promise<void> {
+  const manifest = parseDocument(await fs.promises.readFile(defaultYamlPath, 'utf8'));
+  manifest.set('dataSources', new YAMLSeq());
+  await fs.promises.writeFile(defaultYamlPath, manifest.toString(), 'utf8');
 }
 
 export async function validateEthereumProjectManifest(projectPath: string): Promise<boolean> {

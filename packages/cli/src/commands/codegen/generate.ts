@@ -5,20 +5,22 @@ import fs, {lstatSync} from 'fs';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, getProjectRootAndManifest} from '@subql/common';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
-import {Document, Node} from 'yaml';
 import {
   constructMethod,
   filterExistingMethods,
   filterObjectsByStateMutability,
   generateHandlers,
-  generateManifest,
+  generateManifestTs,
+  generateManifestYaml,
   getAbiInterface,
   getManifestData,
   prepareAbiDirectory,
   prepareInputFragments,
+  tsExtractor,
+  yamlExtractor,
 } from '../../controller/generate-controller';
 import {extractFromTs} from '../../utils';
 
@@ -49,8 +51,7 @@ export default class Generate extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
     const {abiPath, address, events, file, functions, startBlock} = flags;
-    let manifest: string;
-    let root: string;
+    let manifest: string, root: string;
     let isTs: boolean;
 
     const projectPath = path.resolve(file ?? process.cwd());
@@ -87,40 +88,68 @@ export default class Generate extends Command {
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-    let existingManifest: Document<Node<unknown>, true> | string;
-    let existingDs: EthereumDs[] | string;
-    // ts check if the file is ts
-    if (isTs) {
-      existingManifest = await fs.promises.readFile(manifest, 'utf8');
-
-      const extractedDatasources = extractFromTs(existingManifest, {
-        dataSources: undefined,
-      });
-      existingDs = extractedDatasources.dataSources as string;
-    } else {
-      // yaml
-      existingManifest = await getManifestData(manifest);
-      existingDs = ((existingManifest.get('dataSources') as any)?.toJSON() as EthereumDs[]) ?? [];
-    }
-
     const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
     const selectedFunctions = await prepareInputFragments('function', functions, functionFragments, abiName);
 
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(selectedEvents, selectedFunctions, existingDs, address);
-
-    const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
-    const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
+    let cleanEvents: Record<string, EventFragment>,
+      cleanFunctions: Record<string, FunctionFragment>,
+      constructedEvents: SelectedMethod[],
+      constructedFunctions: SelectedMethod[];
 
     try {
-      const userInput: UserInput = {
-        startBlock: startBlock,
-        functions: constructedFunctions,
-        events: constructedEvents,
-        abiPath: `./abis/${abiFileName}`,
-        address: address,
-      };
+      if (isTs) {
+        const existingManifest = await fs.promises.readFile(manifest, 'utf8');
+        const extractedDatasources = extractFromTs(existingManifest, {
+          dataSources: undefined,
+        });
+        const existingDs = extractedDatasources.dataSources as string;
+        const [cleanEvents, cleanFunctions] = filterExistingMethods(
+          selectedEvents,
+          selectedFunctions,
+          existingDs,
+          address,
+          tsExtractor
+        );
 
-      await generateManifest(manifest, userInput, existingManifest);
+        constructedEvents = constructMethod<EventFragment>(cleanEvents);
+        constructedFunctions = constructMethod<FunctionFragment>(cleanFunctions);
+
+        const userInput: UserInput = {
+          startBlock: startBlock,
+          functions: constructedFunctions,
+          events: constructedEvents,
+          abiPath: `./abis/${abiFileName}`,
+          address: address,
+        };
+
+        await generateManifestTs(manifest, userInput, existingManifest);
+      } else {
+        // yaml
+        const existingManifest = await getManifestData(manifest);
+        const existingDs = ((existingManifest.get('dataSources') as any)?.toJSON() as EthereumDs[]) ?? [];
+
+        [cleanEvents, cleanFunctions] = filterExistingMethods(
+          selectedEvents,
+          selectedFunctions,
+          existingDs,
+          address,
+          yamlExtractor
+        );
+
+        constructedEvents = constructMethod<EventFragment>(cleanEvents);
+        constructedFunctions = constructMethod<FunctionFragment>(cleanFunctions);
+
+        const userInput: UserInput = {
+          startBlock: startBlock,
+          functions: constructedFunctions,
+          events: constructedEvents,
+          abiPath: `./abis/${abiFileName}`,
+          address: address,
+        };
+
+        await generateManifestYaml(manifest, userInput, existingManifest);
+      }
+
       await generateHandlers([constructedEvents, constructedFunctions], root, abiName);
 
       this.log('-----------Generated-----------');
@@ -132,7 +161,7 @@ export default class Generate extends Command {
       });
       this.log('-------------------------------');
     } catch (e) {
-      throw new Error(e.message);
+      this.error(e);
     }
   }
 }
