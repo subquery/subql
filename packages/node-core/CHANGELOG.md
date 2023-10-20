@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## Added
+
+## [6.1.0] - 2023-10-20
+### Added
 - Add in-memory cache to be used in sandbox #(2110)
 
 ### Fixed
-- Fixed poi migration init check, and improve logging 
+- Fixed poi migration init check, and improve logging (#2112)
 
 ## [6.0.4] - 2023-10-18
 ### Fixed
@@ -446,7 +448,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.0.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.1.0...HEAD
+[6.1.0]: https://github.com/subquery/subql/compare/node-core/6.0.4...node-core/6.1.0
 [6.0.4]: https://github.com/subquery/subql/compare/node-core/6.0.3...node-core/6.0.4
 [6.0.3]: https://github.com/subquery/subql/compare/node-core/6.0.2...node-core/6.0.3
 [6.0.2]: https://github.com/subquery/subql/compare/node-core/6.0.1...node-core/6.0.2
