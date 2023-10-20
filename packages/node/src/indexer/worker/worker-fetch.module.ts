@@ -8,6 +8,7 @@ import {
   WorkerDynamicDsService,
   ConnectionPoolStateManager,
   WorkerConnectionPoolStateManager,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -18,6 +19,7 @@ import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { SandboxService } from '../sandbox.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
+import { WorkerInMemoryCacheService } from './worker.inMemoryCache.service';
 import { WorkerService } from './worker.service';
 import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.service';
 
@@ -62,6 +64,10 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
       provide: UnfinalizedBlocksService,
       useFactory: () =>
         new WorkerUnfinalizedBlocksService((global as any).host),
+    },
+    {
+      provide: InMemoryCacheService,
+      useFactory: () => new WorkerInMemoryCacheService((global as any).host),
     },
   ],
   exports: [],

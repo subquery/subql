@@ -9,6 +9,7 @@ import {
   IndexerSandbox,
   hostStoreToStore,
   ISubqueryProject,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { Store, BaseDataSource } from '@subql/types-core';
 import { ApiService, CosmosSafeClient } from './api.service';
@@ -22,6 +23,7 @@ export class SandboxService<Api extends CosmosSafeClient> {
     private readonly apiService: ApiService,
     @Inject(isMainThread ? StoreService : 'Null')
     private readonly storeService: StoreService,
+    private readonly cacheService: InMemoryCacheService,
     private readonly nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject,
   ) {}
@@ -31,11 +33,13 @@ export class SandboxService<Api extends CosmosSafeClient> {
       ? this.storeService.getStore()
       : hostStoreToStore((global as any).host); // Provided in worker.ts
 
+    const cache = this.cacheService.getCache();
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
+          cache,
           store,
           root: this.project.root,
           entry,

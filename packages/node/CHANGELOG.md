@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-10-20
+### Added
+- Inject in-memory cache to sandbox
+
+### Fixed
+- Bump with `@subq/node-core` 3.1.0 , fixed poi migration init check, and improve logging
+
 ## [3.0.3] - 2023-10-17
 ### Changed
 - Update type names to be consistent with main SDK (#189)
@@ -284,7 +291,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.1.0...HEAD
+[3.1.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.3...node-cosmos/3.1.0
 [3.0.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.2...node-cosmos/3.0.3
 [3.0.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.1...node-cosmos/3.0.2
 [3.0.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.0.0...node-cosmos/3.0.1
