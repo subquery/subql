@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debug logging for dictionary queries (#2077)
 
 ### Fixed
+- Fix unit tests (#2097)
 - Fixed Poi migration performance issue with `sqlIterator` 
 - Fixed AutoQueue timeout issue, align setting with nodeConfig.
 

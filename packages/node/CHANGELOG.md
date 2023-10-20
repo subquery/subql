@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - debug has changed from a boolean to a string to allow scoping debug log level (#2077)
 
 ### Fixed
+- Fix unit tests (#2097)
 - Sync with node-core. 
   - Fixed Poi migration performance issue.
   - Fixed AutoQueue timeout issue.
