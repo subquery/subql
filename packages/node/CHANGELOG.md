@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.0] - 2023-10-20
 ### Added
 - Inject in-memory cache to sandbox (#2110)
+### Fixed
+- Bump with `@subq/node-core` 3.1.0 , fixed poi migration init check, and improve logging
 
 ## [3.0.8] - 2023-10-18
 ### Fixed
@@ -1017,7 +1021,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.0.8...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/subquery/subql/compare/v3.0.8...v3.1.0
 [3.0.8]: https://github.com/subquery/subql/compare/node/3.0.7...node/3.0.8
 [3.0.7]: https://github.com/subquery/subql/compare/node/3.0.6...node/3.0.7
 [3.0.6]: https://github.com/subquery/subql/compare/node/3.0.5...node/3.0.6
