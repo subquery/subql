@@ -4,7 +4,7 @@
 import {existsSync, readFileSync} from 'fs';
 import path from 'path';
 import {SubqlTest} from '@subql/testing';
-import {Store} from '@subql/types-core';
+import {Cache, Store} from '@subql/types-core';
 import {levelFilter} from '@subql/utils';
 import {last, merge} from 'lodash';
 import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
@@ -14,6 +14,7 @@ import {getLogger} from '../logger';
 import {timeout} from '../utils';
 
 export interface SandboxOption {
+  cache?: Cache;
   store?: Store;
   root: string;
   entry: string;
@@ -165,9 +166,12 @@ export class IndexerSandbox extends Sandbox {
     }
   }
 
-  private injectGlobals({store}: SandboxOption) {
+  private injectGlobals({cache, store}: SandboxOption) {
     if (store) {
       this.freeze(store, 'store');
+    }
+    if (cache) {
+      this.freeze(cache, 'cache');
     }
     this.freeze(logger, 'logger');
   }

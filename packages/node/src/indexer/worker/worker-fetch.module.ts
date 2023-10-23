@@ -9,6 +9,7 @@ import {
   WorkerConnectionPoolStateManager,
   ConnectionPoolStateManager,
   NodeConfig,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -20,6 +21,7 @@ import { ProjectService } from '../project.service';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { SandboxService } from '../sandbox.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
+import { WorkerInMemoryCacheService } from './worker.inMemoryCache.service';
 import { WorkerService } from './worker.service';
 import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.service';
 
@@ -77,6 +79,10 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
     },
     WorkerService,
     WorkerRuntimeService,
+    {
+      provide: InMemoryCacheService,
+      useFactory: () => new WorkerInMemoryCacheService((global as any).host),
+    },
   ],
   exports: [],
 })

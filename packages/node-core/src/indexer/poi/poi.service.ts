@@ -48,6 +48,9 @@ export class PoiService implements OnApplicationShutdown {
    */
   async init(schema: string): Promise<void> {
     this._poiRepo = this.storeCache.poi ?? undefined;
+    if (!this._poiRepo) {
+      return;
+    }
     const latestSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
     if (latestSyncedPoiHeight === undefined) {
       await this.migratePoi(schema);
@@ -61,14 +64,13 @@ export class PoiService implements OnApplicationShutdown {
    */
   private async migratePoi(schema: string): Promise<void> {
     try {
-      logger.info('Migrating POI table, this may take some time');
       // Remove and Change column from sequelize not work, it only applies to public schema
       // https://github.com/sequelize/sequelize/issues/13365
       // await this.poiRepo?.model.sequelize?.getQueryInterface().changeColumn(tableName,'mmrRoot',{})
       const tableName = this.poiRepo.model.getTableName().toString();
       const checkAttributesQuery = `SELECT
-        (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "operationHashRoot" IS NOT NULL)) AS operationHashRoot_nullable,
-        (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "chainBlockHash" IS NOT NULL)) AS chainBlockHash_nullable,
+        (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "operationHashRoot" IS NOT NULL)) AS operationhashroot_nullable,
+        (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "chainBlockHash" IS NOT NULL)) AS chainblockhash_nullable,
         (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "hash" IS NOT NULL)) AS hash_nullable,
         (NOT EXISTS (SELECT 1 FROM ${tableName} WHERE "parentHash" IS NOT NULL)) AS parent_nullable,
         (EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = '_poi' AND column_name = 'mmrRoot' AND table_schema = '${schema}' )) AS mmr_exists;`;
@@ -87,10 +89,10 @@ export class PoiService implements OnApplicationShutdown {
           queries.push(`ALTER TABLE ${tableName} DROP COLUMN "mmrRoot";`);
           queries.push(`DROP TABLE IF EXISTS "${schema}"."_mmr";`);
         }
-        if (!checkResult.chainBlockHash_nullable) {
+        if (!checkResult.operationhashroot_nullable) {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "operationHashRoot" DROP NOT NULL;`);
         }
-        if (!checkResult.chainBlockHash_nullable) {
+        if (!checkResult.chainblockhash_nullable) {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "chainBlockHash" DROP NOT NULL;`);
           // keep existing chainBlockHash
           queries.push(
@@ -124,6 +126,7 @@ export class PoiService implements OnApplicationShutdown {
       }
 
       if (queries.length) {
+        logger.info('Migrating POI table, this may take some time');
         const tx = await this.poiRepo.model.sequelize?.transaction();
         if (!tx) {
           throw new Error(`Create transaction for poi migration got undefined!`);
@@ -137,7 +140,7 @@ export class PoiService implements OnApplicationShutdown {
           }
         }
         await tx.commit();
-        logger.info(`Successful migrate Poi`);
+        logger.info('Migrating POI completed.');
         if (checkResult?.mmr_exists) {
           logger.info(`If file based mmr were used previously, it can be clean up mannually`);
         }
@@ -145,7 +148,6 @@ export class PoiService implements OnApplicationShutdown {
     } catch (e) {
       throw new Error(`Failed to migrate poi table. {e}`);
     }
-    logger.info('Migrating POI completed.');
   }
 
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
