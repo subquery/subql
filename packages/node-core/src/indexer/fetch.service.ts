@@ -99,9 +99,27 @@ export abstract class BaseFetchService<
   }
 
   async init(startHeight: number): Promise<void> {
+    this.bypassBlocks = [];
+
     if (this.networkConfig?.bypassBlocks !== undefined) {
       this.bypassBlocks = transformBypassBlocks(this.networkConfig.bypassBlocks).filter((blk) => blk >= startHeight);
     }
+
+    const datasources = this.projectService.getDataSourcesMap().getAll();
+
+    const sortedHeights = Array.from(datasources.keys()).sort((a, b) => a - b);
+
+    for (let i = 0; i < sortedHeights.length - 1; i++) {
+      const currentHeight = sortedHeights[i];
+      const nextHeight = sortedHeights[i + 1];
+
+      const currentDS = datasources.get(currentHeight);
+      // If the value for the current height is an empty array, then it's a gap
+      if (currentDS && currentDS.length === 0) {
+        this.bypassBlocks.push(...range(currentHeight, nextHeight));
+      }
+    }
+
     const interval = await this.getChainInterval();
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);

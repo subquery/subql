@@ -129,7 +129,12 @@ export abstract class BaseIndexerManager<
   private filterDataSources(nextProcessingHeight: number, dataSources: DS[]): DS[] {
     let filteredDs: DS[];
 
-    filteredDs = dataSources.filter((ds) => ds.startBlock !== undefined && ds.startBlock <= nextProcessingHeight);
+    filteredDs = dataSources.filter(
+      (ds) =>
+        ds.startBlock !== undefined &&
+        ds.startBlock <= nextProcessingHeight &&
+        (ds.endBlock ?? Number.MAX_SAFE_INTEGER) >= nextProcessingHeight
+    );
 
     // perform filter for custom ds
     filteredDs = filteredDs.filter((ds) => {

@@ -292,7 +292,19 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
     const dsMap = new Map<number, DS[]>();
 
-    for (const [height, project] of this.projectUpgradeService.projects) {
+    const projects = [...this.projectUpgradeService.projects];
+
+    for (let i = 0; i < projects.length; i++) {
+      const [height, project] = projects[i];
+      let nextMinStartHeight: number;
+
+      if (i + 1 < projects.length) {
+        const nextProject = projects[i + 1][1];
+        nextMinStartHeight = nextProject.dataSources
+          .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+          .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock;
+      }
+
       const activeDataSources = new Set<DS>();
       //events denote addition or deletion of datasources from height-datasource map entries at the specified block height
       const events: {
@@ -302,7 +314,9 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       }[] = [];
 
       [...project.dataSources, ...dynamicDs]
-        .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+        .filter((ds): ds is DS & {startBlock: number} => {
+          return !!ds.startBlock && (!nextMinStartHeight || nextMinStartHeight > ds.startBlock);
+        })
         .forEach((ds) => {
           events.push({block: Math.max(height, ds.startBlock), start: true, ds});
           if (ds.endBlock) events.push({block: ds.endBlock + 1, start: false, ds});
@@ -310,12 +324,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
       // sort events by block in ascending order, start events come before end events
       const sortedEvents = events.sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start));
-
-      // remove all dsMap entries after this height because it will be replaced by current project datasources
-      const minStartHeight = sortedEvents[0].block;
-      [...dsMap.entries()].forEach(([height, ds]) => {
-        if (height >= minStartHeight) dsMap.delete(height);
-      });
 
       sortedEvents.forEach((event) => {
         event.start ? activeDataSources.add(event.ds) : activeDataSources.delete(event.ds);
