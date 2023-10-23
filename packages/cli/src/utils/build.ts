@@ -13,7 +13,7 @@ import {
 } from '@subql/common';
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
-import ts from 'typescript';
+import * as tsNode from 'ts-node';
 
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `import {toJsonObject} from '@subql/common';` +
@@ -50,7 +50,7 @@ export async function buildManifestFromLocation(location: string, command: Comma
       replaceTsReferencesInMultichain(projectYamlPath);
     }
   } catch (e) {
-    console.log(e)
+    console.log(e);
     throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
   }
   return directory;
@@ -60,12 +60,14 @@ export async function generateManifestFromTs(projectManifestEntry: string, comma
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
   try {
-    const result = ts.transpileModule(requireScriptWrapper(projectManifestEntry, projectYamlPath), {});
+    // Allows requiring TS, this allows requirng the projectManifestEntry ts file
+    const tsNodeService = tsNode.register({transpileOnly: true});
 
-    console.log('OUTPUT', result)
+    // Compile the above script
+    const script = tsNodeService.compile(requireScriptWrapper(projectManifestEntry, projectYamlPath), 'inline.ts');
 
-    // Run the compiled output
-    eval(result.outputText);
+    // Run compiled code
+    eval(script);
 
     command.log(`Project manifest generated to ${projectYamlPath}`);
 
