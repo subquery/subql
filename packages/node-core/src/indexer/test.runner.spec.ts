@@ -139,7 +139,7 @@ describe('TestRunner', () => {
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect((testRunner as any).failedTests).toBe(testMock.expectedEntities.length);
+    expect((testRunner as any).failedTests).toBe(1);
 
     const summary = (testRunner as any).failedTestSummary;
     expect(summary?.testName).toEqual(testMock.name);

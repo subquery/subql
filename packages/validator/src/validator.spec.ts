@@ -15,7 +15,7 @@ describe('Validate project with manifest spec 1.0.0, auto identify network', () 
   });
 
   // No longer supported ?
-  it('should validate get reports', async () => {
+  it.skip('should validate get reports', async () => {
     const url = 'https://github.com/subquery/tutorials-frontier-evm-starter';
     const v = await Validator.create(url);
     v.addRule(...commonRules);

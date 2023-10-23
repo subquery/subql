@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Multichain support for TypeScript manifest (#2097)
 - Support for multi endpoints CLI deployment (#2117)
 
 ## [4.0.5] - 2023-10-18

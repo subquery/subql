@@ -123,9 +123,10 @@ describe('Cli can create project', () => {
       projects.find((p) => p.name === 'Polkadot-starter')
     );
     await prepare(projectPath, projectSpec);
-    const [specVersion, endpoint, author, description] = await readDefaults(projectPath);
+    const [endpoint, author, description] = await readDefaults(projectPath);
 
-    expect(projectSpec.specVersion).toEqual(specVersion);
+    //spec version is  not returned from readDefaults
+    //expect(projectSpec.specVersion).toEqual(specVersion);
     expect(projectSpec.endpoint).toEqual(endpoint);
     expect(projectSpec.author).toEqual(author);
     expect(projectSpec.description).toEqual(description);
