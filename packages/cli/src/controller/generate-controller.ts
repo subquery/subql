@@ -19,9 +19,8 @@ import * as inquirer from 'inquirer';
 import {upperFirst, difference, pickBy} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {ADDRESS_REG} from '../constants';
+import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
 import {
-  extractArrayValueFromTsManifest,
   extractFromTs,
   renderTemplate,
   replaceArrayValueInTsManifest,
@@ -136,14 +135,14 @@ export function generateHandlerName(name: string, abiName: string, type: 'tx' | 
 function generateFormattedHandlers(
   userInput: UserInput,
   abiName: string,
-  kindModifier: (kind: string) => any
+  kindModifier: (kind: string) => EthereumHandlerKind | string
 ): SubqlRuntimeHandler[] {
   const formattedHandlers: SubqlRuntimeHandler[] = [];
 
   userInput.functions.forEach((fn) => {
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(fn.name, abiName, 'tx'),
-      kind: kindModifier('EthereumHandlerKind.Call'),
+      kind: kindModifier('EthereumHandlerKind.Call') as any, // union type
       filter: {
         function: fn.method,
       },
@@ -154,7 +153,7 @@ function generateFormattedHandlers(
   userInput.events.forEach((event) => {
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(event.name, abiName, 'log'),
-      kind: kindModifier('EthereumHandlerKind.Event'),
+      kind: kindModifier('EthereumHandlerKind.Event') as any, // Should be union type
       filter: {
         topics: [event.method],
       },
@@ -168,7 +167,7 @@ function generateFormattedHandlers(
 export function constructDatasourcesTs(userInput: UserInput): string {
   const abiName = parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
-  const handlersString = tsStringify(formattedHandlers as any);
+  const handlersString = tsStringify(formattedHandlers);
 
   return `{
     kind: EthereumDatasourceKind.Runtime,
@@ -261,7 +260,7 @@ function filterExistingFragments<T extends Fragment | ConstructorFragment>(
   return cleanFragments;
 }
 
-type ManifestExtractor<T> = (
+export type ManifestExtractor<T> = (
   dataSources: T,
   casedInputAddress: string | undefined
 ) => {
@@ -317,13 +316,11 @@ export const tsExtractor: ManifestExtractor<string> = (dataSources, casedInputAd
       return match && match[1].toLowerCase() === casedInputAddress;
     })
     .forEach((d) => {
-      const topicsReg = /topics:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
-      const functionReg = /function\s*:\s*['"]([^'"]+)['"]/;
-      const extractedValue = extractFromTs(d, {handler: undefined}) as {handler: string};
+      const extractedValue = extractFromTs(d, {handlers: undefined}) as {handlers: string};
 
-      const regResult = extractFromTs(extractedValue.handler, {
-        topics: topicsReg,
-        function: functionReg,
+      const regResult = extractFromTs(extractedValue.handlers, {
+        topics: TOPICS_REG,
+        function: FUNCTION_REG,
       });
       if (regResult.topics !== null) {
         existingEvents.push(regResult.topics[0]);

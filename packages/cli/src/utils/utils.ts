@@ -115,43 +115,58 @@ export function findReplace(manifest: string, replacer: RegExp, value: string): 
   return manifest.replace(replacer, value);
 }
 
-export function findArrayIndicesTsManifest(manifest: string, key: string): [number, number] {
+export function findMatchingIndices(
+  content: string,
+  startChar: string,
+  endChar: string,
+  startFrom = 0
+): [number, number][] {
   //  JavaScript's regex engine does not support recursive patterns like (?1).
   //  This regex would work in engines that support recursion, such as PCRE (Perl-Compatible Regular Expressions).
 
-  const start = manifest.indexOf(`${key}:`);
-  if (start === -1) throw new Error(`${key} not found`);
+  let openCount = 0;
+  let startIndex: number;
+  const pairs: [number, number][] = [];
 
-  let openBrackets = 0;
-  let startIndex: number, endIndex: number;
-
-  for (let i = start; i < manifest.length; i++) {
-    if (manifest[i] === '[') {
-      if (openBrackets === 0) startIndex = i;
-      openBrackets++;
-    } else if (manifest[i] === ']') {
-      openBrackets--;
-      if (openBrackets === 0) {
-        endIndex = i;
+  for (let i = startFrom; i < content.length; i++) {
+    if (content[i] === startChar) {
+      if (openCount === 0) startIndex = i;
+      openCount++;
+    } else if (content[i] === endChar) {
+      openCount--;
+      if (openCount === 0) {
+        pairs.push([startIndex, i]);
         break;
       }
     }
   }
+  if (openCount !== 0) throw new Error(`Unbalanced ${startChar} and ${endChar}`);
 
-  if (openBrackets !== 0) throw new Error(`${key} contains unbalanced brackets`);
+  return pairs;
+}
+export function findArrayIndicesTsManifest(content: string, key: string): [number, number] {
+  const start = content.indexOf(`${key}:`);
+  if (start === -1) throw new Error(`${key} not found`);
+  const pairs = findMatchingIndices(content, '[', ']', start);
 
-  return [startIndex, endIndex];
+  if (pairs.length === 0) throw new Error(`${key} contains unbalanced brackets`);
+
+  return pairs[0];
 }
-export function replaceArrayValueInTsManifest(manifest: string, key: string, newValue: string): string {
-  const [startIndex, endIndex] = findArrayIndicesTsManifest(manifest, key);
-  return manifest.slice(0, startIndex) + newValue + manifest.slice(endIndex + 1);
+export function replaceArrayValueInTsManifest(content: string, key: string, newValue: string): string {
+  const [startIndex, endIndex] = findArrayIndicesTsManifest(content, key);
+  return content.slice(0, startIndex) + newValue + content.slice(endIndex + 1);
 }
-export function extractArrayValueFromTsManifest(manifest: string, key: string): string | null {
-  const [startIndex, endIndex] = findArrayIndicesTsManifest(manifest, key);
-  return manifest.slice(startIndex, endIndex + 1);
+export function extractArrayValueFromTsManifest(content: string, key: string): string | null {
+  const [startIndex, endIndex] = findArrayIndicesTsManifest(content, key);
+  return content.slice(startIndex, endIndex + 1);
 }
 
-export function tsStringify(obj: SubqlRuntimeHandler | string, indent = 2, currentIndent = 0): string {
+export function tsStringify(
+  obj: SubqlRuntimeHandler | SubqlRuntimeHandler[] | string,
+  indent = 2,
+  currentIndent = 0
+): string {
   if (typeof obj !== 'object' || obj === null) {
     if (typeof obj === 'string' && obj.includes('EthereumHandlerKind')) {
       return obj; // Return the string as-is without quotes
@@ -180,6 +195,8 @@ export function extractFromTs(
   patterns: {[key: string]: RegExp | undefined}
 ): {[key: string]: string | string[] | null} {
   const result: {[key: string]: string | string[] | null} = {};
+  // TODO should extract then validate value type ?
+  // check what the following char is after key
   const arrKeys = ['endpoint', 'topics'];
   const nestArr = ['dataSources', 'handlers'];
   for (const key in patterns) {
@@ -204,24 +221,21 @@ export function extractFromTs(
 export function splitArrayString(arrayStr: string): string[] {
   // Remove the starting and ending square brackets
   const content = arrayStr.trim().slice(1, -1).trim();
+  const pairs: [number, number][] = [];
+  let lastEndIndex = 0;
 
-  let openBraces = 0;
-  let startIndex = 0;
-  const components: string[] = [];
-
-  for (let i = 0; i < content.length; i++) {
-    if (content[i] === '{') {
-      if (openBraces === 0) startIndex = i;
-      openBraces++;
-    } else if (content[i] === '}') {
-      openBraces--;
-      if (openBraces === 0) {
-        components.push(content.slice(startIndex, i + 1).trim());
-      }
-    }
+  while (lastEndIndex < content.length) {
+    const newPairs = findMatchingIndices(content, '{', '}', lastEndIndex);
+    if (newPairs.length === 0) break;
+    pairs.push(newPairs[0]);
+    lastEndIndex = newPairs[0][1] + 1;
   }
 
-  return components;
+  return pairs.map(([start, end]) => {
+    // Extract the string and further process to remove excess whitespace
+    const extracted = content.slice(start, end + 1).trim();
+    return extracted.replace(/\s+/g, ' ');
+  });
 }
 
 // Cold validate on ts manifest, for generate scaffold command

@@ -17,6 +17,7 @@ import {
   generateManifestYaml,
   getAbiInterface,
   getManifestData,
+  ManifestExtractor,
   prepareAbiDirectory,
   prepareInputFragments,
   tsExtractor,
@@ -48,6 +49,34 @@ export default class Generate extends Command {
     address: Flags.string({description: 'contract address'}),
   };
 
+  private prepareUserInput<T>(
+    selectedEvents: Record<string, EventFragment>,
+    selectedFunctions: Record<string, FunctionFragment>,
+    existingDs: T,
+    address: string | undefined,
+    startBlock: number,
+    abiFileName: string,
+    extractor: ManifestExtractor<T>
+  ): UserInput {
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      selectedEvents,
+      selectedFunctions,
+      existingDs,
+      address,
+      extractor
+    );
+
+    const constructedEvents = constructMethod<EventFragment>(cleanEvents);
+    const constructedFunctions = constructMethod<FunctionFragment>(cleanFunctions);
+
+    return {
+      startBlock: startBlock,
+      functions: constructedFunctions,
+      events: constructedEvents,
+      abiPath: `./abis/${abiFileName}`,
+      address: address,
+    };
+  }
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
     const {abiPath, address, events, file, functions, startBlock} = flags;
@@ -91,10 +120,7 @@ export default class Generate extends Command {
     const selectedEvents = await prepareInputFragments('event', events, eventsFragments, abiName);
     const selectedFunctions = await prepareInputFragments('function', functions, functionFragments, abiName);
 
-    let cleanEvents: Record<string, EventFragment>,
-      cleanFunctions: Record<string, FunctionFragment>,
-      constructedEvents: SelectedMethod[],
-      constructedFunctions: SelectedMethod[];
+    let userInput: UserInput;
 
     try {
       if (isTs) {
@@ -103,24 +129,16 @@ export default class Generate extends Command {
           dataSources: undefined,
         });
         const existingDs = extractedDatasources.dataSources as string;
-        const [cleanEvents, cleanFunctions] = filterExistingMethods(
+
+        userInput = this.prepareUserInput(
           selectedEvents,
           selectedFunctions,
           existingDs,
           address,
+          startBlock,
+          abiFileName,
           tsExtractor
         );
-
-        constructedEvents = constructMethod<EventFragment>(cleanEvents);
-        constructedFunctions = constructMethod<FunctionFragment>(cleanFunctions);
-
-        const userInput: UserInput = {
-          startBlock: startBlock,
-          functions: constructedFunctions,
-          events: constructedEvents,
-          abiPath: `./abis/${abiFileName}`,
-          address: address,
-        };
 
         await generateManifestTs(manifest, userInput, existingManifest);
       } else {
@@ -128,36 +146,27 @@ export default class Generate extends Command {
         const existingManifest = await getManifestData(manifest);
         const existingDs = ((existingManifest.get('dataSources') as any)?.toJSON() as EthereumDs[]) ?? [];
 
-        [cleanEvents, cleanFunctions] = filterExistingMethods(
+        userInput = this.prepareUserInput(
           selectedEvents,
           selectedFunctions,
           existingDs,
           address,
+          startBlock,
+          abiFileName,
           yamlExtractor
         );
-
-        constructedEvents = constructMethod<EventFragment>(cleanEvents);
-        constructedFunctions = constructMethod<FunctionFragment>(cleanFunctions);
-
-        const userInput: UserInput = {
-          startBlock: startBlock,
-          functions: constructedFunctions,
-          events: constructedEvents,
-          abiPath: `./abis/${abiFileName}`,
-          address: address,
-        };
 
         await generateManifestYaml(manifest, userInput, existingManifest);
       }
 
-      await generateHandlers([constructedEvents, constructedFunctions], root, abiName);
+      await generateHandlers([userInput.events, userInput.functions], root, abiName);
 
       this.log('-----------Generated-----------');
-      Object.keys(cleanFunctions).map((fn) => {
-        this.log(`Function: ${fn} successfully generated`);
+      userInput.functions.forEach((fn) => {
+        this.log(`Function: ${fn.name} successfully generated`);
       });
-      Object.keys(cleanEvents).map((event) => {
-        this.log(`Event: ${event} successfully generated`);
+      userInput.events.forEach((event) => {
+        this.log(`Event: ${event.name} successfully generated`);
       });
       this.log('-------------------------------');
     } catch (e) {

@@ -17,11 +17,13 @@ import {
   filterObjectsByStateMutability,
   generateHandlerName,
   generateHandlers,
-  generateManifest,
+  generateManifestTs,
+  generateManifestYaml,
   getAbiInterface,
   getManifestData,
   prepareAbiDirectory,
   prepareInputFragments,
+  yamlExtractor,
 } from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
@@ -202,7 +204,7 @@ describe('CLI codegen:generate, Can write to file', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    await generateManifest(path.join(pPath, './mock-project.ts'), mockInput, tsManifest);
+    await generateManifestTs(path.join(pPath, './mock-project.ts'), mockInput, tsManifest);
     const newManifest = await fs.promises.readFile(filePath, 'utf8');
     expect(newManifest).toBe(
       `// @ts-nocheck
@@ -329,7 +331,7 @@ export default project;
   });
   it('Can generate manifest', async () => {
     const existingManifestData = await getManifestData(path.join(PROJECT_PATH, MANIFEST_PATH));
-    await generateManifest(path.join(PROJECT_PATH, MANIFEST_PATH), mockUserInput, existingManifestData);
+    await generateManifestYaml(path.join(PROJECT_PATH, MANIFEST_PATH), mockUserInput, existingManifestData);
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, MANIFEST_PATH)) as any).dataSources;
 
     expect(updatedManifestDs[1]).toStrictEqual({
@@ -385,13 +387,18 @@ export default project;
       selectedEvents,
       selectedFunctions,
       existingDs,
-      '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+      '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      yamlExtractor
     );
 
     mockUserInput.events = constructMethod<EventFragment>(eventFrags);
     mockUserInput.functions = constructMethod<FunctionFragment>(functionFrags);
 
-    await generateManifest(path.join(PROJECT_PATH, './generate-project-2.yaml'), mockUserInput, existingManifestData);
+    await generateManifestYaml(
+      path.join(PROJECT_PATH, './generate-project-2.yaml'),
+      mockUserInput,
+      existingManifestData
+    );
 
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, './generate-project-2.yaml')) as any)
       .dataSources;
