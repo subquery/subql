@@ -31,7 +31,7 @@ export async function deployToHostedService(
         data: {
           version: ipfsCID,
           dictEndpoint: dictEndpoint,
-          endpoint: endpoint,
+          endpoint: splitEndpoints(endpoint),
           advancedSettings: {
             query: query,
             indexer: indexer,
@@ -166,7 +166,7 @@ export async function redeploy(
       data: {
         version: ipfsCID,
         dictEndpoint: dictEndpoint,
-        endpoint: endpoint,
+        endpoint: splitEndpoints(endpoint),
         indexerImageVersion: indexerVersion,
         queryImageVersion: queryVersion,
         advancedSettings: {
@@ -245,6 +245,9 @@ export async function imageVersions(name: string, version: string, authToken: st
   } catch (e) {
     errorHandle(e, 'Failed to get image:');
   }
+}
+export function splitEndpoints(endpointStr: string): string[] {
+  return endpointStr.split(',').map((e) => e.trim());
 }
 interface EndpointType {
   network: string;
