@@ -140,5 +140,6 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
       this.flushableRecordCounter = 1;
     }
     this.setCache = newSetCache;
+    this.getCache = newSetCache;
   }
 }

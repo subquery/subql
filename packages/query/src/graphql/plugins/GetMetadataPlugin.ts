@@ -19,6 +19,8 @@ const METADATA_TYPES = {
   lastProcessedHeight: 'number',
   lastProcessedTimestamp: 'number',
   targetHeight: 'number',
+  lastFinalizedVerifiedHeight: 'number',
+  unfinalizedBlocks: 'string',
   chain: 'string',
   specName: 'string',
   genesisHash: 'string',
@@ -29,6 +31,8 @@ const METADATA_TYPES = {
   startHeight: 'number',
   evmChainId: 'string',
   deployments: 'string',
+  lastCreatedPoiHeight: 'number',
+  latestSyncedPoiHeight: 'number',
 };
 
 const METADATA_KEYS = Object.keys(METADATA_TYPES);
@@ -209,6 +213,10 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         dynamicDatasources: String
         evmChainId: String
         deployments: JSON
+        lastFinalizedVerifiedHeight: Int
+        unfinalizedBlocks: String
+        lastCreatedPoiHeight: Int
+        latestSyncedPoiHeight: Int
       }
 
       type _MetadatasEdge {
@@ -227,9 +235,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
 
         _metadatas(
           after: Cursor
-          before: Cursor # distinct: [_mmr_distinct_enum] = null
-        ): # filter: _MetadataFilter
-        # first: Int
+          before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter
+        ): # first: Int
         # last: Int
         # offset: Int
         # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]

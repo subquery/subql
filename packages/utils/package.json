@@ -1,10 +1,11 @@
 {
   "name": "@subql/utils",
-  "version": "2.4.4-2",
+  "version": "2.4.5-0",
   "description": "",
   "packageManager": "yarn@3.1.1",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"utils/\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -31,5 +32,5 @@
   "devDependencies": {
     "@types/semver": "^7"
   },
-  "stableVersion": "2.4.4-1"
+  "stableVersion": "2.4.4"
 }

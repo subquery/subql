@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
-import {getProjectRootAndManifest} from '@subql/common';
+import {DEFAULT_TS_MANIFEST, getProjectRootAndManifest} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {
@@ -49,6 +49,9 @@ export default class Generate extends Command {
     const {abiPath, address, events, file, functions, startBlock} = flags;
 
     const projectPath = path.resolve(file ?? process.cwd());
+    if (fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST))) {
+      throw new Error('generate does not yet support ts manifest');
+    }
     const {manifests, root} = getProjectRootAndManifest(projectPath);
 
     const abiName = parseContractPath(abiPath).name;

@@ -3,10 +3,9 @@
 
 import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
-import {cloneDeep} from 'lodash';
 import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
-import {ensureProofOfIndexId, PlainPoiModel, PoiInterface} from '../poi/poiModel';
+import {PlainPoiModel, PoiInterface} from '../poi/poiModel';
 import {Cacheable} from './cacheable';
 import {ICachedModelControl} from './types';
 const logger = getLogger('PoiCache');
@@ -35,34 +34,9 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
       this.setCache[proof.id] = proof;
     }
   }
-  async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
-    await this.mutex.waitForUnlock();
-    return this.plainPoiModel.getPoiBlocksByRange(startHeight);
-  }
-
-  async getPoiBlocksBefore(startHeight: number, options?: {offset: number; limit: number}): Promise<ProofOfIndex[]> {
-    await this.mutex.waitForUnlock();
-    return this.plainPoiModel.getPoiBlocksBefore(startHeight, options);
-  }
-  async getPoiById(id: number): Promise<ProofOfIndex | undefined> {
-    await this.mutex.waitForUnlock();
-    if (this.setCache[id]) {
-      return this.setCache[id];
-    }
-    const result = await this.model.findByPk(id);
-    if (result) {
-      return ensureProofOfIndexId(result?.toJSON<ProofOfIndex>());
-    }
-    return;
-  }
 
   get isFlushable(): boolean {
     return !!Object.entries(this.setCache).length;
-  }
-
-  async getFirst(): Promise<ProofOfIndex | undefined> {
-    await this.mutex.waitForUnlock();
-    return this.plainPoiModel.getFirst();
   }
 
   protected async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {

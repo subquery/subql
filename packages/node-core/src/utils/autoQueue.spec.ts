@@ -29,6 +29,7 @@ describe('AutoQueue', () => {
   it('doesnt resolve tasks if flush is called', async () => {
     const autoQueue = new AutoQueue<number>(10, 2);
     const results: number[] = [];
+    let abortedCount = 0;
 
     const tasks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -37,9 +38,14 @@ describe('AutoQueue', () => {
     });
 
     tasks.map((t) => {
-      void autoQueue.put(t).then((r) => {
-        results.push(r);
-      });
+      void autoQueue
+        .put(t)
+        .then((r) => {
+          results.push(r);
+        })
+        .catch((e) => {
+          abortedCount++;
+        });
     });
 
     // Wait for some tasks to complete
@@ -53,6 +59,8 @@ describe('AutoQueue', () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     expect(results).toEqual([1, 2]);
+    // Match concurrency
+    expect(abortedCount).toEqual(2);
   });
 
   it('has a cap on the number of out of order tasks', async () => {
@@ -141,5 +149,48 @@ describe('AutoQueue', () => {
 
     // Assertions done, complete the task
     resolveFn();
+  });
+
+  it('resumes after flushing', async () => {
+    const autoQueue = new AutoQueue<number>(10, 2, 1);
+
+    const results: number[] = [];
+
+    const tasks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      return v;
+    });
+
+    tasks.map((t) => {
+      void autoQueue
+        .put(t)
+        .then((r) => {
+          results.push(r);
+        })
+        .catch((e) => {
+          // We expect some to throw as they get flushed
+        });
+    });
+
+    // Wait for some tasks to complete
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    autoQueue.flush();
+
+    const tasks2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return v;
+    });
+
+    await Promise.all(
+      tasks2.map((t) => {
+        return autoQueue.put(t).then((r) => {
+          results.push(r + 10);
+        });
+      })
+    );
+
+    expect(results).toEqual([1, 2, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
   });
 });

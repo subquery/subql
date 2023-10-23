@@ -1,11 +1,12 @@
 {
   "name": "@subql/common-substrate",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"common-substrate/\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -26,5 +27,6 @@
     "@types/bn.js": "4.11.6",
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  }
+  },
+  "stableVersion": "3.1.1"
 }

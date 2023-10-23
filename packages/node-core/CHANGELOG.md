@@ -5,6 +5,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.1.0] - 2023-10-20
+### Added
+- Add in-memory cache to be used in sandbox #(2110)
+
+### Fixed
+- Fixed poi migration init check, and improve logging (#2112)
+
+## [6.0.4] - 2023-10-18
+### Fixed
+- Store bulk methods failing with workers (#2107)
+
+## [6.0.3] - 2023-10-17
+### Fixed
+- Dictionary validation error causing application exit (#2101)
+- Auto queue flush getting the queue into a bad state (#2103)
+- Fix getCache could not been cleared after reindex, and could have been re-used and lead to error, such as syncPoi
+
+## [6.0.2] - 2023-10-12
+### Fixed
+- Issues with using object destructing for store interface and workers (#2094)
+
+## [6.0.1] - 2023-10-12
+### Fixed
+- Store operations failing with workers when options are provided (#2092)
+- skip managing connection pool for single endpoint (#2091)
+
+## [6.0.0] - 2023-10-11
 ### Changed
 - Support scoped debug logging (#2077)
 
@@ -12,9 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debug logging for dictionary queries (#2077)
 
 ### Fixed
-- Fix unit tests (#2097)
-- Fixed Poi migration performance issue with `sqlIterator` 
-- Fixed AutoQueue timeout issue, align setting with nodeConfig.
+- Fixed Poi migration performance issue with `sqlIterator`
+- Fixed AutoQueue timeout issue, align setting with nodeConfig. (#2081)
+- Fixed Poi sync could block DB IO and drop connection issue (#2086)
 
 ## [5.0.3] - 2023-10-03
 ### Fixed
@@ -420,7 +448,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/5.0.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.1.0...HEAD
+[6.1.0]: https://github.com/subquery/subql/compare/node-core/6.0.4...node-core/6.1.0
+[6.0.4]: https://github.com/subquery/subql/compare/node-core/6.0.3...node-core/6.0.4
+[6.0.3]: https://github.com/subquery/subql/compare/node-core/6.0.2...node-core/6.0.3
+[6.0.2]: https://github.com/subquery/subql/compare/node-core/6.0.1...node-core/6.0.2
+[6.0.1]: https://github.com/subquery/subql/compare/node-core/6.0.0...node-core/6.0.1
+[6.0.0]: https://github.com/subquery/subql/compare/node-core/5.0.3...node-core/6.0.0
 [5.0.3]: https://github.com/subquery/subql/compare/node-core/5.0.2...node-core/5.0.3
 [5.0.2]: https://github.com/subquery/subql/compare/node-core/5.0.1...node-core/5.0.2
 [5.0.1]: https://github.com/subquery/subql/compare/node-core/4.2.3...node-core/5.0.1

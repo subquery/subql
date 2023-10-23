@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -10,11 +9,12 @@ import {
 import {
   StoreService,
   PoiService,
+  PoiSyncService,
   NodeConfig,
   ConnectionPoolService,
   StoreCacheService,
-  ConnectionPoolStateManager,
   IProjectUpgradeService,
+  InMemoryCacheService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -173,12 +173,15 @@ function createIndexerManager(
     storeCache,
     project,
   );
+  const cacheService = new InMemoryCacheService();
   const poiService = new PoiService(
     nodeConfig,
     storeCache,
     eventEmitter,
     project,
   );
+
+  const poiSyncService = new PoiSyncService(nodeConfig, eventEmitter, project);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
@@ -187,6 +190,7 @@ function createIndexerManager(
   const sandboxService = new SandboxService(
     apiService,
     storeService,
+    cacheService,
     nodeConfig,
     project,
   );
@@ -196,6 +200,7 @@ function createIndexerManager(
     dsProcessorService,
     apiService,
     poiService,
+    poiSyncService,
     sequelize,
     project,
     projectUpgradeService,

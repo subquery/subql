@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "3.0.5-1",
+  "version": "3.1.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -10,7 +10,8 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nodemon",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"node/\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -59,6 +60,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "3.0.5-0"
+  ]
 }

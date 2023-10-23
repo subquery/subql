@@ -11,6 +11,7 @@ import {
   validateCosmosManifest,
   ProjectManifestImpls as CosmosManifest,
   generateCosmwasm,
+  CosmosCustomModuleImpl,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
@@ -270,10 +271,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     datasources = datasources.concat(customDatasources);
   }
 
-  const chainTypes = plainManifests
-    .filter((m) => validateCosmosManifest(m))
-    .map((m) => (m as CosmosManifest).network.chaintypes)
-    .filter((value) => value && value.size);
+  const chainTypes = getChaintypes(plainManifests);
 
   if (chainTypes.length) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
@@ -294,6 +292,15 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     }
     console.log(`* Types index generated !`);
   }
+}
+
+export function getChaintypes(
+  manifest: {templates?: TemplateKind[]; dataSources: DatasourceKind[]}[]
+): Map<string, CosmosCustomModuleImpl>[] {
+  return manifest
+    .filter((m) => validateCosmosManifest(m))
+    .map((m) => (m as CosmosManifest).network.chaintypes)
+    .filter((value) => value && Object.keys(value).length !== 0);
 }
 
 export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {

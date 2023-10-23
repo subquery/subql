@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/4.0.3-0 linux-x64 node-v18.18.0
+@subql/cli/4.0.5-0 linux-x64 node-v18.18.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -43,7 +43,6 @@ USAGE
 - [`subql deployment:delete`](#subql-deploymentdelete)
 - [`subql deployment:deploy`](#subql-deploymentdeploy)
 - [`subql deployment:promote`](#subql-deploymentpromote)
-- [`subql help [COMMAND]`](#subql-help-command)
 - [`subql init [PROJECTNAME]`](#subql-init-projectname)
 - [`subql multi-chain:add`](#subql-multi-chainadd)
 - [`subql project`](#subql-project)
@@ -71,7 +70,7 @@ DESCRIPTION
   Build this SubQuery project code
 ```
 
-_See code: [lib/commands/build/index.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/build/index.js)_
+_See code: [lib/commands/build/index.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/build/index.js)_
 
 ## `subql codegen`
 
@@ -89,7 +88,7 @@ DESCRIPTION
   Generate schemas for graph node
 ```
 
-_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/codegen/index.js)_
+_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/codegen/index.js)_
 
 ## `subql codegen:generate`
 
@@ -112,7 +111,7 @@ DESCRIPTION
   Generate Project.yaml and mapping functions based on provided ABI
 ```
 
-_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/codegen/generate.js)_
+_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/codegen/generate.js)_
 
 ## `subql deployment`
 
@@ -155,7 +154,7 @@ DESCRIPTION
   Deploy to hosted service
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/deployment/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/deployment/index.js)_
 
 ## `subql deployment:delete`
 
@@ -174,7 +173,7 @@ DESCRIPTION
   Delete Deployment
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/deployment/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/deployment/delete.js)_
 
 ## `subql deployment:deploy`
 
@@ -214,7 +213,7 @@ DESCRIPTION
   Deployment to hosted service
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/deployment/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/deployment/deploy.js)_
 
 ## `subql deployment:promote`
 
@@ -233,27 +232,7 @@ DESCRIPTION
   Promote Deployment
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/deployment/promote.js)_
-
-## `subql help [COMMAND]`
-
-display help for subql
-
-```
-USAGE
-  $ subql help [COMMAND] [--all]
-
-ARGUMENTS
-  COMMAND  command to show help for
-
-FLAGS
-  --all  see all commands in CLI
-
-DESCRIPTION
-  display help for subql
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.3.1/src/commands/help.ts)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/deployment/promote.js)_
 
 ## `subql init [PROJECTNAME]`
 
@@ -277,7 +256,7 @@ DESCRIPTION
   Initialize a scaffold subquery project
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/init.js)_
 
 ## `subql multi-chain:add`
 
@@ -296,7 +275,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain configuration
 ```
 
-_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/multi-chain/add.js)_
+_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/multi-chain/add.js)_
 
 ## `subql project`
 
@@ -322,7 +301,7 @@ DESCRIPTION
   Create/Delete project
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/project/index.js)_
 
 ## `subql project:create-project`
 
@@ -347,7 +326,7 @@ DESCRIPTION
   Create Project on Hosted Service
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/project/create-project.js)_
 
 ## `subql project:delete-project`
 
@@ -365,7 +344,7 @@ DESCRIPTION
   Delete Project on Hosted Service
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
@@ -384,7 +363,7 @@ DESCRIPTION
   Upload this SubQuery project to IPFS
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -406,6 +385,6 @@ DESCRIPTION
   Check a folder or github repo is a validate subquery project
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v4.0.3-0/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v4.0.5-0/lib/commands/validate.js)_
 
 <!-- commandsstop -->
