@@ -6218,7 +6218,6 @@ __metadata:
     "@subql/common-stellar": ^3.0.0
     "@subql/common-substrate": "workspace:*"
     "@subql/utils": "workspace:*"
-    "@subql/validator": "workspace:*"
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.2.0
     "@types/node": ^18.16.10
@@ -6245,7 +6244,9 @@ __metadata:
     simple-git: ^3.16.0
     terser-webpack-plugin: ^5.3.7
     ts-loader: ^9.2.6
+    ts-node: ^10.9.1
     tslib: ^2.3.1
+    typescript: ">=5.2.2"
     update-notifier: 5.1.0
     webpack: ^5.76.0
     webpack-merge: ^5.8.0
@@ -6388,7 +6389,43 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@^3.1.0, @subql/common@^3.1.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@subql/common@npm:3.1.1"
+  dependencies:
+    "@subql/types-core": 0.1.1
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: 1d1e3070f0a2f2368a7ba24f9b98012ca88362d51e7e53ed146026aa8c2844e8d58335496a19341facf4422aa2cac89b05e87860b0a4f73e542ca91f8240cdd0
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:^3.1.0, @subql/common@npm:^3.1.1":
+  version: 3.1.3
+  resolution: "@subql/common@npm:3.1.3"
+  dependencies:
+    "@subql/types-core": 0.1.2-0
+    axios: ^0.27.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: 2e5f145a44913dda9d8cd5d9cfe1bbda6be8e46ef74b278191f67310ffbfeea6ce76c4ff79c5b6b4a9e21a93d60994bc31db29e7bd198cdafe4203723b59893c
+  languageName: node
+  linkType: hard
+
+"@subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -6412,24 +6449,6 @@ __metadata:
     update-notifier: 5.1.0
   languageName: unknown
   linkType: soft
-
-"@subql/common@npm:3.1.1":
-  version: 3.1.1
-  resolution: "@subql/common@npm:3.1.1"
-  dependencies:
-    "@subql/types-core": 0.1.1
-    axios: ^0.27.2
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 1d1e3070f0a2f2368a7ba24f9b98012ca88362d51e7e53ed146026aa8c2844e8d58335496a19341facf4422aa2cac89b05e87860b0a4f73e542ca91f8240cdd0
-  languageName: node
-  linkType: hard
 
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
@@ -6577,6 +6596,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-core@npm:0.1.2-0":
+  version: 0.1.2-0
+  resolution: "@subql/types-core@npm:0.1.2-0"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: a70258c1cbe8aa407946ed4cd8fa13c6fea72caa0efa1837a4c400c535b0e4d483388d8c54eedd1afa483e65ac85706d637e0112230129e9313a90a552d7244f
+  languageName: node
+  linkType: hard
+
 "@subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
@@ -6670,25 +6698,6 @@ __metadata:
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
     tar: ^6.1.11
-  languageName: unknown
-  linkType: soft
-
-"@subql/validator@workspace:*, @subql/validator@workspace:packages/validator":
-  version: 0.0.0-use.local
-  resolution: "@subql/validator@workspace:packages/validator"
-  dependencies:
-    "@subql/common": "workspace:*"
-    "@subql/common-algorand": ^3.0.0
-    "@subql/common-cosmos": ^3.0.1
-    "@subql/common-ethereum": ^3.0.2
-    "@subql/common-flare": ^3.0.1
-    "@subql/common-near": ^3.0.0
-    "@subql/common-stellar": ^3.0.0
-    "@subql/common-substrate": "workspace:*"
-    "@types/js-yaml": ^4.0.5
-    axios: ^0.24.0
-    js-yaml: ^4.1.0
-    package-json-type: ^1.0.3
   languageName: unknown
   linkType: soft
 
@@ -8956,15 +8965,6 @@ __metadata:
   dependencies:
     follow-redirects: ^1.14.0
   checksum: 44245f24ac971e7458f3120c92f9d66d1fc695e8b97019139de5b0cc65d9b8104647db01e5f46917728edfc0cfd88eb30fc4c55e6053eef4ace76768ce95ff3c
-  languageName: node
-  linkType: hard
-
-"axios@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "axios@npm:0.24.0"
-  dependencies:
-    follow-redirects: ^1.14.4
-  checksum: 468cf496c08a6aadfb7e699bebdac02851e3043d4e7d282350804ea8900e30d368daa6e3cd4ab83b8ddb5a3b1e17a5a21ada13fc9cebd27b74828f47a4236316
   languageName: node
   linkType: hard
 
@@ -12699,16 +12699,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.4, follow-redirects@npm:^1.14.9":
-  version: 1.15.0
-  resolution: "follow-redirects@npm:1.15.0"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: eaec81c3e0ae57aae2422e38ad3539d0e7279b3a63f9681eeea319bb683dea67502c4e097136b8ce9721542b4e236e092b6b49e34e326cdd7733c274f0a3f378
-  languageName: node
-  linkType: hard
-
 "follow-redirects@npm:^1.14.7":
   version: 1.15.3
   resolution: "follow-redirects@npm:1.15.3"
@@ -12716,6 +12706,16 @@ __metadata:
     debug:
       optional: true
   checksum: 584da22ec5420c837bd096559ebfb8fe69d82512d5585004e36a3b4a6ef6d5905780e0c74508c7b72f907d1fa2b7bd339e613859e9c304d0dc96af2027fd0231
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.14.9":
+  version: 1.15.0
+  resolution: "follow-redirects@npm:1.15.0"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: eaec81c3e0ae57aae2422e38ad3539d0e7279b3a63f9681eeea319bb683dea67502c4e097136b8ce9721542b4e236e092b6b49e34e326cdd7733c274f0a3f378
   languageName: node
   linkType: hard
 
@@ -21657,6 +21657,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:>=5.2.2":
+  version: 5.2.2
+  resolution: "typescript@npm:5.2.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 7912821dac4d962d315c36800fe387cdc0a6298dba7ec171b350b4a6e988b51d7b8f051317786db1094bd7431d526b648aba7da8236607febb26cf5b871d2d3c
+  languageName: node
+  linkType: hard
+
 "typescript@npm:^4.9.5":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
@@ -21664,6 +21674,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: ee000bc26848147ad423b581bd250075662a354d84f0e06eb76d3b892328d8d4440b7487b5a83e851b12b255f55d71835b008a66cbf8f255a11e4400159237db
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@>=5.2.2#~builtin<compat/typescript>":
+  version: 5.2.2
+  resolution: "typescript@patch:typescript@npm%3A5.2.2#~builtin<compat/typescript>::version=5.2.2&hash=493e53"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 07106822b4305de3f22835cbba949a2b35451cad50888759b6818421290ff95d522b38ef7919e70fb381c5fe9c1c643d7dea22c8b31652a717ddbd57b7f4d554
   languageName: node
   linkType: hard
 

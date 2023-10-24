@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Removed `validate` command from cli, also removed from `@subql/validator` from dependencies (#2121)
+### Added
+- Multichain support for TypeScript manifest (#2097)
+- Support for multi endpoints CLI deployment (#2117)
+
+### Fixed
+- Building TS manifest on Windows (#2118)
 
 ## [4.0.5] - 2023-10-18
 ### Changed

@@ -10,12 +10,7 @@
     "outDir": "lib",
     "noImplicitAny": true
   },
-  "references": [
-    {"path": "../common"},
-    {"path": "../common-substrate"},
-    {"path": "../utils"},
-    {"path": "../validator"}
-  ],
+  "references": [{"path": "../common"}, {"path": "../common-substrate"}, {"path": "../utils"}],
   "include": ["src/**/*"],
   "exclude": ["test/schemaTest/project.ts"]
 }

@@ -127,5 +127,5 @@ describe('SubqueryProject', () => {
     );
 
     expect(project.chainTypes).toBeDefined();
-  });
+  }, 50000);
 });

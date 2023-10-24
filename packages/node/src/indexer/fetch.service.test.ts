@@ -6,7 +6,7 @@ import { ApiService } from './api.service';
 import { FetchService } from './fetch.service';
 import { createCachedProvider } from './x-provider/cachedProvider';
 
-const WS_POLKADOT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
+const WS_POLKADOT_ENDPOINT = 'wss://rpc.polkadot.io';
 
 describe('FetchService', () => {
   let fetchService: FetchService;
@@ -39,7 +39,7 @@ describe('FetchService', () => {
       null, // SchedulerRegistry
       null, // RuntimeService
     ) as any;
-  });
+  }, 10000);
 
   afterAll(async () => {
     await api.disconnect();

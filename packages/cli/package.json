@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "4.0.5",
+  "version": "4.0.6-3",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -18,7 +18,6 @@
     "@subql/common-stellar": "^3.0.0",
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
-    "@subql/validator": "workspace:*",
     "algosdk": "^1.19.0",
     "boxen": "5.1.2",
     "cli-ux": "^6.0.9",
@@ -34,7 +33,9 @@
     "simple-git": "^3.16.0",
     "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.2.6",
+    "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
+    "typescript": ">=5.2.2",
     "update-notifier": "5.1.0",
     "webpack": "^5.76.0",
     "webpack-merge": "^5.8.0",
@@ -88,5 +89,6 @@
   "types": "lib/index.d.ts",
   "resolutions": {
     "node-fetch": "2.6.7"
-  }
+  },
+  "stableVersion": "4.0.6-2"
 }

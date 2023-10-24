@@ -5,7 +5,7 @@ import {threadId} from 'node:worker_threads';
 import {BaseDataSource} from '@subql/types-core';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
-import {AutoQueue, memoryLock} from '../../utils';
+import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {IProjectService} from '../types';
 
@@ -40,7 +40,7 @@ export abstract class BaseWorkerService<
     private projectUpgradeService: IProjectUpgradeService,
     nodeConfig: NodeConfig
   ) {
-    this.queue = new AutoQueue(undefined, nodeConfig.batchSize, nodeConfig.timeout);
+    this.queue = new AutoQueue(undefined, nodeConfig.batchSize, nodeConfig.timeout, 'Worker Service');
   }
 
   async fetchBlock(height: number, extra: E): Promise<R | undefined> {
@@ -64,6 +64,9 @@ export abstract class BaseWorkerService<
         return this.toBlockResponse(block);
       });
     } catch (e: any) {
+      if (isTaskFlushedError(e)) {
+        return;
+      }
       logger.error(e, `Failed to fetch block ${height}`);
     }
   }

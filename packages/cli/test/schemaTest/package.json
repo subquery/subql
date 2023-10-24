@@ -23,7 +23,6 @@
   "dependencies": {
     "@subql/common": "latest",
     "@subql/types-ethereum": "latest",
-    "@subql/validator": "latest",
     "assert": "^2.0.0"
   },
   "devDependencies": {
