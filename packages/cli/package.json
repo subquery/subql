@@ -18,7 +18,6 @@
     "@subql/common-stellar": "^3.0.0",
     "@subql/common-substrate": "workspace:*",
     "@subql/utils": "workspace:*",
-    "@subql/validator": "workspace:*",
     "algosdk": "^1.19.0",
     "boxen": "5.1.2",
     "cli-ux": "^6.0.9",

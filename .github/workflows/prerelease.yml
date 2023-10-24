@@ -85,11 +85,6 @@ jobs:
         with:
           paths: packages/testing
 
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-validator
-        with:
-          paths: packages/validator
-
       - run: yarn
 
       - name: build
@@ -157,13 +152,6 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/query
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump validator & deploy
-        if: steps.changed-validator.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/validator
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump cli & deploy
