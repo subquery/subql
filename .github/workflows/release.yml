@@ -83,11 +83,6 @@ jobs:
           paths: packages/query
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-validator
-        with:
-          paths: packages/validator
-
-      - uses: marceloprado/has-changed-path@v1
         id: changed-testing
         with:
           paths: packages/testing
@@ -167,14 +162,6 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/query
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Validator
-        if: steps.changed-validator.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/validator
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

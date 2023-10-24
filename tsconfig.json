@@ -30,8 +30,6 @@
       "@subql/types-core/*": ["packages/types-core/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
-      "@subql/validator": ["packages/validator/src"],
-      "@subql/validator/*": ["packages/validator/src/*"],
       "@subql/testing": ["packages/testing/src"],
       "@subql/testing/*": ["packages/testing/src/*"]
     },
@@ -46,7 +44,6 @@
     {"path": "packages/types-core"},
     {"path": "packages/types"},
     {"path": "packages/utils"},
-    {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],
