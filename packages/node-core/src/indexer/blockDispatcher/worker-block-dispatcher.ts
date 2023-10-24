@@ -11,7 +11,7 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
-import {AutoQueue} from '../../utils';
+import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
@@ -31,9 +31,14 @@ type Worker = {
   terminate: () => Promise<number>;
 };
 
-function initAutoQueue<T>(workers: number | undefined, batchSize: number): AutoQueue<T> {
+function initAutoQueue<T>(
+  workers: number | undefined,
+  batchSize: number,
+  timeout?: number,
+  name?: string
+): AutoQueue<T> {
   assert(workers && workers > 0, 'Number of workers must be greater than 0');
-  return new AutoQueue(workers * batchSize * 2);
+  return new AutoQueue(workers * batchSize * 2, 1, timeout, name);
 }
 
 export abstract class WorkerBlockDispatcher<DS, W extends Worker>
@@ -67,7 +72,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       project,
       projectService,
       projectUpgradeService,
-      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize),
+      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
       smartBatchService,
       storeService,
       storeCacheService,
@@ -170,7 +175,12 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       }
     };
 
-    void this.queue.put(processBlock);
+    void this.queue.put(processBlock).catch((e) => {
+      if (isTaskFlushedError(e)) {
+        return;
+      }
+      throw e;
+    });
   }
 
   @Interval(15000)
