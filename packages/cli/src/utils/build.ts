@@ -23,6 +23,11 @@ const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `const yamlOutput = yaml.dump(project);` +
   `writeFileSync('${outputPath}', '# // Auto-generated , DO NOT EDIT\\n' + yamlOutput);`;
 
+// Replaces \ in path on windows that don't work with require
+function formatPath(p: string): string {
+  return p.replace(/\\/g, '/');
+}
+
 export async function buildManifestFromLocation(location: string, command: Command): Promise<string> {
   let directory: string;
   let projectManifestEntry: string;
@@ -55,6 +60,7 @@ export async function buildManifestFromLocation(location: string, command: Comma
   }
   return directory;
 }
+
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function generateManifestFromTs(projectManifestEntry: string, command: Command): Promise<string> {
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
@@ -64,7 +70,10 @@ export async function generateManifestFromTs(projectManifestEntry: string, comma
     const tsNodeService = tsNode.register({transpileOnly: true});
 
     // Compile the above script
-    const script = tsNodeService.compile(requireScriptWrapper(projectManifestEntry, projectYamlPath), 'inline.ts');
+    const script = tsNodeService.compile(
+      requireScriptWrapper(formatPath(projectManifestEntry), formatPath(projectYamlPath)),
+      'inline.ts'
+    );
 
     // Run compiled code
     eval(script);
