@@ -12,7 +12,7 @@ import {IndexerEvent} from '../../events';
 import {PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
-import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize} from '../../utils';
+import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
@@ -71,8 +71,8 @@ export abstract class BlockDispatcher<B, DS>
       poiSyncService,
       dynamicDsService
     );
-    this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-    this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize);
+    this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
+    this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch');
 
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(fetchBlocksBatches, 'BlockDispatcher', 'fetchBlocksBatches');
@@ -158,44 +158,50 @@ export abstract class BlockDispatcher<B, DS>
             this.smartBatchService.addToSizeBuffer([block]);
             return block;
           })
-          .catch((e) => {
-            logger.error(e, `Failed to fetch block ${blockNum}.`);
-            throw e;
-          })
-          .then((block) => {
-            const height = this.getBlockHeight(block);
+          .then(
+            (block) => {
+              const height = this.getBlockHeight(block);
 
-            return this.processQueue.put(async () => {
-              // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
-              // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
-              const peeked = this.queue.peek();
-              if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < blockNum)) {
-                logger.info(`Queue was reset for new DS, discarding fetched blocks`);
-                return;
-              }
-
-              try {
-                await this.preProcessBlock(height);
-                // Inject runtimeVersion here to enhance api.at preparation
-                const processBlockResponse = await this.indexBlock(block);
-
-                await this.postProcessBlock(height, processBlockResponse);
-
-                //set block to null for garbage collection
-                (block as any) = null;
-              } catch (e: any) {
-                // TODO discard any cache changes from this block height
-                if (this.isShutdown) {
+              return this.processQueue.put(async () => {
+                // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
+                // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
+                const peeked = this.queue.peek();
+                if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < blockNum)) {
+                  logger.info(`Queue was reset for new DS, discarding fetched blocks`);
                   return;
                 }
-                logger.error(
-                  e,
-                  `Failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
-                );
-                throw e;
+
+                try {
+                  await this.preProcessBlock(height);
+                  // Inject runtimeVersion here to enhance api.at preparation
+                  const processBlockResponse = await this.indexBlock(block);
+
+                  await this.postProcessBlock(height, processBlockResponse);
+
+                  //set block to null for garbage collection
+                  (block as any) = null;
+                } catch (e: any) {
+                  // TODO discard any cache changes from this block height
+                  if (this.isShutdown) {
+                    return;
+                  }
+                  logger.error(
+                    e,
+                    `Failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
+                  );
+                  throw e;
+                }
+              });
+            },
+            (e) => {
+              if (isTaskFlushedError(e)) {
+                // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
+                return;
               }
-            });
-          })
+              logger.error(e, `Failed to fetch block ${blockNum}.`);
+              throw e;
+            }
+          )
           .catch((e) => {
             logger.warn(e, 'Failed to enqueue fetched block to process');
             process.exit(1);

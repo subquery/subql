@@ -12,10 +12,14 @@ export interface IQueue {
   flush(): void;
 }
 
-class TaskFlushedError extends Error {
-  constructor() {
-    super('This task was flushed from the queue before completing');
+export class TaskFlushedError extends Error {
+  constructor(queueName = 'Auto') {
+    super(`This task was flushed from the ${queueName} queue before completing`);
   }
+}
+
+export function isTaskFlushedError(e: any): e is TaskFlushedError {
+  return e instanceof TaskFlushedError;
 }
 
 export class Queue<T> implements IQueue {
@@ -115,8 +119,9 @@ export class AutoQueue<T> implements IQueue {
    * @param {number} capacity - The size limit of the queue, if undefined there is no limit
    * @param {number} [concurrency=1] - The number of parallel tasks that can be processed at any one time.
    * @param {number} [taskTimeoutSec=900] - A timeout for tasks to complete in. Units are seconds. Align with nodeConfig process timeout.
+   * @param {string} [name] - A name for the queue to help with debugging
    * */
-  constructor(capacity?: number, public concurrency = 1, private taskTimeoutSec = 900) {
+  constructor(capacity?: number, public concurrency = 1, private taskTimeoutSec = 900, private name = 'Auto') {
     this.queue = new Queue<Action<T>>(capacity);
   }
 
@@ -143,11 +148,11 @@ export class AutoQueue<T> implements IQueue {
 
   putMany(tasks: Array<Task<T>>): Promise<T>[] {
     if (this.freeSpace && tasks.length > this.freeSpace) {
-      throw new Error('Queue exceeds max size');
+      throw new Error(`${this.name} Queue exceeds max size`);
     }
 
     if (this._abort) {
-      throw new Error('Queue has been aborted');
+      throw new Error(`${this.name} Queue has been aborted`);
     }
 
     return tasks.map((task, index) => {
@@ -194,12 +199,12 @@ export class AutoQueue<T> implements IQueue {
       const p = timeout(
         Promise.resolve(action.task()),
         this.taskTimeoutSec,
-        `Auto queue process task timeout in ${this.taskTimeoutSec} seconds. Please increase --timeout`
+        `${this.name} Queue process task timeout in ${this.taskTimeoutSec} seconds. Please increase --timeout`
       )
         .then((result) => {
           // Queue was flushed while task was running, we ned to discard now
           if (this.nextTask > action.index) {
-            action.reject(new TaskFlushedError());
+            action.reject(new TaskFlushedError(this.name));
             return;
           }
           this.outOfOrderTasks[action.index] = {action, result};
@@ -207,7 +212,7 @@ export class AutoQueue<T> implements IQueue {
         .catch((error) => {
           // Queue was flushed while task was running, we ned to discard now
           if (this.nextTask > action.index) {
-            action.reject(new TaskFlushedError());
+            action.reject(new TaskFlushedError(this.name));
             return;
           }
           this.outOfOrderTasks[action.index] = {action, error};
@@ -244,7 +249,7 @@ export class AutoQueue<T> implements IQueue {
     // Clean up out of order tasks
     Object.entries(this.outOfOrderTasks).map(([id, task]) => {
       // Is this desired behaviour? The other option would be resolving undefined
-      task.action.reject(new TaskFlushedError());
+      task.action.reject(new TaskFlushedError(this.name));
     });
     this.outOfOrderTasks = {};
     this.pendingPromise = false;
