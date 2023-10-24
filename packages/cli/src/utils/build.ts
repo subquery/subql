@@ -1,10 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {execFile} from 'child_process';
 import {assert} from 'console';
 import {existsSync, lstatSync, readFileSync, writeFileSync} from 'fs';
-import util from 'node:util';
 import path from 'path';
 import {Command} from '@oclif/core';
 import {
@@ -15,6 +13,7 @@ import {
 } from '@subql/common';
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
+import * as tsNode from 'ts-node';
 
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `import {toJsonObject} from '@subql/common';` +
@@ -23,6 +22,11 @@ const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `const project = toJsonObject((require('${scriptPath}')).default);` +
   `const yamlOutput = yaml.dump(project);` +
   `writeFileSync('${outputPath}', '# // Auto-generated , DO NOT EDIT\\n' + yamlOutput);`;
+
+// Replaces \ in path on windows that don't work with require
+function formatPath(p: string): string {
+  return p.replace(/\\/g, '/');
+}
 
 export async function buildManifestFromLocation(location: string, command: Command): Promise<string> {
   let directory: string;
@@ -51,20 +55,29 @@ export async function buildManifestFromLocation(location: string, command: Comma
       replaceTsReferencesInMultichain(projectYamlPath);
     }
   } catch (e) {
+    console.log(e);
     throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
   }
   return directory;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function generateManifestFromTs(projectManifestEntry: string, command: Command): Promise<string> {
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
   try {
-    await util.promisify(execFile)(
-      'npx',
-      ['ts-node', '-e', requireScriptWrapper(projectManifestEntry, projectYamlPath)],
-      {cwd: path.dirname(projectManifestEntry)}
+    // Allows requiring TS, this allows requirng the projectManifestEntry ts file
+    const tsNodeService = tsNode.register({transpileOnly: true});
+
+    // Compile the above script
+    const script = tsNodeService.compile(
+      requireScriptWrapper(formatPath(projectManifestEntry), formatPath(projectYamlPath)),
+      'inline.ts'
     );
+
+    // Run compiled code
+    eval(script);
+
     command.log(`Project manifest generated to ${projectYamlPath}`);
 
     return projectYamlPath;
