@@ -289,10 +289,7 @@ export const yamlExtractor: ManifestExtractor<EthereumDs[]> = (dataSources, case
 
   dataSources
     .filter((d: EthereumDs) => {
-      if (casedInputAddress && d.options.address) {
-        return casedInputAddress === d.options.address.toLowerCase();
-      }
-      return casedInputAddress === d.options.address || (!casedInputAddress && !d.options.address);
+      return casedInputAddress === d.options?.address.toLowerCase() || (!!casedInputAddress && !!d.options?.address);
     })
     .forEach((handler: any) => {
       if ('topics' in handler.filter) {
@@ -313,7 +310,7 @@ export const tsExtractor: ManifestExtractor<string> = (dataSources, casedInputAd
   splitArrayString(dataSources)
     .filter((d) => {
       const match = d.match(ADDRESS_REG);
-      return match && match[1].toLowerCase() === casedInputAddress;
+      return match && match.length >= 2 && match[1].toLowerCase() === casedInputAddress;
     })
     .forEach((d) => {
       const extractedValue = extractFromTs(d, {handlers: undefined}) as {handlers: string};
