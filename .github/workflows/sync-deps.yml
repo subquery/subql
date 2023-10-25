@@ -1,0 +1,45 @@
+name: Sync Deps
+on:
+  workflow_dispatch:
+jobs:
+  code-style:
+    name: code-style
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+    env:
+      SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
+      SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
+      SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - run: yarn
+
+    # Update deps
+    - name: update types
+      run: yarn --cwd ./packages/types add @subql/types-core
+    - name: update common
+      run: yarn --cwd ./packages/common-ethereum add @subql/common
+    - name: update node
+      run: yarn --cwd ./packages/node add @subql/common @subql/types-core
+
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=branch::sync-$(date +'%Y%m%d')"
+
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: 'Update @subql deps'
+        branch: ${{ steps.date.outputs.branch }}
+        create_branch: true
+
+    - uses: peter-evans/create-pull-request@v5
+      with:
+        branch: ${{ steps.date.outputs.branch }}
+      if: steps.auto-commit-action.outputs.changes_detected == 'true'
+
