@@ -37,4 +37,7 @@ jobs:
         branch: ${{ steps.branch-name.outputs.branch }}
         commit-message: "Update @subql deps"
         token: ${{ secrets.SQ_SDK_GITHUB_SECRET }}
+        title: 'Sync @subql dependencies'
+        body-file: '.github/PULL_REQUEST_TEMPLATE'
+
 
