@@ -30,7 +30,7 @@ jobs:
 
     - name: Determine branch name
       id: branch-name
-      run: echo "branch=branch::sync-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      run: echo "branch=sync-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
 
     - uses: peter-evans/create-pull-request@v5
       with:
