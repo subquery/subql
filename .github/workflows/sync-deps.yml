@@ -1,0 +1,43 @@
+name: Sync Deps
+on:
+  workflow_dispatch:
+jobs:
+  code-style:
+    name: update deps
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+    env:
+      SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
+      SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
+      SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - run: yarn
+
+    # Update deps
+    - name: Update types
+      run: yarn --cwd ./packages/types add @subql/types-core
+    - name: Update common
+      run: yarn --cwd ./packages/common-stellar add @subql/common
+    - name: Update node
+      run: yarn --cwd ./packages/node add @subql/common @subql/node-core
+
+    - name: Determine branch name
+      id: branch-name
+      run: echo "branch=sync-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+    - uses: peter-evans/create-pull-request@v5
+      with:
+        branch: ${{ steps.branch-name.outputs.branch }}
+        commit-message: "Update @subql deps"
+        token: ${{ secrets.SQ_SDK_GITHUB_SECRET }}
+        title: 'Sync @subql dependencies'
+        body-file: '.github/PULL_REQUEST_TEMPLATE.md'
+
+
