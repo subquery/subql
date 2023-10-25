@@ -28,22 +28,12 @@ jobs:
     - name: Update node
       run: yarn --cwd ./packages/node add @subql/common @subql/types-core
 
-    - name: Get current date
-      id: date
+    - name: Determine branch name
+      id: branch-name
       run: echo "::set-output name=branch::sync-$(date +'%Y%m%d')"
-
-    - uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: 'Update @subql deps'
-        branch: ${{ steps.date.outputs.branch }}
-        create_branch: true
-
-    - name: "Run if changes have been detected"
-      # if: steps.auto-commit-action.outputs.changes_detected == 'true'
-      run: echo "Changes 2222! ${{steps.auto-commit-action.outputs.changes_detected}}"
 
     - uses: peter-evans/create-pull-request@v5
       with:
-        branch: ${{ steps.date.outputs.branch }}
-      if: steps.auto-commit-action.outputs.changes_detected == 'true'
+        branch: ${{ steps.date.branch-name.branch }}
+        commit-message: "Update @subql deps"
 
