@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.1] - 2023-10-25
 ### Fixed
 - Fix crash when creating new dynamic datasources
 
@@ -295,7 +297,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.1...HEAD
+[3.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.0...node-ethereum/3.1.1
 [3.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.6...node-ethereum/3.1.0
 [3.0.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.5...node-ethereum/3.0.6
 [3.0.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.0.4...node-ethereum/3.0.5
