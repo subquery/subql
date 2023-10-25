@@ -32,10 +32,6 @@ jobs:
       id: date
       run: echo "::set-output name=branch::sync-$(date +'%Y%m%d')"
 
-    - name: "Run if changes have been detected"
-      if: steps.auto-commit-action.outputs.changes_detected == 'true'
-      run: echo "Changes 1111!"
-
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: 'Update @subql deps'
@@ -43,8 +39,8 @@ jobs:
         create_branch: true
 
     - name: "Run if changes have been detected"
-      if: steps.auto-commit-action.outputs.changes_detected == 'true'
-      run: echo "Changes 2222!"
+      # if: steps.auto-commit-action.outputs.changes_detected == 'true'
+      run: echo "Changes 2222! ${{steps.auto-commit-action.outputs.changes_detected}}"
 
     - uses: peter-evans/create-pull-request@v5
       with:
