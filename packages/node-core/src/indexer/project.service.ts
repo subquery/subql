@@ -268,9 +268,16 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return [...dataSources, ...dynamicDs];
   }
 
-  async hasDataSourcesAfterHeight(height: number): Promise<boolean> {
-    const dataSources = await this.getDataSources();
-    return dataSources.some((ds) => ds.endBlock === undefined || ds.endBlock > height);
+  hasDataSourcesAfterHeight(height: number): boolean {
+    const datasourcesMap = this.getDataSourcesMap();
+    //check if there are datasoures for current height
+    if (datasourcesMap.get(height).length) {
+      return true;
+    }
+
+    //check for datasources with height after the current height
+    const dataSources = this.getDataSourcesMap().getAll();
+    return [...dataSources.entries()].some(([dsHeight, ds]) => dsHeight > height && ds.length);
   }
 
   // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers

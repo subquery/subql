@@ -48,5 +48,5 @@ export interface IProjectService<DS> {
   getDataSources(blockHeight?: number): Promise<DS[]>;
   getStartBlockFromDataSources(): number;
   getDataSourcesMap(): BlockHeightMap<DS[]>;
-  hasDataSourcesAfterHeight(height: number): Promise<boolean>;
+  hasDataSourcesAfterHeight(height: number): boolean;
 }

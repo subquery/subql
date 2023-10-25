@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NodeConfig} from '../configure';
+import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {BaseProjectService} from './project.service';
@@ -39,18 +40,51 @@ describe('BaseProjectService', () => {
     );
   });
 
-  it('hasDataSourcesAfterHeight', async () => {
-    service.getDataSources = jest.fn().mockResolvedValue([{endBlock: 100}, {endBlock: 200}, {endBlock: 300}]);
+  it('hasDataSourcesAfterHeight', () => {
+    (service as any).dynamicDsService.dynamicDatasources = [];
+    (service as any).projectUpgradeService = {
+      projects: [
+        [
+          1,
+          {
+            dataSources: [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 10, endBlock: 20},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 50, endBlock: 200},
+              {startBlock: 500},
+            ],
+          },
+        ],
+      ],
+    } as any;
 
-    const result = await service.hasDataSourcesAfterHeight(150);
-    expect(result).toBe(true);
+    const result1 = service.hasDataSourcesAfterHeight(301);
+    expect(result1).toBe(true);
+    const result2 = service.hasDataSourcesAfterHeight(502);
+    expect(result2).toBe(true);
   });
 
-  it('hasDataSourcesAfterHeight - undefined endBlock', async () => {
-    service.getDataSources = jest.fn().mockResolvedValue([{endBlock: 100}, {endBlock: undefined}]);
+  it('hasDataSourcesAfterHeight - no available datasource', () => {
+    (service as any).dynamicDsService.dynamicDatasources = [];
+    (service as any).projectUpgradeService = {
+      projects: [
+        [
+          1,
+          {
+            dataSources: [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 10, endBlock: 20},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 50, endBlock: 200},
+            ],
+          },
+        ],
+      ],
+    } as any;
 
-    const result = await service.hasDataSourcesAfterHeight(150);
-    expect(result).toBe(true);
+    const result = service.hasDataSourcesAfterHeight(301);
+    expect(result).toBe(false);
   });
 
   it('getDataSources', async () => {
