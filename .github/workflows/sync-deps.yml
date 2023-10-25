@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 jobs:
   code-style:
-    name: code-style
+    name: update deps
     runs-on: ubuntu-latest
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
@@ -21,22 +21,30 @@ jobs:
     - run: yarn
 
     # Update deps
-    - name: update types
+    - name: Update types
       run: yarn --cwd ./packages/types add @subql/types-core
-    - name: update common
+    - name: Update common
       run: yarn --cwd ./packages/common-ethereum add @subql/common
-    - name: update node
+    - name: Update node
       run: yarn --cwd ./packages/node add @subql/common @subql/types-core
 
     - name: Get current date
       id: date
       run: echo "::set-output name=branch::sync-$(date +'%Y%m%d')"
 
+    - name: "Run if changes have been detected"
+      if: steps.auto-commit-action.outputs.changes_detected == 'true'
+      run: echo "Changes 1111!"
+
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: 'Update @subql deps'
         branch: ${{ steps.date.outputs.branch }}
         create_branch: true
+
+    - name: "Run if changes have been detected"
+      if: steps.auto-commit-action.outputs.changes_detected == 'true'
+      run: echo "Changes 2222!"
 
     - uses: peter-evans/create-pull-request@v5
       with:
