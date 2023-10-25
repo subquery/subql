@@ -30,10 +30,10 @@ jobs:
 
     - name: Determine branch name
       id: branch-name
-      run: echo "::set-output name=branch::sync-$(date +'%Y%m%d')"
+      run: echo "branch=branch::sync-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
 
     - uses: peter-evans/create-pull-request@v5
       with:
-        branch: ${{ steps.date.branch-name.branch }}
+        branch: ${{ steps.branch-name.outputs.branch }}
         commit-message: "Update @subql deps"
 
