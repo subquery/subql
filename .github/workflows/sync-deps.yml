@@ -36,5 +36,5 @@ jobs:
       with:
         branch: ${{ steps.branch-name.outputs.branch }}
         commit-message: "Update @subql deps"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.SQ_SDK_GITHUB_SECRET }}
 
