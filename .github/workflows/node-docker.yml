@@ -1,11 +1,14 @@
 name: "Node-to-docker"
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       isLatest:
         description: 'Add latest tag'
         default: 'true'
-        require: true
+        required: true
 
 jobs:
   node-build-push-docker-onfinality:
@@ -29,14 +32,24 @@ jobs:
           username: onfinality
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
       ## node
       - name: Get updated node version
         id: get-node-version
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
+      # Replace workspace:* with actual versions
+      - name: Replace workspace dependencies with actual versions
+        run: |
+          sh .github/workflows/scripts/replace-versions.sh
+
       - name: Build and push
-        if: github.event.inputs.isLatest == 'false'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -46,7 +59,7 @@ jobs:
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
-        if: github.event.inputs.isLatest == 'true'
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -54,6 +67,10 @@ jobs:
           file: ./packages/node/Dockerfile
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
+
+      # Revert package.json to its original state after publishing
+      - name: Revert package.json
+        run: git checkout -- ./packages/node/package.json
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -79,11 +96,15 @@ jobs:
           username: subquerynetwork
           password: ${{ secrets.SQ_DOCKERHUB_TOKEN }}
 
-      ## node
-      - name: Get updated node version
-        id: get-node-version
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      # Replace workspace:* with actual versions
+      - name: Replace workspace dependencies with actual versions
         run: |
-          sh .github/workflows/scripts/nodeVersion.sh
+          sh .github/workflows/scripts/replace-versions.sh
 
       - name: Build and push
         if: github.event.inputs.isLatest == 'false'
@@ -93,7 +114,6 @@ jobs:
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
           tags: subquerynetwork/subql-node-substrate:v${{ steps.get-node-version.outputs.NODE_VERSION }},
-          build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
         if: github.event.inputs.isLatest == 'true'
@@ -103,7 +123,10 @@ jobs:
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
           tags: subquerynetwork/subql-node-substrate:v${{ steps.get-node-version.outputs.NODE_VERSION }},subquerynetwork/subql-node-substrate:latest
-          build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
+
+      # Revert package.json to its original state after publishing
+      - name: Revert package.json
+        run: git checkout -- ./packages/node/package.json
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

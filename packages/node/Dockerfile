@@ -1,14 +1,28 @@
 # production images
 FROM node:18 as builder
-ARG RELEASE_VERSION
+
 ENTRYPOINT ["subql-node"]
-RUN npm i -g --unsafe-perm @subql/node@${RELEASE_VERSION}
+RUN npm install -g --force yarn@latest
+
+WORKDIR /app
+COPY . .
+
+# Install dependencies
+RUN yarn install
+
+# Install TypeScript globally
+#RUN npm install -g typescript
+
+# Build the application
+#RUN yarn build
 
 FROM node:18-alpine
 ENV TZ utc
 
 RUN apk add --no-cache tini git curl
-COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
+# Copy the built application from the previous stage
+COPY --from=builder /app .
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node/bin/run"]
+# Adjust the ENTRYPOINT to the location of your application's start script
+ENTRYPOINT ["/sbin/tini", "--", "node", "bin/run"]
 CMD ["-f","/app"]
