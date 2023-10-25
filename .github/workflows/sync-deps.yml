@@ -26,7 +26,7 @@ jobs:
     - name: Update common
       run: yarn --cwd ./packages/common-ethereum add @subql/common
     - name: Update node
-      run: yarn --cwd ./packages/node add @subql/common @subql/types-core
+      run: yarn --cwd ./packages/node add @subql/common @subql/node-core
 
     - name: Determine branch name
       id: branch-name
@@ -38,6 +38,6 @@ jobs:
         commit-message: "Update @subql deps"
         token: ${{ secrets.SQ_SDK_GITHUB_SECRET }}
         title: 'Sync @subql dependencies'
-        body-file: '.github/PULL_REQUEST_TEMPLATE'
+        body-file: '.github/PULL_REQUEST_TEMPLATE.md'
 
 
