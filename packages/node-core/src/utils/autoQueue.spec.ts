@@ -83,7 +83,7 @@ describe('AutoQueue', () => {
           results.push(r);
         })
       )
-    ).rejects.toEqual(new Error('Auto queue process task timeout in 0.2 seconds. Please increase --timeout'));
+    ).rejects.toEqual(new Error('Auto Queue process task timeout in 0.2 seconds. Please increase --timeout'));
   });
 
   it('can adjust the parallelism while running', async () => {
