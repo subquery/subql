@@ -6,9 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2023-10-25
+### Fixed
+- Update node-core with fix for crash when creating a dynamic datasource
+
 ## [3.1.0] - 2023-10-20
 ### Added
 - Inject in-memory cache to sandbox (#2110)
+
 ### Fixed
 - Bump with `@subq/node-core` 3.1.0 , fixed poi migration init check, and improve logging
 
@@ -1021,7 +1026,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.1.1...HEAD
+[3.1.1]: https://github.com/subquery/subql/compare/node/3.1.0...node/3.1.1
 [3.1.0]: https://github.com/subquery/subql/compare/v3.0.8...v3.1.0
 [3.0.8]: https://github.com/subquery/subql/compare/node/3.0.7...node/3.0.8
 [3.0.7]: https://github.com/subquery/subql/compare/node/3.0.6...node/3.0.7
