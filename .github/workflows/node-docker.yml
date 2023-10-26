@@ -107,7 +107,7 @@ jobs:
       # Replace workspace:* with actual versions
       - name: Replace workspace dependencies with actual versions
         run: |
-          sh .github/workflows/scripts/replace-versions.sh
+          ./.github/workflows/scripts/replace-versions.sh
 
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
