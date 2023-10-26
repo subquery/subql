@@ -1,5 +1,8 @@
 name: "Node-to-docker"
 on:
+  push:
+    branches:
+      - docker-from-source
   release:
     types:
       - published
@@ -49,7 +52,7 @@ jobs:
           sh .github/workflows/scripts/replace-versions.sh
 
       - name: Build and push
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
+        if: gihub.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -107,7 +110,7 @@ jobs:
           sh .github/workflows/scripts/replace-versions.sh
 
       - name: Build and push
-        if: github.event.inputs.isLatest == 'false'
+        if: gihub.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -116,7 +119,7 @@ jobs:
           tags: subquerynetwork/subql-node-substrate:dockertest,
 
       - name: Build and push
-        if: github.event.inputs.isLatest == 'true'
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
           push: true
