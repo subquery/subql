@@ -72,6 +72,7 @@ function syncRuntimeService(
 export type IIndexerWorker = IBaseIndexerWorker & {
   syncRuntimeService: typeof syncRuntimeService;
   getSpecFromMap: typeof getSpecFromMap;
+  initWorker: typeof initWorker;
 };
 
 (global as any).host = createWorkerHost([], {

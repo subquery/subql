@@ -76,7 +76,7 @@ export class WorkerBlockDispatcherService
           SubstrateDatasource
         >(
           path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
-          ['syncRuntimeService', 'getSpecFromMap'],
+          ['syncRuntimeService', 'getSpecFromMap', 'initWorker'],
           storeService.getStore(),
           cacheService.getCache(),
           dynamicDsService,
