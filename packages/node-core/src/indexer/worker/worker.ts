@@ -190,7 +190,7 @@ export async function createIndexerWorker<
     DefaultWorkerFunctions<ApiConnection, DS>
   >(
     workerPath,
-    [...baseWorkerFunctions, ...workerFns],
+    [...baseWorkerFunctions, 'initWorker', ...workerFns],
     {
       ...cacheHostFunctions(cache),
       ...storeHostFunctions(store),
