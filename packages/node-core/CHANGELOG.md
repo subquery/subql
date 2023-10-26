@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.1.1] - 2023-10-25
 ### Fixed
 - Not handling TaskFlushedErrors in block dispatchers (#2120)
 
@@ -450,7 +452,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.1.1...HEAD
+[6.1.1]: https://github.com/subquery/subql/compare/node-core/6.1.0...node-core/6.1.1
 [6.1.0]: https://github.com/subquery/subql/compare/node-core/6.0.4...node-core/6.1.0
 [6.0.4]: https://github.com/subquery/subql/compare/node-core/6.0.3...node-core/6.0.4
 [6.0.3]: https://github.com/subquery/subql/compare/node-core/6.0.2...node-core/6.0.3
