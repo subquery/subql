@@ -17,5 +17,5 @@ do
   version=$(jq -r '.version' $package/package.json)
 
   # Replace workspace:* with the actual version in package.json of node
-  sed -i "s#\"${packages[$package]}\": \"workspace:*\"#\"${packages[$package]}\": \"$version\"#g" ./packages/node/package.json
+  sed -i "s#\"${packages[$package]}\": \"workspace:\*\"#\"${packages[$package]}\": \"$version\"#g" ./packages/node/package.json
 done
