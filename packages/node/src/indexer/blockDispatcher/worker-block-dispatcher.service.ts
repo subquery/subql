@@ -6,77 +6,30 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  Worker,
   SmartBatchService,
   StoreService,
   PoiService,
   StoreCacheService,
   IProjectService,
-  IDynamicDsService,
   WorkerBlockDispatcher,
-  IUnfinalizedBlocksService,
   ConnectionPoolStateManager,
-  connectionPoolStateHostFunctions,
   IProjectUpgradeService,
-  DefaultWorkerFunctions,
-  baseWorkerFunctions,
-  storeHostFunctions,
-  cacheHostFunctions,
-  dynamicDsHostFunctions,
   PoiSyncService,
   InMemoryCacheService,
+  createIndexerWorker as createIndexerWorkerCore,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { Cache, Store } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
-import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
+import { IIndexerWorker } from '../worker/worker';
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
-
-async function createIndexerWorker(
-  store: Store,
-  cache: Cache,
-  dynamicDsService: IDynamicDsService<SubstrateDatasource>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
-  connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
-  root: string,
-  startHeight: number,
-): Promise<IndexerWorker> {
-  const indexerWorker = Worker.create<
-    IInitIndexerWorker,
-    DefaultWorkerFunctions<ApiPromiseConnection, SubstrateDatasource>
-  >(
-    path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
-    [
-      ...baseWorkerFunctions,
-      'initWorker',
-      'syncRuntimeService',
-      'getSpecFromMap',
-    ],
-    {
-      ...cacheHostFunctions(cache),
-      ...storeHostFunctions(store),
-      ...dynamicDsHostFunctions(dynamicDsService),
-      unfinalizedBlocksProcess:
-        unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
-          unfinalizedBlocksService,
-        ),
-      ...connectionPoolStateHostFunctions(connectionPoolState),
-    },
-    root,
-  );
-
-  await indexerWorker.initWorker(startHeight);
-
-  return indexerWorker;
-}
 
 @Injectable()
 export class WorkerBlockDispatcherService
@@ -100,7 +53,7 @@ export class WorkerBlockDispatcherService
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
-    unfinalizedBlocksSevice: UnfinalizedBlocksService,
+    unfinalizedBlocksService: UnfinalizedBlocksService,
     connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
   ) {
     super(
@@ -116,11 +69,18 @@ export class WorkerBlockDispatcherService
       project,
       dynamicDsService,
       () =>
-        createIndexerWorker(
+        createIndexerWorkerCore<
+          IIndexerWorker,
+          ApiPromiseConnection,
+          BlockContent,
+          SubstrateDatasource
+        >(
+          path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
+          ['syncRuntimeService', 'getSpecFromMap'],
           storeService.getStore(),
           cacheService.getCache(),
           dynamicDsService,
-          unfinalizedBlocksSevice,
+          unfinalizedBlocksService,
           connectionPoolState,
           project.root,
           projectService.startHeight,

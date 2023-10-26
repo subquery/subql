@@ -21,13 +21,17 @@ export class WorkerUnfinalizedBlocksService
     }
   }
 
-  async processUnfinalizedBlocks(block: BlockContent): Promise<number | null> {
+  async processUnfinalizedBlocks(
+    block: BlockContent,
+  ): Promise<number | undefined> {
     return this.host.unfinalizedBlocksProcess(
       substrateHeaderToHeader(block.block.block.header),
     );
   }
 
-  async processUnfinalizedBlockHeader(header: Header): Promise<number | null> {
+  async processUnfinalizedBlockHeader(
+    header: Header | undefined,
+  ): Promise<number | undefined> {
     return this.host.unfinalizedBlocksProcess(header);
   }
 
