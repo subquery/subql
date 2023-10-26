@@ -74,10 +74,6 @@ export type IIndexerWorker = IBaseIndexerWorker & {
   getSpecFromMap: typeof getSpecFromMap;
 };
 
-export type IInitIndexerWorker = IIndexerWorker & {
-  initWorker: typeof initWorker;
-};
-
 (global as any).host = createWorkerHost([], {
   syncRuntimeService,
   getSpecFromMap,
