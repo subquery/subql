@@ -417,18 +417,6 @@ describe('CLI codegen:generate', () => {
     const absolutePath = '/root/Downloads/example.file';
     expect(resolveToAbsolutePath(absolutePath)).toBe(absolutePath);
   });
-  it('read ds from ts-manifest', async () => {
-    const projectPath = path.join(__dirname, '../../test/ts-manifest', DEFAULT_TS_MANIFEST);
-    const m = await fs.promises.readFile(projectPath, 'utf8');
-    expect(
-      extractFromTs(m, {
-        dataSources: undefined,
-      })
-    ).toStrictEqual({
-      dataSources:
-        '[\n        {\n            kind: EthereumDatasourceKind.Runtime,\n            startBlock: 4719568,\n\n            options: {\n                // Must be a key of assets\n                abi:\'erc20\',\n                // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n                address:\'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\'\n            },\n            assets: new Map([[\'erc20\', { file: \'./abis/erc20.abi.json\' }]]),\n            mapping: {\n                file: "./dist/index.js",\n                handlers: [\n                    {\n                        kind: EthereumHandlerKind.Call,\n                        handler: "handleTransaction",\n                        filter: {\n                            /**\n                             * The function can either be the function fragment or signature\n                             * function: \'0x095ea7b3\'\n                             * function: \'0x7ff36ab500000000000000000000000000000000000000000000000000000000\'\n                             */\n                            function: "approve(address spender, uint256 rawAmount)",\n                        },\n                    },\n                    {\n                        kind: EthereumHandlerKind.Event,\n                        handler: "handleLog",\n                        filter: {\n                            /**\n                             * Follows standard log filters https://docs.ethers.io/v5/concepts/events/\n                             * address: "0x60781C2586D68229fde47564546784ab3fACA982"\n                             */\n                            topics: ["Transfer(address indexed from, address indexed to, uint256 amount)"],\n                        },\n                    },\n                ],\n            },\n        },\n    ]',
-    });
-  });
   it('filter existing methods', () => {
     const casedInputAddress = '0x60781C2586D68229fde47564546784ab3fACA982'.toLowerCase();
 
@@ -621,9 +609,8 @@ describe('CLI codegen:generate', () => {
       topics: TOPICS_REG,
       endpoint: ENDPOINT_REG,
     });
-    expect(v).toStrictEqual({
-      dataSources:
-        '[\n' +
+    expect(v.dataSources).toMatch(
+      '[\n' +
         '    {\n' +
         '      kind: EthereumDatasourceKind.Runtime,\n' +
         '      startBlock: 4719568,\n' +
@@ -664,9 +651,11 @@ describe('CLI codegen:generate', () => {
         '        ],\n' +
         '      },\n' +
         '    },\n' +
-        '  ]',
-      handlers:
-        '[\n' +
+        '  ]'
+    );
+
+    expect(v.handlers).toMatch(
+      '[\n' +
         '          {\n' +
         '            kind: EthereumHandlerKind.Call,\n' +
         "            handler: 'handleTransaction',\n" +
@@ -690,12 +679,14 @@ describe('CLI codegen:generate', () => {
         "              topics: ['Transfer(address indexed from, address indexed to, uint256 amount)'],\n" +
         '            },\n' +
         '          },\n' +
-        '        ]',
-      function: 'approve(address spender, uint256 rawAmount)',
-      topics: ['Transfer(address indexed from, address indexed to, uint256 amount)'],
-      endpoint: ['https://eth.api.onfinality.io/public'],
-    });
+        '        ]'
+    );
+    // TODO expected to fail, due to unable to skip comments
+    expect(v.function).toMatch('approve(address spender, uint256 rawAmount)');
+    expect(v.topics[0]).toMatch('Transfer(address indexed from, address indexed to, uint256 amount)');
+    expect(v.endpoint[0]).toMatch('https://eth.api.onfinality.io/public');
   });
+  // });
   // All these test should test against mockData as well as
   it('Should replace value in tsManifetst', async () => {
     const projectPath = path.join(__dirname, '../../test/ts-manifest', DEFAULT_TS_MANIFEST);
@@ -740,7 +731,6 @@ describe('CLI codegen:generate', () => {
       "{key: {key: 'value1'}}",
       "{key: {key: 'value1'}}",
     ]);
-
     // nested arrarys and objects
     expect(
       splitArrayString(

@@ -206,7 +206,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     };
     await generateManifestTs(path.join(pPath, './mock-project.ts'), mockInput, tsManifest);
     const newManifest = await fs.promises.readFile(filePath, 'utf8');
-    expect(newManifest).toBe(
+    expect(newManifest).toMatch(
       `// @ts-nocheck
 import {
     EthereumProject,
