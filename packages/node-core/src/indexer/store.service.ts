@@ -714,35 +714,14 @@ group by
     if (!this.historical) {
       throw new Error('Unable to reindex, historical state not enabled');
     }
+    // This should only been called from CLI, blockHeight in storeService never been set and is required for`beforeFind` hook
+    // Height no need to change for rewind during indexing
+    if (this._blockHeight === undefined) {
+      this.setBlockHeight(targetBlockHeight);
+    }
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
-        await model.destroy({
-          transaction,
-          hooks: false,
-          where: this.sequelize.where(
-            this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-            Op.gt,
-            targetBlockHeight
-          ),
-        });
-        await model.update(
-          {
-            __block_range: this.sequelize.fn(
-              'int8range',
-              this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-              null
-            ),
-          },
-          {
-            transaction,
-            hooks: false,
-            where: {
-              __block_range: {
-                [Op.contains]: targetBlockHeight,
-              },
-            },
-          }
-        );
+        await batchDeleteAndThenUpdate(this.sequelize, model, transaction, targetBlockHeight);
       }
     }
     this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
@@ -905,5 +884,75 @@ group by
         }
       },
     };
+  }
+}
+
+// REMOVE 1,000 record per batch
+async function batchDeleteAndThenUpdate(
+  sequelize: Sequelize,
+  model: ModelStatic<any>,
+  transaction: Transaction,
+  targetBlockHeight: number,
+  batchSize = 1000
+): Promise<void> {
+  let offset = 0;
+  let completed = false;
+  // eslint-disable-next-line no-constant-condition
+  while (!completed) {
+    try {
+      const recordsToUpdate = await model.findAll({
+        transaction,
+        limit: batchSize,
+        offset,
+        where: {
+          __block_range: {
+            [Op.contains]: targetBlockHeight,
+          },
+        },
+      });
+      const recordsToDelete = await model.findAll({
+        transaction,
+        limit: batchSize,
+        offset,
+        where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
+      });
+      if (recordsToDelete.length === 0 && recordsToUpdate.length === 0) {
+        break;
+        completed = true;
+      }
+      logger.debug(
+        `Found ${model.name} recordsToDelete ${recordsToDelete.length},recordsToUpdate ${recordsToUpdate.length},`
+      );
+      if (recordsToDelete.length) {
+        await model.destroy({
+          transaction,
+          hooks: false,
+          where: {
+            _id: {
+              [Op.in]: recordsToDelete.map((record) => record._id),
+            },
+          },
+        });
+      }
+      if (recordsToUpdate.length) {
+        await model.update(
+          {
+            __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
+          },
+          {
+            transaction,
+            hooks: false,
+            where: {
+              _id: {
+                [Op.in]: recordsToUpdate.map((record) => record._id),
+              },
+            },
+          }
+        );
+      }
+      offset += batchSize;
+    } catch (e) {
+      throw new Error(`Reindex update model ${model.name} failed, please try to reindex again: ${e}`);
+    }
   }
 }

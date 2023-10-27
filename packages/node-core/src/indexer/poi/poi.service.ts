@@ -7,6 +7,7 @@ import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {sqlIterator} from '../../utils';
+import {PoiRepo} from '../entities';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
 import {ISubqueryProject} from '../types';
@@ -159,10 +160,57 @@ export class PoiService implements OnApplicationShutdown {
         },
       },
     });
+
+    await batchDeletePoi(this.poiRepo.model, transaction, targetBlockHeight);
     const lastSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
     if (lastSyncedPoiHeight !== undefined && lastSyncedPoiHeight > targetBlockHeight) {
       this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
     }
     this.storeCache.metadata.bulkRemove(['lastCreatedPoiHeight']);
+  }
+}
+
+// REMOVE 10,000 record per batch
+async function batchDeletePoi(
+  model: PoiRepo,
+  transaction: Transaction,
+  targetBlockHeight: number,
+  batchSize = 10000
+): Promise<void> {
+  let offset = 0;
+  let completed = false;
+  // eslint-disable-next-line no-constant-condition
+  while (!completed) {
+    try {
+      const recordsToDelete = await model.findAll({
+        transaction,
+        limit: batchSize,
+        offset,
+        where: {
+          id: {
+            [Op.gt]: targetBlockHeight,
+          },
+        },
+      });
+      if (recordsToDelete.length === 0) {
+        break;
+        completed = true;
+      }
+      logger.debug(`Found Poi recordsToDelete ${recordsToDelete.length}`);
+      if (recordsToDelete.length) {
+        await model.destroy({
+          transaction,
+          hooks: false,
+          where: {
+            id: {
+              [Op.in]: recordsToDelete.map((record) => record.id),
+            },
+          },
+        });
+      }
+      offset += batchSize;
+    } catch (e) {
+      throw new Error(`Reindex model Poi failed, please try to reindex again: ${e}`);
+    }
   }
 }
