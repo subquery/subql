@@ -223,7 +223,9 @@ export class EthereumApi implements ApiWrapper {
   }
 
   async getBestBlockHeight(): Promise<number> {
-    const tag = this.supportsFinalization ? 'safe' : 'latest';
+    // Cronos "safe" tag doesn't currently work as indended
+    const tag =
+      this.supportsFinalization && this.chainId !== 25 ? 'safe' : 'latest';
     return (await this.client.getBlock(tag)).number;
   }
 
