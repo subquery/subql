@@ -23,8 +23,8 @@ do
 
   # Check if the node package.json file exists
   if [[ -f $node_package_json ]]; then
-    # Replace workspace:* with the actual version in package.json of node
-    sed -i.bak "s#\"${packages[$package]}\": \"workspace:\*\"#\"${packages[$package]}\": \"$version\"#g" $node_package_json
+    # Replace workspace:* with the actual version in package.json of node, without including the trailing comma
+    sed -i.bak "s#\"${packages[$package]}\": \"workspace:\*\"#\"${packages[$package]}\": \"$version\"#" $node_package_json
     # Remove the backup file
     rm "${node_package_json}.bak"
   else
