@@ -6311,7 +6311,7 @@ __metadata:
     "@oclif/core": ^2.15.0
     "@subql/common": "workspace:*"
     "@subql/common-algorand": ^3.0.0
-    "@subql/common-concordium": ^3.1.2
+    "@subql/common-concordium": ^3.1.3
     "@subql/common-cosmos": ^3.0.1
     "@subql/common-ethereum": ^3.0.2
     "@subql/common-flare": ^3.0.1
@@ -6379,9 +6379,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-concordium@npm:^3.1.2":
-  version: 3.1.2
-  resolution: "@subql/common-concordium@npm:3.1.2"
+"@subql/common-concordium@npm:^3.1.3":
+  version: 3.1.3
+  resolution: "@subql/common-concordium@npm:3.1.3"
   dependencies:
     "@concordium/node-sdk": 9.4.0
     "@subql/common": latest
@@ -6392,7 +6392,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: cd3d6f06d5b2c41883f7207af93e2041829f72be5b7e356b5b2341c750f5c079b9fbe9509cfab7a88d314b9d9a5ae2a826532ec882c906db051707cec84238eb
+  checksum: 78ef9d31b869514ee5109c341a09cb201bff63a7bb2b527a291e0d8078d30c9348aee7871a2c62f0f8ffac30dace994451f3bb530497ab0e0d1adc68236bde65
   languageName: node
   linkType: hard
 
