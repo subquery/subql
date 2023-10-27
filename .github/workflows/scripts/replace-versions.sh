@@ -16,7 +16,9 @@ do
   # Get the version of the current package
   version=$(jq -r '.version' $package/package.json)
   echo $package
-  echo $version
+  echo $version  
   # Replace workspace:* with the actual version in package.json of node
-  sed -i "s#\"${packages[$package]}\": \"workspace:\*\"#\"${packages[$package]}\": \"$version\"#g" ./packages/node/package.json
+  sed -i.bak "s#\"${packages[$package]}\": \"workspace:\*\"#\"${packages[$package]}\": \"$version\"#g" ./packages/node/package.json
+  # Remove the backup file
+  rm ./packages/node/package.json.bak
 done
