@@ -206,127 +206,120 @@ describe('CLI codegen:generate, Can write to file', () => {
     };
     await generateManifestTs(path.join(pPath, './mock-project.ts'), mockInput, tsManifest);
     const newManifest = await fs.promises.readFile(filePath, 'utf8');
-    expect(newManifest).toMatch(
-      `// @ts-nocheck
-import {
-    EthereumProject,
-    EthereumDatasourceKind,
-    EthereumHandlerKind,
-} from "@subql/types-ethereum";
-
-// Can expand the Datasource processor types via the generic param
-const project: EthereumProject = {
-    specVersion: "1.0.0",
-    version: "0.0.1",
-    name: "ethereum-subql-starter",
-    description:
-        "This project can be use as a starting point for developing your new Ethereum SubQuery project",
-    runner: {
-        node: {
-            name: "@subql/node-ethereum",
-            version: ">=3.0.0",
-        },
-        query: {
-            name: "@subql/query",
-            version: "*",
-        },
-    },
-    schema: {
-        file: "./schema.graphql",
-    },
-    network: {
-        /**
-         * chainId is the EVM Chain ID, for Ethereum this is 1
-         * https://chainlist.org/chain/1
-         */
-        chainId:
-            "1",
-        /**
-         * This endpoint must be a public non-pruned archive node
-         * Public nodes may be rate limited, which can affect indexing speed
-         * When developing your project we suggest getting a private API key
-         * You can get them from OnFinality for free https://app.onfinality.io
-         * https://documentation.onfinality.io/support/the-enhanced-api-service
-         */
-        endpoint: ["https://eth.api.onfinality.io/public"],
-        dictionary: "https://gx.api.subquery.network/sq/subquery/eth-dictionary"
-    },
-    dataSources: [{
-      kind: EthereumDatasourceKind.Runtime,
-      startBlock: 1,
-      options: {
-        abi: 'Erc721',
-        address: 'aaa',
-      },
-      assets: new Map([['Erc721', {file: './abis/erc721.json'}]]),
-      mapping: {
-        file: './dist/index.js',
-        handlers: [
-  {
-    handler: "handleTransferFromErc721Tx",
-    kind: EthereumHandlerKind.Call,
-    filter: {
-      function: "transferFrom(address,address,uint256)"
-    }
-  },
-  {
-    handler: "handleApprovalErc721Log",
-    kind: EthereumHandlerKind.Event,
-    filter: {
-      topics: [
-        "Approval(address,address,uint256)"
-      ]
-    }
-  }
-]
-      }
-    },
-        {
-            kind: EthereumDatasourceKind.Runtime,
-            startBlock: 4719568,
-
-            options: {
-                // Must be a key of assets
-                abi:'erc20',
-                // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
-                address:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-            },
-            assets: new Map([['erc20', { file: './abis/erc20.abi.json' }]]),
-            mapping: {
-                file: "./dist/index.js",
-                handlers: [
-                    {
-                        kind: EthereumHandlerKind.Call,
-                        handler: "handleTransaction",
-                        filter: {
-                            /**
-                             * The function can either be the function fragment or signature
-                             * function: '0x095ea7b3'
-                             * function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'
-                             */
-                            function: "approve(address spender, uint256 rawAmount)",
-                        },
-                    },
-                    {
-                        kind: EthereumHandlerKind.Event,
-                        handler: "handleLog",
-                        filter: {
-                            /**
-                             * Follows standard log filters https://docs.ethers.io/v5/concepts/events/
-                             * address: "0x60781C2586D68229fde47564546784ab3fACA982"
-                             */
-                            topics: ["Transfer(address indexed from, address indexed to, uint256 amount)"],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-    repository: "https://github.com/subquery/ethereum-subql-starter"
-};
-
-export default project;
-`
+    expect(newManifest).toBe(
+      '// @ts-nocheck\n' +
+        "import {EthereumProject, EthereumDatasourceKind, EthereumHandlerKind} from '@subql/types-ethereum';\n" +
+        '\n' +
+        '// Can expand the Datasource processor types via the generic param\n' +
+        'const project: EthereumProject = {\n' +
+        "  specVersion: '1.0.0',\n" +
+        "  version: '0.0.1',\n" +
+        "  name: 'ethereum-subql-starter',\n" +
+        "  description: 'This project can be use as a starting point for developing your new Ethereum SubQuery project',\n" +
+        '  runner: {\n' +
+        '    node: {\n' +
+        "      name: '@subql/node-ethereum',\n" +
+        "      version: '>=3.0.0',\n" +
+        '    },\n' +
+        '    query: {\n' +
+        "      name: '@subql/query',\n" +
+        "      version: '*',\n" +
+        '    },\n' +
+        '  },\n' +
+        '  schema: {\n' +
+        "    file: './schema.graphql',\n" +
+        '  },\n' +
+        '  network: {\n' +
+        '    /**\n' +
+        '     * chainId is the EVM Chain ID, for Ethereum this is 1\n' +
+        '     * https://chainlist.org/chain/1\n' +
+        '     */\n' +
+        "    chainId: '1',\n" +
+        '    /**\n' +
+        '     * This endpoint must be a public non-pruned archive node\n' +
+        '     * Public nodes may be rate limited, which can affect indexing speed\n' +
+        '     * When developing your project we suggest getting a private API key\n' +
+        '     * You can get them from OnFinality for free https://app.onfinality.io\n' +
+        '     * https://documentation.onfinality.io/support/the-enhanced-api-service\n' +
+        '     */\n' +
+        "    endpoint: ['https://eth.api.onfinality.io/public'],\n" +
+        "    dictionary: 'https://gx.api.subquery.network/sq/subquery/eth-dictionary',\n" +
+        '  },\n' +
+        '  dataSources: [{\n' +
+        '    kind: EthereumDatasourceKind.Runtime,\n' +
+        '    startBlock: 1,\n' +
+        '    options: {\n' +
+        "      abi: 'Erc721',\n" +
+        "      address: 'aaa',\n" +
+        '    },\n' +
+        "    assets: new Map([['Erc721', {file: './abis/erc721.json'}]]),\n" +
+        '    mapping: {\n' +
+        "      file: './dist/index.js',\n" +
+        '      handlers: [\n' +
+        '  {\n' +
+        '    handler: "handleTransferFromErc721Tx",\n' +
+        '    kind: EthereumHandlerKind.Call,\n' +
+        '    filter: {\n' +
+        '      function: "transferFrom(address,address,uint256)"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  {\n' +
+        '    handler: "handleApprovalErc721Log",\n' +
+        '    kind: EthereumHandlerKind.Event,\n' +
+        '    filter: {\n' +
+        '      topics: [\n' +
+        '        "Approval(address,address,uint256)"\n' +
+        '      ]\n' +
+        '    }\n' +
+        '  }\n' +
+        ']\n' +
+        '    }\n' +
+        '  },\n' +
+        '    {\n' +
+        '      kind: EthereumDatasourceKind.Runtime,\n' +
+        '      startBlock: 4719568,\n' +
+        '\n' +
+        '      options: {\n' +
+        '        // Must be a key of assets\n' +
+        "        abi: 'erc20',\n" +
+        '        // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+        "        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',\n" +
+        '      },\n' +
+        "      assets: new Map([['erc20', {file: './abis/erc20.abi.json'}]]),\n" +
+        '      mapping: {\n' +
+        "        file: './dist/index.js',\n" +
+        '        handlers: [\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Call,\n' +
+        "            handler: 'handleTransaction',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * The function can either be the function fragment or signature\n' +
+        "               * function: '0x095ea7b3'\n" +
+        "               * function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'\n" +
+        '               */\n' +
+        "              function: 'approve(address spender, uint256 rawAmount)',\n" +
+        '            },\n' +
+        '          },\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Event,\n' +
+        "            handler: 'handleLog',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * Follows standard log filters https://docs.ethers.io/v5/concepts/events/\n' +
+        '               * address: "0x60781C2586D68229fde47564546784ab3fACA982"\n' +
+        '               */\n' +
+        "              topics: ['Transfer(address indexed from, address indexed to, uint256 amount)'],\n" +
+        '            },\n' +
+        '          },\n' +
+        '        ],\n' +
+        '      },\n' +
+        '    },\n' +
+        '  ],\n' +
+        "  repository: 'https://github.com/subquery/ethereum-subql-starter',\n" +
+        '};\n' +
+        '\n' +
+        'export default project;\n'
     );
   });
   it('Can generate manifest', async () => {
