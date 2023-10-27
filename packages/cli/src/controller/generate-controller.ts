@@ -289,10 +289,8 @@ export const yamlExtractor: ManifestExtractor<EthereumDs[]> = (dataSources, case
 
   dataSources
     .filter((d: EthereumDs) => {
-      return (
-        (casedInputAddress && d.options?.address && casedInputAddress === d.options.address.toLowerCase()) ||
-        (!!casedInputAddress && !!d.options?.address)
-      );
+      const dsAddress = d.options.address?.toLowerCase();
+      return casedInputAddress ? casedInputAddress === dsAddress : !dsAddress;
     })
     .forEach((ds: EthereumDs) => {
       ds.mapping.handlers.forEach((handler) => {
