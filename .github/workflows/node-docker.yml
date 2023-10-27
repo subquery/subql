@@ -46,6 +46,9 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
+      - name: Display node package.json
+        run: cat ./packages/node/package.json
+
       - name: Set execute permissions for the script
         run: chmod +x .github/workflows/scripts/replace-versions.sh
 
@@ -53,6 +56,9 @@ jobs:
       - name: Replace workspace dependencies with actual versions
         run: |
           ./.github/workflows/scripts/replace-versions.sh
+      
+      - name: Display node package.json
+        run: cat ./packages/node/package.json
 
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
