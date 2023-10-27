@@ -18,8 +18,6 @@ for package in ${!packages[@]}
 do
   # Get the version of the current package
   version=$(jq -r '.version' $package/package.json)
-  echo $package
-  echo $version
 
   # Check if the node package.json file exists
   if [[ -f $node_package_json ]]; then

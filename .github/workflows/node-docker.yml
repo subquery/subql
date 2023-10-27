@@ -46,9 +46,6 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
-      - name: Display node package.json
-        run: cat ./packages/node/package.json
-
       - name: Set execute permissions for the script
         run: chmod +x .github/workflows/scripts/replace-versions.sh
 
@@ -57,9 +54,6 @@ jobs:
         run: |
           ./.github/workflows/scripts/replace-versions.sh
       
-      - name: Display node package.json
-        run: cat ./packages/node/package.json
-
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
         uses: docker/build-push-action@v2
@@ -115,6 +109,12 @@ jobs:
       - name: build
         run: yarn build
 
+      ## node
+      - name: Get updated node version
+        id: get-node-version
+        run: |
+          sh .github/workflows/scripts/nodeVersion.sh
+
       - name: Set execute permissions for the script
         run: chmod +x .github/workflows/scripts/replace-versions.sh
 
@@ -127,6 +127,7 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
@@ -136,6 +137,7 @@ jobs:
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
