@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- ts-manifest compatibility with `codegen:generate` command (#2111)
+
+## [4.1.0] - 2023-10-25
 ### Changed
 - Removed `validate` command from cli, also removed from `@subql/validator` from dependencies (#2121)
+
 ### Added
 - Multichain support for TypeScript manifest (#2097)
 - Support for multi endpoints CLI deployment (#2117)
@@ -489,7 +494,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql/compare/cli/4.0.5...cli/4.1.0
 [4.0.5]: https://github.com/subquery/subql/compare/cli/4.0.4...cli/4.0.5
 [4.0.4]: https://github.com/subquery/subql/compare/cli/4.0.3...cli/4.0.4
 [4.0.3]: https://github.com/subquery/subql/compare/cli/4.0.2...cli/4.0.3

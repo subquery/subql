@@ -4,7 +4,7 @@
 import {Header} from '../unfinalizedBlocks.service';
 
 export type HostUnfinalizedBlocks = {
-  unfinalizedBlocksProcess: (header: Header) => Promise<number | null>;
+  unfinalizedBlocksProcess: (header: Header | undefined) => Promise<number | undefined>;
 };
 
 export const hostUnfinalizedBlocksKeys: (keyof HostUnfinalizedBlocks)[] = ['unfinalizedBlocksProcess'];

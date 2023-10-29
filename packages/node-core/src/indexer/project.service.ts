@@ -10,7 +10,15 @@ import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, initHotSchemaReload, reindex} from '../utils';
+import {
+  getExistingProjectSchema,
+  getStartHeight,
+  hasValue,
+  initDbSchema,
+  initHotSchemaReload,
+  mainThreadOnly,
+  reindex,
+} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
@@ -260,31 +268,74 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return [...dataSources, ...dynamicDs];
   }
 
+  hasDataSourcesAfterHeight(height: number): boolean {
+    const datasourcesMap = this.getDataSourcesMap();
+    //check if there are datasoures for current height
+    if (datasourcesMap.get(height).length) {
+      return true;
+    }
+
+    //check for datasources with height after the current height
+    const dataSources = this.getDataSourcesMap().getAll();
+    return [...dataSources.entries()].some(([dsHeight, ds]) => dsHeight > height && ds.length);
+  }
+
   // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
   async getDataSources(blockHeight?: number): Promise<DS[]> {
     const dataSources = this.project.dataSources;
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
 
     return [...dataSources, ...dynamicDs].filter(
-      (ds) => blockHeight === undefined || (ds.startBlock !== undefined && ds.startBlock <= blockHeight)
+      (ds) =>
+        blockHeight === undefined ||
+        (ds.startBlock !== undefined &&
+          ds.startBlock <= blockHeight &&
+          (ds.endBlock === undefined || ds.endBlock >= blockHeight))
     );
   }
 
+  @mainThreadOnly()
   getDataSourcesMap(): BlockHeightMap<DS[]> {
-    assert(isMainThread, 'This method is only avaiable on the main thread');
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
-
     const dsMap = new Map<number, DS[]>();
 
-    // Loop through all projects
-    for (const [height, project] of this.projectUpgradeService.projects) {
-      // Iterate all the DS at the project height
+    const projects = [...this.projectUpgradeService.projects];
+
+    for (let i = 0; i < projects.length; i++) {
+      const [height, project] = projects[i];
+      let nextMinStartHeight: number;
+
+      if (i + 1 < projects.length) {
+        const nextProject = projects[i + 1][1];
+        nextMinStartHeight = nextProject.dataSources
+          .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+          .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock;
+      }
+
+      const activeDataSources = new Set<DS>();
+      //events denote addition or deletion of datasources from height-datasource map entries at the specified block height
+      const events: {
+        block: number; //block height at which addition or deletion of datasource should take place
+        start: boolean; //if start=TRUE, add the datasource. otherwise remove the datasource.
+        ds: DS;
+      }[] = [];
+
       [...project.dataSources, ...dynamicDs]
-        .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
-        .sort((a, b) => a.startBlock - b.startBlock)
-        .forEach((ds, index, dataSources) => {
-          dsMap.set(Math.max(height, ds.startBlock), dataSources.slice(0, index + 1));
+        .filter((ds): ds is DS & {startBlock: number} => {
+          return !!ds.startBlock && (!nextMinStartHeight || nextMinStartHeight > ds.startBlock);
+        })
+        .forEach((ds) => {
+          events.push({block: Math.max(height, ds.startBlock), start: true, ds});
+          if (ds.endBlock) events.push({block: ds.endBlock + 1, start: false, ds});
         });
+
+      // sort events by block in ascending order, start events come before end events
+      const sortedEvents = events.sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start));
+
+      sortedEvents.forEach((event) => {
+        event.start ? activeDataSources.add(event.ds) : activeDataSources.delete(event.ds);
+        dsMap.set(event.block, Array.from(activeDataSources));
+      });
     }
 
     return new BlockHeightMap(dsMap);
