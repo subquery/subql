@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {DEFAULT_TS_MANIFEST, loadFromJsonOrYaml} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import rimraf from 'rimraf';
 import {parseContractPath} from 'typechain';
@@ -17,11 +17,13 @@ import {
   filterObjectsByStateMutability,
   generateHandlerName,
   generateHandlers,
-  generateManifest,
+  generateManifestTs,
+  generateManifestYaml,
   getAbiInterface,
   getManifestData,
   prepareAbiDirectory,
   prepareInputFragments,
+  yamlExtractor,
 } from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
@@ -175,6 +177,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     await Promise.all([
       promisify(rimraf)(path.join(__dirname, '../../test/schemaTest/src')),
       promisify(rimraf)(path.join(__dirname, '../../test/schemaTest/abis/abis.json')),
+      promisify(rimraf)(path.join(__dirname, '../../test/ts-manifest/mock-project.ts')),
       fs.promises.writeFile(path.join(PROJECT_PATH, MANIFEST_PATH), stringify(originalManifestData), {
         encoding: 'utf8',
         flag: 'w',
@@ -190,10 +193,138 @@ describe('CLI codegen:generate, Can write to file', () => {
       flag: 'w',
     });
   });
-
+  it('generateManifest from ts-manifest', async () => {
+    const pPath = path.join(__dirname, '../../test/ts-manifest');
+    const filePath = path.join(pPath, 'mock-project.ts');
+    const tsManifest = await fs.promises.readFile(path.join(pPath, DEFAULT_TS_MANIFEST), 'utf8');
+    const mockInput: UserInput = {
+      startBlock: 1,
+      functions: mockConstructedFunctions,
+      events: mockConstructedEvents,
+      abiPath: './abis/erc721.json',
+      address: 'aaa',
+    };
+    await generateManifestTs(path.join(pPath, './mock-project.ts'), mockInput, tsManifest);
+    const newManifest = await fs.promises.readFile(filePath, 'utf8');
+    expect(newManifest).toBe(
+      '// @ts-nocheck\n' +
+        "import {EthereumProject, EthereumDatasourceKind, EthereumHandlerKind} from '@subql/types-ethereum';\n" +
+        '\n' +
+        '// Can expand the Datasource processor types via the generic param\n' +
+        'const project: EthereumProject = {\n' +
+        "  specVersion: '1.0.0',\n" +
+        "  version: '0.0.1',\n" +
+        "  name: 'ethereum-subql-starter',\n" +
+        "  description: 'This project can be use as a starting point for developing your new Ethereum SubQuery project',\n" +
+        '  runner: {\n' +
+        '    node: {\n' +
+        "      name: '@subql/node-ethereum',\n" +
+        "      version: '>=3.0.0',\n" +
+        '    },\n' +
+        '    query: {\n' +
+        "      name: '@subql/query',\n" +
+        "      version: '*',\n" +
+        '    },\n' +
+        '  },\n' +
+        '  schema: {\n' +
+        "    file: './schema.graphql',\n" +
+        '  },\n' +
+        '  network: {\n' +
+        '    /**\n' +
+        '     * chainId is the EVM Chain ID, for Ethereum this is 1\n' +
+        '     * https://chainlist.org/chain/1\n' +
+        '     */\n' +
+        "    chainId: '1',\n" +
+        '    /**\n' +
+        '     * This endpoint must be a public non-pruned archive node\n' +
+        '     * Public nodes may be rate limited, which can affect indexing speed\n' +
+        '     * When developing your project we suggest getting a private API key\n' +
+        '     * You can get them from OnFinality for free https://app.onfinality.io\n' +
+        '     * https://documentation.onfinality.io/support/the-enhanced-api-service\n' +
+        '     */\n' +
+        "    endpoint: ['https://eth.api.onfinality.io/public'],\n" +
+        "    dictionary: 'https://gx.api.subquery.network/sq/subquery/eth-dictionary',\n" +
+        '  },\n' +
+        '  dataSources: [{\n' +
+        '    kind: EthereumDatasourceKind.Runtime,\n' +
+        '    startBlock: 1,\n' +
+        '    options: {\n' +
+        "      abi: 'Erc721',\n" +
+        "      address: 'aaa',\n" +
+        '    },\n' +
+        "    assets: new Map([['Erc721', {file: './abis/erc721.json'}]]),\n" +
+        '    mapping: {\n' +
+        "      file: './dist/index.js',\n" +
+        '      handlers: [\n' +
+        '  {\n' +
+        '    handler: "handleTransferFromErc721Tx",\n' +
+        '    kind: EthereumHandlerKind.Call,\n' +
+        '    filter: {\n' +
+        '      function: "transferFrom(address,address,uint256)"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  {\n' +
+        '    handler: "handleApprovalErc721Log",\n' +
+        '    kind: EthereumHandlerKind.Event,\n' +
+        '    filter: {\n' +
+        '      topics: [\n' +
+        '        "Approval(address,address,uint256)"\n' +
+        '      ]\n' +
+        '    }\n' +
+        '  }\n' +
+        ']\n' +
+        '    }\n' +
+        '  },\n' +
+        '    {\n' +
+        '      kind: EthereumDatasourceKind.Runtime,\n' +
+        '      startBlock: 4719568,\n' +
+        '\n' +
+        '      options: {\n' +
+        '        // Must be a key of assets\n' +
+        "        abi: 'erc20',\n" +
+        '        // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+        "        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',\n" +
+        '      },\n' +
+        "      assets: new Map([['erc20', {file: './abis/erc20.abi.json'}]]),\n" +
+        '      mapping: {\n' +
+        "        file: './dist/index.js',\n" +
+        '        handlers: [\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Call,\n' +
+        "            handler: 'handleTransaction',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * The function can either be the function fragment or signature\n' +
+        "               * function: '0x095ea7b3'\n" +
+        "               * function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'\n" +
+        '               */\n' +
+        "              function: 'approve(address spender, uint256 rawAmount)',\n" +
+        '            },\n' +
+        '          },\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Event,\n' +
+        "            handler: 'handleLog',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * Follows standard log filters https://docs.ethers.io/v5/concepts/events/\n' +
+        '               * address: "0x60781C2586D68229fde47564546784ab3fACA982"\n' +
+        '               */\n' +
+        "              topics: ['Transfer(address indexed from, address indexed to, uint256 amount)'],\n" +
+        '            },\n' +
+        '          },\n' +
+        '        ],\n' +
+        '      },\n' +
+        '    },\n' +
+        '  ],\n' +
+        "  repository: 'https://github.com/subquery/ethereum-subql-starter',\n" +
+        '};\n' +
+        '\n' +
+        'export default project;\n'
+    );
+  });
   it('Can generate manifest', async () => {
-    const existingManifestData = await getManifestData(PROJECT_PATH, MANIFEST_PATH);
-    await generateManifest(PROJECT_PATH, MANIFEST_PATH, mockUserInput, existingManifestData);
+    const existingManifestData = await getManifestData(path.join(PROJECT_PATH, MANIFEST_PATH));
+    await generateManifestYaml(path.join(PROJECT_PATH, MANIFEST_PATH), mockUserInput, existingManifestData);
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, MANIFEST_PATH)) as any).dataSources;
 
     expect(updatedManifestDs[1]).toStrictEqual({
@@ -230,7 +361,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     });
   });
   it('if handler filter already exist with matching address, should not add', async () => {
-    const existingManifestData = await getManifestData(PROJECT_PATH, './generate-project-2.yaml');
+    const existingManifestData = await getManifestData(path.join(PROJECT_PATH, './generate-project-2.yaml'));
     const abiInterface = getAbiInterface(PROJECT_PATH, './erc721.json');
     const existingDs = (existingManifestData.get('dataSources') as any).toJSON() as EthereumDs[];
 
@@ -249,13 +380,18 @@ describe('CLI codegen:generate, Can write to file', () => {
       selectedEvents,
       selectedFunctions,
       existingDs,
-      '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+      '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      yamlExtractor
     );
 
     mockUserInput.events = constructMethod<EventFragment>(eventFrags);
     mockUserInput.functions = constructMethod<FunctionFragment>(functionFrags);
 
-    await generateManifest(PROJECT_PATH, './generate-project-2.yaml', mockUserInput, existingManifestData);
+    await generateManifestYaml(
+      path.join(PROJECT_PATH, './generate-project-2.yaml'),
+      mockUserInput,
+      existingManifestData
+    );
 
     const updatedManifestDs = (loadFromJsonOrYaml(path.join(PROJECT_PATH, './generate-project-2.yaml')) as any)
       .dataSources;
@@ -298,7 +434,7 @@ describe('CLI codegen:generate, Can write to file', () => {
       '1',
     ]);
 
-    const manifest = await getManifestData(PROJECT_PATH, './generate-project-2.yaml');
+    const manifest = await getManifestData(path.join(PROJECT_PATH, './generate-project-2.yaml'));
     const ds = manifest.get('dataSources') as any;
     expect(ds.commentBefore).toBe('datasource comment');
     expect(ds.items[0].get('mapping').get('handlers').comment).toBe('handler comment');
