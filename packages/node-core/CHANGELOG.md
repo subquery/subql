@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - WorkerInMemoryCacheService from node (#2125)
+- New `endBlock` option on datasources (#2064)
 
 ### Fixed
 - Wrong link to docs for testing
