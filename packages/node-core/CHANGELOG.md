@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - WorkerInMemoryCacheService from node (#2125)
 
+### Fixed
+- Wrong link to docs for testing
+
 ## [6.1.1] - 2023-10-25
 ### Fixed
 - Not handling TaskFlushedErrors in block dispatchers (#2120)

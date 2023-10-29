@@ -75,7 +75,7 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
       }
       this.logFailedTestsSummary();
     } else {
-      const docsUrl = 'https://academy.subquery.network/build/testing.html';
+      const docsUrl = 'https://academy.subquery.network/build/testing.html#the-subquery-testing-framework';
       logger.warn(
         `No tests found. Please refer to the documentation for guidance on creating and running tests: ${docsUrl}`
       );
