@@ -208,6 +208,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
       // Flush all data from cache and wait
       await this.storeCacheService.flushCache(false, true);
     }
+
+    if (!this.projectService.hasDataSourcesAfterHeight(height)) {
+      logger.info(`All data sources have been processed up to block number ${height}. Exiting gracefully...`);
+      await this.storeCacheService.flushCache(false, true);
+      process.exit(0);
+    }
   }
 
   /**

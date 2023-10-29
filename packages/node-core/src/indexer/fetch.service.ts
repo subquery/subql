@@ -98,10 +98,31 @@ export abstract class BaseFetchService<
     );
   }
 
+  private updateBypassBlocksFromDatasources(): void {
+    const datasources = this.projectService.getDataSourcesMap().getAll();
+
+    const heights = Array.from(datasources.keys());
+
+    for (let i = 0; i < heights.length - 1; i++) {
+      const currentHeight = heights[i];
+      const nextHeight = heights[i + 1];
+
+      const currentDS = datasources.get(currentHeight);
+      // If the value for the current height is an empty array, then it's a gap
+      if (currentDS && currentDS.length === 0) {
+        this.bypassBlocks.push(...range(currentHeight, nextHeight));
+      }
+    }
+  }
+
   async init(startHeight: number): Promise<void> {
+    this.bypassBlocks = [];
+
     if (this.networkConfig?.bypassBlocks !== undefined) {
       this.bypassBlocks = transformBypassBlocks(this.networkConfig.bypassBlocks).filter((blk) => blk >= startHeight);
     }
+
+    this.updateBypassBlocksFromDatasources();
     const interval = await this.getChainInterval();
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
@@ -243,7 +264,7 @@ export abstract class BaseFetchService<
         startBlockHeight >= this.dictionaryService.startHeight &&
         startBlockHeight < this.latestFinalizedHeight
       ) {
-        /* queryEndBlock needs to be limited by the latest height.
+        /* queryEndBlock needs to be limited by the latest height or the maximum value of endBlock in datasources.
          * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
          */
         const queryEndBlock = Math.min(startBlockHeight + DICTIONARY_MAX_QUERY_SIZE, this.latestFinalizedHeight);
