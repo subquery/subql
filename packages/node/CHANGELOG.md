@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Use WorkerInMemoryCacheService from node core (#2125)
 
+### Fixed
+- Missing dependencies for testing command
+
 ## [3.1.1] - 2023-10-25
 ### Fixed
 - Update node-core with fix for crash when creating a dynamic datasource
