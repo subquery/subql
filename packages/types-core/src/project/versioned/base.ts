@@ -16,6 +16,11 @@ export interface BaseDataSource<H extends BaseHandler = BaseHandler, M extends B
    */
   startBlock?: number;
   /**
+   * The ending block number for the datasource (optional).
+   * @type {number}
+   */
+  endBlock?: number;
+  /**
    * The mapping associated with the datasource.
    * This contains the handlers.
    * @type {M}
@@ -69,4 +74,5 @@ export interface TemplateBase {
   name: string;
 }
 
-export type BaseTemplateDataSource<DS extends BaseDataSource = BaseDataSource> = Omit<DS, 'startBlock'> & TemplateBase;
+export type BaseTemplateDataSource<DS extends BaseDataSource = BaseDataSource> = Omit<DS, 'startBlock' | 'endBlock'> &
+  TemplateBase;
