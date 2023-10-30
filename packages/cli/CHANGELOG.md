@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Support building and publishing Concordium projects (#2078)
 - ts-manifest compatibility with `codegen:generate` command (#2111)
 
 ## [4.1.0] - 2023-10-25

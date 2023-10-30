@@ -26,6 +26,7 @@ export enum NETWORK_FAMILY {
   flare = 'Flare',
   near = 'Near',
   stellar = 'Stellar',
+  concordium = 'Concordium',
 }
 
 export const runnerMapping = {
@@ -37,6 +38,7 @@ export const runnerMapping = {
   '@subql/node-flare': NETWORK_FAMILY.flare,
   '@subql/node-near': NETWORK_FAMILY.near,
   '@subql/node-stellar': NETWORK_FAMILY.stellar,
+  '@subql/node-concordium': NETWORK_FAMILY.concordium,
 };
 
 // DATABASE TYPE
