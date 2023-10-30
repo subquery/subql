@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Improve reindex query to remove/update by batches.
+- Fix poi reindex beyond genesis height issue.
+
 ## [6.1.1] - 2023-10-25
 ### Fixed
 - Not handling TaskFlushedErrors in block dispatchers (#2120)

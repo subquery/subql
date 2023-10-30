@@ -887,13 +887,13 @@ group by
   }
 }
 
-// REMOVE 1,000 record per batch
+// REMOVE 10,000 record per batch
 async function batchDeleteAndThenUpdate(
   sequelize: Sequelize,
   model: ModelStatic<any>,
   transaction: Transaction,
   targetBlockHeight: number,
-  batchSize = 1000
+  batchSize = 10000
 ): Promise<void> {
   let offset = 0;
   let completed = false;
@@ -903,7 +903,8 @@ async function batchDeleteAndThenUpdate(
       const recordsToUpdate = await model.findAll({
         transaction,
         limit: batchSize,
-        offset,
+        attributes: {include: ['_id']},
+        offset, // We need to apply offset, because after update the records, the record could still with in range, avoid endless query here.
         where: {
           __block_range: {
             [Op.contains]: targetBlockHeight,
@@ -913,7 +914,7 @@ async function batchDeleteAndThenUpdate(
       const recordsToDelete = await model.findAll({
         transaction,
         limit: batchSize,
-        offset,
+        attributes: {include: ['_id']},
         where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
       });
       if (recordsToDelete.length === 0 && recordsToUpdate.length === 0) {
@@ -921,7 +922,7 @@ async function batchDeleteAndThenUpdate(
         completed = true;
       }
       logger.debug(
-        `Found ${model.name} recordsToDelete ${recordsToDelete.length},recordsToUpdate ${recordsToUpdate.length},`
+        `Found ${model.name} recordsToDelete ${recordsToDelete.length},recordsToUpdate ${recordsToUpdate.length}`
       );
       if (recordsToDelete.length) {
         await model.destroy({
@@ -929,7 +930,7 @@ async function batchDeleteAndThenUpdate(
           hooks: false,
           where: {
             _id: {
-              [Op.in]: recordsToDelete.map((record) => record._id),
+              [Op.in]: recordsToDelete.map((record) => record.dataValues._id),
             },
           },
         });
@@ -944,7 +945,7 @@ async function batchDeleteAndThenUpdate(
             hooks: false,
             where: {
               _id: {
-                [Op.in]: recordsToUpdate.map((record) => record._id),
+                [Op.in]: recordsToUpdate.map((record) => record.dataValues._id),
               },
             },
           }

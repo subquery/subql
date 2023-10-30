@@ -115,7 +115,7 @@ export class PoiService implements OnApplicationShutdown {
         }
         if (!checkResult.parent_nullable) {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "parentHash" DROP NOT NULL;`);
-          queries.push(sqlIterator(tableName, `UPDATE ${tableName} SET "parentHash" = NULL;`));
+          queries.push(sqlIterator(tableName, `UPDATE ${tableName} SET "parentHash" = NULL`));
 
           queries.push(
             sqlIterator(
@@ -163,8 +163,19 @@ export class PoiService implements OnApplicationShutdown {
 
     await batchDeletePoi(this.poiRepo.model, transaction, targetBlockHeight);
     const lastSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
+
     if (lastSyncedPoiHeight !== undefined && lastSyncedPoiHeight > targetBlockHeight) {
-      this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
+      const genesisPoi = await this.poiRepo.model.findOne({
+        order: [['id', 'ASC']],
+        transaction: transaction,
+      });
+      // This indicates reindex height is less than genesis poi height
+      // And genesis poi has been remove from `batchDeletePoi`
+      if (!genesisPoi) {
+        this.storeCache.metadata.bulkRemove(['latestSyncedPoiHeight']);
+      } else {
+        this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
+      }
     }
     this.storeCache.metadata.bulkRemove(['lastCreatedPoiHeight']);
   }
@@ -175,9 +186,9 @@ async function batchDeletePoi(
   model: PoiRepo,
   transaction: Transaction,
   targetBlockHeight: number,
-  batchSize = 10000
+  batchSize = 10
 ): Promise<void> {
-  let offset = 0;
+  // const offset = 0;
   let completed = false;
   // eslint-disable-next-line no-constant-condition
   while (!completed) {
@@ -185,7 +196,6 @@ async function batchDeletePoi(
       const recordsToDelete = await model.findAll({
         transaction,
         limit: batchSize,
-        offset,
         where: {
           id: {
             [Op.gt]: targetBlockHeight,
@@ -208,7 +218,7 @@ async function batchDeletePoi(
           },
         });
       }
-      offset += batchSize;
+      // offset += batchSize;
     } catch (e) {
       throw new Error(`Reindex model Poi failed, please try to reindex again: ${e}`);
     }
