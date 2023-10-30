@@ -216,10 +216,15 @@ export abstract class BaseFetchService<
     return moduloBlocks;
   }
 
-  getEnqueuedModuloBlocks(startBlockHeight: number): number[] {
+  /**
+   *
+   * @param startBlockHeight
+   * @param endBlockHeight is either FinalizedHeight or BestHeight, ensure ModuloBlocks not greater than this number
+   */
+  getEnqueuedModuloBlocks(startBlockHeight: number, endBlockHeight: number): number[] {
     return this.getModuloBlocks(
       startBlockHeight,
-      this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight
+      Math.min(this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight, endBlockHeight)
     ).slice(0, this.nodeConfig.batchSize);
   }
 
@@ -313,7 +318,7 @@ export abstract class BaseFetchService<
 
       const enqueuingBlocks =
         handlers.length && this.getModulos().length === handlers.length
-          ? this.getEnqueuedModuloBlocks(startBlockHeight)
+          ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
           : range(startBlockHeight, endHeight + 1);
 
       await this.enqueueBlocks(enqueuingBlocks);
@@ -321,6 +326,14 @@ export abstract class BaseFetchService<
   }
 
   private async enqueueBlocks(enqueuingBlocks: number[]): Promise<void> {
+    // We check enqueuingBlocks length rather than cleanedBatchBlocks
+    // Because when bypass blocks, cleanedBatchBlocks can be [], but latestBufferHeight could be valid to update metadata
+    // See comments in blockDispatcher.enqueueBlocks method
+    if (!enqueuingBlocks.length) {
+      logger.info(`No blocks to enqueue at the moment.`);
+      await delay(10);
+      return;
+    }
     const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
     await this.blockDispatcher.enqueueBlocks(
       cleanedBatchBlocks,
