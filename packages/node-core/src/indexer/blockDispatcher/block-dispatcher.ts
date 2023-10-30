@@ -95,6 +95,7 @@ export abstract class BlockDispatcher<B, DS>
     }
     logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
+    // Those blocks will still be filtered in the handler
     this.queue.putMany(heights);
 
     this.latestBufferedHeight = latestBufferHeight ?? last(heights) ?? this.latestBufferedHeight;

@@ -303,7 +303,7 @@ export abstract class BaseFetchService<
             } else {
               const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
               const enqueueBlocks = batchBlocks.slice(0, maxBlockSize);
-              await this.enqueueBlocks(enqueueBlocks);
+              await this.enqueueBlocks(enqueueBlocks, latestHeight);
             }
             continue; // skip nextBlockRange() way
           }
@@ -321,27 +321,37 @@ export abstract class BaseFetchService<
           ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
           : range(startBlockHeight, endHeight + 1);
 
-      await this.enqueueBlocks(enqueuingBlocks);
+      await this.enqueueBlocks(enqueuingBlocks, latestHeight);
     }
   }
 
-  private async enqueueBlocks(enqueuingBlocks: number[]): Promise<void> {
-    // We check enqueuingBlocks length rather than cleanedBatchBlocks
-    // Because when bypass blocks, cleanedBatchBlocks can be [], but latestBufferHeight could be valid to update metadata
-    // See comments in blockDispatcher.enqueueBlocks method
-    if (!enqueuingBlocks.length) {
-      logger.info(`No blocks to enqueue at the moment.`);
-      await delay(10);
-      return;
-    }
+  /**
+   *
+   * @param enqueuingBlocks
+   * @param latestHeight ensure LatestBufferHeight get updated if enqueuingBlocks is empty
+   * @private
+   */
+  private async enqueueBlocks(enqueuingBlocks: number[], latestHeight: number): Promise<void> {
     const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
     await this.blockDispatcher.enqueueBlocks(
       cleanedBatchBlocks,
-      this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks)
+      this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks, latestHeight)
     );
   }
 
-  private getLatestBufferHeight(cleanedBatchBlocks: number[], rawBatchBlocks: number[]): number {
+  /**
+   *
+   * @param cleanedBatchBlocks
+   * @param rawBatchBlocks
+   * @param latestHeight
+   * @private
+   */
+  private getLatestBufferHeight(cleanedBatchBlocks: number[], rawBatchBlocks: number[], latestHeight: number): number {
+    // When both BatchBlocks are empty, mean no blocks to enqueue and full synced,
+    // we are safe to update latestBufferHeight to this number
+    if (cleanedBatchBlocks.length === 0 && rawBatchBlocks.length === 0) {
+      return latestHeight;
+    }
     return Math.max(...cleanedBatchBlocks, ...rawBatchBlocks);
   }
   private filteredBlockBatch(currentBatchBlocks: number[]): number[] {
