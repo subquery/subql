@@ -28,6 +28,9 @@ export interface CosmosTransaction {
 }
 
 export interface CosmosMessage<T = any> {
+  /**
+   * The index of the message within the transaction
+   */
   idx: number;
   block: CosmosBlock;
   tx: CosmosTransaction;

@@ -120,8 +120,9 @@ export class IndexerManager extends BaseIndexerManager<
       for (const msg of msgs) {
         await this.indexMessage(msg, dataSources, getVM);
         const events = blockContent.events.filter(
-          (event) => event.msg?.idx === msg.idx,
+          (event) => event.tx.hash === tx.hash && event.msg?.idx === msg.idx,
         );
+
         for (const evt of events) {
           await this.indexEvent(evt, dataSources, getVM);
         }

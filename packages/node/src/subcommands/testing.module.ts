@@ -8,7 +8,9 @@ import {
   ConnectionPoolService,
   ConnectionPoolStateManager,
   DbModule,
+  InMemoryCacheService,
   PoiService,
+  PoiSyncService,
   StoreService,
   TestRunner,
 } from '@subql/node-core';
@@ -26,10 +28,12 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({
   providers: [
+    InMemoryCacheService,
     StoreService,
     StoreCacheService,
     EventEmitter2,
     PoiService,
+    PoiSyncService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
