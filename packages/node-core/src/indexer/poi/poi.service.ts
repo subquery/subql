@@ -152,15 +152,6 @@ export class PoiService implements OnApplicationShutdown {
   }
 
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
-    await this.poiRepo.model.destroy({
-      transaction,
-      where: {
-        id: {
-          [Op.gt]: targetBlockHeight,
-        },
-      },
-    });
-
     await batchDeletePoi(this.poiRepo.model, transaction, targetBlockHeight);
     const lastSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
 
@@ -186,9 +177,8 @@ async function batchDeletePoi(
   model: PoiRepo,
   transaction: Transaction,
   targetBlockHeight: number,
-  batchSize = 10
+  batchSize = 10000
 ): Promise<void> {
-  // const offset = 0;
   let completed = false;
   // eslint-disable-next-line no-constant-condition
   while (!completed) {

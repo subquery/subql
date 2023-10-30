@@ -900,23 +900,25 @@ async function batchDeleteAndThenUpdate(
   // eslint-disable-next-line no-constant-condition
   while (!completed) {
     try {
-      const recordsToUpdate = await model.findAll({
-        transaction,
-        limit: batchSize,
-        attributes: {include: ['_id']},
-        offset, // We need to apply offset, because after update the records, the record could still with in range, avoid endless query here.
-        where: {
-          __block_range: {
-            [Op.contains]: targetBlockHeight,
+      const [recordsToUpdate, recordsToDelete] = await Promise.all([
+        model.findAll({
+          transaction,
+          limit: batchSize,
+          attributes: {include: ['_id']},
+          offset, // We need to apply offset, because after update the records, the record could still with in range, avoid endless query here.
+          where: {
+            __block_range: {
+              [Op.contains]: targetBlockHeight,
+            },
           },
-        },
-      });
-      const recordsToDelete = await model.findAll({
-        transaction,
-        limit: batchSize,
-        attributes: {include: ['_id']},
-        where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
-      });
+        }),
+        model.findAll({
+          transaction,
+          limit: batchSize,
+          attributes: {include: ['_id']},
+          where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
+        }),
+      ]);
       if (recordsToDelete.length === 0 && recordsToUpdate.length === 0) {
         break;
         completed = true;
