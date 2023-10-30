@@ -6,14 +6,15 @@ import path from 'path';
 import rimraf from 'rimraf';
 import {codegen, processFields, validateEntityName} from './codegen-controller';
 
-
 jest.mock('fs', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fsMock = jest.createMockFromModule('fs') as any;
-  fsMock.promises = {
-    mkdir: jest.fn(),
+  const fs = jest.requireActual('fs');
+  return {
+    ...fs,
+    promises: {
+      ...fs.promises,
+      mkdir: jest.fn(),
+    },
   };
-  return fsMock;
 });
 
 jest.mock('rimraf', () => {
