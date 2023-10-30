@@ -369,7 +369,7 @@ describe('Fetch Service', () => {
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
-    // simulate we have synced to block 50, ande modulos is 20, next block to handle suppose be 70
+    // simulate we have synced to block 50, and modulos is 20, next block to handle suppose be 70
     // we will still enqueue 60 to update LatestBufferHeight
     await fetchService.init(50);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 60);
