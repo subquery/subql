@@ -2,7 +2,7 @@
 FROM node:18 as builder
 
 WORKDIR /app
-COPY ./pacakges/node ./
+COPY ./packages/node ./
 
 RUN npm install -g --force yarn@latest
 RUN yarn pack -o /app.tgz
