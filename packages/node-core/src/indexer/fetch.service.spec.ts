@@ -365,14 +365,14 @@ describe('Fetch Service', () => {
 
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {
     fetchService.modulos = [20];
-    fetchService.finalizedHeight = 60;
+    fetchService.finalizedHeight = 55;
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
-    // simulate we have synced to block 50, and modulo is 20, next block to handle suppose be 70
-    // we will still enqueue 60 to update LatestBufferHeight
+    // simulate we have synced to block 50, and modulo is 20, next block to handle suppose be 60,80,100...
+    // we will still enqueue 55 to update LatestBufferHeight
     await fetchService.init(50);
-    expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 60);
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([], 55);
   });
 
   it('skips bypassBlocks', async () => {
