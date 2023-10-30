@@ -66,6 +66,7 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
     dialect: 'postgres',
     ssl: nodeConfig.isPostgresSecureConnection,
     dialectOptions: {
+      options: {requestTimeout: nodeConfig.timeout * 1000}, // configure timeout is in seconds, requestTimeout is in milliseconds
       ssl: {
         rejectUnauthorized: false,
         ca: nodeConfig.postgresCACert,

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Align sequelize `requestTimeout` with process timeout.
 - Improve reindex query to remove/update by batches.
 - Fix poi reindex beyond genesis height issue.
 
