@@ -1,5 +1,8 @@
 name: "Node-to-docker"
 on:
+  push:
+    branches:
+      - docker-from-source
   release:
     types:
       - published
@@ -43,23 +46,23 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
-      - name: Set execute permissions for the script
-        run: chmod +x .github/workflows/scripts/replace-versions.sh
+      #- name: Set execute permissions for the script
+      #  run: chmod +x .github/workflows/scripts/replace-versions.sh
 
       # Replace workspace:* with actual versions
-      - name: Replace workspace dependencies with actual versions
-        run: |
-          ./.github/workflows/scripts/replace-versions.sh
+      #- name: Replace workspace dependencies with actual versions
+      #  run: |
+      #    ./.github/workflows/scripts/replace-versions.sh
       
       - name: Build and push
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node
+          tags: onfinality/subql-node:dockertest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
@@ -112,23 +115,23 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
-      - name: Set execute permissions for the script
-        run: chmod +x .github/workflows/scripts/replace-versions.sh
+      #- name: Set execute permissions for the script
+      #  run: chmod +x .github/workflows/scripts/replace-versions.sh
 
       # Replace workspace:* with actual versions
-      - name: Replace workspace dependencies with actual versions
-        run: |
-          ./.github/workflows/scripts/replace-versions.sh
+      #- name: Replace workspace dependencies with actual versions
+      #  run: |
+      #    ./.github/workflows/scripts/replace-versions.sh
 
       - name: Build and push
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: subquerynetwork/subql-node-substrate,
+          tags: subquerynetwork/subql-node-substrate:dockertest,
 
       - name: Build and push
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
