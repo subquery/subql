@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2023-10-31
+### Added
+- New `endBlock` option on datasources (#2064)
+- Add Concordium to network family (#2078)
+
 ## [3.2.0] - 2023-10-25
 ### Added
 - Multichain support for TypeScript manifests (#2097)
@@ -334,7 +339,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/3.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/3.3.0...HEAD
+[3.3.0]: https://github.com/subquery/subql/compare/common/3.2.0...common/3.3.0
 [3.2.0]: https://github.com/subquery/subql/compare/common/3.1.3...common/3.2.0
 [3.1.3]: https://github.com/subquery/subql/compare/common/3.1.2...common/3.1.3
 [3.1.2]: https://github.com/subquery/subql/compare/common/3.1.1...common/3.1.2

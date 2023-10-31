@@ -5,8 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.2.0] - 2023-10-31
+### Fixed
+- Sync with node-core, fixed modulo block ahead of finalized block issue (#2132)
+- Missing dependencies for testing command
+
 ### Changed
 - Use WorkerInMemoryCacheService from node core (#2125)
+- Update `@subql/node-core` with latest features and fixes
+
+### Added
+- Logger now supports negative filters. To use this prefix the logger name with a `-`. E.g `--debug="*,-SQL"` (#2133)
 
 ## [3.1.1] - 2023-10-25
 ### Fixed
@@ -1028,7 +1038,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.2.0...HEAD
+[3.2.0]: https://github.com/subquery/subql/compare/node/3.1.1...node/3.2.0
 [3.1.1]: https://github.com/subquery/subql/compare/node/3.1.0...node/3.1.1
 [3.1.0]: https://github.com/subquery/subql/compare/v3.0.8...v3.1.0
 [3.0.8]: https://github.com/subquery/subql/compare/node/3.0.7...node/3.0.8

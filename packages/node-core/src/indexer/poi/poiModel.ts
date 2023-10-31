@@ -61,6 +61,7 @@ export class PlainPoiModel implements PoiInterface {
     }
     await this.model.bulkCreate(proofs, {
       transaction: tx,
+      conflictAttributes: ['id'],
       updateOnDuplicate: ['hash', 'parentHash'],
     });
   }

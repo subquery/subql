@@ -216,10 +216,15 @@ export abstract class BaseFetchService<
     return moduloBlocks;
   }
 
-  getEnqueuedModuloBlocks(startBlockHeight: number): number[] {
+  /**
+   *
+   * @param startBlockHeight
+   * @param endBlockHeight is either FinalizedHeight or BestHeight, ensure ModuloBlocks not greater than this number
+   */
+  getEnqueuedModuloBlocks(startBlockHeight: number, endBlockHeight: number): number[] {
     return this.getModuloBlocks(
       startBlockHeight,
-      this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight
+      Math.min(this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight, endBlockHeight)
     ).slice(0, this.nodeConfig.batchSize);
   }
 
@@ -298,7 +303,7 @@ export abstract class BaseFetchService<
             } else {
               const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
               const enqueueBlocks = batchBlocks.slice(0, maxBlockSize);
-              await this.enqueueBlocks(enqueueBlocks);
+              await this.enqueueBlocks(enqueueBlocks, latestHeight);
             }
             continue; // skip nextBlockRange() way
           }
@@ -313,22 +318,40 @@ export abstract class BaseFetchService<
 
       const enqueuingBlocks =
         handlers.length && this.getModulos().length === handlers.length
-          ? this.getEnqueuedModuloBlocks(startBlockHeight)
+          ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
           : range(startBlockHeight, endHeight + 1);
 
-      await this.enqueueBlocks(enqueuingBlocks);
+      await this.enqueueBlocks(enqueuingBlocks, latestHeight);
     }
   }
 
-  private async enqueueBlocks(enqueuingBlocks: number[]): Promise<void> {
+  /**
+   *
+   * @param enqueuingBlocks
+   * @param latestHeight ensure LatestBufferHeight get updated if enqueuingBlocks is empty
+   * @private
+   */
+  private async enqueueBlocks(enqueuingBlocks: number[], latestHeight: number): Promise<void> {
     const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
     await this.blockDispatcher.enqueueBlocks(
       cleanedBatchBlocks,
-      this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks)
+      this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks, latestHeight)
     );
   }
 
-  private getLatestBufferHeight(cleanedBatchBlocks: number[], rawBatchBlocks: number[]): number {
+  /**
+   *
+   * @param cleanedBatchBlocks
+   * @param rawBatchBlocks
+   * @param latestHeight
+   * @private
+   */
+  private getLatestBufferHeight(cleanedBatchBlocks: number[], rawBatchBlocks: number[], latestHeight: number): number {
+    // When both BatchBlocks are empty, mean no blocks to enqueue and full synced,
+    // we are safe to update latestBufferHeight to this number
+    if (cleanedBatchBlocks.length === 0 && rawBatchBlocks.length === 0) {
+      return latestHeight;
+    }
     return Math.max(...cleanedBatchBlocks, ...rawBatchBlocks);
   }
   private filteredBlockBatch(currentBatchBlocks: number[]): number[] {

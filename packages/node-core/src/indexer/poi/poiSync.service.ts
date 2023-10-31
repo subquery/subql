@@ -9,12 +9,13 @@ import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db';
 import {PoiEvent} from '../../events';
-import {Metadata, MetadataFactory, MetadataRepo, PlainPoiModel, PoiFactory} from '../../indexer';
 import {getLogger} from '../../logger';
 import {hasValue, Queue} from '../../utils';
-import {ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
+import {Metadata, MetadataFactory, MetadataRepo} from '../entities';
+import {PoiFactory, ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
 import {ISubqueryProject} from '../types';
 import {PoiBlock} from './PoiBlock';
+import {PlainPoiModel} from './poiModel';
 
 const GENESIS_PARENT_HASH = hexToU8a('0x00');
 const logger = getLogger('PoiSyncService');

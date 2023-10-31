@@ -3,6 +3,7 @@
 
 import path from 'path';
 import {DEFAULT_MANIFEST, extensionIsTs, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {isCustomDs as isCustomConcordiumDs, isRuntimeDs as isRuntimeConcordiumDs} from '@subql/common-concordium';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -25,6 +26,10 @@ import {
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
 } from '@subql/types';
+import {
+  RuntimeDatasourceTemplate as ConcordiumDsTemplate,
+  CustomDatasourceTemplate as ConcordiumCustomDsTemplate,
+} from '@subql/types-concordium';
 import {TemplateBase} from '@subql/types-core';
 import {
   RuntimeDatasourceTemplate as CosmosDsTemplate,
@@ -67,7 +72,9 @@ type TemplateKind =
   | NearDsTemplate
   | NearCustomDsTemplate
   | StellarDsTemplate
-  | StellarCustomDsTemplate;
+  | StellarCustomDsTemplate
+  | ConcordiumDsTemplate
+  | ConcordiumCustomDsTemplate;
 
 export type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
 
@@ -410,6 +417,8 @@ function hasParameters(t: TemplateKind): boolean {
     isRuntimeNearDs(t as NearDsTemplate) ||
     isCustomNearDs(t as NearDsTemplate) ||
     isRuntimeStellarDs(t as StellarDsTemplate) ||
-    isCustomStellarDs(t as StellarDsTemplate)
+    isCustomStellarDs(t as StellarDsTemplate) ||
+    isRuntimeConcordiumDs(t as ConcordiumDsTemplate) ||
+    isCustomConcordiumDs(t as ConcordiumDsTemplate)
   );
 }

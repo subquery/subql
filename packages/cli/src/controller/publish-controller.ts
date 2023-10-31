@@ -11,6 +11,7 @@ import {
   mapToObject,
 } from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
+import {parseConcordiumProjectManifest} from '@subql/common-concordium';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
@@ -69,6 +70,7 @@ export async function uploadToIpfs(
       parseFlareProjectManifest,
       parseNearProjectManifest,
       parseStellarProjectManifest,
+      parseConcordiumProjectManifest,
     ];
 
     let manifest = null;

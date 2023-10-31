@@ -159,10 +159,10 @@ describe('cacheModel', () => {
     let testModel: CachedModel<{id: string; field1: number}>;
     let sequelize: Sequelize;
 
-    const flush = async () => {
+    const flush = async (height?: number) => {
       const tx = await sequelize.transaction();
 
-      await testModel.flush(tx);
+      await testModel.flush(tx, height);
 
       return tx.commit();
     };
@@ -195,7 +195,7 @@ describe('cacheModel', () => {
         },
         1
       );
-      await flush();
+      await flush(1);
       // the block range has been set
       expect(sypOnApplyBlockRange).toHaveBeenCalledTimes(1);
 

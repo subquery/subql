@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2023-10-31
+### Added
+- Logger now supports negative filters. To use this prefix the logger name with a `-`. E.g `--debug="*,-SQL"` (#2133)
+
 ## [2.4.4] - 2023-10-11
 ### Added
 - Option to set debug level for child loggers
@@ -91,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/v2.4.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.5.0...HEAD
+[2.5.0]: https://github.com/subquery/subql/compare/utils/2.4.4...utils/2.5.0
 [2.4.4]: https://github.com/subquery/subql/compare/v2.4.3...v2.4.4
 [2.4.3]: https://github.com/subquery/subql/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/subquery/subql/compare/utils/2.4.1...utils/2.4.2
