@@ -6,30 +6,18 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  Worker,
   SmartBatchService,
   StoreService,
   PoiService,
   PoiSyncService,
   StoreCacheService,
   IProjectService,
-  IDynamicDsService,
-  HostStore,
-  HostDynamicDS,
   WorkerBlockDispatcher,
-  IUnfinalizedBlocksService,
-  HostConnectionPoolState,
-  connectionPoolStateHostFunctions,
   ConnectionPoolStateManager,
-  HostUnfinalizedBlocks,
-  baseWorkerFunctions,
-  storeHostFunctions,
-  cacheHostFunctions,
-  dynamicDsHostFunctions,
   IProjectUpgradeService,
   InMemoryCacheService,
+  createIndexerWorker,
 } from '@subql/node-core';
-import { Cache, Store } from '@subql/types-core';
 import {
   CosmosProjectDs,
   SubqueryProject,
@@ -38,47 +26,11 @@ import { CosmosClientConnection } from '../cosmosClient.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
-import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
+import { IIndexerWorker } from '../worker/worker';
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
-
-async function createIndexerWorker(
-  store: Store,
-  cache: Cache,
-  dynamicDsService: IDynamicDsService<CosmosProjectDs>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService<BlockContent>,
-  connectionPoolState: ConnectionPoolStateManager<CosmosClientConnection>,
-  root: string,
-  startHeight: number,
-): Promise<IndexerWorker> {
-  const indexerWorker = Worker.create<
-    IInitIndexerWorker,
-    HostDynamicDS<CosmosProjectDs> &
-      HostStore &
-      HostUnfinalizedBlocks &
-      HostConnectionPoolState<CosmosClientConnection>
-  >(
-    path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
-    [...baseWorkerFunctions, 'initWorker'],
-    {
-      ...cacheHostFunctions(cache),
-      ...storeHostFunctions(store),
-      ...dynamicDsHostFunctions(dynamicDsService),
-      unfinalizedBlocksProcess:
-        unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
-          unfinalizedBlocksService,
-        ),
-      ...connectionPoolStateHostFunctions(connectionPoolState),
-    },
-    root,
-  );
-
-  await indexerWorker.initWorker(startHeight);
-
-  return indexerWorker;
-}
 
 @Injectable()
 export class WorkerBlockDispatcherService
@@ -115,7 +67,14 @@ export class WorkerBlockDispatcherService
       project,
       dynamicDsService,
       () =>
-        createIndexerWorker(
+        createIndexerWorker<
+          IIndexerWorker,
+          CosmosClientConnection,
+          BlockContent,
+          CosmosProjectDs
+        >(
+          path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
+          [],
           storeService.getStore(),
           cacheService.getCache(),
           dynamicDsService,

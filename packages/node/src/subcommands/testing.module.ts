@@ -11,10 +11,10 @@ import {
   InMemoryCacheService,
   PoiService,
   PoiSyncService,
+  StoreCacheService,
   StoreService,
   TestRunner,
 } from '@subql/node-core';
-import { StoreCacheService } from '@subql/node-core/dist';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';

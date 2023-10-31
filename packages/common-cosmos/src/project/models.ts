@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ProcessorImpl} from '@subql/common';
+import {BaseDataSource, ProcessorImpl} from '@subql/common';
 import {FileReference, Processor} from '@subql/types-core';
 import {
   CosmosEventFilter,
@@ -167,6 +167,7 @@ export class CosmosProcessorOptions implements CosmosProcessorOptions {
 }
 
 export class CosmosRuntimeDataSourceBase<M extends CosmosMapping<CosmosRuntimeHandler>>
+  extends BaseDataSource
   implements CosmosRuntimeDatasource<M>
 {
   @IsEnum(CosmosDatasourceKind, {groups: [CosmosDatasourceKind.Runtime]})
@@ -174,8 +175,6 @@ export class CosmosRuntimeDataSourceBase<M extends CosmosMapping<CosmosRuntimeHa
   @Type(() => RuntimeMapping)
   @ValidateNested()
   mapping: M;
-  @IsInt()
-  startBlock: number;
   @IsOptional()
   @Validate(FileReferenceImp)
   assets?: Map<string, FileReference>;
@@ -199,19 +198,18 @@ export class CosmosCustomModuleImpl implements CustomModule {
 }
 
 export class CosmosCustomDataSourceBase<
-  K extends string,
-  M extends CosmosMapping = CosmosMapping<CosmosCustomHandler>,
-  O = any
-> implements CosmosCustomDatasource<K, M, O>
+    K extends string,
+    M extends CosmosMapping = CosmosMapping<CosmosCustomHandler>,
+    O = any
+  >
+  extends BaseDataSource
+  implements CosmosCustomDatasource<K, M, O>
 {
   @IsString()
   kind: K;
   @Type(() => CustomMapping)
   @ValidateNested()
   mapping: M;
-  @IsOptional()
-  @IsInt()
-  startBlock?: number;
   @Type(() => CosmosFileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, CustomDataSourceAsset>;
