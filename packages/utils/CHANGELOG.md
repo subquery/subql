@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Logger now supports negative filters. To use this prefix the logger name with a `-`. E.g `--debug="*,-SQL"` (#2133)
 
 ## [2.4.4] - 2023-10-11
 ### Added

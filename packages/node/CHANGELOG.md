@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Missing dependencies for testing command
 
+### Added
+- Logger now supports negative filters. To use this prefix the logger name with a `-`. E.g `--debug="*,-SQL"` (#2133)
+
 ## [3.1.1] - 2023-10-25
 ### Fixed
 - Update node-core with fix for crash when creating a dynamic datasource
