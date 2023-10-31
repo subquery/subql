@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Fixed
+- Fixed modulo block ahead of finalized block issue (#2132)
+
 ### Added
 - WorkerInMemoryCacheService from node (#2125)
 - New `endBlock` option on datasources (#2064)
