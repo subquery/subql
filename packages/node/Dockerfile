@@ -23,7 +23,7 @@ RUN apk add --no-cache tini git curl tar
 COPY --from=builder /app/packages/node/app.tgz /app.tgz
 RUN tar -xzvf /app.tgz --strip 1 && rm /app.tgz
 
-RUN yarn install
+RUN yarn install --production
 
 ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
 CMD ["-f","/app"]
