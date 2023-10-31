@@ -3,9 +3,19 @@
 
 import {FileReference, ParentProject, Processor} from '@subql/types-core';
 import {plainToInstance, Type} from 'class-transformer';
-import {Allow, Equals, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
+import {
+  Allow,
+  Equals,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  Validate,
+  ValidateNested,
+  validateSync,
+} from 'class-validator';
 import yaml from 'js-yaml';
-import {toJsonObject} from '../utils';
+import {IsEndBlockGreater, toJsonObject} from '../utils';
 import {ParentProjectModel} from './v1_0_0/models';
 
 export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
@@ -77,4 +87,14 @@ export class BaseDeploymentV1_0_0 {
       condenseFlow: true,
     });
   }
+}
+
+export class BaseDataSource {
+  @IsOptional()
+  @IsInt()
+  startBlock?: number;
+  @Validate(IsEndBlockGreater)
+  @IsOptional()
+  @IsInt()
+  endBlock?: number;
 }

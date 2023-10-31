@@ -5,16 +5,24 @@ import assert from 'node:assert';
 import {getHeapStatistics} from 'node:v8';
 import {threadId} from 'node:worker_threads';
 import {INestApplication} from '@nestjs/common';
-import {BaseDataSource} from '@subql/types-core';
+import {BaseDataSource, Store, Cache} from '@subql/types-core';
+import {IApiConnectionSpecific} from '../../api.service';
 import {getLogger} from '../../logger';
 import {waitForBatchSize} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
-import {WorkerHost, AsyncMethods} from './worker.builder';
-import {HostCache, hostCacheKeys} from './worker.cache.service';
-import {HostConnectionPoolState, hostConnectionPoolStateKeys} from './worker.connectionPoolState.manager';
-import {HostDynamicDS, hostDynamicDsKeys} from './worker.dynamic-ds.service';
+import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
+import {IDynamicDsService} from '../dynamic-ds.service';
+import {IUnfinalizedBlocksService} from '../unfinalizedBlocks.service';
+import {WorkerHost, Worker, AsyncMethods} from './worker.builder';
+import {cacheHostFunctions, HostCache, hostCacheKeys} from './worker.cache.service';
+import {
+  connectionPoolStateHostFunctions,
+  HostConnectionPoolState,
+  hostConnectionPoolStateKeys,
+} from './worker.connectionPoolState.manager';
+import {dynamicDsHostFunctions, HostDynamicDS, hostDynamicDsKeys} from './worker.dynamic-ds.service';
 import {BaseWorkerService, WorkerStatusResponse} from './worker.service';
-import {HostStore, hostStoreKeys} from './worker.store.service';
+import {HostStore, hostStoreKeys, storeHostFunctions} from './worker.store.service';
 import {HostUnfinalizedBlocks, hostUnfinalizedBlocksKeys} from './worker.unfinalizedBlocks.service';
 
 export type DefaultWorkerFunctions<
@@ -159,6 +167,43 @@ export function createWorkerHost<
     },
     logger
   );
+}
+
+export async function createIndexerWorker<
+  T extends IBaseIndexerWorker,
+  ApiConnection extends IApiConnectionSpecific<any, any, any> /*ApiPromiseConnection*/ /*ApiPromiseConnection*/,
+  B,
+  DS extends BaseDataSource = BaseDataSource
+>(
+  workerPath: string,
+  workerFns: (keyof Omit<T, keyof IBaseIndexerWorker>)[],
+  store: Store,
+  cache: Cache,
+  dynamicDsService: IDynamicDsService<DS>,
+  unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
+  connectionPoolState: ConnectionPoolStateManager<ApiConnection>,
+  root: string,
+  startHeight: number
+): Promise<T & {terminate: () => Promise<number>}> {
+  const indexerWorker = Worker.create<
+    T & {initWorker: (startHeight: number) => Promise<void>},
+    DefaultWorkerFunctions<ApiConnection, DS>
+  >(
+    workerPath,
+    [...baseWorkerFunctions, 'initWorker', ...workerFns],
+    {
+      ...cacheHostFunctions(cache),
+      ...storeHostFunctions(store),
+      ...dynamicDsHostFunctions(dynamicDsService),
+      unfinalizedBlocksProcess: unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(unfinalizedBlocksService),
+      ...connectionPoolStateHostFunctions(connectionPoolState),
+    },
+    root
+  );
+
+  await indexerWorker.initWorker(startHeight);
+
+  return indexerWorker;
 }
 
 process.on('uncaughtException', (e) => {

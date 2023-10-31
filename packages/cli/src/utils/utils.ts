@@ -5,6 +5,8 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST} from '@subql/common';
+import {SubqlRuntimeHandler} from '@subql/common-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
@@ -113,25 +115,127 @@ export function findReplace(manifest: string, replacer: RegExp, value: string): 
   return manifest.replace(replacer, value);
 }
 
+export function findMatchingIndices(
+  content: string,
+  startChar: string,
+  endChar: string,
+  startFrom = 0
+): [number, number][] {
+  //  JavaScript's regex engine does not support recursive patterns like (?1).
+  //  This regex would work in engines that support recursion, such as PCRE (Perl-Compatible Regular Expressions).
+
+  let openCount = 0;
+  let startIndex: number;
+  const pairs: [number, number][] = [];
+
+  for (let i = startFrom; i < content.length; i++) {
+    if (content[i] === startChar) {
+      if (openCount === 0) startIndex = i;
+      openCount++;
+    } else if (content[i] === endChar) {
+      openCount--;
+      if (openCount === 0) {
+        pairs.push([startIndex, i]);
+        break;
+      }
+    }
+  }
+  if (openCount !== 0) throw new Error(`Unbalanced ${startChar} and ${endChar}`);
+
+  return pairs;
+}
+export function findArrayIndicesTsManifest(content: string, key: string): [number, number] {
+  const start = content.indexOf(`${key}:`);
+  if (start === -1) throw new Error(`${key} not found`);
+  const pairs = findMatchingIndices(content, '[', ']', start);
+
+  if (pairs.length === 0) throw new Error(`${key} contains unbalanced brackets`);
+
+  return pairs[0];
+}
+export function replaceArrayValueInTsManifest(content: string, key: string, newValue: string): string {
+  const [startIndex, endIndex] = findArrayIndicesTsManifest(content, key);
+  return content.slice(0, startIndex) + newValue + content.slice(endIndex + 1);
+}
+export function extractArrayValueFromTsManifest(content: string, key: string): string | null {
+  const [startIndex, endIndex] = findArrayIndicesTsManifest(content, key);
+  return content.slice(startIndex, endIndex + 1);
+}
+
+export function tsStringify(
+  obj: SubqlRuntimeHandler | SubqlRuntimeHandler[] | string,
+  indent = 2,
+  currentIndent = 0
+): string {
+  if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj === 'string' && obj.includes('EthereumHandlerKind')) {
+      return obj; // Return the string as-is without quotes
+    }
+    return JSON.stringify(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    const items = obj.map((item) => tsStringify(item, indent, currentIndent + indent));
+    return `[\n${items.map((item) => ' '.repeat(currentIndent + indent) + item).join(',\n')}\n${' '.repeat(
+      currentIndent
+    )}]`;
+  }
+
+  const entries = Object.entries(obj);
+  const result = entries.map(([key, value]) => {
+    const valueStr = tsStringify(value, indent, currentIndent + indent);
+    return `${' '.repeat(currentIndent + indent)}${key}: ${valueStr}`;
+  });
+
+  return `{\n${result.join(',\n')}\n${' '.repeat(currentIndent)}}`;
+}
+
 export function extractFromTs(
   manifest: string,
-  patterns: {[key: string]: RegExp}
+  patterns: {[key: string]: RegExp | undefined}
 ): {[key: string]: string | string[] | null} {
   const result: {[key: string]: string | string[] | null} = {};
-
+  // TODO should extract then validate value type ?
+  // check what the following char is after key
+  const arrKeys = ['endpoint', 'topics'];
+  const nestArr = ['dataSources', 'handlers'];
   for (const key in patterns) {
-    const match = manifest.match(patterns[key]);
+    if (!nestArr.includes(key)) {
+      const match = manifest.match(patterns[key]);
 
-    if (key === 'endpoint' && match) {
-      const inputStr = match[1].replace(/`/g, '"');
-      const jsonOutput = JSON5.parse(inputStr);
-      result[key] = Array.isArray(jsonOutput) ? jsonOutput : [jsonOutput];
+      if (arrKeys.includes(key) && match) {
+        const inputStr = match[1].replace(/`/g, '"');
+        const jsonOutput = JSON5.parse(inputStr);
+        result[key] = Array.isArray(jsonOutput) ? jsonOutput : [jsonOutput];
+      } else {
+        result[key] = match ? match[1] : null;
+      }
     } else {
-      result[key] = match ? match[1] : null;
+      result[key] = extractArrayValueFromTsManifest(manifest, key);
     }
   }
 
   return result;
+}
+
+export function splitArrayString(arrayStr: string): string[] {
+  // Remove the starting and ending square brackets
+  const content = arrayStr.trim().slice(1, -1).trim();
+  const pairs: [number, number][] = [];
+  let lastEndIndex = 0;
+
+  while (lastEndIndex < content.length) {
+    const newPairs = findMatchingIndices(content, '{', '}', lastEndIndex);
+    if (newPairs.length === 0) break;
+    pairs.push(newPairs[0]);
+    lastEndIndex = newPairs[0][1] + 1;
+  }
+
+  return pairs.map(([start, end]) => {
+    // Extract the string and further process to remove excess whitespace
+    const extracted = content.slice(start, end + 1).trim();
+    return extracted.replace(/\s+/g, ' ');
+  });
 }
 
 // Cold validate on ts manifest, for generate scaffold command
@@ -139,4 +243,12 @@ export function validateEthereumTsManifest(manifest: string): boolean {
   const typePattern = /@subql\/types-ethereum/;
   const nodePattern = /@subql\/node-ethereum/;
   return !!typePattern.test(manifest) && !!nodePattern.test(manifest);
+}
+
+export function defaultYamlManifestPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_MANIFEST);
+}
+
+export function defaultTSManifestPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_TS_MANIFEST);
 }

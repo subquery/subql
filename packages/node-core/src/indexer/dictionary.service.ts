@@ -349,7 +349,7 @@ export class DictionaryService {
     dataSources: BlockHeightMap<DS[]>,
     buildDictionaryQueryEntries: (dataSources: DS[]) => DictionaryQueryEntry[]
   ): void {
-    this.queriesMap = dataSources.map((dataSources) => buildDictionaryQueryEntries(dataSources));
+    this.queriesMap = dataSources.map(buildDictionaryQueryEntries);
   }
 
   async scopedDictionaryEntries(
@@ -360,10 +360,8 @@ export class DictionaryService {
     const queryDetails = this.queriesMap?.getDetails(startBlockHeight);
     const queryEntry: DictionaryQueryEntry[] = queryDetails?.value ?? [];
 
-    // Update end block if query changes
-    if (queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock) {
-      queryEndBlock = queryDetails?.endHeight;
-    }
+    queryEndBlock =
+      queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock ? queryDetails.endHeight : queryEndBlock;
 
     const dict = await this.getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize, queryEntry);
 

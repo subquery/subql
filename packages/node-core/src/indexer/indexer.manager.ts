@@ -129,7 +129,12 @@ export abstract class BaseIndexerManager<
   private filterDataSources(nextProcessingHeight: number, dataSources: DS[]): DS[] {
     let filteredDs: DS[];
 
-    filteredDs = dataSources.filter((ds) => ds.startBlock !== undefined && ds.startBlock <= nextProcessingHeight);
+    filteredDs = dataSources.filter(
+      (ds) =>
+        ds.startBlock !== undefined &&
+        ds.startBlock <= nextProcessingHeight &&
+        (ds.endBlock ?? Number.MAX_SAFE_INTEGER) >= nextProcessingHeight
+    );
 
     // perform filter for custom ds
     filteredDs = filteredDs.filter((ds) => {
@@ -146,8 +151,13 @@ export abstract class BaseIndexerManager<
   private assertDataSources(ds: DS[], blockHeight: number) {
     if (!ds.length) {
       logger.error(
-        `Your start block of all the datasources is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
-         or delete your database and start again from the currently specified startBlock`
+        `Issue detected with data sources: \n
+        Either all data sources have a 'startBlock' greater than the current indexed block height (${blockHeight}), 
+        or they have an 'endBlock' less than the current block. \n
+        Solution options: \n
+        1. Adjust 'startBlock' in project.yaml to be less than or equal to ${blockHeight}, 
+           and 'endBlock' to be greater than or equal to ${blockHeight}. \n
+        2. Delete your database and start again with the currently specified 'startBlock' and 'endBlock'.`
       );
       process.exit(1);
     }

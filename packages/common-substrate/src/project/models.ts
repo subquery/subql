@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
-import {BlockFilterImpl, ProcessorImpl} from '@subql/common';
+import {BaseDataSource, BlockFilterImpl, ProcessorImpl} from '@subql/common';
 import {
   SubstrateBlockFilter,
   SubstrateBlockHandler,
@@ -24,7 +24,6 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
-  IsInt,
   IsOptional,
   IsString,
   IsObject,
@@ -149,15 +148,12 @@ export class CustomMapping implements BaseMapping<SubstrateCustomHandler> {
   file: string;
 }
 
-export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
+export class RuntimeDataSourceBase extends BaseDataSource implements SubstrateRuntimeDatasource {
   @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
   kind: SubstrateDatasourceKind.Runtime;
   @Type(() => RuntimeMapping)
   @ValidateNested()
   mapping: RuntimeMapping;
-  @IsOptional()
-  @IsInt()
-  startBlock?: number;
 }
 
 export class FileReferenceImpl implements FileReference {
@@ -166,6 +162,7 @@ export class FileReferenceImpl implements FileReference {
 }
 
 export class CustomDataSourceBase<K extends string, M extends CustomMapping, O = any>
+  extends BaseDataSource
   implements SubstrateCustomDatasource<K, M, O>
 {
   @IsString()
@@ -173,9 +170,6 @@ export class CustomDataSourceBase<K extends string, M extends CustomMapping, O =
   @Type(() => CustomMapping)
   @ValidateNested()
   mapping: M;
-  @IsOptional()
-  @IsInt()
-  startBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, FileReference>;

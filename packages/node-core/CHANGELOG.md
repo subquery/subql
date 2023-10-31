@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Align sequelize `requestTimeout` with process timeout.
-- Improve reindex query to remove/update by batches.
-- Fix poi reindex beyond genesis height issue.
+- Improve reindex query to remove/update by batches. (#2131)
+- Fix poi reindex beyond genesis height issue. (#2131)
+- Fixed modulo block ahead of finalized block issue (#2132)
+- Wrong link to docs for testing
+### Added
+- WorkerInMemoryCacheService from node (#2125)
+- New `endBlock` option on datasources (#2064)
 
 ## [6.1.1] - 2023-10-25
 ### Fixed

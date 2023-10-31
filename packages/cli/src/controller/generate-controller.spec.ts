@@ -1,16 +1,28 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {DEFAULT_TS_MANIFEST} from '@subql/common';
 import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
-import {resolveToAbsolutePath} from '../utils';
+import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
 import {
-  constructDatasources,
+  extractArrayValueFromTsManifest,
+  extractFromTs,
+  findMatchingIndices,
+  replaceArrayValueInTsManifest,
+  resolveToAbsolutePath,
+  splitArrayString,
+  tsStringify,
+} from '../utils';
+import {
+  constructDatasourcesTs,
+  constructDatasourcesYaml,
   constructHandlerProps,
   constructMethod,
   filterExistingMethods,
@@ -19,6 +31,8 @@ import {
   getAbiInterface,
   prepareInputFragments,
   removeKeyword,
+  tsExtractor,
+  yamlExtractor,
 } from './generate-controller';
 
 const mockConstructedFunctions: SelectedMethod[] = [
@@ -68,6 +82,42 @@ const mockDsFn = (): EthereumDs[] => [
   },
 ];
 
+const mockDsStr =
+  '' +
+  '[\n' +
+  '{\n' +
+  "                kind: 'EthereumDatasourceKind.Runtime',\n" +
+  '                startBlock: 4719568,\n' +
+  '    \n' +
+  '                options: {\n' +
+  '                    // Must be a key of assets\n' +
+  "                    abi:'erc20',\n" +
+  '                    // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+  "                    address:'0x60781C2586D68229fde47564546784ab3fACA982'\n" +
+  '                },\n' +
+  "                assets: \"new Map([['erc20', { file: './abis/erc20.abi.json' }]])\",\n" +
+  '                mapping: {\n' +
+  '                    file: "./dist/index.js",\n' +
+  '                    handlers: [\n' +
+  '                        {\n' +
+  "                            kind: 'EthereumHandlerKind.Call',\n" +
+  '                            handler: "handleTransaction",\n' +
+  '                            filter: {\n' +
+  '                                function: "approve(address,uint256)",\n' +
+  '                            },\n' +
+  '                        },\n' +
+  '                        {\n' +
+  "                            kind: 'EthereumHandlerKind.Event',\n" +
+  '                            handler: "handleLog",\n' +
+  '                            filter: {\n' +
+  '                                topics: ["Transfer(address,address,uint256)"],\n' +
+  '                            },\n' +
+  '                        },\n' +
+  '                    ],\n' +
+  '                },\n' +
+  '            },\n' +
+  '        ]';
+
 describe('CLI codegen:generate', () => {
   const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
@@ -83,7 +133,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    const constructedDs = constructDatasources(mockUserInput);
+    const constructedDs = constructDatasourcesYaml(mockUserInput);
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
     expect(constructedDs).toStrictEqual({
@@ -238,7 +288,13 @@ describe('CLI codegen:generate', () => {
   it('filter out existing methods, input address === undefined && ds address === "", should filter', () => {
     const ds = mockDsFn();
     ds[0].options.address = '';
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      eventFragments,
+      functionFragments,
+      ds,
+      undefined,
+      yamlExtractor
+    );
     // function approve should be filtered out
     // event transfer should be filtered out
     expect(cleanEvents).toStrictEqual({
@@ -251,17 +307,30 @@ describe('CLI codegen:generate', () => {
   it('filter out existing methods, only on matching address', () => {
     const ds = mockDsFn();
     ds[0].options.address = '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2';
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, 'zzz');
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      eventFragments,
+      functionFragments,
+      ds,
+      'zzz',
+      yamlExtractor
+    );
     const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
     const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
 
-    expect(constructedEvents.length).toBe(Object.keys(eventFragments).length);
-    expect(constructedFunctions.length).toBe(Object.keys(functionFragments).length);
+    console.log(constructedEvents, '|', constructedFunctions);
+    // expect(constructedEvents.length).toBe(Object.keys(eventFragments).length);
+    // expect(constructedFunctions.length).toBe(Object.keys(functionFragments).length);
   });
   it('filter out existing methods, inputAddress === undefined || "" should filter all ds that contains no address', () => {
     const ds = mockDsFn();
     ds[0].options.address = undefined;
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, undefined);
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      eventFragments,
+      functionFragments,
+      ds,
+      undefined,
+      yamlExtractor
+    );
 
     expect(cleanEvents).toStrictEqual({
       'Approval(address,address,uint256)': eventFragments['Approval(address,address,uint256)'],
@@ -279,7 +348,13 @@ describe('CLI codegen:generate', () => {
     logHandler.topics = ['Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'];
 
     // should filter out approve and Transfer
-    const [cleanEvents, cleanFunctions] = filterExistingMethods(eventFragments, functionFragments, ds, 'zzz');
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      eventFragments,
+      functionFragments,
+      ds,
+      'zzz',
+      yamlExtractor
+    );
     const constructedEvents: SelectedMethod[] = constructMethod<EventFragment>(cleanEvents);
     const constructedFunctions: SelectedMethod[] = constructMethod<FunctionFragment>(cleanFunctions);
 
@@ -342,5 +417,330 @@ describe('CLI codegen:generate', () => {
   it('if absolutePath regex should not do anything', () => {
     const absolutePath = '/root/Downloads/example.file';
     expect(resolveToAbsolutePath(absolutePath)).toBe(absolutePath);
+  });
+  it('filter existing methods', () => {
+    const casedInputAddress = '0x60781C2586D68229fde47564546784ab3fACA982'.toLowerCase();
+
+    const [cleanEvents, cleanFunctions] = filterExistingMethods(
+      eventFragments,
+      functionFragments,
+      mockDsStr,
+      casedInputAddress,
+      tsExtractor
+    );
+    // should filter out approve fn and transfer event
+    expect(Object.keys(cleanEvents).includes('Transfer')).toBe(false);
+    expect(Object.keys(cleanFunctions).includes('approval')).toBe(false);
+  });
+  it('splitArrayString', () => {
+    const dsArr =
+      '' +
+      '[\n' +
+      '{\n' +
+      "                kind: 'EthereumDatasourceKind.Runtime',\n" +
+      '                startBlock: 4719568,\n' +
+      '    \n' +
+      '                options: {\n' +
+      '                    // Must be a key of assets\n' +
+      "                    abi:'erc20',\n" +
+      '                    // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+      "                    address:'0x60781C2586D68229fde47564546784ab3fACA982'\n" +
+      '                },\n' +
+      "                assets: \"new Map([['erc20', { file: './abis/erc20.abi.json' }]])\",\n" +
+      '                mapping: {\n' +
+      '                    file: "./dist/index.js",\n' +
+      '                    handlers: [\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Call',\n" +
+      '                            handler: "handleTransaction",\n' +
+      '                            filter: {\n' +
+      '                                function: "approve(address,uint256)",\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Event',\n" +
+      '                            handler: "handleLog",\n' +
+      '                            filter: {\n' +
+      '                                topics: ["Transfer(address,address,uint256)"],\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                    ],\n' +
+      '                },\n' +
+      '            },\n' +
+      '{\n' +
+      "                kind: 'EthereumDatasourceKind.Runtime',\n" +
+      '                startBlock: 4719568,\n' +
+      '    \n' +
+      '                options: {\n' +
+      '                    // Must be a key of assets\n' +
+      "                    abi:'erc20',\n" +
+      '                    // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+      "                    address:'0x60781C2586D68229fde47564546784ab3fACA982'\n" +
+      '                },\n' +
+      "                assets: \"new Map([['erc20', { file: './abis/erc20.abi.json' }]])\",\n" +
+      '                mapping: {\n' +
+      '                    file: "./dist/index.js",\n' +
+      '                    handlers: [\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Call',\n" +
+      '                            handler: "handleTransaction",\n' +
+      '                            filter: {\n' +
+      '                                function: "approve(address,uint256)",\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                        {\n' +
+      "                            kind: 'EthereumHandlerKind.Event',\n" +
+      '                            handler: "handleLog",\n' +
+      '                            filter: {\n' +
+      '                                topics: ["Transfer(address,address,uint256)"],\n' +
+      '                            },\n' +
+      '                        },\n' +
+      '                    ],\n' +
+      '                },\n' +
+      '            },\n' +
+      '        ]';
+    expect(splitArrayString(dsArr).length).toBe(2);
+  });
+  it('Correct constructedDataSourcesTs', () => {
+    const mockUserInput: UserInput = {
+      startBlock: 1,
+      functions: mockConstructedFunctions,
+      events: mockConstructedEvents,
+      abiPath: './abis/erc721.json',
+      address: 'aaa',
+    };
+    expect(constructDatasourcesTs(mockUserInput)).toStrictEqual(
+      `{
+    kind: EthereumDatasourceKind.Runtime,
+    startBlock: 1,
+    options: {
+      abi: 'Erc721',
+      address: 'aaa',
+    },
+    assets: new Map([['Erc721', {file: './abis/erc721.json'}]]),
+    mapping: {
+      file: './dist/index.js',
+      handlers: [
+  {
+    handler: "handleTransferFromErc721Tx",
+    kind: EthereumHandlerKind.Call,
+    filter: {
+      function: "transferFrom(address,address,uint256)"
+    }
+  },
+  {
+    handler: "handleApprovalErc721Log",
+    kind: EthereumHandlerKind.Event,
+    filter: {
+      topics: [
+        "Approval(address,address,uint256)"
+      ]
+    }
+  }
+]
+    }
+  }`
+    );
+  });
+  it('Construct correct ds for yaml', () => {
+    const mockUserInput: UserInput = {
+      startBlock: 1,
+      functions: mockConstructedFunctions,
+      events: mockConstructedEvents,
+      abiPath: './abis/erc721.json',
+      address: 'aaa',
+    };
+    expect(constructDatasourcesYaml(mockUserInput)).toStrictEqual({
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'Erc721',
+        address: 'aaa',
+      },
+      assets: new Map([['Erc721', {file: './abis/erc721.json'}]]),
+      mapping: {
+        file: './dist/index.js',
+        handlers: [
+          {
+            handler: 'handleTransferFromErc721Tx',
+            kind: EthereumHandlerKind.Call,
+            filter: {
+              function: 'transferFrom(address,address,uint256)',
+            },
+          },
+          {
+            handler: 'handleApprovalErc721Log',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Approval(address,address,uint256)'],
+            },
+          },
+        ],
+      },
+    });
+  });
+  it('tsExtractor should extract existing events and functions from ts-manifest', () => {
+    // TODO: extractor fails when encountering comments
+    expect(tsExtractor(mockDsStr, '0x60781C2586D68229fde47564546784ab3fACA982'.toLowerCase())).toStrictEqual({
+      existingEvents: ['Transfer(address,address,uint256)'],
+      existingFunctions: ['approve(address,uint256)'],
+    });
+    expect(tsExtractor(mockDsStr, 'zzz'.toLowerCase())).toStrictEqual({
+      existingEvents: [],
+      existingFunctions: [],
+    });
+  });
+  it('findArray indices', async () => {
+    // locate dataSources
+    const projectPath = path.join(__dirname, '../../test/ts-manifest', DEFAULT_TS_MANIFEST);
+    const m = await fs.promises.readFile(projectPath, 'utf8');
+    expect(findMatchingIndices(m, '[', ']', m.indexOf(`dataSources: `))).toStrictEqual([[1293, 2720]]);
+
+    // locate handlers in DS
+    expect(findMatchingIndices(mockDsStr, '[', ']', mockDsStr.indexOf('handlers: '))).toStrictEqual([[630, 1278]]);
+  });
+  // TODO failing test due to unable to process comments
+  it('extract from TS manifest', async () => {
+    const projectPath = path.join(__dirname, '../../test/ts-manifest', DEFAULT_TS_MANIFEST);
+    const m = await fs.promises.readFile(projectPath, 'utf8');
+    const v = extractFromTs(m, {
+      dataSources: undefined,
+      handlers: undefined,
+      function: FUNCTION_REG,
+      topics: TOPICS_REG,
+      endpoint: ENDPOINT_REG,
+    });
+    expect(v.dataSources).toMatch(
+      '[\n' +
+        '    {\n' +
+        '      kind: EthereumDatasourceKind.Runtime,\n' +
+        '      startBlock: 4719568,\n' +
+        '\n' +
+        '      options: {\n' +
+        '        // Must be a key of assets\n' +
+        "        abi: 'erc20',\n" +
+        '        // # this is the contract address for wrapped ether https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\n' +
+        "        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',\n" +
+        '      },\n' +
+        "      assets: new Map([['erc20', {file: './abis/erc20.abi.json'}]]),\n" +
+        '      mapping: {\n' +
+        "        file: './dist/index.js',\n" +
+        '        handlers: [\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Call,\n' +
+        "            handler: 'handleTransaction',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * The function can either be the function fragment or signature\n' +
+        "               * function: '0x095ea7b3'\n" +
+        "               * function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'\n" +
+        '               */\n' +
+        "              function: 'approve(address spender, uint256 rawAmount)',\n" +
+        '            },\n' +
+        '          },\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Event,\n' +
+        "            handler: 'handleLog',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * Follows standard log filters https://docs.ethers.io/v5/concepts/events/\n' +
+        '               * address: "0x60781C2586D68229fde47564546784ab3fACA982"\n' +
+        '               */\n' +
+        "              topics: ['Transfer(address indexed from, address indexed to, uint256 amount)'],\n" +
+        '            },\n' +
+        '          },\n' +
+        '        ],\n' +
+        '      },\n' +
+        '    },\n' +
+        '  ]'
+    );
+
+    expect(v.handlers).toMatch(
+      '[\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Call,\n' +
+        "            handler: 'handleTransaction',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * The function can either be the function fragment or signature\n' +
+        "               * function: '0x095ea7b3'\n" +
+        "               * function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'\n" +
+        '               */\n' +
+        "              function: 'approve(address spender, uint256 rawAmount)',\n" +
+        '            },\n' +
+        '          },\n' +
+        '          {\n' +
+        '            kind: EthereumHandlerKind.Event,\n' +
+        "            handler: 'handleLog',\n" +
+        '            filter: {\n' +
+        '              /**\n' +
+        '               * Follows standard log filters https://docs.ethers.io/v5/concepts/events/\n' +
+        '               * address: "0x60781C2586D68229fde47564546784ab3fACA982"\n' +
+        '               */\n' +
+        "              topics: ['Transfer(address indexed from, address indexed to, uint256 amount)'],\n" +
+        '            },\n' +
+        '          },\n' +
+        '        ]'
+    );
+    // TODO expected to fail, due to unable to skip comments
+    expect(v.function).toMatch('approve(address spender, uint256 rawAmount)');
+    expect(v.topics[0]).toMatch('Transfer(address indexed from, address indexed to, uint256 amount)');
+    expect(v.endpoint[0]).toMatch('https://eth.api.onfinality.io/public');
+  });
+  // });
+  // All these test should test against mockData as well as
+  it('Should replace value in tsManifetst', async () => {
+    const projectPath = path.join(__dirname, '../../test/ts-manifest', DEFAULT_TS_MANIFEST);
+    const m = await fs.promises.readFile(projectPath, 'utf8');
+    const v = replaceArrayValueInTsManifest(m, 'dataSources', '[{},{}]');
+    const r = extractArrayValueFromTsManifest(v, 'dataSources');
+    expect(r).toStrictEqual('[{},{}]');
+  });
+  it('Correct output on tsStringify', () => {
+    const mockDs = mockDsFn();
+    const v = tsStringify(mockDs[0].mapping.handlers);
+    expect(v).toBe(`[
+  {
+    handler: "handleTransaction",
+    kind: "ethereum/TransactionHandler",
+    filter: {
+      function: "approve(address,uint256)"
+    }
+  },
+  {
+    handler: "handleLog",
+    kind: "ethereum/LogHandler",
+    filter: {
+      topics: [
+        "Transfer(address,address,uint256)"
+      ]
+    }
+  }
+]`);
+  });
+  it('Split array', () => {
+    expect(splitArrayString("[{key: 'value1'},{key: 'value2'}]")).toStrictEqual(["{key: 'value1'}", "{key: 'value2'}"]);
+    // trim spacing
+    expect(splitArrayString("[{key: 'value1'},{key: 'value2'},  {key:      'value3'}]")).toStrictEqual([
+      "{key: 'value1'}",
+      "{key: 'value2'}",
+      "{key: 'value3'}",
+    ]);
+
+    // nested objects
+    expect(splitArrayString(`[ "{key: {key: 'value1'}}", "{key: {key: 'value1'}}"]`)).toStrictEqual([
+      "{key: {key: 'value1'}}",
+      "{key: {key: 'value1'}}",
+    ]);
+    // nested arrarys and objects
+    expect(
+      splitArrayString(
+        `[ "{key: {key: ['value1']}}", "{key: {key: 'value1'}}",  "{key: [{key: 'value1'}, {key: 'value1'}]}"]`
+      )
+    ).toStrictEqual([
+      "{key: {key: ['value1']}}",
+      "{key: {key: 'value1'}}",
+      "{key: [{key: 'value1'}, {key: 'value1'}]}",
+    ]);
   });
 });

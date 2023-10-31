@@ -252,16 +252,16 @@ export default class Init extends Command {
       },
     ]);
 
-    this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
-    await buildManifestFromLocation(this.projectPath, this);
+    const cleanedContractAddress = contractAddress.replace(/[`'"]/g, '');
 
+    this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
     await Generate.run([
       '-f',
       this.projectPath,
       '--abiPath',
       `${abiFilePath}`,
       '--address',
-      `${contractAddress}`,
+      `${cleanedContractAddress}`,
       '--startBlock',
       `${startBlock}`,
     ]);

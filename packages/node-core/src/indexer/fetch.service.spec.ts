@@ -4,6 +4,7 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
+import {range} from 'lodash';
 import {
   BlockDispatcher,
   delay,
@@ -80,7 +81,6 @@ const mockDs: BaseDataSource = {
 
 const projectService = {
   getStartBlockFromDataSources: jest.fn(() => mockDs.startBlock),
-  getDataSourcesMap: jest.fn(() => new BlockHeightMap(new Map([[1, [mockDs, mockDs]]]))), // TODO
   getAllDataSources: jest.fn(() => [mockDs]),
 } as any as IProjectService<any>;
 
@@ -147,6 +147,10 @@ describe('Fetch Service', () => {
       eventEmitter,
       schedulerRegistry
     );
+
+    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
+      () => new BlockHeightMap(new Map([[1, [mockDs, mockDs]]]))
+    );
   });
 
   const enableDictionary = () => {
@@ -174,6 +178,58 @@ describe('Fetch Service', () => {
     await fetchService.init(1);
 
     expect(preHookLoopSpy).toHaveBeenCalled();
+  });
+
+  it('adds bypassBlocks for empty datasources', async () => {
+    (fetchService as any).projectService.getDataSourcesMap = jest.fn().mockReturnValueOnce(
+      new BlockHeightMap(
+        new Map([
+          [
+            1,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+            ],
+          ],
+          [
+            10,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 10, endBlock: 20},
+            ],
+          ],
+          [
+            21,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+            ],
+          ],
+          [
+            50,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 50, endBlock: 200},
+            ],
+          ],
+          [
+            101,
+            [
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 50, endBlock: 200},
+            ],
+          ],
+          [201, [{startBlock: 1, endBlock: 300}]],
+          [301, []],
+          [500, [{startBlock: 500}]],
+        ])
+      )
+    );
+
+    await fetchService.init(1);
+    expect((fetchService as any).bypassBlocks).toEqual(range(301, 500));
   });
 
   it('checks chain heads at an interval', async () => {
@@ -307,9 +363,20 @@ describe('Fetch Service', () => {
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
   });
 
+  it('update the LatestBufferHeight when modulo blocks full synced', async () => {
+    fetchService.modulos = [20];
+    fetchService.finalizedHeight = 55;
+
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+
+    // simulate we have synced to block 50, and modulo is 20, next block to handle suppose be 60,80,100...
+    // we will still enqueue 55 to update LatestBufferHeight
+    await fetchService.init(50);
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([], 55);
+  });
+
   it('skips bypassBlocks', async () => {
-    // This doesn't get set in init because networkConfig doesn't define it, so we can set it
-    (fetchService as any).bypassBlocks = [3];
+    (fetchService as any).networkConfig.bypassBlocks = [3];
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
