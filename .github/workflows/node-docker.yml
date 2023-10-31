@@ -41,6 +41,10 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
+      - run: yarn
+      - name: build
+        run: yarn build
+
       
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
@@ -93,6 +97,10 @@ jobs:
         id: get-node-version
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
+
+      - run: yarn
+      - name: build
+        run: yarn build
 
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
