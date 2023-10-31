@@ -5,12 +5,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EthereumApi, EthereumApiService } from '../ethereum';
 import { ProjectService } from './project.service';
 
+const HTTP_ENDPOINT = 'https://eth.llamarpc.com';
+
 const mockApiService = (): EthereumApiService => {
-  const ethApi = new EthereumApi(
-    'https://eth.api.onfinality.io/public',
-    20,
-    new EventEmitter2(),
-  );
+  const ethApi = new EthereumApi(HTTP_ENDPOINT, 20, new EventEmitter2());
 
   // await ethApi.init();
 

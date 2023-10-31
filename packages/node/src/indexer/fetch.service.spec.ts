@@ -13,7 +13,8 @@ import {
 } from '../configure/SubqueryProject';
 import { buildDictionaryQueryEntries, FetchService } from './fetch.service';
 
-const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
+// const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
+const HTTP_ENDPOINT = 'https://eth.llamarpc.com';
 const mockTempDs: EthereumProjectDsTemplate[] = [
   {
     name: 'ERC721',

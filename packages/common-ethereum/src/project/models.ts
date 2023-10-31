@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {BaseDataSource} from '@subql/common';
 import {FileReference} from '@subql/types-core';
 import {
   EthereumHandlerKind,
@@ -179,7 +180,10 @@ export class EthereumProcessorOptions implements SubqlEthereumProcessorOptions {
   address?: string;
 }
 
-export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
+export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
+  extends BaseDataSource
+  implements SubqlRuntimeDatasource<M>
+{
   @IsEnum(SubqlEthereumDatasourceKind, {
     groups: [SubqlEthereumDatasourceKind.FlareRuntime, SubqlEthereumDatasourceKind.EthRuntime],
   })
@@ -187,9 +191,6 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> 
   @Type(() => EthereumMapping)
   @ValidateNested()
   mapping: M;
-  @IsOptional()
-  @IsInt()
-  startBlock?: number;
   @IsOptional()
   assets?: Map<string, FileReference>;
   @IsOptional()
@@ -204,6 +205,7 @@ export class FileReferenceImpl implements FileReference {
 }
 
 export class CustomDataSourceBase<K extends string, M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>>
+  extends BaseDataSource
   implements SubqlCustomDatasource<K, M>
 {
   @IsString()
@@ -211,9 +213,6 @@ export class CustomDataSourceBase<K extends string, M extends SubqlMapping = Sub
   @Type(() => CustomMapping)
   @ValidateNested()
   mapping: M;
-  @IsOptional()
-  @IsInt()
-  startBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, CustomDataSourceAsset>;

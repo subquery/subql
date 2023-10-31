@@ -11,6 +11,7 @@ import {
   ConnectionPoolStateManager,
   NodeConfig,
   InMemoryCacheService,
+  WorkerInMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
@@ -21,7 +22,6 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-import { WorkerInMemoryCacheService } from './worker/worker.inMemoryCache.service';
 import { WorkerService } from './worker/worker.service';
 import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlocks.service';
 

@@ -90,7 +90,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     debug: {
       demandOption: false,
-      describe: `Enable debug logging for specific scopes, this will override log-level. "*" will enable debug everywhere, or comma separated strings for specific scopes. e.g. "SQL,dictionary"`,
+      describe: `Enable debug logging for specific scopes, this will override log-level. "*" will enable debug everywhere, or comma separated strings for specific scopes. e.g. "SQL,dictionary". To disable specific scopes you can prefix them with '-'. e.g. "*,-SQL"`,
       type: 'string',
     },
     'dictionary-resolver': {

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Unfinalized blocks not working with Cronos (#193)
 
+### Changed
+- Update `@subql/node-core` with fixes and support for endBlock feature (#195)
+
 ## [3.1.1] - 2023-10-25
 ### Fixed
 - Fix crash when creating new dynamic datasources
