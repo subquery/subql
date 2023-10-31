@@ -1,29 +1,19 @@
 # Build stage
-FROM node:18 as builder
-
+FROM node:18-alpine as builder
 WORKDIR /app
-COPY ./ ./
-
-RUN npm install -g --force yarn@latest
-RUN npm install -g --force typescript@latest
-
-WORKDIR /app/packages/node
-
-RUN yarn pack --filename app.tgz
-
+COPY ./packages/node ./
+RUN npm install -g --force yarn@latest && \
+    yarn pack --filename app.tgz && \
+    rm -rf /root/.npm /root/.cache
 
 # Production stage
 FROM node:18-alpine
-ENV TZ utc
-
-RUN apk add --no-cache tini git curl tar
-
-COPY --from=builder /app/packages/node/app.tgz /app.tgz
-
-RUN tar -xzvf /app.tgz --strip 1 && rm /app.tgz
-
-RUN yarn install --production
-RUN yarn cache clean
-
+RUN apk add --no-cache tini
+COPY --from=builder /app/app.tgz /app.tgz
+RUN tar -xzvf /app.tgz --strip 1 && \
+    rm /app.tgz && \
+    yarn install --production && \
+    yarn cache clean && \
+    rm -rf /root/.npm /root/.cache
 ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
 CMD ["-f","/app"]
