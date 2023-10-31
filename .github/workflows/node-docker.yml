@@ -35,24 +35,12 @@ jobs:
           username: onfinality
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - run: yarn
-
-      - name: build
-        run: yarn build
-
       ## node
       - name: Get updated node version
         id: get-node-version
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
-      #- name: Set execute permissions for the script
-      #  run: chmod +x .github/workflows/scripts/replace-versions.sh
-
-      # Replace workspace:* with actual versions
-      #- name: Replace workspace dependencies with actual versions
-      #  run: |
-      #    ./.github/workflows/scripts/replace-versions.sh
       
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
@@ -75,10 +63,6 @@ jobs:
           file: ./packages/node/Dockerfile
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
-
-      # Revert package.json to its original state after publishing
-      - name: Revert package.json
-        run: git checkout -- ./packages/node/package.json
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -104,24 +88,11 @@ jobs:
           username: subquerynetwork
           password: ${{ secrets.SQ_DOCKERHUB_TOKEN }}
 
-      - run: yarn
-
-      - name: build
-        run: yarn build
-
       ## node
       - name: Get updated node version
         id: get-node-version
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
-
-      #- name: Set execute permissions for the script
-      #  run: chmod +x .github/workflows/scripts/replace-versions.sh
-
-      # Replace workspace:* with actual versions
-      #- name: Replace workspace dependencies with actual versions
-      #  run: |
-      #    ./.github/workflows/scripts/replace-versions.sh
 
       - name: Build and push
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
@@ -142,10 +113,6 @@ jobs:
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
           tags: subquerynetwork/subql-node-substrate:v${{ steps.get-node-version.outputs.NODE_VERSION }},subquerynetwork/subql-node-substrate:latest
-
-      # Revert package.json to its original state after publishing
-      - name: Revert package.json
-        run: git checkout -- ./packages/node/package.json
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
