@@ -1,8 +1,5 @@
 name: "Node-to-docker"
 on:
-  push:
-    branches:
-      - docker-from-source
   release:
     types:
       - published
@@ -47,7 +44,7 @@ jobs:
 
       
       - name: Build and push
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -103,7 +100,7 @@ jobs:
         run: yarn build
 
       - name: Build and push
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false')
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
           context: .

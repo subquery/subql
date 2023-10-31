@@ -3,7 +3,6 @@ FROM node:18 as builder
 
 WORKDIR /app
 COPY ./ ./
-RUN ls .yarn
 
 RUN npm install -g --force yarn@latest
 RUN npm install -g --force typescript@latest
