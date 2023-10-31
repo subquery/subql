@@ -21,10 +21,12 @@ ENV TZ utc
 RUN apk add --no-cache tini git curl tar
 
 COPY --from=builder /app/packages/node/app.tgz /app.tgz
-COPY --from=builder /app/.yarn/cache .
+# Copy the yarn cache directory
+COPY --from=builder /app/.yarn /app/.yarn
+
 RUN tar -xzvf /app.tgz --strip 1 && rm /app.tgz
 
-RUN YARN_CACHE_FOLDER=/.yarn/cache yarn install --production --non-interactive --pure-lockfile --prefer-offline
+RUN yarn install --production --non-interactive --pure-lockfile --prefer-offline
 RUN yarn cache clean
 
 ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
