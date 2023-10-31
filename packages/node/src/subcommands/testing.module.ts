@@ -9,7 +9,9 @@ import {
   ConnectionPoolService,
   ConnectionPoolStateManager,
   DbModule,
+  InMemoryCacheService,
   PoiService,
+  PoiSyncService,
   ProjectUpgradeSevice,
   StoreService,
   TestRunner,
@@ -28,10 +30,12 @@ import { TestingService } from './testing.service';
 
 @Module({
   providers: [
+    InMemoryCacheService,
     StoreService,
     TestingService,
     EventEmitter2,
     PoiService,
+    PoiSyncService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,

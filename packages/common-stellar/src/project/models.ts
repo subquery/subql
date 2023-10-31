@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {forbidNonWhitelisted, ProcessorImpl} from '@subql/common';
+import {BaseDataSource, forbidNonWhitelisted, ProcessorImpl} from '@subql/common';
 import {Processor, FileReference} from '@subql/types-core';
 import {
   StellarHandlerKind,
@@ -201,7 +201,10 @@ export class StellarProcessorOptions implements SubqlStellarProcessorOptions {
   address?: string;
 }
 
-export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
+export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
+  extends BaseDataSource
+  implements SubqlRuntimeDatasource<M>
+{
   @IsEnum(StellarDatasourceKind, {
     groups: [StellarDatasourceKind.Runtime],
   })
@@ -209,9 +212,6 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> 
   @Type(() => StellarMapping)
   @ValidateNested()
   mapping: M;
-  @IsOptional()
-  @IsInt()
-  startBlock?: number;
   @IsOptional()
   assets?: Map<string, FileReference>;
   @IsOptional()
@@ -226,6 +226,7 @@ export class FileReferenceImpl implements FileReference {
 }
 
 export class CustomDataSourceBase<K extends string, M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>, O = any>
+  extends BaseDataSource
   implements SubqlCustomDatasource<K, M, O>
 {
   @IsString()

@@ -6,14 +6,13 @@ import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ApiService,
-  StoreService,
-  PoiService,
   ConnectionPoolService,
-  StoreCacheService,
   WorkerDynamicDsService,
   ConnectionPoolStateManager,
   WorkerConnectionPoolStateManager,
   ProjectUpgradeSevice,
+  InMemoryCacheService,
+  WorkerInMemoryCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { StellarApiService } from '../../stellar';
@@ -88,6 +87,10 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
         }
         return new WorkerUnfinalizedBlocksService((global as any).host);
       },
+    },
+    {
+      provide: InMemoryCacheService,
+      useFactory: () => new WorkerInMemoryCacheService((global as any).host),
     },
   ],
 })
