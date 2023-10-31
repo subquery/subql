@@ -4,16 +4,18 @@ FROM node:18 as builder
 WORKDIR /app
 COPY ./ ./
 
-# Copy the replace-versions.sh script
-COPY ./.github/workflows/scripts/replace-versions.sh ./replace-versions.sh
+RUN ls ./packages/node/scripts
+
+#for use in replace-version.sh
+RUN apt-get update && apt-get install -y jq
+
 
 RUN npm install -g --force yarn@latest
 RUN npm install -g --force typescript@latest
 
 # Run the replace-versions.sh script
-RUN chmod +x ./replace-versions.sh
-RUN ./replace-versions.sh
-
+RUN chmod +x ./packages/node/scripts/replace-versions.sh
+RUN ./packages/node/scripts/replace-versions.sh
 WORKDIR /app/packages/node
 
 # Run yarn install and yarn build in the packages/node directory
