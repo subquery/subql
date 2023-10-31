@@ -6,6 +6,7 @@ import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
 import {createStream} from 'rotating-file-stream';
 import {colorizeLevel, ctx} from './colors';
+import {LEVELS, LEVELS_MAP} from './constants';
 export interface LoggerOption {
   level?: string;
   filepath?: string;
@@ -21,10 +22,10 @@ export interface LoggerOption {
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
-  private debugFilter: string[];
+  private _debugFilter: string[];
 
   constructor({filepath, level: logLevel = 'info', nestedKey, outputFormat, rotate, debugFilter = []}: LoggerOption) {
-    this.debugFilter = debugFilter;
+    this._debugFilter = debugFilter;
 
     const options = {
       messageKey: 'message',
@@ -120,13 +121,27 @@ export class Logger {
   }
 
   setDebugFilter(debugFilter: string[]): void {
-    this.debugFilter = debugFilter;
+    this._debugFilter = debugFilter;
     Object.keys(this.childLoggers).map((key) => this.applyChildDebug(key));
   }
 
+  private get debugFilter(): string[] {
+    return this._debugFilter.map((f) => f.trim());
+  }
+
   private applyChildDebug(category: string) {
-    if (this.debugFilter.includes(category) && this.childLoggers[category].level) {
+    if (!this.childLoggers[category].level) return;
+
+    if (this.debugFilter.includes(`-${category}`)) {
+      this.pino.info(`Debug logging is disabled for ${category}`);
+      // Set the log level to the global log level or INFO if its debug
+      const newLevel = Math.max(LEVELS_MAP[<LevelWithSilent>this.pino.level], LEVELS_MAP.info);
+      this.childLoggers[category].level = LEVELS[newLevel as keyof typeof LEVELS].toLowerCase();
+    } else if (this.debugFilter.includes(category)) {
       this.pino.info(`Debug logging is enabled for ${category}`);
+      this.childLoggers[category].level = 'debug';
+    } else if (this.debugFilter.includes('*')) {
+      // Don't log wildcards, it spams the output
       this.childLoggers[category].level = 'debug';
     }
   }
