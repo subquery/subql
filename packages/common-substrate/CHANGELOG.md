@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2023-10-31
+### Changed
+- Update `@subql/common` with support for endBlock feature
+
 ## [3.1.2] - 2023-10-18
 ### Changed
 - Version bump with `common` 3.1.3
@@ -116,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.1.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.2.0...HEAD
+[3.2.0]: https://github.com/subquery/subql/compare/common-substrate/3.1.2...common-substrate/3.2.0
 [3.1.2]: https://github.com/subquery/subql/compare/common-substrate/3.1.1...common-substrate/3.1.2
 [3.1.1]: https://github.com/subquery/subql/compare/common-substrate/3.1.0...common-substrate/3.1.1
 [3.1.0]: https://github.com/subquery/subql/compare/common-substrate/3.0.1...common-substrate/3.1.0
