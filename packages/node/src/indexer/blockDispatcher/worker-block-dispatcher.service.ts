@@ -7,28 +7,18 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   getLogger,
   NodeConfig,
-  Worker,
   SmartBatchService,
   StoreService,
   PoiService,
   PoiSyncService,
   StoreCacheService,
   IProjectService,
-  IDynamicDsService,
-  HostStore,
-  HostDynamicDS,
   WorkerBlockDispatcher,
-  IUnfinalizedBlocksService,
-  HostConnectionPoolState,
-  ConnectionPoolStateManager,
-  connectionPoolStateHostFunctions,
-  baseWorkerFunctions,
-  storeHostFunctions,
-  dynamicDsHostFunctions,
   IProjectUpgradeService,
-  HostUnfinalizedBlocks,
+  ConnectionPoolStateManager,
+  createIndexerWorker,
+  InMemoryCacheService,
 } from '@subql/node-core';
-import { Store } from '@subql/types-core';
 import {
   StellarProjectDs,
   SubqueryProject,
@@ -37,44 +27,13 @@ import { StellarApiConnection } from '../../stellar/api.connection';
 import { StellarBlockWrapped } from '../../stellar/block.stellar';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
-import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
+import { IIndexerWorker } from '../worker/worker';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
-
-async function createIndexerWorker(
-  store: Store,
-  dynamicDsService: IDynamicDsService<StellarProjectDs>,
-  unfinalizedBlocksService: IUnfinalizedBlocksService<StellarBlockWrapped>,
-  connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
-  root: string,
-  startHeight: number,
-): Promise<IndexerWorker> {
-  const indexerWorker = Worker.create<
-    IInitIndexerWorker,
-    HostDynamicDS<StellarProjectDs> & HostStore & HostUnfinalizedBlocks
-  >(
-    path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
-    [...baseWorkerFunctions, 'initWorker'],
-    {
-      ...storeHostFunctions(store),
-      ...dynamicDsHostFunctions(dynamicDsService),
-      unfinalizedBlocksProcess:
-        unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(
-          unfinalizedBlocksService,
-        ),
-      ...connectionPoolStateHostFunctions(connectionPoolState),
-    },
-    root,
-  );
-
-  await indexerWorker.initWorker(startHeight);
-
-  return indexerWorker;
-}
 
 @Injectable()
 export class WorkerBlockDispatcherService
@@ -89,6 +48,7 @@ export class WorkerBlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     smartBatchService: SmartBatchService,
+    cacheService: InMemoryCacheService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiService: PoiService,
@@ -111,8 +71,16 @@ export class WorkerBlockDispatcherService
       project,
       dynamicDsService,
       () =>
-        createIndexerWorker(
+        createIndexerWorker<
+          IIndexerWorker,
+          StellarApiConnection,
+          StellarBlockWrapped,
+          StellarProjectDs
+        >(
+          path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
+          [],
           storeService.getStore(),
+          cacheService.getCache(),
           dynamicDsService,
           unfinalizedBlocksSevice,
           connectionPoolState,

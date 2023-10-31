@@ -54,10 +54,6 @@ async function initWorker(startHeight: number): Promise<void> {
 }
 export type IIndexerWorker = IBaseIndexerWorker;
 
-export type IInitIndexerWorker = IIndexerWorker & {
-  initWorker: typeof initWorker;
-};
-
 (global as any).host = createWorkerHost([], {
   initWorker,
 });

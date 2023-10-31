@@ -63,127 +63,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       return reindexInit(argv.targetHeight);
     },
   })
-  .command({
-    command: 'mmr-regen',
-    describe:
-      'Re-generate mmr between Filebased/Postgres mmr and Proof of index',
-    builder: (yargs) =>
-      yargs.options({
-        probe: {
-          type: 'boolean',
-          description:
-            'Fetch latest mmr height information from file based/postgres DB and Poi table',
-          demandOption: false,
-          default: false,
-        },
-        targetHeight: {
-          type: 'number',
-          description: 'Re-genrate mmr value from this block height',
-          demandOption: false,
-        },
-        resetOnly: {
-          type: 'boolean',
-          description:
-            'Only reset the mmr value in both POI and file based/postgres DB to target height',
-          demandOption: false,
-          default: false,
-        },
-        unsafe: {
-          type: 'boolean',
-          description: 'Allow sync mmr from Poi table to file or a postgres DB',
-          demandOption: false,
-          default: false,
-        },
-        'mmr-store-type': {
-          demandOption: false,
-          describe:
-            'When regenerate MMR store in either a file or a postgres DB',
-          type: 'string',
-          choices: ['file', 'postgres'],
-          default: 'postgres',
-        },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe:
-            'File based only : local path of the merkle mountain range (.mmr) file',
-          type: 'string',
-        },
-        'db-schema': {
-          demandOption: false,
-          describe: 'Db schema name of the project',
-          type: 'string',
-        },
-        subquery: {
-          alias: 'f',
-          demandOption: true,
-          default: process.cwd(),
-          describe: 'Local path or IPFS cid of the subquery project',
-          type: 'string',
-        },
-      }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as string,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrRegenerateInit } = require('./subcommands/mmrRegenerate.init');
-      return mmrRegenerateInit(
-        argv.probe,
-        argv.resetOnly,
-        argv.unsafe,
-        argv.targetHeight,
-      );
-    },
-  })
-  .command({
-    command: 'mmr-migrate',
-    describe: 'Migrate MMR data from storage file to postgres DB',
-    builder: (yargs) =>
-      yargs.options({
-        direction: {
-          type: 'string',
-          description: 'set direction of migration (file -> DB or DB -> file)',
-          demandOption: false,
-          choices: ['dbToFile', 'fileToDb'],
-          default: 'dbToFile',
-        },
-        'mmr-path': {
-          alias: 'm',
-          demandOption: false,
-          describe: 'Local path of the merkle mountain range (.mmr) file',
-          type: 'string',
-        },
-        'db-schema': {
-          demandOption: false,
-          describe: 'Db schema name of the project',
-          type: 'string',
-        },
-        subquery: {
-          alias: 'f',
-          demandOption: true,
-          default: process.cwd(),
-          describe: 'Local path or IPFS cid of the subquery project',
-          type: 'string',
-        },
-      }),
-    handler: (argv) => {
-      initLogger(
-        argv.debug as string,
-        argv.outputFmt as 'json' | 'colored',
-        argv.logLevel as string | undefined,
-      );
-
-      // lazy import to make sure logger is instantiated before all other services
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { mmrMigrateInit } = require('./subcommands/mmrMigrate.init');
-      return mmrMigrateInit(argv.direction);
-    },
-  })
   .options({
     'batch-size': {
       demandOption: false,
@@ -210,10 +89,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     debug: {
       demandOption: false,
-      describe:
-        'Show debug information to console output. will forcefully set log level to debug',
-      type: 'boolean',
-      default: false,
+      describe: `Enable debug logging for specific scopes, this will override log-level. "*" will enable debug everywhere, or comma separated strings for specific scopes. e.g. "SQL,dictionary". To disable specific scopes you can prefix them with '-'. e.g. "*,-SQL"`,
+      type: 'string',
     },
     'dictionary-resolver': {
       demandOption: false,
