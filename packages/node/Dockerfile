@@ -11,7 +11,7 @@ RUN yarn build
 
 WORKDIR /app/packages/node
 
-RUN yarn pack --filename ./app.tgz
+RUN yarn pack --filename app.tgz
 
 
 # Production stage
@@ -23,7 +23,8 @@ RUN apk add --no-cache tini git curl tar
 COPY --from=builder /app/packages/node/app.tgz /app.tgz
 RUN tar -xzvf /app.tgz --strip 1 && rm /app.tgz
 
-RUN yarn install --production
+RUN yarn install --production --non-interactive --pure-lockfile --prefer-offline
+
 
 ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
 CMD ["-f","/app"]
