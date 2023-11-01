@@ -8,7 +8,7 @@ RUN npm install -g --force yarn@latest && \
 
 # Production stage
 FROM node:18-alpine
-RUN apk add --no-cache tini curl
+RUN apk add --no-cache tini curl git
 COPY --from=builder /app/app.tgz /app.tgz
 RUN tar -xzvf /app.tgz --strip 1 && \
     rm /app.tgz && \
