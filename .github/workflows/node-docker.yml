@@ -11,8 +11,32 @@ on:
         required: true
 
 jobs:
-  node-build-push-docker-onfinality:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      changes_found: ${{ steps.check_changes.outputs.changes_found }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check for package changes and commit message
+        id: check_changes
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]
+          then
+            COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+            if [[ $COMMIT_MESSAGE == "[release]"* ]] && git diff --name-only HEAD~1 HEAD -- './packages/node/package.json'
+            then
+              echo "::set-output name=changes_found::true"
+            else
+              echo "::set-output name=changes_found::false"
+            fi
+          else
+            echo "::set-output name=changes_found::true"
+          fi
 
+
+  node-build-push-docker-onfinality:
+    needs: check
+    if: needs.check.outputs.changes_found == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -69,7 +93,8 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
 
   node-build-push-docker-subquery:
-
+    needs: check
+    if: needs.check.outputs.changes_found == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
