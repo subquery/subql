@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import {Transaction} from '@subql/x-sequelize';
+import {getLogger} from '../..//logger';
 import {hasValue} from '../../utils';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
 import {Cacheable} from './cacheable';
@@ -139,7 +140,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
       newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
       this.flushableRecordCounter = 1;
     }
-    this.setCache = newSetCache;
-    this.getCache = newSetCache;
+    this.setCache = {...newSetCache};
+    this.getCache = {...newSetCache};
   }
 }
