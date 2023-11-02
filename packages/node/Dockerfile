@@ -1,14 +1,19 @@
-# production images
-FROM node:18 as builder
-ARG RELEASE_VERSION
-ENTRYPOINT ["subql-node-stellar"]
-RUN npm i -g --unsafe-perm @subql/node-stellar@${RELEASE_VERSION}
+# Build stage
+FROM node:18-alpine as builder
+WORKDIR /app
+COPY ./packages/node ./
+RUN npm install -g --force yarn@latest && \
+    yarn pack --filename app.tgz && \
+    rm -rf /root/.npm /root/.cache
 
+# Production stage
 FROM node:18-alpine
-ENV TZ utc
-
-RUN apk add --no-cache tini git curl
-COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
-
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node-stellar/bin/run"]
+RUN apk add --no-cache tini curl git
+COPY --from=builder /app/app.tgz /app.tgz
+RUN tar -xzvf /app.tgz --strip 1 && \
+    rm /app.tgz && \
+    yarn install --production && \
+    yarn cache clean && \
+    rm -rf /root/.npm /root/.cache
+ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
 CMD ["-f","/app"]

@@ -1,15 +1,41 @@
 name: "Node-to-docker"
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       isLatest:
         description: 'Add latest tag'
         default: 'true'
-        require: true
+        required: true
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      changes_found: ${{ steps.check_changes.outputs.changes_found }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check for package changes and commit message
+        id: check_changes
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]
+          then
+            COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+            if [[ $COMMIT_MESSAGE == "[release]"* ]] && git diff --name-only HEAD~1 HEAD -- './packages/node/package.json'
+            then
+              echo "::set-output name=changes_found::true"
+            else
+              echo "::set-output name=changes_found::false"
+            fi
+          else
+            echo "::set-output name=changes_found::true"
+          fi
+          
   node-build-push-docker:
-
+    needs: check
+    if: needs.check.outputs.changes_found == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -35,8 +61,12 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
+      - run: yarn
+      - name: build
+        run: yarn build
+
       - name: Build and push
-        if: github.event.inputs.isLatest == 'false'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -46,7 +76,7 @@ jobs:
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
-        if: github.event.inputs.isLatest == 'true'
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
           push: true
