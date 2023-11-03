@@ -931,7 +931,7 @@ async function batchDeleteAndThenUpdate(
               }
             ),
       ]);
-      logger.info(`${model.name} deleted ${numDestroyRows} records, updated ${numUpdatedRows} records`);
+      logger.debug(`${model.name} deleted ${numDestroyRows} records, updated ${numUpdatedRows} records`);
       if (numDestroyRows === 0) {
         destroyCompleted = true;
       }
