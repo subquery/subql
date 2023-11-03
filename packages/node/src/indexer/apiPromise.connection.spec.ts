@@ -74,4 +74,9 @@ describe('ApiPromiseConnection', () => {
     expect(httpProvider.send).toHaveBeenCalledTimes(2);
     expect(result1).not.toEqual(result2);
   }, 10000);
+
+  afterEach(async () => {
+    await wsProvider.disconnect();
+    await httpProvider.disconnect();
+  });
 });
