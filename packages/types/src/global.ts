@@ -4,6 +4,8 @@
 import {ApiPromise} from '@polkadot/api';
 import {ApiDecoration} from '@polkadot/api/types';
 
+import '@subql/types-core/dist/global';
+
 type ApiAt = ApiDecoration<'promise'> & {rpc: ApiPromise['rpc']};
 
 declare global {

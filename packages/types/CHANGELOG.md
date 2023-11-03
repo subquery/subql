@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2023-10-31
+### Changed
+- Import types-core global so there is no need to update tsconfig
+- Update `@subql/types-core` to add support for endBlock
+
 ## [3.2.0] - 2023-10-20
 ### Changed
 - Version bump with `types-core` 0.2.0
@@ -208,7 +213,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/3.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/3.3.0...HEAD
+[3.3.0]: https://github.com/subquery/subql/compare/types/3.2.0...types/3.3.0
 [3.2.0]: https://github.com/subquery/subql/compare/types/3.1.2...types/3.2.0
 [3.1.2]: https://github.com/subquery/subql/compare/types/3.1.1...types/3.1.2
 [3.1.1]: https://github.com/subquery/subql/compare/types/3.1.0...types/3.1.1

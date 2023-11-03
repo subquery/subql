@@ -5,12 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- `processedBlockCount` and `schemaMigrationCount` metadata fields incrementing exponentially (#2136)
 
+## [6.2.0] - 2023-10-31
 ### Fixed
 - Improve reindex query to remove/update by batches. (#2131)
 - Fix poi reindex beyond genesis height issue. (#2131)
 - Fixed modulo block ahead of finalized block issue (#2132)
 - Wrong link to docs for testing
+
 ### Added
 - WorkerInMemoryCacheService from node (#2125)
 - New `endBlock` option on datasources (#2064)
@@ -461,7 +465,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.2.0...HEAD
+[6.2.0]: https://github.com/subquery/subql/compare/node-core/6.1.1...node-core/6.2.0
 [6.1.1]: https://github.com/subquery/subql/compare/node-core/6.1.0...node-core/6.1.1
 [6.1.0]: https://github.com/subquery/subql/compare/node-core/6.0.4...node-core/6.1.0
 [6.0.4]: https://github.com/subquery/subql/compare/node-core/6.0.3...node-core/6.0.4
