@@ -79,13 +79,15 @@ describe('ConnectionPoolService', () => {
     }, 20000);
 
     it('should handle failed reconnection after max attempts', async () => {
+      //add an endpoint so that process.exit() is not called when one endpoint is removed.
+      connectionPoolService.addToConnections(mockApiConnection, 'https://example2.com/api');
       (mockApiConnection.apiConnect as any).mockImplementation(() => Promise.reject(new Error('Reconnection failed')));
 
       (connectionPoolService as any).handleApiDisconnects('https://example.com/api');
 
       await waitFor(() => (mockApiConnection.apiConnect as any).mock.calls.length === 5);
       expect(mockApiConnection.apiConnect).toHaveBeenCalledTimes(5);
-      expect(connectionPoolService.numConnections).toBe(0);
+      expect(connectionPoolService.numConnections).toBe(1);
     }, 50000);
 
     it('should call handleApiDisconnects only once when multiple connection errors are triggered', async () => {
