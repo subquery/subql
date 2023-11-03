@@ -51,14 +51,9 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: 18
-
-            - name: Installing dependencies
-              run: yarn install
-
             - uses: artiomtr/jest-coverage-report-action@v2
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
-                  skip-step: install
                   working-directory: ${{ matrix.path }}
                   test-script: yarn test-jest
                   annotations: none
