@@ -26,27 +26,39 @@ jobs:
       run: yarn lint
 
   coverage:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
+        name: Coverage report
+        runs-on: ubuntu-latest
+        services:
+          postgres:
+            image: postgres
+            env:
+              POSTGRES_PASSWORD: postgres
+            options: >-
+              --health-cmd pg_isready
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
         env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_DATABASE: postgres
-      DB_HOST: postgres
-      DB_PORT: 5432
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          github-token: ${{ secrets.REPO_TOKEN }}
-          test-script: yarn test-jest
-          package-manager: yarn
+          DB_USER: postgres
+          DB_PASS: postgres
+          DB_DATABASE: postgres
+          DB_HOST: postgres
+          DB_PORT: 5432
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Use Node 18
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 18
+
+            - name: Installing dependencies
+              run: yarn install
+
+            - uses: artiomtr/jest-coverage-report-action@v2
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  skip-step: install
+                  working-directory: ${{ matrix.path }}
+                  test-script: yarn test-jest
+                  annotations: none
