@@ -271,7 +271,6 @@ export abstract class BaseFetchService<
         /* queryEndBlock needs to be limited by the latest height or the maximum value of endBlock in datasources.
          * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
          */
-        this.nodeConfig.dictionaryTimeout;
         const queryEndBlock = Math.min(
           startBlockHeight + this.nodeConfig.dictionaryQuerySize,
           this.latestFinalizedHeight
