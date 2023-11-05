@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Add `dictionaryQuerySize` to nodeConfig, so the block range in dictionary can be configurable. (#2139)
+
 ### Fixed
 - Fix `multi-chain` should disable historical by default, rather than exit
 - Fix reindex targetHeight issue introduced in #2131 (#2138)
 - `processedBlockCount` and `schemaMigrationCount` metadata fields incrementing exponentially (#2136)
+- Fix regression introduced in [#2110](https://github.com/subquery/subql/pull/2110) that broke `unwrapProxy` if the input is an array
 
 ## [6.2.0] - 2023-10-31
 ### Fixed
