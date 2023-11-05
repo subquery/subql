@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add `dictionaryQuerySize` to nodeConfig, so the block range in dictionary can be configurable. (#2139)
 ### Fixed
+- Fix `multi-chain` should disable historical by default, rather than exit
 - Fix reindex targetHeight issue introduced in #2131 (#2138)
 - `processedBlockCount` and `schemaMigrationCount` metadata fields incrementing exponentially (#2136)
 

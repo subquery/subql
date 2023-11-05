@@ -461,12 +461,10 @@ export class StoreService {
           store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);
 
         if (useHistorical && multiChain) {
-          logger.error(
+          throw new Error(
             'Historical feature is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
           );
-          process.exit(1);
         }
-
         return useHistorical;
       }
       throw new Error('Metadata table does not exist');
