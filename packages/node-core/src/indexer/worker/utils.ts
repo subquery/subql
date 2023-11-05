@@ -10,6 +10,11 @@ import {instanceToPlain} from 'class-transformer';
  * NOTE do not use this on return types, if used on an entity it would strip all functions and have a plain object
  * */
 function unwrapProxy<T = any>(input: T): T {
+  // Arrays are not proxy objects but their contents might be. This applies to bulkCreate and bulkUpdate
+  if (Array.isArray(input) && input.length && util.types.isProxy(input[0])) {
+    return instanceToPlain(input) as T;
+  }
+
   if (!util.types.isProxy(input)) {
     return input;
   }
