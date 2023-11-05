@@ -895,65 +895,49 @@ async function batchDeleteAndThenUpdate(
   targetBlockHeight: number,
   batchSize = 10000
 ): Promise<void> {
-  let offset = 0;
-  let completed = false;
-  // eslint-disable-next-line no-constant-condition
-  while (!completed) {
+  let destroyCompleted = false;
+  let updateCompleted = false;
+  while (!destroyCompleted || !updateCompleted) {
     try {
-      const [recordsToUpdate, recordsToDelete] = await Promise.all([
-        model.findAll({
-          transaction,
-          limit: batchSize,
-          attributes: {include: ['_id']},
-          offset, // We need to apply offset, because after update the records, the record could still with in range, avoid endless query here.
-          where: {
-            __block_range: {
-              [Op.contains]: targetBlockHeight,
-            },
-          },
-        }),
-        model.findAll({
-          transaction,
-          limit: batchSize,
-          attributes: {include: ['_id']},
-          where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
-        }),
-      ]);
-      if (recordsToDelete.length === 0 && recordsToUpdate.length === 0) {
-        break;
-        completed = true;
-      }
-      logger.debug(
-        `Found ${model.name} recordsToDelete ${recordsToDelete.length},recordsToUpdate ${recordsToUpdate.length}`
-      );
-      if (recordsToDelete.length) {
-        await model.destroy({
-          transaction,
-          hooks: false,
-          where: {
-            _id: {
-              [Op.in]: recordsToDelete.map((record) => record.dataValues._id),
-            },
-          },
-        });
-      }
-      if (recordsToUpdate.length) {
-        await model.update(
-          {
-            __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
-          },
-          {
-            transaction,
-            hooks: false,
-            where: {
-              _id: {
-                [Op.in]: recordsToUpdate.map((record) => record.dataValues._id),
+      const [numDestroyRows, [numUpdatedRows]] = await Promise.all([
+        destroyCompleted
+          ? 0
+          : model.destroy({
+              transaction,
+              hooks: false,
+              limit: batchSize,
+              where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
+            }),
+        updateCompleted
+          ? [0]
+          : model.update(
+              {
+                __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
               },
-            },
-          }
-        );
+              {
+                transaction,
+                limit: batchSize,
+                hooks: false,
+                where: {
+                  [Op.and]: [
+                    {
+                      __block_range: {
+                        [Op.contains]: targetBlockHeight,
+                      },
+                    },
+                    sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
+                  ],
+                },
+              }
+            ),
+      ]);
+      logger.debug(`${model.name} deleted ${numDestroyRows} records, updated ${numUpdatedRows} records`);
+      if (numDestroyRows === 0) {
+        destroyCompleted = true;
       }
-      offset += batchSize;
+      if (numUpdatedRows === 0) {
+        updateCompleted = true;
+      }
     } catch (e) {
       throw new Error(`Reindex update model ${model.name} failed, please try to reindex again: ${e}`);
     }
