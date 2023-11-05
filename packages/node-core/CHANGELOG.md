@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- Fix reindex targetHeight issue introduced in #2131 (#2138)
 - `processedBlockCount` and `schemaMigrationCount` metadata fields incrementing exponentially (#2136)
 
 ## [6.2.0] - 2023-10-31
