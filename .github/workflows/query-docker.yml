@@ -1,5 +1,8 @@
 name: "Query-to-docker"
 on:
+  push:
+    branches:
+      - "docker-ci-fix"
   release:
     types:
       - published
