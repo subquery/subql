@@ -28,14 +28,12 @@ import {
 } from '@subql/types';
 import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import { buildSchemaFromString } from '@subql/utils';
-import axios from 'axios';
+
 import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { getChainTypes } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
-const DICTIONARY_REGISTRY =
-  'https://raw.githubusercontent.com/subquery/templates/main/dist/dictionary.json';
 
 export type SubstrateProjectDs = SubqlProjectDs<SubstrateDatasource>;
 export type SubqlProjectDsTemplate =
@@ -154,22 +152,6 @@ async function loadProjectFromManifestBase(
       `Network endpoint must be provided for network. chainId="${network.chainId}"`,
     ),
   );
-
-  if (!projectManifest.network.dictionary) {
-    try {
-      const response = await axios.get(DICTIONARY_REGISTRY);
-      const dictionaryJson = response.data;
-
-      const dictionaries =
-        dictionaryJson.polkadot[projectManifest.network.chainId];
-
-      if (Array.isArray(dictionaries) && dictionaries.length > 0) {
-        projectManifest.network.dictionary = dictionaries[0];
-      }
-    } catch (error) {
-      console.error('An error occurred while fetching the dictionary:', error);
-    }
-  }
 
   let schemaString: string;
   try {
