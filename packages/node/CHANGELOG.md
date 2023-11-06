@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2023-11-06
+### Added
+- With `dictionary-query-size` now dictionary can config the query block range
+
+### Fixed
+- Sync with node-core 6.3.0 with various fixes
+
 ## [3.1.0] - 2023-11-01
 ### Changed
 - Update `@subql/node-core` with fixes and support for endBlock feature (#27)
@@ -34,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.0...HEAD
+[3.3.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.1.0...node-stellar/3.3.0
 [3.1.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.0.2...node-stellar/3.1.0
 [3.0.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.0.1...node-stellar/3.0.2
 [3.0.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.0.0...node-stellar/3.0.1
