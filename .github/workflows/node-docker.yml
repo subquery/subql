@@ -1,5 +1,8 @@
 name: "Node-to-docker"
 on:
+  push:
+    branches:
+      - "docker-ci-fix"
   release:
     types:
       - published
@@ -17,6 +20,8 @@ jobs:
       changes_found: ${{ steps.check_changes.outputs.changes_found }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
       - name: Check for package changes and commit message
         id: check_changes
         run: |
@@ -66,6 +71,16 @@ jobs:
       - name: build
         run: yarn build
 
+      - name: Build and push
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          platforms: arm64,amd64
+          file: ./packages/node/Dockerfile
+          tags: onfinality/subql-node:dockertest
+          build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
       
       - name: Build and push
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
@@ -75,7 +90,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node
+          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
@@ -123,6 +138,16 @@ jobs:
       - run: yarn
       - name: build
         run: yarn build
+
+      - name: Build and push
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          platforms: arm64,amd64
+          file: ./packages/node/Dockerfile
+          tags: subquerynetwork/subql-node-substrate:dockertest,
 
       - name: Build and push
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
