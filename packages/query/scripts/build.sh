@@ -4,7 +4,6 @@ set -e
 apk add --no-cache jq
 npm install -g --force yarn@latest
 cd packages/query
-ls
 
 jq -r '.dependencies | to_entries[] | select(.value == "workspace:*") | .key' package.json | while read -r dep; do
   directory=$(jq --arg dep $dep -r '.compilerOptions.paths[$dep][0]' ../../tsconfig.json | cut -d'/' -f 2)
