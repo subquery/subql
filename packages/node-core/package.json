@@ -16,7 +16,8 @@
   "files": [
     "src/global.d.ts",
     "/dist",
-    "logger.js"
+    "logger.js",
+    "yargs.js"
   ],
   "dependencies": {
     "@apollo/client": "^3.7.16",
