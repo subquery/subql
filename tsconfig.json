@@ -43,7 +43,7 @@
     {"path": "packages/node-core"},
     {"path": "packages/types-core"},
     {"path": "packages/types"},
-    {"path": "packages/utils"},
+    {"path": "packages/utils"}
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],
