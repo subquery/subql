@@ -31,6 +31,8 @@ RUN apk add --no-cache tini curl git && \
     yarn cache clean && \
     rm -rf /root/.npm /root/.cache
 
+RUN ls dist
+
 # Set Entry point and command
 ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
 CMD ["-f","/app"]
