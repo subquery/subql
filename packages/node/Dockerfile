@@ -13,7 +13,7 @@ COPY ./tsconfig.json ./tsconfig.json
 # Install dependencies and build
 RUN apk add --no-cache jq && \
     npm install -g --force yarn@latest && \
-    cd packages/query && \
+    cd packages/node && \
     jq -r '.dependencies | to_entries[] | select(.value == "workspace:*") | .key' package.json | while read -r dep; do \
       directory=$(jq --arg dep $dep -r '.compilerOptions.paths[$dep][0]' ../../tsconfig.json | cut -d'/' -f 2); \
       version=$(jq --arg directory $directory -r '.version' ../$directory/package.json); \
@@ -28,7 +28,7 @@ RUN apk add --no-cache jq && \
 FROM node:18-alpine
 
 # Copy .tgz file from builder
-COPY --from=builder /app/packages/query/app.tgz /app.tgz
+COPY --from=builder /app/packages/node/app.tgz /app.tgz
 
 # Install production dependencies
 RUN apk add --no-cache tini curl git && \
