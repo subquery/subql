@@ -10,12 +10,11 @@ COPY ./packages ./packages
 # Copy tsconfig.json
 COPY ./tsconfig.json ./tsconfig.json
 
-# Copy build script and make it executable
-COPY ./packages/query/scripts/build.sh ./packages/query/scripts/build.sh
-RUN chmod +x ./packages/query/scripts/build.sh
+# Copy build script
+COPY ./scripts/build.sh ./scripts/build.sh
 
 # Install dependencies and build
-RUN ./packages/query/scripts/build.sh
+RUN ./scripts/build.sh packages/query
 
 # Production stage
 FROM node:18-alpine
