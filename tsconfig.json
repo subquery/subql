@@ -21,7 +21,7 @@
       "@subql/common-cosmos": ["packages/common-cosmos/src"],
       "@subql/common-cosmos/*": ["packages/common-cosmos/src/*"],
       "@subql/types-cosmos": ["packages/types/src"],
-      "@subql/types-cosmos/*": ["packages/types/src/*"],
+      "@subql/types-cosmos/*": ["packages/types/src/*"]
     },
     "skipLibCheck": true
   },
@@ -29,7 +29,7 @@
     {"path": "packages/common-cosmos"},
     {"path": "packages/node"},
     {"path": "packages/node-core"},
-    {"path": "packages/types"},
+    {"path": "packages/types"}
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],
