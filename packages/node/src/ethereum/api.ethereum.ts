@@ -282,24 +282,18 @@ export class EthereumApi implements ApiWrapper {
       const block = await this.getBlockPromise(blockNumber, true);
       const logsRaw = await this.client.getLogs({ blockHash: block.hash });
 
-      const logs = logsRaw.map((l) => formatLog(l, block));
-      const transactions = block.transactions.map((tx) => ({
+      block.logs = logsRaw.map((l) => formatLog(l, block));
+      block.transactions = block.transactions.map((tx) => ({
         ...formatTransaction(tx, block),
         receipt: () =>
           this.getTransactionReceipt(tx.hash).then((r) =>
             formatReceipt(r, block),
           ),
-        logs: logs.filter((l) => l.transactionHash === tx.hash),
+        logs: block.logs.filter((l) => l.transactionHash === tx.hash),
       }));
 
-      const ret = {
-        ...block,
-        transactions,
-        logs,
-      };
-
       this.eventEmitter.emit('fetchBlock');
-      return ret;
+      return block;
     } catch (e) {
       throw this.handleError(e);
     }

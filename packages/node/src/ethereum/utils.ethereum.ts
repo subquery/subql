@@ -65,25 +65,29 @@ export function formatLog(
   >,
   block: EthereumBlock,
 ): EthereumLog<EthereumResult> | EthereumLog {
-  return {
+  const formattedLog = {
     ...log,
     address: handleAddress(log.address),
     blockNumber: handleNumber(log.blockNumber).toNumber(),
     transactionIndex: handleNumber(log.transactionIndex).toNumber(),
     logIndex: handleNumber(log.logIndex).toNumber(),
     block,
-    get transaction() {
-      const rawTransaction = block.transactions?.find(
-        (tx) => tx.hash === log.transactionHash,
-      );
-      return rawTransaction
-        ? formatTransaction(rawTransaction, block)
-        : undefined;
-    },
     toJSON(): string {
       return JSON.stringify(omit(this, ['transaction', 'block', 'toJSON']));
     },
-  } as EthereumLog<EthereumResult>;
+  };
+
+  // Define this afterwards as the spread on `...log` breaks defining a getter
+  Object.defineProperty(formattedLog, 'transaction', {
+    get: () => {
+      const rawTransaction = block.transactions?.find(
+        (tx) => tx.hash === log.transactionHash,
+      );
+
+      return rawTransaction;
+    },
+  });
+  return formattedLog as unknown as EthereumLog<EthereumResult>;
 }
 
 export function formatTransaction(

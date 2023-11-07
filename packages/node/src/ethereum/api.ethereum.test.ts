@@ -70,6 +70,14 @@ describe('Api.ethereum', () => {
     );
   });
 
+  it('should have the ability to get receipts via transactions from all types', () => {
+    expect(typeof blockData.transactions[0].receipt).toEqual('function');
+    expect(typeof blockData.logs[0].transaction.receipt).toEqual('function');
+    expect(
+      typeof blockData.transactions[81].logs[0].transaction.receipt,
+    ).toEqual('function');
+  });
+
   it('Decode nested logs in transactions', async () => {
     // Erc721
     const tx = blockData.transactions.find(
@@ -92,6 +100,7 @@ describe('Api.ethereum', () => {
     expect(parsedLog).not.toHaveProperty('args');
     expect(parsedLog).toBeTruthy();
   });
+
   it('Null filter support', async () => {
     const beamEndpoint = 'https://rpc.api.moonbeam.network';
     ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
@@ -211,6 +220,7 @@ describe('Api.ethereum', () => {
     });
     expect(result.length).toBe(0);
   });
+
   it('If transaction is undefined, with null filter, should be supported', async () => {
     const beamEndpoint = 'https://rpc.api.moonbeam.network';
     ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
