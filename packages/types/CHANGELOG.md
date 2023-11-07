@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2023-11-06
+### Fixed
+- Fixed missing global variable: registry (#199)
+
 ## [3.2.0] - 2023-11-01
 ### Changed
 - Import `@subql/types-core` global into global so its no longer needed to update tsconfig in projects (#195)
@@ -92,7 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.2.1...HEAD
+[3.2.1]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.2.0...types-cosmos/3.2.1
 [3.2.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.1.0...types-cosmos/3.2.0
 [3.1.0]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.0.3...types-cosmos/3.1.0
 [3.0.3]: https://github.com/subquery/subql-cosmos/compare/types-cosmos/3.0.2...types-cosmos/3.0.3
