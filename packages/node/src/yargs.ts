@@ -102,6 +102,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Max timeout for dictionary query',
       type: 'number',
     },
+    'dictionary-query-size': {
+      demandOption: false,
+      describe:
+        'Dictionary query max block size, this specify the block height range of the dictionary query',
+      type: 'number',
+    },
     'disable-historical': {
       demandOption: false,
       default: false,
@@ -124,12 +130,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify log level to print. Ignored when --debug is used',
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
-    },
-    'mmr-path': {
-      alias: 'm',
-      demandOption: false,
-      describe: 'Local path of the merkle mountain range (.mmr) file',
-      type: 'string',
     },
     'multi-chain': {
       demandOption: false,
@@ -177,13 +177,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Enable/disable proof of index',
       type: 'boolean',
       default: false,
-    },
-    'mmr-store-type': {
-      demandOption: false,
-      describe: 'Store MMR in either a file or a postgres DB',
-      type: 'string',
-      choices: ['file', 'postgres'],
-      default: 'postgres',
     },
     'query-limit': {
       demandOption: false,
