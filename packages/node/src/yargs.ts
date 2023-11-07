@@ -103,6 +103,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Max timeout for dictionary query',
       type: 'number',
     },
+    'dictionary-query-size': {
+      demandOption: false,
+      describe:
+        'Dictionary query max block size, this specify the block height range of the dictionary query',
+      type: 'number',
+    },
     'disable-historical': {
       demandOption: false,
       describe: 'Disable storing historical state entities',
