@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
@@ -382,10 +383,10 @@ export class EthereumApi implements ApiWrapper {
         return log;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-      return {
-        ...log,
-        args: iface?.parseLog(log).args as T,
-      };
+
+      log.args = iface?.parseLog(log).args as T;
+
+      return log;
     } catch (e) {
       logger.warn(`Failed to parse log data: ${e.message}`);
       return log;
@@ -412,10 +413,9 @@ export class EthereumApi implements ApiWrapper {
           transaction.logs.map(async (log) => this.parseLog(log, ds)),
         )) as Array<EthereumLog | EthereumLog<T>>);
 
-      return {
-        ...transaction,
-        args,
-      };
+      transaction.args = args;
+
+      return transaction;
     } catch (e) {
       logger.warn(`Failed to parse transaction data: ${e.message}`);
       return transaction;

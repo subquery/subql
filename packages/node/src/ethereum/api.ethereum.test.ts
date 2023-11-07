@@ -73,6 +73,10 @@ describe('Api.ethereum', () => {
   it('should have the ability to get receipts via transactions from all types', () => {
     expect(typeof blockData.transactions[0].receipt).toEqual('function');
     expect(typeof blockData.logs[0].transaction.receipt).toEqual('function');
+    expect(typeof blockData.logs[0].transaction.from).toEqual('string');
+    expect(typeof blockData.transactions[81].logs[0].transaction.from).toEqual(
+      'string',
+    );
     expect(
       typeof blockData.transactions[81].logs[0].transaction.receipt,
     ).toEqual('function');
@@ -89,6 +93,17 @@ describe('Api.ethereum', () => {
     expect(parsedTx.logs[0].args).toBeTruthy();
   });
 
+  it('Should decode transaction data and not clone object', async () => {
+    const tx = blockData.transactions.find(
+      (e) =>
+        e.hash ===
+        '0x8e419d0e36d7f9c099a001fded516bd168edd9d27b4aec2bcd56ba3b3b955ccc',
+    );
+    const parsedTx = await ethApi.parseTransaction(tx, ds);
+
+    expect(parsedTx).toBe(tx);
+  });
+
   it('Should return raw logs, if decode fails', async () => {
     // not Erc721
     const tx = blockData.transactions.find(
@@ -99,6 +114,18 @@ describe('Api.ethereum', () => {
     const parsedLog = await ethApi.parseLog(tx.logs[0], ds);
     expect(parsedLog).not.toHaveProperty('args');
     expect(parsedLog).toBeTruthy();
+  });
+
+  // This test is here to ensure getters aren't removed
+  it('Should not clone logs when parsing args', async () => {
+    const log = blockData.transactions.find(
+      (e) =>
+        e.hash ===
+        '0x8e419d0e36d7f9c099a001fded516bd168edd9d27b4aec2bcd56ba3b3b955ccc',
+    ).logs[1];
+
+    const parsedLog = await ethApi.parseLog(log, ds);
+    expect(parsedLog).toBe(log);
   });
 
   it('Null filter support', async () => {
