@@ -17,6 +17,8 @@ jobs:
       changes_found: ${{ steps.check_changes.outputs.changes_found }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
       - name: Check for package changes and commit message
         id: check_changes
         run: |

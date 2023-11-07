@@ -21,14 +21,14 @@
       "@subql/common-stellar": ["packages/common-stellar/src"],
       "@subql/common-stellar/*": ["packages/common-stellar/src/*"],
       "@subql/types-stellar": ["packages/types/src"],
-      "@subql/types-stellar/*": ["packages/types/src/*"],
+      "@subql/types-stellar/*": ["packages/types/src/*"]
     },
     "skipLibCheck": true
   },
   "references": [
     {"path": "packages/common-stellar"},
     {"path": "packages/node"},
-    {"path": "packages/types"},
+    {"path": "packages/types"}
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],
