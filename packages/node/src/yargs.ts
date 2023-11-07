@@ -91,6 +91,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
               'Dictionary query max block size, this specify the block height range of the dictionary query',
             type: 'number',
           },
+          'dictionary-registry': {
+            demandOption: false,
+            describe:
+              'Url to a dictionary registry used to resolve dictionary if one is not provided',
+            type: 'string',
+          },
           'disable-historical': {
             demandOption: false,
             describe: 'Disable storing historical state entities',
