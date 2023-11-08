@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.2] - 2023-11-08
+### Fixed
+- Fixed docker build pipeline, release to re-publish docker image(#207)
+
 ## [3.3.1] - 2023-11-08
 ### Fixed
 - Getting transaction receipts when accessing via a log handler
@@ -316,7 +320,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.2...HEAD
+[3.3.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.1...node-ethereum/3.3.2
 [3.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.0...node-ethereum/3.3.1
 [3.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.2...node-ethereum/3.3.0
 [3.1.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.1...node-ethereum/3.1.2
