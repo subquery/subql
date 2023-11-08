@@ -18,3 +18,10 @@ do
         echo "WARNING: ${file} not found"
     fi
 done
+
+# Replace paths in tsconfig.json
+if [ -f "./tsconfig.json" ]; then
+    replace_paths './tsconfig.json'
+else
+    echo "WARNING: tsconfig.json not found"
+fi
