@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2023-11-06
+### Added
+- With `dictionary-query-size` now dictionary can config the query block range(#2139)
+
+### Fixed
+- Sync with node-core 6.3.0 with various fixes
+
 ## [3.2.0] - 2023-10-31
 ### Fixed
 - Sync with node-core, fixed modulo block ahead of finalized block issue (#2132)
@@ -1038,7 +1045,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.3.0...HEAD
+[3.3.0]: https://github.com/subquery/subql/compare/node/3.2.0...node/3.3.0
 [3.2.0]: https://github.com/subquery/subql/compare/node/3.1.1...node/3.2.0
 [3.1.1]: https://github.com/subquery/subql/compare/node/3.1.0...node/3.1.1
 [3.1.0]: https://github.com/subquery/subql/compare/v3.0.8...v3.1.0

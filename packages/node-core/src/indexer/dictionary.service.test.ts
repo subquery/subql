@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {NETWORK_FAMILY} from '@subql/common';
 import {SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
@@ -354,4 +355,14 @@ describe('DictionaryService', () => {
   });
 
   // TODO write a test that queries over 2 block ranges in case DS has been removed
+
+  it('can use the dictionary registry to resolve a url', async () => {
+    const dictUrl: string = await (DictionaryService as any).resolveDictionary(
+      NETWORK_FAMILY.ethereum,
+      1,
+      'https://github.com/subquery/templates/raw/main/dictionary.json'
+    );
+
+    expect(dictUrl).toEqual('https://dict-tyk.subquery.network/query/eth-mainnet');
+  });
 });

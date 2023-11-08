@@ -4,6 +4,7 @@
 import { gql } from '@apollo/client/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NETWORK_FAMILY } from '@subql/common';
 import {
   NodeConfig,
   timeout,
@@ -28,17 +29,34 @@ const logger = getLogger('dictionary');
 
 @Injectable()
 export class DictionaryService extends CoreDictionaryService {
-  constructor(
+  private constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
+    dictionaryUrl?: string,
   ) {
     super(
-      project.network.dictionary,
+      dictionaryUrl ?? project.network.dictionary,
       project.network.chainId,
       nodeConfig,
       eventEmitter,
     );
+  }
+
+  static async create(
+    project: SubqueryProject,
+    nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
+  ): Promise<DictionaryService> {
+    const url =
+      project.network.dictionary ??
+      (await CoreDictionaryService.resolveDictionary(
+        NETWORK_FAMILY.substrate,
+        project.network.chainId,
+        nodeConfig.dictionaryRegistry,
+      ));
+
+    return new DictionaryService(project, nodeConfig, eventEmitter, url);
   }
 
   protected validateChainMeta(metaData: MetaData): boolean {

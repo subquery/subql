@@ -6,6 +6,7 @@ import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {dictHttpLink} from '@subql/apollo-links';
+import {NETWORK_FAMILY} from '@subql/common';
 import {DictionaryQueryCondition, DictionaryQueryEntry, BaseDataSource} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
 import fetch from 'cross-fetch';
@@ -198,6 +199,30 @@ export class DictionaryService {
         },
       },
     });
+  }
+
+  protected static async resolveDictionary(
+    networkFamily: NETWORK_FAMILY,
+    chainId: string,
+    registryUrl: string
+  ): Promise<string | undefined> {
+    try {
+      const response = await fetch(registryUrl);
+
+      if (!response.ok) {
+        throw new Error(`Bad response, code="${response.status}" body="${await response.text()}"`);
+      }
+      const dictionaryJson = await response.json();
+
+      const dictionaries = dictionaryJson[networkFamily.toLowerCase()][chainId];
+
+      if (Array.isArray(dictionaries) && dictionaries.length > 0) {
+        // TODO choose alternatives
+        return dictionaries[0];
+      }
+    } catch (error: any) {
+      logger.error(error, 'An error occurred while fetching the dictionary:');
+    }
   }
 
   get useDictionary(): boolean {

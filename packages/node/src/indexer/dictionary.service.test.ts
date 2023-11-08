@@ -31,7 +31,7 @@ const nodeConfig = new NodeConfig({
 describe('DictionaryService', () => {
   it('should return all specVersion', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(
+    const dictionaryService = await DictionaryService.create(
       project,
       nodeConfig,
       new EventEmitter2(),
@@ -44,7 +44,7 @@ describe('DictionaryService', () => {
 
   it('not use dictionary if endpoint genesisHash is not match with metadata', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(
+    const dictionaryService = await DictionaryService.create(
       project,
       nodeConfig,
       new EventEmitter2(),

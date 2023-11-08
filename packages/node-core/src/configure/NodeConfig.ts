@@ -25,6 +25,7 @@ export interface IConfig {
   readonly primaryNetworkEndpoint?: string;
   readonly networkDictionary?: string;
   readonly dictionaryResolver?: string | false;
+  readonly dictionaryRegistry: string;
   readonly outputFmt?: 'json';
   readonly logLevel: LevelWithSilent;
   readonly queryLimit: number;
@@ -33,6 +34,7 @@ export interface IConfig {
   readonly proofOfIndex: boolean;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
+  readonly dictionaryQuerySize: number;
   readonly workers?: number;
   readonly profiler?: boolean;
   readonly unsafe?: boolean;
@@ -68,6 +70,7 @@ const DEFAULT_CONFIG = {
   timestampField: true,
   proofOfIndex: false,
   dictionaryTimeout: 30,
+  dictionaryQuerySize: 10000,
   profiler: false,
   subscription: false,
   disableHistorical: false,
@@ -169,6 +172,14 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.dictionaryResolver ?? 'https://kepler-auth.subquery.network';
   }
 
+  get dictionaryRegistry(): string {
+    if (this._config.dictionaryRegistry) {
+      return this._config.dictionaryRegistry;
+    }
+
+    return 'https://github.com/subquery/templates/raw/main/dictionary.json';
+  }
+
   get timeout(): number {
     return this._config.timeout;
   }
@@ -211,6 +222,10 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get dictionaryTimeout(): number {
     return this._config.dictionaryTimeout;
+  }
+
+  get dictionaryQuerySize(): number {
+    return this._config.dictionaryQuerySize;
   }
 
   get ipfs(): string | undefined {

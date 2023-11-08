@@ -17,7 +17,6 @@ import {DynamicDsService} from './dynamic-ds.service';
 import {IProjectService} from './types';
 
 const logger = getLogger('FetchService');
-const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
@@ -272,7 +271,10 @@ export abstract class BaseFetchService<
         /* queryEndBlock needs to be limited by the latest height or the maximum value of endBlock in datasources.
          * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
          */
-        const queryEndBlock = Math.min(startBlockHeight + DICTIONARY_MAX_QUERY_SIZE, this.latestFinalizedHeight);
+        const queryEndBlock = Math.min(
+          startBlockHeight + this.nodeConfig.dictionaryQuerySize,
+          this.latestFinalizedHeight
+        );
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
