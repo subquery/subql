@@ -13,8 +13,8 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@polkadot/util": "^12.2.1",
-    "@polkadot/util-crypto": "^12.2.1",
+    "@polkadot/util": "^12.5.1",
+    "@polkadot/util-crypto": "^12.5.1",
     "@subql/x-sequelize": "6.32.0-0.0.2",
     "ansi-styles": "^6.1.0",
     "axios": "^0.27.1",
