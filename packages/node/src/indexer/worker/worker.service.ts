@@ -18,7 +18,7 @@ import { IndexerManager } from '../indexer.manager';
 import { BlockContent } from '../types';
 
 export type FetchBlockResponse = {
-  parentHash: string;
+  parentHash: string | undefined;
 };
 
 export type WorkerStatusResponse = {
@@ -59,7 +59,7 @@ export class WorkerService extends BaseWorkerService<
 
   protected toBlockResponse(block: BlockContent): FetchBlockResponse {
     return {
-      parentHash: block.block.header.lastBlockId.hash.toString(),
+      parentHash: block.block.header.lastBlockId?.hash.toString(),
     };
   }
 
