@@ -12,7 +12,7 @@ import {copySync} from 'fs-extra';
 import {IDLObject} from 'wasm-ast-types';
 import {isRuntimeCosmosDs} from '../project';
 import {COSMWASM_OPTS, TELESCOPE_OPTS} from './constants';
-import {loadCosmwasmAbis} from './util';
+import {loadCosmwasmAbis, tmpProtoDir} from './util';
 
 const TYPE_ROOT_DIR = 'src/types';
 
@@ -186,7 +186,7 @@ export async function tempProtoDir(projectPath: string): Promise<string> {
 
   commonProtoPaths.forEach((p) => {
     // ensure output format is a dir
-    copySync(p, path.join(tmpDir, `${p.replace(path.dirname(p), '')}`));
+    copySync(p, tmpProtoDir(tmpDir, p));
   });
   copySync(userProto, tmpDir, {overwrite: true});
   return tmpDir;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
 import {CosmosRuntimeDatasource} from '@subql/types-cosmos';
@@ -16,9 +17,12 @@ import {
   processProtoFilePath,
   tempProtoDir,
 } from './codegen-controller';
-import {loadCosmwasmAbis} from './util';
+import {loadCosmwasmAbis, tmpProtoDir} from './util';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
+const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
+  // eslint-disable-next-line jest/valid-describe-callback, jest/valid-title, jest/no-disabled-tests
+  condition ? describe(...args) : describe.skip(...args);
 
 describe('Codegen cosmos', () => {
   describe('Protobuf to ts', () => {
@@ -189,6 +193,20 @@ describe('Codegen cosmos', () => {
       const output = await fs.promises.readFile(path.join(PROJECT_PATH, 'test.ts'));
       expect(output.toString()).toMatch(expectCodegen);
       await promisify(rimraf)(path.join(PROJECT_PATH, 'test.ts'));
+    });
+  });
+  it('ensure correct protoDir on macos', () => {
+    const protoPath = '/Users/ben/subql-workspace/node/subql/node_modules/@protobufs/amino';
+    const tmpDir = '/var/folders/ks/720tmlnn3fj6m4sg91c7spjm0000gn/T/wS0Gob';
+    const macosPath = path.join(tmpDir, `${protoPath.replace(path.dirname(protoPath), '')}`);
+    expect(tmpProtoDir(tmpDir, protoPath)).toEqual(macosPath);
+  });
+  describeIf(os.platform() === 'win32', 'ensure correct protoDir on windowsOs', () => {
+    it('correct pathing on windows', () => {
+      const winProtoPath = 'C:\\Users\\zzz\\subql\\subql\\node_modules@protobufs\\amino';
+      const winTmpDir = 'C:\\Users\\zzz\\AppData\\Local\\Temp\\GZTuPZ';
+
+      expect(tmpProtoDir(winTmpDir, winProtoPath)).toEqual('C:\\Users\\zzz\\AppData\\Local\\Temp\\GZTuPZ\\amino');
     });
   });
 });
