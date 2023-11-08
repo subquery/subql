@@ -70,6 +70,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
@@ -80,6 +81,7 @@ jobs:
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
@@ -152,6 +154,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile-flare
@@ -162,6 +165,7 @@ jobs:
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile-flare
@@ -207,6 +211,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
@@ -217,6 +222,7 @@ jobs:
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
@@ -289,6 +295,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile-flare
@@ -299,6 +306,7 @@ jobs:
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
         uses: docker/build-push-action@v2
         with:
+          context: .
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile-flare
