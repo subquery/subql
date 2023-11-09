@@ -26,3 +26,18 @@ function unwrapProxy<T = any>(input: T): T {
 export function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R): (...args: T) => R {
   return (...args: T) => fn(...(args.map(unwrapProxy) as T));
 }
+
+export class BlockUnavailableError extends Error {
+  constructor(message = 'Block is unavailable in the chain') {
+    super(message);
+    // Object.setPrototypeOf(this, BlockUnavailableError.prototype);
+    this.name = 'BlockUnavailableError';
+  }
+}
+
+export function isBlockUnavailableError(e: any): boolean {
+  return e.message === 'Block is unavailable in the chain';
+}
+// export function isBlockUnavailableError(e: any): e is BlockUnavailableError {
+//   return e instanceof BlockUnavailableError;
+// }
