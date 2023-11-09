@@ -91,7 +91,6 @@ export abstract class BaseWorkerService<
       if (!isBlockUnavailableError(e)) {
         logger.error(e, `Failed to index block ${height}: ${e.stack}`);
       }
-      console.log('processBlock instance: ', e instanceof BlockUnavailableError);
       throw e;
     } finally {
       this._isIndexing = false;

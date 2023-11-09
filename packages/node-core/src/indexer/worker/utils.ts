@@ -4,6 +4,8 @@
 import * as util from 'util';
 import {instanceToPlain} from 'class-transformer';
 
+const BLOCK_UNAVAILBLE_ERROR_MSG = 'Block is unavailable in the chain';
+
 /**
  * Proxy objects aren't serializable between worker threads.
  * VM2 Seems to have objects come out as proxy objects.
@@ -28,16 +30,13 @@ export function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R):
 }
 
 export class BlockUnavailableError extends Error {
-  constructor(message = 'Block is unavailable in the chain') {
+  constructor(message = BLOCK_UNAVAILBLE_ERROR_MSG) {
     super(message);
-    // Object.setPrototypeOf(this, BlockUnavailableError.prototype);
-    this.name = 'BlockUnavailableError';
+    Object.setPrototypeOf(this, BlockUnavailableError.prototype);
   }
 }
-
-export function isBlockUnavailableError(e: any): boolean {
-  return e.message === 'Block is unavailable in the chain';
+export function isBlockUnavailableError(e: any): e is BlockUnavailableError {
+  // When parsing errors through workers, the error doesn't retain its original type
+  // Hence, we are using message as a validation too
+  return e instanceof BlockUnavailableError || e.message === BLOCK_UNAVAILBLE_ERROR_MSG;
 }
-// export function isBlockUnavailableError(e: any): e is BlockUnavailableError {
-//   return e instanceof BlockUnavailableError;
-// }

@@ -169,7 +169,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       } catch (e: any) {
         // TODO discard any cache changes from this block height
 
-        console.log('dispatcher processBlock instance: ', e instanceof BlockUnavailableError);
         if (isBlockUnavailableError(e)) {
           return;
         }
