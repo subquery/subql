@@ -14,3 +14,4 @@ export * from './meta';
 export * from './utils';
 export * from './indexer';
 export * from './subcommands';
+export * from './yargs';
