@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-import {Entity, Store, IProjectNetworkConfig, FieldsExpression} from '@subql/types-core';
+import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   GraphQLModelsType,
@@ -58,12 +58,13 @@ import {
 } from '../utils';
 import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
+import {Store} from './store';
 import {CacheMetadataModel} from './storeCache';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
-import {ISubqueryProject, OperationType} from './types';
+import {ISubqueryProject} from './types';
 
-const logger = getLogger('store');
+const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
@@ -735,153 +736,27 @@ group by
     );
   }
 
+  isIndexedHistorical(entity: string, field: string): boolean {
+    return (
+      this.modelIndexedFields.findIndex(
+        (indexField) =>
+          upperFirst(camelCase(indexField.entityName)) === entity &&
+          camelCase(indexField.fieldName) === field &&
+          // With historical indexes are not unique
+          (this.historical || indexField.isUnique)
+      ) > -1
+    );
+  }
+
   getStore(): Store {
-    return {
-      get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
-        try {
-          return this.storeCache.getModel<T>(entity).get(id);
-        } catch (e) {
-          throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
-        }
-      },
-      getByField: async <T extends Entity>(
-        entity: string,
-        field: keyof T,
-        value: T[keyof T] | T[keyof T][],
-        options: {
-          offset?: number;
-          limit?: number;
-        } = {}
-      ): Promise<T[]> => {
-        try {
-          const indexed = this.isIndexed(entity, String(field));
-          assert(indexed, `to query by field ${String(field)}, an index must be created on model ${entity}`);
-          if (options?.limit && this.config.queryLimit < options?.limit) {
-            logger.warn(
-              `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${this.config.queryLimit} as the limit.`
-            );
-          }
-          const finalLimit = options.limit ? Math.min(options.limit, this.config.queryLimit) : this.config.queryLimit;
-          if (options.offset === undefined) {
-            options.offset = 0;
-          }
-          return this.storeCache
-            .getModel<T>(entity)
-            .getByField(field, value, {limit: finalLimit, offset: options.offset});
-        } catch (e) {
-          throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
-        }
-      },
-      getByFields: async <T extends Entity>(
-        entity: string,
-        filter: FieldsExpression<T>[],
-        options?: {
-          offset?: number;
-          limit?: number;
-        }
-      ): Promise<T[]> => {
-        try {
-          // Check that the fields are indexed
-          filter.forEach((f) => {
-            assert(
-              this.isIndexed(entity, String(f[0])),
-              `to query by field ${String(f[0])}, an index must be created on model ${entity}`
-            );
-          });
-
-          if (options?.limit && this.config.queryLimit < options?.limit) {
-            logger.warn(
-              `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${this.config.queryLimit} as the limit.`
-            );
-          }
-
-          const finalOptions = {
-            offset: options?.offset ?? 0,
-            limit: Math.min(options?.limit ?? this.config.queryLimit, this.config.queryLimit),
-          };
-
-          return this.storeCache.getModel<T>(entity).getByFields(filter, finalOptions);
-        } catch (e) {
-          throw new Error(`Failed to getByFields Entity ${entity}: ${e}`);
-        }
-      },
-      getOneByField: async <T extends Entity>(
-        entity: string,
-        field: keyof T,
-        value: T[keyof T]
-        // eslint-disable-next-line @typescript-eslint/require-await
-      ): Promise<T | undefined> => {
-        try {
-          const indexed =
-            this.modelIndexedFields.findIndex(
-              (indexField) =>
-                upperFirst(camelCase(indexField.entityName)) === entity &&
-                camelCase(indexField.fieldName) === field &&
-                // With historical indexes are not unique
-                (this.historical || indexField.isUnique)
-            ) > -1;
-          assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
-          return this.storeCache.getModel<T>(entity).getOneByField(field, value);
-        } catch (e) {
-          throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
-        }
-      },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      set: async (entity: string, _id: string, data: Entity): Promise<void> => {
-        try {
-          this.storeCache.getModel(entity).set(_id, data, this.blockHeight);
-
-          this.operationStack?.put(OperationType.Set, entity, data);
-        } catch (e) {
-          throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
-        }
-      },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
-        try {
-          this.storeCache.getModel(entity).bulkCreate(data, this.blockHeight);
-
-          for (const item of data) {
-            this.operationStack?.put(OperationType.Set, entity, item);
-          }
-        } catch (e) {
-          throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
-        }
-      },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      bulkUpdate: async (entity: string, data: Entity[], fields?: string[]): Promise<void> => {
-        try {
-          this.storeCache.getModel(entity).bulkUpdate(data, this.blockHeight, fields);
-          for (const item of data) {
-            this.operationStack?.put(OperationType.Set, entity, item);
-          }
-        } catch (e) {
-          throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
-        }
-      },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      remove: async (entity: string, id: string): Promise<void> => {
-        try {
-          this.storeCache.getModel(entity).remove(id, this.blockHeight);
-
-          this.operationStack?.put(OperationType.Remove, entity, id);
-        } catch (e) {
-          throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
-        }
-      },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      bulkRemove: async (entity: string, ids: string[]): Promise<void> => {
-        try {
-          this.storeCache.getModel(entity).bulkRemove(ids, this.blockHeight);
-
-          for (const id of ids) {
-            this.operationStack?.put(OperationType.Remove, entity, id);
-          }
-        } catch (e) {
-          throw new Error(`Failed to bulkRemove Entity ${entity}: ${e}`);
-        }
-      },
-    };
+    return new Store(
+      this.config,
+      this.storeCache,
+      this.blockHeight,
+      this.isIndexed.bind(this),
+      this.isIndexedHistorical.bind(this),
+      this.operationStack
+    );
   }
 }
 
