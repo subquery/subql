@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - When using store get methods the `save` function would be missing
 
+### Fixed
+- Workers selecting apis for endpoints that aren't connected (#2154)
+
 ## [6.3.0] - 2023-11-06
 ### Added
 - Add `dictionaryQuerySize` to nodeConfig, so the block range in dictionary can be configurable. (#2139)

@@ -12,7 +12,7 @@ import {
 } from '../connectionPoolState.manager';
 
 export type HostConnectionPoolState<T> = {
-  hostGetNextConnectedEndpoint: () => Promise<string | undefined>;
+  hostGetNextConnectedEndpoint: (connectedEndpoints?: string[]) => Promise<string | undefined>;
   hostAddToConnections: (endpoint: string, primary: boolean) => Promise<void>;
   hostGetFieldFromConnectionPoolItem: <K extends keyof ConnectionPoolItem<T>>(
     endpoint: string,
@@ -68,8 +68,8 @@ export class WorkerConnectionPoolStateManager<T extends IApiConnectionSpecific>
     }
   }
 
-  async getNextConnectedEndpoint(): Promise<string | undefined> {
-    return this.host.hostGetNextConnectedEndpoint();
+  async getNextConnectedEndpoint(connectedEndpoints?: string[]): Promise<string | undefined> {
+    return this.host.hostGetNextConnectedEndpoint(connectedEndpoints);
   }
 
   async addToConnections(endpoint: string, primary = false): Promise<void> {
