@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Update Polkadot/api to 10.10.1 (#2150)
 - Use yargs config from node-core (#2144)
 
 ## [3.3.0] - 2023-11-06
