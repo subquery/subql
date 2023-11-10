@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {isMainThread} from 'node:worker_threads';
 import {OnApplicationShutdown, Injectable} from '@nestjs/common';
 import {Interval} from '@nestjs/schedule';
@@ -74,10 +75,11 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   private async updateNextConnectedApiIndex(): Promise<void> {
-    this.cachedEndpoint = await this.poolStateManager.getNextConnectedEndpoint();
-    if (this.allApi[this.cachedEndpoint as string] === null) {
+    const newEndpoint = await this.poolStateManager.getNextConnectedEndpoint(Object.keys(this.allApi));
+    if (!!newEndpoint && this.allApi[newEndpoint] === null) {
       return this.updateNextConnectedApiIndex();
     }
+    this.cachedEndpoint = newEndpoint;
   }
 
   get api(): T {
@@ -89,6 +91,8 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
       );
     }
     const api = this.allApi[endpoint];
+
+    assert(api, `Api for endpoint ${endpoint} not found`);
 
     const wrappedApi = new Proxy(api, {
       get: (target, prop, receiver) => {

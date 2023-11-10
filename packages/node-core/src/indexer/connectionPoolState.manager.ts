@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {OnApplicationShutdown} from '@nestjs/common';
+import {Interval} from '@nestjs/schedule';
 import chalk from 'chalk';
 import {ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
@@ -26,11 +27,12 @@ export interface ConnectionPoolItem<T> {
   timeoutId?: NodeJS.Timeout;
 }
 
-const logger = getLogger('connection-pool-state');
+const logger = getLogger('ConnectionPoolState');
 
 export interface IConnectionPoolStateManager<T extends IApiConnectionSpecific<any, any, any>> {
   addToConnections(endpoint: string, primary: boolean, initFailed: boolean): Promise<void>;
-  getNextConnectedEndpoint(): Promise<string | undefined>;
+  // Connected endpoints allows reducing the endpoints to ones connected in the worker
+  getNextConnectedEndpoint(connectedEndpoints?: string[]): Promise<string | undefined>;
   // Async to be compatible with workers
   getFieldValue<K extends keyof ConnectionPoolItem<T>>(endpoint: string, field: K): Promise<ConnectionPoolItem<T>[K]>;
   // Async to be compatible with workers
@@ -71,20 +73,29 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
     }
   }
 
+  @Interval(15000)
+  logConnectionStatus() {
+    logger.debug(JSON.stringify(this.pool, null, 2));
+  }
+
   //eslint-disable-next-line @typescript-eslint/require-await
-  async getNextConnectedEndpoint(): Promise<string | undefined> {
+  async getNextConnectedEndpoint(connectedEndpoints?: string[]): Promise<string | undefined> {
     const primaryendpoint = this.getPrimaryEndpoint();
     if (primaryendpoint !== undefined) {
       return primaryendpoint;
     }
 
-    const endpoints = Object.keys(this.pool).filter(
+    const availableEndpoints = Object.keys(this.pool).filter(
+      (endpoint) => !connectedEndpoints || connectedEndpoints.includes(endpoint)
+    );
+
+    const endpoints = availableEndpoints.filter(
       (endpoint) => !this.pool[endpoint].backoffDelay && this.pool[endpoint].connected && !this.pool[endpoint].failed
     );
 
     if (endpoints.length === 0) {
       // If all endpoints are suspended, try to find a rate-limited one
-      const rateLimitedEndpoints = Object.keys(this.pool).filter(
+      const rateLimitedEndpoints = availableEndpoints.filter(
         (endpoint) => this.pool[endpoint].backoffDelay && this.pool[endpoint].rateLimited
       );
 

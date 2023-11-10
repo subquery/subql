@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Base yargs config for all SDKs (#2144)
+- Support block skipping on unavailable blocks (#2151)
+
+### Fixed
+- When using store get methods the `save` function would be missing
+
+### Fixed
+- Workers selecting apis for endpoints that aren't connected (#2154)
 
 ## [6.3.0] - 2023-11-06
 ### Added

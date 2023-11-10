@@ -8,6 +8,7 @@ import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {IProjectService} from '../types';
+import {BlockUnavailableError, isBlockUnavailableError} from './utils';
 
 export type FetchBlockResponse = {specVersion: number; parentHash: string} | undefined;
 
@@ -76,7 +77,7 @@ export abstract class BaseWorkerService<
       this._isIndexing = true;
       const block = this.fetchedBlocks[height];
 
-      if (!block) {
+      if (block === undefined) {
         throw new Error(`Block ${height} has not been fetched`);
       }
 
@@ -87,7 +88,9 @@ export abstract class BaseWorkerService<
 
       return await this.processFetchedBlock(block, await this.projectService.getDataSources(height));
     } catch (e: any) {
-      logger.error(e, `Failed to index block ${height}: ${e.stack}`);
+      if (!isBlockUnavailableError(e)) {
+        logger.error(e, `Failed to index block ${height}: ${e.stack}`);
+      }
       throw e;
     } finally {
       this._isIndexing = false;
