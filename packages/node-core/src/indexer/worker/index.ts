@@ -9,3 +9,4 @@ export * from './worker.connectionPoolState.manager';
 export * from './worker.unfinalizedBlocks.service';
 export * from './worker.service';
 export * from './worker';
+export * from './utils';

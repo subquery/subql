@@ -9,7 +9,7 @@ import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {PoiSyncService} from '../../indexer';
+import {BlockUnavailableError, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
@@ -18,6 +18,7 @@ import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {ISubqueryProject, IProjectService} from '../types';
+import {isBlockUnavailableError} from '../worker/utils';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
@@ -167,6 +168,10 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
         });
       } catch (e: any) {
         // TODO discard any cache changes from this block height
+
+        if (isBlockUnavailableError(e)) {
+          return;
+        }
         logger.error(
           e,
           `failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
