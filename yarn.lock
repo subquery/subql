@@ -6527,7 +6527,7 @@ __metadata:
     "@types/semver": ^7.3.9
     "@types/tar": ^6.1.1
     "@types/update-notifier": ^6
-    axios: ^0.27.2
+    axios: ^1.6.0
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
     fs-extra: ^10.1.0
@@ -6822,7 +6822,7 @@ __metadata:
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/semver": ^7
     ansi-styles: ^6.1.0
-    axios: ^0.27.1
+    axios: ^1.6.0
     chalk: ^4.1.2
     detect-port: ^1.3.0
     flatted: ^3.2.5
@@ -9111,7 +9111,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.27.1, axios@npm:^0.27.2":
+"axios@npm:^0.27.2":
   version: 0.27.2
   resolution: "axios@npm:0.27.2"
   dependencies:
@@ -9129,6 +9129,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: 7fb6a4313bae7f45e89d62c70a800913c303df653f19eafec88e56cea2e3821066b8409bc68be1930ecca80e861c52aa787659df0ffec6ad4d451c7816b9386b
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.0":
+  version: 1.6.1
+  resolution: "axios@npm:1.6.1"
+  dependencies:
+    follow-redirects: ^1.15.0
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
   languageName: node
   linkType: hard
 
