@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update Polkadot/util to 10.5.1 (#2150)
 
 ### Removed
-- Removed unused `axios` from dependency
+- Removed unused `axios` from dependency (#2155)
 
 ## [2.5.0] - 2023-10-31
 ### Added
