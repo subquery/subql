@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - When using store get methods the `save` function would be missing
+- Not indexing cleanly when all datasources have reached their end block
 
 ### Fixed
 - Workers selecting apis for endpoints that aren't connected (#2154)

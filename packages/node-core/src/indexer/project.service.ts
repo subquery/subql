@@ -271,7 +271,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
   hasDataSourcesAfterHeight(height: number): boolean {
     const datasourcesMap = this.getDataSourcesMap();
     //check if there are datasoures for current height
-    if (datasourcesMap.get(height).length) {
+    if (datasourcesMap.get(height + 1).length) {
       return true;
     }
 
