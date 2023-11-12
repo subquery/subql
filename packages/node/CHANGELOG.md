@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.4.0] - 2023-11-10
 ### Changed
 - Update Polkadot/api to 10.10.1 (#2150)
 - Use yargs config from node-core (#2144)
@@ -1048,7 +1050,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.0...HEAD
+[3.4.0]: https://github.com/subquery/subql/compare/node/3.3.0...node/3.4.0
 [3.3.0]: https://github.com/subquery/subql/compare/node/3.2.0...node/3.3.0
 [3.2.0]: https://github.com/subquery/subql/compare/node/3.1.1...node/3.2.0
 [3.1.1]: https://github.com/subquery/subql/compare/node/3.1.0...node/3.1.1
