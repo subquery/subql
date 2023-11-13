@@ -1,7 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { NETWORK_FAMILY } from '@subql/common';
 import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
@@ -11,16 +12,32 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 
 @Injectable()
 export class DictionaryService extends CoreDictionaryService {
-  constructor(
+  private constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     eventEmitter: EventEmitter2,
     nodeConfig: NodeConfig,
+    dictionaryUrl?: string,
   ) {
     super(
-      project.network.dictionary,
+      dictionaryUrl ?? project.network.dictionary,
       project.network.chainId,
       nodeConfig,
       eventEmitter,
     );
+  }
+
+  static async create(
+    project: SubqueryProject,
+    nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
+  ): Promise<DictionaryService> {
+    const url =
+      project.network.dictionary ??
+      (await CoreDictionaryService.resolveDictionary(
+        NETWORK_FAMILY.stellar,
+        project.network.chainId,
+        nodeConfig.dictionaryRegistry,
+      ));
+    return new DictionaryService(project, eventEmitter, nodeConfig, url);
   }
 }
