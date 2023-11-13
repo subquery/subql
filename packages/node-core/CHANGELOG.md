@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Fixed
+- Store not having access to blockheight and causing workers to fail on startup (#2161)
 
 ## [6.4.0] - 2023-11-10
 ### Added
@@ -13,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support block skipping on unavailable blocks (#2151)
 
 ### Fixed
-- When using store get methods the `save` function would be missing
+- When using store get methods the `save` function would be missing (#2153)
 - Not indexing cleanly when all datasources have reached their end block
 
 ### Fixed
