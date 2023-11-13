@@ -19,8 +19,11 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
 });
 
-function mockDictionaryService(url: string): DictionaryServicePrivate {
-  return new DictionaryService(
+// eslint-disable-next-line @typescript-eslint/require-await
+async function mockDictionaryService(
+  url: string,
+): Promise<DictionaryServicePrivate> {
+  return DictionaryService.create(
     {
       network: {
         dictionary: url,
@@ -34,8 +37,8 @@ function mockDictionaryService(url: string): DictionaryServicePrivate {
 describe('Dictionary Queries', () => {
   let dictionary: DictionaryServicePrivate;
 
-  beforeAll(() => {
-    dictionary = mockDictionaryService('http://localhost:3000'); // TODO get url
+  beforeAll(async () => {
+    dictionary = await mockDictionaryService('http://localhost:3000'); // TODO get url
   });
 
   describe('Message Filter Queries', () => {

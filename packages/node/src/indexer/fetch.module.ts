@@ -123,7 +123,22 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     ConnectionPoolService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
-    DictionaryService,
+    {
+      provide: DictionaryService,
+      useFactory: async (
+        project: SubqueryProject,
+        nodeConfig: NodeConfig,
+        eventEmitter: EventEmitter2,
+      ) => {
+        const dictionaryService = await DictionaryService.create(
+          project,
+          nodeConfig,
+          eventEmitter,
+        );
+        return dictionaryService;
+      },
+      inject: ['ISubqueryProject', NodeConfig, EventEmitter2],
+    },
     SandboxService,
     DsProcessorService,
     DynamicDsService,

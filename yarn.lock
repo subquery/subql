@@ -3794,7 +3794,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:^12.2.1":
+"@polkadot/util-crypto@npm:^12.5.1":
   version: 12.5.1
   resolution: "@polkadot/util-crypto@npm:12.5.1"
   dependencies:
@@ -3814,7 +3814,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util@npm:12.5.1, @polkadot/util@npm:^12.2.1":
+"@polkadot/util@npm:12.5.1, @polkadot/util@npm:^12.5.1":
   version: 12.5.1
   resolution: "@polkadot/util@npm:12.5.1"
   dependencies:
@@ -4291,9 +4291,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "@subql/node-core@npm:6.3.0"
+"@subql/node-core@npm:^6.4.0":
+  version: 6.4.0
+  resolution: "@subql/node-core@npm:6.4.0"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
@@ -4303,7 +4303,7 @@ __metadata:
     "@subql/common": 3.3.0
     "@subql/testing": 2.1.0
     "@subql/types": 3.3.0
-    "@subql/utils": 2.5.0
+    "@subql/utils": 2.6.0
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
@@ -4318,7 +4318,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: a0961eb85a5bfb5ff521658563ef78e2db55969857295f4108a937377fbf81bb02567d8353be24b880e38e9b6c14d91ebad468fe555346faae7d8a0a5ae69f79
+  checksum: 29208b471b1c41750905b5056fbaab16c88f5448ca4d525ccdc5156b513fe66debf9424519dbbf277ce47fe25e0cdde6186c12fdec233a8aedc1b269b56f8fde
   languageName: node
   linkType: hard
 
@@ -4339,7 +4339,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.3.0
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": ^6.3.0
+    "@subql/node-core": ^6.4.0
     "@subql/types-cosmos": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -4414,12 +4414,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.5.0":
-  version: 2.5.0
-  resolution: "@subql/utils@npm:2.5.0"
+"@subql/utils@npm:2.6.0":
+  version: 2.6.0
+  resolution: "@subql/utils@npm:2.6.0"
   dependencies:
-    "@polkadot/util": ^12.2.1
-    "@polkadot/util-crypto": ^12.2.1
+    "@polkadot/util": ^12.5.1
+    "@polkadot/util-crypto": ^12.5.1
     "@subql/x-sequelize": 6.32.0-0.0.2
     ansi-styles: ^6.1.0
     axios: ^0.27.1
@@ -4433,7 +4433,7 @@ __metadata:
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
     tar: ^6.1.11
-  checksum: 27d958f916f519aba9257d5bb4d310f0bb08d628098643c417342fbf864e6138de28d7fd0c8a3b3177f93668544b0655a6b483c9b1fe5fabbd8b08babc2ea36a
+  checksum: 284b125beb62976bd6c5f49a82d8bd3da96f928bfbfde72f42773b62440c6b9ef1a68dfbae85cff7aee40f5f349ebb1a91f41a314cbfd2b98c905496543a1323
   languageName: node
   linkType: hard
 
