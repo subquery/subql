@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Changed
+- Updates to match changes in `@subql/node-core` (#210)
+  - Dictionary service to use dictionary registry
+  - Use yargs from node core
+  
 ## [3.3.2] - 2023-11-08
 ### Fixed
 - Fixed docker build pipeline, release to re-publish docker image(#207)

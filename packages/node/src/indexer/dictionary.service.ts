@@ -3,6 +3,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NETWORK_FAMILY } from '@subql/common';
 import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
@@ -22,9 +23,10 @@ export class DictionaryService extends CoreDictionaryService {
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     chainId?: string,
+    dictionaryUrl?: string,
   ) {
     super(
-      project.network.dictionary,
+      dictionaryUrl ?? project.network.dictionary,
       chainId ?? project.network.chainId,
       nodeConfig,
       eventEmitter,
@@ -43,7 +45,21 @@ export class DictionaryService extends CoreDictionaryService {
     const chainAliases = await this.getEvmChainId();
     const chainAlias = chainAliases[project.network.chainId];
 
-    return new DictionaryService(project, nodeConfig, eventEmitter, chainAlias);
+    const url =
+      project.network.dictionary ??
+      (await CoreDictionaryService.resolveDictionary(
+        NETWORK_FAMILY.ethereum,
+        chainAlias,
+        nodeConfig.dictionaryRegistry,
+      ));
+
+    return new DictionaryService(
+      project,
+      nodeConfig,
+      eventEmitter,
+      chainAlias,
+      url,
+    );
   }
 
   protected validateChainMeta(metaData: MetaData): boolean {
