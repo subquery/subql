@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.3.1] - 2023-11-13
 ### Changed
-- Updates to match changes in `@subql/node-core` (#34)
+- Updates to match changes in 
   - Dictionary service to use dictionary registry
   - Use yargs from node core
 
@@ -45,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.1...HEAD
+[3.3.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.0...node-stellar/3.3.1
 [3.3.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.1.0...node-stellar/3.3.0
 [3.1.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.0.2...node-stellar/3.1.0
 [3.0.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.0.1...node-stellar/3.0.2
