@@ -25,7 +25,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" ]]
           then
             TAG_NAME=${GITHUB_REF#refs/tags/}
-            if [[ $TAG_NAME == "node/"* ]]
+            if [[ $TAG_NAME == "node-ethereum/"* ]]
             then
               echo "::set-output name=changes_found::true"
             else
