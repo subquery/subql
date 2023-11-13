@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support block skipping on unavailable blocks (#2151)
 
 ### Fixed
-- When using store get methods the `save` function would be missing
+- When using store get methods the `save` function would be missing (#2153)
 - Not indexing cleanly when all datasources have reached their end block
 
 ### Fixed

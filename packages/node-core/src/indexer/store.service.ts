@@ -101,7 +101,7 @@ export class StoreService {
 
   // Should be updated each block
   private _blockHeight?: number;
-  private operationStack?: StoreOperations;
+  private _operationStack?: StoreOperations;
 
   constructor(
     private sequelize: Sequelize,
@@ -125,7 +125,15 @@ export class StoreService {
     return this._metaDataRepo;
   }
 
-  private get blockHeight(): number {
+  private set operationStack(os: StoreOperations | undefined) {
+    this._operationStack = os;
+  }
+
+  get operationStack(): StoreOperations | undefined {
+    return this._operationStack;
+  }
+
+  get blockHeight(): number {
     assert(this._blockHeight, new Error('StoreService.setBlockHeight has not been called'));
     return this._blockHeight;
   }
@@ -749,14 +757,7 @@ group by
   }
 
   getStore(): Store {
-    return new Store(
-      this.config,
-      this.storeCache,
-      this.blockHeight,
-      this.isIndexed.bind(this),
-      this.isIndexedHistorical.bind(this),
-      this.operationStack
-    );
+    return new Store(this.config, this.storeCache, this);
   }
 }
 
