@@ -6686,6 +6686,7 @@ __metadata:
     "@subql/x-postgraphile-core": 4.13.0-0.2.0
     "@types/express": ^4.17.13
     "@types/express-pino-logger": ^4.0.3
+    "@types/graphql-depth-limit": ^1
     "@types/jest": ^27.4.0
     "@types/lodash": ^4.14.178
     "@types/rimraf": ^3.0.2
@@ -6695,6 +6696,7 @@ __metadata:
     graphile-build: ^4.12.2
     graphile-utils: ^4.12.2
     graphql: ^15.8.0
+    graphql-depth-limit: ^1.1.0
     graphql-query-complexity: ^0.11.0
     lodash: ^4.17.21
     nodemon: ^2.0.15
@@ -7353,6 +7355,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: c3070ccdc9ca0f40df747bced1c96c71a61992d6f7c767e8fd24bb6a3c2de26e8b84135ede000b7e79db530a23e7e88dcd9db60eee6395d0f4ce1dae91369dd4
+  languageName: node
+  linkType: hard
+
+"@types/graphql-depth-limit@npm:^1":
+  version: 1.1.6
+  resolution: "@types/graphql-depth-limit@npm:1.1.6"
+  dependencies:
+    graphql: ^14.5.3
+  checksum: f00b8935f8b72d6182350e058b8f4d7c408a33baceef9a62f97668465eafe4c1655d84fd991b06d2f65a7e8ca94a02f911d794d932c3524733c4847cb6e3adf7
   languageName: node
   linkType: hard
 
@@ -8987,6 +8998,13 @@ __metadata:
     es-abstract: ^1.19.2
     es-shim-unscopables: ^1.0.0
   checksum: 2a652b3e8dc0bebb6117e42a5ab5738af0203a14c27341d7bb2431467bdb4b348e2c5dc555dfcda8af0a5e4075c400b85311ded73861c87290a71a17c3e0a257
+  languageName: node
+  linkType: hard
+
+"arrify@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "arrify@npm:1.0.1"
+  checksum: 745075dd4a4624ff0225c331dacb99be501a515d39bcb7c84d24660314a6ec28e68131b137e6f7e16318170842ce97538cd298fc4cd6b2cc798e0b957f2747e7
   languageName: node
   linkType: hard
 
@@ -13622,6 +13640,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql-depth-limit@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "graphql-depth-limit@npm:1.1.0"
+  dependencies:
+    arrify: ^1.0.1
+  peerDependencies:
+    graphql: "*"
+  checksum: e43c8c0462612870797c0691e2c9488d6773eb794dda2b71c2c5659f721ec28be42e6c1f381e3b05a892c25d212d9babe08888a8ce6fd4f83ecc19a988675e56
+  languageName: node
+  linkType: hard
+
 "graphql-parse-resolve-info@npm:4.12.0":
   version: 4.12.0
   resolution: "graphql-parse-resolve-info@npm:4.12.0"
@@ -13711,6 +13740,15 @@ __metadata:
   version: 15.8.0
   resolution: "graphql@npm:15.8.0"
   checksum: 423325271db8858428641b9aca01699283d1fe5b40ef6d4ac622569ecca927019fce8196208b91dd1d8eb8114f00263fe661d241d0eb40c10e5bfd650f86ec5e
+  languageName: node
+  linkType: hard
+
+"graphql@npm:^14.5.3":
+  version: 14.7.0
+  resolution: "graphql@npm:14.7.0"
+  dependencies:
+    iterall: ^1.2.2
+  checksum: e5f4e60799421a573904f390e1ec0aa76360f751688dbbe62e9c35baa0d3727c8d59a659bfc524f126dffe3518da87fd8ecaa78c94fd5c0fe4e035c670745242
   languageName: node
   linkType: hard
 
