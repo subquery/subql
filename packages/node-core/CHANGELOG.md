@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.4.1] - 2023-11-13
 ### Fixed
-- Store not having access to blockheight and causing workers to fail on startup (#2161)
+- Store not having access to blockHeight and causing workers to fail on startup (#2161)
 
 ## [6.4.0] - 2023-11-10
 ### Added
@@ -487,7 +489,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.4.1...HEAD
+[6.4.1]: https://github.com/subquery/subql/compare/node-core/6.4.0...node-core/6.4.1
 [6.4.0]: https://github.com/subquery/subql/compare/node-core/6.3.0...node-core/6.4.0
 [6.3.0]: https://github.com/subquery/subql/compare/node-core/6.2.0...node-core/6.3.0
 [6.2.0]: https://github.com/subquery/subql/compare/node-core/6.1.1...node-core/6.2.0
