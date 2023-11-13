@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.3.3] - 2023-11-13
 ### Changed
-- Updates to match changes in `@subql/node-core` (#210)
+- Updates to match changes in 
   - Dictionary service to use dictionary registry
   - Use yargs from node core
-  
+
 ## [3.3.2] - 2023-11-08
 ### Fixed
 - Fixed docker build pipeline, release to re-publish docker image(#207)
@@ -324,7 +326,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.3...HEAD
+[3.3.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.2...node-ethereum/3.3.3
 [3.3.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.1...node-ethereum/3.3.2
 [3.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.0...node-ethereum/3.3.1
 [3.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.1.2...node-ethereum/3.3.0
