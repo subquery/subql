@@ -4273,7 +4273,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.3.0, @subql/common@npm:^3.3.0":
+"@subql/common@npm:3.3.1-0":
+  version: 3.3.1-0
+  resolution: "@subql/common@npm:3.3.1-0"
+  dependencies:
+    "@subql/types-core": 0.3.0
+    axios: ^1.6.0
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: 7ac2d170e587da4765ea9e54169b45f6733a13adfde0db96b852f604c115a5f739f9862de11a8c7cc52c23062648881d35e07692b390b79201472a63d4287add
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:^3.3.0":
   version: 3.3.0
   resolution: "@subql/common@npm:3.3.0"
   dependencies:
@@ -4291,19 +4309,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^6.4.0":
-  version: 6.4.0
-  resolution: "@subql/node-core@npm:6.4.0"
+"@subql/node-core@npm:^6.4.1":
+  version: 6.4.1
+  resolution: "@subql/node-core@npm:6.4.1"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
     "@subql/apollo-links": ^1.0.2
-    "@subql/common": 3.3.0
+    "@subql/common": 3.3.1-0
     "@subql/testing": 2.1.0
     "@subql/types": 3.3.0
-    "@subql/utils": 2.6.0
+    "@subql/utils": 2.6.1-0
     "@subql/x-sequelize": 6.32.0-0.0.2
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
@@ -4318,7 +4336,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 29208b471b1c41750905b5056fbaab16c88f5448ca4d525ccdc5156b513fe66debf9424519dbbf277ce47fe25e0cdde6186c12fdec233a8aedc1b269b56f8fde
+  checksum: 13977dfc737d6a25ed5d7c5050a25cd4e84881f66fdb2b14b6da2c1d25f0b27af27ff0c5e16db2997bfd593cd4ef771e6dd1c6413a7d04abc1034a9ee9592b80
   languageName: node
   linkType: hard
 
@@ -4339,7 +4357,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.3.0
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": ^6.4.0
+    "@subql/node-core": ^6.4.1
     "@subql/types-cosmos": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -4414,15 +4432,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@subql/utils@npm:2.6.0"
+"@subql/utils@npm:2.6.1-0":
+  version: 2.6.1-0
+  resolution: "@subql/utils@npm:2.6.1-0"
   dependencies:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
     "@subql/x-sequelize": 6.32.0-0.0.2
     ansi-styles: ^6.1.0
-    axios: ^0.27.1
     chalk: ^4.1.2
     detect-port: ^1.3.0
     flatted: ^3.2.5
@@ -4433,7 +4450,7 @@ __metadata:
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
     tar: ^6.1.11
-  checksum: 284b125beb62976bd6c5f49a82d8bd3da96f928bfbfde72f42773b62440c6b9ef1a68dfbae85cff7aee40f5f349ebb1a91f41a314cbfd2b98c905496543a1323
+  checksum: dea61bb79cd6ed9f239ab0e4e5c07e7aa24c2e212e233e06b539130663a4cc45852a96b4c7a35145cc068ade7dad54121f2f98a73e1f5a09aaff6231f106d829
   languageName: node
   linkType: hard
 
@@ -5777,13 +5794,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.27.1, axios@npm:^0.27.2":
+"axios@npm:^0.27.2":
   version: 0.27.2
   resolution: "axios@npm:0.27.2"
   dependencies:
     follow-redirects: ^1.14.9
     form-data: ^4.0.0
   checksum: 38cb7540465fe8c4102850c4368053c21683af85c5fdf0ea619f9628abbcb59415d1e22ebc8a6390d2bbc9b58a9806c874f139767389c862ec9b772235f06854
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.0":
+  version: 1.6.1
+  resolution: "axios@npm:1.6.1"
+  dependencies:
+    follow-redirects: ^1.15.0
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
   languageName: node
   linkType: hard
 
@@ -8216,6 +8244,16 @@ __metadata:
     debug:
       optional: true
   checksum: faa66059b66358ba65c234c2f2a37fcec029dc22775f35d9ad6abac56003268baf41e55f9ee645957b32c7d9f62baf1f0b906e68267276f54ec4b4c597c2b190
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.0":
+  version: 1.15.3
+  resolution: "follow-redirects@npm:1.15.3"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 584da22ec5420c837bd096559ebfb8fe69d82512d5585004e36a3b4a6ef6d5905780e0c74508c7b72f907d1fa2b7bd339e613859e9c304d0dc96af2027fd0231
   languageName: node
   linkType: hard
 
@@ -12461,6 +12499,13 @@ __metadata:
     forwarded: 0.2.0
     ipaddr.js: 1.9.1
   checksum: 29c6990ce9364648255454842f06f8c46fcd124d3e6d7c5066df44662de63cdc0bad032e9bf5a3d653ff72141cc7b6019873d685708ac8210c30458ad99f2b74
+  languageName: node
+  linkType: hard
+
+"proxy-from-env@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "proxy-from-env@npm:1.1.0"
+  checksum: ed7fcc2ba0a33404958e34d95d18638249a68c430e30fcb6c478497d72739ba64ce9810a24f53a7d921d0c065e5b78e3822759800698167256b04659366ca4d4
   languageName: node
   linkType: hard
 
