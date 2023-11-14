@@ -103,7 +103,7 @@ export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?
           );
           const errors = validateQueryDepth(maxDepth, validationContext);
           if (errors.length > 0) {
-            throw new GraphQLError(errors.map((error) => printError(error)).join('\n'));
+            throw new GraphQLError(errors.map((error) => error.message).join('\n'));
           }
         },
       };
