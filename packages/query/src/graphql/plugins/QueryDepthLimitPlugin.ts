@@ -16,10 +16,7 @@ import {
   ASTNode,
 } from 'graphql';
 
-export function validateQueryDepth(maxDepth: number | undefined, context: ValidationContext): void {
-  if (maxDepth === undefined) {
-    return;
-  }
+export function validateQueryDepth(maxDepth: number, context: ValidationContext): void {
   const {definitions} = context.getDocument();
   const fragments = getFragments(definitions);
   const operations = getQueriesAndMutations(definitions);
@@ -92,6 +89,9 @@ export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?
     requestDidStart: () => {
       return {
         didResolveOperation(context: {document: DocumentNode}) {
+          if (options?.maxDepth === undefined) {
+            return;
+          }
           const validationContext = new ValidationContext(
             options.schema,
             context.document,
