@@ -19,6 +19,7 @@ import {
   DocumentNode,
   separateOperations,
 } from 'graphql';
+import {printError} from 'graphql/error/GraphQLError';
 import {ASTValidationContext} from 'graphql/validation/ValidationContext';
 
 type IgnoreRule = string | RegExp | ((fieldName: string) => boolean);
@@ -32,10 +33,8 @@ function validateQueryDepth(maxDepth: number, context: ASTValidationContext): Gr
   const errors: GraphQLError[] = [];
 
   const {definitions} = context.getDocument();
-  console.log('def', definitions);
   const fragments = getFragments(definitions);
   const operations = getQueriesAndMutations(definitions);
-  console.log('op', operations);
 
   for (const operation of operations) {
     const depth = determineDepth(operation, fragments, 0, maxDepth, context, operation);
@@ -71,12 +70,12 @@ function determineDepth(
   context: ASTValidationContext,
   operationName: string
 ): number {
-  if (depthSoFar > maxDepth) {
-    return context.reportError(
-      new GraphQLError(`'${operationName}' exceeds maximum operation depth of ${maxDepth}`, [node])
-    );
-  }
-  console.log('node', node);
+  // if (depthSoFar > maxDepth) {
+  //   return depthSoFar
+  //   // return context.reportError(
+  //   //   new GraphQLError(`'${operationName}' exceeds maximum operation depth of ${maxDepth}`, [node])
+  //   // );
+  // }
 
   switch (node.kind) {
     case Kind.FIELD: {
@@ -109,7 +108,7 @@ export function queryDepthLimitPlugin(options: {
   maxDepth?: number;
   ignore?: IgnoreRule;
 }): ApolloServerPlugin {
-  const maxDepth = options.maxDepth ?? 5; // Default max depth to 5 if not provided
+  const maxDepth = options.maxDepth ?? 13; // Default max depth to 5 if not provided
   // const ignoreRules: IgnoreRule[] = options.ignore ? [].concat(options.ignore) : [];
 
   return {
@@ -118,19 +117,18 @@ export function queryDepthLimitPlugin(options: {
         didResolveOperation(context) {
           // console.log(context)
           const validationContext = new ASTValidationContext(context.document, (err) => {
-            throw new Error('graphql error');
+            throw err;
           });
           const errors = validateQueryDepth(maxDepth, validationContext);
-          console.log('plugin error', errors);
-          //
-          // console.log('errors', errors)
-          // if (errors.length > 0) {
-          //     throw new Error(errors.map((error) => error.message).join('\n'));
-          // }
+          if (errors.length > 0) {
+            console.log('e', errors);
+            throw new GraphQLError(errors.map((error) => printError(error)).join('\n'));
+          }
         },
-        willSendResponse({response}) {
-          console.log('resp', response);
-        },
+        // can alter to a 500, bad user input
+        // willSendResponse({response}) {
+        //   console.log('resp', response);
+        // },
       };
     },
   } as unknown as ApolloServerPlugin;
