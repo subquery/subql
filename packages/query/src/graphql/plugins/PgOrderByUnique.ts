@@ -131,7 +131,6 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
           pgQuery: (queryBuilder) => {
             if (orderBy !== null) {
               orderBy.forEach((item) => {
-                console.log('item: ', item);
                 const {specs, unique} = item;
                 const orders = Array.isArray(specs[0]) || specs.length === 0 ? specs : [specs];
                 orders.forEach(([col, ascending, specNullsFirst]) => {
