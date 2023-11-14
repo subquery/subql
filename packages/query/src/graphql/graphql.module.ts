@@ -26,6 +26,7 @@ import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
 import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
+import {queryDepthLimitPlugin} from './plugins/QueryDepthLimitPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
@@ -161,6 +162,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
           })
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
+      queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
     ];
 
     if (argv['query-explain']) {
