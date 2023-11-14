@@ -28,7 +28,7 @@ export function validateQueryDepth(maxDepth: number | undefined, context: Valida
     if (operation.name && operation.name.value === 'IntrospectionQuery') {
       continue;
     }
-    determineDepth(operation, fragments, 0, maxDepth);
+    checkDepth(operation, fragments, 0, maxDepth);
   }
 }
 
@@ -50,37 +50,41 @@ function getQueriesAndMutations(definitions: readonly DefinitionNode[]): Operati
   return definitions.filter(isOperationDefinitionNode);
 }
 
-function determineDepth(
+export function checkDepth(
   node: ASTNode,
   fragments: Record<string, FragmentDefinitionNode>,
   depthSoFar: number,
   maxDepth: number
-): number {
+): void {
   if (depthSoFar > maxDepth) {
     throw new GraphQLError(`Query is too deep. Maximum depth allowed is ${maxDepth}.`, [node]);
   }
   switch (node.kind) {
     case Kind.FIELD: {
       if (!node.selectionSet) {
-        return depthSoFar;
+        return;
       }
 
-      return node.selectionSet.selections.reduce((max: number, selection: SelectionNode) => {
-        return Math.max(max, determineDepth(selection, fragments, depthSoFar + 1, maxDepth));
-      }, depthSoFar);
+      node.selectionSet.selections.forEach((selection: SelectionNode) => {
+        checkDepth(selection, fragments, depthSoFar + 1, maxDepth);
+      });
+
+      return;
     }
     case Kind.FRAGMENT_SPREAD: {
-      return determineDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth);
+      console.log('frag', fragments);
+      return checkDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth);
     }
     case Kind.INLINE_FRAGMENT:
     case Kind.FRAGMENT_DEFINITION:
     case Kind.OPERATION_DEFINITION: {
-      return node.selectionSet.selections.reduce((max: number, selection: SelectionNode) => {
-        return Math.max(max, determineDepth(selection, fragments, depthSoFar, maxDepth));
-      }, depthSoFar);
+      node.selectionSet.selections.forEach((selection: SelectionNode) => {
+        checkDepth(selection, fragments, depthSoFar, maxDepth);
+      });
+      return;
     }
     default:
-      return depthSoFar;
+      break;
   }
 }
 
