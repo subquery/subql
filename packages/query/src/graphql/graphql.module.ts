@@ -162,7 +162,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
           })
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
-      queryDepthLimitPlugin({schema}),
+      queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
     ];
 
     if (argv['query-explain']) {
