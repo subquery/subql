@@ -1,35 +1,22 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import type {
-  ApolloServerPlugin,
-  GraphQLRequestContext,
-  GraphQLRequestContextDidResolveOperation,
-  GraphQLRequestListener,
-} from 'apollo-server-plugin-base';
+import type {ApolloServerPlugin} from 'apollo-server-plugin-base';
 import {
   GraphQLSchema,
-  DefinitionNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
   Kind,
-  FieldNode,
-  ValidationContext,
   GraphQLError,
   DocumentNode,
-  separateOperations,
+  DefinitionNode,
+  printError,
+  ValidationContext,
+  TypeInfo,
+  SelectionNode,
+  FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from 'graphql';
-import {printError} from 'graphql/error/GraphQLError';
-import {ASTValidationContext} from 'graphql/validation/ValidationContext';
 
-type IgnoreRule = string | RegExp | ((fieldName: string) => boolean);
-
-interface DepthLimitOptions {
-  ignore?: IgnoreRule | IgnoreRule[];
-}
-
-// Helper functions (potentially converted to TypeScript and cleaned up)
-function validateQueryDepth(maxDepth: number, context: ASTValidationContext): GraphQLError[] {
+function validateQueryDepth(maxDepth: number, context: ValidationContext): GraphQLError[] {
   const errors: GraphQLError[] = [];
 
   const {definitions} = context.getDocument();
@@ -37,7 +24,10 @@ function validateQueryDepth(maxDepth: number, context: ASTValidationContext): Gr
   const operations = getQueriesAndMutations(definitions);
 
   for (const operation of operations) {
-    const depth = determineDepth(operation, fragments, 0, maxDepth, context, operation);
+    if (operation.name && operation.name.value === 'IntrospectionQuery') {
+      continue; // Skip the rest of the loop for this iteration
+    }
+    const depth = determineDepth(operation, fragments, 0, maxDepth, context);
     if (depth > maxDepth) {
       errors.push(new GraphQLError(`Query is too deep: ${depth}. Maximum depth allowed is ${maxDepth}.`, [operation]));
     }
@@ -46,56 +36,49 @@ function validateQueryDepth(maxDepth: number, context: ASTValidationContext): Gr
   return errors;
 }
 
-// Helper function to get fragments
-function getFragments(definitions: readonly any[]): Record<string, any> {
-  return definitions
-    .filter((def): def is any => def.kind === Kind.FRAGMENT_DEFINITION)
-    .reduce((frags, def) => {
-      frags[def.name.value] = def;
-      return frags;
-    }, {});
+function isOperationDefinitionNode(node: DefinitionNode): node is OperationDefinitionNode {
+  return node.kind === Kind.OPERATION_DEFINITION;
+}
+function isFragmentDefinitionNode(node: DefinitionNode): node is FragmentDefinitionNode {
+  return node.kind === Kind.FRAGMENT_DEFINITION;
 }
 
-// Helper function to get operations (query/mutation/subscription)
-function getQueriesAndMutations(definitions: readonly any[]): any[] {
-  return definitions.filter((def): def is any => def.kind === Kind.OPERATION_DEFINITION);
+function getFragments(definitions: readonly DefinitionNode[]): Record<string, FragmentDefinitionNode> {
+  return definitions.filter(isFragmentDefinitionNode).reduce((frags, def) => {
+    frags[def.name.value] = def;
+    return frags;
+  }, {});
 }
 
-// Recursive function to determine the depth of each operation
+function getQueriesAndMutations(definitions: readonly DefinitionNode[]): OperationDefinitionNode[] {
+  return definitions.filter(isOperationDefinitionNode);
+}
+
 function determineDepth(
   node: any,
   fragments: Record<string, any>,
   depthSoFar: number,
   maxDepth: number,
-  context: ASTValidationContext,
-  operationName: string
+  context: ValidationContext
 ): number {
-  // if (depthSoFar > maxDepth) {
-  //   return depthSoFar
-  //   // return context.reportError(
-  //   //   new GraphQLError(`'${operationName}' exceeds maximum operation depth of ${maxDepth}`, [node])
-  //   // );
-  // }
-
   switch (node.kind) {
     case Kind.FIELD: {
       if (!node.selectionSet) {
         return depthSoFar;
       }
 
-      return node.selectionSet.selections.reduce((max, selection) => {
-        return Math.max(max, determineDepth(selection, fragments, depthSoFar + 1, maxDepth, context, operationName));
+      return node.selectionSet.selections.reduce((max: number, selection: SelectionNode) => {
+        return Math.max(max, determineDepth(selection, fragments, depthSoFar + 1, maxDepth, context));
       }, depthSoFar);
     }
     case Kind.FRAGMENT_SPREAD: {
-      return determineDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth, context, operationName);
+      return determineDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth, context);
     }
     case Kind.INLINE_FRAGMENT:
     case Kind.FRAGMENT_DEFINITION:
     case Kind.OPERATION_DEFINITION: {
-      console.log('operation def');
-      return node.selectionSet.selections.reduce((max, selection) => {
-        return Math.max(max, determineDepth(selection, fragments, depthSoFar, maxDepth, context, operationName));
+      return node.selectionSet.selections.reduce((max: number, selection: SelectionNode) => {
+        return Math.max(max, determineDepth(selection, fragments, depthSoFar, maxDepth, context));
       }, depthSoFar);
     }
     default:
@@ -103,32 +86,26 @@ function determineDepth(
   }
 }
 
-export function queryDepthLimitPlugin(options: {
-  schema: GraphQLSchema;
-  maxDepth?: number;
-  ignore?: IgnoreRule;
-}): ApolloServerPlugin {
-  const maxDepth = options.maxDepth ?? 13; // Default max depth to 5 if not provided
-  // const ignoreRules: IgnoreRule[] = options.ignore ? [].concat(options.ignore) : [];
+export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?: number}): ApolloServerPlugin {
+  const maxDepth = options.maxDepth ?? 5; // Default max depth to 5 if not provided
 
   return {
     requestDidStart: () => {
       return {
-        didResolveOperation(context) {
-          // console.log(context)
-          const validationContext = new ASTValidationContext(context.document, (err) => {
-            throw err;
-          });
+        didResolveOperation(context: {document: DocumentNode}) {
+          const validationContext = new ValidationContext(
+            options.schema,
+            context.document,
+            new TypeInfo(options.schema),
+            (err) => {
+              throw err;
+            }
+          );
           const errors = validateQueryDepth(maxDepth, validationContext);
           if (errors.length > 0) {
-            console.log('e', errors);
             throw new GraphQLError(errors.map((error) => printError(error)).join('\n'));
           }
         },
-        // can alter to a 500, bad user input
-        // willSendResponse({response}) {
-        //   console.log('resp', response);
-        // },
       };
     },
   } as unknown as ApolloServerPlugin;
