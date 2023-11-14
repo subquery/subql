@@ -8,7 +8,6 @@ import {
   GraphQLError,
   DocumentNode,
   DefinitionNode,
-  printError,
   ValidationContext,
   TypeInfo,
   SelectionNode,
@@ -17,23 +16,20 @@ import {
   ASTNode,
 } from 'graphql';
 
-export function validateQueryDepth(maxDepth: number, context: ValidationContext): GraphQLError[] {
-  const errors: GraphQLError[] = [];
-
+export function validateQueryDepth(maxDepth: number | undefined, context: ValidationContext): void {
+  if (maxDepth === undefined) {
+    return;
+  }
   const {definitions} = context.getDocument();
   const fragments = getFragments(definitions);
   const operations = getQueriesAndMutations(definitions);
 
   for (const operation of operations) {
     if (operation.name && operation.name.value === 'IntrospectionQuery') {
-      continue; // Skip the rest of the loop for this iteration
+      continue;
     }
-    const depth = determineDepth(operation, fragments, 0, maxDepth, context);
-    if (depth > maxDepth) {
-      errors.push(new GraphQLError(`Query is too deep: ${depth}. Maximum depth allowed is ${maxDepth}.`, [operation]));
-    }
+    determineDepth(operation, fragments, 0, maxDepth);
   }
-  return errors;
 }
 
 function isOperationDefinitionNode(node: DefinitionNode): node is OperationDefinitionNode {
@@ -58,9 +54,11 @@ function determineDepth(
   node: ASTNode,
   fragments: Record<string, FragmentDefinitionNode>,
   depthSoFar: number,
-  maxDepth: number,
-  context: ValidationContext
+  maxDepth: number
 ): number {
+  if (depthSoFar > maxDepth) {
+    throw new GraphQLError(`Query is too deep. Maximum depth allowed is ${maxDepth}.`, [node]);
+  }
   switch (node.kind) {
     case Kind.FIELD: {
       if (!node.selectionSet) {
@@ -68,17 +66,17 @@ function determineDepth(
       }
 
       return node.selectionSet.selections.reduce((max: number, selection: SelectionNode) => {
-        return Math.max(max, determineDepth(selection, fragments, depthSoFar + 1, maxDepth, context));
+        return Math.max(max, determineDepth(selection, fragments, depthSoFar + 1, maxDepth));
       }, depthSoFar);
     }
     case Kind.FRAGMENT_SPREAD: {
-      return determineDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth, context);
+      return determineDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth);
     }
     case Kind.INLINE_FRAGMENT:
     case Kind.FRAGMENT_DEFINITION:
     case Kind.OPERATION_DEFINITION: {
       return node.selectionSet.selections.reduce((max: number, selection: SelectionNode) => {
-        return Math.max(max, determineDepth(selection, fragments, depthSoFar, maxDepth, context));
+        return Math.max(max, determineDepth(selection, fragments, depthSoFar, maxDepth));
       }, depthSoFar);
     }
     default:
@@ -87,8 +85,6 @@ function determineDepth(
 }
 
 export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?: number}): ApolloServerPlugin {
-  const maxDepth = options.maxDepth ?? 5; // Default max depth to 5 if not provided
-
   return {
     requestDidStart: () => {
       return {
@@ -101,10 +97,7 @@ export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?
               throw err;
             }
           );
-          const errors = validateQueryDepth(maxDepth, validationContext);
-          if (errors.length > 0) {
-            throw new GraphQLError(errors.map((error) => error.message).join('\n'));
-          }
+          validateQueryDepth(options.maxDepth, validationContext);
         },
       };
     },
