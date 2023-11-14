@@ -72,7 +72,6 @@ export function checkDepth(
       return;
     }
     case Kind.FRAGMENT_SPREAD: {
-      console.log('frag', fragments);
       return checkDepth(fragments[node.name.value], fragments, depthSoFar, maxDepth);
     }
     case Kind.INLINE_FRAGMENT:
