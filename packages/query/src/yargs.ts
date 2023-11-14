@@ -105,6 +105,12 @@ export function getYargsOption() {
       },
       'query-limit': {
         demandOption: false,
+        describe: 'Set limit on number of query results per entity',
+        type: 'number',
+        default: 100,
+      },
+      'query-depth-limit': {
+        demandOption: false,
         describe: 'Set limit on query depth',
         type: 'number',
         default: 100,

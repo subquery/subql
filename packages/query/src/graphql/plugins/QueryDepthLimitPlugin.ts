@@ -14,9 +14,10 @@ import {
   SelectionNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
+  ASTNode,
 } from 'graphql';
 
-function validateQueryDepth(maxDepth: number, context: ValidationContext): GraphQLError[] {
+export function validateQueryDepth(maxDepth: number, context: ValidationContext): GraphQLError[] {
   const errors: GraphQLError[] = [];
 
   const {definitions} = context.getDocument();
@@ -32,7 +33,6 @@ function validateQueryDepth(maxDepth: number, context: ValidationContext): Graph
       errors.push(new GraphQLError(`Query is too deep: ${depth}. Maximum depth allowed is ${maxDepth}.`, [operation]));
     }
   }
-
   return errors;
 }
 
@@ -55,8 +55,8 @@ function getQueriesAndMutations(definitions: readonly DefinitionNode[]): Operati
 }
 
 function determineDepth(
-  node: any,
-  fragments: Record<string, any>,
+  node: ASTNode,
+  fragments: Record<string, FragmentDefinitionNode>,
   depthSoFar: number,
   maxDepth: number,
   context: ValidationContext
