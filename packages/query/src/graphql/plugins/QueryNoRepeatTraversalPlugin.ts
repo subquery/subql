@@ -12,10 +12,14 @@ import {
   SelectionNode,
   FragmentDefinitionNode,
   ASTNode,
+  isInterfaceType,
+  isUnionType,
+  isObjectType,
+  isEnumType,
 } from 'graphql';
 import {getFragments, getQueriesAndMutations} from '../../utils/utils';
 
-export function validateQueryDepth(maxDepth: number, context: ValidationContext): void {
+export function validateQueryDepth(ignoredFields: string[], context: ValidationContext): void {
   const {definitions} = context.getDocument();
   const fragments = getFragments(definitions);
   const operations = getQueriesAndMutations(definitions);
@@ -24,28 +28,38 @@ export function validateQueryDepth(maxDepth: number, context: ValidationContext)
     if (operation.name && operation.name.value === 'IntrospectionQuery') {
       continue;
     }
-    checkDepth(operation, fragments, 0, maxDepth);
+    checkRepeatTraversal(operation, fragments, ignoredFields);
   }
 }
 
-export function checkDepth(
+export function checkRepeatTraversal(
   node: ASTNode,
   fragments: Record<string, FragmentDefinitionNode>,
-  depthSoFar: number,
-  maxDepth: number
+  ignoredFields: string[],
+  path: Set<string> = new Set()
 ): void {
-  if (depthSoFar > maxDepth) {
-    throw new GraphQLError(`Query is too deep. Maximum depth allowed is ${maxDepth}.`, [node]);
-  }
+  let fieldName: string | null = null;
 
   switch (node.kind) {
     case Kind.FIELD: {
+      fieldName = node.name.value;
+      if (ignoredFields.includes(fieldName)) return;
+
+      if (path.has(fieldName)) {
+        throw new GraphQLError(`Repeated traversal detected on '${fieldName}'.`, [node]);
+      }
+
+      const newPath = new Set(path);
+      if (fieldName !== 'nodes') {
+        newPath.add(fieldName); // this should only be limited to entities ?
+      }
+
       if (!node.selectionSet) {
         return;
       }
 
       node.selectionSet.selections.forEach((selection: SelectionNode) => {
-        checkDepth(selection, fragments, depthSoFar + 1, maxDepth);
+        checkRepeatTraversal(selection, fragments, ignoredFields, newPath);
       });
 
       return;
@@ -57,13 +71,13 @@ export function checkDepth(
       if (!fragment) {
         throw new GraphQLError(`Fragment "${fragmentName}" not found.`, [node]);
       }
-      return checkDepth(fragment, fragments, depthSoFar, maxDepth);
+      return checkRepeatTraversal(fragment, fragments, ignoredFields, path);
     }
     case Kind.INLINE_FRAGMENT:
     case Kind.FRAGMENT_DEFINITION:
     case Kind.OPERATION_DEFINITION: {
       node.selectionSet.selections.forEach((selection: SelectionNode) => {
-        checkDepth(selection, fragments, depthSoFar, maxDepth);
+        checkRepeatTraversal(selection, fragments, ignoredFields, new Set(path));
       });
       return;
     }
@@ -72,14 +86,23 @@ export function checkDepth(
   }
 }
 
-export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?: number}): ApolloServerPlugin {
+export function queryNoRepeatTraversalPlugin(options: {
+  schema: GraphQLSchema;
+  ignoredFields?: string[];
+}): ApolloServerPlugin {
   return {
     requestDidStart: () => {
       return {
-        didResolveOperation(context: {document: DocumentNode}) {
-          if (options?.maxDepth === undefined) {
-            return;
-          }
+        didResolveOperation: function (context: {document: DocumentNode}) {
+          // const typeMap = options.schema.getTypeMap();
+          //
+          // // Filter and process types as needed
+          // Object.values(typeMap).forEach(type => {
+          //     if (isObjectType(type) || isInterfaceType(type) || isUnionType(type) || isEnumType(type)) {
+          //         console.log(`Type name: ${type.name}`);
+          //     }
+          // });
+
           const validationContext = new ValidationContext(
             options.schema,
             context.document,
@@ -88,7 +111,7 @@ export function queryDepthLimitPlugin(options: {schema: GraphQLSchema; maxDepth?
               throw err;
             }
           );
-          validateQueryDepth(options.maxDepth, validationContext);
+          validateQueryDepth(options.ignoredFields, validationContext);
         },
       };
     },
