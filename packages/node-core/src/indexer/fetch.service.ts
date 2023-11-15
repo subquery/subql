@@ -230,7 +230,7 @@ export abstract class BaseFetchService<
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)];
+    const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)].flat();
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
