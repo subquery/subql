@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "",
   "author": "SubQuery Pte Ltd",
   "license": "GPL-3.0",
@@ -30,7 +30,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^3.3.0",
     "@subql/common-cosmos": "workspace:*",
-    "@subql/node-core": "^6.4.1",
+    "@subql/node-core": "^6.4.2",
     "@subql/types-cosmos": "workspace:*",
     "cosmjs-types": "^0.7.0",
     "cron-converter": "^1.0.2",
