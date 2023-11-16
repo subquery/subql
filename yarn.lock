@@ -3163,9 +3163,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@subql/apollo-links@npm:1.0.2"
+"@subql/apollo-links@npm:^1.2.2":
+  version: 1.100.0
+  resolution: "@subql/apollo-links@npm:1.100.0"
   dependencies:
     "@metamask/eth-sig-util": 5.1.0
     apollo-link-error: ^1.1.13
@@ -3173,12 +3173,13 @@ __metadata:
     buffer: ^6.0.3
     cross-fetch: ^4.0.0
     ethers: ^5.6.8
+    js-base64: ^3.7.5
     jwt-decode: ^3.1.2
     lru-cache: ^10.0.1
   peerDependencies:
     "@apollo/client": "*"
     graphql: "*"
-  checksum: b7e3511d78d136bdda4e1ae1722c22522a10dacbe7b0908fe7065233cd1ed2e61a6e3a599b9a37b356bedf48833212eb037593324bc409def6e562c094605376
+  checksum: c9347ee402e59227ff932748891702963a31c062c9aacf8dab659a9576a65745a604e0edd51101303d391c7ef69d1c743de375dca9074de3b542c08fb9690b94
   languageName: node
   linkType: hard
 
@@ -3242,15 +3243,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^6.4.1":
-  version: 6.4.1
-  resolution: "@subql/node-core@npm:6.4.1"
+"@subql/node-core@npm:^6.4.2":
+  version: 6.4.2
+  resolution: "@subql/node-core@npm:6.4.2"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/apollo-links": ^1.0.2
+    "@subql/apollo-links": ^1.2.2
     "@subql/common": 3.3.1-0
     "@subql/testing": 2.1.0
     "@subql/types": 3.3.0
@@ -3269,7 +3270,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 13977dfc737d6a25ed5d7c5050a25cd4e84881f66fdb2b14b6da2c1d25f0b27af27ff0c5e16db2997bfd593cd4ef771e6dd1c6413a7d04abc1034a9ee9592b80
+  checksum: 93f7e2c1e1f855645496d92d4a5ad5970eee092dee7f2274687285b15bae87139ffdd61e979a33fe7470cd8abc4b660786e2148cfa003ad2566c9f5a4c1676a2
   languageName: node
   linkType: hard
 
@@ -3287,7 +3288,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.3.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^6.4.1
+    "@subql/node-core": ^6.4.2
     "@subql/testing": ^2.0.2
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -9122,6 +9123,13 @@ __metadata:
   bin:
     jest: bin/jest.js
   checksum: a8ff2eb0f421623412236e23cbe67c638127fffde466cba9606bc0c0553b4c1e5cb116d7e0ef990b5d1712851652c8ee461373b578df50857fe635b94ff455d5
+  languageName: node
+  linkType: hard
+
+"js-base64@npm:^3.7.5":
+  version: 3.7.5
+  resolution: "js-base64@npm:3.7.5"
+  checksum: 67a78c8b1c47b73f1c6fba1957e9fe6fd9dc78ac93ac46cc2e43472dcb9cf150d126fb0e593192e88e0497354fa634d17d255add7cc6ee3c7b4d29870faa8e18
   languageName: node
   linkType: hard
 

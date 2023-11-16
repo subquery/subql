@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.4] - 2023-11-16
+### Fixed
+- Sync with `node-core` 6.4.2, Fix incorrect enqueuedBlocks, dictionaries timing out by updating `@subql/apollo-links` (#212)
+
 ## [3.3.3] - 2023-11-13
 ### Changed
 - Updates to match changes in 
@@ -326,7 +330,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.4...HEAD
+[3.3.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.3...node-ethereum/3.3.4
 [3.3.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.2...node-ethereum/3.3.3
 [3.3.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.1...node-ethereum/3.3.2
 [3.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.0...node-ethereum/3.3.1
