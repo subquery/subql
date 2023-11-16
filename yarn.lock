@@ -6292,9 +6292,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@subql/apollo-links@npm:1.0.2"
+"@subql/apollo-links@npm:^1.2.2":
+  version: 1.100.0
+  resolution: "@subql/apollo-links@npm:1.100.0"
   dependencies:
     "@metamask/eth-sig-util": 5.1.0
     apollo-link-error: ^1.1.13
@@ -6302,12 +6302,13 @@ __metadata:
     buffer: ^6.0.3
     cross-fetch: ^4.0.0
     ethers: ^5.6.8
+    js-base64: ^3.7.5
     jwt-decode: ^3.1.2
     lru-cache: ^10.0.1
   peerDependencies:
     "@apollo/client": "*"
     graphql: "*"
-  checksum: b7e3511d78d136bdda4e1ae1722c22522a10dacbe7b0908fe7065233cd1ed2e61a6e3a599b9a37b356bedf48833212eb037593324bc409def6e562c094605376
+  checksum: c9347ee402e59227ff932748891702963a31c062c9aacf8dab659a9576a65745a604e0edd51101303d391c7ef69d1c743de375dca9074de3b542c08fb9690b94
   languageName: node
   linkType: hard
 
@@ -6601,7 +6602,7 @@ __metadata:
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/apollo-links": ^1.0.2
+    "@subql/apollo-links": ^1.2.2
     "@subql/common": "workspace:*"
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
@@ -15799,6 +15800,13 @@ __metadata:
   version: 0.16.0
   resolution: "jmespath@npm:0.16.0"
   checksum: 2d602493a1e4addfd1350ac8c9d54b1b03ed09e305fd863bab84a4ee1f52868cf939dd1a08c5cdea29ce9ba8f86875ebb458b6ed45dab3e1c3f2694503fb2fd9
+  languageName: node
+  linkType: hard
+
+"js-base64@npm:^3.7.5":
+  version: 3.7.5
+  resolution: "js-base64@npm:3.7.5"
+  checksum: 67a78c8b1c47b73f1c6fba1957e9fe6fd9dc78ac93ac46cc2e43472dcb9cf150d126fb0e593192e88e0497354fa634d17d255add7cc6ee3c7b4d29870faa8e18
   languageName: node
   linkType: hard
 
