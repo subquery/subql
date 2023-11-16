@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Dictionaries timing out by updating `@subql/apollo-links` (#2169)
+- Incorrect block queue with multiple ds (#2167)
 
 ## [6.4.1] - 2023-11-13
 ### Fixed
