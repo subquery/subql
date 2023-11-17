@@ -22,4 +22,13 @@ export const yargsOptions = yargsBuilder({
     const { reindexInit } = require('./subcommands/reindex.init');
     return reindexInit(targetHeight);
   },
+  runOptions: {
+    'block-confirmations': {
+      demandOption: false,
+      default: 20,
+      describe:
+        'The number of blocks behind the head to be considered finalized, this has no effect with Ethereum',
+      type: 'number',
+    },
+  },
 });
