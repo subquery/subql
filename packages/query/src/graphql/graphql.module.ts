@@ -12,7 +12,8 @@ import {
   ApolloServerPluginLandingPageDisabled,
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from 'apollo-server-core';
-import {ApolloServer} from 'apollo-server-express';
+import {ApolloServer, UserInputError} from 'apollo-server-express';
+import {NextFunction, Request, Response} from 'express';
 import ExpressPinoLogger from 'express-pino-logger';
 import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {set} from 'lodash';
@@ -184,7 +185,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
 
     app.use(ExpressPinoLogger(PinoConfig));
-
+    if (argv['query-batch-limit'] !== undefined) {
+      app.use(limitBatchedQueries);
+    }
     await server.start();
     server.applyMiddleware({
       app,
@@ -193,4 +196,20 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     });
     return server;
   }
+}
+function limitBatchedQueries(req: Request, res: Response, next: NextFunction): void {
+  const errors = [];
+  if (req.method === 'POST') {
+    try {
+      const queries = req.body;
+      if (Array.isArray(queries) && queries.length > argv['query-batch-limit']) {
+        errors.push(new UserInputError('Batch query limit exceeded'));
+        throw errors;
+      }
+    } catch (error) {
+      res.status(500).json({errors: [...error]});
+      return next(error);
+    }
+  }
+  next();
 }
