@@ -116,7 +116,7 @@ export function getYargsOption() {
       },
       'query-alias-limit': {
         demandOption: false,
-        describe: 'Set limit on query alias limi',
+        describe: 'Set limit on query alias limit',
         type: 'number',
       },
       'query-complexity': {
