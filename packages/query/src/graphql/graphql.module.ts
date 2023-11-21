@@ -26,6 +26,7 @@ import {getLogger, PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
+import {queryAliasLimit} from './plugins/QueryAliasLimitPlugin';
 import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {queryDepthLimitPlugin} from './plugins/QueryDepthLimitPlugin';
 import {ProjectService} from './project.service';
@@ -164,6 +165,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
       queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
+      queryAliasLimit({schema, limit: argv['query-alias-limit']}),
     ];
 
     if (argv['query-explain']) {

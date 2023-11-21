@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Allow restrictions on alias queries, with flag `--query-alias-limit` (#2174)
 - Allow restrictions on array based queries, with flag `--query-batch-limit` (#2172)
 
 ## [2.7.0] - 2023-11-15

@@ -118,7 +118,11 @@ export function getYargsOption() {
         demandOption: false,
         describe: 'Set limit on query depth',
         type: 'number',
-        default: 100,
+      },
+      'query-alias-limit': {
+        demandOption: false,
+        describe: 'Set limit on query alias limit',
+        type: 'number',
       },
       'query-complexity': {
         demandOption: false,
