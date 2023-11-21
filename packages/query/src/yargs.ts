@@ -109,6 +109,11 @@ export function getYargsOption() {
         type: 'number',
         default: 100,
       },
+      'query-batch-limit': {
+        demandOption: false,
+        describe: 'Set limit on number on the maximum batch queries',
+        type: 'number',
+      },
       'query-depth-limit': {
         demandOption: false,
         describe: 'Set limit on query depth',
