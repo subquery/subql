@@ -58,28 +58,6 @@ const mockPoiRepo = (): PoiRepo => {
   } as any as PoiRepo;
 };
 
-// const mockPoiModel = (model: PoiRepo): PlainPoiModel => {
-
-//   return {
-//     model,
-//     getFirst: () => {
-//       throw new Error('Not implemented');
-//     },
-//     getPoiById: (id: number) => {
-//       throw new Error('Not implemented');
-//     },
-//     getPoiBlocksByRange: (startHeight: number) => {
-//       throw new Error('Not implemented');
-//     },
-//     bulkUpsert: (proofs: ProofOfIndex[], tx: Transaction) => {
-//       throw new Error('Not implemented');
-//     },
-//     getPoiBlocksBefore: (startHeight: number, options?: { limit: number }) => {
-//       throw new Error('Not implemented');
-//     },
-//   }
-// }
-
 jest.mock('@subql/x-sequelize', () => {
   let data: Record<string, any> = {};
 
