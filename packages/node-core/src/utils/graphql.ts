@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {
   getTypeByScalarName,
   GraphQLModelsType,
@@ -13,6 +14,7 @@ import {
   isNull,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
+import {GraphQLSchema, ObjectTypeDefinitionNode, parse, visit} from 'graphql';
 
 export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums: Map<string, string>): ModelAttributes {
   const fields = modelType.fields;
@@ -79,4 +81,54 @@ export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums:
     acc[field.name] = columnOption;
     return acc;
   }, {} as ModelAttributes<any>);
+}
+
+// should log out the differences in accordance
+export function compareSchema(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): any {
+  const oldSchemaAST = oldSchema;
+  const newSchemaAST = newSchema;
+
+  const changes = {
+    addedTypes: [] as any[],
+    removedTypes: [] as any[],
+    modifiedTypes: {} as any,
+    // ... more specific changes if needed
+  };
+
+  // visit(newSchemaAST, {
+  //   ObjectTypeDefinition(node) {
+  //     const typeName = node.name.value;
+  //     const oldTypeNode = oldSchemaAST.definitions.find(
+  //         (def: any) => def.kind === 'ObjectTypeDefinition' && def.name.value === typeName
+  //     ) as ObjectTypeDefinitionNode
+  //
+  //     if (oldTypeNode === undefined) {
+  //       changes.addedTypes.push(typeName);
+  //     } else {
+  //       const newFields = node.fields?.map(field => field.name.value) || [];
+  //       const oldFields = oldTypeNode.fields?.map(field => field.name.value) || [];
+  //
+  //       const addedFields = newFields.filter(field => !oldFields.includes(field));
+  //       const removedFields = oldFields.filter(field => !newFields.includes(field));
+  //
+  //       if (addedFields.length || removedFields.length) {
+  //         changes.modifiedTypes[typeName] = { addedFields, removedFields };
+  //       }
+  //     }
+  //   }
+  // });
+  //
+  // // Detecting types removed in the new schema
+  // visit(oldSchemaAST, {
+  //   ObjectTypeDefinition(node) {
+  //     const typeName = node.name.value;
+  //     const typeExistsInNew = newSchemaAST.definitions.some(
+  //         (def: any) => def.kind === 'ObjectTypeDefinition' && def.name.value === typeName
+  //     );
+  //
+  //     if (!typeExistsInNew) {
+  //       changes.removedTypes.push(typeName);
+  //     }
+  //   }
+  // });
 }

@@ -3,10 +3,11 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
+import {parse, visit, ObjectTypeDefinitionNode} from 'graphql';
 import {findLast, last} from 'lodash';
 import {CacheMetadataModel, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
-import {getStartHeight, mainThreadOnly} from '../utils';
+import {compareSchema, getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
@@ -231,9 +232,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
           `Parent project ${currentProject.parent.reference} has a block height that is greater than the current project`
         );
       }
+      const oldSchema = currentProject.schema;
+      const newSchema = nextProject.schema;
+
+      compareSchema(oldSchema, newSchema);
       currentProject = nextProject;
     }
-
     if (!projects.size) {
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
@@ -251,6 +255,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     assertEqual(startProject.runner?.node.name, parentProject.runner?.node.name, 'subquery node');
 
     // TODO validate schema
+    // validate the changes are compatible
   }
 
   // Returns a height to rewind to if rewind is needed. Otherwise throws an error
