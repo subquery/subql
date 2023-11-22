@@ -9,7 +9,7 @@ import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {BlockUnavailableError, PoiSyncService} from '../../indexer';
+import {PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
@@ -61,7 +61,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    poiService: PoiService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     dynamicDsService: DynamicDsService<DS>,
@@ -77,7 +76,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       smartBatchService,
       storeService,
       storeCacheService,
-      poiService,
       poiSyncService,
       dynamicDsService
     );

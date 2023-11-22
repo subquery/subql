@@ -4,6 +4,7 @@
 import {delay} from '@subql/common';
 import {Op, Sequelize} from '@subql/x-sequelize';
 import {PoiRepo, ProofOfIndex} from '../entities';
+import {PlainPoiModel} from '../poi';
 import {CachePoiModel} from './cachePoi';
 
 const mockPoiRepo = (): PoiRepo => {
@@ -15,13 +16,20 @@ const mockPoiRepo = (): PoiRepo => {
   return {
     findByPk: (key: number) => ({toJSON: () => data[key]}),
     findAll: ({limit, order, where}: any) => {
-      const orderedKeys = ascKeys();
+      const orderedKeys = order[0][1] === 'DESC' ? descKeys() : ascKeys();
 
       const startHeight = where.id[Op.gte];
+      let filteredKeys: number[] = orderedKeys;
+      if (startHeight !== undefined) {
+        filteredKeys = orderedKeys.filter((key) => key >= startHeight);
+      } else {
+        const startHeight = where.id[Op.lte];
+        if (startHeight !== undefined) {
+          filteredKeys = orderedKeys.filter((key) => key <= startHeight);
+        }
+      }
 
-      const filteredKeys = orderedKeys.filter((key) => key >= startHeight).slice(0, limit);
-
-      return filteredKeys.map((key) => ({toJSON: () => data[key]}));
+      return filteredKeys.slice(0, limit).map((key) => ({toJSON: () => data[key]}));
     },
     findOne: ({order, where}: any) => {
       const orderedKeys = descKeys();
@@ -49,6 +57,28 @@ const mockPoiRepo = (): PoiRepo => {
     },
   } as any as PoiRepo;
 };
+
+// const mockPoiModel = (model: PoiRepo): PlainPoiModel => {
+
+//   return {
+//     model,
+//     getFirst: () => {
+//       throw new Error('Not implemented');
+//     },
+//     getPoiById: (id: number) => {
+//       throw new Error('Not implemented');
+//     },
+//     getPoiBlocksByRange: (startHeight: number) => {
+//       throw new Error('Not implemented');
+//     },
+//     bulkUpsert: (proofs: ProofOfIndex[], tx: Transaction) => {
+//       throw new Error('Not implemented');
+//     },
+//     getPoiBlocksBefore: (startHeight: number, options?: { limit: number }) => {
+//       throw new Error('Not implemented');
+//     },
+//   }
+// }
 
 jest.mock('@subql/x-sequelize', () => {
   let data: Record<string, any> = {};
@@ -116,6 +146,47 @@ describe('CachePoi', () => {
       cachePoi.clear(30);
       expect(cachePoi.flushableRecordCounter).toBe(1);
       // expect(cachePoi.getPoiById(120)).toBeDefined();
+    });
+
+    describe('getPoiBlocksBefore', () => {
+      beforeEach(async () => {
+        // Store data
+        cachePoi.bulkUpsert([
+          {id: 1, chainBlockHash: '0x1111'},
+          {id: 2, chainBlockHash: '0x2222'},
+          {id: 3, chainBlockHash: '0x3333'},
+          {id: 4, chainBlockHash: '0x4444'},
+        ] as any);
+
+        const tx = await sequelize.transaction();
+        await cachePoi.flush(tx);
+        await tx.commit();
+
+        // Cache data
+        cachePoi.bulkUpsert([
+          {id: 5, chainBlockHash: '0x1234'},
+          {id: 30, chainBlockHash: '0x5678'},
+          {id: 120, chainBlockHash: '0x91011'},
+        ] as any);
+      });
+
+      it('should hit the cache first', async () => {
+        const results = await cachePoi.getPoiBlocksBefore(50, {limit: 2});
+
+        expect(results.map((r) => r.id)).toEqual([30, 5]);
+      });
+
+      it('should be able to get data from just the store', async () => {
+        const results = await cachePoi.getPoiBlocksBefore(4);
+
+        expect(results.map((r) => r.id)).toEqual([4, 3, 2, 1]);
+      });
+
+      it('should be able to combine cache and store data', async () => {
+        const results = await cachePoi.getPoiBlocksBefore(30);
+
+        expect(results.map((r) => r.id)).toEqual([30, 5, 4, 3, 2, 1]);
+      });
     });
   });
 });

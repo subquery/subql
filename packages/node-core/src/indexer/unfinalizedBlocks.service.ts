@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {last} from 'lodash';
+import {isEqual, last} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
+import {ProofOfIndex} from './entities';
+import {PoiBlock} from './poi';
 import {StoreCacheService} from './storeCache';
 
 const logger = getLogger('UnfinalizedBlocks');
@@ -153,13 +155,9 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   // find closest record from block heights
   private getClosestRecord(blockHeight: number): Header | undefined {
     // Have the block in the best block, can be verified
-    const record = [...this.unfinalizedBlocks] // Copy so we can reverse
+    return [...this.unfinalizedBlocks] // Copy so we can reverse
       .reverse() // Reverse the list to find the largest block
       .find(({blockHeight: height}) => height <= blockHeight);
-    if (record) {
-      return record;
-    }
-    return undefined;
   }
 
   // check unfinalized blocks for a fork, returns the header where a fork happened
@@ -175,7 +173,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     if (lastVerifiableBlock.blockHeight === this.finalizedBlockNumber) {
       if (lastVerifiableBlock.blockHash !== this.finalizedHeader.blockHash) {
         logger.warn(
-          `Block fork found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.blockHash}, actual hash is ${this.finalizedHeader.blockHash}`
+          `Block fork found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.blockHash}, actual hash is ${this.finalizedHeader.blockHash}.`
         );
         return this.finalizedHeader;
       }
@@ -224,6 +222,49 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     }
 
     return this.lastCheckedBlockHeight;
+  }
+
+  // Finds the last POI that had a correct block hash, this is used with the Eth sdk
+  protected async findFinalizedUsingPOI(header: Header): Promise<Header> {
+    const poiModel = this.storeCache.poi;
+    if (!poiModel) {
+      // TODO update message to explain how to recover from this.
+      throw new Error('Poi is not enabled, unable to check for last finalized block');
+    }
+
+    let lastHeight = header.blockHeight;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const indexedBlocks: ProofOfIndex[] = await poiModel.getPoiBlocksBefore(lastHeight);
+
+      if (!indexedBlocks.length) {
+        break;
+      }
+
+      // Work backwards to find a block on chain that matches POI
+      for (const indexedBlock of indexedBlocks) {
+        const chainHeader = await this.getHeaderForHeight(indexedBlock.id);
+
+        // Need to convert to PoiBlock to encode block hash to Uint8Array properly
+        const testPoiBlock = PoiBlock.create(
+          chainHeader.blockHeight,
+          chainHeader.blockHash,
+          new Uint8Array(),
+          indexedBlock.projectId ?? ''
+        );
+
+        // Need isEqual because of Uint8Array type
+        if (isEqual(testPoiBlock.chainBlockHash, indexedBlock.chainBlockHash)) {
+          return chainHeader;
+        }
+      }
+
+      // Next page of POI, use height rather than offset/limit as data could change in that time
+      lastHeight = indexedBlocks[indexedBlocks.length - 1].id - 1;
+    }
+
+    throw new Error('Unable to find a POI block with matching block hash');
   }
 
   private saveUnfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks): void {
