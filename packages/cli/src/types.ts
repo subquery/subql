@@ -119,3 +119,23 @@ export interface ProjectDataType {
   chainId: string;
   apiVersion: string;
 }
+
+export interface V3DeploymentInput {
+  cid: string;
+  type: 'primary' | 'stage';
+  queryImageVersion: string;
+  queryAdvancedSettings: {
+    query: QueryAdvancedOpts;
+  };
+  chains: V3DeploymentIndexerType[];
+}
+
+export interface V3DeploymentIndexerType {
+  cid: string;
+  dictEndpoint: string;
+  endpoint: string | string[];
+  indexerImageVersion: string;
+  indexerAdvancedSettings: {
+    indexer: IndexerAdvancedOpts;
+  };
+}

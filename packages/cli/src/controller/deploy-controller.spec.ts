@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ROOT_API_URL_DEV} from '../constants';
-import {DeploymentDataType, DeploymentSpec, ValidateDataType} from '../types';
+import {DeploymentDataType, DeploymentSpec, V3DeploymentIndexerType, ValidateDataType} from '../types';
 import {delay} from '../utils';
 import {
-  deployToHostedService,
+  createDeployment,
   promoteDeployment,
   deleteDeployment,
   deploymentStatus,
@@ -14,7 +14,7 @@ import {
   dictionaryEndpoints,
   imageVersions,
   processEndpoints,
-  redeploy,
+  updateDeployment,
   projectsInfo,
 } from './deploy-controller';
 import {createProject, deleteProject} from './project-controller';
@@ -52,22 +52,21 @@ async function deployTestProject(
     testAuth,
     url
   );
+
   const endpoint = await networkEndpoints(url);
   const dictEndpoint = await dictionaryEndpoints(url);
-  return deployToHostedService(
-    org,
-    project_name,
-    testAuth,
-    ipfs,
-    indexerV[0],
-    queryV[0],
-    processEndpoints(endpoint, validator.chainId),
-    projectSpec.type,
-    processEndpoints(dictEndpoint, validator.chainId),
-    {},
-    {},
-    url
-  );
+
+  const project = {
+    cid: ipfs,
+    dictEndpoint: processEndpoints(dictEndpoint, validator.chainId),
+    endpoint: processEndpoints(endpoint, validator.chainId),
+    indexerImageVersion: indexerV[0],
+    indexerAdvancedSettings: {
+      indexer: {},
+    },
+  };
+
+  return createDeployment(org, project_name, testAuth, ipfs, queryV[0], projectSpec.type, {}, [project], url);
 }
 
 const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
@@ -182,18 +181,25 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       ROOT_API_URL_DEV
     );
 
-    await redeploy(
+    const project = {
+      cid: ipfs,
+      dictEndpoint: processEndpoints(dict, validator.chainId),
+      endpoint: processEndpoints(endpoints, validator.chainId),
+      indexerImageVersion: indexerV[0],
+      indexerAdvancedSettings: {
+        indexer: {},
+      },
+    };
+
+    await updateDeployment(
       org,
       projectName,
       deployOutput.id,
       testAuth,
       newIPFS,
-      processEndpoints(endpoints, validator.chainId),
-      processEndpoints(dict, validator.chainId),
-      indexerV[0],
       queryV[0],
       {},
-      {},
+      [project],
       ROOT_API_URL_DEV
     );
     const updatedInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);

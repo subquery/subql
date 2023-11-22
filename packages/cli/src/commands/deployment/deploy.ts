@@ -8,14 +8,15 @@ import cli from 'cli-ux';
 import inquirer from 'inquirer';
 import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
 import {
-  deployToHostedService,
+  createDeployment,
   dictionaryEndpoints,
   imageVersions,
   ipfsCID_validate,
   networkEndpoints,
   processEndpoints,
   projectsInfo,
-  redeploy,
+  splitEndpoints,
+  updateDeployment,
 } from '../../controller/deploy-controller';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
@@ -90,6 +91,7 @@ export default class Deploy extends Command {
       maxConnection: flags.queryMaxConnection,
       Aggregate: flags.queryAggregate,
     };
+
     const indexerAD = {
       unsafe: flags.indexerUnsafe,
       batchSize: flags.indexerBatchSize,
@@ -149,37 +151,42 @@ export default class Deploy extends Command {
       }
     }
     const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
+    const chains = [
+      {
+        cid: ipfsCID,
+        dictEndpoint: dict,
+        endpoint: splitEndpoints(endpoint),
+        indexerImageVersion: indexerVersion,
+        indexerAdvancedSettings: {
+          indexer: indexerAD,
+        },
+      },
+    ];
 
     if (projectInfo !== undefined) {
-      await redeploy(
+      await updateDeployment(
         org,
         projectName,
         projectInfo.id,
         authToken,
         ipfsCID,
-        endpoint,
-        dict,
-        indexerVersion,
         queryVersion,
         queryAD,
-        indexerAD,
+        chains,
         ROOT_API_URL_PROD
       );
       this.log(`Project: ${projectName} has been re-deployed`);
     } else {
       this.log('Deploying SubQuery project to Hosted Service');
-      const deploymentOutput = await deployToHostedService(
+      const deploymentOutput = await createDeployment(
         org,
         projectName,
         authToken,
         ipfsCID,
-        indexerVersion,
         queryVersion,
-        endpoint,
         flags.type,
-        dict,
         queryAD,
-        indexerAD,
+        chains,
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
       this.log(`Project: ${deploymentOutput.projectKey}

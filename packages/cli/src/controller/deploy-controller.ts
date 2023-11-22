@@ -2,21 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import axios from 'axios';
-import {DeploymentDataType, IndexerAdvancedOpts, ProjectDataType, QueryAdvancedOpts, ValidateDataType} from '../types';
+import {
+  DeploymentDataType,
+  ProjectDataType,
+  QueryAdvancedOpts,
+  V3DeploymentIndexerType,
+  V3DeploymentInput,
+  ValidateDataType,
+} from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
-export async function deployToHostedService(
+export async function createDeployment(
   org: string,
   projectName: string,
   authToken: string,
   ipfsCID: string,
-  indexerImageVersion: string,
   queryImageVersion: string,
-  endpoint: string,
   type: string,
-  dictEndpoint: string,
   query: QueryAdvancedOpts,
-  indexer: IndexerAdvancedOpts,
+  chains: V3DeploymentIndexerType[],
   url: string
 ): Promise<DeploymentDataType> {
   try {
@@ -26,20 +30,15 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `v2/subqueries/${buildProjectKey(org, projectName)}/deployments`,
+        url: `v3/subqueries/${buildProjectKey(org, projectName)}/deployments`,
         baseURL: url,
         data: {
-          version: ipfsCID,
-          dictEndpoint: dictEndpoint,
-          endpoint: splitEndpoints(endpoint),
-          advancedSettings: {
-            query: query,
-            indexer: indexer,
-          },
-          indexerImageVersion: indexerImageVersion,
-          queryImageVersion: queryImageVersion,
+          cid: ipfsCID,
           type: type,
-        },
+          queryImageVersion: queryImageVersion,
+          queryAdvancedSettings: {query},
+          chains,
+        } as V3DeploymentInput,
       })
     ).data;
     return result.deployment;
@@ -141,18 +140,15 @@ export async function projectsInfo(
   }
 }
 
-export async function redeploy(
+export async function updateDeployment(
   org: string,
   projectName: string,
   deployID: number,
   authToken: string,
   ipfsCID: string,
-  endpoint: string,
-  dictEndpoint: string,
-  indexerVersion: string,
   queryVersion: string,
   query: QueryAdvancedOpts,
-  indexer: IndexerAdvancedOpts,
+  chains: V3DeploymentIndexerType[],
   url: string
 ): Promise<void> {
   try {
@@ -161,19 +157,14 @@ export async function redeploy(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'put',
-      url: `v2/subqueries/${buildProjectKey(org, projectName)}/deployments/${deployID}`,
+      url: `v3/subqueries/${buildProjectKey(org, projectName)}/deployments/${deployID}`,
       baseURL: url,
       data: {
-        version: ipfsCID,
-        dictEndpoint: dictEndpoint,
-        endpoint: splitEndpoints(endpoint),
-        indexerImageVersion: indexerVersion,
+        cid: ipfsCID,
         queryImageVersion: queryVersion,
-        advancedSettings: {
-          query: query,
-          indexer: indexer,
-        },
-      },
+        queryAdvancedSettings: {query},
+        chains,
+      } as V3DeploymentInput,
     });
   } catch (e) {
     errorHandle(e, `Failed to redeploy project: ${e.message}`);
@@ -249,7 +240,7 @@ export async function imageVersions(name: string, version: string, authToken: st
 export function splitEndpoints(endpointStr: string): string[] {
   return endpointStr.split(',').map((e) => e.trim());
 }
-interface EndpointType {
+export interface EndpointType {
   network: string;
   endpoint: string;
   chainId: string;
