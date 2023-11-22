@@ -3,8 +3,7 @@
 
 import {delay} from '@subql/common';
 import {Op, Sequelize} from '@subql/x-sequelize';
-import {PoiRepo, ProofOfIndex} from '../entities';
-import {PlainPoiModel} from '../poi';
+import {PoiRepo} from '../entities';
 import {CachePoiModel} from './cachePoi';
 
 const mockPoiRepo = (): PoiRepo => {
