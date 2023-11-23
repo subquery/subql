@@ -69,15 +69,14 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
     this.finalizedHeader = await this.getFinalizedHead();
 
-    if (!this.nodeConfig.unfinalizedBlocks && this.unfinalizedBlocks.length) {
+    if (this.unfinalizedBlocks.length) {
       logger.info('Processing unfinalized blocks');
       // Validate any previously unfinalized blocks
 
       const rewindHeight = await this.processUnfinalizedBlocks();
-
       if (rewindHeight !== undefined) {
         logger.info(
-          `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight} `
+          `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight}`
         );
         await reindex(rewindHeight);
         logger.info(`Successful rewind to block ${rewindHeight}!`);

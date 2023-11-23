@@ -109,14 +109,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
       this._startHeight = await this.getStartHeight();
 
-      const reindexedUnfinalized = await this.initUnfinalized();
-
-      // Find the new start height based on some rewinding
-      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
-
-      // Set the start height so the right project is used
-      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
-
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
         await this.poiService.init(this.schema);
@@ -124,6 +116,15 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
         await this.poiSyncService.init(this.schema);
         void this.poiSyncService.syncPoi(undefined);
       }
+
+      // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
+      const reindexedUnfinalized = await this.initUnfinalized();
+
+      // Find the new start height based on some rewinding
+      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
+
+      // Set the start height so the right project is used
+      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
