@@ -14,6 +14,8 @@ const logger = getLogger('UnfinalizedBlocks');
 export const METADATA_UNFINALIZED_BLOCKS_KEY = 'unfinalizedBlocks';
 export const METADATA_LAST_FINALIZED_PROCESSED_KEY = 'lastFinalizedVerifiedHeight';
 
+export const POI_NOT_ENABLED_ERROR_MESSAGE = 'Poi is not enabled, unable to check for last finalized block';
+
 const UNFINALIZED_THRESHOLD = 200;
 
 export type Header = {
@@ -227,8 +229,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   protected async findFinalizedUsingPOI(header: Header): Promise<Header> {
     const poiModel = this.storeCache.poi;
     if (!poiModel) {
-      // TODO update message to explain how to recover from this.
-      throw new Error('Poi is not enabled, unable to check for last finalized block');
+      throw new Error(POI_NOT_ENABLED_ERROR_MESSAGE);
     }
 
     let lastHeight = header.blockHeight;
