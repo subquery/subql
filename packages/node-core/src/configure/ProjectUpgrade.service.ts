@@ -192,6 +192,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     let currentProject = startProject;
     let currentHeight: number | undefined;
 
+    let nextProject = startProject;
+
     const addProject = (height: number, project: P) => {
       this.validateProject(startProject, project);
       projects.set(height, project);
@@ -224,7 +226,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       }
 
       // Load the next project and repeat
-      const nextProject = await loadProject(currentProject.parent.reference).catch((e) => {
+      nextProject = await loadProject(currentProject.parent.reference).catch((e) => {
         throw new Error(`Failed to load parent project with cid: ${currentProject.parent?.reference}. ${e}`);
       });
       if (nextProject.parent && nextProject.parent.block > currentProject.parent.block) {
@@ -232,15 +234,22 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
           `Parent project ${currentProject.parent.reference} has a block height that is greater than the current project`
         );
       }
-      const oldSchema = currentProject.schema;
-      const newSchema = nextProject.schema;
 
-      compareSchema(oldSchema, newSchema);
       currentProject = nextProject;
     }
     if (!projects.size) {
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
+
+    // const b = (currentProject.parent  as any).reference
+    // const np = await loadProject(b).catch(e => {
+    //   throw new Error(e)
+    // })
+
+    const currentSchema = currentProject.schema;
+    const nextSchema = nextProject.schema;
+    const startProjectSchema = startProject.schema;
+    compareSchema(currentSchema, startProjectSchema);
 
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight);

@@ -89,6 +89,15 @@ export abstract class BaseFetchService<
   }
 
   private get useDictionary(): boolean {
+    console.log('use dict', this.dictionaryService.useDictionary);
+    console.log('latestBufferedHeight', this.blockDispatcher.latestBufferedHeight);
+    console.log('project service getStartFromDs', this.projectService.getStartBlockFromDataSources());
+    console.log(
+      'queryMap',
+      this.dictionaryService.queriesMap?.get(
+        this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
+      )?.length
+    );
     return (
       this.dictionaryService.useDictionary &&
       !!this.dictionaryService.queriesMap?.get(
