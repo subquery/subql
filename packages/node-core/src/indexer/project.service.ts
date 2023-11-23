@@ -36,7 +36,12 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSource> implements IProjectService<DS> {
+export abstract class BaseProjectService<
+  API extends IApi,
+  DS extends BaseDataSource,
+  UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>
+> implements IProjectService<DS>
+{
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -57,7 +62,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     protected readonly nodeConfig: NodeConfig,
     protected readonly dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
-    private unfinalizedBlockService: IUnfinalizedBlocksService<any>
+    protected readonly unfinalizedBlockService: UnfinalizedBlocksService
   ) {
     if (this.nodeConfig.unsafe) {
       logger.warn(
@@ -342,7 +347,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return new BlockHeightMap(dsMap);
   }
 
-  private async initUnfinalized(): Promise<number | undefined> {
+  protected async initUnfinalized(): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
       logger.error(
         'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical'
