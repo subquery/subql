@@ -49,8 +49,14 @@ export class EthereumApiConnection
     blockConfirmations: number,
     fetchBlocksBatches: GetFetchFunc,
     eventEmitter: EventEmitter2,
+    unfinalizedBlocks: boolean,
   ): Promise<EthereumApiConnection> {
-    const api = new EthereumApi(endpoint, blockConfirmations, eventEmitter);
+    const api = new EthereumApi(
+      endpoint,
+      blockConfirmations,
+      eventEmitter,
+      unfinalizedBlocks,
+    );
 
     await api.init();
 

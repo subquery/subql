@@ -10,7 +10,11 @@ import {
   NodeConfig,
   profilerWrap,
 } from '@subql/node-core';
-import { EthereumBlock, EthereumNetworkConfig, LightEthereumBlock } from '@subql/types-ethereum';
+import {
+  EthereumBlock,
+  EthereumNetworkConfig,
+  LightEthereumBlock,
+} from '@subql/types-ethereum';
 import { EthereumNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';
@@ -71,6 +75,7 @@ export class EthereumApiService extends ApiService<
           this.nodeConfig.blockConfirmations,
           this.fetchBlocksBatches,
           this.eventEmitter,
+          this.nodeConfig.unfinalizedBlocks,
         ),
       //eslint-disable-next-line @typescript-eslint/require-await
       async (connection: EthereumApiConnection) => {
