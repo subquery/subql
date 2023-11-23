@@ -3,11 +3,11 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {parse, visit, ObjectTypeDefinitionNode} from 'graphql';
+import {SchemaMigrationService} from '@subql/node-core/configure/SchemaMigration.service';
 import {findLast, last} from 'lodash';
 import {CacheMetadataModel, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
-import {compareSchema, getStartHeight, mainThreadOnly} from '../utils';
+import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
@@ -241,15 +241,13 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
 
-    // const b = (currentProject.parent  as any).reference
-    // const np = await loadProject(b).catch(e => {
-    //   throw new Error(e)
-    // })
-
+    // determine what is the next project
     const currentSchema = currentProject.schema;
     const nextSchema = nextProject.schema;
     const startProjectSchema = startProject.schema;
-    compareSchema(currentSchema, startProjectSchema);
+
+    const migrationService = new SchemaMigrationService(currentSchema, startProjectSchema);
+    migrationService.compareSchema();
 
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight);
@@ -265,6 +263,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     // TODO validate schema
     // validate the changes are compatible
+    // Rules:
   }
 
   // Returns a height to rewind to if rewind is needed. Otherwise throws an error

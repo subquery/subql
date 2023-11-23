@@ -14,7 +14,6 @@ import {
   isNull,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
-import {GraphQLSchema, ObjectTypeDefinitionNode, parse, visit, introspectionFromSchema, printSchema} from 'graphql';
 
 export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums: Map<string, string>): ModelAttributes {
   const fields = modelType.fields;
@@ -81,75 +80,4 @@ export function modelsTypeToModelAttributes(modelType: GraphQLModelsType, enums:
     acc[field.name] = columnOption;
     return acc;
   }, {} as ModelAttributes<any>);
-}
-
-// should log out the differences in accordance
-export function compareSchema(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): any {
-  const currentSchemaString = printSchema(currentSchema);
-  const nextSchemaString = printSchema(nextSchema);
-
-  // Parse the schema strings into AST
-  const currentSchemaAST = parse(currentSchemaString);
-  const nextSchemaAST = parse(nextSchemaString);
-
-  const changes = {
-    addedTypes: [] as any[],
-    removedTypes: [] as any[],
-    modifiedTypes: {} as any,
-  };
-
-  visit(nextSchemaAST, {
-    ObjectTypeDefinition(node) {
-      const typeName = node.name.value;
-      const oldTypeNode = currentSchemaAST.definitions.find(
-        (def: any) => def.kind === 'ObjectTypeDefinition' && def.name.value === typeName
-      ) as ObjectTypeDefinitionNode;
-
-      if (oldTypeNode === undefined) {
-        changes.addedTypes.push(typeName);
-      } else {
-        const newFields = node.fields?.map((field) => field) || [];
-        const oldFields = oldTypeNode.fields?.map((field) => field) || [];
-
-        const addedFields = newFields.filter(
-          (field) => !oldFields.some((oldField) => oldField.name.value === field.name.value)
-        );
-        const removedFields = oldFields.filter(
-          (field) => !newFields.some((newField) => newField.name.value === field.name.value)
-        );
-        // check for modified fields
-        const modifiedFields = newFields.reduce((acc, newField) => {
-          const oldField = oldFields.find((oldField) => oldField.name.value === newField.name.value);
-          if (oldField && oldField.type.kind !== newField.type.kind) {
-            acc[newField.name.value] = {from: oldField.type.kind, to: newField.type.kind};
-          }
-          return acc;
-        }, {} as any);
-
-        if (addedFields.length || removedFields.length || Object.keys(modifiedFields).length > 0) {
-          changes.modifiedTypes[typeName] = {
-            addedFields: addedFields.map((f) => f.name),
-            removedFields: removedFields.map((f) => f.name),
-            modifiedFields,
-          };
-        }
-      }
-    },
-  });
-
-  console.log('changes before remove detection', changes);
-  // Detecting types removed in the new schema
-  visit(currentSchemaAST, {
-    ObjectTypeDefinition(node) {
-      const typeName = node.name.value;
-      const typeExistsInNew = nextSchemaAST.definitions.some(
-        (def: any) => def.kind === 'ObjectTypeDefinition' && def.name.value === typeName
-      );
-
-      if (!typeExistsInNew) {
-        changes.removedTypes.push(typeName);
-      }
-    },
-  });
-  console.log('changes', changes);
 }
