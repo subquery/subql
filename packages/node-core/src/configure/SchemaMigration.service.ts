@@ -36,6 +36,18 @@ export interface SchemaChanges {
 // }
 
 const logger = getLogger('SchemaMigrationService');
+// need test for this
+export function extractTypeDetails(typeNode: TypeNode): {type: string; kind: string} {
+  let currentTypeNode: TypeNode = typeNode;
+
+  while (currentTypeNode.kind === 'NonNullType' || currentTypeNode.kind === 'ListType') {
+    currentTypeNode = currentTypeNode.type;
+  }
+
+  const name = currentTypeNode.kind === 'NamedType' ? currentTypeNode.name.value : '';
+
+  return {type: currentTypeNode.kind, kind: name};
+}
 
 export class SchemaMigrationService {
   private readonly _currentSchema: GraphQLSchema;
@@ -81,19 +93,17 @@ export class SchemaMigrationService {
           const modifiedFields = newFields.reduce(
             (acc, newField) => {
               const oldField = oldFields.find((oldField) => oldField.name.value === newField.name.value);
-              // extra check for type.name.value
+
+              const newFieldDetails = extractTypeDetails(newField.type);
+              const oldFieldDetails = oldField ? extractTypeDetails(oldField.type) : null;
               if (
-                oldField &&
-                (oldField.type.kind !== newField.type.kind ||
-                  (oldField.type as any).name.value !== (newField.type as any).name.value)
+                oldFieldDetails &&
+                newFieldDetails &&
+                (oldFieldDetails.kind !== newFieldDetails.kind || oldFieldDetails.kind !== newFieldDetails.kind)
               ) {
-                console.log({
-                  kind: {from: (oldField.type as any).name.value, to: (newField.type as any).name.value},
-                });
                 acc[newField.name.value] = {
-                  type: {from: oldField.type.kind, to: newField.type.kind},
-                  // kind: {from: oldField.type.name.value, to: newField.type.name.value}
-                  kind: {from: '', to: ''},
+                  type: {from: oldFieldDetails.type, to: newFieldDetails.type},
+                  kind: {from: oldFieldDetails.kind, to: newFieldDetails.kind},
                 };
               }
               return acc;

@@ -19,7 +19,7 @@ describe('SchemaMigration', () => {
       const migrationService = new SchemaMigrationService(currentSchema, nextSchema);
 
       const v = migrationService.compareSchema();
-      const expectdOutput: SchemaChanges = {
+      const expectOutput: SchemaChanges = {
         addedEntities: ['EntityFour'],
         removedEntities: ['EntityThree'],
         modifiedEntities: {
@@ -28,8 +28,8 @@ describe('SchemaMigration', () => {
             removedFields: [],
             modifiedFields: {
               field3: {
-                type: {from: 'NameType', to: 'NonNullType'},
-                kind: {from: 'NameType', to: 'NonNullType'},
+                type: {from: 'NamedType', to: 'NamedType'},
+                kind: {from: 'BigInt', to: 'EntityTwo'},
               },
             },
           },
@@ -37,16 +37,15 @@ describe('SchemaMigration', () => {
             addedFields: [{kind: 'Name', value: 'field4', loc: {start: 459, end: 465} as any}],
             removedFields: [{kind: 'Name', value: 'field1', loc: {start: 423, end: 429} as any}],
             modifiedFields: {
-              field2: {
-                type: {from: 'NameType', to: 'NonNullType'},
-                kind: {from: 'NameType', to: 'NonNullType'},
+              field3: {
+                type: {from: 'NamedType', to: 'NamedType'},
+                kind: {from: 'BigInt', to: 'Int'},
               },
-              // field3: {from: "NamedType", to: "NonNullType"}, # Unable to pick up BigInt to Int
             },
           },
         },
       };
-      // expect(v).toStrictEqual()
+      expect(JSON.parse(JSON.stringify(v))).toStrictEqual(expectOutput);
     });
   });
 });
