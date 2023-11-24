@@ -1,13 +1,28 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {GraphQLSchema, ObjectTypeDefinitionNode, parse, printSchema, visit, NameNode, DefinitionNode} from 'graphql';
+import {
+  GraphQLSchema,
+  ObjectTypeDefinitionNode,
+  parse,
+  printSchema,
+  visit,
+  NameNode,
+  DefinitionNode,
+  TypeNode,
+} from 'graphql';
 import {getLogger} from '../logger';
 
 export interface EntityChanges {
   addedFields: NameNode[];
   removedFields: NameNode[];
-  modifiedFields: Record<string, {from: string; to: string}>; // i think from and to can be enums
+  modifiedFields: Record<
+    string,
+    {
+      type: {from: string; to: string};
+      kind: {from: string; to: string};
+    }
+  >; // i think from and to can be enums
 }
 
 export interface SchemaChanges {
@@ -63,13 +78,34 @@ export class SchemaMigrationService {
             (field) => !newFields.some((newField) => newField.name.value === field.name.value)
           );
           // check for modified fields
-          const modifiedFields = newFields.reduce((acc, newField) => {
-            const oldField = oldFields.find((oldField) => oldField.name.value === newField.name.value);
-            if (oldField && oldField.type.kind !== newField.type.kind) {
-              acc[newField.name.value] = {from: oldField.type.kind, to: newField.type.kind};
-            }
-            return acc;
-          }, {} as Record<string, {from: string; to: string}>);
+          const modifiedFields = newFields.reduce(
+            (acc, newField) => {
+              const oldField = oldFields.find((oldField) => oldField.name.value === newField.name.value);
+              // extra check for type.name.value
+              if (
+                oldField &&
+                (oldField.type.kind !== newField.type.kind ||
+                  (oldField.type as any).name.value !== (newField.type as any).name.value)
+              ) {
+                console.log({
+                  kind: {from: (oldField.type as any).name.value, to: (newField.type as any).name.value},
+                });
+                acc[newField.name.value] = {
+                  type: {from: oldField.type.kind, to: newField.type.kind},
+                  // kind: {from: oldField.type.name.value, to: newField.type.name.value}
+                  kind: {from: '', to: ''},
+                };
+              }
+              return acc;
+            },
+            {} as Record<
+              string,
+              {
+                type: {from: string; to: string};
+                kind: {from: string; to: string};
+              }
+            >
+          );
 
           if (addedFields.length || removedFields.length || Object.keys(modifiedFields).length > 0) {
             changes.modifiedEntities[typeName] = {
@@ -97,7 +133,8 @@ export class SchemaMigrationService {
     });
     return changes;
   }
-  // Operations
+  // Operations, everything has to happen in a transaction
+  //
   addColumn() {
     //
   }

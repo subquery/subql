@@ -242,6 +242,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
 
     // determine what is the next project
+
     const currentSchema = currentProject.schema;
     const nextSchema = nextProject.schema;
     const startProjectSchema = startProject.schema;

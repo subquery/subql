@@ -1,0 +1,29 @@
+type EntityOne @entity {
+  id: ID!
+  field1: Int!
+  field2: String
+  field3: EntityTwo! # Updated from BigInt to EntityTwo ID
+}
+
+type EntityTwo @entity {
+  id: ID!
+  #    field1: Int! # Dropped field1
+  field2: String! # Updated from nullable to non-nullable
+  field3: Int # Updated from BigInt to Int
+  field4: EntityFour! # Added new field
+}
+
+# Dropped Entity Three
+#type EntityThree @entity {
+#    id: ID!
+#    field1: Int!
+#    field2: String
+#    field3: BigInt
+#}
+
+type EntityFour @entity {
+  id: ID!
+  field1: Int!
+  field2: String
+  field3: [EntityTwo] @derivedFrom(field: "field4")
+}
