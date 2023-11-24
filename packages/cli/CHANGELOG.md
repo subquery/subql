@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.2.2] - 2023-11-24
 ### Changed
 - Update deployment command with v3 api (#2177)
 
@@ -503,7 +505,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.2...HEAD
+[4.2.2]: https://github.com/subquery/subql/compare/cli/4.2.1...cli/4.2.2
 [4.2.1]: https://github.com/subquery/subql/compare/cli/4.2.0...cli/4.2.1
 [4.2.0]: https://github.com/subquery/subql/compare/cli/4.1.0...cli/4.2.0
 [4.1.0]: https://github.com/subquery/subql/compare/cli/4.0.5...cli/4.1.0
