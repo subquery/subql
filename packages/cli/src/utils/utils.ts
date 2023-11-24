@@ -74,7 +74,7 @@ export async function checkToken(authToken_ENV: string, token_path: string): Pro
 
 export function errorHandle(e: any, msg: string): Error {
   if ((axios.isAxiosError(e) as any) && e?.response?.data) {
-    throw new Error(`${msg} ${e.response.data.message}`);
+    throw new Error(`${msg} ${e.response.data.message ?? e.response.data}`);
   }
 
   throw new Error(`${msg} ${e.message}`);
