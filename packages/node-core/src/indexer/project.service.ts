@@ -123,7 +123,7 @@ export abstract class BaseProjectService<
       }
 
       // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
-      const reindexedUnfinalized = await this.initUnfinalized();
+      const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
       // Find the new start height based on some rewinding
       this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
@@ -347,7 +347,7 @@ export abstract class BaseProjectService<
     return new BlockHeightMap(dsMap);
   }
 
-  protected async initUnfinalized(): Promise<number | undefined> {
+  private async initUnfinalizedInternal(): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
       logger.error(
         'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical'
@@ -355,6 +355,10 @@ export abstract class BaseProjectService<
       process.exit(1);
     }
 
+    return this.initUnfinalized();
+  }
+
+  protected async initUnfinalized(): Promise<number | undefined> {
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
