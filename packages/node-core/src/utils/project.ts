@@ -5,7 +5,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} from '@subql/common';
-import {BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
+import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import Cron from 'cron-converter';
@@ -126,6 +126,10 @@ export function getModulos<DS extends BaseDataSource, CDS extends DS & BaseCusto
   return modulos;
 }
 
+export function isAssetsDs(ds: unknown): ds is BaseAssetsDataSource {
+  return !!(ds as any).assets;
+}
+
 export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
   _dataSources: (DS | CDS)[],
   reader: Reader,
@@ -137,19 +141,22 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
     _dataSources.map(async (dataSource) => {
       dataSource.startBlock = dataSource.startBlock ?? 1;
       const entryScript = await loadDataSourceScript(reader, dataSource.mapping.file);
+      if (isAssetsDs(dataSource)) {
+        for (const [, asset] of Object.entries(dataSource.assets)) {
+          if (reader instanceof LocalReader) {
+            asset.file = path.resolve(root, asset.file);
+          } else {
+            const res = await reader.getFile(asset.file);
+            const outputPath = path.resolve(root, asset.file.replace('ipfs://', ''));
+            await fs.promises.writeFile(outputPath, res as string);
+            asset.file = outputPath;
+          }
+        }
+      }
       const file = await updateDataSourcesEntry(reader, dataSource.mapping.file, root, entryScript);
       if (isCustomDs(dataSource)) {
         if (dataSource.processor) {
           dataSource.processor.file = await updateProcessor(reader, root, dataSource.processor.file);
-        }
-        if (dataSource.assets) {
-          for (const [, asset] of dataSource.assets) {
-            if (reader instanceof LocalReader) {
-              asset.file = path.resolve(root, asset.file);
-            } else {
-              asset.file = await saveFile(reader, root, asset.file, '');
-            }
-          }
         }
         return {
           ...dataSource,
