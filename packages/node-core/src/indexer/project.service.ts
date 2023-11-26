@@ -282,7 +282,7 @@ export abstract class BaseProjectService<
     }
 
     //check for datasources with height after the current height
-    const dataSources = this.getDataSourcesMap().getAll();
+    const dataSources = datasourcesMap.getAll();
     return [...dataSources.entries()].some(([dsHeight, ds]) => dsHeight > height && ds.length);
   }
 
@@ -313,9 +313,12 @@ export abstract class BaseProjectService<
 
       if (i + 1 < projects.length) {
         const nextProject = projects[i + 1][1];
-        nextMinStartHeight = nextProject.dataSources
-          .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
-          .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock;
+        nextMinStartHeight = Math.max(
+          nextProject.dataSources
+            .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+            .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock,
+          projects[i + 1][0]
+        );
       }
 
       const activeDataSources = new Set<DS>();
