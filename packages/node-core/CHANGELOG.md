@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
 ### Added
 - The ability to find the last indexed with a valid block hash using POI (#2176)
+
+### Fixed
+- Fix incorrect datasources map that could result in `Value at height 7408910 was undefined` (#2183)
+- Fix template assets path not been resolved correctly and lead to `Failed to parse log data` (#2182)
 
 ## [6.4.2] - 2023-11-16
 ### Fixed
