@@ -29,12 +29,16 @@ export interface BaseDataSource<H extends BaseHandler = BaseHandler, M extends B
 }
 
 export interface BaseCustomDataSource<H extends BaseHandler = BaseHandler, T extends BaseMapping<H> = BaseMapping<H>>
-  extends BaseDataSource<H, T> {
+  extends BaseDataSource<H, T>,
+    BaseAssetsDataSource {
   /**
    * The processor used for the custom datasource.
    * @type {Processor<O>}
    */
   processor: Processor;
+}
+
+export interface BaseAssetsDataSource {
   /**
    * A map of custom datasource assets. These typically include ABIs or other files used to decode data.
    * @type {Map<string, FileReference>}
