@@ -10,7 +10,7 @@ import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiBlock, PoiService, PoiSyncService} from '../poi';
+import {PoiBlock, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -61,7 +61,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     protected smartBatchService: SmartBatchService,
     protected storeService: StoreService,
     private storeCacheService: StoreCacheService,
-    private poiService: PoiService,
     private poiSyncService: PoiSyncService,
     protected dynamicDsService: DynamicDsService<any>
   ) {}

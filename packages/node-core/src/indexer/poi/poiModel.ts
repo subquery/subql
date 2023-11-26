@@ -9,6 +9,11 @@ import {PoiRepo, ProofOfIndex} from '../entities';
 export interface PoiInterface {
   model: PoiRepo;
   bulkUpsert(proofs: ProofOfIndex[], tx?: Transaction): Promise<void> | void;
+  /**
+   * Gets the 100 blocks <= to the start height where there is an operation.
+   * This can be used to determine the last blocks that had data to index.
+   * */
+  getPoiBlocksBefore(startHeight: number): Promise<ProofOfIndex[]>;
 }
 
 // When using cockroach db, poi id is store in bigint format, and sequelize toJSON() can not convert id correctly (to string)
@@ -64,5 +69,20 @@ export class PlainPoiModel implements PoiInterface {
       conflictAttributes: ['id'],
       updateOnDuplicate: ['hash', 'parentHash'],
     });
+  }
+
+  async getPoiBlocksBefore(
+    startHeight: number,
+    options: {limit: number} = {limit: DEFAULT_FETCH_RANGE}
+  ): Promise<ProofOfIndex[]> {
+    const result = await this.model.findAll({
+      limit: options.limit,
+      where: {
+        id: {[Op.lte]: startHeight},
+        operationHashRoot: {[Op.ne]: null},
+      },
+      order: [['id', 'DESC']],
+    });
+    return result.map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));
   }
 }

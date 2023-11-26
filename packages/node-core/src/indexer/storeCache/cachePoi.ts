@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {DEFAULT_FETCH_RANGE} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
 import {getLogger} from '../../logger';
@@ -64,5 +65,30 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     }
     this.setCache = cloneSetCache;
     this.flushableRecordCounter = Object.entries(this.setCache).length;
+  }
+
+  async getPoiBlocksBefore(
+    startHeight: number,
+    options: {limit: number} = {limit: DEFAULT_FETCH_RANGE}
+  ): Promise<ProofOfIndex[]> {
+    await this.mutex.waitForUnlock();
+
+    // Use cached values and apply the same filter as store method
+    const cachedValues = Object.values(this.setCache)
+      .sort((a, b) => b.id - a.id)
+      .filter((poi) => poi.id <= startHeight && poi.operationHashRoot !== null)
+      .slice(0, options.limit);
+
+    // Fill remaining values from the store
+    const newOptions = {limit: options.limit - cachedValues.length};
+
+    // If we've already filled the limit, return just cached values
+    if (newOptions.limit <= 0) {
+      return cachedValues;
+    }
+
+    const storeValues = await this.plainPoiModel.getPoiBlocksBefore(startHeight, newOptions);
+
+    return [...cachedValues, ...storeValues];
   }
 }

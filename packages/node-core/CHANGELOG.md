@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- The ability to find the last indexed with a valid block hash using POI (#2176)
 
 ## [6.4.2] - 2023-11-16
 ### Fixed

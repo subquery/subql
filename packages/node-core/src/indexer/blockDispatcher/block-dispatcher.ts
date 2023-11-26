@@ -51,7 +51,6 @@ export abstract class BlockDispatcher<B, DS>
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    poiService: PoiService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     dynamicDsService: DynamicDsService<DS>,
@@ -67,7 +66,6 @@ export abstract class BlockDispatcher<B, DS>
       smartBatchService,
       storeService,
       storeCacheService,
-      poiService,
       poiSyncService,
       dynamicDsService
     );
@@ -204,6 +202,10 @@ export abstract class BlockDispatcher<B, DS>
             }
           )
           .catch((e) => {
+            if (isTaskFlushedError(e)) {
+              // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
+              return;
+            }
             logger.warn(e, 'Failed to enqueue fetched block to process');
             process.exit(1);
           });

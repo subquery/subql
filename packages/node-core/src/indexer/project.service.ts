@@ -36,7 +36,12 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSource> implements IProjectService<DS> {
+export abstract class BaseProjectService<
+  API extends IApi,
+  DS extends BaseDataSource,
+  UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>
+> implements IProjectService<DS>
+{
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -57,7 +62,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     protected readonly nodeConfig: NodeConfig,
     protected readonly dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
-    private unfinalizedBlockService: IUnfinalizedBlocksService<any>
+    protected readonly unfinalizedBlockService: UnfinalizedBlocksService
   ) {
     if (this.nodeConfig.unsafe) {
       logger.warn(
@@ -109,14 +114,6 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
 
       this._startHeight = await this.getStartHeight();
 
-      const reindexedUnfinalized = await this.initUnfinalized();
-
-      // Find the new start height based on some rewinding
-      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
-
-      // Set the start height so the right project is used
-      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
-
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
         await this.poiService.init(this.schema);
@@ -124,6 +121,15 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
         await this.poiSyncService.init(this.schema);
         void this.poiSyncService.syncPoi(undefined);
       }
+
+      // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
+      const reindexedUnfinalized = await this.initUnfinalizedInternal();
+
+      // Find the new start height based on some rewinding
+      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
+
+      // Set the start height so the right project is used
+      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
@@ -341,7 +347,7 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
     return new BlockHeightMap(dsMap);
   }
 
-  private async initUnfinalized(): Promise<number | undefined> {
+  private async initUnfinalizedInternal(): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
       logger.error(
         'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical'
@@ -349,6 +355,10 @@ export abstract class BaseProjectService<API extends IApi, DS extends BaseDataSo
       process.exit(1);
     }
 
+    return this.initUnfinalized();
+  }
+
+  protected async initUnfinalized(): Promise<number | undefined> {
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
