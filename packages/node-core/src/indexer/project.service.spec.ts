@@ -197,5 +197,33 @@ describe('BaseProjectService', () => {
         ])
       );
     });
+
+    it('build correct map when upgrade has the same start height as first project', () => {
+      (service as any).dynamicDsService.dynamicDatasources = [];
+      (service as any).projectUpgradeService = {
+        projects: [
+          [
+            7408909,
+            {
+              dataSources: [{startBlock: 7408909}],
+            },
+          ],
+          [
+            7880532,
+            {
+              dataSources: [{startBlock: 7408909}],
+            },
+          ],
+        ],
+      } as any;
+
+      const result = service.getDataSourcesMap();
+      expect(result.getAll()).toEqual(
+        new Map([
+          [7408909, [{startBlock: 7408909}]],
+          [7880532, [{startBlock: 7408909}]],
+        ])
+      );
+    });
   });
 });
