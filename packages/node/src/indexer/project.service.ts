@@ -29,7 +29,8 @@ const { version: packageVersion } = require('../../package.json');
 @Injectable()
 export class ProjectService extends BaseProjectService<
   EthereumApiService,
-  EthereumProjectDs
+  EthereumProjectDs,
+  UnfinalizedBlocksService
 > {
   protected packageVersion = packageVersion;
 
@@ -74,5 +75,12 @@ export class ProjectService extends BaseProjectService<
   protected onProjectChange(project: SubqueryProject): void | Promise<void> {
     // TODO update this when implementing skipBlock feature for Eth
     this.apiService.updateBlockFetching();
+  }
+
+  protected async initUnfinalized(): Promise<number | undefined> {
+    return this.unfinalizedBlockService.init(
+      this.reindex.bind(this),
+      this.apiService.api.supportsFinalization,
+    );
   }
 }

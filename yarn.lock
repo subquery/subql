@@ -3243,9 +3243,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^6.4.2":
-  version: 6.4.2
-  resolution: "@subql/node-core@npm:6.4.2"
+"@subql/node-core@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@subql/node-core@npm:7.0.0"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
@@ -3270,7 +3270,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 93f7e2c1e1f855645496d92d4a5ad5970eee092dee7f2274687285b15bae87139ffdd61e979a33fe7470cd8abc4b660786e2148cfa003ad2566c9f5a4c1676a2
+  checksum: 0c83ef7d7540c6ae667faaec69c7ad542880c481c763199bccaa22bb4110ee9a516cc29a4dc74e99be48157b1ccc0668cad24f8fb3910977146e2293ff3f5a91
   languageName: node
   linkType: hard
 
@@ -3288,7 +3288,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.3.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^6.4.2
+    "@subql/node-core": ^7.0.0
     "@subql/testing": ^2.0.2
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -4689,13 +4689,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.6.0":
-  version: 1.6.1
-  resolution: "axios@npm:1.6.1"
+  version: 1.6.2
+  resolution: "axios@npm:1.6.2"
   dependencies:
     follow-redirects: ^1.15.0
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
+  checksum: 4a7429e2b784be0f2902ca2680964391eae7236faa3967715f30ea45464b98ae3f1c6f631303b13dfe721b17126b01f486c7644b9ef276bfc63112db9fd379f8
   languageName: node
   linkType: hard
 

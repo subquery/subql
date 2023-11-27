@@ -6,6 +6,7 @@ import { IConfig, NodeConfig } from '@subql/node-core';
 export interface IEthereumConfig extends IConfig {
   skipTransactions: boolean;
   blockConfirmations: number;
+  blockForkReindex: number;
 }
 
 export class EthereumNodeConfig extends NodeConfig<IEthereumConfig> {
@@ -31,5 +32,9 @@ export class EthereumNodeConfig extends NodeConfig<IEthereumConfig> {
 
   get blockConfirmations(): number {
     return this._config.blockConfirmations;
+  }
+
+  get blockForkReindex(): number {
+    return this._config.blockForkReindex;
   }
 }

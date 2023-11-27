@@ -25,10 +25,17 @@ export const yargsOptions = yargsBuilder({
   runOptions: {
     'block-confirmations': {
       demandOption: false,
-      default: 20,
+      default: 200,
       describe:
-        'The number of blocks behind the head to be considered finalized, this has no effect with Ethereum',
+        'The number of blocks behind the head to be considered finalized for networks without deterministic finalisation such as Polygon POS',
       type: 'number',
+    },
+    'block-fork-reindex': {
+      demandOption: false,
+      default: 1000,
+      type: 'number',
+      describe:
+        'The number of blocks to reindex if a fork happens before cached unfinalized blocks and POI is not enabled.',
     },
   },
 });

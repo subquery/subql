@@ -1,7 +1,6 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
@@ -99,7 +98,11 @@ export class EthereumApi implements ApiWrapper {
   private name: string;
 
   // Ethereum POS
-  private supportsFinalization = true;
+  private _supportsFinalization = true;
+
+  get supportsFinalization(): boolean {
+    return this._supportsFinalization;
+  }
 
   /**
    * @param {string} endpoint - The endpoint of the RPC provider
@@ -164,7 +167,7 @@ export class EthereumApi implements ApiWrapper {
         ]);
 
       this.genesisBlock = genesisBlock;
-      this.supportsFinalization = supportsFinalization && supportsSafe;
+      this._supportsFinalization = supportsFinalization && supportsSafe;
       this.chainId = network.chainId;
       this.name = network.name;
     } catch (e) {
