@@ -4,6 +4,7 @@
 import path from 'path';
 import {SchemaChanges, SchemaMigrationService} from '@subql/node-core';
 import {buildSchemaFromFile} from '@subql/utils';
+import {DataTypes} from '@subql/x-sequelize';
 
 describe('SchemaMigration', () => {
   describe('comparator', () => {
@@ -26,15 +27,21 @@ describe('SchemaMigration', () => {
             addedFields: [
               {
                 fieldName: 'field3',
-                nullable: false,
                 type: 'EntityTwo',
+                attributes: {
+                  type: DataTypes.STRING,
+                  allowNull: false,
+                },
               },
             ],
             removedFields: [
               {
                 fieldName: 'field3',
-                nullable: true,
                 type: 'BigInt',
+                attributes: {
+                  type: DataTypes.BIGINT,
+                  allowNull: true,
+                },
               },
             ],
           },
@@ -43,34 +50,52 @@ describe('SchemaMigration', () => {
               {
                 fieldName: 'field2',
                 type: 'String',
-                nullable: false,
+                attributes: {
+                  type: DataTypes.STRING,
+                  allowNull: false,
+                },
               },
               {
                 fieldName: 'field3',
                 type: 'Int',
-                nullable: true,
+                attributes: {
+                  type: DataTypes.INTEGER,
+                  allowNull: true,
+                },
               },
               {
                 fieldName: 'field4',
                 type: 'EntityFour',
-                nullable: false,
+                attributes: {
+                  type: DataTypes.STRING, // TODO this should be primary key
+                  allowNull: false,
+                },
               },
             ],
             removedFields: [
               {
                 fieldName: 'field2',
                 type: 'String',
-                nullable: true,
+                attributes: {
+                  type: DataTypes.STRING,
+                  allowNull: true,
+                },
               },
               {
                 fieldName: 'field3',
                 type: 'BigInt',
-                nullable: true,
+                attributes: {
+                  type: DataTypes.BIGINT,
+                  allowNull: true,
+                },
               },
               {
                 fieldName: 'field1',
                 type: 'Int',
-                nullable: false,
+                attributes: {
+                  type: DataTypes.INTEGER,
+                  allowNull: false,
+                },
               },
             ],
           },

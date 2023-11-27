@@ -8,6 +8,7 @@ import {
   ModelAttributeColumnOptions,
   Model,
   DataType,
+  DataTypes,
 } from '@subql/x-sequelize';
 import {
   GraphQLSchema,
@@ -25,19 +26,11 @@ import {NodeConfig} from './NodeConfig';
 interface FieldDetailsType {
   fieldName: string;
   type: string; // Int, String... etc
-  nullable?: boolean;
-  // TODO list all other fields, uniqueBy ..etc
+  attributes: ModelAttributeColumnOptions;
 }
 export interface EntityChanges {
   addedFields: FieldDetailsType[];
   removedFields: FieldDetailsType[];
-  // modifiedFields: Record<
-  //   string,
-  //   {
-  //     type: {from: string; to: string};
-  //     kind: {from: string; to: string};
-  //   }
-  // >; // i think from and to can be enums
 }
 
 export interface SchemaChanges {
@@ -52,7 +45,7 @@ export interface SchemaChanges {
 
 const logger = getLogger('SchemaMigrationService');
 // need test for this
-export function extractTypeDetails(typeNode: TypeNode): {type: string; kind: string} {
+export function extractTypeDetails(typeNode: TypeNode): {dataType: string; graphQLType: string} {
   let currentTypeNode: TypeNode = typeNode;
 
   while (currentTypeNode.kind === 'NonNullType' || currentTypeNode.kind === 'ListType') {
@@ -61,7 +54,22 @@ export function extractTypeDetails(typeNode: TypeNode): {type: string; kind: str
 
   const name = currentTypeNode.kind === 'NamedType' ? currentTypeNode.name.value : '';
 
-  return {type: currentTypeNode.kind, kind: name};
+  return {graphQLType: currentTypeNode.kind, dataType: name};
+}
+
+function mapGraphQLTypeToSequelize(type: string): DataType {
+  const typeMapping: Record<string, DataType> = {
+    Int: DataTypes.INTEGER,
+    Float: DataTypes.FLOAT,
+    String: DataTypes.STRING,
+    Boolean: DataTypes.BOOLEAN,
+    ID: DataTypes.UUID,
+    BigInt: DataTypes.BIGINT,
+    // TODO .. add more supported types
+    // TODO if the type is of an available Entity it should be considered as ID ?
+  };
+
+  return typeMapping[type] || DataTypes.STRING; // Default to STRING if type not found
 }
 
 export class SchemaMigrationService {
@@ -104,15 +112,23 @@ export class SchemaMigrationService {
             .filter((field) => !oldFields.some((oldField) => oldField.name.value === field.name.value))
             .map((field) => ({
               fieldName: field.name.value,
-              type: extractTypeDetails(field.type).kind,
-              nullable: !field.type.kind.includes('NonNullType'),
+              type: extractTypeDetails(field.type).dataType,
+              attributes: {
+                type: mapGraphQLTypeToSequelize(extractTypeDetails(field.type).dataType),
+                allowNull: !field.type.kind.includes('NonNullType'),
+                // TODO JSON types... etc needs to be added here
+              },
             }));
           const removedFields: FieldDetailsType[] = oldFields
             .filter((field) => !newFields.some((newField) => newField.name.value === field.name.value))
             .map((field) => ({
               fieldName: field.name.value,
-              type: extractTypeDetails(field.type).kind,
-              nullable: !field.type.kind.includes('NonNullType'),
+              type: extractTypeDetails(field.type).dataType,
+              attributes: {
+                type: mapGraphQLTypeToSequelize(extractTypeDetails(field.type).dataType),
+                allowNull: !field.type.kind.includes('NonNullType'),
+                // TODO JSON types... etc needs to be added here
+              },
             }));
 
           const modifiedFields: Record<string, {old: FieldDetailsType; new: FieldDetailsType}> = {};
@@ -124,19 +140,27 @@ export class SchemaMigrationService {
               if (oldField) {
                 const newFieldDetails = {
                   fieldName: newField.name.value,
-                  type: extractTypeDetails(newField.type).kind,
-                  nullable: !newField.type.kind.includes('NonNullType'),
+                  type: extractTypeDetails(newField.type).dataType,
+                  attributes: {
+                    type: mapGraphQLTypeToSequelize(extractTypeDetails(newField.type).dataType),
+                    allowNull: !newField.type.kind.includes('NonNullType'),
+                    // TODO JSON types... etc needs to be added here
+                  },
                 };
 
                 const oldFieldDetails = {
                   fieldName: oldField.name.value,
-                  type: extractTypeDetails(oldField.type).kind,
-                  nullable: !oldField.type.kind.includes('NonNullType'),
+                  type: extractTypeDetails(oldField.type).dataType,
+                  attributes: {
+                    type: mapGraphQLTypeToSequelize(extractTypeDetails(oldField.type).dataType),
+                    allowNull: !oldField.type.kind.includes('NonNullType'),
+                    // TODO JSON types... etc needs to be added here
+                  },
                 };
 
                 if (
                   newFieldDetails.type !== oldFieldDetails.type ||
-                  newFieldDetails.nullable !== oldFieldDetails.nullable
+                  newFieldDetails.attributes.allowNull !== oldFieldDetails.attributes.allowNull
                 ) {
                   modifiedFields[newField.name.value] = {old: oldFieldDetails, new: newFieldDetails};
                 }
