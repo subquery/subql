@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.4.0] - 2023-11-27
 ### Added
+- Update `@subql/node-core` with bug fixes
 - Different method for detecting block forks for chains with probabalistic finalization (#217)
 
 ## [3.3.6] - 2023-11-23
@@ -22,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.3.3] - 2023-11-13
 ### Changed
-- Updates to match changes in `@subql/node-core` (#210)
+- Updates to match changes in
   - Dictionary service to use dictionary registry
   - Use yargs from node core
 
@@ -340,7 +343,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.6...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.0...HEAD
+[3.4.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.6...node-ethereum/3.4.0
 [3.3.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.5...node-ethereum/3.3.6
 [3.3.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.4...node-ethereum/3.3.5
 [3.3.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.3...node-ethereum/3.3.4
