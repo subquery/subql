@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-core",
-  "version": "0.3.1-1",
+  "version": "0.4.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -17,6 +17,5 @@
   ],
   "dependencies": {
     "package-json-type": "^1.0.3"
-  },
-  "stableVersion": "0.3.1-0"
+  }
 }
