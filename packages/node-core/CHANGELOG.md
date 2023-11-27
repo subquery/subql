@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [7.0.0] - 2023-11-27
 ### Added
 - The ability to find the last indexed with a valid block hash using POI (#2176)
 
@@ -500,7 +502,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/6.4.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.0...HEAD
+[7.0.0]: https://github.com/subquery/subql/compare/node-core/6.4.2...node-core/7.0.0
 [6.4.2]: https://github.com/subquery/subql/compare/node-core/6.4.1...node-core/6.4.2
 [6.4.1]: https://github.com/subquery/subql/compare/node-core/6.4.0...node-core/6.4.1
 [6.4.0]: https://github.com/subquery/subql/compare/node-core/6.3.0...node-core/6.4.0
