@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix ipfs deployment templates path failed to resolved, issue was introduced node-core 7.0.0
+
 ## [3.4.3] - 2023-11-27
 ### Changed
 - Remove unused PoiService from block dispatchers (#2176)
