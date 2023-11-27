@@ -247,8 +247,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     const nextSchema = nextProject.schema;
     const startProjectSchema = startProject.schema;
 
-    const migrationService = new SchemaMigrationService(currentSchema, startProjectSchema);
-    migrationService.compareSchema();
+    const migrationService = SchemaMigrationService.compareSchema(currentSchema, startProjectSchema);
+    // migrationService.compareSchema();
 
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight);

@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  Sequelize,
+  Transaction,
+  ModelAttributes,
+  ModelAttributeColumnOptions,
+  Model,
+  DataType,
+} from '@subql/x-sequelize';
+import {
   GraphQLSchema,
   ObjectTypeDefinitionNode,
   parse,
@@ -12,17 +20,24 @@ import {
   TypeNode,
 } from 'graphql';
 import {getLogger} from '../logger';
+import {NodeConfig} from './NodeConfig';
 
+interface FieldDetailsType {
+  fieldName: string;
+  type: string; // Int, String... etc
+  nullable?: boolean;
+  // TODO list all other fields, uniqueBy ..etc
+}
 export interface EntityChanges {
-  addedFields: NameNode[];
-  removedFields: NameNode[];
-  modifiedFields: Record<
-    string,
-    {
-      type: {from: string; to: string};
-      kind: {from: string; to: string};
-    }
-  >; // i think from and to can be enums
+  addedFields: FieldDetailsType[];
+  removedFields: FieldDetailsType[];
+  // modifiedFields: Record<
+  //   string,
+  //   {
+  //     type: {from: string; to: string};
+  //     kind: {from: string; to: string};
+  //   }
+  // >; // i think from and to can be enums
 }
 
 export interface SchemaChanges {
@@ -52,13 +67,15 @@ export function extractTypeDetails(typeNode: TypeNode): {type: string; kind: str
 export class SchemaMigrationService {
   private readonly _currentSchema: GraphQLSchema;
   private readonly _nextSchema: GraphQLSchema;
-  constructor(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema) {
+  private _sequelize: Sequelize;
+  constructor(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema, config: NodeConfig, sequelize: Sequelize) {
+    this._sequelize = sequelize;
     this._currentSchema = currentSchema;
     this._nextSchema = nextSchema;
   }
-  compareSchema(): SchemaChanges {
-    const currentSchemaString = printSchema(this._currentSchema);
-    const nextSchemaString = printSchema(this._nextSchema);
+  static compareSchema(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): SchemaChanges {
+    const currentSchemaString = printSchema(currentSchema);
+    const nextSchemaString = printSchema(nextSchema);
 
     // Parse the schema strings into AST
     const currentSchemaAST = parse(currentSchemaString);
@@ -83,45 +100,62 @@ export class SchemaMigrationService {
           const newFields = node.fields?.map((field) => field) || [];
           const oldFields = oldTypeNode.fields?.map((field) => field) || [];
 
-          const addedFields = newFields.filter(
-            (field) => !oldFields.some((oldField) => oldField.name.value === field.name.value)
-          );
-          const removedFields = oldFields.filter(
-            (field) => !newFields.some((newField) => newField.name.value === field.name.value)
-          );
-          // check for modified fields
-          const modifiedFields = newFields.reduce(
-            (acc, newField) => {
+          const addedFields: FieldDetailsType[] = newFields
+            .filter((field) => !oldFields.some((oldField) => oldField.name.value === field.name.value))
+            .map((field) => ({
+              fieldName: field.name.value,
+              type: extractTypeDetails(field.type).kind,
+              nullable: !field.type.kind.includes('NonNullType'),
+            }));
+          const removedFields: FieldDetailsType[] = oldFields
+            .filter((field) => !newFields.some((newField) => newField.name.value === field.name.value))
+            .map((field) => ({
+              fieldName: field.name.value,
+              type: extractTypeDetails(field.type).kind,
+              nullable: !field.type.kind.includes('NonNullType'),
+            }));
+
+          const modifiedFields: Record<string, {old: FieldDetailsType; new: FieldDetailsType}> = {};
+
+          if (node.fields) {
+            node.fields.forEach((newField) => {
               const oldField = oldFields.find((oldField) => oldField.name.value === newField.name.value);
 
-              const newFieldDetails = extractTypeDetails(newField.type);
-              const oldFieldDetails = oldField ? extractTypeDetails(oldField.type) : null;
-              if (
-                oldFieldDetails &&
-                newFieldDetails &&
-                (oldFieldDetails.kind !== newFieldDetails.kind || oldFieldDetails.kind !== newFieldDetails.kind)
-              ) {
-                acc[newField.name.value] = {
-                  type: {from: oldFieldDetails.type, to: newFieldDetails.type},
-                  kind: {from: oldFieldDetails.kind, to: newFieldDetails.kind},
+              if (oldField) {
+                const newFieldDetails = {
+                  fieldName: newField.name.value,
+                  type: extractTypeDetails(newField.type).kind,
+                  nullable: !newField.type.kind.includes('NonNullType'),
                 };
-              }
-              return acc;
-            },
-            {} as Record<
-              string,
-              {
-                type: {from: string; to: string};
-                kind: {from: string; to: string};
-              }
-            >
-          );
 
-          if (addedFields.length || removedFields.length || Object.keys(modifiedFields).length > 0) {
+                const oldFieldDetails = {
+                  fieldName: oldField.name.value,
+                  type: extractTypeDetails(oldField.type).kind,
+                  nullable: !oldField.type.kind.includes('NonNullType'),
+                };
+
+                if (
+                  newFieldDetails.type !== oldFieldDetails.type ||
+                  newFieldDetails.nullable !== oldFieldDetails.nullable
+                ) {
+                  modifiedFields[newField.name.value] = {old: oldFieldDetails, new: newFieldDetails};
+                }
+              }
+            });
+
+            for (const fieldName in modifiedFields) {
+              const {new: newDetails, old} = modifiedFields[fieldName];
+              changes.modifiedEntities[typeName] = changes.modifiedEntities[typeName] || {
+                addedFields: [],
+                removedFields: [],
+              };
+              changes.modifiedEntities[typeName].addedFields.push(newDetails);
+              changes.modifiedEntities[typeName].removedFields.push(old);
+            }
+
             changes.modifiedEntities[typeName] = {
-              addedFields: addedFields.map((f) => f.name),
-              removedFields: removedFields.map((f) => f.name),
-              modifiedFields,
+              addedFields: [...(changes.modifiedEntities[typeName]?.addedFields || []), ...addedFields],
+              removedFields: [...(changes.modifiedEntities[typeName]?.removedFields || []), ...removedFields],
             };
           }
         }
@@ -143,23 +177,76 @@ export class SchemaMigrationService {
     });
     return changes;
   }
-  // Operations, everything has to happen in a transaction
-  //
-  addColumn() {
-    //
+
+  async init(): Promise<void> {
+    const transaction = await this._sequelize.transaction();
+    const {addedEntities, modifiedEntities, removedEntities} = SchemaMigrationService.compareSchema(
+      this._currentSchema,
+      this._nextSchema
+    );
+
+    try {
+      // Remove should always occur before create
+      if (removedEntities.length) {
+        await Promise.all(removedEntities.map((entity) => this.dropTable(entity, transaction)));
+      }
+
+      if (addedEntities.length) {
+        // how do i get modelAttributes ???
+        // Promise.all(addedEntities.map(entity => this.createTable(
+        //     entity,
+        // )))
+      }
+      const dropColumnExecutables: Promise<void>[] = [];
+      const createColumnExecutables: Promise<void>[] = [];
+
+      if (Object.keys(modifiedEntities).length) {
+        const entities = Object.keys(modifiedEntities);
+        entities.forEach((entity) => {
+          const entityValues = modifiedEntities[entity];
+
+          entityValues.removedFields.forEach((field) => {
+            dropColumnExecutables.push(this.dropColumn(entity, field.fieldName, transaction));
+          });
+
+          entityValues.addedFields.forEach((field) => {
+            // TODO ensure that field.type is correct
+            createColumnExecutables.push(this.createColumn(entity, field.fieldName, field.type, transaction));
+          });
+        });
+      }
+
+      await Promise.all(dropColumnExecutables);
+      await Promise.all(createColumnExecutables);
+
+      await transaction.commit();
+    } catch (e: any) {
+      await transaction.rollback();
+      throw new Error(e);
+    }
   }
 
-  removeColumn() {
+  private async createColumn(
+    tableName: string,
+    columnName: string,
+    dataType: ModelAttributeColumnOptions<Model<any, any>> | DataType,
+    transaction: Transaction
+  ): Promise<void> {
+    await this._sequelize.getQueryInterface().addColumn(tableName, columnName, dataType, {transaction});
+  }
+  private async dropColumn(tableName: string, columnName: string, transaction: Transaction): Promise<void> {
+    await this._sequelize.getQueryInterface().removeColumn(tableName, columnName, {transaction});
+  }
+  private async createTable(tableName: string, attributes: ModelAttributes, transaction: Transaction): Promise<void> {
+    await this._sequelize.getQueryInterface().createTable(tableName, attributes, {transaction});
+  }
+  private async dropTable(tableName: string, transaction: Transaction): Promise<void> {
+    await this._sequelize.getQueryInterface().dropTable(tableName, {transaction});
+  }
+  private async createIndex() {
     //
   }
-
-  createTable() {
-    //
-  }
-  dropTable() {
-    //
-  }
-  createIndex() {
+  private async dropIndex() {
     //
   }
 }

@@ -16,36 +16,67 @@ describe('SchemaMigration', () => {
     it('drop, create, modify entity', () => {
       const currentSchema = buildSchemaFromFile(oldSchemaPath);
       const nextSchema = buildSchemaFromFile(newSchemaPath);
-      const migrationService = new SchemaMigrationService(currentSchema, nextSchema);
 
-      const v = migrationService.compareSchema();
+      const v = SchemaMigrationService.compareSchema(currentSchema, nextSchema);
       const expectOutput: SchemaChanges = {
         addedEntities: ['EntityFour'],
         removedEntities: ['EntityThree'],
         modifiedEntities: {
           EntityOne: {
-            addedFields: [],
-            removedFields: [],
-            modifiedFields: {
-              field3: {
-                type: {from: 'NamedType', to: 'NamedType'},
-                kind: {from: 'BigInt', to: 'EntityTwo'},
+            addedFields: [
+              {
+                fieldName: 'field3',
+                nullable: false,
+                type: 'EntityTwo',
               },
-            },
+            ],
+            removedFields: [
+              {
+                fieldName: 'field3',
+                nullable: true,
+                type: 'BigInt',
+              },
+            ],
           },
           EntityTwo: {
-            addedFields: [{kind: 'Name', value: 'field4', loc: {start: 459, end: 465} as any}],
-            removedFields: [{kind: 'Name', value: 'field1', loc: {start: 423, end: 429} as any}],
-            modifiedFields: {
-              field3: {
-                type: {from: 'NamedType', to: 'NamedType'},
-                kind: {from: 'BigInt', to: 'Int'},
+            addedFields: [
+              {
+                fieldName: 'field2',
+                type: 'String',
+                nullable: false,
               },
-            },
+              {
+                fieldName: 'field3',
+                type: 'Int',
+                nullable: true,
+              },
+              {
+                fieldName: 'field4',
+                type: 'EntityFour',
+                nullable: false,
+              },
+            ],
+            removedFields: [
+              {
+                fieldName: 'field2',
+                type: 'String',
+                nullable: true,
+              },
+              {
+                fieldName: 'field3',
+                type: 'BigInt',
+                nullable: true,
+              },
+              {
+                fieldName: 'field1',
+                type: 'Int',
+                nullable: false,
+              },
+            ],
           },
         },
       };
-      expect(JSON.parse(JSON.stringify(v))).toStrictEqual(expectOutput);
+      expect(v).toStrictEqual(expectOutput);
     });
   });
 });
