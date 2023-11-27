@@ -146,10 +146,7 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
           if (reader instanceof LocalReader) {
             asset.file = path.resolve(root, asset.file);
           } else {
-            const res = await reader.getFile(asset.file);
-            const outputPath = path.resolve(root, asset.file.replace('ipfs://', ''));
-            await fs.promises.writeFile(outputPath, res as string);
-            asset.file = outputPath;
+            asset.file = await saveFile(reader, root, asset.file, '');
           }
         }
       }
