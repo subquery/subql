@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix ipfs deployment templates path failed to resolved, issue was introduced in #2182 
+
 ## [7.0.0] - 2023-11-27
 ### Added
 - The ability to find the last indexed with a valid block hash using POI (#2176)

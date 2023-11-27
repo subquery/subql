@@ -110,7 +110,7 @@ describe('SubqueryProject', () => {
     });
   });
 
-  it('loads chainTypes from deplyoment', async () => {
+  it('loads chainTypes from deployment', async () => {
     const reader = await ReaderFactory.create(
       'ipfs://QmZYR6tpRYvmnKoUtugpwYfH9CpP7a8fYYcLVX3d7dph2j',
       { ipfs: IPFS_NODE_ENDPOINT },
@@ -127,5 +127,27 @@ describe('SubqueryProject', () => {
     );
 
     expect(project.chainTypes).toBeDefined();
+  }, 50000);
+
+  it('loads asset file correctly from deployment', async () => {
+    const reader = await ReaderFactory.create(
+      'ipfs://QmRoosV27325uAeepKqaTEPFKjC3nk4rrKmZJSd7QXYKZQ',
+      { ipfs: IPFS_NODE_ENDPOINT },
+    );
+
+    const project = await SubqueryProject.create(
+      'ipfs://QmRoosV27325uAeepKqaTEPFKjC3nk4rrKmZJSd7QXYKZQ',
+      await reader.getProjectSchema(),
+      reader,
+      await getProjectRoot(reader),
+      {
+        endpoint: ['wss://moonriver.api.onfinality.io/public-ws'],
+      },
+    );
+    expect(project.templates[0].name).toBeDefined();
+    // Expect file path to be ipfs too
+    expect((project.templates[0] as any).assets.get('erc20').file).toBe(
+      'ipfs://QmYoHL3BvEW6nH1zYZqnziUHjajadu5ErJHavHS2zXkZhv',
+    );
   }, 50000);
 });
