@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-stellar",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -27,7 +27,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^3.3.0",
     "@subql/common-stellar": "workspace:*",
-    "@subql/node-core": "^6.4.2",
+    "@subql/node-core": "^7.0.0",
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.2.1-1",
     "@subql/types-stellar": "workspace:*",
