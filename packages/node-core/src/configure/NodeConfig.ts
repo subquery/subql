@@ -177,7 +177,7 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
       return this._config.dictionaryRegistry;
     }
 
-    return 'https://github.com/subquery/templates/raw/main/dictionary.json';
+    return 'https://github.com/subquery/templates/raw/main/dist/dictionary.json';
   }
 
   get timeout(): number {
