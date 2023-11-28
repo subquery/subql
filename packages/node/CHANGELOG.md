@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.1] - 2023-11-28
+### Fixed
+- Fix ipfs deployment templates path failed to resolved, issue was introduced node-core 7.0.0
+- Update with node-core to fix network dictionary timeout but not fallback to config dictionary issue
+
 ## [3.4.0] - 2023-11-27
 ### Changed
 - Update `@subql/node-core` with minor fixes
@@ -16,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.3.1] - 2023-11-13
 ### Changed
-- Updates to match changes in 
+- Updates to match changes in `@subql/node-core` (#34)
   - Dictionary service to use dictionary registry
   - Use yargs from node core
 
@@ -55,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.4.1...HEAD
+[3.4.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.4.0...node-stellar/3.4.1
 [3.4.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.2...node-stellar/3.4.0
 [3.3.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.1...node-stellar/3.3.2
 [3.3.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.3.0...node-stellar/3.3.1
