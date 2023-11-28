@@ -360,7 +360,7 @@ describe('DictionaryService', () => {
     const dictUrl: string = await (DictionaryService as any).resolveDictionary(
       NETWORK_FAMILY.ethereum,
       1,
-      'https://github.com/subquery/templates/raw/main/dictionary.json'
+      'https://github.com/subquery/templates/raw/main/dist/dictionary.json'
     );
 
     expect(dictUrl).toEqual('https://dict-tyk.subquery.network/query/eth-mainnet');
