@@ -22,7 +22,7 @@ export enum NETWORK_FAMILY {
   substrate = 'Substrate',
   cosmos = 'Cosmos',
   algorand = 'Algorand',
-  ethereum = 'evm',
+  ethereum = 'Ethereum',
   flare = 'Flare',
   near = 'Near',
   stellar = 'Stellar',
