@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.1] - 2023-11-28
 ### Fixed
-- Fix ipfs deployment templates path failed to resolved, issue was introduced in #2182 
+- Fix ipfs deployment templates path failed to resolved, issue was introduced in #2182
+- Update @subql/apollo-links to fix network dictionary timeout but not fallback to config dictionary issue
 
 ## [7.0.0] - 2023-11-27
 ### Added
@@ -505,7 +507,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.1...HEAD
+[7.0.1]: https://github.com/subquery/subql/compare/node-core/7.0.0...node-core/7.0.1
 [7.0.0]: https://github.com/subquery/subql/compare/node-core/6.4.2...node-core/7.0.0
 [6.4.2]: https://github.com/subquery/subql/compare/node-core/6.4.1...node-core/6.4.2
 [6.4.1]: https://github.com/subquery/subql/compare/node-core/6.4.0...node-core/6.4.1
