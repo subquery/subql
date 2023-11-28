@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.1] - 2023-11-28
 ### Fixed
-- Fix ipfs deployment templates path failed to resolved, issue was introduced in #2182
+- Fix ipfs deployment templates path failed to resolved, issue was introduced in #2182 (#2185)
 - Update @subql/apollo-links to fix network dictionary timeout but not fallback to config dictionary issue
 
 ## [7.0.0] - 2023-11-27
