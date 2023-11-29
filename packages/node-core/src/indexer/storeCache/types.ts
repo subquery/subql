@@ -3,7 +3,7 @@
 
 import {FieldsExpression} from '@subql/types-core';
 import {Transaction} from '@subql/x-sequelize';
-import LRUCache from 'lru-cache';
+import {LRUCache} from 'lru-cache';
 import {SetValueModel} from './setValueModel';
 
 export type HistoricalModel = {__block_range: any};

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import LRUCache from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 
 const MAX_CACHE_SIZE = 200;
 const CACHE_TTL = 60 * 1000;
