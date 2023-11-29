@@ -12,7 +12,6 @@ import {
   dictionaryEndpoints,
   imageVersions,
   ipfsCID_validate,
-  networkEndpoints,
   processEndpoints,
   projectsInfo,
   splitEndpoints,

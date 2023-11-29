@@ -203,21 +203,6 @@ export async function dictionaryEndpoints(url: string): Promise<EndpointType[]> 
   }
 }
 
-export async function networkEndpoints(url: string): Promise<EndpointType[]> {
-  try {
-    const result = (
-      await axios({
-        method: 'get',
-        url: `subqueries/network-endpoints`,
-        baseURL: url,
-      })
-    ).data;
-    return result;
-  } catch (e) {
-    errorHandle(e, 'Failed to get endpoint:');
-  }
-}
-
 export function processEndpoints(endpoints: EndpointType[], chainId: string): string | undefined {
   return endpoints.find((endpoint: EndpointType) => endpoint.chainId === chainId)?.endpoint;
 }
