@@ -12,7 +12,6 @@ import {
   dictionaryEndpoints,
   imageVersions,
   ipfsCID_validate,
-  networkEndpoints,
   processEndpoints,
   projectsInfo,
   splitEndpoints,
@@ -34,7 +33,7 @@ export default class Deploy extends Command {
     indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
     queryVersion: Flags.string({description: 'Enter query-version', required: false}),
     dict: Flags.string({description: 'Enter dictionary', required: false}),
-    endpoint: Flags.string({description: 'Enter endpoint', required: false}),
+    endpoint: Flags.string({description: 'Enter endpoint', required: true}),
     //indexer set up flags
     indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
     indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
@@ -74,14 +73,11 @@ export default class Deploy extends Command {
     }
 
     if (!endpoint) {
-      const validateEndpoint = processEndpoints(await networkEndpoints(ROOT_API_URL_PROD), validator.chainId);
-      if (!flags.useDefaults) {
-        endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', validateEndpoint, null, true);
-      } else if (validateEndpoint) {
-        endpoint = validateEndpoint;
-      } else {
-        throw new Error(chalk.red('Please use --endpoint flag when using a custom Endpoint'));
+      if (flags.useDefaults) {
+        throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag'));
       }
+
+      endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, null, true);
     }
 
     const queryAD = {

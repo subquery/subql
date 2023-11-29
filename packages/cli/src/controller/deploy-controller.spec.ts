@@ -10,7 +10,6 @@ import {
   deleteDeployment,
   deploymentStatus,
   ipfsCID_validate,
-  networkEndpoints,
   dictionaryEndpoints,
   imageVersions,
   processEndpoints,
@@ -53,13 +52,13 @@ async function deployTestProject(
     url
   );
 
-  const endpoint = await networkEndpoints(url);
+  const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
   const dictEndpoint = await dictionaryEndpoints(url);
 
   const project = {
     cid: ipfs,
     dictEndpoint: processEndpoints(dictEndpoint, validator.chainId),
-    endpoint: processEndpoints(endpoint, validator.chainId),
+    endpoint,
     indexerImageVersion: indexerV[0],
     indexerAdvancedSettings: {
       indexer: {},
@@ -76,7 +75,7 @@ const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
 
-describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
+describe('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, projectName, repository, subtitle} = projectSpec;
     try {
@@ -146,11 +145,6 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     );
   });
 
-  it('get Endpoint - polkadot', async () => {
-    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
-    const endpoints = await networkEndpoints(ROOT_API_URL_DEV);
-    expect(processEndpoints(endpoints, validator.chainId)).toBe('wss://polkadot.api.onfinality.io/public-ws');
-  });
   it('get DictEndpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
@@ -166,7 +160,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
     const initProjectInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);
 
-    const endpoints = await networkEndpoints(ROOT_API_URL_DEV);
+    const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
     const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
     const indexerV = await imageVersions(
       validator.manifestRunner.node.name,
@@ -184,7 +178,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     const project = {
       cid: ipfs,
       dictEndpoint: processEndpoints(dict, validator.chainId),
-      endpoint: processEndpoints(endpoints, validator.chainId),
+      endpoint,
       indexerImageVersion: indexerV[0],
       indexerAdvancedSettings: {
         indexer: {},
