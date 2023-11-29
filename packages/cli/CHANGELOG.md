@@ -507,7 +507,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.3...HEAD
+[4.2.3]: https://github.com/subquery/subql/compare/cli/4.2.2...cli/4.2.3
 [4.2.2]: https://github.com/subquery/subql/compare/cli/4.2.1...cli/4.2.2
 [4.2.1]: https://github.com/subquery/subql/compare/cli/4.2.0...cli/4.2.1
 [4.2.0]: https://github.com/subquery/subql/compare/cli/4.1.0...cli/4.2.0
