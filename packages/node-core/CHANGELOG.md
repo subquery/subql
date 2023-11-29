@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - dictionary registry path (#2187)
 
+### Fixed
+- bump `lru-cache` to `10.1.0` and remove default exports (#2189)
+
 ## [7.0.1] - 2023-11-28
 ### Fixed
 - Fix ipfs deployment templates path failed to resolved, issue was introduced in #2182 (#2185)
