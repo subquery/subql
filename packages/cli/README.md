@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/4.2.2-1 linux-x64 node-v18.18.2
+@subql/cli/4.2.3-0 linux-x64 node-v18.18.2
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -69,7 +69,7 @@ DESCRIPTION
   Build this SubQuery project code
 ```
 
-_See code: [lib/commands/build/index.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/build/index.js)_
+_See code: [lib/commands/build/index.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/build/index.js)_
 
 ## `subql codegen`
 
@@ -87,7 +87,7 @@ DESCRIPTION
   Generate schemas for graph node
 ```
 
-_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/codegen/index.js)_
+_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/codegen/index.js)_
 
 ## `subql codegen:generate`
 
@@ -110,7 +110,7 @@ DESCRIPTION
   Generate Project.yaml and mapping functions based on provided ABI
 ```
 
-_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/codegen/generate.js)_
+_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/codegen/generate.js)_
 
 ## `subql deployment`
 
@@ -118,8 +118,8 @@ Deploy to hosted service
 
 ```
 USAGE
-  $ subql deployment [--options deploy|promote|delete] [--org <value>] [--projectName <value>] [--ipfsCID
-    <value>] [--type stage|primary] [--indexerVersion <value>] [--queryVersion <value>] [--dict <value>] [--endpoint
+  $ subql deployment --endpoint <value> [--options deploy|promote|delete] [--org <value>] [--projectName
+    <value>] [--ipfsCID <value>] [--type stage|primary] [--indexerVersion <value>] [--queryVersion <value>] [--dict
     <value>] [--indexerUnsafe] [--indexerBatchSize <value>] [--indexerSubscription] [--disableHistorical]
     [--indexerWorkers <value>] [--queryUnsafe] [--querySubscription] [--queryTimeout <value>] [--queryMaxConnection
     <value>] [--queryAggregate] [-d] [--project_name <value>] [--deploymentID <value>]
@@ -129,7 +129,7 @@ FLAGS
   --deploymentID=<value>        Enter deployment ID
   --dict=<value>                Enter dictionary
   --disableHistorical           Disable Historical Data
-  --endpoint=<value>            Enter endpoint
+  --endpoint=<value>            (required) Enter endpoint
   --indexerBatchSize=<value>    Enter batchSize from 1 to 30
   --indexerSubscription         Enable Indexer subscription
   --indexerUnsafe               Enable indexer unsafe
@@ -153,7 +153,7 @@ DESCRIPTION
   Deploy to hosted service
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/deployment/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/deployment/index.js)_
 
 ## `subql deployment:delete`
 
@@ -172,7 +172,7 @@ DESCRIPTION
   Delete Deployment
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/deployment/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/deployment/delete.js)_
 
 ## `subql deployment:deploy`
 
@@ -180,8 +180,8 @@ Deployment to hosted service
 
 ```
 USAGE
-  $ subql deployment:deploy [--org <value>] [--projectName <value>] [--ipfsCID <value>] [--type stage|primary]
-    [--indexerVersion <value>] [--queryVersion <value>] [--dict <value>] [--endpoint <value>] [--indexerUnsafe]
+  $ subql deployment:deploy --endpoint <value> [--org <value>] [--projectName <value>] [--ipfsCID <value>] [--type
+    stage|primary] [--indexerVersion <value>] [--queryVersion <value>] [--dict <value>] [--indexerUnsafe]
     [--indexerBatchSize <value>] [--indexerSubscription] [--disableHistorical] [--indexerWorkers <value>]
     [--queryUnsafe] [--querySubscription] [--queryTimeout <value>] [--queryMaxConnection <value>] [--queryAggregate]
     [-d]
@@ -190,7 +190,7 @@ FLAGS
   -d, --useDefaults             Use default values for indexerVersion, queryVersion, dictionary, endpoint
   --dict=<value>                Enter dictionary
   --disableHistorical           Disable Historical Data
-  --endpoint=<value>            Enter endpoint
+  --endpoint=<value>            (required) Enter endpoint
   --indexerBatchSize=<value>    Enter batchSize from 1 to 30
   --indexerSubscription         Enable Indexer subscription
   --indexerUnsafe               Enable indexer unsafe
@@ -212,7 +212,7 @@ DESCRIPTION
   Deployment to hosted service
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/deployment/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/deployment/deploy.js)_
 
 ## `subql deployment:promote`
 
@@ -231,7 +231,7 @@ DESCRIPTION
   Promote Deployment
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/deployment/promote.js)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/deployment/promote.js)_
 
 ## `subql init [PROJECTNAME]`
 
@@ -255,7 +255,7 @@ DESCRIPTION
   Initialize a scaffold subquery project
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/init.js)_
 
 ## `subql multi-chain:add`
 
@@ -274,7 +274,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain configuration
 ```
 
-_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/multi-chain/add.js)_
+_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/multi-chain/add.js)_
 
 ## `subql project`
 
@@ -300,7 +300,7 @@ DESCRIPTION
   Create/Delete project
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/project/index.js)_
 
 ## `subql project:create-project`
 
@@ -325,7 +325,7 @@ DESCRIPTION
   Create Project on Hosted Service
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/project/create-project.js)_
 
 ## `subql project:delete-project`
 
@@ -343,7 +343,7 @@ DESCRIPTION
   Delete Project on Hosted Service
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
@@ -362,6 +362,6 @@ DESCRIPTION
   Upload this SubQuery project to IPFS
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v4.2.2-1/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v4.2.3-0/lib/commands/publish.js)_
 
 <!-- commandsstop -->
