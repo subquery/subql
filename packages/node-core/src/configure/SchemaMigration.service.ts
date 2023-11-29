@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Injectable, Optional} from '@nestjs/common';
 import {
   Sequelize,
   Transaction,
@@ -10,18 +11,8 @@ import {
   DataType,
   DataTypes,
 } from '@subql/x-sequelize';
-import {
-  GraphQLSchema,
-  ObjectTypeDefinitionNode,
-  parse,
-  printSchema,
-  visit,
-  NameNode,
-  DefinitionNode,
-  TypeNode,
-} from 'graphql';
+import {GraphQLSchema, ObjectTypeDefinitionNode, parse, printSchema, visit, DefinitionNode, TypeNode} from 'graphql';
 import {getLogger} from '../logger';
-import {NodeConfig} from './NodeConfig';
 
 interface FieldDetailsType {
   fieldName: string;
@@ -34,17 +25,13 @@ export interface EntityChanges {
 }
 
 export interface SchemaChanges {
-  addedEntities: string[];
+  addedEntities: {entityName: string; attributes: ModelAttributes}[];
   removedEntities: string[];
   modifiedEntities: Record<string, EntityChanges>;
 }
 
-// export interface ISchemaMigrationService {
-//     schemaComparator(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema):
-// }
-
 const logger = getLogger('SchemaMigrationService');
-// need test for this
+
 export function extractTypeDetails(typeNode: TypeNode): {dataType: string; graphQLType: string} {
   let currentTypeNode: TypeNode = typeNode;
 
@@ -57,10 +44,13 @@ export function extractTypeDetails(typeNode: TypeNode): {dataType: string; graph
   return {graphQLType: currentTypeNode.kind, dataType: name};
 }
 
-function mapGraphQLTypeToSequelize(type: string): DataType {
+function mapGraphQLTypeToSequelize(type: string, knownEntities: Set<string>): DataType {
+  if (knownEntities.has(type)) {
+    return DataTypes.UUID;
+  }
+
   const typeMapping: Record<string, DataType> = {
     Int: DataTypes.INTEGER,
-    Float: DataTypes.FLOAT,
     String: DataTypes.STRING,
     Boolean: DataTypes.BOOLEAN,
     ID: DataTypes.UUID,
@@ -72,16 +62,11 @@ function mapGraphQLTypeToSequelize(type: string): DataType {
   return typeMapping[type] || DataTypes.STRING; // Default to STRING if type not found
 }
 
+@Injectable()
 export class SchemaMigrationService {
-  private readonly _currentSchema: GraphQLSchema;
-  private readonly _nextSchema: GraphQLSchema;
-  private _sequelize: Sequelize;
-  constructor(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema, config: NodeConfig, sequelize: Sequelize) {
-    this._sequelize = sequelize;
-    this._currentSchema = currentSchema;
-    this._nextSchema = nextSchema;
-  }
-  static compareSchema(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): SchemaChanges {
+  constructor(private sequelize: Sequelize) {}
+
+  compareSchema(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): SchemaChanges {
     const currentSchemaString = printSchema(currentSchema);
     const nextSchemaString = printSchema(nextSchema);
 
@@ -95,6 +80,17 @@ export class SchemaMigrationService {
       modifiedEntities: {},
     };
 
+    // Collect all entity names from both schemas
+    const knownEntityNames = new Set<string>();
+
+    const collectEntityNames = (node: ObjectTypeDefinitionNode) => {
+      knownEntityNames.add(node.name.value);
+    };
+
+    // This must be looped prior to set knownEntityName
+    visit(currentSchemaAST, {ObjectTypeDefinition: collectEntityNames});
+    visit(nextSchemaAST, {ObjectTypeDefinition: collectEntityNames});
+
     visit(nextSchemaAST, {
       ObjectTypeDefinition(node) {
         const typeName = node.name.value;
@@ -103,7 +99,19 @@ export class SchemaMigrationService {
         ) as ObjectTypeDefinitionNode;
 
         if (oldTypeNode === undefined) {
-          changes.addedEntities.push(typeName);
+          // Collect attributes for the new entity
+          const attributes =
+            node.fields?.reduce((acc, field) => {
+              const fieldDetails = extractTypeDetails(field.type);
+              acc[field.name.value] = {
+                type: mapGraphQLTypeToSequelize(fieldDetails.dataType, knownEntityNames),
+                allowNull: !field.type.kind.includes('NonNullType'),
+                // Add other relevant Sequelize attributes here
+              };
+              return acc;
+            }, {} as Record<string, any>) || {};
+
+          changes.addedEntities.push({entityName: typeName, attributes});
         } else {
           const newFields = node.fields?.map((field) => field) || [];
           const oldFields = oldTypeNode.fields?.map((field) => field) || [];
@@ -114,7 +122,7 @@ export class SchemaMigrationService {
               fieldName: field.name.value,
               type: extractTypeDetails(field.type).dataType,
               attributes: {
-                type: mapGraphQLTypeToSequelize(extractTypeDetails(field.type).dataType),
+                type: mapGraphQLTypeToSequelize(extractTypeDetails(field.type).dataType, knownEntityNames),
                 allowNull: !field.type.kind.includes('NonNullType'),
                 // TODO JSON types... etc needs to be added here
               },
@@ -125,7 +133,7 @@ export class SchemaMigrationService {
               fieldName: field.name.value,
               type: extractTypeDetails(field.type).dataType,
               attributes: {
-                type: mapGraphQLTypeToSequelize(extractTypeDetails(field.type).dataType),
+                type: mapGraphQLTypeToSequelize(extractTypeDetails(field.type).dataType, knownEntityNames),
                 allowNull: !field.type.kind.includes('NonNullType'),
                 // TODO JSON types... etc needs to be added here
               },
@@ -142,7 +150,7 @@ export class SchemaMigrationService {
                   fieldName: newField.name.value,
                   type: extractTypeDetails(newField.type).dataType,
                   attributes: {
-                    type: mapGraphQLTypeToSequelize(extractTypeDetails(newField.type).dataType),
+                    type: mapGraphQLTypeToSequelize(extractTypeDetails(newField.type).dataType, knownEntityNames),
                     allowNull: !newField.type.kind.includes('NonNullType'),
                     // TODO JSON types... etc needs to be added here
                   },
@@ -152,7 +160,7 @@ export class SchemaMigrationService {
                   fieldName: oldField.name.value,
                   type: extractTypeDetails(oldField.type).dataType,
                   attributes: {
-                    type: mapGraphQLTypeToSequelize(extractTypeDetails(oldField.type).dataType),
+                    type: mapGraphQLTypeToSequelize(extractTypeDetails(oldField.type).dataType, knownEntityNames),
                     allowNull: !oldField.type.kind.includes('NonNullType'),
                     // TODO JSON types... etc needs to be added here
                   },
@@ -201,13 +209,14 @@ export class SchemaMigrationService {
     });
     return changes;
   }
+  // TODO: If modifying exisiting column, index check is necessary to find all existing Index, if there are indexes in place, then we must reintroduce it
 
-  async init(): Promise<void> {
-    const transaction = await this._sequelize.transaction();
-    const {addedEntities, modifiedEntities, removedEntities} = SchemaMigrationService.compareSchema(
-      this._currentSchema,
-      this._nextSchema
-    );
+  // TODO add relationToMap
+
+  // TODO add id and blockRange Attributes
+  async run(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): Promise<void> {
+    const transaction = await this.sequelize.transaction();
+    const {addedEntities, modifiedEntities, removedEntities} = this.compareSchema(currentSchema, nextSchema);
 
     try {
       // Remove should always occur before create
@@ -216,10 +225,10 @@ export class SchemaMigrationService {
       }
 
       if (addedEntities.length) {
-        // how do i get modelAttributes ???
-        // Promise.all(addedEntities.map(entity => this.createTable(
-        //     entity,
-        // )))
+        // TODO if the table has fields that is relational to another table that is yet to exist, that table should be created first
+        await Promise.all(
+          addedEntities.map((entity) => this.createTable(entity.entityName, entity.attributes, transaction))
+        );
       }
       const dropColumnExecutables: Promise<void>[] = [];
       const createColumnExecutables: Promise<void>[] = [];
@@ -256,16 +265,16 @@ export class SchemaMigrationService {
     dataType: ModelAttributeColumnOptions<Model<any, any>> | DataType,
     transaction: Transaction
   ): Promise<void> {
-    await this._sequelize.getQueryInterface().addColumn(tableName, columnName, dataType, {transaction});
+    await this.sequelize.getQueryInterface().addColumn(tableName, columnName, dataType, {transaction});
   }
   private async dropColumn(tableName: string, columnName: string, transaction: Transaction): Promise<void> {
-    await this._sequelize.getQueryInterface().removeColumn(tableName, columnName, {transaction});
+    await this.sequelize.getQueryInterface().removeColumn(tableName, columnName, {transaction});
   }
   private async createTable(tableName: string, attributes: ModelAttributes, transaction: Transaction): Promise<void> {
-    await this._sequelize.getQueryInterface().createTable(tableName, attributes, {transaction});
+    await this.sequelize.getQueryInterface().createTable(tableName, attributes, {transaction});
   }
   private async dropTable(tableName: string, transaction: Transaction): Promise<void> {
-    await this._sequelize.getQueryInterface().dropTable(tableName, {transaction});
+    await this.sequelize.getQueryInterface().dropTable(tableName, {transaction});
   }
   private async createIndex() {
     //

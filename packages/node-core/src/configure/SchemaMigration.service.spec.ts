@@ -4,7 +4,7 @@
 import path from 'path';
 import {SchemaChanges, SchemaMigrationService} from '@subql/node-core';
 import {buildSchemaFromFile} from '@subql/utils';
-import {DataTypes} from '@subql/x-sequelize';
+import {DataTypes, ModelAttributes} from '@subql/x-sequelize';
 
 describe('SchemaMigration', () => {
   describe('comparator', () => {
@@ -18,9 +18,28 @@ describe('SchemaMigration', () => {
       const currentSchema = buildSchemaFromFile(oldSchemaPath);
       const nextSchema = buildSchemaFromFile(newSchemaPath);
 
-      const v = SchemaMigrationService.compareSchema(currentSchema, nextSchema);
+      const mockAttributes = {
+        field1: {
+          allowNull: false,
+          type: DataTypes.INTEGER,
+        },
+        field2: {
+          allowNull: true,
+          type: DataTypes.STRING,
+        },
+        field3: {
+          allowNull: true,
+          type: DataTypes.UUID,
+        },
+        id: {
+          allowNull: false,
+          type: DataTypes.UUID,
+        },
+      };
+
+      const v = new SchemaMigrationService({} as any);
       const expectOutput: SchemaChanges = {
-        addedEntities: ['EntityFour'],
+        addedEntities: [{entityName: 'EntityFour', attributes: mockAttributes as unknown as ModelAttributes}],
         removedEntities: ['EntityThree'],
         modifiedEntities: {
           EntityOne: {
@@ -29,7 +48,7 @@ describe('SchemaMigration', () => {
                 fieldName: 'field3',
                 type: 'EntityTwo',
                 attributes: {
-                  type: DataTypes.STRING,
+                  type: DataTypes.UUID,
                   allowNull: false,
                 },
               },
@@ -67,7 +86,7 @@ describe('SchemaMigration', () => {
                 fieldName: 'field4',
                 type: 'EntityFour',
                 attributes: {
-                  type: DataTypes.STRING, // TODO this should be primary key
+                  type: DataTypes.UUID, // TODO this should be primary key
                   allowNull: false,
                 },
               },

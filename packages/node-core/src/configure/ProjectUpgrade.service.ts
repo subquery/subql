@@ -13,7 +13,11 @@ import {BlockHeightMap} from '../utils/blockHeightMap';
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
 
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
-  init: (metadata: CacheMetadataModel, onProjectUpgrade?: OnProjectUpgradeCallback<P>) => Promise<number | undefined>;
+  init: (
+    metadata: CacheMetadataModel,
+    schemaMigrationService: SchemaMigrationService,
+    onProjectUpgrade?: OnProjectUpgradeCallback<P>
+  ) => Promise<number | undefined>;
   /**
    * This should only be called from within a worker thread as they dont have access to the store
    * */
@@ -89,8 +93,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   #initialized = false;
 
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
-
-  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
+  private migrationService?: SchemaMigrationService;
+  private constructor(
+    private _projects: BlockHeightMap<P>,
+    currentHeight: number
+    // private migrationService: SchemaMigrationService
+  ) {
     logger.info(
       `Projects: ${JSON.stringify(
         [..._projects.getAll().entries()].reduce((acc, curr) => {
@@ -109,6 +117,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   async init(
     metadata: CacheMetadataModel,
+    schemaMigrationService?: SchemaMigrationService,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
     if (this.#initialized) {
@@ -118,6 +127,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#initialized = true;
     this.#metadata = metadata;
     this.onProjectUpgrade = onProjectUpgrade;
+    this.migrationService = schemaMigrationService;
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 
@@ -160,6 +170,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     // Need to set this so that operations under hasChanged use the new project
     this.#currentProject = newProject;
 
+    // this is where i should be calling schemaMigration method
     if (hasChanged) {
       if (isMainThread) {
         try {
@@ -185,6 +196,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   static async create<P extends ISubqueryProject>(
     startProject: P, // The project passed in via application start
     loadProject: (ipfsCid: string) => Promise<P>,
+    // @Inject(SchemaMigrationService) migrationService: SchemaMigrationService,
     startHeight?: number // How far back we need to load parent versions
   ): Promise<ProjectUpgradeSevice<P>> {
     const projects: Map<number, P> = new Map();
@@ -246,8 +258,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     const currentSchema = currentProject.schema;
     const nextSchema = nextProject.schema;
     const startProjectSchema = startProject.schema;
+    // migrationService.run()
 
-    const migrationService = SchemaMigrationService.compareSchema(currentSchema, startProjectSchema);
+    // const migrationService = new SchemaMigrationService(
+    //     currentSchema,
+    //     startProjectSchema,
+    // );
     // migrationService.compareSchema();
 
     assert(currentHeight, 'Unable to determine current height from projects');

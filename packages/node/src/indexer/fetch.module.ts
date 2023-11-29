@@ -16,6 +16,7 @@ import {
   IProjectUpgradeService,
   PoiSyncService,
   InMemoryCacheService,
+  SchemaMigrationService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -114,8 +115,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         DynamicDsService,
         UnfinalizedBlocksService,
         ConnectionPoolStateManager,
+        // SchemaMigrationService,
       ],
     },
+    // SchemaMigrationService,
     FetchService,
     ConnectionPoolService,
     IndexingBenchmarkService,

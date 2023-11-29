@@ -1,8 +1,10 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Sequelize} from '@subql/x-sequelize';
 import {CacheMetadataModel, ISubqueryProject} from '../indexer';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
+import {SchemaMigrationService} from './SchemaMigration.service';
 
 const templateProject = {
   network: {
@@ -97,6 +99,7 @@ const mockMetadata = () => {
     set: jest.fn((_, value) => (deployments = JSON.parse(value))),
   } as any as CacheMetadataModel;
 };
+const mockSchemaMigrationService = new SchemaMigrationService({} as Sequelize);
 
 describe('Project Upgrades', () => {
   describe('Loading projects', () => {
@@ -104,6 +107,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[0],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         1
       );
 
@@ -114,6 +118,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         1
       );
 
@@ -122,7 +127,12 @@ describe('Project Upgrades', () => {
 
     it('can handle projects that somehow refer to each other', async () => {
       await expect(
-        ProjectUpgradeSevice.create(loopProjects[1], (id) => Promise.resolve(loopProjects[parseInt(id, 10)]), 1)
+        ProjectUpgradeSevice.create(
+          loopProjects[1],
+          (id) => Promise.resolve(loopProjects[parseInt(id, 10)]),
+          mockSchemaMigrationService,
+          1
+        )
       ).rejects.toThrow();
     });
 
@@ -130,6 +140,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         21
       );
 
@@ -140,6 +151,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         20
       );
 
@@ -148,7 +160,12 @@ describe('Project Upgrades', () => {
 
     it('will throw if parent projects are not at an earlier height', async () => {
       await expect(
-        ProjectUpgradeSevice.create(futureProjects[2], (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1)
+        ProjectUpgradeSevice.create(
+          futureProjects[2],
+          (id) => Promise.resolve(futureProjects[parseInt(id, 10)]),
+          mockSchemaMigrationService,
+          1
+        )
       ).rejects.toThrow();
     });
 
@@ -157,7 +174,12 @@ describe('Project Upgrades', () => {
         dataSources: [{startBlock: 20}],
       } as ISubqueryProject;
       await expect(
-        ProjectUpgradeSevice.create(project, (id) => Promise.resolve(futureProjects[parseInt(id, 10)]), 1)
+        ProjectUpgradeSevice.create(
+          project,
+          (id) => Promise.resolve(futureProjects[parseInt(id, 10)]),
+          mockSchemaMigrationService,
+          1
+        )
       ).rejects.toThrow();
     });
 
@@ -177,7 +199,12 @@ describe('Project Upgrades', () => {
       ] as ISubqueryProject[];
 
       await expect(
-        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1)
+        ProjectUpgradeSevice.create(
+          projects[1],
+          (id) => Promise.resolve(projects[parseInt(id, 10)]),
+          mockSchemaMigrationService,
+          1
+        )
       ).rejects.toThrow();
     });
 
@@ -201,7 +228,12 @@ describe('Project Upgrades', () => {
       ] as ISubqueryProject[];
 
       await expect(
-        ProjectUpgradeSevice.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]), 1)
+        ProjectUpgradeSevice.create(
+          projects[1],
+          (id) => Promise.resolve(projects[parseInt(id, 10)]),
+          mockSchemaMigrationService,
+          1
+        )
       ).rejects.toThrow();
     });
   });
@@ -213,6 +245,7 @@ describe('Project Upgrades', () => {
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         1
       );
     });
@@ -238,6 +271,7 @@ describe('Project Upgrades', () => {
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         1
       );
 
@@ -296,6 +330,7 @@ describe('Project Upgrades', () => {
       upgradeService = await ProjectUpgradeSevice.create(
         {...demoProjects[5], id: '5'},
         (id) => Promise.resolve({...demoProjects[parseInt(id, 10)], id}),
+        mockSchemaMigrationService,
         1
       );
     });
@@ -339,6 +374,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[0],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+        mockSchemaMigrationService,
         1
       );
 

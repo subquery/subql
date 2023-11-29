@@ -7,7 +7,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
-import {IProjectUpgradeService, NodeConfig} from '../configure';
+import {IProjectUpgradeService, NodeConfig, SchemaMigrationService} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {
@@ -368,7 +368,11 @@ export abstract class BaseProjectService<
   private async initUpgradeService(): Promise<number | undefined> {
     const metadata = this.storeService.storeCache.metadata;
 
-    const upgradePoint = await this.projectUpgradeService.init(metadata, this.handleProjectChange.bind(this));
+    const upgradePoint = await this.projectUpgradeService.init(
+      metadata,
+      new SchemaMigrationService(this.sequelize),
+      this.handleProjectChange.bind(this)
+    );
 
     // Called to allow handling the first project
     await this.onProjectChange(this.project);
