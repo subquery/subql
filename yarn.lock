@@ -3196,9 +3196,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "@subql/node-core@npm:7.0.1"
+"@subql/node-core@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "@subql/node-core@npm:7.0.2"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
@@ -3216,14 +3216,14 @@ __metadata:
     cross-fetch: ^3.1.6
     dayjs: ^1.10.7
     lodash: ^4.17.21
-    lru-cache: 8.0.4
+    lru-cache: 10.1.0
     merkle-tools: ^1.4.1
     prom-client: ^14.0.1
     source-map: ^0.7.4
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 61060f1578cb8698ff3ed9a8ece1ae045e27704a1ce37dfbb2bac75cc7d4babf006582ca2d9539f3fb2d07a6af22d45daec7649ca7894f92b08df918203712be
+  checksum: 81b991bc727d83f3f8f7acd6e7988a6828d029b4cd09e870b0d46d55316031d64564bc8ae8d615a89e95553971c17a715505559f82058ba503571fbb03ad817d
   languageName: node
   linkType: hard
 
@@ -3241,7 +3241,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.3.0
     "@subql/common-stellar": "workspace:*"
-    "@subql/node-core": ^7.0.1
+    "@subql/node-core": ^7.0.2
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.2.1-1
     "@subql/types-stellar": "workspace:*"
@@ -3290,7 +3290,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.3.0, @subql/types-core@npm:^0.3.0":
+"@subql/types-core@npm:0.3.0":
   version: 0.3.0
   resolution: "@subql/types-core@npm:0.3.0"
   dependencies:
@@ -3308,11 +3308,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-core@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@subql/types-core@npm:0.4.0"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: e3565739c7a7e74f00dd1cfb81a1d4dab00875c23b7759dec0e3dd89e5e29d49e90aec2ef8366b77113a15fe85f6dd1a33476600a21ce7779ed1444920732a90
+  languageName: node
+  linkType: hard
+
 "@subql/types-stellar@workspace:*, @subql/types-stellar@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types-stellar@workspace:packages/types"
   dependencies:
-    "@subql/types-core": ^0.3.0
+    "@subql/types-core": ^0.4.0
     soroban-client: 0.9.2
     stellar-sdk: ^10.4.1
   languageName: unknown
@@ -9346,10 +9355,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:8.0.4":
-  version: 8.0.4
-  resolution: "lru-cache@npm:8.0.4"
-  checksum: dee2b905a8cd688c5847faa46ba3cfeaa0766283b244bfd6177420e04e9d923fc901a9a578fc3963d70959631595240ead37abaf43e21968bb9805bbd9519856
+"lru-cache@npm:10.1.0":
+  version: 10.1.0
+  resolution: "lru-cache@npm:10.1.0"
+  checksum: 58056d33e2500fbedce92f8c542e7c11b50d7d086578f14b7074d8c241422004af0718e08a6eaae8705cee09c77e39a61c1c79e9370ba689b7010c152e6a76ab
   languageName: node
   linkType: hard
 
