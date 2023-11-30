@@ -145,9 +145,11 @@ describe('SubqueryProject', () => {
       },
     );
     expect(project.templates[0].name).toBeDefined();
-    // Expect file path to be ipfs too
-    expect((project.templates[0] as any).assets.get('erc20').file).toBe(
-      'ipfs://QmYoHL3BvEW6nH1zYZqnziUHjajadu5ErJHavHS2zXkZhv',
+    // Expect asset to be fetched
+    const regexPattern = /^\/var\/folders\/\d+\/\w+\/T\/\w+\/\w+$/;
+
+    expect((project.templates[0] as any).assets.get('erc20').file).toMatch(
+      regexPattern,
     );
   }, 50000);
 });
