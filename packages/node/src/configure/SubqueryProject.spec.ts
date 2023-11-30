@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import path from 'path';
 
 import {
@@ -11,7 +12,27 @@ import {
   makeTempDir,
   ReaderFactory,
 } from '@subql/common';
-import { Reader } from '@subql/types-core';
+import {
+  SubstrateCustomDataSourceImpl,
+  isCustomDs,
+} from '@subql/common-substrate';
+import {
+  loadDataSourceScript,
+  saveFile,
+  SubqlProjectDs,
+  updateDataSourcesEntry,
+  updateDataSourcesV1_0_0,
+  updateProcessor,
+} from '@subql/node-core';
+import {
+  SubstrateCustomDatasource,
+  SubstrateRuntimeDatasource,
+} from '@subql/types';
+import {
+  BaseCustomDataSource,
+  BaseDataSource,
+  Reader,
+} from '@subql/types-core';
 import { SubqueryProject } from './SubqueryProject';
 
 // eslint-disable-next-line jest/no-export
@@ -153,3 +174,141 @@ describe('SubqueryProject', () => {
     );
   }, 50000);
 });
+
+describe('load asset with updateDataSourcesV1_0_0', () => {
+  const customDsImpl: SubstrateCustomDataSourceImpl[] = [
+    {
+      kind: 'substrate/FrontierEvm',
+      assets: new Map().set('erc20', {
+        file: 'ipfs://QmYoHL3BvEW6nH1zYZqnziUHjajadu5ErJHavHS2zXkZhv',
+      }),
+      mapping: {
+        file: 'ipfs://QmP4Hrfydh4zswkZYeTnnZQFhTGo3LkCfHz4jdkbP8ZA8P',
+        handlers: [
+          {
+            filter: {
+              topics: [
+                'Transfer(address indexed from,address indexed to,uint256 value)',
+              ],
+            },
+            handler: 'handleEvmEvent',
+            kind: 'substrate/FrontierEvmEvent',
+          },
+          {
+            filter: {
+              function: 'approve(address to,uint256 value)',
+            },
+            handler: 'handleEvmCall',
+            kind: 'substrate/FrontierEvmCall',
+          },
+        ],
+      },
+      processor: {
+        file: 'ipfs://QmeHHtqRFSJQwv8pr6oUDsAkNPNAPSXXPoKiab8NKJHkiH',
+        options: {
+          abi: 'erc20',
+          address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b',
+        },
+      },
+      startBlock: 752073,
+      validate: jest.fn(),
+    },
+  ];
+  let root: string;
+  let reader: Reader;
+  beforeEach(async () => {
+    reader = await ReaderFactory.create(
+      'ipfs://QmRoosV27325uAeepKqaTEPFKjC3nk4rrKmZJSd7QXYKZQ',
+      { ipfs: IPFS_NODE_ENDPOINT },
+    );
+    root = await makeTempDir();
+  });
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('incorrect created empty file for ds asset with old updateDataSourcesV1_0_0 method', async () => {
+    const ds = await updateDataSourcesV1_0_0_false<
+      SubstrateRuntimeDatasource,
+      SubstrateCustomDatasource<any, any>
+    >(customDsImpl, reader, root, isCustomDs);
+    const inspectAssetPath = (ds[0] as any).assets.get('erc20').file;
+    const { dir, ext } = path.parse(inspectAssetPath);
+    // Which is incorrect, asset should not have any extension.
+    expect(ext).toBe('.js');
+    const assetContent = fs.readFileSync(inspectAssetPath, 'utf8');
+    // And when we load it, it is empty file.
+    expect(assetContent).toBe('');
+  }, 50000);
+
+  it('After fix, it could load asset correctly', async () => {
+    const ds = await updateDataSourcesV1_0_0<
+      SubstrateRuntimeDatasource,
+      SubstrateCustomDatasource<any, any>
+    >(customDsImpl, reader, root, isCustomDs);
+    const inspectAssetPath = (ds[0] as any).assets.get('erc20').file;
+    const { dir, ext } = path.parse(inspectAssetPath);
+    // should have no extension
+    expect(ext).toBe('');
+    const assetContent = fs.readFileSync(inspectAssetPath, 'utf8');
+    // And when we load it, it should resolve correct abi
+    expect(assetContent).toContain('transferFrom');
+  }, 50000);
+});
+
+type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
+
+// The method implementation failed previously, and it is deprecated
+async function updateDataSourcesV1_0_0_false<
+  DS extends BaseDataSource,
+  CDS extends DS & BaseCustomDataSource,
+>(
+  _dataSources: (DS | CDS)[],
+  reader: Reader,
+  root: string,
+  isCustomDs: IsCustomDs<DS, CDS>,
+): Promise<SubqlProjectDs<DS | CDS>[]> {
+  // force convert to updated ds
+  return Promise.all(
+    _dataSources.map(async (dataSource) => {
+      dataSource.startBlock = dataSource.startBlock ?? 1;
+      const entryScript = await loadDataSourceScript(
+        reader,
+        dataSource.mapping.file,
+      );
+      const file = await updateDataSourcesEntry(
+        reader,
+        dataSource.mapping.file,
+        root,
+        entryScript,
+      );
+      if (isCustomDs(dataSource)) {
+        if (dataSource.processor) {
+          dataSource.processor.file = await updateProcessor(
+            reader,
+            root,
+            dataSource.processor.file,
+          );
+        }
+        if (dataSource.assets) {
+          for (const [, asset] of dataSource.assets) {
+            if (reader instanceof LocalReader) {
+              asset.file = path.resolve(root, asset.file);
+            } else {
+              asset.file = await saveFile(reader, root, asset.file, '');
+            }
+          }
+        }
+        return {
+          ...dataSource,
+          mapping: { ...dataSource.mapping, entryScript, file },
+        };
+      } else {
+        return {
+          ...dataSource,
+          mapping: { ...dataSource.mapping, entryScript, file },
+        };
+      }
+    }),
+  );
+}
