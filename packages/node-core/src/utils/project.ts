@@ -142,11 +142,12 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
       dataSource.startBlock = dataSource.startBlock ?? 1;
       const entryScript = await loadDataSourceScript(reader, dataSource.mapping.file);
       if (isAssetsDs(dataSource)) {
-        for (const [, asset] of Object.entries(dataSource.assets)) {
+        for (const [, asset] of dataSource.assets.entries()) {
+          // Only need to resolve path for local file
           if (reader instanceof LocalReader) {
             asset.file = path.resolve(root, asset.file);
           } else {
-            asset.file = await saveFile(reader, root, asset.file, '');
+            asset.file = await fetchAndSaveFile(reader, root, asset.file, '');
           }
         }
       }

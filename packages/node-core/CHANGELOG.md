@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed resolved asset file with incorrect format and content in #2185
+
 ## [7.0.2] - 2023-11-29
 ### Changed
 - dictionary registry path (#2187)
