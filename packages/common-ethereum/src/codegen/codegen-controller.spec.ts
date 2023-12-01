@@ -80,9 +80,7 @@ describe('Codegen spec', () => {
         abi: 'erc20',
         address: '',
       },
-      assets: {
-        erc20: {file: './abis/erc20.json'},
-      } as unknown as Map<string, {file: string}>,
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
       mapping: {
         file: '',
         handlers: [

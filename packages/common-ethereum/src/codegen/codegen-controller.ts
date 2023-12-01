@@ -51,8 +51,8 @@ export function prepareSortedAssets(
   datasources
     .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)))
     .forEach((d) => {
-      Object.entries(d.assets).map(([name, value]) => {
-        // should do a if covert to absolute
+      for (const [name, value] of d.assets.entries()) {
+        // should do if covert to absolute
         // if value.file is not absolute, the
         const filePath = path.join(projectPath, value.file);
         if (!fs.existsSync(filePath)) {
@@ -61,7 +61,7 @@ export function prepareSortedAssets(
         // We use actual abi file name instead on name provided in assets
         // This is aligning with files in './ethers-contracts'
         sortedAssets[parseContractPath(filePath).name] = value.file;
-      });
+      }
     });
   return sortedAssets;
 }

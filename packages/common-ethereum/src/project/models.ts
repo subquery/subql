@@ -191,6 +191,8 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
   @Type(() => EthereumMapping)
   @ValidateNested()
   mapping: M;
+  @Type(() => FileReferenceImpl)
+  @ValidateNested({each: true})
   @IsOptional()
   assets?: Map<string, FileReference>;
   @IsOptional()

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Correct asset type to map, also made update in codegen controller (#223)
+
 ## [3.1.0] - 2023-11-01
 ### Added
 - Update `@subql/common` and relevant changes to support endBlock feature (#195)

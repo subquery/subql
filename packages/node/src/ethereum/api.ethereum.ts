@@ -54,7 +54,7 @@ async function loadAssets(
   }
   const res: Record<string, string> = {};
 
-  for (const [name, { file }] of Object.entries(ds.assets)) {
+  for (const [name, { file }] of ds.assets.entries()) {
     try {
       res[name] = await fs.promises.readFile(file, { encoding: 'utf8' });
     } catch (e) {

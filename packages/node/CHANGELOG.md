@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix with after correct asset type (#223)
+
+
 ## [3.4.2] - 2023-11-30
 ### Fixed
 - Sync with `node-core` 7.0.2
