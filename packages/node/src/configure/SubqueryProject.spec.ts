@@ -179,9 +179,9 @@ describe('load asset with updateDataSourcesV1_0_0', () => {
   const customDsImpl: SubstrateCustomDataSourceImpl[] = [
     {
       kind: 'substrate/FrontierEvm',
-      assets: new Map().set('erc20', {
+      assets: new Map([['erc20', {
         file: 'ipfs://QmYoHL3BvEW6nH1zYZqnziUHjajadu5ErJHavHS2zXkZhv',
-      }),
+      ]]),
       mapping: {
         file: 'ipfs://QmP4Hrfydh4zswkZYeTnnZQFhTGo3LkCfHz4jdkbP8ZA8P',
         handlers: [
