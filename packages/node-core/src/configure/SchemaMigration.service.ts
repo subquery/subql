@@ -1,18 +1,19 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Injectable, Optional} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {
   Sequelize,
-  Transaction,
   ModelAttributes,
   ModelAttributeColumnOptions,
-  Model,
   DataType,
   DataTypes,
+  StringDataType,
+  Utils,
 } from '@subql/x-sequelize';
 import {GraphQLSchema, ObjectTypeDefinitionNode, parse, printSchema, visit, DefinitionNode, TypeNode} from 'graphql';
 import {getLogger} from '../logger';
+import {modelToTableName} from '../utils/sequelizeUtil';
 
 interface FieldDetailsType {
   fieldName: string;
@@ -44,6 +45,25 @@ export function extractTypeDetails(typeNode: TypeNode): {dataType: string; graph
   return {graphQLType: currentTypeNode.kind, dataType: name};
 }
 
+// just a wrapper for naming confusion
+function formatColumnName(columnName: string): string {
+  return Utils.underscoredIf(columnName, true);
+}
+
+const sequelizeToPostgresTypeMap = {
+  [DataTypes.STRING.name]: (dataType: DataType) => {
+    const stringDataType = dataType as StringDataType;
+    const length = stringDataType.options?.length;
+    return length ? `VARCHAR(${length})` : 'TEXT';
+  },
+  [DataTypes.INTEGER.name]: () => 'INTEGER',
+  [DataTypes.BIGINT.name]: () => 'BIGINT',
+  [DataTypes.UUID.name]: () => 'UUID',
+  [DataTypes.BOOLEAN.name]: () => 'BOOLEAN',
+  [DataTypes.FLOAT.name]: () => 'FLOAT',
+  [DataTypes.DATE.name]: () => 'TIMESTAMP',
+};
+
 function mapGraphQLTypeToSequelize(type: string, knownEntities: Set<string>): DataType {
   if (knownEntities.has(type)) {
     return DataTypes.UUID;
@@ -60,6 +80,35 @@ function mapGraphQLTypeToSequelize(type: string, knownEntities: Set<string>): Da
   };
 
   return typeMapping[type] || DataTypes.STRING; // Default to STRING if type not found
+}
+
+function formatDataType(dataType: DataType): string {
+  if (typeof dataType === 'string') {
+    return dataType;
+  } else {
+    const formatter = sequelizeToPostgresTypeMap[dataType.key];
+    return formatter(dataType);
+  }
+}
+
+function formatAttributes(attributes: ModelAttributes): string {
+  return Object.entries(attributes)
+    .map(([colName, options]) => {
+      const typedOptions = options as ModelAttributeColumnOptions;
+
+      const type = formatDataType(typedOptions.type);
+      const allowNull = typedOptions.allowNull === false ? 'NOT NULL' : '';
+      const defaultValue = typedOptions.defaultValue ? `DEFAULT '${typedOptions.defaultValue}'` : '';
+      const primaryKey = typedOptions.primaryKey ? 'PRIMARY KEY' : '';
+      const unique = typedOptions.unique ? 'UNIQUE' : '';
+      const autoIncrement = typedOptions.autoIncrement ? 'AUTO_INCREMENT' : '';
+
+      // Construct the column definition string
+      return `"${modelToTableName(
+        colName
+      )}" ${type} ${allowNull} ${defaultValue} ${primaryKey} ${unique} ${autoIncrement}`.trim();
+    })
+    .join(', ');
 }
 
 @Injectable()
@@ -214,24 +263,42 @@ export class SchemaMigrationService {
   // TODO add relationToMap
 
   // TODO add id and blockRange Attributes
-  async run(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): Promise<void> {
+  async run(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema, dbSchema: string): Promise<void> {
     const transaction = await this.sequelize.transaction();
+    if (!transaction) {
+      throw new Error('Failed to create transaction');
+    }
     const {addedEntities, modifiedEntities, removedEntities} = this.compareSchema(currentSchema, nextSchema);
 
+    // get all json
+    // getAllJsonObjects
+
+    // get enums
+    // getAllEnums
+
+    // get entity relations
+    // getAllEntitiesRelations
+
+    // Composite Indexes
+
+    console.log('schemaMigration run executed');
+    console.log('removed', removedEntities);
+    console.log('added', addedEntities);
+    const executableQueries: string[] = [];
     try {
       // Remove should always occur before create
       if (removedEntities.length) {
-        await Promise.all(removedEntities.map((entity) => this.dropTable(entity, transaction)));
+        removedEntities.forEach((entity) => {
+          executableQueries.push(this.dropTable(dbSchema, entity));
+        });
       }
 
       if (addedEntities.length) {
         // TODO if the table has fields that is relational to another table that is yet to exist, that table should be created first
-        await Promise.all(
-          addedEntities.map((entity) => this.createTable(entity.entityName, entity.attributes, transaction))
-        );
+        addedEntities.forEach((entity) => {
+          executableQueries.push(this.createTable(dbSchema, entity.entityName, entity.attributes));
+        });
       }
-      const dropColumnExecutables: Promise<void>[] = [];
-      const createColumnExecutables: Promise<void>[] = [];
 
       if (Object.keys(modifiedEntities).length) {
         const entities = Object.keys(modifiedEntities);
@@ -239,43 +306,60 @@ export class SchemaMigrationService {
           const entityValues = modifiedEntities[entity];
 
           entityValues.removedFields.forEach((field) => {
-            dropColumnExecutables.push(this.dropColumn(entity, field.fieldName, transaction));
+            executableQueries.push(this.dropColumn(dbSchema, entity, field.fieldName));
           });
 
           entityValues.addedFields.forEach((field) => {
-            // TODO ensure that field.type is correct
-            createColumnExecutables.push(this.createColumn(entity, field.fieldName, field.type, transaction));
+            executableQueries.push(this.createColumn(dbSchema, entity, field.fieldName, field.type));
           });
         });
       }
-
-      await Promise.all(dropColumnExecutables);
-      await Promise.all(createColumnExecutables);
+      console.log('executableQueries', executableQueries);
+      for (const query of executableQueries) {
+        await this.sequelize.query(query, {transaction});
+      }
 
       await transaction.commit();
     } catch (e: any) {
+      console.log(e);
       await transaction.rollback();
       throw new Error(e);
     }
   }
 
-  private async createColumn(
-    tableName: string,
-    columnName: string,
-    dataType: ModelAttributeColumnOptions<Model<any, any>> | DataType,
-    transaction: Transaction
-  ): Promise<void> {
-    await this.sequelize.getQueryInterface().addColumn(tableName, columnName, dataType, {transaction});
+  private createColumn(schema: string, tableName: string, columnName: string, dataType: DataType): string {
+    return `
+    DO $$ 
+    BEGIN
+      BEGIN
+        ALTER TABLE "${schema}"."${modelToTableName(tableName)}" ADD COLUMN "${formatColumnName(
+      columnName
+    )}" ${dataType};
+      EXCEPTION
+        WHEN duplicate_column THEN RAISE NOTICE 'column ${formatColumnName(
+          columnName
+        )} already exists in ${modelToTableName(tableName)}.';
+      END;
+    END;
+    $$;
+  `;
+    // return `ALTER TABLE "${schema}"."${modelToTableName(tableName)}" ADD COLUMN "${formatColumnName(columnName)}" ${dataType};`;
   }
-  private async dropColumn(tableName: string, columnName: string, transaction: Transaction): Promise<void> {
-    await this.sequelize.getQueryInterface().removeColumn(tableName, columnName, {transaction});
+
+  private dropColumn(schema: string, tableName: string, columnName: string): string {
+    return `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${formatColumnName(
+      columnName
+    )};`;
   }
-  private async createTable(tableName: string, attributes: ModelAttributes, transaction: Transaction): Promise<void> {
-    await this.sequelize.getQueryInterface().createTable(tableName, attributes, {transaction});
+  private createTable(schema: string, tableName: string, attributes: ModelAttributes): string {
+    const formattedAttributes = formatAttributes(attributes);
+    return `CREATE TABLE IF NOT EXISTS "${schema}"."${modelToTableName(tableName)}" (${formattedAttributes});`;
   }
-  private async dropTable(tableName: string, transaction: Transaction): Promise<void> {
-    await this.sequelize.getQueryInterface().dropTable(tableName, {transaction});
+
+  private dropTable(schema: string, tableName: string): string {
+    return `DROP TABLE IF EXISTS "${schema}"."${modelToTableName(tableName)}";`;
   }
+
   private async createIndex() {
     //
   }

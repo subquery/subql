@@ -153,7 +153,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
   protected async preProcessBlock(height: number): Promise<void> {
     this.storeService.setBlockHeight(height);
 
-    await this.projectUpgradeService.setCurrentHeight(height);
+    await this.projectUpgradeService.setCurrentHeight(height, this.nodeConfig.dbSchema);
 
     this.currentProcessingHeight = height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {

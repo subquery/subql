@@ -36,12 +36,14 @@ export abstract class BaseWorkerService<
   protected abstract toBlockResponse(block: B): R;
   protected abstract processFetchedBlock(block: B, dataSources: DS[]): Promise<ProcessBlockResponse>;
 
+  private nodeConfig: NodeConfig;
   constructor(
     private projectService: IProjectService<DS>,
     private projectUpgradeService: IProjectUpgradeService,
     nodeConfig: NodeConfig
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize, nodeConfig.timeout, 'Worker Service');
+    this.nodeConfig = nodeConfig;
   }
 
   async fetchBlock(height: number, extra: E): Promise<R | undefined> {
@@ -84,7 +86,8 @@ export abstract class BaseWorkerService<
       delete this.fetchedBlocks[height];
 
       // Makes sure the correct project is used for that height
-      await this.projectUpgradeService.setCurrentHeight(height);
+      // TODO tmp schema
+      await this.projectUpgradeService.setCurrentHeight(height, this.nodeConfig.dbSchema);
 
       return await this.processFetchedBlock(block, await this.projectService.getDataSources(height));
     } catch (e: any) {

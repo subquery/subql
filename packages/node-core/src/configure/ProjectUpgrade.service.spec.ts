@@ -99,7 +99,6 @@ const mockMetadata = () => {
     set: jest.fn((_, value) => (deployments = JSON.parse(value))),
   } as any as CacheMetadataModel;
 };
-const mockSchemaMigrationService = new SchemaMigrationService({} as Sequelize);
 
 describe('Project Upgrades', () => {
   describe('Loading projects', () => {
@@ -107,7 +106,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[0],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         1
       );
 
@@ -118,7 +117,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         1
       );
 
@@ -130,7 +129,7 @@ describe('Project Upgrades', () => {
         ProjectUpgradeSevice.create(
           loopProjects[1],
           (id) => Promise.resolve(loopProjects[parseInt(id, 10)]),
-          mockSchemaMigrationService,
+
           1
         )
       ).rejects.toThrow();
@@ -140,7 +139,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         21
       );
 
@@ -151,7 +150,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         20
       );
 
@@ -163,7 +162,7 @@ describe('Project Upgrades', () => {
         ProjectUpgradeSevice.create(
           futureProjects[2],
           (id) => Promise.resolve(futureProjects[parseInt(id, 10)]),
-          mockSchemaMigrationService,
+
           1
         )
       ).rejects.toThrow();
@@ -177,7 +176,7 @@ describe('Project Upgrades', () => {
         ProjectUpgradeSevice.create(
           project,
           (id) => Promise.resolve(futureProjects[parseInt(id, 10)]),
-          mockSchemaMigrationService,
+
           1
         )
       ).rejects.toThrow();
@@ -202,7 +201,7 @@ describe('Project Upgrades', () => {
         ProjectUpgradeSevice.create(
           projects[1],
           (id) => Promise.resolve(projects[parseInt(id, 10)]),
-          mockSchemaMigrationService,
+
           1
         )
       ).rejects.toThrow();
@@ -231,7 +230,7 @@ describe('Project Upgrades', () => {
         ProjectUpgradeSevice.create(
           projects[1],
           (id) => Promise.resolve(projects[parseInt(id, 10)]),
-          mockSchemaMigrationService,
+
           1
         )
       ).rejects.toThrow();
@@ -245,7 +244,7 @@ describe('Project Upgrades', () => {
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         1
       );
     });
@@ -271,11 +270,11 @@ describe('Project Upgrades', () => {
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         1
       );
 
-      await upgradeService.init(mockMetadata());
+      await upgradeService.init(mockMetadata(), new SchemaMigrationService({} as Sequelize));
 
       project = upgradableSubqueryProject(upgradeService);
     });
@@ -285,21 +284,21 @@ describe('Project Upgrades', () => {
     });
 
     it('can set the current height on the service', async () => {
-      await upgradeService.setCurrentHeight(20);
+      await upgradeService.setCurrentHeight(20, 'test-schema');
 
       expect(upgradeService.currentHeight).toEqual(20);
       expect(project.currentHeight).toEqual(20);
     });
 
     it('can set the current height on the project', async () => {
-      await project.setCurrentHeight(20);
+      await project.setCurrentHeight(20, 'test-schema');
 
       expect(upgradeService.currentHeight).toEqual(20);
       expect(project.currentHeight).toEqual(20);
     });
 
     it('the project is the right project for a set height', async () => {
-      await project.setCurrentHeight(25);
+      await project.setCurrentHeight(25, 'test-schema');
 
       expect(project.parent?.block).toEqual(20);
     });
@@ -330,7 +329,7 @@ describe('Project Upgrades', () => {
       upgradeService = await ProjectUpgradeSevice.create(
         {...demoProjects[5], id: '5'},
         (id) => Promise.resolve({...demoProjects[parseInt(id, 10)], id}),
-        mockSchemaMigrationService,
+
         1
       );
     });
@@ -374,7 +373,7 @@ describe('Project Upgrades', () => {
       const upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[0],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-        mockSchemaMigrationService,
+
         1
       );
 

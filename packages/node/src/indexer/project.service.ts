@@ -69,6 +69,7 @@ export class ProjectService extends BaseProjectService<
   }
 
   protected onProjectChange(project: SubqueryProject): void | Promise<void> {
+    // TODO: flush all current ?
     this.apiService.updateBlockFetching();
   }
 }

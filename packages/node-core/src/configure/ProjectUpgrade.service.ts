@@ -24,7 +24,7 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
   initWorker(currentHeight: number, onProjectUpgrade?: OnProjectUpgradeCallback<P>): void;
   updateIndexedDeployments: (id: string, blockHeight: number) => Promise<void>;
   readonly currentHeight: number;
-  setCurrentHeight: (newHeight: number) => Promise<void>;
+  setCurrentHeight: (newHeight: number, schema: string) => Promise<void>;
   currentProject: P;
   projects: Map<number, P>;
   getProject: (height: number) => P;
@@ -94,11 +94,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
-  private constructor(
-    private _projects: BlockHeightMap<P>,
-    currentHeight: number
-    // private migrationService: SchemaMigrationService
-  ) {
+  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number) {
     logger.info(
       `Projects: ${JSON.stringify(
         [..._projects.getAll().entries()].reduce((acc, curr) => {
@@ -117,7 +113,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   async init(
     metadata: CacheMetadataModel,
-    schemaMigrationService?: SchemaMigrationService,
+    schemaMigrationService: SchemaMigrationService,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
     if (this.#initialized) {
@@ -160,7 +156,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     return this.#currentHeight;
   }
 
-  async setCurrentHeight(height: number): Promise<void> {
+  async setCurrentHeight(height: number, schema: string): Promise<void> {
     this.#currentHeight = height;
     const newProjectDetails = this._projects.getDetails(height);
     assert(newProjectDetails, `Unable to find project for height ${height}`);
@@ -168,13 +164,22 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     const hasChanged = this.#currentProject !== newProject;
     // Need to set this so that operations under hasChanged use the new project
+    const project = this.#currentProject;
     this.#currentProject = newProject;
 
-    // this is where i should be calling schemaMigration method
     if (hasChanged) {
       if (isMainThread) {
         try {
           // Use the project start height here for when resuming indexing at an arbitrary height
+
+          // implementing logic where i should check for currentHeight and which schema to rewind to
+          // if unfinalized block is enabled do not run rewind
+          const currentSchema = project.schema;
+          const nextSchema = newProject.schema;
+
+          assert(this.migrationService, 'missing schema migration service');
+          await this.migrationService.run(currentSchema, nextSchema, schema);
+
           await this.updateIndexedDeployments(newProject.id, startHeight);
         } catch (e: any) {
           logger.error(e, 'Failed to update deployment metadata');
@@ -253,19 +258,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
 
-    // determine what is the next project
-
-    const currentSchema = currentProject.schema;
-    const nextSchema = nextProject.schema;
-    const startProjectSchema = startProject.schema;
-    // migrationService.run()
-
-    // const migrationService = new SchemaMigrationService(
-    //     currentSchema,
-    //     startProjectSchema,
-    // );
-    // migrationService.compareSchema();
-
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight);
   }
@@ -279,8 +271,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     assertEqual(startProject.runner?.node.name, parentProject.runner?.node.name, 'subquery node');
 
     // TODO validate schema
-    // validate the changes are compatible
-    // Rules:
   }
 
   // Returns a height to rewind to if rewind is needed. Otherwise throws an error

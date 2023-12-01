@@ -406,7 +406,7 @@ export abstract class BaseProjectService<
   private async handleProjectChange(): Promise<void> {
     // Apply any migrations to the schema
     if (isMainThread) {
-      await this.initDbSchema();
+      // await this.initDbSchema();
     }
 
     // Reload the dynamic ds with new project
