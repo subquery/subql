@@ -44,6 +44,16 @@ export async function getProjectRoot(reader: Reader): Promise<string> {
   throw new Error('Un-known reader type');
 }
 
+// Inspect asset path and content
+function inspectAsset(inspectAssetPath: string) {
+  const { dir, ext } = path.parse(inspectAssetPath);
+  // should have no extension
+  expect(ext).toBe('');
+  const assetContent = fs.readFileSync(inspectAssetPath, 'utf8');
+  // And when we load it, it should resolve correct abi
+  expect(assetContent).toContain('transferFrom');
+}
+
 describe('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
     let projectDirV1_0_0: string;
@@ -167,11 +177,10 @@ describe('SubqueryProject', () => {
     );
     expect(project.templates[0].name).toBeDefined();
     // Expect asset to be fetched
-    const regexPattern = /^\/var\/folders\/\d+\/\w+\/T\/\w+\/\w+$/;
-
-    expect((project.templates[0] as any).assets.get('erc20').file).toMatch(
-      regexPattern,
-    );
+    const inspectAssetPath = (project.templates[0] as any).assets.get(
+      'erc20',
+    ).file;
+    inspectAsset(inspectAssetPath);
   }, 50000);
 });
 
@@ -179,9 +188,14 @@ describe('load asset with updateDataSourcesV1_0_0', () => {
   const customDsImpl: SubstrateCustomDataSourceImpl[] = [
     {
       kind: 'substrate/FrontierEvm',
-      assets: new Map([['erc20', {
-        file: 'ipfs://QmYoHL3BvEW6nH1zYZqnziUHjajadu5ErJHavHS2zXkZhv',
-      ]]),
+      assets: new Map([
+        [
+          'erc20',
+          {
+            file: 'ipfs://QmYoHL3BvEW6nH1zYZqnziUHjajadu5ErJHavHS2zXkZhv',
+          },
+        ],
+      ]),
       mapping: {
         file: 'ipfs://QmP4Hrfydh4zswkZYeTnnZQFhTGo3LkCfHz4jdkbP8ZA8P',
         handlers: [
@@ -227,88 +241,12 @@ describe('load asset with updateDataSourcesV1_0_0', () => {
     fs.rmSync(root, { recursive: true, force: true });
   });
 
-  it('incorrect created empty file for ds asset with old updateDataSourcesV1_0_0 method', async () => {
-    const ds = await updateDataSourcesV1_0_0_false<
-      SubstrateRuntimeDatasource,
-      SubstrateCustomDatasource<any, any>
-    >(customDsImpl, reader, root, isCustomDs);
-    const inspectAssetPath = (ds[0] as any).assets.get('erc20').file;
-    const { dir, ext } = path.parse(inspectAssetPath);
-    // Which is incorrect, asset should not have any extension.
-    expect(ext).toBe('.js');
-    const assetContent = fs.readFileSync(inspectAssetPath, 'utf8');
-    // And when we load it, it is empty file.
-    expect(assetContent).toBe('');
-  }, 50000);
-
   it('After fix, it could load asset correctly', async () => {
     const ds = await updateDataSourcesV1_0_0<
       SubstrateRuntimeDatasource,
       SubstrateCustomDatasource<any, any>
     >(customDsImpl, reader, root, isCustomDs);
     const inspectAssetPath = (ds[0] as any).assets.get('erc20').file;
-    const { dir, ext } = path.parse(inspectAssetPath);
-    // should have no extension
-    expect(ext).toBe('');
-    const assetContent = fs.readFileSync(inspectAssetPath, 'utf8');
-    // And when we load it, it should resolve correct abi
-    expect(assetContent).toContain('transferFrom');
+    inspectAsset(inspectAssetPath);
   }, 50000);
 });
-
-type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
-
-// The method implementation failed previously, and it is deprecated
-async function updateDataSourcesV1_0_0_false<
-  DS extends BaseDataSource,
-  CDS extends DS & BaseCustomDataSource,
->(
-  _dataSources: (DS | CDS)[],
-  reader: Reader,
-  root: string,
-  isCustomDs: IsCustomDs<DS, CDS>,
-): Promise<SubqlProjectDs<DS | CDS>[]> {
-  // force convert to updated ds
-  return Promise.all(
-    _dataSources.map(async (dataSource) => {
-      dataSource.startBlock = dataSource.startBlock ?? 1;
-      const entryScript = await loadDataSourceScript(
-        reader,
-        dataSource.mapping.file,
-      );
-      const file = await updateDataSourcesEntry(
-        reader,
-        dataSource.mapping.file,
-        root,
-        entryScript,
-      );
-      if (isCustomDs(dataSource)) {
-        if (dataSource.processor) {
-          dataSource.processor.file = await updateProcessor(
-            reader,
-            root,
-            dataSource.processor.file,
-          );
-        }
-        if (dataSource.assets) {
-          for (const [, asset] of dataSource.assets) {
-            if (reader instanceof LocalReader) {
-              asset.file = path.resolve(root, asset.file);
-            } else {
-              asset.file = await saveFile(reader, root, asset.file, '');
-            }
-          }
-        }
-        return {
-          ...dataSource,
-          mapping: { ...dataSource.mapping, entryScript, file },
-        };
-      } else {
-        return {
-          ...dataSource,
-          mapping: { ...dataSource.mapping, entryScript, file },
-        };
-      }
-    }),
-  );
-}
