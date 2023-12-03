@@ -6,9 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.3] - 2023-12-04
 ### Fixed
 - Fix with after correct asset type (#223)
-
 
 ## [3.4.2] - 2023-11-30
 ### Fixed
@@ -356,7 +356,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.3...HEAD
+[3.4.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.2...node-ethereum/3.4.3
 [3.4.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.1...node-ethereum/3.4.2
 [3.4.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.0...node-ethereum/3.4.1
 [3.4.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.3.6...node-ethereum/3.4.0

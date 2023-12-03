@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "3.4.3-0",
+  "version": "3.4.3",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -27,7 +27,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^3.3.0",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "7.0.3-0",
+    "@subql/node-core": "^7.0.3",
     "@subql/testing": "^2.0.2",
     "@subql/types-ethereum": "workspace:*",
     "cacheable-lookup": "6",
@@ -65,6 +65,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "3.4.2"
+  ]
 }
