@@ -15,6 +15,7 @@ export function modelToTableName(modelName: string): string {
 // Rewrite due to method is not exported from sequelize
 // This method is same from https://github.com/sequelize/sequelize/blob/26beda5bf76bd65e30264ebf135e39efaa7d514d/packages/core/src/utils/string.ts#L89
 export function generateIndexName(tableName: TableName, index: IndexesOptions): string {
+  console.log(index);
   if (typeof tableName !== 'string' && tableName.tableName) {
     tableName = tableName.tableName;
   }

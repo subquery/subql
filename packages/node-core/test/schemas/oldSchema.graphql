@@ -2,7 +2,7 @@ type EntityOne @entity {
   id: ID! #id is a required field
   field1: Int!
   field2: String #filed2 is an optional field
-  field3: BigInt
+  field3: EntityThree!
 }
 
 type EntityTwo @entity {
@@ -10,11 +10,30 @@ type EntityTwo @entity {
   field1: Int!
   field2: String #filed2 is an optional field
   field3: BigInt
+  field5: FieldTypeOld!
+}
+
+type ExampleJsonOne @jsonField {
+  one: String!
+  two: Int!
+}
+
+type ExampleJsonTwo @jsonField {
+  one: String!
+  two: ExampleJsonOne! # Nested Json
 }
 
 type EntityThree @entity {
   id: ID! #id is a required field
-  field1: Int!
-  field2: String #filed2 is an optional field
-  field3: BigInt
+  field1: [ExampleJsonTwo]
+}
+
+enum FieldTypeOld {
+  VALUE1
+  VALUE2
+}
+
+enum FieldTypeMod {
+  VALUE1
+  VALUE2
 }

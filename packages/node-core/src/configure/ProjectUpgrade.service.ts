@@ -5,7 +5,7 @@ import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {SchemaMigrationService} from '@subql/node-core/configure/SchemaMigration.service';
 import {findLast, last} from 'lodash';
-import {CacheMetadataModel, ISubqueryProject} from '../indexer';
+import {ISubqueryProject, StoreCacheService} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
@@ -14,7 +14,7 @@ type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promis
 
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
   init: (
-    metadata: CacheMetadataModel,
+    storeCacheService: StoreCacheService,
     schemaMigrationService: SchemaMigrationService,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ) => Promise<number | undefined>;
@@ -88,8 +88,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   #currentHeight: number;
   #currentProject: P;
 
-  #metadata?: CacheMetadataModel;
-
+  #storeCache?: StoreCacheService;
   #initialized = false;
 
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
@@ -112,7 +111,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   }
 
   async init(
-    metadata: CacheMetadataModel,
+    storeCache: StoreCacheService,
     schemaMigrationService: SchemaMigrationService,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
@@ -121,7 +120,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       return;
     }
     this.#initialized = true;
-    this.#metadata = metadata;
+    this.#storeCache = storeCache;
     this.onProjectUpgrade = onProjectUpgrade;
     this.migrationService = schemaMigrationService;
 
@@ -170,20 +169,23 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     if (hasChanged) {
       if (isMainThread) {
         try {
-          // Use the project start height here for when resuming indexing at an arbitrary height
-
-          // implementing logic where i should check for currentHeight and which schema to rewind to
-          // if unfinalized block is enabled do not run rewind
-          const currentSchema = project.schema;
-          const nextSchema = newProject.schema;
-
-          assert(this.migrationService, 'missing schema migration service');
-          await this.migrationService.run(currentSchema, nextSchema, schema);
+          assert(this.#storeCache, 'CacheMetadataModel is undefined');
+          if (!this.#storeCache?.unfinalizedBlocks) {
+            assert(this.migrationService, 'Migration service is undefined');
+            await this.migrationService?.run(
+              project.schema,
+              newProject.schema,
+              schema,
+              height,
+              this.#storeCache?._flushCache.bind(this.#storeCache),
+              this.#storeCache?.indexCountLimit
+            );
+          }
 
           await this.updateIndexedDeployments(newProject.id, startHeight);
         } catch (e: any) {
-          logger.error(e, 'Failed to update deployment metadata');
-          process.exit(1);
+          logger.error(e, 'Failed to update deployment');
+          throw new Error(e);
         }
       }
 
@@ -305,8 +307,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   }
 
   private async getDeploymentsMetadata(): Promise<Record<number, string>> {
-    assert(this.#metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
-    const deploymentsRaw = await this.#metadata.find('deployments');
+    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
+    const deploymentsRaw = await this.#storeCache?.metadata.find('deployments');
 
     if (!deploymentsRaw) return {};
 
@@ -315,7 +317,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   @mainThreadOnly()
   async updateIndexedDeployments(id: string, blockHeight: number): Promise<void> {
-    assert(this.#metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
+    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
     const deployments = await this.getDeploymentsMetadata();
 
     // If the last deployment is the same as the one we're updating to theres no need to do anything
@@ -333,6 +335,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     deployments[blockHeight] = id;
 
-    this.#metadata.set('deployments', JSON.stringify(deployments));
+    this.#storeCache?.metadata.set('deployments', JSON.stringify(deployments));
   }
 }

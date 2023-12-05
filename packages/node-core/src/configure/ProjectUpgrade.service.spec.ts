@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {CacheMetadataModel, ISubqueryProject} from '../indexer';
+import {CacheMetadataModel, ISubqueryProject, StoreCacheService} from '../indexer';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 import {SchemaMigrationService} from './SchemaMigration.service';
 
@@ -265,16 +265,20 @@ describe('Project Upgrades', () => {
   describe('Upgradable subquery project', () => {
     let upgradeService: ProjectUpgradeSevice<ISubqueryProject>;
     let project: ISubqueryProject & IProjectUpgradeService<ISubqueryProject>;
+    let storeCache: StoreCacheService;
 
     beforeEach(async () => {
+      storeCache = new StoreCacheService({} as any, {} as any, {} as any);
+
+      jest.spyOn(storeCache as any, 'metadata').mockImplementation(() => mockMetadata());
+
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
-
         1
       );
 
-      await upgradeService.init(mockMetadata(), new SchemaMigrationService({} as Sequelize));
+      await upgradeService.init(storeCache, new SchemaMigrationService({} as Sequelize));
 
       project = upgradableSubqueryProject(upgradeService);
     });

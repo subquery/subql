@@ -6,8 +6,21 @@ import os from 'os';
 import path from 'path';
 import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} from '@subql/common';
 import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
-import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
+import {generateIndexName, modelToTableName} from '@subql/node-core/utils/sequelizeUtil';
+import {blake2AsHex, getAllEntitiesRelations, GraphQLModelsType, IndexType} from '@subql/utils';
+import {
+  DataTypes,
+  IndexesOptions,
+  Model,
+  ModelAttributeColumnOptions,
+  ModelAttributes,
+  ModelStatic,
+  Op,
+  QueryTypes,
+  Sequelize,
+  Utils,
+} from '@subql/x-sequelize';
 import Cron from 'cron-converter';
 import {isNumber, range, uniq, without, flatten} from 'lodash';
 import tar from 'tar';
@@ -321,4 +334,74 @@ export function getStartHeight(dataSources: BaseDataSource[]): number {
   } else {
     return Math.min(...startBlocksList);
   }
+}
+// Only used with historical to add indexes to ID fields for gettign entitities by ID
+export function addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
+  const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
+  if (idFieldName && !indexes.find((idx) => idx.fields?.includes(idFieldName))) {
+    indexes.push({
+      fields: [Utils.underscoredIf(idFieldName, true)],
+      unique: false,
+    });
+  }
+}
+
+export function addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>, blockHeight: number | undefined): void {
+  sequelizeModel.addScope('defaultScope', {
+    attributes: {
+      exclude: ['__id', '__block_range'],
+    },
+  });
+
+  // TODO add blockHeight
+  sequelizeModel.addHook('beforeFind', (options) => {
+    (options.where as any).__block_range = {
+      [Op.contains]: blockHeight as any,
+    };
+  });
+  sequelizeModel.addHook('beforeValidate', (attributes, options) => {
+    attributes.__block_range = [blockHeight, null];
+  });
+}
+
+export function updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
+  indexes.forEach((index) => {
+    // follow same pattern as _generateIndexName
+    const tableName = modelToTableName(modelName);
+    const deprecated = generateIndexName(tableName, index);
+
+    if (!existedIndexes.includes(deprecated)) {
+      const fields = (index.fields ?? []).join('_');
+      index.name = blake2AsHex(`${modelName}_${fields}`, 64).substring(0, 63);
+    }
+  });
+}
+
+export function addIdAndBlockRangeAttributes(attributes: ModelAttributes<Model<any, any>, any>): void {
+  (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
+  attributes.__id = {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true,
+  } as ModelAttributeColumnOptions;
+  attributes.__block_range = {
+    type: DataTypes.RANGE(DataTypes.BIGINT),
+    allowNull: false,
+  } as ModelAttributeColumnOptions;
+}
+
+export function addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
+  indexes.forEach((index) => {
+    if (index.using === IndexType.GIN) {
+      return;
+    }
+    if (!index.fields) {
+      index.fields = [];
+    }
+    index.fields.push('_block_range');
+    index.using = IndexType.GIST;
+    // GIST does not support unique indexes
+    index.unique = false;
+  });
 }

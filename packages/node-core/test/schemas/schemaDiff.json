@@ -1,0 +1,312 @@
+{
+  "addedModels": [
+    {
+      "name": "EntityFour",
+      "fields": [
+        {
+          "name": "id",
+          "type": "ID",
+          "isArray": false,
+          "nullable": false,
+          "isEnum": false
+        },
+        {
+          "type": "FieldTypeNew",
+          "isEnum": true,
+          "isArray": false,
+          "nullable": false,
+          "name": "field1"
+        },
+        {
+          "name": "field2",
+          "type": "Json",
+          "jsonInterface": {
+            "name": "NewJsonTwo",
+            "fields": [
+              {
+                "name": "one",
+                "type": "String",
+                "nullable": false,
+                "isArray": false
+              },
+              {
+                "name": "two",
+                "type": "Json",
+                "jsonInterface": {
+                  "name": "NewJsonOne",
+                  "fields": [
+                    {
+                      "name": "one",
+                      "type": "String",
+                      "nullable": false,
+                      "isArray": false
+                    },
+                    {
+                      "name": "two",
+                      "type": "Int",
+                      "nullable": false,
+                      "isArray": false
+                    }
+                  ]
+                },
+                "nullable": true,
+                "isArray": false
+              }
+            ]
+          },
+          "isArray": true,
+          "nullable": true,
+          "isEnum": false
+        }
+      ],
+      "indexes": [
+        {
+          "unique": false,
+          "fields": ["field2"],
+          "using": "gin"
+        }
+      ]
+    }
+  ],
+  "removedModels": [
+    {
+      "name": "EntityThree",
+      "fields": [
+        {
+          "name": "id",
+          "type": "ID",
+          "isArray": false,
+          "nullable": false,
+          "isEnum": false
+        },
+        {
+          "name": "field1",
+          "type": "Json",
+          "jsonInterface": {
+            "name": "ExampleJsonTwo",
+            "fields": [
+              {
+                "name": "one",
+                "type": "String",
+                "nullable": false,
+                "isArray": false
+              },
+              {
+                "name": "two",
+                "type": "Json",
+                "jsonInterface": {
+                  "name": "ExampleJsonOne",
+                  "fields": [
+                    {
+                      "name": "one",
+                      "type": "String",
+                      "nullable": false,
+                      "isArray": false
+                    },
+                    {
+                      "name": "two",
+                      "type": "Int",
+                      "nullable": false,
+                      "isArray": false
+                    }
+                  ]
+                },
+                "nullable": false,
+                "isArray": false
+              }
+            ]
+          },
+          "isArray": true,
+          "nullable": true,
+          "isEnum": false
+        }
+      ],
+      "indexes": [
+        {
+          "unique": false,
+          "fields": ["field1"],
+          "using": "gin"
+        }
+      ]
+    }
+  ],
+  "modifiedModels": {
+    "EntityOne": {
+      "model": {
+        "name": "EntityOne",
+        "fields": [
+          {
+            "name": "id",
+            "type": "ID",
+            "isArray": false,
+            "nullable": false,
+            "isEnum": false
+          },
+          {
+            "name": "field1",
+            "type": "Int",
+            "isArray": false,
+            "nullable": false,
+            "isEnum": false
+          },
+          {
+            "name": "field2",
+            "type": "String",
+            "isArray": false,
+            "nullable": false,
+            "isEnum": false
+          },
+          {
+            "name": "field3Id",
+            "type": "String",
+            "isArray": false,
+            "nullable": false,
+            "isEnum": false
+          }
+        ],
+        "indexes": [
+          {
+            "unique": true,
+            "fields": ["field1"]
+          },
+          {
+            "unique": false,
+            "fields": ["field3Id"],
+            "using": "hash"
+          }
+        ]
+      },
+      "addedFields": [],
+      "removedFields": [],
+      "addedIndexes": [
+        {
+          "unique": true,
+          "fields": ["field1"]
+        }
+      ],
+      "removedIndexes": []
+    },
+    "EntityTwo": {
+      "model": {
+        "name": "EntityTwo",
+        "fields": [
+          {
+            "name": "id",
+            "type": "ID",
+            "isArray": false,
+            "nullable": false,
+            "isEnum": false
+          },
+          {
+            "name": "field2",
+            "type": "FieldTypeMod",
+            "isArray": false,
+            "nullable": true,
+            "isEnum": true
+          },
+          {
+            "name": "field3",
+            "type": "Int",
+            "isArray": false,
+            "nullable": true,
+            "isEnum": false
+          },
+          {
+            "name": "field4Id",
+            "type": "String",
+            "isArray": false,
+            "nullable": false,
+            "isEnum": false
+          }
+        ],
+        "indexes": [
+          {
+            "unique": false,
+            "fields": ["field4Id"],
+            "using": "hash"
+          },
+          {
+            "fields": ["field2", "field3"]
+          }
+        ]
+      },
+      "addedFields": [
+        {
+          "name": "field4Id",
+          "type": "String",
+          "isArray": false,
+          "nullable": false,
+          "isEnum": false
+        }
+      ],
+      "removedFields": [
+        {
+          "name": "field1",
+          "type": "Int",
+          "isArray": false,
+          "nullable": false,
+          "isEnum": false
+        },
+        {
+          "type": "FieldTypeOld",
+          "isEnum": true,
+          "isArray": false,
+          "nullable": false,
+          "name": "field5"
+        }
+      ],
+      "addedIndexes": [
+        {
+          "unique": false,
+          "fields": ["field4Id"],
+          "using": "hash"
+        },
+        {
+          "fields": ["field2", "field3"]
+        }
+      ],
+      "removedIndexes": []
+    }
+  },
+  "addedRelations": [
+    {
+      "from": "EntityOne",
+      "type": "belongsTo",
+      "to": "EntityTwo",
+      "foreignKey": "field3Id"
+    },
+    {
+      "from": "EntityTwo",
+      "type": "belongsTo",
+      "to": "EntityFour",
+      "foreignKey": "field4Id"
+    },
+    {
+      "from": "EntityFour",
+      "type": "hasMany",
+      "to": "EntityTwo",
+      "foreignKey": "field4Id",
+      "fieldName": "field3"
+    }
+  ],
+  "removedRelations": [
+    {
+      "from": "EntityOne",
+      "type": "belongsTo",
+      "to": "EntityThree",
+      "foreignKey": "field3Id"
+    }
+  ],
+  "addedEnums": [
+    {
+      "name": "FieldTypeNew",
+      "values": ["VALUE1", "VALUE2"]
+    }
+  ],
+  "removedEnums": [
+    {
+      "name": "FieldTypeOld",
+      "values": ["VALUE1", "VALUE2"]
+    }
+  ]
+}

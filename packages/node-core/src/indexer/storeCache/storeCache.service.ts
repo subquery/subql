@@ -26,6 +26,8 @@ export class StoreCacheService extends BaseCacheService {
   private poiRepo?: PoiRepo;
   private readonly storeCacheThreshold: number;
   private readonly cacheUpperLimit: number;
+  private readonly _unfinalizedBlocks: boolean;
+  private readonly _indexCountLimit: number;
   private _historical = true;
   private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
@@ -36,6 +38,8 @@ export class StoreCacheService extends BaseCacheService {
     super('StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
     this.cacheUpperLimit = config.storeCacheUpperLimit;
+    this._unfinalizedBlocks = config.unfinalizedBlocks;
+    this._indexCountLimit = config.indexCountLimit;
     this._lastFlushTs = new Date();
 
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
@@ -49,6 +53,13 @@ export class StoreCacheService extends BaseCacheService {
     this._historical = historical;
     this.metadataRepo = meta;
     this.poiRepo = poi;
+  }
+
+  get unfinalizedBlocks(): boolean {
+    return this._unfinalizedBlocks;
+  }
+  get indexCountLimit(): number {
+    return this._indexCountLimit;
   }
 
   getNextStoreOperationIndex(): number {

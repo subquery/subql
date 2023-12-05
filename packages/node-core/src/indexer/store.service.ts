@@ -33,6 +33,10 @@ import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
+  addBlockRangeColumnToIndexes,
+  addHistoricalIdIndex,
+  addIdAndBlockRangeAttributes,
+  addScopeAndBlockHeightHooks,
   addTagsToForeignKeyMap,
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   camelCaseObjectKey,
@@ -55,6 +59,7 @@ import {
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
+  updateIndexesName,
 } from '../utils';
 import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
@@ -316,14 +321,14 @@ export class StoreService {
         throw new Error(`too many indexes on entity ${model.name}`);
       }
       if (this.historical) {
-        this.addIdAndBlockRangeAttributes(attributes);
-        this.addBlockRangeColumnToIndexes(indexes);
-        this.addHistoricalIdIndex(model, indexes);
+        addIdAndBlockRangeAttributes(attributes);
+        addBlockRangeColumnToIndexes(indexes);
+        addHistoricalIdIndex(model, indexes);
       }
       // Hash indexes name to ensure within postgres limit
       // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
       // only update index name as it is new index or not found (it is might be an over length index name)
-      this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
+      updateIndexesName(model.name, indexes, existedIndexes as string[]);
 
       // Update index query for cockroach db
       this.beforeHandleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
@@ -339,7 +344,7 @@ export class StoreService {
       });
 
       if (this.historical) {
-        this.addScopeAndBlockHeightHooks(sequelizeModel);
+        addScopeAndBlockHeightHooks(sequelizeModel, this._blockHeight);
         // TODO, remove id and block_range constrain, check id manually
         // see https://github.com/subquery/subql/issues/1542
       }
@@ -488,21 +493,6 @@ export class StoreService {
     }
   }
 
-  private addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
-    indexes.forEach((index) => {
-      if (index.using === IndexType.GIN) {
-        return;
-      }
-      if (!index.fields) {
-        index.fields = [];
-      }
-      index.fields.push('_block_range');
-      index.using = IndexType.GIST;
-      // GIST does not support unique indexes
-      index.unique = false;
-    });
-  }
-
   // Sequelize model will generate follow query to create hash indexes
   // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
   // This will be rejected from cockroach db due to syntax error
@@ -548,30 +538,6 @@ export class StoreService {
     }
   }
 
-  private updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
-    indexes.forEach((index) => {
-      // follow same pattern as _generateIndexName
-      const tableName = modelToTableName(modelName);
-      const deprecated = generateIndexName(tableName, index);
-
-      if (!existedIndexes.includes(deprecated)) {
-        const fields = (index.fields ?? []).join('_');
-        index.name = blake2AsHex(`${modelName}_${fields}`, 64).substring(0, 63);
-      }
-    });
-  }
-
-  // Only used with historical to add indexes to ID fields for gettign entitities by ID
-  private addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
-    const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
-    if (idFieldName && !indexes.find((idx) => idx.fields?.includes(idFieldName))) {
-      indexes.push({
-        fields: [Utils.underscoredIf(idFieldName, true)],
-        unique: false,
-      });
-    }
-  }
-
   private addRelationToMap(
     relation: GraphQLRelationsType,
     foreignKeys: Map<string, Map<string, SmartTags>>,
@@ -600,38 +566,6 @@ export class StoreService {
       default:
         throw new Error('Relation type is not supported');
     }
-  }
-
-  addIdAndBlockRangeAttributes(attributes: ModelAttributes<Model<any, any>, any>): void {
-    (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
-    attributes.__id = {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      allowNull: false,
-      primaryKey: true,
-    } as ModelAttributeColumnOptions;
-    attributes.__block_range = {
-      type: DataTypes.RANGE(DataTypes.BIGINT),
-      allowNull: false,
-    } as ModelAttributeColumnOptions;
-  }
-
-  private addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>): void {
-    // TODO, check impact of remove this
-    sequelizeModel.addScope('defaultScope', {
-      attributes: {
-        exclude: ['__id', '__block_range'],
-      },
-    });
-
-    sequelizeModel.addHook('beforeFind', (options) => {
-      (options.where as any).__block_range = {
-        [Op.contains]: this.blockHeight as any,
-      };
-    });
-    sequelizeModel.addHook('beforeValidate', (attributes, options) => {
-      attributes.__block_range = [this.blockHeight, null];
-    });
   }
 
   private validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {

@@ -366,10 +366,8 @@ export abstract class BaseProjectService<
   }
 
   private async initUpgradeService(): Promise<number | undefined> {
-    const metadata = this.storeService.storeCache.metadata;
-
     const upgradePoint = await this.projectUpgradeService.init(
-      metadata,
+      this.storeService.storeCache,
       new SchemaMigrationService(this.sequelize),
       this.handleProjectChange.bind(this)
     );
