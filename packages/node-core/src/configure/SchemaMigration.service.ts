@@ -25,7 +25,6 @@ import {
   DataTypes,
   IndexesOptions,
   ModelAttributeColumnOptions,
-  ModelAttributes,
   QueryInterfaceIndexOptions,
   Sequelize,
   TableName,
@@ -33,7 +32,7 @@ import {
   Utils,
 } from '@subql/x-sequelize';
 import {SetRequired} from '@subql/x-sequelize/types/utils/set-required';
-import {GraphQLSchema, TypeNode} from 'graphql';
+import {GraphQLSchema} from 'graphql';
 import {getLogger} from '../logger';
 import {
   addBlockRangeColumnToIndexes,
@@ -291,7 +290,7 @@ function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): b
 }
 
 function hasChanged(changes: SchemaChangesType): boolean {
-  return Object.values(changes).every((change) =>
+  return Object.values(changes).some((change) =>
     Array.isArray(change) ? change.length > 0 : Object.keys(change).length > 0
   );
 }
@@ -347,7 +346,7 @@ export class SchemaMigrationService {
       removedModels,
       removedRelations,
     } = schemaDifference;
-    if (hasChanged(schemaDifference)) {
+    if (!hasChanged(schemaDifference)) {
       logger.info('No Schema changes');
       return;
     }
@@ -433,6 +432,7 @@ export class SchemaMigrationService {
           }
 
           for (const index of modelValue.addedIndexes) {
+            console.log(model, {...index, fields: index.fields.map((f) => formatColumnName(f))});
             await this.createIndex(
               dbSchema,
               model,

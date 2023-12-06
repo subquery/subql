@@ -10,6 +10,7 @@ import {
   ConnectionPoolService,
   ConnectionPoolStateManager,
   DbOption,
+  generateHashedIndexName,
   NodeConfig,
   PoiService,
   PoiSyncService,
@@ -43,14 +44,12 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-const PROJECT_CID = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
-const TEST_SCHEMA_NAME = 'test-migration';
-
 async function prepareProjectModule(
   cid: string,
   sequelize: Sequelize,
   tempDirChild: string,
   tempDirParent: string,
+  schemaName: string,
 ): Promise<INestApplication> {
   const childReader = await reader(cid);
 
@@ -97,9 +96,10 @@ async function prepareProjectModule(
       {
         provide: NodeConfig,
         useFactory: () => ({
-          dbSchema: `${TEST_SCHEMA_NAME}`,
-          subquery: `ipfs://${cid}`,
+          dbSchema: schemaName,
+          subquery: cid,
           ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
+          allowSchemaMigration: true,
         }),
       },
       {
@@ -156,14 +156,27 @@ describe('SchemaMigration integration tests', () => {
     await promisify(rimraf)(tempDirParent);
     return app?.close();
   });
+  afterAll(async () => {
+    // await sequelize.dropAllSchemas({})
+    await Promise.all([
+      sequelize.dropSchema('test-migrations-1', { logging: true }),
+      sequelize.dropSchema('test-migrations-2', { logging: true }),
+      sequelize.dropSchema('test-migrations-3', { logging: true }),
+      sequelize.dropSchema('test-migrations-4', { logging: true }),
+      sequelize.dropSchema('test-migrations-5', { logging: true }),
+    ]);
+  });
 
   it('Migrate basic schema w/o indexes', async () => {
     // Expect schema to be of QmdjcBRUYtieZ4Gtj2C7nF9AfdHJVJcmTJ2wfr8c54WydQ
+    const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
+    const schema = 'test-migrations-1';
     app = await prepareProjectModule(
-      PROJECT_CID,
+      cid,
       sequelize,
       tempDirChild,
       tempDirParent,
+      schema,
     );
 
     projectService = app.get('IProjectService');
@@ -174,7 +187,7 @@ describe('SchemaMigration integration tests', () => {
     await projectService.init(500);
 
     const dbResults = await sequelize.query(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema='${TEST_SCHEMA_NAME}';`,
+      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}';`,
       { type: QueryTypes.SELECT },
     );
     const tableNames: string[] = dbResults.map((row: string[]) => {
@@ -189,7 +202,7 @@ describe('SchemaMigration integration tests', () => {
 
     // Query to check the structure of 'accounts' table
     const accountColumns = await sequelize.query(
-      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = '${TEST_SCHEMA_NAME}' AND table_name = 'accounts';`,
+      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = '${schema}' AND table_name = 'accounts';`,
       { type: QueryTypes.SELECT },
     );
     const firstTransferBlockColumn = accountColumns.find(
@@ -207,7 +220,7 @@ describe('SchemaMigration integration tests', () => {
             FROM
                 information_schema.columns
             WHERE
-                table_schema = '${TEST_SCHEMA_NAME}'
+                table_schema = '${schema}'
                 AND table_name = 'test_entities'
                 AND column_name = '_block_range';`,
     );
@@ -219,7 +232,7 @@ describe('SchemaMigration integration tests', () => {
               FROM
                   pg_indexes
               WHERE
-                  schemaname = '${TEST_SCHEMA_NAME}'
+                  schemaname = '${schema}'
                   AND tablename = 'test_entities';`,
     );
 
@@ -234,22 +247,16 @@ describe('SchemaMigration integration tests', () => {
       parser: null,
       name: 'test_entities_id',
     };
-    const fields = (indexOptions.fields ?? []).join('_');
-    const expectIndexName = blake2AsHex(`TestEntity_${fields}`, 64).substring(
-      0,
-      63,
-    );
+    const expectIndexName = generateHashedIndexName('TestEntity', indexOptions);
 
     expect(indexResult).toStrictEqual([
       {
         indexname: 'test_entities_pkey',
-        indexdef:
-          'CREATE UNIQUE INDEX test_entities_pkey ON "test-migration".test_entities USING btree (_id)',
+        indexdef: `CREATE UNIQUE INDEX test_entities_pkey ON "${schema}".test_entities USING btree (_id)`,
       },
       {
         indexname: expectIndexName,
-        indexdef:
-          'CREATE INDEX "0x4eda71e3658b726f" ON "test-migration".test_entities USING btree (id)',
+        indexdef: `CREATE INDEX "0x4eda71e3658b726f" ON "${schema}".test_entities USING btree (id)`,
       },
     ]);
 
@@ -262,11 +269,13 @@ describe('SchemaMigration integration tests', () => {
     // parent: QmbqZ1UoRVJ4umb3FByNN2rPYgzHxWKohfeEVnkQakDLgQ
     // child: QmQZgpfWNnEXDkLwXNPB4XY65pB4C8qz7cPKLsqnxrer7J
     const jsonCid = 'QmQZgpfWNnEXDkLwXNPB4XY65pB4C8qz7cPKLsqnxrer7J';
+    const schema = 'test-migrations-2';
     app = await prepareProjectModule(
       jsonCid,
       sequelize,
       tempDirChild,
       tempDirParent,
+      schema,
     );
 
     projectService = app.get('IProjectService');
@@ -275,7 +284,7 @@ describe('SchemaMigration integration tests', () => {
     await projectService.init(500);
 
     const dbResults = await sequelize.query(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema='${TEST_SCHEMA_NAME}';`,
+      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}';`,
       { type: QueryTypes.SELECT },
     );
     const tableNames: string[] = dbResults.map((row: string[]) => {
@@ -288,7 +297,7 @@ describe('SchemaMigration integration tests', () => {
       `
           SELECT column_name, data_type
           FROM information_schema.columns
-          WHERE table_schema = 'test-migration'
+          WHERE table_schema = '${schema}'
             AND table_name = 'test_entity_threes'
             AND column_name = 'example_field';
         `,
@@ -296,44 +305,42 @@ describe('SchemaMigration integration tests', () => {
     );
     expect((exampleFieldColumn as any).data_type).toEqual('jsonb');
   });
-  it('Migrate should not rewind if unfinalized is enabled', async () => {
-    //
-  });
   it('Migration fails on ENUM introduction', async () => {
     // parent: QmQfwp2Zc7rcS9ktboKPXn7cFhc9QCuKkQdoEnzKUnBgr1
     // child: Qmb2VFxMqCSS6Bwvkh96rYtfPuueU3Kz3ngr7pbb8h5kst
-    const originalExit = process.exit;
-    // Mock process.exit
-    (process.exit as any) = jest.fn();
 
     const enumCid = 'Qmb2VFxMqCSS6Bwvkh96rYtfPuueU3Kz3ngr7pbb8h5kst';
+    const schema = 'test-migrations-3';
+
     app = await prepareProjectModule(
       enumCid,
       sequelize,
       tempDirChild,
       tempDirParent,
+      schema,
     );
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
     await apiService.init();
 
-    // TODO SpyOn on logger
-
-    await projectService.init(500);
-    expect(process.exit).toHaveBeenCalledWith(1);
-    process.exit = originalExit;
+    await expect(projectService.init(500)).rejects.toThrow(
+      'Schema Migration currently does not support Enum removal and creation',
+    );
   });
   it('Migration fails on Relational creation and removal', async () => {
     // parent: QmXc3cH6BnXFEyiuJmbWZZLyz6E2e8B8RukrLeBS1Q21T6
     // child (removed relation and create new relation): QmVTcEZbMopEi7VLzBiYStvT18dG6xXEhkFxGUNmHhSppg
 
     const relationCid = 'QmVTcEZbMopEi7VLzBiYStvT18dG6xXEhkFxGUNmHhSppg';
+    const schema = 'test-migrations-4';
+
     app = await prepareProjectModule(
       relationCid,
       sequelize,
       tempDirChild,
       tempDirParent,
+      schema,
     );
 
     projectService = app.get('IProjectService');
@@ -341,18 +348,22 @@ describe('SchemaMigration integration tests', () => {
 
     await apiService.init();
 
-    await projectService.init(500);
+    await expect(projectService.init(500)).rejects.toThrow(
+      'Schema Migration currently does not support Relational removal or creation',
+    );
   });
 
   it('Migration on index removal, creation', async () => {
     // parent: QmXikuVRr5rKfzC9v6vF8zEywJ8AUhR7MGt44kdZjQgLAg
     // child : QmQ6msxfc8vqeiPwbbJHu9JZyH6e25u2A4YWi8SxpB69KH
     const relationCid = 'QmQ6msxfc8vqeiPwbbJHu9JZyH6e25u2A4YWi8SxpB69KH';
+    const schema = 'test-migrations-5';
     app = await prepareProjectModule(
       relationCid,
       sequelize,
       tempDirChild,
       tempDirParent,
+      schema,
     );
 
     projectService = app.get('IProjectService');
@@ -361,6 +372,42 @@ describe('SchemaMigration integration tests', () => {
     await apiService.init();
 
     await projectService.init(500);
-    // expect indexes on columns to be fo same
+
+    const [indexResult] = await sequelize.query(
+      `SELECT
+                  indexname,
+                  indexdef
+              FROM
+                  pg_indexes
+              WHERE
+                  schemaname = '${schema}';`,
+    );
+
+    expect(
+      indexResult.find(
+        (i: any) =>
+          i.indexname ===
+          generateHashedIndexName('TestIndexOne', {
+            unique: true,
+            fields: ['name'],
+          }),
+      ),
+    ).toEqual({
+      indexname: '0x7cea7dddb66a5475',
+      indexdef: `CREATE UNIQUE INDEX "0x7cea7dddb66a5475" ON "${schema}".test_index_ones USING btree (name)`,
+    });
+    expect(
+      indexResult.find(
+        (i: any) =>
+          i.indexname ===
+          generateHashedIndexName('TestIndexTwo', {
+            unique: false,
+            fields: ['name'],
+          }),
+      ),
+    ).toEqual({
+      indexname: '0xc1e1132ee204d92f',
+      indexdef: `CREATE INDEX "0xc1e1132ee204d92f" ON "${schema}".test_index_twos USING btree (name)`,
+    });
   });
 });
