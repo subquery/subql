@@ -15,7 +15,7 @@ import {
   hexToU8a,
 } from '@subql/utils';
 import {IndexesOptions, ModelStatic, Op, QueryTypes, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
-import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
+import {camelCase, flatten, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
@@ -36,8 +36,6 @@ import {
   createUniqueIndexQuery,
   dropNotifyFunction,
   dropNotifyTrigger,
-  enumNameToHash,
-  getEnumDeprecated,
   getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
@@ -45,6 +43,7 @@ import {
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
+  syncEnums,
   updateIndexesName,
 } from '../utils';
 import {modelToTableName} from '../utils/sequelizeUtil';
@@ -238,58 +237,7 @@ export class StoreService {
     const existedIndexes = indexesResult.map((i) => (i as any).indexname);
 
     for (const e of this.modelsRelations.enums) {
-      // We shouldn't set the typename to e.name because it could potentially create SQL injection,
-      // using a replacement at the type name location doesn't work.
-      const enumTypeName = enumNameToHash(e.name);
-      let type = `"${schema}"."${enumTypeName}"`;
-      let [results] = await this.sequelize.query(
-        `SELECT pg_enum.enumlabel as enum_value
-         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
-        {replacements: [enumTypeName, schema]}
-      );
-
-      const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
-      const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
-      if (resultsDeprecated.length !== 0) {
-        results = resultsDeprecated;
-        type = `"${enumTypeNameDeprecated}"`;
-      }
-
-      if (results.length === 0) {
-        await this.sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
-          replacements: e.values,
-        });
-      } else {
-        const currentValues = results.map((v: any) => v.enum_value);
-        // Assert the existing enum is same
-
-        // Make it a function to not execute potentially big joins unless needed
-        if (!isEqual(e.values, currentValues)) {
-          throw new Error(
-            `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
-              `,`
-            )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
-          );
-        }
-      }
-      // Ref: https://www.graphile.org/postgraphile/enums/
-      // Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
-      // It is difficult for sequelize use replacement, instead we use escape to avoid injection
-      // UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
-      // See https://github.com/cockroachdb/cockroach/issues/44135
-
-      if (this.dbType === SUPPORT_DB.cockRoach) {
-        logger.warn(
-          `Comment on enum ${e.description} is not supported with ${this.dbType}, enum name may display incorrectly in query service`
-        );
-      } else {
-        const comment = this.sequelize.escape(
-          `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
-        );
-        await this.sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
-      }
-      enumTypeMap.set(e.name, type);
+      await syncEnums(this.sequelize, this.dbType, e, schema, enumTypeMap, logger);
     }
     const extraQueries = [];
     // Function need to create ahead of triggers

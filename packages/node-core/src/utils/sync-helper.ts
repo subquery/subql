@@ -1,8 +1,24 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {hashName, blake2AsHex} from '@subql/utils';
-import {QueryTypes, Sequelize, Utils} from '@subql/x-sequelize';
+import {SUPPORT_DB} from '@subql/common';
+import {hashName, blake2AsHex, GraphQLEnumsType, IndexType, GraphQLModelsType} from '@subql/utils';
+import {
+  DataTypes,
+  IndexesOptions,
+  Model,
+  ModelAttributeColumnOptions,
+  ModelAttributes,
+  ModelStatic,
+  Op,
+  QueryTypes,
+  Sequelize,
+  Utils,
+} from '@subql/x-sequelize';
+import {isEqual} from 'lodash';
+import Pino from 'pino';
+import {getEnumDeprecated} from './project';
+import {generateIndexName, modelToTableName} from './sequelizeUtil';
 
 export interface SmartTags {
   foreignKey?: string;
@@ -227,3 +243,136 @@ export const sqlIterator = (tableName: string, sql: string, batch: number = DEFA
   END $$
   `;
 };
+
+// Only used with historical to add indexes to ID fields for gettign entitities by ID
+export function addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
+  const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
+  if (idFieldName && !indexes.find((idx) => idx.fields?.includes(idFieldName))) {
+    indexes.push({
+      fields: [Utils.underscoredIf(idFieldName, true)],
+      unique: false,
+    });
+  }
+}
+
+export function addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>, blockHeight: number | undefined): void {
+  sequelizeModel.addScope('defaultScope', {
+    attributes: {
+      exclude: ['__id', '__block_range'],
+    },
+  });
+
+  // TODO add blockHeight
+  sequelizeModel.addHook('beforeFind', (options) => {
+    (options.where as any).__block_range = {
+      [Op.contains]: blockHeight as any,
+    };
+  });
+  sequelizeModel.addHook('beforeValidate', (attributes, options) => {
+    attributes.__block_range = [blockHeight, null];
+  });
+}
+
+export function generateHashedIndexName(modelName: string, indexOptions: IndexesOptions): string {
+  return blake2AsHex(`${modelName}_${(indexOptions.fields ?? []).join('_')}`, 64).substring(0, 63);
+}
+
+export function updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
+  indexes.forEach((index) => {
+    // follow same pattern as _generateIndexName
+    const tableName = modelToTableName(modelName);
+    const deprecated = generateIndexName(tableName, index);
+
+    if (!existedIndexes.includes(deprecated)) {
+      index.name = generateHashedIndexName(modelName, index);
+    }
+  });
+}
+
+export function addIdAndBlockRangeAttributes(attributes: ModelAttributes<Model<any, any>, any>): void {
+  (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
+  attributes.__id = {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true,
+  } as ModelAttributeColumnOptions;
+  attributes.__block_range = {
+    type: DataTypes.RANGE(DataTypes.BIGINT),
+    allowNull: false,
+  } as ModelAttributeColumnOptions;
+}
+
+export function addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
+  indexes.forEach((index) => {
+    if (index.using === IndexType.GIN) {
+      return;
+    }
+    if (!index.fields) {
+      index.fields = [];
+    }
+    index.fields.push('_block_range');
+    index.using = IndexType.GIST;
+    // GIST does not support unique indexes
+    index.unique = false;
+  });
+}
+
+// Ref: https://www.graphile.org/postgraphile/enums/
+// Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
+// It is difficult for sequelize use replacement, instead we use escape to avoid injection
+// UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
+// See https://github.com/cockroachdb/cockroach/issues/44135
+export async function syncEnums(
+  sequelize: Sequelize,
+  dbType: SUPPORT_DB,
+  e: GraphQLEnumsType,
+  schema: string,
+  enumTypeMap: Map<string, string>,
+  logger: Pino.Logger
+): Promise<void> {
+  // We shouldn't set the typename to e.name because it could potentially create SQL injection,
+  // using a replacement at the type name location doesn't work.
+  const enumTypeName = enumNameToHash(e.name);
+  let type = `"${schema}"."${enumTypeName}"`;
+  let [results] = await sequelize.query(
+    `SELECT pg_enum.enumlabel as enum_value
+         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
+    {replacements: [enumTypeName, schema]}
+  );
+
+  const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
+  const resultsDeprecated = await getEnumDeprecated(sequelize, enumTypeNameDeprecated);
+  if (resultsDeprecated.length !== 0) {
+    results = resultsDeprecated;
+    type = `"${enumTypeNameDeprecated}"`;
+  }
+
+  if (results.length === 0) {
+    await sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
+      replacements: e.values,
+    });
+  } else {
+    const currentValues = results.map((v: any) => v.enum_value);
+    // Assert the existing enum is same
+
+    // Make it a function to not execute potentially big joins unless needed
+    if (!isEqual(e.values, currentValues)) {
+      throw new Error(
+        `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
+          `,`
+        )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
+      );
+    }
+  }
+  if (dbType === SUPPORT_DB.cockRoach) {
+    logger.warn(
+      `Comment on enum ${e.description} is not supported with ${dbType}, enum name may display incorrectly in query service`
+    );
+  } else {
+    const comment = sequelize.escape(`@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`);
+    await sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
+  }
+  enumTypeMap.set(e.name, type);
+}

@@ -54,6 +54,7 @@ export interface IConfig {
   readonly storeFlushInterval: number;
   readonly isTest?: boolean;
   readonly root?: string;
+  readonly allowSchemaMigration: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -81,6 +82,7 @@ const DEFAULT_CONFIG = {
   storeGetCacheSize: 500,
   storeCacheAsync: true,
   storeFlushInterval: 5,
+  allowSchemaMigration: false,
 };
 
 export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
@@ -145,6 +147,9 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.networkDictionary;
   }
 
+  get allowSchemaMigration(): boolean {
+    return this._config.allowSchemaMigration;
+  }
   get storeCacheThreshold(): number {
     return this._config.storeCacheThreshold;
   }

@@ -2,86 +2,55 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Injectable} from '@nestjs/common';
+import {SUPPORT_DB} from '@subql/common';
 import {
-  blake2AsHex,
+  BigInt,
+  Boolean,
+  DateObj,
+  Float,
   getAllEntitiesRelations,
-  getAllEnums,
   GraphQLEntityField,
   GraphQLEntityIndex,
   GraphQLEnumsType,
   GraphQLModelsType,
   GraphQLRelationsType,
-  IndexType,
-  SequelizeTypes,
-  BigInt,
-  Boolean,
-  DateObj,
-  Float,
   ID,
   Int,
   Json,
+  SequelizeTypes,
   String,
 } from '@subql/utils';
 import {
-  Sequelize,
-  ModelAttributes,
-  ModelAttributeColumnOptions,
   DataType,
   DataTypes,
-  Utils,
   IndexesOptions,
-  Transaction,
-  TableName,
+  ModelAttributeColumnOptions,
+  ModelAttributes,
   QueryInterfaceIndexOptions,
+  Sequelize,
+  TableName,
+  Transaction,
+  Utils,
 } from '@subql/x-sequelize';
 import {SetRequired} from '@subql/x-sequelize/types/utils/set-required';
-import {GraphQLSchema, ObjectTypeDefinitionNode, parse, printSchema, visit, DefinitionNode, TypeNode} from 'graphql';
+import {GraphQLSchema, TypeNode} from 'graphql';
 import {getLogger} from '../logger';
 import {
   addBlockRangeColumnToIndexes,
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
   addScopeAndBlockHeightHooks,
-  enumNameToHash,
   generateHashedIndexName,
   getColumnOption,
-  getEnumDeprecated,
   getExistedIndexesQuery,
   modelsTypeToModelAttributes,
+  syncEnums,
   updateIndexesName,
 } from '../utils';
 import {modelToTableName} from '../utils/sequelizeUtil';
 import {NodeConfig} from './NodeConfig';
 
-interface FieldDetailsType {
-  fieldName: string;
-  type: string; // Int, String... etc
-  attributes: ModelAttributeColumnOptions;
-}
-export interface EntityChanges {
-  addedFields: FieldDetailsType[];
-  removedFields: FieldDetailsType[];
-}
-
-export interface SchemaChanges {
-  addedEntities: {entityName: string; attributes: ModelAttributes}[];
-  removedEntities: string[];
-  modifiedEntities: Record<string, EntityChanges>;
-}
-
 const logger = getLogger('SchemaMigrationService');
-
-export function extractTypeDetails(typeNode: TypeNode): {dataType: string; graphQLType: string} {
-  let currentTypeNode: TypeNode = typeNode;
-
-  while (currentTypeNode.kind === 'NonNullType' || currentTypeNode.kind === 'ListType') {
-    currentTypeNode = currentTypeNode.type;
-  }
-
-  const name = currentTypeNode.kind === 'NamedType' ? currentTypeNode.name.value : '';
-
-  return {graphQLType: currentTypeNode.kind, dataType: name};
-}
 
 // just a wrapper for naming confusion
 function formatColumnName(columnName: string): string {
@@ -123,30 +92,30 @@ function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): string {
 
   // Adding models
   if (schemaChanges.addedModels.length) {
-    logMessage += `Added Models: ${formatModels(schemaChanges.addedModels)}\n`;
+    logMessage += `Added Entities: ${formatModels(schemaChanges.addedModels)}\n`;
   }
 
   // Removing models
   if (schemaChanges.removedModels.length) {
-    logMessage += `Removed Models: ${formatModels(schemaChanges.removedModels)}\n`;
+    logMessage += `Removed Entities: ${formatModels(schemaChanges.removedModels)}\n`;
   }
 
   // Modified models
   Object.entries(schemaChanges.modifiedModels).forEach(([modelName, changes]) => {
-    logMessage += `Modified Model: ${modelName}\n`;
+    logMessage += `Modified Entities: ${modelName}\n`;
 
     if (changes.addedFields.length) {
-      logMessage += `  Added Fields: ${changes.addedFields.map((field) => field.name).join(', ')}\n`;
+      logMessage += `\tAdded Fields: ${changes.addedFields.map((field) => field.name).join(', ')}\n`;
     }
     if (changes.removedFields.length) {
-      logMessage += `  Removed Fields: ${changes.removedFields.map((field) => field.name).join(', ')}\n`;
+      logMessage += `\tRemoved Fields: ${changes.removedFields.map((field) => field.name).join(', ')}\n`;
     }
 
     if (changes.addedIndexes.length) {
-      logMessage += `  Added Indexes: ${formatIndexes(changes.addedIndexes)}\n`;
+      logMessage += `\tAdded Indexes: ${formatIndexes(changes.addedIndexes)}\n`;
     }
     if (changes.removedIndexes.length) {
-      logMessage += `  Removed Indexes: ${formatIndexes(changes.removedIndexes)}\n`;
+      logMessage += `\tRemoved Indexes: ${formatIndexes(changes.removedIndexes)}\n`;
     }
   });
 
@@ -176,7 +145,6 @@ function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): string {
   return logMessage;
 }
 
-// This is required for creating columns
 function formatAttributes(columnOptions: ModelAttributeColumnOptions): string {
   const type = formatDataType(columnOptions.type);
   const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
@@ -210,7 +178,6 @@ export interface SchemaChangesType {
 
   addedRelations: GraphQLRelationsType[];
   removedRelations: GraphQLRelationsType[];
-  // look into modifying relations, if possible or possible cases for it
 
   addedEnums: GraphQLEnumsType[];
   removedEnums: GraphQLEnumsType[];
@@ -280,21 +247,18 @@ function compareModels(
   const currentModelsMap = new Map(currentModels.map((model) => [model.name, model]));
   const nextModelsMap = new Map(nextModels.map((model) => [model.name, model]));
 
-  // removed models
   currentModels.forEach((model) => {
     if (!nextModelsMap.has(model.name)) {
       changes.removedModels.push(model);
     }
   });
 
-  // added models
   nextModels.forEach((model) => {
     if (!currentModelsMap.has(model.name)) {
       changes.addedModels.push(model);
     }
   });
 
-  // modified models
   nextModels.forEach((model) => {
     const currentModel = currentModelsMap.get(model.name);
     if (currentModel) {
@@ -323,6 +287,12 @@ function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): b
     index1.fields.join(',') === index2.fields.join(',') &&
     index1.unique === index2.unique &&
     index1.using === index2.using
+  );
+}
+
+function hasChanged(changes: SchemaChangesType): boolean {
+  return Object.values(changes).every((change) =>
+    Array.isArray(change) ? change.length > 0 : Object.keys(change).length > 0
   );
 }
 
@@ -356,11 +326,7 @@ export class SchemaMigrationService {
 
     return changes;
   }
-  // TODO: If modifying exisiting column, index check is necessary to find all existing Index, if there are indexes in place, then we must reintroduce it
 
-  // TODO add relationToMap
-
-  // TODO add id and blockRange Attributes
   async run(
     currentSchema: GraphQLSchema,
     nextSchema: GraphQLSchema,
@@ -369,16 +335,6 @@ export class SchemaMigrationService {
     _flushCache: (flushAll?: boolean) => Promise<void>,
     config: NodeConfig
   ): Promise<void> {
-    const transaction = await this.sequelize.transaction();
-    if (!transaction) {
-      throw new Error('Failed to create transaction');
-    }
-    await _flushCache(true);
-    /*
-    Currently Unsupported Schema Migration changes:
-      add/remove enums
-      add/remove relations
-   */
     const schemaDifference = this.schemaComparator(currentSchema, nextSchema);
 
     const {
@@ -391,9 +347,34 @@ export class SchemaMigrationService {
       removedModels,
       removedRelations,
     } = schemaDifference;
+    if (hasChanged(schemaDifference)) {
+      logger.info('No Schema changes');
+      return;
+    }
 
+    if (blockHeight < 1) {
+      Object.values(modifiedModels).forEach(({addedFields, removedFields}) => {
+        addedFields.forEach((addedField) => {
+          const correspondingRemovedField = removedFields.find((removedField) => removedField.name === addedField.name);
+
+          if (correspondingRemovedField && correspondingRemovedField.nullable && !addedField.nullable) {
+            throw new Error(`Field ${addedField.name} was nullable but is being added as non-nullable.`);
+          }
+        });
+      });
+    }
+
+    const transaction = await this.sequelize.transaction();
+    if (!transaction) {
+      throw new Error('Failed to create transaction');
+    }
+    await _flushCache(true);
+    /*
+    Currently Unsupported Schema Migration changes:
+      add/remove enums
+      add/remove relations
+   */
     logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
-
     /*
     SQL execution order:
     Drop table (this will also drop the Indexes on that Table),
@@ -409,27 +390,17 @@ export class SchemaMigrationService {
     const enumTypeMap = new Map<string, string>();
 
     for (const e of allEnums) {
-      const enumTypeName = enumNameToHash(e.name);
-      let type = `"${dbSchema}"."${enumTypeName}"`;
-      const enumTypeNameDeprecated = `${dbSchema}_enum_${enumNameToHash(e.name)}`;
-      const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
+      await syncEnums(this.sequelize, SUPPORT_DB.postgres, e, dbSchema, enumTypeMap, logger);
+    }
+    if (addedEnums.length > 0 || removedEnums.length > 0) {
+      throw new Error('Schema Migration currently does not support Enum removal and creation');
+    }
 
-      if (resultsDeprecated.length !== 0) {
-        type = `"${enumTypeNameDeprecated}"`;
-      }
-
-      enumTypeMap.set(e.name, type);
+    if (removedRelations.length > 0 || addedRelations.length > 0) {
+      throw new Error('Schema Migration currently does not support Relational removal or creation');
     }
 
     try {
-      if (addedEnums.length > 0 || removedEnums.length > 0) {
-        throw new Error('Schema Migration currently does not support Enum removal and creation');
-      }
-
-      if (removedRelations.length > 0 || addedRelations.length > 0) {
-        throw new Error('Schema Migration currently does not support Relational removal or creation');
-      }
-
       // Remove should always occur before create
       if (removedModels.length) {
         for (const model of removedModels) {
@@ -602,8 +573,7 @@ export class SchemaMigrationService {
     indexOption: IndexesOptions,
     transaction: Transaction
   ): Promise<void> {
-    const tableNameObj: TableName = {tableName: modelToTableName(tableName), schema};
     const hashedIndexName = generateHashedIndexName(tableName, indexOption);
-    await this.sequelize.getQueryInterface().removeIndex(tableNameObj, hashedIndexName, {transaction});
+    await this.sequelize.query(`DROP INDEX IF EXISTS "${schema}"."${hashedIndexName}"`, {transaction});
   }
 }

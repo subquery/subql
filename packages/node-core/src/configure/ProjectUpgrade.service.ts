@@ -169,14 +169,16 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
           if (!this.#storeCache._config.unfinalizedBlocks) {
             assert(this.migrationService, 'MigrationService is undefined');
 
-            await this.migrationService.run(
-              project.schema,
-              newProject.schema,
-              this.#storeCache._config.dbSchema,
-              height,
-              this.#storeCache._flushCache.bind(this.#storeCache),
-              this.#storeCache._config
-            );
+            if (this.#storeCache._config.allowSchemaMigration) {
+              await this.migrationService.run(
+                project.schema,
+                newProject.schema,
+                this.#storeCache._config.dbSchema,
+                height,
+                this.#storeCache._flushCache.bind(this.#storeCache),
+                this.#storeCache._config
+              );
+            }
           }
 
           await this.updateIndexedDeployments(newProject.id, startHeight);
