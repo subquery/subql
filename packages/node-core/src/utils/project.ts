@@ -364,6 +364,10 @@ export function addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>, bl
   });
 }
 
+export function generateHashedIndexName(modelName: string, indexOptions: IndexesOptions): string {
+  return blake2AsHex(`${modelName}_${(indexOptions.fields ?? []).join('_')}`, 64).substring(0, 63);
+}
+
 export function updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
   indexes.forEach((index) => {
     // follow same pattern as _generateIndexName
@@ -371,8 +375,7 @@ export function updateIndexesName(modelName: string, indexes: IndexesOptions[], 
     const deprecated = generateIndexName(tableName, index);
 
     if (!existedIndexes.includes(deprecated)) {
-      const fields = (index.fields ?? []).join('_');
-      index.name = blake2AsHex(`${modelName}_${fields}`, 64).substring(0, 63);
+      index.name = generateHashedIndexName(modelName, index);
     }
   });
 }

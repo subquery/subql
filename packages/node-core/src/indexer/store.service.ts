@@ -7,28 +7,14 @@ import {getDbType, SUPPORT_DB} from '@subql/common';
 import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
-  GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
   IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
   hexToU8a,
-  blake2AsHex,
 } from '@subql/utils';
-import {
-  DataTypes,
-  IndexesOptions,
-  Model,
-  ModelAttributeColumnOptions,
-  ModelAttributes,
-  ModelStatic,
-  Op,
-  QueryTypes,
-  Sequelize,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
+import {IndexesOptions, ModelStatic, Op, QueryTypes, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -61,7 +47,7 @@ import {
   smartTags,
   updateIndexesName,
 } from '../utils';
-import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
+import {modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
 import {CacheMetadataModel} from './storeCache';

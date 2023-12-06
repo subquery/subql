@@ -4,3 +4,5 @@
 export * from './generalTypes';
 
 export * from './TypeClass';
+
+export * from './supported';

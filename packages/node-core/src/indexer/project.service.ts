@@ -368,7 +368,6 @@ export abstract class BaseProjectService<
   private async initUpgradeService(): Promise<number | undefined> {
     const upgradePoint = await this.projectUpgradeService.init(
       this.storeService.storeCache,
-      new SchemaMigrationService(this.sequelize),
       this.handleProjectChange.bind(this)
     );
 

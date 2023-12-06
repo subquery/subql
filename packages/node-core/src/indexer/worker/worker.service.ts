@@ -86,8 +86,7 @@ export abstract class BaseWorkerService<
       delete this.fetchedBlocks[height];
 
       // Makes sure the correct project is used for that height
-      // TODO tmp schema
-      await this.projectUpgradeService.setCurrentHeight(height, this.nodeConfig.dbSchema);
+      await this.projectUpgradeService.setCurrentHeight(height);
 
       return await this.processFetchedBlock(block, await this.projectService.getDataSources(height));
     } catch (e: any) {

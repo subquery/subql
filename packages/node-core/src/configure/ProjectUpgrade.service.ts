@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {SchemaMigrationService} from '@subql/node-core/configure/SchemaMigration.service';
-import {findLast, last} from 'lodash';
+import {findLast, last, parseInt} from 'lodash';
 import {ISubqueryProject, StoreCacheService} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight, mainThreadOnly} from '../utils';
@@ -15,7 +15,6 @@ type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promis
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
   init: (
     storeCacheService: StoreCacheService,
-    schemaMigrationService: SchemaMigrationService,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ) => Promise<number | undefined>;
   /**
@@ -24,7 +23,7 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
   initWorker(currentHeight: number, onProjectUpgrade?: OnProjectUpgradeCallback<P>): void;
   updateIndexedDeployments: (id: string, blockHeight: number) => Promise<void>;
   readonly currentHeight: number;
-  setCurrentHeight: (newHeight: number, schema: string) => Promise<void>;
+  setCurrentHeight: (newHeight: number) => Promise<void>;
   currentProject: P;
   projects: Map<number, P>;
   getProject: (height: number) => P;
@@ -104,15 +103,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         2
       )}`
     );
-
     // Bypass setters here because we want to avoid side-effect
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
   }
-
   async init(
-    storeCache: StoreCacheService,
-    schemaMigrationService: SchemaMigrationService,
+    storeCacheService: StoreCacheService,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
     if (this.#initialized) {
@@ -120,9 +116,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       return;
     }
     this.#initialized = true;
-    this.#storeCache = storeCache;
+    this.#storeCache = storeCacheService;
     this.onProjectUpgrade = onProjectUpgrade;
-    this.migrationService = schemaMigrationService;
+    this.migrationService = new SchemaMigrationService(storeCacheService._sequelize);
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 
@@ -155,7 +151,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     return this.#currentHeight;
   }
 
-  async setCurrentHeight(height: number, schema: string): Promise<void> {
+  async setCurrentHeight(height: number): Promise<void> {
     this.#currentHeight = height;
     const newProjectDetails = this._projects.getDetails(height);
     assert(newProjectDetails, `Unable to find project for height ${height}`);
@@ -169,23 +165,24 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     if (hasChanged) {
       if (isMainThread) {
         try {
-          assert(this.#storeCache, 'CacheMetadataModel is undefined');
-          if (!this.#storeCache?.unfinalizedBlocks) {
-            assert(this.migrationService, 'Migration service is undefined');
-            await this.migrationService?.run(
+          assert(this.#storeCache, 'StoreCacheService is undefined');
+          if (!this.#storeCache._config.unfinalizedBlocks) {
+            assert(this.migrationService, 'MigrationService is undefined');
+
+            await this.migrationService.run(
               project.schema,
               newProject.schema,
-              schema,
+              this.#storeCache._config.dbSchema,
               height,
-              this.#storeCache?._flushCache.bind(this.#storeCache),
-              this.#storeCache?.indexCountLimit
+              this.#storeCache._flushCache.bind(this.#storeCache),
+              this.#storeCache._config
             );
           }
 
           await this.updateIndexedDeployments(newProject.id, startHeight);
         } catch (e: any) {
           logger.error(e, 'Failed to update deployment');
-          throw new Error(e);
+          throw e;
         }
       }
 
@@ -203,7 +200,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   static async create<P extends ISubqueryProject>(
     startProject: P, // The project passed in via application start
     loadProject: (ipfsCid: string) => Promise<P>,
-    // @Inject(SchemaMigrationService) migrationService: SchemaMigrationService,
     startHeight?: number // How far back we need to load parent versions
   ): Promise<ProjectUpgradeSevice<P>> {
     const projects: Map<number, P> = new Map();

@@ -1,10 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Sequelize} from '@subql/x-sequelize';
 import {CacheMetadataModel, ISubqueryProject, StoreCacheService} from '../indexer';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
-import {SchemaMigrationService} from './SchemaMigration.service';
 
 const templateProject = {
   network: {
@@ -278,7 +276,7 @@ describe('Project Upgrades', () => {
         1
       );
 
-      await upgradeService.init(storeCache, new SchemaMigrationService({} as Sequelize));
+      await upgradeService.init(storeCache);
 
       project = upgradableSubqueryProject(upgradeService);
     });
@@ -288,21 +286,21 @@ describe('Project Upgrades', () => {
     });
 
     it('can set the current height on the service', async () => {
-      await upgradeService.setCurrentHeight(20, 'test-schema');
+      await upgradeService.setCurrentHeight(20);
 
       expect(upgradeService.currentHeight).toEqual(20);
       expect(project.currentHeight).toEqual(20);
     });
 
     it('can set the current height on the project', async () => {
-      await project.setCurrentHeight(20, 'test-schema');
+      await project.setCurrentHeight(20);
 
       expect(upgradeService.currentHeight).toEqual(20);
       expect(project.currentHeight).toEqual(20);
     });
 
     it('the project is the right project for a set height', async () => {
-      await project.setCurrentHeight(25, 'test-schema');
+      await project.setCurrentHeight(25);
 
       expect(project.parent?.block).toEqual(20);
     });
