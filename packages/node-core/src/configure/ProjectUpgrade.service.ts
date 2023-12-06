@@ -156,7 +156,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     const newProjectDetails = this._projects.getDetails(height);
     assert(newProjectDetails, `Unable to find project for height ${height}`);
     const {startHeight, value: newProject} = newProjectDetails;
-    console.log(this.#currentProject);
 
     const hasChanged = this.#currentProject !== newProject;
     // Need to set this so that operations under hasChanged use the new project

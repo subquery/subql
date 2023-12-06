@@ -433,7 +433,6 @@ export class SchemaMigrationService {
           }
 
           for (const index of modelValue.addedIndexes) {
-            console.log(model, {...index, fields: index.fields.map((f) => formatColumnName(f))});
             await this.createIndex(
               dbSchema,
               model,
