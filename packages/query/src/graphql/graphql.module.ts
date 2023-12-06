@@ -13,6 +13,7 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from 'apollo-server-core';
 import {ApolloServer, UserInputError} from 'apollo-server-express';
+import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
 import ExpressPinoLogger from 'express-pino-logger';
 import {execute, GraphQLSchema, subscribe} from 'graphql';
@@ -188,6 +189,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
     app.use(ExpressPinoLogger(PinoConfig));
     app.use(limitBatchedQueries);
+    app.use(compression());
+
     await server.start();
     server.applyMiddleware({
       app,
