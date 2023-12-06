@@ -9,6 +9,8 @@ describe('SchemaMigration', () => {
   describe('comparator', () => {
     const oldSchemaPath = path.join(__dirname, '../../test/schemas/oldSchema.graphql');
     const newSchemaPath = path.join(__dirname, '../../test/schemas/newSchema.graphql');
+    const badSchemaPath = path.join(__dirname, '../../test/schemas/badSchema.graphql');
+
     const schemaMigrationService = new SchemaMigrationService({} as any);
 
     it('ensure comparator correctness', () => {
@@ -30,12 +32,18 @@ describe('SchemaMigration', () => {
         - Drop Entity with JsonField
         - Drop Enum
         Modified
-        - field - Nullable to Non-nullable
         - Entity - field
         - Modify Enum // TODO this is currently not being handled
        */
       const expectResult = require('../../test/schemas/schemaDiff.json');
       expect(JSON.parse(JSON.stringify(result))).toStrictEqual(expectResult);
+    });
+    it('comparator should throw on nullable to non-nullable', () => {
+      const currentSchema = buildSchemaFromFile(oldSchemaPath);
+      const nextSchema = buildSchemaFromFile(badSchemaPath);
+      expect(() => schemaMigrationService.schemaComparator(currentSchema, nextSchema)).toThrow(
+        'n Entity: EntityOne, field: field2 changed from non-nullable to nullable.'
+      );
     });
   });
 });

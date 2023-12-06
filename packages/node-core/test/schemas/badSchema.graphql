@@ -1,7 +1,7 @@
 type EntityOne @entity {
   id: ID!
   field1: Int! @index(unique: true) # added @index unique
-  field2: String!
+  field2: String # from nullable to non-nullable
   field3: EntityTwo! # Updated from BigInt to EntityTwo ID
 }
 

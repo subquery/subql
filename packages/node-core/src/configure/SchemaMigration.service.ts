@@ -264,7 +264,6 @@ function compareModels(
       const addedFields = model.fields.filter((field) => !currentModel.fields.some((f) => fieldsAreEqual(f, field)));
       const removedFields = currentModel.fields.filter((field) => !model.fields.some((f) => fieldsAreEqual(f, field)));
 
-      // TODO different ordered indexes
       const addedIndexes = model.indexes.filter((index) => !currentModel.indexes.some((i) => indexesEqual(i, index)));
       const removedIndexes = currentModel.indexes.filter((index) => !model.indexes.some((i) => indexesEqual(i, index)));
 
@@ -323,6 +322,20 @@ export class SchemaMigrationService {
     // Compare Models
     compareModels(currentData.models, nextData.models, changes);
 
+    // Nullable to non-nullable || non-nullable to nullable is unsupported (rewind purposes)
+    Object.entries(changes.modifiedModels).forEach(([modelName, {addedFields, removedFields}]) => {
+      addedFields.forEach((addedField) => {
+        const correspondingRemovedField = removedFields.find((removedField) => removedField.name === addedField.name);
+
+        if (correspondingRemovedField && correspondingRemovedField.nullable !== addedField.nullable) {
+          const errorType = correspondingRemovedField.nullable
+            ? 'nullable to non-nullable'
+            : 'non-nullable to nullable';
+          throw new Error(`In Entity: ${modelName}, field: ${addedField.name} changed from ${errorType}.`);
+        }
+      });
+    });
+
     return changes;
   }
 
@@ -349,18 +362,6 @@ export class SchemaMigrationService {
     if (!hasChanged(schemaDifference)) {
       logger.info('No Schema changes');
       return;
-    }
-
-    if (blockHeight < 1) {
-      Object.values(modifiedModels).forEach(({addedFields, removedFields}) => {
-        addedFields.forEach((addedField) => {
-          const correspondingRemovedField = removedFields.find((removedField) => removedField.name === addedField.name);
-
-          if (correspondingRemovedField && correspondingRemovedField.nullable && !addedField.nullable) {
-            throw new Error(`Field ${addedField.name} was nullable but is being added as non-nullable.`);
-          }
-        });
-      });
     }
 
     const transaction = await this.sequelize.transaction();

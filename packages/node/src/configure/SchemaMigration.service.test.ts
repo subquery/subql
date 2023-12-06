@@ -259,11 +259,6 @@ describe('SchemaMigration integration tests', () => {
         indexdef: `CREATE INDEX "0x4eda71e3658b726f" ON "${schema}".test_entities USING btree (id)`,
       },
     ]);
-
-    // Create new tables should include historical columns
-    // Check for test_field to be removed
-    // expect(accountsColumnNames).not.toContain('test_field');
-    // ensure correct historical indexes are created
   });
   it('Ensure correct JSON field creation with nested json', async () => {
     // parent: QmbqZ1UoRVJ4umb3FByNN2rPYgzHxWKohfeEVnkQakDLgQ
