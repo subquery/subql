@@ -108,6 +108,10 @@ export abstract class BaseProjectService<
       await this.ensureMetadata();
       const reindexedUpgrade = await this.initUpgradeService();
 
+      /*
+      Need to get startHeight eariler than db init
+      pass blockHeight to dbInit to ensure which project to init of schema
+       */
       await this.initDbSchema();
 
       await this.initHotSchemaReload();

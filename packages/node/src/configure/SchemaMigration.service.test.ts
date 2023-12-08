@@ -405,4 +405,61 @@ describe('SchemaMigration integration tests', () => {
       indexdef: `CREATE INDEX "0xc1e1132ee204d92f" ON "${schema}".test_index_twos USING btree (name)`,
     });
   });
+  it('Should initialize correct schema based on startHeight', async () => {
+    // parent: QmXVbrr1zBtK8a9c75auEknmy8g63qp6gQ9bSKrfCqoAKh
+    // child : QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9
+    const relationCid = 'QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9';
+    const schema = 'test-migrations-6';
+    app = await prepareProjectModule(
+      relationCid,
+      sequelize,
+      tempDirChild,
+      tempDirParent,
+      schema,
+    );
+
+    projectService = app.get('IProjectService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+
+    await projectService.init(1);
+
+    const dbResults = await sequelize.query(
+      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}';`,
+      { type: QueryTypes.SELECT },
+    );
+    const tableNames: string[] = dbResults.map((row: string[]) => {
+      return row[0];
+    });
+
+    expect(tableNames).toContain('_metadata');
+    expect(tableNames).toContain('accounts');
+    expect(tableNames).not.toContain('test_entities');
+    expect(tableNames).toContain('transfers');
+  });
+  it('On entity drop isRewindable should be false', async () => {
+    // parent: QmXVbrr1zBtK8a9c75auEknmy8g63qp6gQ9bSKrfCqoAKh
+    // child : QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9
+    const relationCid = 'QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9';
+    const schema = 'test-migrations-7';
+    app = await prepareProjectModule(
+      relationCid,
+      sequelize,
+      tempDirChild,
+      tempDirParent,
+      schema,
+    );
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+
+    await projectService.init(500);
+    const isRewindable = (projectUpgradeService as any).isRewindable;
+    // TODO failing due to wrongful init schema
+    expect(isRewindable).toBe(false);
+  });
 });

@@ -231,8 +231,7 @@ export function yargsBuilder<
               },
               'allow-schema-migration': {
                 demandOption: false,
-                default: false,
-                describe: 'Allow schema-migration to occur on ProjectUpgrades',
+                describe: 'Allow schema-migration to occur with project upgrades',
                 type: 'boolean',
               },
               root: {

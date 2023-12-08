@@ -73,6 +73,9 @@ export async function reindex(
       // Flush metadata changes from above Promise.all
       await storeService.storeCache.metadata.flush(transaction);
 
+      // revert migrations
+      // migrationService()
+
       await transaction.commit();
       logger.info('Reindex Success');
     } catch (err: any) {

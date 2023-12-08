@@ -16,7 +16,6 @@ import {
   IProjectUpgradeService,
   PoiSyncService,
   InMemoryCacheService,
-  SchemaMigrationService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';

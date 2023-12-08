@@ -298,7 +298,20 @@ function hasChanged(changes: SchemaChangesType): boolean {
 export class SchemaMigrationService {
   constructor(private sequelize: Sequelize) {}
 
-  schemaComparator(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): SchemaChangesType {
+  static validateSchemaChanges(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): boolean {
+    const {modifiedModels, removedModels} = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
+    if (removedModels.length > 0) return false;
+
+    for (const {removedFields} of Object.values(modifiedModels)) {
+      if (removedFields.length > 0) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  static schemaComparator(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): SchemaChangesType {
     const currentData = getAllEntitiesRelations(currentSchema);
     const nextData = getAllEntitiesRelations(nextSchema);
 
@@ -321,17 +334,14 @@ export class SchemaMigrationService {
 
     // Compare Models
     compareModels(currentData.models, nextData.models, changes);
-
-    // Nullable to non-nullable || non-nullable to nullable is unsupported (rewind purposes)
     Object.entries(changes.modifiedModels).forEach(([modelName, {addedFields, removedFields}]) => {
       addedFields.forEach((addedField) => {
         const correspondingRemovedField = removedFields.find((removedField) => removedField.name === addedField.name);
 
-        if (correspondingRemovedField && correspondingRemovedField.nullable !== addedField.nullable) {
-          const errorType = correspondingRemovedField.nullable
-            ? 'nullable to non-nullable'
-            : 'non-nullable to nullable';
-          throw new Error(`In Entity: ${modelName}, field: ${addedField.name} changed from ${errorType}.`);
+        if (correspondingRemovedField && correspondingRemovedField.nullable && !addedField.nullable) {
+          throw new Error(
+            `In Entity: ${modelName}, field: ${addedField.name} was nullable but is being added as non-nullable.`
+          );
         }
       });
     });
@@ -347,7 +357,7 @@ export class SchemaMigrationService {
     _flushCache: (flushAll?: boolean) => Promise<void>,
     config: NodeConfig
   ): Promise<void> {
-    const schemaDifference = this.schemaComparator(currentSchema, nextSchema);
+    const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
 
     const {
       addedEnums,
