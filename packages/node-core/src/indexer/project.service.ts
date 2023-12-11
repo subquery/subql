@@ -110,9 +110,6 @@ export abstract class BaseProjectService<
 
       const reindexedUpgrade = await this.initUpgradeService();
 
-      console.log('this.project', this.project);
-      console.log('this.currentProject', this.projectUpgradeService.currentProject);
-
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
         await this.poiService.init(this.schema);
@@ -392,6 +389,10 @@ export abstract class BaseProjectService<
             logger.error(
               `Unable to upgrade project. Cannot rewind to block ${upgradePoint} without historical indexing enabled.`
             );
+            process.exit(1);
+          }
+          if (!this.projectUpgradeService.isRewindable) {
+            logger.error(`Due to dropped changes in schema migration, project cannot rewind`);
             process.exit(1);
           }
           logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);

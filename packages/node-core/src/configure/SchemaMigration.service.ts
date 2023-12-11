@@ -334,18 +334,6 @@ export class SchemaMigrationService {
 
     // Compare Models
     compareModels(currentData.models, nextData.models, changes);
-    Object.entries(changes.modifiedModels).forEach(([modelName, {addedFields, removedFields}]) => {
-      addedFields.forEach((addedField) => {
-        const correspondingRemovedField = removedFields.find((removedField) => removedField.name === addedField.name);
-
-        if (correspondingRemovedField && correspondingRemovedField.nullable && !addedField.nullable) {
-          throw new Error(
-            `In Entity: ${modelName}, field: ${addedField.name} was nullable but is being added as non-nullable.`
-          );
-        }
-      });
-    });
-
     return changes;
   }
 

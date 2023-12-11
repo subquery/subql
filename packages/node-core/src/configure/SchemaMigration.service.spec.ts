@@ -36,19 +36,11 @@ describe('SchemaMigration', () => {
       const expectResult = require('../../test/schemas/schemaDiff.json');
       expect(JSON.parse(JSON.stringify(result))).toStrictEqual(expectResult);
     });
-    it('comparator should throw on nullable to non-nullable', () => {
+    it('Determine isRewindable', () => {
       const currentSchema = buildSchemaFromFile(oldSchemaPath);
       const nextSchema = buildSchemaFromFile(badSchemaPath);
-      expect(() => SchemaMigrationService.schemaComparator(currentSchema, nextSchema)).toThrow(
-        'n Entity: EntityOne, field: field2 changed from non-nullable to nullable.'
-      );
-    });
-    it('comparator should throw on dataType changes while retaining non-nullable', () => {
-      const currentSchema = buildSchemaFromFile(oldSchemaPath);
-      const nextSchema = buildSchemaFromFile(badSchemaPath);
-      expect(() => SchemaMigrationService.schemaComparator(currentSchema, nextSchema)).toThrow(
-        'n Entity: EntityOne, field: field2 changed from non-nullable to nullable.'
-      );
+      const v = SchemaMigrationService.validateSchemaChanges(currentSchema, nextSchema);
+      expect(v).toBe(false);
     });
   });
 });

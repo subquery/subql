@@ -25,6 +25,7 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
   updateIndexedDeployments: (id: string, blockHeight: number) => Promise<void>;
   readonly currentHeight: number;
   setCurrentHeight: (newHeight: number) => Promise<void>;
+  isRewindable: boolean;
   currentProject: P;
   projects: Map<number, P>;
   getProject: (height: number) => P;
@@ -93,7 +94,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
-  private isRewindable = true;
+  private _isRewindable = true;
 
   private constructor(private _projects: BlockHeightMap<P>, currentHeight: number, isRewindable: boolean) {
     logger.info(
@@ -109,6 +110,10 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     // Bypass setters here because we want to avoid side-effect
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
+    this._isRewindable = isRewindable;
+  }
+  get isRewindable(): boolean {
+    return this._isRewindable;
   }
   async init(
     storeCacheService: StoreCacheService,
@@ -267,7 +272,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
           `Parent project ${currentProject.parent.reference} has a block height that is greater than the current project`
         );
       }
-
       currentProject = nextProject;
     }
 
@@ -275,7 +279,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
 
-    isRewindable = SchemaMigrationService.validateSchemaChanges(currentProject.schema, nextProject.schema);
+    isRewindable = this.rewindableCheck(projects);
 
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight, isRewindable);
@@ -283,6 +287,19 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   getProject(height: number): P {
     return this._projects.get(height);
+  }
+
+  private static rewindableCheck<P extends ISubqueryProject>(projects: Map<number, P>): boolean {
+    const sortedProjects = new Map([...projects.entries()].sort((a, b) => a[0] - b[0]));
+    const projectIterator = sortedProjects.values();
+    let previousProject = projectIterator.next().value;
+    for (const project of projectIterator) {
+      if (!SchemaMigrationService.validateSchemaChanges(previousProject.schema, project.schema)) {
+        return false;
+      }
+      previousProject = project;
+    }
+    return true;
   }
 
   private static validateProject<P extends ISubqueryProject>(startProject: P, parentProject: P): void {
