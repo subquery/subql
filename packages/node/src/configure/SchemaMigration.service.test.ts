@@ -406,12 +406,12 @@ describe('SchemaMigration integration tests', () => {
     });
   });
   it('Should initialize correct schema based on startHeight', async () => {
-    // parent: QmXVbrr1zBtK8a9c75auEknmy8g63qp6gQ9bSKrfCqoAKh
-    // child : QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9
-    const relationCid = 'QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9';
+    // parent: QmQuww78v2XeGVVPVj6rWLhqvw78xrcR2SZJ5QLe7aaxu3
+    // child : QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy
+    const cid = 'QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy';
     const schema = 'test-migrations-6';
     app = await prepareProjectModule(
-      relationCid,
+      cid,
       sequelize,
       tempDirChild,
       tempDirParent,
@@ -435,16 +435,16 @@ describe('SchemaMigration integration tests', () => {
 
     expect(tableNames).toContain('_metadata');
     expect(tableNames).toContain('accounts');
-    expect(tableNames).not.toContain('test_entities');
+    expect(tableNames).toContain('test_index_ones');
     expect(tableNames).toContain('transfers');
   });
   it('On entity drop isRewindable should be false', async () => {
-    // parent: QmXVbrr1zBtK8a9c75auEknmy8g63qp6gQ9bSKrfCqoAKh
-    // child : QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9
-    const relationCid = 'QmY2bRcX76XQ2ZwX418uK3raTUiyqnB8fo6tB4ovh8z4V9';
+    // parent: QmQuww78v2XeGVVPVj6rWLhqvw78xrcR2SZJ5QLe7aaxu3
+    // child : QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy
+    const cid = 'QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy';
     const schema = 'test-migrations-7';
     app = await prepareProjectModule(
-      relationCid,
+      cid,
       sequelize,
       tempDirChild,
       tempDirParent,

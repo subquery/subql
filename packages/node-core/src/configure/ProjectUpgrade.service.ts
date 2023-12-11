@@ -15,6 +15,7 @@ type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promis
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
   init: (
     storeCacheService: StoreCacheService,
+    currentHeight: number,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ) => Promise<number | undefined>;
   /**
@@ -111,6 +112,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   }
   async init(
     storeCacheService: StoreCacheService,
+    currentHeight: number,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
     if (this.#initialized) {
@@ -119,18 +121,21 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
     this.#initialized = true;
     this.#storeCache = storeCacheService;
-    this.onProjectUpgrade = onProjectUpgrade;
     this.migrationService = new SchemaMigrationService(storeCacheService._sequelize);
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 
     const lastProjectChange = this.validateIndexedData(indexedDeployments);
 
+    this.#currentHeight = currentHeight;
+    this.#currentProject = this.getProject(this.#currentHeight);
+
     if (lastProjectChange) {
       this.#currentHeight = lastProjectChange;
       this.#currentProject = this.getProject(this.#currentHeight);
     }
 
+    this.onProjectUpgrade = onProjectUpgrade;
     return lastProjectChange;
   }
 
@@ -253,7 +258,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       }
 
       // only reassign if the result is false
-      isRewindable = SchemaMigrationService.validateSchemaChanges(currentProject.schema, nextProject.schema);
       // Load the next project and repeat
       nextProject = await loadProject(currentProject.parent.reference).catch((e) => {
         throw new Error(`Failed to load parent project with cid: ${currentProject.parent?.reference}. ${e}`);
@@ -266,9 +270,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
       currentProject = nextProject;
     }
+
     if (!projects.size) {
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
+
+    isRewindable = SchemaMigrationService.validateSchemaChanges(currentProject.schema, nextProject.schema);
 
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight, isRewindable);

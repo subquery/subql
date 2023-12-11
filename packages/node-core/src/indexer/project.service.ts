@@ -106,17 +106,12 @@ export abstract class BaseProjectService<
       await this.storeService.initCoreTables(this._schema);
       await this.dynamicDsService.init(this.storeService.storeCache.metadata);
       await this.ensureMetadata();
+      this._startHeight = await this.getStartHeight();
+
       const reindexedUpgrade = await this.initUpgradeService();
 
-      /*
-      Need to get startHeight eariler than db init
-      pass blockHeight to dbInit to ensure which project to init of schema
-       */
-      await this.initDbSchema();
-
-      await this.initHotSchemaReload();
-
-      this._startHeight = await this.getStartHeight();
+      console.log('this.project', this.project);
+      console.log('this.currentProject', this.projectUpgradeService.currentProject);
 
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
@@ -133,7 +128,9 @@ export abstract class BaseProjectService<
       this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
 
       // Set the start height so the right project is used
-      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
+      await this.initDbSchema();
+
+      await this.initHotSchemaReload();
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
@@ -370,8 +367,10 @@ export abstract class BaseProjectService<
   }
 
   private async initUpgradeService(): Promise<number | undefined> {
+    assert(this._startHeight, 'missing start height');
     const upgradePoint = await this.projectUpgradeService.init(
       this.storeService.storeCache,
+      this._startHeight,
       this.handleProjectChange.bind(this)
     );
 

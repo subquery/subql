@@ -246,7 +246,7 @@ describe('Project Upgrades', () => {
         1
       );
 
-      await upgradeService.init(storeCache);
+      await upgradeService.init(storeCache, 1);
 
       project = upgradableSubqueryProject(upgradeService);
     });
