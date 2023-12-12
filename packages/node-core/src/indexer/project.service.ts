@@ -108,7 +108,7 @@ export abstract class BaseProjectService<
       await this.ensureMetadata();
       this._startHeight = await this.getStartHeight();
 
-      const reindexedUpgrade = await this.initUpgradeService();
+      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
 
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
@@ -363,11 +363,10 @@ export abstract class BaseProjectService<
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
-  private async initUpgradeService(): Promise<number | undefined> {
-    assert(this._startHeight, 'missing start height');
+  private async initUpgradeService(startHeight: number): Promise<number | undefined> {
     const upgradePoint = await this.projectUpgradeService.init(
       this.storeService.storeCache,
-      this._startHeight,
+      startHeight,
       this.handleProjectChange.bind(this)
     );
 

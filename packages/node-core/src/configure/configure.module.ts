@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {handleCreateSubqueryProjectError, LocalReader, makeTempDir, ReaderFactory} from '@subql/common';
-import {SchemaMigrationService} from '@subql/node-core/configure/SchemaMigration.service';
 import {Reader} from '@subql/types-core';
 import {camelCase, isNil, omitBy} from 'lodash';
 import {ISubqueryProject} from '../indexer';

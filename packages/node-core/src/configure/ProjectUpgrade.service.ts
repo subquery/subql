@@ -94,9 +94,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
-  private _isRewindable = true;
+  isRewindable;
 
-  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number, isRewindable: boolean) {
+  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number, private _isRewindable = true) {
     logger.info(
       `Projects: ${JSON.stringify(
         [..._projects.getAll().entries()].reduce((acc, curr) => {
@@ -110,10 +110,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     // Bypass setters here because we want to avoid side-effect
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
-    this._isRewindable = isRewindable;
-  }
-  get isRewindable(): boolean {
-    return this._isRewindable;
+    this.isRewindable = this._isRewindable;
   }
   async init(
     storeCacheService: StoreCacheService,
@@ -132,14 +129,10 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     const lastProjectChange = this.validateIndexedData(indexedDeployments);
 
-    this.#currentHeight = currentHeight;
+    this.#currentHeight = lastProjectChange || currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
 
-    if (lastProjectChange) {
-      this.#currentHeight = lastProjectChange;
-      this.#currentProject = this.getProject(this.#currentHeight);
-    }
-
+    // executed last to ensure that the correct project is set first
     this.onProjectUpgrade = onProjectUpgrade;
     return lastProjectChange;
   }
@@ -181,13 +174,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
           if (!this.#storeCache._config.unfinalizedBlocks) {
             assert(this.migrationService, 'MigrationService is undefined');
             if (this.#storeCache._config.allowSchemaMigration) {
-              // on start up we need to check if it is rewindable
-              // should initialize with the first schema (first project) instead of current behaviour
-              /*
-              all projects, find root project start schema, load that in (this should be executed on init) (project.service.ts)
-              a check for all schemas, if one has (non-rewindable schema changes, rewindable for schema should be false)
-
-               */
               await this.migrationService.run(
                 project.schema,
                 newProject.schema,
@@ -229,8 +215,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     let nextProject = startProject;
 
-    let isRewindable = true;
-
     const addProject = (height: number, project: P) => {
       this.validateProject(startProject, project);
       projects.set(height, project);
@@ -262,7 +246,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         break;
       }
 
-      // only reassign if the result is false
       // Load the next project and repeat
       nextProject = await loadProject(currentProject.parent.reference).catch((e) => {
         throw new Error(`Failed to load parent project with cid: ${currentProject.parent?.reference}. ${e}`);
@@ -279,7 +262,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       throw new Error('No valid projects found, this could be due to the startHeight.');
     }
 
-    isRewindable = this.rewindableCheck(projects);
+    const isRewindable = this.rewindableCheck(projects);
 
     assert(currentHeight, 'Unable to determine current height from projects');
     return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight, isRewindable);
