@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.4] - 2023-12-14
+### Changed
+- Update @subql/common
+
 ## [7.0.3] - 2023-12-04
 ### Fixed
 - Fixed resolved asset file with incorrect format and content in #2185
@@ -518,7 +522,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.4...HEAD
+[7.0.4]: https://github.com/subquery/subql/compare/node-core/7.0.3...node-core/7.0.4
 [7.0.3]: https://github.com/subquery/subql/compare/node-core/7.0.2...node-core/7.0.3
 [7.0.2]: https://github.com/subquery/subql/compare/node-core/7.0.1...node-core/7.0.2
 [7.0.1]: https://github.com/subquery/subql/compare/node-core/7.0.0...node-core/7.0.1

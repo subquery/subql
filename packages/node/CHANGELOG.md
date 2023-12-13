@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.8] - 2023-12-14
+### Changed
+- Update @subql/common
+
 ## [3.4.7] - 2023-12-05
 ### Fixed
 - Fix init dynamic ds failed with workers, due to incorrect injection in fetch module.
@@ -1080,7 +1084,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.7...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.8...HEAD
+[3.4.8]: https://github.com/subquery/subql/compare/node/3.4.7...node/3.4.8
 [3.4.7]: https://github.com/subquery/subql/compare/node/3.4.6...node/3.4.7
 [3.4.6]: https://github.com/subquery/subql/compare/node/3.4.5...node/3.4.6
 [3.4.5]: https://github.com/subquery/subql/compare/node/3.4.4...node/3.4.5
