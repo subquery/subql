@@ -9,6 +9,7 @@ import {makeTempDir} from '@subql/common';
 import {CosmosChaintypes, CustomModule, CosmosRuntimeDatasource} from '@subql/types-cosmos';
 import {Data} from 'ejs';
 import {copySync} from 'fs-extra';
+import {upperFirst} from 'lodash';
 import {IDLObject} from 'wasm-ast-types';
 import {isRuntimeCosmosDs} from '../project';
 import {COSMWASM_OPTS, TELESCOPE_OPTS} from './constants';
@@ -26,6 +27,18 @@ const COSMWASM_INTERFACE_WRAPPER_PATH = '/src/types/cosmwasm-interface-wrappers'
 const COSMWASM_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../../templates/cosmwasm-interfaces.ts.ejs');
 
 interface ProtobufRenderProps {
+  /**
+   * The dot notation format of the path without PROTO dir
+   * @exmaple
+   * 'cosmos.auth.v1beta1.tx'
+   * */
+  namespace: string;
+  /**
+   * The camel case format of the path without PROTO dir
+   * @example
+   * 'CosmosAuthV1Beta1Tx'
+   * */
+  name: string;
   messageNames: string[]; // all messages
   path: string; // should process the file Path and concat with PROTO dir
 }
@@ -40,6 +53,20 @@ export function processProtoFilePath(path: string): string {
   // removes `./proto` and `.proto` suffix, converts all `.` to `/`
   // should be able to accept more paths, not just from `proto directory`
   return `./proto-interfaces/${path.replace(/^\.\/proto\/|\.proto$/g, '').replace(/\./g, '/')}`;
+}
+
+function pathToNamespace(path: string): string {
+  return path
+    .replace(/^\.\/proto\/|\.proto$/g, '')
+    .split(/(?<=\\\\)\/|(?<!\\)\//)
+    .join('.');
+}
+
+function pathToName(path: string): string {
+  return pathToNamespace(path)
+    .split('.')
+    .map((p) => upperFirst(p))
+    .join('');
 }
 
 export function isProtoPath(filePath: string, projectPath: string): boolean {
@@ -151,24 +178,36 @@ export function prepareProtobufRenderProps(
     return [];
   }
   return chaintypes.filter(Boolean).flatMap((chaintype) => {
-    return Object.entries(chaintype).map(([key, value]) => {
-      const filePath = path.join(projectPath, value.file);
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Error: chainType ${key}, file ${value.file} does not exist`);
-      }
-      if (!isProtoPath(value.file, projectPath)) {
-        console.error(
-          `Codegen will not apply for this file: ${value.file} Please ensure it is under the ./proto directory if you want to run codegen on it`
-        );
-      }
-      return {
-        messageNames: value.messages,
-        path: processProtoFilePath(value.file),
-      };
-    });
+    return Object.entries(chaintype)
+      .map(([key, value]) => {
+        const filePath = path.join(projectPath, value.file);
+        if (!fs.existsSync(filePath)) {
+          throw new Error(`Error: chainType ${key}, file ${value.file} does not exist`);
+        }
+        if (!isProtoPath(value.file, projectPath)) {
+          console.error(
+            `Codegen will not apply for this file: ${value.file} Please ensure it is under the ./proto directory if you want to run codegen on it`
+          );
+        }
+
+        // We only need to generate for RPC messages that are always prefixed with Msg
+        const messages = value.messages.filter((m: string) => m.indexOf('Msg') === 0);
+        if (!messages.length) return;
+
+        return {
+          messageNames: messages,
+          namespace: pathToNamespace(value.file),
+          name: pathToName(value.file),
+          path: processProtoFilePath(value.file),
+        };
+      })
+      .filter(Boolean);
   });
 }
 
+/**
+ * Makes a temporaray directory and populates it with some core protobufs used by all projects, then copies over the projects protobufs
+ * */
 export async function tempProtoDir(projectPath: string): Promise<string> {
   const tmpDir = await makeTempDir();
   const userProto = path.join(projectPath, './proto');
@@ -198,11 +237,12 @@ export async function generateProto(
   prepareDirPath: (path: string, recreate: boolean) => Promise<void>,
   renderTemplate: (templatePath: string, outputPath: string, templateData: Data) => Promise<void>,
   upperFirst: (string?: string) => string,
-  mkdirProto: (projectPath: string) => Promise<string>
+  /** @deprecated */
+  mkdirProto?: (projectPath: string) => Promise<string>
 ): Promise<void> {
   let tmpPath: string;
   try {
-    tmpPath = await mkdirProto(projectPath);
+    tmpPath = await tempProtoDir(projectPath);
     const protobufRenderProps = prepareProtobufRenderProps(chaintypes, projectPath);
     const outputPath = path.join(projectPath, PROTO_INTERFACES_ROOT_DIR);
     await prepareDirPath(path.join(projectPath, PROTO_INTERFACES_ROOT_DIR), true);
@@ -227,6 +267,7 @@ export async function generateProto(
     const errorMessage = e.message.startsWith('Dependency')
       ? `Please add the missing protobuf file to ./proto directory`
       : '';
+    console.log('ERRROR', e);
     throw new Error(`Failed to generate from protobufs. ${e.message}, ${errorMessage}`);
   } finally {
     fs.rmSync(tmpPath, {recursive: true, force: true});

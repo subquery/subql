@@ -4252,7 +4252,7 @@ __metadata:
     "@protobufs/google": ^0.0.10
     "@protobufs/ibc": ^0.1.0
     "@protobufs/tendermint": ^0.0.10
-    "@subql/common": ^3.3.0
+    "@subql/common": ^3.3.1
     "@subql/types-cosmos": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/ejs": ^3.1.2
@@ -4274,29 +4274,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.3.1-0":
-  version: 3.3.1-0
-  resolution: "@subql/common@npm:3.3.1-0"
+"@subql/common@npm:3.3.1, @subql/common@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "@subql/common@npm:3.3.1"
   dependencies:
-    "@subql/types-core": 0.3.0
-    axios: ^1.6.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 7ac2d170e587da4765ea9e54169b45f6733a13adfde0db96b852f604c115a5f739f9862de11a8c7cc52c23062648881d35e07692b390b79201472a63d4287add
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "@subql/common@npm:3.3.0"
-  dependencies:
-    "@subql/types-core": 0.3.0
+    "@subql/types-core": 0.4.0
     axios: ^0.27.2
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
@@ -4306,20 +4288,20 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: 50d904c0c7e0b8caeb1f53a968c9c5aa223fa8bc822ab164edbe7043a922e5c200d1ac67996358d9152d443e9288c3e5164c906181cc305a0471ffa6c8e2fdea
+  checksum: cbb55958e925756b8145444b088e12a2b08873458c5df5a08deb28b5ea8bf16d19ef627a04e256a82c2e7e31820fcc787793b863ca3abf3316edff005e5f812d
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^7.0.2":
-  version: 7.0.2
-  resolution: "@subql/node-core@npm:7.0.2"
+"@subql/node-core@npm:^7.0.4":
+  version: 7.0.4
+  resolution: "@subql/node-core@npm:7.0.4"
   dependencies:
     "@apollo/client": ^3.7.16
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
     "@subql/apollo-links": ^1.2.3
-    "@subql/common": 3.3.1-0
+    "@subql/common": 3.3.1
     "@subql/testing": 2.1.0
     "@subql/types": 3.3.0
     "@subql/utils": 2.6.1-0
@@ -4337,7 +4319,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 81b991bc727d83f3f8f7acd6e7988a6828d029b4cd09e870b0d46d55316031d64564bc8ae8d615a89e95553971c17a715505559f82058ba503571fbb03ad817d
+  checksum: a2d01a2d86d015b1901a1c25ead920c10d540d4f8d62c0ec52c54acacc765645ae0aa4e3ae0de675f4f80d6eec03f5dd56a42b3408a260adf87923ee0cd32fe8
   languageName: node
   linkType: hard
 
@@ -4356,9 +4338,9 @@ __metadata:
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
-    "@subql/common": ^3.3.0
+    "@subql/common": ^3.3.1
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": ^7.0.2
+    "@subql/node-core": ^7.0.4
     "@subql/types-cosmos": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -4395,12 +4377,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@subql/types-core@npm:0.3.0"
+"@subql/types-core@npm:0.4.0, @subql/types-core@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@subql/types-core@npm:0.4.0"
   dependencies:
     package-json-type: ^1.0.3
-  checksum: fa9ec3bb27d33b57a18425553f6f9239dca439f37f296ae49dd1da958a3d6f14d73aa0831c057828618798926049c0308f3cba68276c80bfbff2fbfe265d1bf3
+  checksum: e3565739c7a7e74f00dd1cfb81a1d4dab00875c23b7759dec0e3dd89e5e29d49e90aec2ef8366b77113a15fe85f6dd1a33476600a21ce7779ed1444920732a90
   languageName: node
   linkType: hard
 
@@ -4410,15 +4392,6 @@ __metadata:
   dependencies:
     package-json-type: ^1.0.3
   checksum: 1c54fecfd7b99875528a87109a3cb8cfcb86a61221f7e715be49198381c6c97e481b60f351c8210df67d1074d3541cd6ee0aad17831f0896dcea63e9784bda64
-  languageName: node
-  linkType: hard
-
-"@subql/types-core@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@subql/types-core@npm:0.4.0"
-  dependencies:
-    package-json-type: ^1.0.3
-  checksum: e3565739c7a7e74f00dd1cfb81a1d4dab00875c23b7759dec0e3dd89e5e29d49e90aec2ef8366b77113a15fe85f6dd1a33476600a21ce7779ed1444920732a90
   languageName: node
   linkType: hard
 
@@ -5811,17 +5784,6 @@ __metadata:
     follow-redirects: ^1.14.9
     form-data: ^4.0.0
   checksum: 38cb7540465fe8c4102850c4368053c21683af85c5fdf0ea619f9628abbcb59415d1e22ebc8a6390d2bbc9b58a9806c874f139767389c862ec9b772235f06854
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.6.0":
-  version: 1.6.1
-  resolution: "axios@npm:1.6.1"
-  dependencies:
-    follow-redirects: ^1.15.0
-    form-data: ^4.0.0
-    proxy-from-env: ^1.1.0
-  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
   languageName: node
   linkType: hard
 
@@ -8248,16 +8210,6 @@ __metadata:
   linkType: hard
 
 "follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.14.9":
-  version: 1.15.2
-  resolution: "follow-redirects@npm:1.15.2"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: faa66059b66358ba65c234c2f2a37fcec029dc22775f35d9ad6abac56003268baf41e55f9ee645957b32c7d9f62baf1f0b906e68267276f54ec4b4c597c2b190
-  languageName: node
-  linkType: hard
-
-"follow-redirects@npm:^1.15.0":
   version: 1.15.3
   resolution: "follow-redirects@npm:1.15.3"
   peerDependenciesMeta:
@@ -12516,13 +12468,6 @@ __metadata:
     forwarded: 0.2.0
     ipaddr.js: 1.9.1
   checksum: 29c6990ce9364648255454842f06f8c46fcd124d3e6d7c5066df44662de63cdc0bad032e9bf5a3d653ff72141cc7b6019873d685708ac8210c30458ad99f2b74
-  languageName: node
-  linkType: hard
-
-"proxy-from-env@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "proxy-from-env@npm:1.1.0"
-  checksum: ed7fcc2ba0a33404958e34d95d18638249a68c430e30fcb6c478497d72739ba64ce9810a24f53a7d921d0c065e5b78e3822759800698167256b04659366ca4d4
   languageName: node
   linkType: hard
 

@@ -35,23 +35,28 @@ describe('Codegen cosmos', () => {
         {
           'osmosis.gamm.v1beta1': {
             file: './proto/osmosis/gamm/v1beta1/tx.proto',
+
             messages: ['MsgSwapExactAmountIn'],
           },
         },
         {
           'osmosis.poolmanager.v1beta1': {
             file: './proto/osmosis/poolmanager/v1beta1/swap_route.proto',
-            messages: ['SwapAmountInRoute'],
+            messages: ['MsgSwapAmountInRoute'],
           },
         },
       ];
       expect(prepareProtobufRenderProps(mockChainTypes, PROJECT_PATH)).toStrictEqual([
         {
           messageNames: ['MsgSwapExactAmountIn'],
+          namespace: 'osmosis.gamm.v1beta1.tx',
+          name: 'OsmosisGammV1beta1Tx',
           path: './proto-interfaces/osmosis/gamm/v1beta1/tx',
         },
         {
-          messageNames: ['SwapAmountInRoute'],
+          messageNames: ['MsgSwapAmountInRoute'],
+          namespace: 'osmosis.poolmanager.v1beta1.swap_route',
+          name: 'OsmosisPoolmanagerV1beta1Swap_route',
           path: './proto-interfaces/osmosis/poolmanager/v1beta1/swap_route',
         },
       ]);
@@ -61,14 +66,16 @@ describe('Codegen cosmos', () => {
         {
           'osmosis.poolmanager.v1beta1': {
             file: './proto/osmosis/poolmanager/v1beta1/swap_route.proto',
-            messages: ['SwapAmountInRoute'],
+            messages: ['MsgSwapAmountInRoute'],
           },
         },
         undefined,
       ];
       expect(prepareProtobufRenderProps(mixedMockChainTypes, PROJECT_PATH)).toStrictEqual([
         {
-          messageNames: ['SwapAmountInRoute'],
+          messageNames: ['MsgSwapAmountInRoute'],
+          name: 'OsmosisPoolmanagerV1beta1Swap_route',
+          namespace: 'osmosis.poolmanager.v1beta1.swap_route',
           path: './proto-interfaces/osmosis/poolmanager/v1beta1/swap_route',
         },
       ]);
@@ -103,6 +110,58 @@ describe('Codegen cosmos', () => {
       const v = await fs.promises.readFile(path.join(tp, './cosmos/base/v1beta1/coin.proto'));
       expect(v.toString()).toBe('fake proto');
       await promisify(rimraf)(tp);
+    });
+
+    it('renders correct codegen from ejs', async () => {
+      const job = {
+        props: {
+          proto: [
+            {
+              messageNames: ['MsgSwapExactAmountIn'],
+              namespace: 'osmosis.gamm.v1beta1.tx',
+              name: 'OsmosisGammV1beta1Tx',
+              path: './proto-interfaces/osmosis/gamm/v1beta1/tx',
+            },
+            {
+              messageNames: ['SwapAmountInRoute'],
+              namespace: 'osmosis.poolmanager.v1beta1.swap_route',
+              name: 'OsmosisPoolmanagerV1beta1Swap_route',
+              path: './proto-interfaces/osmosis/poolmanager/v1beta1/swap_route',
+            },
+          ],
+        },
+        helper: {upperFirst},
+      };
+
+      const output = await ejs.renderFile(path.resolve(__dirname, '../../templates/proto-interface.ts.ejs'), job);
+
+      // await fs.promises.writeFile(path.join(PROJECT_PATH, 'test.ts'), data);
+      const expectCodegen = `// SPDX-License-Identifier: Apache-2.0
+
+// Auto-generated , DO NOT EDIT
+import {CosmosMessage} from "@subql/types-cosmos";
+
+import * as OsmosisGammV1beta1Tx from "./proto-interfaces/osmosis/gamm/v1beta1/tx";
+
+import * as OsmosisPoolmanagerV1beta1Swap_route from "./proto-interfaces/osmosis/poolmanager/v1beta1/swap_route";
+
+
+export namespace osmosis.gamm.v1beta1.tx {
+
+  export type MsgSwapExactAmountInMessage = CosmosMessage<OsmosisGammV1beta1Tx.MsgSwapExactAmountIn>;
+}
+
+export namespace osmosis.poolmanager.v1beta1.swap_route {
+
+  export type SwapAmountInRouteMessage = CosmosMessage<OsmosisPoolmanagerV1beta1Swap_route.SwapAmountInRoute>;
+}
+
+`;
+
+      expect(output).toEqual(expectCodegen);
+      // const output = await fs.promises.readFile(path.join(PROJECT_PATH, 'test.ts'));
+      // expect(output.toString()).toMatch(expectCodegen);
+      // await promisify(rimraf)(path.join(PROJECT_PATH, 'test.ts'));
     });
   });
 
@@ -162,7 +221,7 @@ describe('Codegen cosmos', () => {
         },
       ]);
     });
-    it('render correct codegen from ejs', async () => {
+    it('renders correct codegen from ejs', async () => {
       const mockJob = {
         contract: 'Cw20',
         messages: {
