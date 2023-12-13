@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.0.0] - 2023-12-14
 ### Fixed
-- Codegen generating types with duplicate names leading to invalid TS (#216)
+- Codegen generating types with duplicate names leading to invalid TS. (#216)
 
 ## [3.2.1] - 2023-11-08
 ### Fixed
@@ -113,7 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/4.0.0...HEAD
+[4.0.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.2.1...common-cosmos/4.0.0
 [3.2.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.2.0...common-cosmos/3.2.1
 [3.2.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.1.1...common-cosmos/3.2.0
 [3.1.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.1.0...common-cosmos/3.1.1

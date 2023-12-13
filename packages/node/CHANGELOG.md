@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.5] - 2023-12-14
+### Changed
+- Update @subql/common-cosmos and other deps
+
 ## [3.4.4] - 2023-11-30
 ### Fixed
 - Sync with `node-core` 7.0.2
@@ -25,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.4.0] - 2023-11-13
 ### Changed
-- Updates to match changes in `@subql/node-core` (#209)
+- Updates to match changes in
   - Dictionary service to use dictionary registry
   - Use yargs from node core
 
@@ -337,7 +341,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.4...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.5...HEAD
+[3.4.5]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.4...node-cosmos/3.4.5
 [3.4.4]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.3...node-cosmos/3.4.4
 [3.4.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.2...node-cosmos/3.4.3
 [3.4.2]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.1...node-cosmos/3.4.2
