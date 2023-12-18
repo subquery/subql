@@ -2,38 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SUPPORT_DB} from '@subql/common';
-import {
-  BigInt,
-  Boolean,
-  DateObj,
-  Float,
-  getAllEntitiesRelations,
-  GraphQLEntityField,
-  GraphQLEntityIndex,
-  GraphQLModelsType,
-  ID,
-  Int,
-  Json,
-  SequelizeTypes,
-  String,
-} from '@subql/utils';
-import {
-  DataType,
-  DataTypes,
-  IndexesOptions,
-  Model,
-  ModelAttributeColumnOptions,
-  ModelAttributes,
-  ModelStatic,
-  Sequelize,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
+import {getAllEntitiesRelations, GraphQLEntityField, GraphQLEntityIndex, GraphQLModelsType} from '@subql/utils';
+import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Utils} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
-import {NodeConfig} from '../configure/NodeConfig';
-import {addRelationToMap, formatColumnName, generateHashedIndexName, modelToTableName, syncEnums} from '../utils';
-import {getColumnOption, modelsTypeToModelAttributes} from './graphql';
+import {
+  addRelationToMap,
+  formatAttributes,
+  formatColumnName,
+  generateHashedIndexName,
+  modelToTableName,
+  syncEnums,
+} from '../../utils';
+import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
 import {
   addBlockRangeColumnToIndexes,
   addHistoricalIdIndex,
@@ -42,63 +23,24 @@ import {
   getExistedIndexesQuery,
   SmartTags,
   updateIndexesName,
-} from './sync-helper';
-
-function formatAttributes(columnOptions: ModelAttributeColumnOptions): string {
-  const type = formatDataType(columnOptions.type);
-  const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
-  const primaryKey = columnOptions.primaryKey ? 'PRIMARY KEY' : '';
-  const unique = columnOptions.unique ? 'UNIQUE' : '';
-  const autoIncrement = columnOptions.autoIncrement ? 'AUTO_INCREMENT' : ''; //  PostgreSQL
-
-  // TODO unsupported
-  // const defaultValue = options.defaultValue ? `DEFAULT
-  // TODO Support relational
-  // const references = options.references ? formatReferences(options.references) :
-
-  return `${type} ${allowNull} ${primaryKey} ${unique} ${autoIncrement}`.trim();
-}
-
-const sequelizeToPostgresTypeMap = {
-  [DataTypes.STRING.name]: (dataType: DataType) => String.sequelizeType,
-  [DataTypes.INTEGER.name]: () => Int.sequelizeType,
-  [DataTypes.BIGINT.name]: () => BigInt.sequelizeType,
-  [DataTypes.UUID.name]: () => ID.sequelizeType,
-  [DataTypes.BOOLEAN.name]: () => Boolean.sequelizeType,
-  [DataTypes.FLOAT.name]: () => Float.sequelizeType,
-  [DataTypes.DATE.name]: () => DateObj.sequelizeType,
-  [DataTypes.JSONB.name]: () => Json.sequelizeType,
-};
-
-function formatDataType(dataType: DataType): SequelizeTypes {
-  if (typeof dataType === 'string') {
-    return dataType;
-  } else {
-    const formatter = sequelizeToPostgresTypeMap[dataType.key];
-    return formatter(dataType);
-  }
-}
+} from '../../utils/sync-helper';
+import {NodeConfig} from '../NodeConfig';
 
 export class Migration {
-  private readonly transaction: Transaction;
-  private sequelizeModels: Set<ModelStatic<any>> = new Set();
+  private sequelizeModels: ModelStatic<any>[] = [];
   private rawQueries: string[] = [];
   constructor(
     private sequelize: Sequelize,
     private schemaName: string,
     private config: NodeConfig,
-    private _tx: Transaction,
     private enumTypeMap: Map<string, string> // private foreignKeyMap: Map<string, Map<string, SmartTags>>,
-  ) {
-    this.transaction = this._tx;
-  }
+  ) {}
 
   static async create(
     sequelize: Sequelize,
     schemaName: string,
     graphQLSchema: GraphQLSchema,
     config: NodeConfig,
-    tx: Transaction,
     logger: Pino.Logger
   ): Promise<Migration> {
     const modelsRelationsEnums = getAllEntitiesRelations(graphQLSchema);
@@ -116,33 +58,28 @@ export class Migration {
       addRelationToMap(relation, foreignKeyMap, model, relatedModel);
     }
 
-    return new Migration(
-      sequelize,
-      schemaName,
-      // graphQLSchema,
-      config,
-      tx,
-      // logger,
-      enumTypeMap
-    );
+    return new Migration(sequelize, schemaName, config, enumTypeMap);
   }
 
-  // return all the updated models
-  async run(): Promise<ModelStatic<Model<any, any>>[]> {
+  async run(): Promise<ModelStatic<any>[]> {
+    const transaction = await this.sequelize.transaction();
+    if (!transaction) {
+      throw new Error('Failed to create transaction');
+    }
     try {
       for (const query of this.rawQueries) {
-        await this.sequelize.query(query, {transaction: this.transaction});
+        await this.sequelize.query(query, {transaction});
       }
 
-      await this.transaction.commit();
+      await transaction.commit();
     } catch (e) {
-      await this.transaction.rollback();
+      await transaction.rollback();
       throw e;
     }
 
-    await Promise.all([...this.sequelizeModels].map((m) => m.sync()));
+    await Promise.all(this.sequelizeModels.map((m) => m.sync()));
 
-    return [...this.sequelizeModels];
+    return this.sequelizeModels;
   }
 
   private prepareModelAttributesAndIndexes(model: GraphQLModelsType): {
@@ -186,6 +123,14 @@ export class Migration {
     return sequelizeModel;
   }
 
+  private addModel(sequelizeModel: ModelStatic<any>): void {
+    const modelName = sequelizeModel.name;
+
+    if (!this.sequelizeModels.find((m) => m.name === modelName)) {
+      this.sequelizeModels.push(sequelizeModel);
+    }
+  }
+
   async createTable(model: GraphQLModelsType, blockHeight: number): Promise<void> {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
 
@@ -205,7 +150,7 @@ export class Migration {
     updateIndexesName(model.name, indexes, existedIndexes);
     addScopeAndBlockHeightHooks(sequelizeModel, blockHeight);
 
-    this.sequelizeModels.add(sequelizeModel);
+    this.addModel(sequelizeModel);
   }
 
   dropTable(model: GraphQLModelsType): void {
@@ -225,14 +170,12 @@ export class Migration {
       `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
     );
 
-    // Comments needs to be executed after column creation
     if (columnOptions.comment) {
       this.rawQueries.push(
         `COMMENT ON COLUMN "${this.schemaName}".${dbTableName}.${dbColumnName} IS '${columnOptions.comment}';`
       );
     }
-    // perhaps this can be called on a different layer, to avoid duplications
-    this.sequelizeModels.add(this.createModel(model));
+    this.addModel(this.createModel(model));
   }
   dropColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
     this.rawQueries.push(
@@ -241,7 +184,7 @@ export class Migration {
       )};`
     );
 
-    this.sequelizeModels.add(this.createModel(model));
+    this.addModel(this.createModel(model));
   }
 
   createIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {

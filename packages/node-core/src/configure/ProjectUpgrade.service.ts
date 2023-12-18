@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {SchemaMigrationService} from '@subql/node-core/configure/SchemaMigration.service';
+import {SchemaMigrationService} from '@subql/node-core/configure/migration-service/SchemaMigration.service';
 import {findLast, last, parseInt} from 'lodash';
 import {ISubqueryProject, StoreCacheService} from '../indexer';
 import {getLogger} from '../logger';
@@ -123,7 +123,13 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
     this.#initialized = true;
     this.#storeCache = storeCacheService;
-    this.migrationService = new SchemaMigrationService(storeCacheService._sequelize);
+    this.migrationService = new SchemaMigrationService(
+      storeCacheService._sequelize,
+      storeCacheService._flushCache.bind(storeCacheService),
+      storeCacheService.updateModels.bind(storeCacheService),
+      storeCacheService._config.dbSchema,
+      storeCacheService._config
+    );
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 
@@ -179,21 +185,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
       try {
         await this.onProjectUpgrade?.(startHeight, newProject);
-        console.log('project deployment', newProject.id);
         if (isMainThread) {
           assert(this.#storeCache, 'StoreCacheService is undefined');
           if (!this.#storeCache._config.unfinalizedBlocks) {
             assert(this.migrationService, 'MigrationService is undefined');
             if (this.#storeCache._config.allowSchemaMigration) {
-              await this.migrationService.run(
-                project.schema,
-                newProject.schema,
-                this.#storeCache._config.dbSchema,
-                height,
-                this.#storeCache._flushCache.bind(this.#storeCache),
-                this.#storeCache.updateModels.bind(this.#storeCache),
-                this.#storeCache._config
-              );
+              await this.migrationService.run(project.schema, newProject.schema, height);
             }
           }
         }

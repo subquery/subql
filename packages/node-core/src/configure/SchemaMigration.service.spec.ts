@@ -31,7 +31,7 @@ describe('SchemaMigration', () => {
         - Drop Enum
         Modified
         - Entity - field
-        - Modify Enum // TODO this is currently not being handled
+        - Modify Enum
        */
       const expectResult = require('../../test/schemas/schemaDiff.json');
       expect(JSON.parse(JSON.stringify(result))).toStrictEqual(expectResult);

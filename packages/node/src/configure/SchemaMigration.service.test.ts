@@ -458,7 +458,34 @@ describe('SchemaMigration integration tests', () => {
 
     await projectService.init(500);
     const isRewindable = (projectUpgradeService as any).isRewindable;
-    // TODO failing due to wrongful init schema
     expect(isRewindable).toBe(false);
   });
+  it('Check duplication in sequelize models', async () => {
+    const cid = 'QmfGfmVtbSqDVkyUAg1K1uDh3GtisExAteHhrwCexdSTC2';
+    const schema = 'test-migrations-8';
+    app = await prepareProjectModule(
+      cid,
+      sequelize,
+      tempDirChild,
+      tempDirParent,
+      schema,
+    );
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+
+    await projectUpgradeService.setCurrentHeight(1000);
+  });
+  // TODO
+  // All tests should be test and should use setCurrentHeight
+
+  // Need tests for:
+  // Ensure cacheModels has been updated after schemaMigration is run
+  // Should be able to execute db with ORM apis
+
+  // Re-index should be working
 });
