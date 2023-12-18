@@ -22,6 +22,7 @@ import {
   addBlockRangeColumnToIndexes,
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
+  addRelationToMap,
   addScopeAndBlockHeightHooks,
   addTagsToForeignKeyMap,
   BTREE_GIST_EXTENSION_EXIST_QUERY,
@@ -309,7 +310,7 @@ export class StoreService {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);
       if (this.historical) {
-        this.addRelationToMap(relation, foreignKeyMap, model, relatedModel);
+        addRelationToMap(relation, foreignKeyMap, model, relatedModel);
         continue;
       }
       switch (relation.type) {
@@ -469,36 +470,6 @@ export class StoreService {
         const sqModel = this.sequelize.model(model);
         (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
       }
-    }
-  }
-
-  private addRelationToMap(
-    relation: GraphQLRelationsType,
-    foreignKeys: Map<string, Map<string, SmartTags>>,
-    model: ModelStatic<any>,
-    relatedModel: ModelStatic<any>
-  ) {
-    switch (relation.type) {
-      case 'belongsTo': {
-        addTagsToForeignKeyMap(foreignKeys, model.tableName, relation.foreignKey, {
-          foreignKey: getVirtualFkTag(relation.foreignKey, relatedModel.tableName),
-        });
-        break;
-      }
-      case 'hasOne': {
-        addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
-          singleForeignFieldName: relation.fieldName,
-        });
-        break;
-      }
-      case 'hasMany': {
-        addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
-          foreignFieldName: relation.fieldName,
-        });
-        break;
-      }
-      default:
-        throw new Error('Relation type is not supported');
     }
   }
 

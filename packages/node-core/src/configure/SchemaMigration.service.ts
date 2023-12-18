@@ -2,84 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Injectable} from '@nestjs/common';
-import {SUPPORT_DB} from '@subql/common';
 import {
-  BigInt,
-  Boolean,
-  DateObj,
-  Float,
   getAllEntitiesRelations,
   GraphQLEntityField,
   GraphQLEntityIndex,
   GraphQLEnumsType,
   GraphQLModelsType,
   GraphQLRelationsType,
-  ID,
-  Int,
-  Json,
-  SequelizeTypes,
-  String,
 } from '@subql/utils';
-import {
-  DataType,
-  DataTypes,
-  IndexesOptions,
-  ModelAttributeColumnOptions,
-  QueryInterfaceIndexOptions,
-  Sequelize,
-  TableName,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
-import {SetRequired} from '@subql/x-sequelize/types/utils/set-required';
+import {Model, ModelStatic, Sequelize} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {getLogger} from '../logger';
-import {
-  addBlockRangeColumnToIndexes,
-  addHistoricalIdIndex,
-  addIdAndBlockRangeAttributes,
-  addScopeAndBlockHeightHooks,
-  generateHashedIndexName,
-  getColumnOption,
-  getExistedIndexesQuery,
-  modelsTypeToModelAttributes,
-  syncEnums,
-  updateIndexesName,
-} from '../utils';
-import {modelToTableName} from '../utils/sequelizeUtil';
+import {Migration} from '../utils/migration';
 import {NodeConfig} from './NodeConfig';
 
 const logger = getLogger('SchemaMigrationService');
 
-// just a wrapper for naming confusion
-function formatColumnName(columnName: string): string {
-  return Utils.underscoredIf(columnName, true);
-}
-
-const sequelizeToPostgresTypeMap = {
-  [DataTypes.STRING.name]: (dataType: DataType) => String.sequelizeType,
-  [DataTypes.INTEGER.name]: () => Int.sequelizeType,
-  [DataTypes.BIGINT.name]: () => BigInt.sequelizeType,
-  [DataTypes.UUID.name]: () => ID.sequelizeType,
-  [DataTypes.BOOLEAN.name]: () => Boolean.sequelizeType,
-  [DataTypes.FLOAT.name]: () => Float.sequelizeType,
-  [DataTypes.DATE.name]: () => DateObj.sequelizeType,
-  [DataTypes.JSONB.name]: () => Json.sequelizeType,
-};
-
-function formatDataType(dataType: DataType): SequelizeTypes {
-  if (typeof dataType === 'string') {
-    return dataType;
-  } else {
-    const formatter = sequelizeToPostgresTypeMap[dataType.key];
-    return formatter(dataType);
-  }
-}
-
 function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): string {
   let logMessage = '\n';
 
-  // Helper function to format model names
   const formatModels = (models: GraphQLModelsType[]) => models.map((model: GraphQLModelsType) => model.name).join(', ');
   const formatIndexes = (indexes: GraphQLEntityIndex[]) =>
     indexes
@@ -89,17 +30,14 @@ function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): string {
       )
       .join('; ');
 
-  // Adding models
   if (schemaChanges.addedModels.length) {
     logMessage += `Added Entities: ${formatModels(schemaChanges.addedModels)}\n`;
   }
 
-  // Removing models
   if (schemaChanges.removedModels.length) {
     logMessage += `Removed Entities: ${formatModels(schemaChanges.removedModels)}\n`;
   }
 
-  // Modified models
   Object.entries(schemaChanges.modifiedModels).forEach(([modelName, changes]) => {
     logMessage += `Modified Entities: ${modelName}\n`;
 
@@ -142,21 +80,6 @@ function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): string {
   }
    */
   return logMessage;
-}
-
-function formatAttributes(columnOptions: ModelAttributeColumnOptions): string {
-  const type = formatDataType(columnOptions.type);
-  const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
-  const primaryKey = columnOptions.primaryKey ? 'PRIMARY KEY' : '';
-  const unique = columnOptions.unique ? 'UNIQUE' : '';
-  const autoIncrement = columnOptions.autoIncrement ? 'AUTO_INCREMENT' : ''; //  PostgreSQL
-
-  // TODO unsupported
-  // const defaultValue = options.defaultValue ? `DEFAULT
-  // TODO Support relational
-  // const references = options.references ? formatReferences(options.references) :
-
-  return `${type} ${allowNull} ${primaryKey} ${unique} ${autoIncrement}`.trim();
 }
 
 export interface SchemaChangesType {
@@ -202,7 +125,6 @@ function compareRelations(
   const currentRelationsMap = new Map(currentRelations.map((rel) => [relationKey(rel), rel]));
   const nextRelationsMap = new Map(nextRelations.map((rel) => [relationKey(rel), rel]));
 
-  // Identify added and removed relations
   nextRelations.forEach((rel) => {
     if (!currentRelationsMap.has(relationKey(rel))) {
       changes.addedRelations.push(rel);
@@ -269,7 +191,7 @@ function compareModels(
 
       if (addedFields.length || removedFields.length || addedIndexes.length || removedIndexes.length) {
         changes.modifiedModels[model.name] = {
-          model, // retain model to process enums
+          model,
           addedFields,
           removedFields,
           addedIndexes,
@@ -326,14 +248,10 @@ export class SchemaMigrationService {
       allEnums: currentData.enums, // TODO this will need logic check, once Enum migration is enabled
     };
 
-    // Compare Enums
     compareEnums(currentData.enums, nextData.enums, changes);
-
-    // Compare Relations
     compareRelations(currentData.relations, nextData.relations, changes);
-
-    // Compare Models
     compareModels(currentData.models, nextData.models, changes);
+
     return changes;
   }
 
@@ -343,6 +261,7 @@ export class SchemaMigrationService {
     dbSchema: string,
     blockHeight: number,
     _flushCache: (flushAll?: boolean) => Promise<void>,
+    updateCacheModels: (model: ModelStatic<Model<any, any>>[]) => void,
     config: NodeConfig
   ): Promise<void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
@@ -351,7 +270,7 @@ export class SchemaMigrationService {
       addedEnums,
       addedModels,
       addedRelations,
-      allEnums,
+      allEnums, // TODO enum support
       modifiedModels,
       removedEnums,
       removedModels,
@@ -367,29 +286,10 @@ export class SchemaMigrationService {
       throw new Error('Failed to create transaction');
     }
     await _flushCache(true);
-    /*
-    Currently Unsupported Schema Migration changes:
-      add/remove enums
-      add/remove relations
-   */
+    const migrationAction = await Migration.create(this.sequelize, dbSchema, nextSchema, config, transaction, logger);
+
     logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
-    /*
-    SQL execution order:
-    Drop table (this will also drop the Indexes on that Table),
-    Create table
-    // TODO Drop Enums
-    // TODO Create Enums
-    Drop Columns
-    Add Column
-    // TODO Add/Drop indexes
-    // TODO Add Relations
-     */
 
-    const enumTypeMap = new Map<string, string>();
-
-    for (const e of allEnums) {
-      await syncEnums(this.sequelize, SUPPORT_DB.postgres, e, dbSchema, enumTypeMap, logger);
-    }
     if (addedEnums.length > 0 || removedEnums.length > 0) {
       throw new Error('Schema Migration currently does not support Enum removal and creation');
     }
@@ -399,17 +299,16 @@ export class SchemaMigrationService {
     }
 
     try {
-      // Remove should always occur before create
       if (removedModels.length) {
         for (const model of removedModels) {
-          await this.dropTable(dbSchema, model.name, transaction);
+          migrationAction.dropTable(model);
         }
       }
 
       if (addedModels.length) {
         // TODO if the table has fields that is relational to another table that is yet to exist, that table should be created first
         for (const model of addedModels) {
-          await this.createTable(dbSchema, model, enumTypeMap, blockHeight, config, transaction);
+          await migrationAction.createTable(model, blockHeight);
         }
       }
 
@@ -419,159 +318,29 @@ export class SchemaMigrationService {
           const modelValue = modifiedModels[model];
 
           for (const index of modelValue.removedIndexes) {
-            await this.dropIndex(dbSchema, model, index, transaction);
+            migrationAction.dropIndex(modelValue.model, index);
           }
 
           for (const field of modelValue.removedFields) {
-            await this.dropColumn(dbSchema, model, field.name, transaction);
+            migrationAction.dropColumn(modelValue.model, field);
           }
 
           for (const field of modelValue.addedFields) {
-            await this.createColumn(dbSchema, model, field, enumTypeMap, transaction);
+            migrationAction.createColumn(modelValue.model, field);
           }
 
           for (const index of modelValue.addedIndexes) {
-            await this.createIndex(
-              dbSchema,
-              model,
-              {...index, fields: index.fields.map((f) => formatColumnName(f))},
-              transaction
-            );
+            migrationAction.createIndex(modelValue.model, index);
           }
         }
       }
 
-      await transaction.commit();
+      const models = await migrationAction.run();
+
+      updateCacheModels(models);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
-      await transaction.rollback();
       throw e;
     }
-  }
-
-  private async createColumn(
-    schema: string,
-    tableName: string,
-    field: GraphQLEntityField,
-    enums: Map<string, string>,
-    transaction: Transaction
-  ): Promise<void> {
-    const columnOptions = getColumnOption(field, enums);
-    if (columnOptions.primaryKey) {
-      throw new Error('Primary Key migration upgrade is not allowed');
-    }
-    const dbTableName = modelToTableName(tableName);
-    const dbColumnName = formatColumnName(field.name);
-
-    const formattedAttributes = formatAttributes(columnOptions);
-    await this.sequelize.query(
-      `ALTER TABLE "${schema}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`,
-      {transaction}
-    );
-
-    // Comments needs to be executed after column creation
-    if (columnOptions.comment) {
-      await this.sequelize.query(
-        `COMMENT ON COLUMN "${schema}".${dbTableName}.${dbColumnName} IS '${columnOptions.comment}';`,
-        {transaction}
-      );
-    }
-  }
-
-  private async dropColumn(
-    schema: string,
-    tableName: string,
-    columnName: string,
-    transaction: Transaction
-  ): Promise<void> {
-    await this.sequelize.query(
-      `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${formatColumnName(
-        columnName
-      )};`,
-      {transaction}
-    );
-  }
-  private async createTable(
-    schema: string,
-    model: GraphQLModelsType,
-    enumTypeMap: Map<string, string>,
-    blockHeight: number,
-    config: NodeConfig,
-    transaction: Transaction
-  ): Promise<void> {
-    const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
-    const indexes = model.indexes.map(({fields, unique, using}) => ({
-      fields: fields.map((field) => Utils.underscoredIf(field, true)),
-      unique,
-      using,
-    }));
-
-    if (indexes.length > config.indexCountLimit) {
-      throw new Error(`too many indexes on entity ${model.name}`);
-    }
-
-    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(schema));
-    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
-
-    // Historical should be enabled to use projectUpgrade
-    addIdAndBlockRangeAttributes(attributes);
-    addBlockRangeColumnToIndexes(indexes);
-    addHistoricalIdIndex(model, indexes);
-
-    const sequelizeModel = this.sequelize.define(model.name, attributes, {
-      underscored: true,
-      comment: model.description,
-      freezeTableName: false,
-      createdAt: config.timestampField,
-      updatedAt: config.timestampField,
-      schema,
-      indexes,
-    });
-    updateIndexesName(model.name, indexes, existedIndexes);
-    addScopeAndBlockHeightHooks(sequelizeModel, blockHeight);
-    // TODO cockroach compatibility
-    // TODO Subscription compatibility
-
-    // TODO Support relational
-    // How do i add transaction to sync ? or if Sync is the correct method to use
-    await sequelizeModel.sync();
-  }
-
-  private async dropTable(schema: string, tableName: string, transaction: Transaction): Promise<void> {
-    await this.sequelize.query(`DROP TABLE IF EXISTS "${schema}"."${modelToTableName(tableName)}";`, {transaction});
-  }
-
-  private async createIndex(
-    schema: string,
-    tableName: string,
-    indexOptions: IndexesOptions,
-    transaction: Transaction
-  ): Promise<void> {
-    const formattedTableName = modelToTableName(tableName);
-
-    indexOptions.name = generateHashedIndexName(tableName, indexOptions);
-
-    if (!indexOptions.fields || indexOptions.fields.length === 0) {
-      throw new Error("The 'fields' property is required and cannot be empty.");
-    }
-
-    const options = {
-      ...indexOptions,
-      transaction,
-    } as SetRequired<QueryInterfaceIndexOptions, 'fields'>;
-
-    const tableNameObj: TableName = {tableName: formattedTableName, schema};
-
-    await this.sequelize.getQueryInterface().addIndex(tableNameObj, options);
-  }
-
-  private async dropIndex(
-    schema: string,
-    tableName: string,
-    indexOption: IndexesOptions,
-    transaction: Transaction
-  ): Promise<void> {
-    const hashedIndexName = generateHashedIndexName(tableName, indexOption);
-    await this.sequelize.query(`DROP INDEX IF EXISTS "${schema}"."${hashedIndexName}"`, {transaction});
   }
 }

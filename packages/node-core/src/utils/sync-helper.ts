@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SUPPORT_DB} from '@subql/common';
-import {hashName, blake2AsHex, GraphQLEnumsType, IndexType, GraphQLModelsType} from '@subql/utils';
+import {
+  hashName,
+  blake2AsHex,
+  GraphQLEnumsType,
+  IndexType,
+  GraphQLModelsType,
+  GraphQLRelationsType,
+} from '@subql/utils';
 import {
   DataTypes,
   IndexesOptions,
@@ -375,4 +382,34 @@ export async function syncEnums(
     await sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
   }
   enumTypeMap.set(e.name, type);
+}
+
+export function addRelationToMap(
+  relation: GraphQLRelationsType,
+  foreignKeys: Map<string, Map<string, SmartTags>>,
+  model: ModelStatic<any>,
+  relatedModel: ModelStatic<any>
+): void {
+  switch (relation.type) {
+    case 'belongsTo': {
+      addTagsToForeignKeyMap(foreignKeys, model.tableName, relation.foreignKey, {
+        foreignKey: getVirtualFkTag(relation.foreignKey, relatedModel.tableName),
+      });
+      break;
+    }
+    case 'hasOne': {
+      addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
+        singleForeignFieldName: relation.fieldName,
+      });
+      break;
+    }
+    case 'hasMany': {
+      addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
+        foreignFieldName: relation.fieldName,
+      });
+      break;
+    }
+    default:
+      throw new Error('Relation type is not supported');
+  }
 }

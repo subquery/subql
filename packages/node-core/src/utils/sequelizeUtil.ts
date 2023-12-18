@@ -11,6 +11,10 @@ export function modelToTableName(modelName: string): string {
   return Utils.underscoredIf(Utils.pluralize(modelName), true);
 }
 
+export function formatColumnName(columnName: string): string {
+  return Utils.underscoredIf(columnName, true);
+}
+
 // Rewrite due to method is not exported from sequelize
 // This method is same from https://github.com/sequelize/sequelize/blob/26beda5bf76bd65e30264ebf135e39efaa7d514d/packages/core/src/utils/string.ts#L89
 export function generateIndexName(tableName: TableName, index: IndexesOptions): string {

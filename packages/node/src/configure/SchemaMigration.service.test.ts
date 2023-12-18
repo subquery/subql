@@ -18,7 +18,6 @@ import {
   StoreCacheService,
   StoreService,
 } from '@subql/node-core';
-import { blake2AsHex } from '@subql/utils';
 import { IndexesOptions, QueryTypes, Sequelize } from '@subql/x-sequelize';
 import { isNil, omitBy } from 'lodash';
 import rimraf from 'rimraf';
@@ -151,19 +150,19 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterEach(async () => {
-    // await sequelize.query(`DROP schema "test-migration" cascade;`);
     await promisify(rimraf)(tempDirChild);
     await promisify(rimraf)(tempDirParent);
     return app?.close();
   });
   afterAll(async () => {
-    // await sequelize.dropAllSchemas({})
     await Promise.all([
       sequelize.dropSchema('test-migrations-1', { logging: true }),
       sequelize.dropSchema('test-migrations-2', { logging: true }),
       sequelize.dropSchema('test-migrations-3', { logging: true }),
       sequelize.dropSchema('test-migrations-4', { logging: true }),
       sequelize.dropSchema('test-migrations-5', { logging: true }),
+      sequelize.dropSchema('test-migrations-6', { logging: true }),
+      sequelize.dropSchema('test-migrations-7', { logging: true }),
     ]);
   });
 

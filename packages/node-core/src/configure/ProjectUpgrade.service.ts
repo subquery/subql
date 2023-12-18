@@ -170,6 +170,17 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     if (hasChanged) {
       if (isMainThread) {
         try {
+          await this.updateIndexedDeployments(newProject.id, startHeight);
+        } catch (e: any) {
+          logger.error(e, 'Failed to update deployment');
+          throw e;
+        }
+      }
+
+      try {
+        await this.onProjectUpgrade?.(startHeight, newProject);
+        console.log('project deployment', newProject.id);
+        if (isMainThread) {
           assert(this.#storeCache, 'StoreCacheService is undefined');
           if (!this.#storeCache._config.unfinalizedBlocks) {
             assert(this.migrationService, 'MigrationService is undefined');
@@ -180,20 +191,12 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
                 this.#storeCache._config.dbSchema,
                 height,
                 this.#storeCache._flushCache.bind(this.#storeCache),
+                this.#storeCache.updateModels.bind(this.#storeCache),
                 this.#storeCache._config
               );
             }
           }
-
-          await this.updateIndexedDeployments(newProject.id, startHeight);
-        } catch (e: any) {
-          logger.error(e, 'Failed to update deployment');
-          throw e;
         }
-      }
-
-      try {
-        await this.onProjectUpgrade?.(startHeight, newProject);
       } catch (e: any) {
         logger.error(e, `Failed to complete upgrading project`);
         process.exit(1);
