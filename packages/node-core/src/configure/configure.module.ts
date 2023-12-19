@@ -167,7 +167,6 @@ export async function registerApp<P extends ISubqueryProject>(
     );
   };
 
-  // get schemaMigration and sequelize here
   const projectUpgradeService = await ProjectUpgradeSevice.create(project, createParentProject);
 
   const upgradeableProject = upgradableSubqueryProject(projectUpgradeService);

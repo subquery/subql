@@ -38,6 +38,7 @@ const serviceKeys: Array<keyof IProjectUpgradeService> = [
   'projects',
   'init',
   'updateIndexedDeployments',
+  'isRewindable',
 ];
 
 function assertEqual<T>(valueA: T, valueB: T, name: string) {
@@ -72,7 +73,7 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
        * nestjs scheduler reflecting and being unable to get props.
        * If we can fix that then we can move this above the project accessors
        */
-      if (target[prop as keyof IProjectUpgradeService<P>] /*(serviceKeys as Array<string | symbol>).includes(prop)*/) {
+      if (prop in target /*(serviceKeys as Array<string | symbol>).includes(prop)*/) {
         const result = target[prop as keyof IProjectUpgradeService<P>];
 
         if (result instanceof Function) {

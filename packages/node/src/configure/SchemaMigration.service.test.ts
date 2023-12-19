@@ -116,9 +116,11 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterEach(async () => {
-    await promisify(rimraf)(tempDir);
     await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
+  });
+  afterAll(async () => {
+    await promisify(rimraf)(tempDir);
   });
 
   it('Migrate to new schema', async () => {
@@ -382,16 +384,14 @@ describe('SchemaMigration integration tests', () => {
     app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
-    const projectUpgradeService = app.get('IProjectUpgradeService');
 
     const apiService = app.get(ApiService);
     await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
-
-    // TODO fix this
-    const isRewindable = projectUpgradeService.isRewindable;
+    const isRewindable = (projectService as any).projectUpgradeService
+      .isRewindable;
 
     expect(isRewindable).toBe(false);
   });
