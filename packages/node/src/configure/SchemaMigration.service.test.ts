@@ -2,37 +2,26 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { promisify } from 'util';
-import { INestApplication } from '@nestjs/common';
-import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { Test, TestingModule } from '@nestjs/testing';
-import { makeTempDir, ReaderFactory } from '@subql/common';
+import { DynamicModule, INestApplication } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
+import { Test } from '@nestjs/testing';
 import {
-  ConnectionPoolService,
-  ConnectionPoolStateManager,
+  DbModule,
   DbOption,
   generateHashedIndexName,
   NodeConfig,
-  PoiService,
-  PoiSyncService,
-  ProjectUpgradeSevice,
+  registerApp,
   StoreCacheService,
-  StoreService,
 } from '@subql/node-core';
 import { IndexesOptions, QueryTypes, Sequelize } from '@subql/x-sequelize';
-import { isNil, omitBy } from 'lodash';
 import rimraf from 'rimraf';
 import { ApiService } from '../indexer/api.service';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
+import { FetchModule } from '../indexer/fetch.module';
 import { ProjectService } from '../indexer/project.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
+import { MetaModule } from '../meta/meta.module';
+import { ConfigureModule } from './configure.module';
 import { SubqueryProject } from './SubqueryProject';
-
-const reader = async (cid: string) => {
-  return ReaderFactory.create(`ipfs://${cid}`, {
-    ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
-  });
-};
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
@@ -43,88 +32,69 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-async function prepareProjectModule(
-  cid: string,
-  sequelize: Sequelize,
-  tempDirChild: string,
-  tempDirParent: string,
-  schemaName: string,
-): Promise<INestApplication> {
-  const childReader = await reader(cid);
-
-  const project = await SubqueryProject.create(
-    `${cid}`,
-    await childReader.getProjectSchema(),
-    childReader,
-    tempDirChild,
-    {
-      endpoint: ['wss://rpc.polkadot.io/public-ws'],
-    },
+const mockInstance = async (cid: string, schemaName: string) => {
+  const argv: Record<string, any> = {
+    _: [],
+    // config: {
+    subquery: `ipfs://${cid}`,
+    dbSchema: schemaName,
+    allowSchemaMigration: true,
+    ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
+    networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
+    // }
+  };
+  return registerApp<SubqueryProject>(
+    argv,
+    SubqueryProject.create.bind(SubqueryProject),
+    jest.fn(),
+    '',
   );
+};
 
-  const module: TestingModule = await Test.createTestingModule({
+async function mockRegister(
+  cid: string,
+  schemaName: string,
+): Promise<DynamicModule> {
+  const { nodeConfig, project } = await mockInstance(cid, schemaName);
+
+  return {
+    module: ConfigureModule,
     providers: [
       {
-        provide: 'IProjectUpgradeService',
-        useFactory: () => {
-          return ProjectUpgradeSevice.create(
-            project,
-            async (cid: string): Promise<any> => {
-              const loReader = await reader(cid);
-              return SubqueryProject.create(
-                cid,
-                await loReader.getProjectSchema(),
-                loReader,
-                tempDirParent,
-                omitBy(
-                  {
-                    endpoint: project.network.endpoint,
-                    dictionary: project.network.dictionary,
-                  },
-                  isNil,
-                ),
-              );
-            },
-          );
-        },
-      },
-      {
-        provide: 'IProjectService',
-        useClass: ProjectService,
-      },
-      {
         provide: NodeConfig,
-        useFactory: () => ({
-          dbSchema: schemaName,
-          subquery: cid,
-          ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
-          allowSchemaMigration: true,
-        }),
+        useValue: nodeConfig,
       },
       {
         provide: 'ISubqueryProject',
         useValue: project,
       },
-      DsProcessorService,
-      ApiService,
-      ConnectionPoolService,
-      ConnectionPoolStateManager,
-      EventEmitter2,
       {
-        provide: Sequelize,
-        useValue: sequelize,
+        provide: 'IProjectUpgradeService',
+        useValue: project,
       },
-      StoreService,
-      StoreCacheService,
-      DynamicDsService,
-      UnfinalizedBlocksService,
-      PoiService,
-      PoiSyncService,
+      {
+        provide: 'Null',
+        useValue: null,
+      },
     ],
-    imports: [EventEmitterModule.forRoot()],
+    exports: [NodeConfig, 'ISubqueryProject', 'IProjectUpgradeService', 'Null'],
+  };
+}
+
+async function prepareApp(schemaName: string, cid: string) {
+  const m = await Test.createTestingModule({
+    imports: [
+      DbModule.forRoot(),
+      EventEmitterModule.forRoot(),
+      mockRegister(cid, schemaName),
+      ScheduleModule.forRoot(),
+      FetchModule,
+      MetaModule,
+    ],
+    controllers: [],
   }).compile();
 
-  const app = module.createNestApplication();
+  const app = m.createNestApplication();
   await app.init();
   return app;
 }
@@ -134,8 +104,8 @@ describe('SchemaMigration integration tests', () => {
   let app: INestApplication;
   let projectService: ProjectService;
   let sequelize: Sequelize;
-  let tempDirParent: string;
-  let tempDirChild: string;
+  let tempDir: string;
+  let schemaName: string;
 
   beforeAll(async () => {
     sequelize = new Sequelize(
@@ -144,49 +114,30 @@ describe('SchemaMigration integration tests', () => {
     );
     await sequelize.authenticate();
   });
-  beforeEach(async () => {
-    tempDirChild = await makeTempDir();
-    tempDirParent = await makeTempDir();
-  });
 
   afterEach(async () => {
-    await promisify(rimraf)(tempDirChild);
-    await promisify(rimraf)(tempDirParent);
-    return app?.close();
-  });
-  afterAll(async () => {
-    await Promise.all([
-      sequelize.dropSchema('test-migrations-1', { logging: true }),
-      sequelize.dropSchema('test-migrations-2', { logging: true }),
-      sequelize.dropSchema('test-migrations-3', { logging: true }),
-      sequelize.dropSchema('test-migrations-4', { logging: true }),
-      sequelize.dropSchema('test-migrations-5', { logging: true }),
-      sequelize.dropSchema('test-migrations-6', { logging: true }),
-      sequelize.dropSchema('test-migrations-7', { logging: true }),
-    ]);
+    await promisify(rimraf)(tempDir);
+    await sequelize.dropSchema(schemaName, { logging: false });
+    await app?.close();
   });
 
-  it('Migrate basic schema w/o indexes', async () => {
-    // Expect schema to be of QmdjcBRUYtieZ4Gtj2C7nF9AfdHJVJcmTJ2wfr8c54WydQ
+  it('Migrate to new schema', async () => {
     const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
-    const schema = 'test-migrations-1';
-    app = await prepareProjectModule(
-      cid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    schemaName = 'test-migrations-1';
+    app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
+    const projectUpgradeService = app.get('IProjectUpgradeService');
 
     await apiService.init();
+    await projectService.init(1);
 
-    await projectService.init(500);
+    await projectUpgradeService.setCurrentHeight(1000);
+    tempDir = (projectService as any).project.root;
 
     const dbResults = await sequelize.query(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}';`,
+      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schemaName}';`,
       { type: QueryTypes.SELECT },
     );
     const tableNames: string[] = dbResults.map((row: string[]) => {
@@ -195,13 +146,13 @@ describe('SchemaMigration integration tests', () => {
 
     expect(tableNames).toContain('_metadata');
     expect(tableNames).toContain('accounts');
-    expect(tableNames).toContain('test_entities');
+    expect(tableNames).not.toContain('test_entities');
     expect(tableNames).toContain('transfers');
-    expect(tableNames).not.toContain('test_entity_twos'); // test_entity_twos should be removed
+    expect(tableNames).toContain('test_entity_twos');
 
     // Query to check the structure of 'accounts' table
     const accountColumns = await sequelize.query(
-      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = '${schema}' AND table_name = 'accounts';`,
+      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = '${schemaName}' AND table_name = 'accounts';`,
       { type: QueryTypes.SELECT },
     );
     const firstTransferBlockColumn = accountColumns.find(
@@ -209,7 +160,7 @@ describe('SchemaMigration integration tests', () => {
         row.column_name === 'first_transfer_block',
     ) as { column_name: string; is_nullable: string };
     expect(firstTransferBlockColumn).toBeDefined();
-    expect(firstTransferBlockColumn.is_nullable).toEqual('YES');
+    expect(firstTransferBlockColumn.is_nullable).toEqual('NO');
 
     const [columnResult] = await sequelize.query(
       `SELECT
@@ -219,8 +170,8 @@ describe('SchemaMigration integration tests', () => {
             FROM
                 information_schema.columns
             WHERE
-                table_schema = '${schema}'
-                AND table_name = 'test_entities'
+                table_schema = '${schemaName}'
+                AND table_name = 'test_entity_twos'
                 AND column_name = '_block_range';`,
     );
 
@@ -231,8 +182,8 @@ describe('SchemaMigration integration tests', () => {
               FROM
                   pg_indexes
               WHERE
-                  schemaname = '${schema}'
-                  AND tablename = 'test_entities';`,
+                  schemaname = '${schemaName}'
+                  AND tablename = 'test_entity_twos';`,
     );
 
     expect(columnResult[0]).toStrictEqual({
@@ -244,55 +195,46 @@ describe('SchemaMigration integration tests', () => {
       fields: ['id'],
       unique: false,
       parser: null,
-      name: 'test_entities_id',
+      name: 'test_entity_twos_id',
     };
-    const expectIndexName = generateHashedIndexName('TestEntity', indexOptions);
+    const expectIndexName = generateHashedIndexName(
+      'TestEntityTwo',
+      indexOptions,
+    );
 
     expect(indexResult).toStrictEqual([
       {
-        indexname: 'test_entities_pkey',
-        indexdef: `CREATE UNIQUE INDEX test_entities_pkey ON "${schema}".test_entities USING btree (_id)`,
+        indexname: 'test_entity_twos_pkey',
+        indexdef: `CREATE UNIQUE INDEX test_entity_twos_pkey ON "${schemaName}".test_entity_twos USING btree (_id)`,
       },
       {
         indexname: expectIndexName,
-        indexdef: `CREATE INDEX "0x4eda71e3658b726f" ON "${schema}".test_entities USING btree (id)`,
+        indexdef: `CREATE INDEX "0x30cf0ebdd6c10eed" ON "${schemaName}".test_entity_twos USING btree (id)`,
       },
     ]);
   });
   it('Ensure correct JSON field creation with nested json', async () => {
-    // parent: QmbqZ1UoRVJ4umb3FByNN2rPYgzHxWKohfeEVnkQakDLgQ
-    // child: QmQZgpfWNnEXDkLwXNPB4XY65pB4C8qz7cPKLsqnxrer7J
-    const jsonCid = 'QmQZgpfWNnEXDkLwXNPB4XY65pB4C8qz7cPKLsqnxrer7J';
-    const schema = 'test-migrations-2';
-    app = await prepareProjectModule(
-      jsonCid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    const jsonCid = 'QmPF13eV5syiUtgj7oAfi8CVtJHWYnj4P2oAfGETFYUq3f';
+    schemaName = 'test-migrations-2';
+    app = await prepareApp(schemaName, jsonCid);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
-    await apiService.init();
-    await projectService.init(500);
+    const projectUpgradeService = app.get('IProjectUpgradeService');
 
-    const dbResults = await sequelize.query(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}';`,
-      { type: QueryTypes.SELECT },
-    );
-    const tableNames: string[] = dbResults.map((row: string[]) => {
-      return row[0];
-    });
-    expect(tableNames).toContain('test_entity_twos'); // test_entity_twos should be removed
-    expect(tableNames).not.toContain('new_entities'); // test_entity_twos should be removed
+    await apiService.init();
+    await projectService.init(1);
+
+    await projectUpgradeService.setCurrentHeight(1000);
+
+    tempDir = (projectService as any).project.root;
 
     const [exampleFieldColumn] = await sequelize.query(
       `
           SELECT column_name, data_type
           FROM information_schema.columns
-          WHERE table_schema = '${schema}'
-            AND table_name = 'test_entity_threes'
+          WHERE table_schema = '${schemaName}'
+            AND table_name = 'test_entities'
             AND column_name = 'example_field';
         `,
       { type: QueryTypes.SELECT },
@@ -300,72 +242,66 @@ describe('SchemaMigration integration tests', () => {
     expect((exampleFieldColumn as any).data_type).toEqual('jsonb');
   });
   it('Migration fails on ENUM introduction', async () => {
-    // parent: QmQfwp2Zc7rcS9ktboKPXn7cFhc9QCuKkQdoEnzKUnBgr1
-    // child: Qmb2VFxMqCSS6Bwvkh96rYtfPuueU3Kz3ngr7pbb8h5kst
+    const exitSpy = jest
+      .spyOn(process as any, 'exit')
+      .mockImplementationOnce(() => {
+        return;
+      });
 
-    const enumCid = 'Qmb2VFxMqCSS6Bwvkh96rYtfPuueU3Kz3ngr7pbb8h5kst';
-    const schema = 'test-migrations-3';
+    const enumCid = 'QmVomY9ChqVHtVbUCPg5tEertDhoHTVheG7LcXaGNgysVD';
+    schemaName = 'test-migrations-3';
 
-    app = await prepareProjectModule(
-      enumCid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    app = await prepareApp(schemaName, enumCid);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
-    await apiService.init();
+    const projectUpgradeService = app.get('IProjectUpgradeService');
 
-    await expect(projectService.init(500)).rejects.toThrow(
-      'Schema Migration currently does not support Enum removal and creation',
-    );
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(1000);
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
   it('Migration fails on Relational creation and removal', async () => {
-    // parent: QmXc3cH6BnXFEyiuJmbWZZLyz6E2e8B8RukrLeBS1Q21T6
-    // child (removed relation and create new relation): QmVTcEZbMopEi7VLzBiYStvT18dG6xXEhkFxGUNmHhSppg
+    const exitSpy = jest
+      .spyOn(process as any, 'exit')
+      .mockImplementationOnce(() => {
+        return;
+      });
 
-    const relationCid = 'QmVTcEZbMopEi7VLzBiYStvT18dG6xXEhkFxGUNmHhSppg';
-    const schema = 'test-migrations-4';
+    const relationCid = 'QmZ4zZbou6k4bojfiCp9hUTBgUrmqT3j3kFn9eVvzW9Rqj';
+    schemaName = 'test-migrations-4';
 
-    app = await prepareProjectModule(
-      relationCid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    app = await prepareApp(schemaName, relationCid);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
+    const projectUpgradeService = app.get('IProjectUpgradeService');
 
     await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
 
-    await expect(projectService.init(500)).rejects.toThrow(
-      'Schema Migration currently does not support Relational removal or creation',
-    );
+    await projectUpgradeService.setCurrentHeight(1000);
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   it('Migration on index removal, creation', async () => {
-    // parent: QmXikuVRr5rKfzC9v6vF8zEywJ8AUhR7MGt44kdZjQgLAg
-    // child : QmQ6msxfc8vqeiPwbbJHu9JZyH6e25u2A4YWi8SxpB69KH
-    const relationCid = 'QmQ6msxfc8vqeiPwbbJHu9JZyH6e25u2A4YWi8SxpB69KH';
-    const schema = 'test-migrations-5';
-    app = await prepareProjectModule(
-      relationCid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    const cid = 'QmRXzte2erbpUjqFyd5V2JroZAoD2iEWVxs3GM33sGpnux';
+    schemaName = 'test-migrations-5';
+    app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
+    const projectUpgradeService = app.get('IProjectUpgradeService');
 
     await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
 
-    await projectService.init(500);
+    await projectUpgradeService.setCurrentHeight(1000);
 
     const [indexResult] = await sequelize.query(
       `SELECT
@@ -374,58 +310,61 @@ describe('SchemaMigration integration tests', () => {
               FROM
                   pg_indexes
               WHERE
-                  schemaname = '${schema}';`,
+                  schemaname = '${schemaName}';`,
     );
+    const findIndex = (modelName: string, unique: boolean, fields: string[]) =>
+      indexResult.find(
+        (i: { indexname: string; indexdef: string }) =>
+          i.indexname ===
+          generateHashedIndexName(modelName, { unique, fields }),
+      );
 
-    expect(
-      indexResult.find(
-        (i: any) =>
-          i.indexname ===
-          generateHashedIndexName('TestIndexOne', {
-            unique: true,
-            fields: ['name'],
-          }),
-      ),
-    ).toEqual({
-      indexname: '0x7cea7dddb66a5475',
-      indexdef: `CREATE UNIQUE INDEX "0x7cea7dddb66a5475" ON "${schema}".test_index_ones USING btree (name)`,
-    });
-    expect(
-      indexResult.find(
-        (i: any) =>
-          i.indexname ===
-          generateHashedIndexName('TestIndexTwo', {
-            unique: false,
-            fields: ['name'],
-          }),
-      ),
-    ).toEqual({
-      indexname: '0xc1e1132ee204d92f',
-      indexdef: `CREATE INDEX "0xc1e1132ee204d92f" ON "${schema}".test_index_twos USING btree (name)`,
-    });
+    const uniqueIndex = findIndex('NewIndexOne', true, [
+      'name',
+      '_block_range',
+    ]);
+    const nonUniqueIndex = findIndex('NewIndexTwo', false, [
+      'name',
+      '_block_range',
+    ]);
+    const compositeIndex = findIndex('NewIndexComposite', false, [
+      'block',
+      'block_two',
+      '_block_range',
+    ]);
+    const droppedUniqueIndex = findIndex('DropSingleIndex', true, [
+      'example_field',
+      '_block_range',
+    ]);
+    const droppedCompositeIndex = findIndex('DropCompositeIndex', false, [
+      'block',
+      'block_two',
+      '_block_range',
+    ]);
+
+    expect(uniqueIndex).toBeTruthy();
+    expect(nonUniqueIndex).toBeTruthy();
+    expect(compositeIndex).toBeTruthy();
+
+    expect(droppedCompositeIndex).toBe(undefined);
+    expect(droppedUniqueIndex).toBe(undefined);
   });
   it('Should initialize correct schema based on startHeight', async () => {
     // parent: QmQuww78v2XeGVVPVj6rWLhqvw78xrcR2SZJ5QLe7aaxu3
     // child : QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy
     const cid = 'QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy';
-    const schema = 'test-migrations-6';
-    app = await prepareProjectModule(
-      cid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    schemaName = 'test-migrations-6';
+
+    app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
 
     await apiService.init();
-
     await projectService.init(1);
 
     const dbResults = await sequelize.query(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}';`,
+      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schemaName}';`,
       { type: QueryTypes.SELECT },
     );
     const tableNames: string[] = dbResults.map((row: string[]) => {
@@ -438,54 +377,79 @@ describe('SchemaMigration integration tests', () => {
     expect(tableNames).toContain('transfers');
   });
   it('On entity drop isRewindable should be false', async () => {
-    // parent: QmQuww78v2XeGVVPVj6rWLhqvw78xrcR2SZJ5QLe7aaxu3
-    // child : QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy
     const cid = 'QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy';
-    const schema = 'test-migrations-7';
-    app = await prepareProjectModule(
-      cid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+    schemaName = 'test-migrations-7';
+    app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
+
     const apiService = app.get(ApiService);
-
     await apiService.init();
+    await projectService.init(1);
 
-    await projectService.init(500);
-    const isRewindable = (projectUpgradeService as any).isRewindable;
+    tempDir = (projectService as any).project.root;
+
+    // TODO fix this
+    const isRewindable = projectUpgradeService.isRewindable;
+
     expect(isRewindable).toBe(false);
   });
-  it('Check duplication in sequelize models', async () => {
-    const cid = 'QmfGfmVtbSqDVkyUAg1K1uDh3GtisExAteHhrwCexdSTC2';
-    const schema = 'test-migrations-8';
-    app = await prepareProjectModule(
-      cid,
-      sequelize,
-      tempDirChild,
-      tempDirParent,
-      schema,
-    );
+  it('Should update sequelize Models in cachedModels', async () => {
+    const cid = 'QmWKRpKXgmPArnAGRNaK2wTiWNuosUtxBcB581mcth8B82';
+    schemaName = 'test-migrations-8';
+    app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
+    const storeCache = app.get(StoreCacheService);
+    const cacheSpy = jest.spyOn(storeCache, 'updateModels');
     const apiService = app.get(ApiService);
 
     await apiService.init();
     await projectService.init(1);
+    tempDir = (projectService as any).project.root;
 
     await projectUpgradeService.setCurrentHeight(1000);
+
+    const cachedModels = (storeCache as any).cachedModels;
+
+    expect(Object.keys(cachedModels)).toStrictEqual([
+      '_metadata',
+      'AddedEntity',
+      'Account',
+    ]);
+    expect(
+      Object.keys((cachedModels.Account.model as any).rawAttributes).includes(
+        'addedField',
+      ),
+    ).toBe(true);
+    expect(
+      Object.keys((cachedModels.Account.model as any).rawAttributes).includes(
+        'dropField',
+      ),
+    ).toBe(false);
+
+    expect(cacheSpy).toHaveBeenCalledTimes(1);
   });
-  // TODO
-  // All tests should be test and should use setCurrentHeight
+  it('Ensure no duplication in cacheModels', async () => {
+    const cid = 'QmSmQvbssnCCH2fdi2VyqCQsjKti7tKsJMtxMUmZKUjhq7';
+    schemaName = 'test-migrations-9';
+    app = await prepareApp(schemaName, cid);
 
-  // Need tests for:
-  // Ensure cacheModels has been updated after schemaMigration is run
-  // Should be able to execute db with ORM apis
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const storeCache = app.get(StoreCacheService);
+    const apiService = app.get(ApiService);
 
-  // Re-index should be working
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(1000);
+
+    const cachedModels = (storeCache as any).cachedModels;
+
+    expect(Object.keys(cachedModels)).toStrictEqual(['_metadata', 'Account']);
+  });
 });

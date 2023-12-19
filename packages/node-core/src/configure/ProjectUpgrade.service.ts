@@ -94,7 +94,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
-  isRewindable;
 
   private constructor(private _projects: BlockHeightMap<P>, currentHeight: number, private _isRewindable = true) {
     logger.info(
@@ -110,7 +109,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     // Bypass setters here because we want to avoid side-effect
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
-    this.isRewindable = this._isRewindable;
   }
   async init(
     storeCacheService: StoreCacheService,
@@ -148,6 +146,10 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
     this.onProjectUpgrade = onProjectUpgrade;
+  }
+
+  get isRewindable(): boolean {
+    return this._isRewindable;
   }
 
   get projects(): Map<number, P> {
