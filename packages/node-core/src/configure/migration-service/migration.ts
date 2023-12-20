@@ -29,12 +29,16 @@ import {NodeConfig} from '../NodeConfig';
 export class Migration {
   private sequelizeModels: ModelStatic<any>[] = [];
   private rawQueries: string[] = [];
+  private readonly historical: boolean;
+
   constructor(
     private sequelize: Sequelize,
     private schemaName: string,
     private config: NodeConfig,
     private enumTypeMap: Map<string, string> // private foreignKeyMap: Map<string, Map<string, SmartTags>>,
-  ) {}
+  ) {
+    this.historical = !config.disableHistorical;
+  }
 
   static async create(
     sequelize: Sequelize,
@@ -87,7 +91,9 @@ export class Migration {
     indexes: IndexesOptions[];
   } {
     const attributes = modelsTypeToModelAttributes(model, this.enumTypeMap);
-    addIdAndBlockRangeAttributes(attributes);
+    if (this.historical) {
+      addIdAndBlockRangeAttributes(attributes);
+    }
 
     const indexes = model.indexes.map(({fields, unique, using}) => ({
       fields: fields.map((field) => Utils.underscoredIf(field, true)),
@@ -113,22 +119,21 @@ export class Migration {
       indexes,
     });
   }
-
-  private createModel(model: GraphQLModelsType) {
-    const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
-    // TODO figure out, dont need to add indexes here?
-    addIdAndBlockRangeAttributes(attributes);
-    const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
-    addScopeAndBlockHeightHooks(sequelizeModel, undefined);
-    return sequelizeModel;
-  }
-
   private addModel(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
 
     if (!this.sequelizeModels.find((m) => m.name === modelName)) {
       this.sequelizeModels.push(sequelizeModel);
     }
+  }
+
+  private createModel(model: GraphQLModelsType) {
+    const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
+    const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
+    if (this.historical) {
+      addScopeAndBlockHeightHooks(sequelizeModel, undefined);
+    }
+    return sequelizeModel;
   }
 
   async createTable(model: GraphQLModelsType, blockHeight: number): Promise<void> {
@@ -141,14 +146,18 @@ export class Migration {
     const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(this.schemaName));
     const existedIndexes = indexesResult.map((i) => (i as any).indexname);
 
-    // Historical should be enabled to use projectUpgrade
-    addBlockRangeColumnToIndexes(indexes);
-    addHistoricalIdIndex(model, indexes);
+    if (this.historical) {
+      addBlockRangeColumnToIndexes(indexes);
+      addHistoricalIdIndex(model, indexes);
+    }
 
     const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
 
     updateIndexesName(model.name, indexes, existedIndexes);
-    addScopeAndBlockHeightHooks(sequelizeModel, blockHeight);
+
+    if (this.historical) {
+      addScopeAndBlockHeightHooks(sequelizeModel, blockHeight);
+    }
 
     this.addModel(sequelizeModel);
   }

@@ -32,16 +32,19 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-const mockInstance = async (cid: string, schemaName: string) => {
+const mockInstance = async (
+  cid: string,
+  schemaName: string,
+  disableHistorical: boolean,
+) => {
   const argv: Record<string, any> = {
     _: [],
-    // config: {
+    disableHistorical,
     subquery: `ipfs://${cid}`,
     dbSchema: schemaName,
     allowSchemaMigration: true,
     ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
     networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
-    // }
   };
   return registerApp<SubqueryProject>(
     argv,
@@ -54,8 +57,13 @@ const mockInstance = async (cid: string, schemaName: string) => {
 async function mockRegister(
   cid: string,
   schemaName: string,
+  disableHistorical: boolean,
 ): Promise<DynamicModule> {
-  const { nodeConfig, project } = await mockInstance(cid, schemaName);
+  const { nodeConfig, project } = await mockInstance(
+    cid,
+    schemaName,
+    disableHistorical,
+  );
 
   return {
     module: ConfigureModule,
@@ -81,12 +89,16 @@ async function mockRegister(
   };
 }
 
-async function prepareApp(schemaName: string, cid: string) {
+async function prepareApp(
+  schemaName: string,
+  cid: string,
+  disableHistorical = false,
+) {
   const m = await Test.createTestingModule({
     imports: [
       DbModule.forRoot(),
       EventEmitterModule.forRoot(),
-      mockRegister(cid, schemaName),
+      mockRegister(cid, schemaName, disableHistorical),
       ScheduleModule.forRoot(),
       FetchModule,
       MetaModule,
@@ -451,5 +463,36 @@ describe('SchemaMigration integration tests', () => {
     const cachedModels = (storeCache as any).cachedModels;
 
     expect(Object.keys(cachedModels)).toStrictEqual(['_metadata', 'Account']);
+  });
+  it('Ensure correctness on non-historical migrate', async () => {
+    const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
+    schemaName = 'test-migrations-10';
+    app = await prepareApp(schemaName, cid, true);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(1000);
+
+    const [results] = await sequelize.query(
+      `SELECT
+                column_name
+            FROM
+                information_schema.columns
+            WHERE
+                table_schema = '${schemaName}'
+                AND table_name = 'test_entity_twos'`,
+    );
+
+    expect(
+      !!results.find(
+        (c: { column_name: string }) => c.column_name === '_block_range',
+      ),
+    ).toBe(false);
   });
 });
