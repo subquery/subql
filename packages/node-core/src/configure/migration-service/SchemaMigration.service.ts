@@ -24,7 +24,6 @@ export class SchemaMigrationService {
   constructor(
     private sequelize: Sequelize,
     private flushCache: (flushAll?: boolean) => Promise<void>,
-    private updatedModels: (model: ModelStatic<any>[]) => void,
     private dbSchema: string,
     private config: NodeConfig
   ) {}
@@ -64,7 +63,11 @@ export class SchemaMigrationService {
     return changes;
   }
 
-  async run(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema, blockHeight: number): Promise<void> {
+  async run(
+    currentSchema: GraphQLSchema,
+    nextSchema: GraphQLSchema,
+    blockHeight: number
+  ): Promise<ModelStatic<any>[] | void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
 
     const {
@@ -132,9 +135,7 @@ export class SchemaMigrationService {
         }
       }
 
-      const models = await migrationAction.run();
-
-      this.updatedModels(models);
+      return migrationAction.run();
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
       throw e;

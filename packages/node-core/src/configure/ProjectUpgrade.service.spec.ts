@@ -1,7 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Sequelize} from '@subql/x-sequelize';
 import {CacheMetadataModel, ISubqueryProject, StoreCacheService} from '../indexer';
+import {NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
 const templateProject = {
@@ -246,7 +248,7 @@ describe('Project Upgrades', () => {
         1
       );
 
-      await upgradeService.init(storeCache, 1);
+      await upgradeService.init(storeCache, 1, {} as NodeConfig, {} as Sequelize, '');
 
       project = upgradableSubqueryProject(upgradeService);
     });

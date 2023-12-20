@@ -4,11 +4,13 @@
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
 import {SchemaMigrationService} from '@subql/node-core/configure/migration-service/SchemaMigration.service';
+import {Sequelize} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
 import {ISubqueryProject, StoreCacheService} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
+import {NodeConfig} from './NodeConfig';
 
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
 
@@ -16,6 +18,9 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
   init: (
     storeCacheService: StoreCacheService,
     currentHeight: number,
+    config: NodeConfig,
+    sequelize: Sequelize,
+    schema: string,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ) => Promise<number | undefined>;
   /**
@@ -114,6 +119,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   async init(
     storeCacheService: StoreCacheService,
     currentHeight: number,
+    config: NodeConfig,
+    sequelize: Sequelize,
+    schema: string,
     onProjectUpgrade?: OnProjectUpgradeCallback<P>
   ): Promise<number | undefined> {
     if (this.#initialized) {
@@ -123,11 +131,10 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#initialized = true;
     this.#storeCache = storeCacheService;
     this.migrationService = new SchemaMigrationService(
-      storeCacheService._sequelize,
+      sequelize,
       storeCacheService._flushCache.bind(storeCacheService),
-      storeCacheService.updateModels.bind(storeCacheService),
-      storeCacheService._config.dbSchema,
-      storeCacheService._config
+      schema,
+      config
     );
 
     const indexedDeployments = await this.getDeploymentsMetadata();
@@ -190,10 +197,14 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         await this.onProjectUpgrade?.(startHeight, newProject);
         if (isMainThread) {
           assert(this.#storeCache, 'StoreCacheService is undefined');
-          if (!this.#storeCache._config.unfinalizedBlocks) {
+          if (!this.#storeCache.config.unfinalizedBlocks) {
             assert(this.migrationService, 'MigrationService is undefined');
-            if (this.#storeCache._config.allowSchemaMigration) {
-              await this.migrationService.run(project.schema, newProject.schema, height);
+            if (this.#storeCache.config.allowSchemaMigration) {
+              const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, height);
+
+              if (modifiedModels) {
+                this.#storeCache?.updateModels(modifiedModels);
+              }
             }
           }
         }

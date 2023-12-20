@@ -367,6 +367,9 @@ export abstract class BaseProjectService<
     const upgradePoint = await this.projectUpgradeService.init(
       this.storeService.storeCache,
       startHeight,
+      this.nodeConfig,
+      this.sequelize,
+      this.schema,
       this.handleProjectChange.bind(this)
     );
 

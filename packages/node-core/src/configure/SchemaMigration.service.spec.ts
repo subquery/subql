@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {SchemaMigrationService} from '@subql/node-core';
 import {buildSchemaFromFile} from '@subql/utils';
+import {SchemaMigrationService} from './migration-service';
+import {ProjectUpgradeSevice} from './ProjectUpgrade.service';
 
 describe('SchemaMigration', () => {
   describe('comparator', () => {
@@ -40,6 +41,19 @@ describe('SchemaMigration', () => {
       const currentSchema = buildSchemaFromFile(oldSchemaPath);
       const nextSchema = buildSchemaFromFile(badSchemaPath);
       const v = SchemaMigrationService.validateSchemaChanges(currentSchema, nextSchema);
+      expect(v).toBe(false);
+    });
+    it('Ensure iterator logic', () => {
+      const currentSchema = buildSchemaFromFile(oldSchemaPath);
+      const nextSchema = buildSchemaFromFile(badSchemaPath);
+      const projects = new Map<number, any>([
+        [4, {schema: nextSchema}],
+        [2, {schema: nextSchema}],
+        [1, {schema: currentSchema}],
+        [3, {schema: currentSchema}],
+      ]);
+
+      const v = (ProjectUpgradeSevice as any).rewindableCheck(projects);
       expect(v).toBe(false);
     });
   });

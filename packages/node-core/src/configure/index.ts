@@ -4,4 +4,4 @@
 export * from './configure.module';
 export * from './NodeConfig';
 export * from './ProjectUpgrade.service';
-export * from './migration-service/SchemaMigration.service';
+export * from './migration-service';
