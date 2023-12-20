@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.4] - 2023-12-20
+### Fixed
+- Metadata lastProcessedHeight undefined issue via `@subql/node-core`
+
 ## [3.4.3] - 2023-12-04
 ### Fixed
 - Fix with after correct asset type (#223)
@@ -356,7 +360,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.4...HEAD
+[3.4.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.3...node-ethereum/3.4.4
 [3.4.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.2...node-ethereum/3.4.3
 [3.4.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.1...node-ethereum/3.4.2
 [3.4.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.0...node-ethereum/3.4.1

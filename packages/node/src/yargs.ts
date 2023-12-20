@@ -37,5 +37,11 @@ export const yargsOptions = yargsBuilder({
       describe:
         'The number of blocks to reindex if a fork happens before cached unfinalized blocks and POI is not enabled.',
     },
+    'query-address-limit': {
+      describe:
+        'Set the limit for address on dictionary queries for dynamic datasources',
+      type: 'number',
+      default: 100,
+    },
   },
 });

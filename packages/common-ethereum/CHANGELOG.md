@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2023-12-20
 ### Fixed
 - Correct asset type to map, also made update in codegen controller (#223)
+
+### Changed
+- Update @subql/common
 
 ## [3.1.0] - 2023-11-01
 ### Added
@@ -112,7 +116,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.1...HEAD
+[3.1.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.0...common-ethereum/3.1.1
 [3.1.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.0.6...common-ethereum/3.1.0
 [3.0.6]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.0.5...common-ethereum/3.0.6
 [3.0.5]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.0.4...common-ethereum/3.0.5
