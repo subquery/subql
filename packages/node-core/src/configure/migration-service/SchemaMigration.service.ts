@@ -53,7 +53,7 @@ export class SchemaMigrationService {
       removedRelations: [],
       addedEnums: [],
       removedEnums: [],
-      allEnums: currentData.enums, // TODO this will need logic check, once Enum migration is enabled
+      allEnums: currentData.enums, // TODO support for Enum migration
     };
 
     compareEnums(currentData.enums, nextData.enums, changes);
@@ -106,7 +106,6 @@ export class SchemaMigrationService {
       }
 
       if (addedModels.length) {
-        // TODO if the table has fields that is relational to another table that is yet to exist, that table should be created first
         for (const model of addedModels) {
           await migrationAction.createTable(model, blockHeight);
         }

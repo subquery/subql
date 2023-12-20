@@ -407,7 +407,6 @@ export abstract class BaseProjectService<
   }
 
   private async handleProjectChange(): Promise<void> {
-    // Apply any migrations to the schema if schemaMigration is not enabled
     if (isMainThread && !this.nodeConfig.allowSchemaMigration) {
       await this.initDbSchema();
     }

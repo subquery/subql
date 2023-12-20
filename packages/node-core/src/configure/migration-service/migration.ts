@@ -35,7 +35,7 @@ export class Migration {
     private sequelize: Sequelize,
     private schemaName: string,
     private config: NodeConfig,
-    private enumTypeMap: Map<string, string> // private foreignKeyMap: Map<string, Map<string, SmartTags>>,
+    private enumTypeMap: Map<string, string>
   ) {
     this.historical = !config.disableHistorical;
   }
@@ -50,12 +50,10 @@ export class Migration {
     const modelsRelationsEnums = getAllEntitiesRelations(graphQLSchema);
     const enumTypeMap = new Map<string, string>();
     const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
-    // move up here  TODO
     for (const e of modelsRelationsEnums.enums) {
       await syncEnums(sequelize, SUPPORT_DB.postgres, e, schemaName, enumTypeMap, logger);
     }
 
-    // TODO relations
     for (const relation of modelsRelationsEnums.relations) {
       const model = sequelize.model(relation.from);
       const relatedModel = sequelize.model(relation.to);

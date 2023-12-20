@@ -3,13 +3,13 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {SchemaMigrationService} from '@subql/node-core/configure/migration-service/SchemaMigration.service';
 import {Sequelize} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
 import {ISubqueryProject, StoreCacheService} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
+import {SchemaMigrationService} from './migration-service';
 import {NodeConfig} from './NodeConfig';
 
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;

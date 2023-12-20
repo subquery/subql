@@ -31,7 +31,6 @@ export interface SchemaChangesType {
   addedEnums: GraphQLEnumsType[];
   removedEnums: GraphQLEnumsType[];
   allEnums: GraphQLEnumsType[];
-  // Enums are typically not "modified" in place in PostgreSQL, so no modifiedEnums field is needed
 }
 
 export function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): boolean {
@@ -83,7 +82,6 @@ export function compareRelations(
     }
   });
 
-  // TODO How to handle modified relations
   nextRelations.forEach((nextRel) => {
     const currentRel = currentRelations.find(
       (currentRel) =>
@@ -91,8 +89,7 @@ export function compareRelations(
     );
 
     if (currentRel && currentRel.foreignKey !== nextRel.foreignKey) {
-      // Logic to handle modified relations due to foreignKey changes
-      // This could involve adding to a modifiedRelations array, or similar
+      // TODO handle modified relations
     }
   });
 }
