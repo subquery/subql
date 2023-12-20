@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.9] - 2023-12-20
+### Fixed
+- Metadata lastProcessedHeight undefined issue via `@subql/node-core`
+
 ## [3.4.8] - 2023-12-14
 ### Changed
 - Update @subql/common
@@ -1084,7 +1088,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.8...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.9...HEAD
+[3.4.9]: https://github.com/subquery/subql/compare/node/3.4.8...node/3.4.9
 [3.4.8]: https://github.com/subquery/subql/compare/node/3.4.7...node/3.4.8
 [3.4.7]: https://github.com/subquery/subql/compare/node/3.4.6...node/3.4.7
 [3.4.6]: https://github.com/subquery/subql/compare/node/3.4.5...node/3.4.6
