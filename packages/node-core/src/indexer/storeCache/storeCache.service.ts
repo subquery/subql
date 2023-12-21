@@ -32,10 +32,10 @@ export class StoreCacheService extends BaseCacheService {
   private _lastFlushedOperationIndex = 0;
   private _lastFlushTs: Date;
 
-  constructor(private _sequelize: Sequelize, private _config: NodeConfig, protected eventEmitter: EventEmitter2) {
+  constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     super('StoreCache');
-    this.storeCacheThreshold = _config.storeCacheThreshold;
-    this.cacheUpperLimit = _config.storeCacheUpperLimit;
+    this.storeCacheThreshold = config.storeCacheThreshold;
+    this.cacheUpperLimit = config.storeCacheUpperLimit;
     this._lastFlushTs = new Date();
 
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
@@ -49,13 +49,6 @@ export class StoreCacheService extends BaseCacheService {
     this._historical = historical;
     this.metadataRepo = meta;
     this.poiRepo = poi;
-  }
-  get config() {
-    return this._config;
-  }
-
-  get sequelize() {
-    return this._sequelize;
   }
 
   getNextStoreOperationIndex(): number {

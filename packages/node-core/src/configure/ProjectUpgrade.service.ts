@@ -98,6 +98,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   #storeCache?: StoreCacheService;
   #initialized = false;
 
+  private config?: NodeConfig;
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
 
@@ -130,6 +131,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
     this.#initialized = true;
     this.#storeCache = storeCacheService;
+    this.config = config;
+
     this.migrationService = new SchemaMigrationService(
       sequelize,
       storeCacheService._flushCache.bind(storeCacheService),
@@ -196,10 +199,10 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       try {
         await this.onProjectUpgrade?.(startHeight, newProject);
         if (isMainThread) {
-          assert(this.#storeCache, 'StoreCacheService is undefined');
-          if (!this.#storeCache.config.unfinalizedBlocks) {
+          assert(this.config, 'NodeConfig is undefined');
+          if (!this.config.unfinalizedBlocks) {
             assert(this.migrationService, 'MigrationService is undefined');
-            if (this.#storeCache.config.allowSchemaMigration) {
+            if (this.config.allowSchemaMigration) {
               const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, height);
 
               if (modifiedModels) {
