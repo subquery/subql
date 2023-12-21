@@ -101,6 +101,8 @@ const mockMetadata = () => {
 };
 
 describe('Project Upgrades', () => {
+  jest.spyOn(ProjectUpgradeSevice as any, 'rewindableCheck').mockImplementation(() => true);
+
   describe('Loading projects', () => {
     it('can load a project with no parents', async () => {
       const upgradeService = await ProjectUpgradeSevice.create(
@@ -239,8 +241,7 @@ describe('Project Upgrades', () => {
 
     beforeEach(async () => {
       storeCache = new StoreCacheService({} as any, {} as any, {} as any);
-
-      jest.spyOn(storeCache as any, 'metadata').mockImplementation(() => mockMetadata());
+      (storeCache as any).cachedModels.metadataRepo = mockMetadata();
 
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
