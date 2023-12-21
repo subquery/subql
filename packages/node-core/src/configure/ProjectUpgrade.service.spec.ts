@@ -241,7 +241,7 @@ describe('Project Upgrades', () => {
 
     beforeEach(async () => {
       storeCache = new StoreCacheService({} as any, {} as any, {} as any);
-      (storeCache as any).cachedModels.metadataRepo = mockMetadata();
+      (storeCache as any).cachedModels._metadata = mockMetadata();
 
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
