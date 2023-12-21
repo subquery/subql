@@ -93,6 +93,30 @@ describe('Codegen spec', () => {
     };
     expect(prepareSortedAssets([ds], PROJECT_PATH)).toStrictEqual({Erc20: './abis/erc20.json'});
   });
+
+  it('Should sort assets with object', () => {
+    const ds = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'erc20',
+        address: '',
+      },
+      assets: {
+        erc20: {file: './abis/erc20.json'},
+      } as unknown as Map<string, {file: string}>,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Call,
+          },
+        ],
+      },
+    };
+    expect(prepareSortedAssets([ds], PROJECT_PATH)).toStrictEqual({Erc20: './abis/erc20.json'});
+  });
   it('read artifact abis', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest');
     const abisAssetObj = {

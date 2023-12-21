@@ -3,6 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import {FileReference} from '@subql/types-core';
 import {SubqlRuntimeDatasource} from '@subql/types-ethereum';
 import {Data} from 'ejs';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
@@ -51,7 +52,7 @@ export function prepareSortedAssets(
   datasources
     .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)))
     .forEach((d) => {
-      for (const [name, value] of d.assets.entries()) {
+      const addAsset = (name: string, value: FileReference) => {
         // should do if covert to absolute
         // if value.file is not absolute, the
         const filePath = path.join(projectPath, value.file);
@@ -61,6 +62,16 @@ export function prepareSortedAssets(
         // We use actual abi file name instead on name provided in assets
         // This is aligning with files in './ethers-contracts'
         sortedAssets[parseContractPath(filePath).name] = value.file;
+      };
+
+      if (d.assets instanceof Map) {
+        for (const [name, value] of d.assets.entries()) {
+          addAsset(name, value);
+        }
+      } else {
+        Object.entries(d.assets).map(([name, value]) => {
+          addAsset(name, value as any);
+        });
       }
     });
   return sortedAssets;
