@@ -2,7 +2,16 @@
   "name": "subql-mono",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/types-core",
+    "packages/node-core",
+    "packages/utils",
+    "packages/common",
+    "packages/common-substrate",
+    "packages/testing",
+    "packages/types",
+    "packages/cli",
+    "packages/query",
+    "packages/node"
   ],
   "devDependencies": {
     "@actions/core": "^1.10.0",
