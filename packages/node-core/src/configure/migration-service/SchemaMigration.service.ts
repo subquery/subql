@@ -3,7 +3,7 @@
 
 import {Injectable} from '@nestjs/common';
 import {getAllEntitiesRelations} from '@subql/utils';
-import {ModelStatic, Sequelize} from '@subql/x-sequelize';
+import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {getLogger} from '../../logger';
 import {NodeConfig} from '../NodeConfig';
@@ -66,7 +66,8 @@ export class SchemaMigrationService {
   async run(
     currentSchema: GraphQLSchema,
     nextSchema: GraphQLSchema,
-    blockHeight: number
+    blockHeight: number,
+    transcation: Transaction | undefined
   ): Promise<ModelStatic<any>[] | void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
 
@@ -134,7 +135,7 @@ export class SchemaMigrationService {
         }
       }
 
-      return migrationAction.run();
+      return migrationAction.run(transcation);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
       throw e;

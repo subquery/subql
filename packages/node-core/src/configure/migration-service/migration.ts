@@ -3,7 +3,7 @@
 
 import {SUPPORT_DB} from '@subql/common';
 import {getAllEntitiesRelations, GraphQLEntityField, GraphQLEntityIndex, GraphQLModelsType} from '@subql/utils';
-import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Utils} from '@subql/x-sequelize';
+import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
 import {
@@ -63,11 +63,11 @@ export class Migration {
     return new Migration(sequelize, schemaName, config, enumTypeMap);
   }
 
-  async run(): Promise<ModelStatic<any>[]> {
-    const transaction = await this.sequelize.transaction();
+  async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
     if (!transaction) {
-      throw new Error('Failed to create transaction');
+      transaction = await this.sequelize.transaction();
     }
+
     try {
       for (const query of this.rawQueries) {
         await this.sequelize.query(query, {transaction});
@@ -79,7 +79,9 @@ export class Migration {
       throw e;
     }
 
-    await Promise.all(this.sequelizeModels.map((m) => m.sync()));
+    transaction.afterCommit(async () => {
+      await Promise.all(this.sequelizeModels.map((m) => m.sync()));
+    });
 
     return this.sequelizeModels;
   }
@@ -169,6 +171,11 @@ export class Migration {
     if (columnOptions.primaryKey) {
       throw new Error('Primary Key migration upgrade is not allowed');
     }
+
+    if (!columnOptions.allowNull) {
+      throw new Error(`Non-nullable field creation is not supported: ${field.name} on ${model.name}`);
+    }
+
     const dbTableName = modelToTableName(model.name);
     const dbColumnName = formatColumnName(field.name);
 

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService} from '../indexer';
+import {IProjectUpgradeService, ProjectUpgradeSevice} from '../configure';
+import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
 import {ForceCleanService} from '../subcommands';
 
@@ -17,16 +18,15 @@ const logger = getLogger('Reindex');
  * - poi need to cope with rewind as well. FIXME
  * - in the end, update metadata to targetHeight
  * @param startHeight
- * @param blockOffset
  * @param targetBlockHeight !IMPORTANT! this height is exclusive in the reindex operation
  * @param lastProcessedHeight
  * @param storeService
  * @param unfinalizedBlockService
  * @param dynamicDsService
  * @param sequelize
- * @param PoiService
+ * @param projectUpgradeService
+ * @param poiService
  * @param forceCleanService
- * @param latestSyncedPoiHeight
  */
 export async function reindex(
   startHeight: number,
@@ -36,6 +36,7 @@ export async function reindex(
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
   sequelize: Sequelize,
+  projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
   poiService?: PoiService,
   forceCleanService?: ForceCleanService
 ): Promise<void> {
@@ -68,6 +69,7 @@ export async function reindex(
         unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
         unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
         dynamicDsService.resetDynamicDatasource(targetBlockHeight),
+        projectUpgradeService.rewind(targetBlockHeight, lastProcessedHeight, transaction),
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all

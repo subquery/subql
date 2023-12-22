@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {Sequelize} from '@subql/x-sequelize';
+import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
 import {ISubqueryProject, StoreCacheService} from '../indexer';
 import {getLogger} from '../logger';
@@ -34,6 +34,7 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
   currentProject: P;
   projects: Map<number, P>;
   getProject: (height: number) => P;
+  rewind: (targetBlockHeight: number, lastProcessedHeight: number, transaction: Transaction) => Promise<void>;
 }
 
 const serviceKeys: Array<keyof IProjectUpgradeService> = [
@@ -174,6 +175,55 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   get currentHeight(): number {
     return this.#currentHeight;
   }
+  async rewind(targetBlockHeight: number, lastProcessedHeight: number, transaction: Transaction): Promise<void> {
+    const projectsWithinRange = new BlockHeightMap(this.projects).getWithinRange(
+      targetBlockHeight,
+      lastProcessedHeight
+    );
+
+    // Create an iterator for the project IDs sorted in descending order
+    const sortedProjectIds = Array.from(projectsWithinRange.keys()).sort((a, b) => b - a);
+    const iterator = sortedProjectIds[Symbol.iterator]();
+
+    let currentId = iterator.next();
+    let nextId = iterator.next();
+
+    while (!nextId.done) {
+      const currentProject = projectsWithinRange.get(currentId.value);
+      const nextProject = projectsWithinRange.get(nextId.value);
+
+      if (currentProject && nextProject) {
+        // Call migrate for the current and next project
+        await this.migrate(currentProject, nextProject, transaction);
+      }
+
+      currentId = nextId;
+      nextId = iterator.next();
+    }
+  }
+
+  private async migrate(
+    project: ISubqueryProject,
+    newProject: ISubqueryProject,
+    transaction: Transaction | undefined
+  ): Promise<void> {
+    assert(this.config, 'NodeConfig is undefined');
+    if (!this.config.unfinalizedBlocks) {
+      assert(this.migrationService, 'MigrationService is undefined');
+      if (this.config.allowSchemaMigration) {
+        const modifiedModels = await this.migrationService.run(
+          project.schema,
+          newProject.schema,
+          this.#currentHeight,
+          transaction
+        );
+
+        if (modifiedModels) {
+          this.#storeCache?.updateModels(modifiedModels);
+        }
+      }
+    }
+  }
 
   async setCurrentHeight(height: number): Promise<void> {
     this.#currentHeight = height;
@@ -199,17 +249,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       try {
         await this.onProjectUpgrade?.(startHeight, newProject);
         if (isMainThread) {
-          assert(this.config, 'NodeConfig is undefined');
-          if (!this.config.unfinalizedBlocks) {
-            assert(this.migrationService, 'MigrationService is undefined');
-            if (this.config.allowSchemaMigration) {
-              const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, height);
-
-              if (modifiedModels) {
-                this.#storeCache?.updateModels(modifiedModels);
-              }
-            }
-          }
+          await this.migrate(project, newProject, undefined);
         }
       } catch (e: any) {
         logger.error(e, `Failed to complete upgrading project`);

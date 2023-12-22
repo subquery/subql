@@ -73,7 +73,27 @@ export class BlockHeightMap<T> {
       };
     });
   }
+  getWithinRange(startHeight: number, endHeight: number): Map<number, T> {
+    const result = new Map<number, T>();
+    let previousKey = null;
 
+    for (const [key, value] of this.#map) {
+      if (previousKey !== null && previousKey < startHeight && key >= startHeight) {
+        const previousValue = this.#map.get(previousKey);
+        if (previousValue !== undefined) {
+          result.set(previousKey, previousValue);
+        }
+      }
+
+      if (key >= startHeight && key <= endHeight) {
+        result.set(key, value);
+      }
+
+      previousKey = key;
+    }
+
+    return result;
+  }
   map<T2>(fn: (value: T) => T2): BlockHeightMap<T2> {
     const newMap = new Map<number, T2>();
 

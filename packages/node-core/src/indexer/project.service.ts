@@ -7,7 +7,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {IApi} from '../api.service';
-import {IProjectUpgradeService, NodeConfig, SchemaMigrationService} from '../configure';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {
@@ -432,6 +432,7 @@ export abstract class BaseProjectService<
       this.unfinalizedBlockService,
       this.dynamicDsService,
       this.sequelize,
+      this.projectUpgradeService,
       this.nodeConfig.proofOfIndex ? this.poiService : undefined
       /* Not providing force clean service, it should never be needed */
     );

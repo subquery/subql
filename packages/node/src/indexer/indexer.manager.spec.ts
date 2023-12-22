@@ -148,6 +148,7 @@ export function mockProjectUpgradeService(
     currentProject: project,
     projects: new Map([[startBlock, project]]),
     getProject: () => project,
+    rewind: () => Promise.resolve(),
   };
 }
 
