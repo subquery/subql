@@ -495,4 +495,19 @@ describe('SchemaMigration integration tests', () => {
       ),
     ).toBe(false);
   });
+  it('ensure rewind', async () => {
+    const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
+    schemaName = 'test-migrations-10';
+    app = await prepareApp(schemaName, cid, true);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(1000);
+  });
 });

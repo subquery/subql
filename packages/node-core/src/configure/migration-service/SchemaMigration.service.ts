@@ -67,7 +67,7 @@ export class SchemaMigrationService {
     currentSchema: GraphQLSchema,
     nextSchema: GraphQLSchema,
     blockHeight: number,
-    transcation: Transaction | undefined
+    transaction: Transaction | undefined
   ): Promise<ModelStatic<any>[] | void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
 
@@ -135,7 +135,7 @@ export class SchemaMigrationService {
         }
       }
 
-      return migrationAction.run(transcation);
+      return migrationAction.run(transaction);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
       throw e;

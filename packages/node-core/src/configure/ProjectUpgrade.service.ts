@@ -3,9 +3,10 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
+import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
-import {ISubqueryProject, StoreCacheService} from '../indexer';
+import {ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
@@ -34,7 +35,12 @@ export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryPr
   currentProject: P;
   projects: Map<number, P>;
   getProject: (height: number) => P;
-  rewind: (targetBlockHeight: number, lastProcessedHeight: number, transaction: Transaction) => Promise<void>;
+  rewind: (
+    targetBlockHeight: number,
+    lastProcessedHeight: number,
+    transaction: Transaction,
+    storeService: StoreService
+  ) => Promise<void>;
 }
 
 const serviceKeys: Array<keyof IProjectUpgradeService> = [
@@ -175,14 +181,20 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   get currentHeight(): number {
     return this.#currentHeight;
   }
-  async rewind(targetBlockHeight: number, lastProcessedHeight: number, transaction: Transaction): Promise<void> {
+  async rewind(
+    targetBlockHeight: number,
+    lastProcessedHeight: number,
+    transaction: Transaction,
+    storeService: StoreService
+  ): Promise<void> {
     const projectsWithinRange = new BlockHeightMap(this.projects).getWithinRange(
       targetBlockHeight,
       lastProcessedHeight
     );
 
     // Create an iterator for the project IDs sorted in descending order
-    const sortedProjectIds = Array.from(projectsWithinRange.keys()).sort((a, b) => b - a);
+    const sortedProjectIds = Array.from(projectsWithinRange.keys());
+    // .sort((a, b) => b - a);
     const iterator = sortedProjectIds[Symbol.iterator]();
 
     let currentId = iterator.next();
@@ -193,6 +205,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       const nextProject = projectsWithinRange.get(nextId.value);
 
       if (currentProject && nextProject) {
+        if (this.config?.dbSchema) {
+          await storeService.init(getAllEntitiesRelations(currentProject.schema), this.config.dbSchema);
+        }
         // Call migrate for the current and next project
         await this.migrate(currentProject, nextProject, transaction);
       }

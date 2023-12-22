@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {IProjectUpgradeService, ProjectUpgradeSevice} from '../configure';
+import {IProjectUpgradeService} from '../configure';
 import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
 import {ForceCleanService} from '../subcommands';
@@ -64,12 +64,14 @@ export async function reindex(
     await storeService.storeCache.resetCache();
     const transaction = await sequelize.transaction();
     try {
+      // TODO, when adding this to promise.all, the lastProcessededHeight gets executed through a different transaction
+      await projectUpgradeService.rewind(targetBlockHeight, lastProcessedHeight, transaction, storeService);
+
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
         unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
         unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
         dynamicDsService.resetDynamicDatasource(targetBlockHeight),
-        projectUpgradeService.rewind(targetBlockHeight, lastProcessedHeight, transaction),
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all
