@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix bypassBlock method `cleanedBatchBlocks` could throw Maximum call stack size exceeded error from lodash 
+
 ## [7.0.4] - 2023-12-14
 ### Changed
 - Update @subql/common
