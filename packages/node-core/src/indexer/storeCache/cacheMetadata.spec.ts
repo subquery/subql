@@ -23,4 +23,15 @@ describe('CacheMetadata', () => {
 
     expect((cacheMetadata as any).setCache[incrementKey]).toBe(1);
   });
+
+  // This tested a very specific use case where `cacheModel.getByFields`` was called on the start block which could trigger a flush and "lastProcessedHeight" was not yet set
+  it('clears the caches properly with blockHeight', () => {
+    cacheMetadata.clear(1);
+
+    (cacheMetadata as any).getCache[incrementKey] = 100;
+
+    cacheMetadata.setIncrement(incrementKey);
+
+    expect(Object.keys((cacheMetadata as any).setCache)).not.toContain('lastProcessedHeight');
+  });
 });

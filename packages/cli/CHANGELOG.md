@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.5] - 2023-12-22
+### Fixed
+- codegen for some ethereum projects with assets
+
 ## [4.2.4] - 2023-12-14
 ### Changed
 - Breaking: Update cosmos codegen to fix generating invalid typescript, this could require minor changes to your imports and usage of message types
@@ -514,7 +518,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.5...HEAD
+[4.2.5]: https://github.com/subquery/subql/compare/cli/4.2.4...cli/4.2.5
 [4.2.4]: https://github.com/subquery/subql/compare/cli/4.2.3...cli/4.2.4
 [4.2.3]: https://github.com/subquery/subql/compare/cli/4.2.2...cli/4.2.3
 [4.2.2]: https://github.com/subquery/subql/compare/cli/4.2.1...cli/4.2.2

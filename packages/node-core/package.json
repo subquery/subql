@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "7.0.4",
+  "version": "7.0.6-0",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -20,11 +20,11 @@
     "yargs.js"
   ],
   "dependencies": {
-    "@apollo/client": "^3.7.16",
+    "@apollo/client": "^3.8.8",
     "@nestjs/common": "^9.4.0",
     "@nestjs/event-emitter": "^2.0.0",
     "@nestjs/schedule": "^3.0.1",
-    "@subql/apollo-links": "^1.2.3",
+    "@subql/apollo-links": "1.2.5",
     "@subql/common": "workspace:*",
     "@subql/testing": "workspace:*",
     "@subql/types": "workspace:*",
@@ -46,5 +46,6 @@
   },
   "devDependencies": {
     "@types/async-lock": "^1"
-  }
+  },
+  "stableVersion": "7.0.5"
 }
