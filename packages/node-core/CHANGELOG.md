@@ -6,14 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
+## [7.0.6] - 2023-12-25
 ### Fixed
-- Fix bypassBlock method `cleanedBatchBlocks` could throw Maximum call stack size exceeded error from lodash 
+- Fix bypassBlock method `cleanedBatchBlocks` could throw Maximum call stack size exceeded error from lodash (#2206)
 
 ## [7.0.5] - 2023-12-20
 ### Fixed
 - Fix issue with metadata cache setting lastProcessedHeight to undefined (#2200)
-
 
 ## [7.0.4] - 2023-12-14
 ### Changed
@@ -531,7 +530,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.6...HEAD
+[7.0.6]: https://github.com/subquery/subql/compare/node-core/7.0.5...node-core/7.0.6
 [7.0.5]: https://github.com/subquery/subql/compare/node-core/7.0.4...node-core/7.0.5
 [7.0.4]: https://github.com/subquery/subql/compare/node-core/7.0.3...node-core/7.0.4
 [7.0.3]: https://github.com/subquery/subql/compare/node-core/7.0.2...node-core/7.0.3
