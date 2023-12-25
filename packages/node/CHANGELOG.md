@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.6] - 2023-12-25
+### Fixed
+- Update @subql/node-core to fix bypass block maximum call stack size exceeded issue.
+
 ## [3.4.5] - 2023-12-14
 ### Changed
 - Update @subql/common-cosmos and other deps
@@ -341,7 +345,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.5...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.6...HEAD
+[3.4.6]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.5...node-cosmos/3.4.6
 [3.4.5]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.4...node-cosmos/3.4.5
 [3.4.4]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.3...node-cosmos/3.4.4
 [3.4.3]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.2...node-cosmos/3.4.3
