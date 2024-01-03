@@ -40,22 +40,22 @@ describe('Able to generate cosmos types from protobuf', () => {
 // Auto-generated , DO NOT EDIT
 import {CosmosMessage} from "@subql/types-cosmos";
 
-import {MsgSwapExactAmountIn} from "./proto-interfaces/osmosis/gamm/v1beta1/tx";
-
-import {SwapAmountInRoute} from "./proto-interfaces/osmosis/poolmanager/v1beta1/swap_route";
+import * as OsmosisGammV1beta1Tx from "./proto-interfaces/osmosis/gamm/v1beta1/tx";
 
 
-export type MsgSwapExactAmountInMessage = CosmosMessage<MsgSwapExactAmountIn>;
+export namespace osmosis.gamm.v1beta1.tx {
 
-export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
+  export type MsgSwapExactAmountInMessage = CosmosMessage<OsmosisGammV1beta1Tx.MsgSwapExactAmountIn>;
+}
+
 `;
-    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
+    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst);
     const codegenResult = await fs.promises.readFile(path.join(PROJECT_PATH, '/src/types/CosmosMessageTypes.ts'));
     expect(fs.existsSync(`${PROJECT_PATH}/src/types/CosmosMessageTypes.ts`)).toBeTruthy();
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
   });
+
   it('On missing protobuf dependency should throw', async () => {
-    const tmpDir = await tempProtoDir(PROJECT_PATH);
     const badChainTypes = [
       {
         'osmosis.gamm.v1beta1': {
@@ -65,14 +65,12 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
       },
     ];
     await expect(
-      generateProto(badChainTypes, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, () =>
-        Promise.resolve(tmpDir)
-      )
+      generateProto(badChainTypes, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst)
     ).rejects.toThrow(
       'Failed to generate from protobufs. Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
     );
-    expect(fs.existsSync(tmpDir)).toBe(false);
   });
+
   it('create temp dir with all protobufs', async () => {
     // user Protobufs should not be overwritten
     const preFile = await fs.promises.readFile(path.join(PROJECT_PATH, 'proto/osmosis/gamm/v1beta1/tx.proto'));
@@ -80,12 +78,5 @@ export type SwapAmountInRouteMessage = CosmosMessage<SwapAmountInRoute>;
     const afterFile = await fs.promises.readFile(path.join(tmpDir, 'osmosis/gamm/v1beta1/tx.proto'));
     expect(preFile.toString()).toBe(afterFile.toString());
     await promisify(rimraf)(tmpDir);
-  });
-  it('tmpDirectory should be removed after codegen', async () => {
-    const tmpDir = await tempProtoDir(PROJECT_PATH);
-    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, () =>
-      Promise.resolve(tmpDir)
-    );
-    expect(fs.existsSync(tmpDir)).toBe(false);
   });
 });
