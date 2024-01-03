@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.7] - 2024-01-04
 ### Fixed
-- Update with util package, fix `more than one row returned by a subquery used as an expression` error from x-sequelize
+- Update with util package, fix `more than one row returned by a subquery used as an expression` error from x-sequelize (#2209)
 
 ## [7.0.6] - 2023-12-25
 ### Fixed

@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.4.10] - 2024-01-04
 ### Fixed
-- Update with node-core, fix x-sequelize same table name issue.
-- Sync postgres version to 16 in docker-compose file.
+- Update with node-core, fix x-sequelize same table name issue. (#2209)
+- Sync postgres version to 16 in docker-compose file. (#2209)
 
 ## [3.4.9] - 2023-12-20
 ### Fixed
