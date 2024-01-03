@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Update x-sequelize, fix `more than one row returned by a subquery used as an expression` error.
+
 ## [2.6.0] - 2023-11-10
 ### Changed
 - Update Polkadot/util to 10.5.1 (#2150)

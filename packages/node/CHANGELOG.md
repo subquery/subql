@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Update with node-core, fix x-sequelize same table name issue.
+- Sync postgres version to 16 in docker-compose file.
+
 ## [3.4.9] - 2023-12-20
 ### Fixed
 - Metadata lastProcessedHeight undefined issue via `@subql/node-core`
