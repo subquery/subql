@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.10] - 2024-01-04
 ### Fixed
 - Update with node-core, fix x-sequelize same table name issue.
 - Sync postgres version to 16 in docker-compose file.
@@ -1092,7 +1093,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.9...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.10...HEAD
+[3.4.10]: https://github.com/subquery/subql/compare/node/3.4.9...node/3.4.10
 [3.4.9]: https://github.com/subquery/subql/compare/node/3.4.8...node/3.4.9
 [3.4.8]: https://github.com/subquery/subql/compare/node/3.4.7...node/3.4.8
 [3.4.7]: https://github.com/subquery/subql/compare/node/3.4.6...node/3.4.7
