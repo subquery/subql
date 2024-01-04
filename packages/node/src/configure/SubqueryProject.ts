@@ -23,8 +23,10 @@ import {
   EthereumNetworkConfig,
   RuntimeDatasourceTemplate,
   CustomDatasourceTemplate,
+  EthereumBlockFilter,
 } from '@subql/types-ethereum';
 import { buildSchemaFromString } from '@subql/utils';
+import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { updateDatasourcesFlare } from '../utils/project';
 
@@ -35,6 +37,13 @@ export type EthereumProjectDs = SubqlProjectDs<SubqlEthereumDataSource>;
 export type EthereumProjectDsTemplate =
   | SubqlProjectDs<RuntimeDatasourceTemplate>
   | SubqlProjectDs<CustomDatasourceTemplate>;
+
+export type SubqlProjectBlockFilter = EthereumBlockFilter & {
+  cronSchedule?: {
+    schedule: Cron.Seeker;
+    next: number;
+  };
+};
 
 const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);

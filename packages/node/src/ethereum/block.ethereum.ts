@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { getLogger } from '@subql/node-core';
 import {
   EthereumBlock,
   EthereumTransactionFilter,
@@ -10,6 +11,7 @@ import {
   EthereumTransaction,
   LightEthereumLog,
 } from '@subql/types-ethereum';
+import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { BlockContent } from '../indexer/types';
 import {
   eventToTopic,
@@ -17,6 +19,8 @@ import {
   hexStringEq,
   stringNormalizedEq,
 } from '../utils/string';
+
+const logger = getLogger('block.ethereum');
 
 export function filterBlocksProcessor(
   block: EthereumBlock,
@@ -26,7 +30,34 @@ export function filterBlocksProcessor(
   if (filter?.modulo && block.number % filter.modulo !== 0) {
     return false;
   }
+  if (filter.timestamp) {
+    return filterBlockTimestamp(block, filter as SubqlProjectBlockFilter);
+  }
   return true;
+}
+
+export function filterBlockTimestamp(
+  block: EthereumBlock,
+  filter: SubqlProjectBlockFilter,
+): boolean {
+  const unixTimestamp = Number(block.timestamp) * 1000; // Multiply to add MS
+  if (unixTimestamp > filter.cronSchedule.next) {
+    logger.info(
+      `Block with timestamp ${new Date(
+        unixTimestamp,
+      ).toString()} is about to be indexed`,
+    );
+    logger.info(
+      `Next block will be indexed at ${new Date(
+        filter.cronSchedule.next,
+      ).toString()}`,
+    );
+    filter.cronSchedule.schedule.prev();
+    return true;
+  } else {
+    filter.cronSchedule.schedule.prev();
+    return false;
+  }
 }
 
 export function filterTransactionsProcessor(
