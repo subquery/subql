@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.4.5] - 2024-01-04
 ### Fixed
 - Timestamp filters not working (#229)
+
+### Changed
+- Update node-core with DB query fix
 
 ## [3.4.4] - 2023-12-20
 ### Fixed
@@ -362,7 +367,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.4...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.5...HEAD
+[3.4.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.4...node-ethereum/3.4.5
 [3.4.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.3...node-ethereum/3.4.4
 [3.4.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.2...node-ethereum/3.4.3
 [3.4.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.1...node-ethereum/3.4.2
