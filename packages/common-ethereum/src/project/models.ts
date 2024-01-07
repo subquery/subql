@@ -35,6 +35,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import {SubqlEthereumDatasourceKind, SubqlEthereumHandlerKind, SubqlEthereumProcessorOptions} from './types';
+import {IsEthereumOrZilliqaAddress} from './utils';
 
 export class BlockFilter implements EthereumBlockFilter {
   @IsOptional()
@@ -176,7 +177,7 @@ export class EthereumProcessorOptions implements SubqlEthereumProcessorOptions {
   @IsString()
   abi?: string;
   @IsOptional()
-  @IsEthereumAddress()
+  @IsEthereumOrZilliqaAddress()
   address?: string;
 }
 

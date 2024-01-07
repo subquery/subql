@@ -17,6 +17,7 @@
     "@subql/common": "^3.3.1",
     "@subql/types-ethereum": "workspace:*",
     "@typechain/ethers-v5": "^11.1.1",
+    "@zilliqa-js/crypto": "^3.5.0",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",

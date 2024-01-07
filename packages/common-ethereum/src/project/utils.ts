@@ -9,6 +9,8 @@ import {
   EthereumHandlerKind,
   SubqlRuntimeDatasource,
 } from '@subql/types-ethereum';
+import {fromBech32Address} from '@zilliqa-js/crypto';
+import {buildMessage, isEthereumAddress, ValidateBy, ValidationOptions} from 'class-validator';
 
 export function isBlockHandlerProcessor<E>(
   hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
@@ -34,4 +36,29 @@ export function isCustomDs(ds: SubqlDatasource): ds is SubqlCustomDatasource<str
 
 export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
   return ds.kind === EthereumDatasourceKind.Runtime;
+}
+
+export function isEthereumOrZilliqaAddress(address: string): boolean {
+  try {
+    const ethFormat = fromBech32Address(address);
+    return isEthereumAddress(ethFormat);
+  } catch (e) {
+    return isEthereumAddress(address);
+  }
+}
+
+export function IsEthereumOrZilliqaAddress(validationOptions?: ValidationOptions): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'isEthereumOrZilliqaAddress',
+      validator: {
+        validate: (value, args): boolean => isEthereumOrZilliqaAddress(value),
+        defaultMessage: buildMessage(
+          (eachPrefix) => `${eachPrefix}$property must be a Zilliqa address`,
+          validationOptions
+        ),
+      },
+    },
+    validationOptions
+  );
 }
