@@ -496,11 +496,10 @@ describe('SchemaMigration integration tests', () => {
     ).toBe(false);
   });
   it('On Failed migration, no metadata transaction should be applied', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     const processExitSpy = jest
       .spyOn(process, 'exit')
       .mockImplementation((() => {
-        return;
+        throw new Error();
       }) as any);
 
     const cid = 'QmXkwoV6Si2dfCvGDdAEnhRbQtDq1RTNrjFVsVafhs3qMq';
@@ -515,9 +514,18 @@ describe('SchemaMigration integration tests', () => {
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 
-    await projectUpgradeService.setCurrentHeight(2000);
+    await expect(
+      projectUpgradeService.setCurrentHeight(2000),
+    ).rejects.toThrow();
 
     expect(processExitSpy).toHaveBeenCalledTimes(1);
     expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    const [result] = await sequelize.query(
+      `SELECT * FROM "${schemaName}"._metadata WHERE key = 'lastProcessedHeight'`,
+      { type: QueryTypes.SELECT },
+    );
+
+    expect(result).toBe(undefined);
   });
 });
