@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.2.0] - 2024-01-08
 ### Added
 - Support for Zilliqa addresses (#231)
 
@@ -122,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.2.0...HEAD
+[3.2.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.2...common-ethereum/3.2.0
 [3.1.2]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.1...common-ethereum/3.1.2
 [3.1.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.1.0...common-ethereum/3.1.1
 [3.1.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.0.6...common-ethereum/3.1.0
