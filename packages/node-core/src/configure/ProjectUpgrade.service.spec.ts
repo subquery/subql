@@ -241,7 +241,8 @@ describe('Project Upgrades', () => {
 
     beforeEach(async () => {
       storeCache = new StoreCacheService({} as any, {} as any, {} as any);
-      (storeCache as any).cachedModels._metadata = mockMetadata();
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      (storeCache as any).cachedModels['_metadata'] = mockMetadata();
 
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],

@@ -495,10 +495,17 @@ describe('SchemaMigration integration tests', () => {
       ),
     ).toBe(false);
   });
-  it('ensure rewind', async () => {
-    const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
-    schemaName = 'test-migrations-10';
-    app = await prepareApp(schemaName, cid, true);
+  it('On Failed migration, no metadata transaction should be applied', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const processExitSpy = jest
+      .spyOn(process, 'exit')
+      .mockImplementation((() => {
+        return;
+      }) as any);
+
+    const cid = 'QmXkwoV6Si2dfCvGDdAEnhRbQtDq1RTNrjFVsVafhs3qMq';
+    schemaName = 'test-migrations-11';
+    app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
@@ -508,6 +515,9 @@ describe('SchemaMigration integration tests', () => {
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 
-    await projectUpgradeService.setCurrentHeight(1000);
+    await projectUpgradeService.setCurrentHeight(2000);
+
+    expect(processExitSpy).toHaveBeenCalledTimes(1);
+    expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 });
