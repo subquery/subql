@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Update node-core with initialization query improvement
+
 ## [3.5.0] - 2024-01-08
 ### Added
 - Update with common-ethereum to support for Zilliqa addresses (#231)
