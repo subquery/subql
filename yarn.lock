@@ -6874,7 +6874,7 @@ __metadata:
   dependencies:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
-    "@subql/x-sequelize": 6.32.0-0.0.3
+    "@subql/x-sequelize": 6.32.0-0.0.4
     "@types/semver": ^7
     ansi-styles: ^6.1.0
     chalk: ^4.1.2
@@ -6940,9 +6940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/x-sequelize@npm:6.32.0-0.0.3":
-  version: 6.32.0-0.0.3
-  resolution: "@subql/x-sequelize@npm:6.32.0-0.0.3"
+"@subql/x-sequelize@npm:6.32.0-0.0.4":
+  version: 6.32.0-0.0.4
+  resolution: "@subql/x-sequelize@npm:6.32.0-0.0.4"
   dependencies:
     "@types/debug": ^4.1.7
     "@types/validator": ^13.7.1
@@ -6979,7 +6979,7 @@ __metadata:
       optional: true
     tedious:
       optional: true
-  checksum: 92eb1e492fcf18f676f35d033a7ab6ec58c7e331555068f8284348e16011692e2122b56c17afe19fd6f67259301e37e79f064e5b278a4fed88c89054130f3efb
+  checksum: 1a648338693be8a2516ddfa79134f3f90239804985113ed1931ca154be850fc6d945c5c77d82f589b6d0711d4ad94fd70b468adfabb3f7f5f1e358c7e1d84d71
   languageName: node
   linkType: hard
 

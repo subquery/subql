@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Update with node-core , improve project initialization query from x-sequelize
+
 ## [3.4.10] - 2024-01-04
 ### Fixed
 - Update with node-core, fix x-sequelize same table name issue. (#2209)
