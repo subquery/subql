@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Update with util package, improve project initialization query from x-sequelize
+
 ## [7.0.7] - 2024-01-04
 ### Fixed
 - Update with util package, fix `more than one row returned by a subquery used as an expression` error from x-sequelize (#2209)

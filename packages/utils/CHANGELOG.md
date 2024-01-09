@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Update x-sequelize improve `getForeignKeyReferencesQuery` performance in large size DB 
+
 ## [2.6.1] - 2024-01-04
 ### Fixed
 - Update x-sequelize, fix `more than one row returned by a subquery used as an expression` error. (#2209)

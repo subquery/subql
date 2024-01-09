@@ -15,7 +15,7 @@
   "dependencies": {
     "@polkadot/util": "^12.5.1",
     "@polkadot/util-crypto": "^12.5.1",
-    "@subql/x-sequelize": "6.32.0-0.0.3",
+    "@subql/x-sequelize": "6.32.0-0.0.4",
     "ansi-styles": "^6.1.0",
     "chalk": "^4.1.2",
     "detect-port": "^1.3.0",
