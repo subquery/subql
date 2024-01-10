@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.8] - 2024-01-10
 ### Fixed
-- Update with util package, improve project initialization query from x-sequelize
+- Update with util package, improve project initialization query from x-sequelize (#2212)
 
 ## [7.0.7] - 2024-01-04
 ### Fixed
@@ -537,7 +538,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.7...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.8...HEAD
+[7.0.8]: https://github.com/subquery/subql/compare/node-core/7.0.7...node-core/7.0.8
 [7.0.7]: https://github.com/subquery/subql/compare/node-core/7.0.6...node-core/7.0.7
 [7.0.6]: https://github.com/subquery/subql/compare/node-core/7.0.5...node-core/7.0.6
 [7.0.5]: https://github.com/subquery/subql/compare/node-core/7.0.4...node-core/7.0.5
