@@ -49,23 +49,17 @@ export class Migration {
   ): Promise<Migration> {
     const modelsRelationsEnums = getAllEntitiesRelations(graphQLSchema);
     const enumTypeMap = new Map<string, string>();
-    const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
     for (const e of modelsRelationsEnums.enums) {
       await syncEnums(sequelize, SUPPORT_DB.postgres, e, schemaName, enumTypeMap, logger);
-    }
-
-    for (const relation of modelsRelationsEnums.relations) {
-      const model = sequelize.model(relation.from);
-      const relatedModel = sequelize.model(relation.to);
-      addRelationToMap(relation, foreignKeyMap, model, relatedModel);
     }
 
     return new Migration(sequelize, schemaName, config, enumTypeMap);
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
+    let newTransaction: Transaction | undefined;
     if (!transaction) {
-      transaction = await this.sequelize.transaction();
+      newTransaction = await this.sequelize.transaction();
     }
 
     try {
@@ -73,16 +67,21 @@ export class Migration {
         await this.sequelize.query(query, {transaction});
       }
 
-      await transaction.commit();
+      if (newTransaction) {
+        await newTransaction.commit();
+      }
     } catch (e) {
-      await transaction.rollback();
+      if (newTransaction) {
+        await newTransaction.rollback();
+      }
       throw e;
     }
 
-    transaction.afterCommit(async () => {
-      await Promise.all(this.sequelizeModels.map((m) => m.sync()));
-    });
-
+    if (transaction) {
+      transaction.afterCommit(async () => {
+        await Promise.all(this.sequelizeModels.map((m) => m.sync()));
+      });
+    }
     return this.sequelizeModels;
   }
 

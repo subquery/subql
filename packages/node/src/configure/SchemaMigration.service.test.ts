@@ -300,6 +300,7 @@ describe('SchemaMigration integration tests', () => {
 
     await projectUpgradeService.setCurrentHeight(1000);
     expect(exitSpy).toHaveBeenCalledWith(1);
+    exitSpy.mockRestore();
   });
 
   it('Migration on index removal, creation', async () => {
@@ -498,7 +499,7 @@ describe('SchemaMigration integration tests', () => {
   it('On Failed migration, no metadata transaction should be applied', async () => {
     const processExitSpy = jest
       .spyOn(process, 'exit')
-      .mockImplementation((() => {
+      .mockImplementationOnce((() => {
         throw new Error();
       }) as any);
 
@@ -527,5 +528,22 @@ describe('SchemaMigration integration tests', () => {
     );
 
     expect(result).toBe(undefined);
+
+    processExitSpy.mockRestore();
+  });
+  it.skip('support relations on migration', async () => {
+    const cid = 'QmXJwbpr6wcoNeDM3M6xy8FuaiME3N6zvsUTxThmaVfKpz';
+    schemaName = 'test-migrations-13';
+    app = await prepareApp(schemaName, cid);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(2000);
   });
 });

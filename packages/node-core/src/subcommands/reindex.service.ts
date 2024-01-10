@@ -23,7 +23,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly poiService: PoiService,
-    private readonly projectUpgradeService: ProjectUpgradeSevice,
+    @Inject('IProjectUpgradeService') private readonly projectUpgradeService: ProjectUpgradeSevice,
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,

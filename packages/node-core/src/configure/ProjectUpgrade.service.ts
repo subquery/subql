@@ -191,10 +191,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       targetBlockHeight,
       lastProcessedHeight
     );
-
-    // Create an iterator for the project IDs sorted in descending order
     const sortedProjectIds = Array.from(projectsWithinRange.keys());
-    // .sort((a, b) => b - a);
     const iterator = sortedProjectIds[Symbol.iterator]();
 
     let currentId = iterator.next();
@@ -208,11 +205,11 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         if (this.config?.dbSchema) {
           await storeService.init(getAllEntitiesRelations(currentProject.schema), this.config.dbSchema);
         }
-        // Call migrate for the current and next project
         await this.migrate(currentProject, nextProject, transaction);
       }
 
       currentId = nextId;
+      this.#currentProject = nextProject as P;
       nextId = iterator.next();
     }
   }

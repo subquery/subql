@@ -69,6 +69,10 @@ export abstract class BaseProjectService<
         'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service'
       );
     }
+
+    if (this.nodeConfig.unfinalizedBlocks && this.nodeConfig.allowSchemaMigration) {
+      throw new Error('Unfinalized Blocks and Schema Migration cannot be enabled at the same time');
+    }
   }
 
   protected get schema(): string {

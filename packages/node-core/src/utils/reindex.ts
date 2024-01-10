@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
 import {IProjectUpgradeService} from '../configure';
 import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
@@ -64,7 +65,12 @@ export async function reindex(
     await storeService.storeCache.resetCache();
     const transaction = await sequelize.transaction();
     try {
-      // TODO, when adding this to promise.all, the lastProcessededHeight gets executed through a different transaction
+      /*
+      Must initialize storeService, to ensure all models are loaded, as storeService.init has not been called at this point
+       1. During runtime, model should be already been init
+       2.1 On start, projectUpgrade rewind will sync the sequelize models
+       2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
+    */
       await projectUpgradeService.rewind(targetBlockHeight, lastProcessedHeight, transaction, storeService);
 
       await Promise.all([
