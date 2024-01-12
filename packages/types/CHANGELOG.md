@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix Eth datasource miss extend base datasource type, missing `endBlock` in Datasource
+
 ## [3.2.1] - 2023-11-30
 ### Changed
 - Sync with `@subql/types-core` 0.4.0
