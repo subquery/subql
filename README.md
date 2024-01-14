@@ -30,7 +30,7 @@ Dig into every term, usecases, and best-practices that help you build a dApp whi
 
 #### Publish your SubQuery Project to our Managed Service
 
-Don't want to worry about running your own indexing infrastructure? SubQuery provides a [managed Service](https://explorer.subquery.network) with industry leading hosting so you can sleep easy. Trused by hundreds of projects with millions of daily requests, follow our publishing guide to see how you can upload your project to [SubQuery Projects](https://academy.subquery.network/run_publish/publish.html).
+Don't want to worry about running your own indexing infrastructure? SubQuery provides a [managed Service](https://explorer.subquery.network) with industry leading hosting so you can sleep easy. Trusted by hundreds of projects with millions of daily requests, follow our publishing guide to see how you can upload your project to [SubQuery Projects](https://academy.subquery.network/run_publish/publish.html).
 
 #### Run your own Indexer and Query Service
 
