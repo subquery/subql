@@ -1,7 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {CacheMetadataModel, ISubqueryProject} from '../indexer';
+import {Sequelize} from '@subql/x-sequelize';
+import {CacheMetadataModel, ISubqueryProject, StoreCacheService} from '../indexer';
+import {NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
 const templateProject = {
@@ -99,6 +101,8 @@ const mockMetadata = () => {
 };
 
 describe('Project Upgrades', () => {
+  jest.spyOn(ProjectUpgradeSevice as any, 'rewindableCheck').mockImplementation(() => true);
+
   describe('Loading projects', () => {
     it('can load a project with no parents', async () => {
       const upgradeService = await ProjectUpgradeSevice.create(
@@ -233,15 +237,20 @@ describe('Project Upgrades', () => {
   describe('Upgradable subquery project', () => {
     let upgradeService: ProjectUpgradeSevice<ISubqueryProject>;
     let project: ISubqueryProject & IProjectUpgradeService<ISubqueryProject>;
+    let storeCache: StoreCacheService;
 
     beforeEach(async () => {
+      storeCache = new StoreCacheService({} as any, {} as any, {} as any);
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      (storeCache as any).cachedModels['_metadata'] = mockMetadata();
+
       upgradeService = await ProjectUpgradeSevice.create(
         demoProjects[5],
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
         1
       );
 
-      await upgradeService.init(mockMetadata());
+      await upgradeService.init(storeCache, 1, {} as NodeConfig, {} as Sequelize, '');
 
       project = upgradableSubqueryProject(upgradeService);
     });

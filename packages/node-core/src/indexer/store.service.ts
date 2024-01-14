@@ -7,32 +7,23 @@ import {getDbType, SUPPORT_DB} from '@subql/common';
 import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
-  GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
   IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
   hexToU8a,
-  blake2AsHex,
 } from '@subql/utils';
-import {
-  DataTypes,
-  IndexesOptions,
-  Model,
-  ModelAttributeColumnOptions,
-  ModelAttributes,
-  ModelStatic,
-  Op,
-  QueryTypes,
-  Sequelize,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
-import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
+import {IndexesOptions, ModelStatic, Op, QueryTypes, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
+import {camelCase, flatten, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
+  addBlockRangeColumnToIndexes,
+  addHistoricalIdIndex,
+  addIdAndBlockRangeAttributes,
+  addRelationToMap,
+  addScopeAndBlockHeightHooks,
   addTagsToForeignKeyMap,
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   camelCaseObjectKey,
@@ -46,8 +37,6 @@ import {
   createUniqueIndexQuery,
   dropNotifyFunction,
   dropNotifyTrigger,
-  enumNameToHash,
-  getEnumDeprecated,
   getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
@@ -55,8 +44,10 @@ import {
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
+  syncEnums,
+  updateIndexesName,
 } from '../utils';
-import {generateIndexName, modelToTableName} from '../utils/sequelizeUtil';
+import {modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
 import {CacheMetadataModel} from './storeCache';
@@ -247,58 +238,7 @@ export class StoreService {
     const existedIndexes = indexesResult.map((i) => (i as any).indexname);
 
     for (const e of this.modelsRelations.enums) {
-      // We shouldn't set the typename to e.name because it could potentially create SQL injection,
-      // using a replacement at the type name location doesn't work.
-      const enumTypeName = enumNameToHash(e.name);
-      let type = `"${schema}"."${enumTypeName}"`;
-      let [results] = await this.sequelize.query(
-        `SELECT pg_enum.enumlabel as enum_value
-         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
-        {replacements: [enumTypeName, schema]}
-      );
-
-      const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
-      const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
-      if (resultsDeprecated.length !== 0) {
-        results = resultsDeprecated;
-        type = `"${enumTypeNameDeprecated}"`;
-      }
-
-      if (results.length === 0) {
-        await this.sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
-          replacements: e.values,
-        });
-      } else {
-        const currentValues = results.map((v: any) => v.enum_value);
-        // Assert the existing enum is same
-
-        // Make it a function to not execute potentially big joins unless needed
-        if (!isEqual(e.values, currentValues)) {
-          throw new Error(
-            `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
-              `,`
-            )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
-          );
-        }
-      }
-      // Ref: https://www.graphile.org/postgraphile/enums/
-      // Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
-      // It is difficult for sequelize use replacement, instead we use escape to avoid injection
-      // UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
-      // See https://github.com/cockroachdb/cockroach/issues/44135
-
-      if (this.dbType === SUPPORT_DB.cockRoach) {
-        logger.warn(
-          `Comment on enum ${e.description} is not supported with ${this.dbType}, enum name may display incorrectly in query service`
-        );
-      } else {
-        const comment = this.sequelize.escape(
-          `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
-        );
-        await this.sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
-      }
-      enumTypeMap.set(e.name, type);
+      await syncEnums(this.sequelize, this.dbType, e, schema, enumTypeMap, logger);
     }
     const extraQueries = [];
     // Function need to create ahead of triggers
@@ -316,14 +256,14 @@ export class StoreService {
         throw new Error(`too many indexes on entity ${model.name}`);
       }
       if (this.historical) {
-        this.addIdAndBlockRangeAttributes(attributes);
-        this.addBlockRangeColumnToIndexes(indexes);
-        this.addHistoricalIdIndex(model, indexes);
+        addIdAndBlockRangeAttributes(attributes);
+        addBlockRangeColumnToIndexes(indexes);
+        addHistoricalIdIndex(model, indexes);
       }
       // Hash indexes name to ensure within postgres limit
       // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
       // only update index name as it is new index or not found (it is might be an over length index name)
-      this.updateIndexesName(model.name, indexes, existedIndexes as string[]);
+      updateIndexesName(model.name, indexes, existedIndexes as string[]);
 
       // Update index query for cockroach db
       this.beforeHandleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
@@ -339,7 +279,7 @@ export class StoreService {
       });
 
       if (this.historical) {
-        this.addScopeAndBlockHeightHooks(sequelizeModel);
+        addScopeAndBlockHeightHooks(sequelizeModel, this._blockHeight);
         // TODO, remove id and block_range constrain, check id manually
         // see https://github.com/subquery/subql/issues/1542
       }
@@ -370,7 +310,7 @@ export class StoreService {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);
       if (this.historical) {
-        this.addRelationToMap(relation, foreignKeyMap, model, relatedModel);
+        addRelationToMap(relation, foreignKeyMap, model, relatedModel);
         continue;
       }
       switch (relation.type) {
@@ -488,21 +428,6 @@ export class StoreService {
     }
   }
 
-  private addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
-    indexes.forEach((index) => {
-      if (index.using === IndexType.GIN) {
-        return;
-      }
-      if (!index.fields) {
-        index.fields = [];
-      }
-      index.fields.push('_block_range');
-      index.using = IndexType.GIST;
-      // GIST does not support unique indexes
-      index.unique = false;
-    });
-  }
-
   // Sequelize model will generate follow query to create hash indexes
   // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
   // This will be rejected from cockroach db due to syntax error
@@ -546,92 +471,6 @@ export class StoreService {
         (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
       }
     }
-  }
-
-  private updateIndexesName(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
-    indexes.forEach((index) => {
-      // follow same pattern as _generateIndexName
-      const tableName = modelToTableName(modelName);
-      const deprecated = generateIndexName(tableName, index);
-
-      if (!existedIndexes.includes(deprecated)) {
-        const fields = (index.fields ?? []).join('_');
-        index.name = blake2AsHex(`${modelName}_${fields}`, 64).substring(0, 63);
-      }
-    });
-  }
-
-  // Only used with historical to add indexes to ID fields for gettign entitities by ID
-  private addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
-    const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
-    if (idFieldName && !indexes.find((idx) => idx.fields?.includes(idFieldName))) {
-      indexes.push({
-        fields: [Utils.underscoredIf(idFieldName, true)],
-        unique: false,
-      });
-    }
-  }
-
-  private addRelationToMap(
-    relation: GraphQLRelationsType,
-    foreignKeys: Map<string, Map<string, SmartTags>>,
-    model: ModelStatic<any>,
-    relatedModel: ModelStatic<any>
-  ) {
-    switch (relation.type) {
-      case 'belongsTo': {
-        addTagsToForeignKeyMap(foreignKeys, model.tableName, relation.foreignKey, {
-          foreignKey: getVirtualFkTag(relation.foreignKey, relatedModel.tableName),
-        });
-        break;
-      }
-      case 'hasOne': {
-        addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
-          singleForeignFieldName: relation.fieldName,
-        });
-        break;
-      }
-      case 'hasMany': {
-        addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
-          foreignFieldName: relation.fieldName,
-        });
-        break;
-      }
-      default:
-        throw new Error('Relation type is not supported');
-    }
-  }
-
-  addIdAndBlockRangeAttributes(attributes: ModelAttributes<Model<any, any>, any>): void {
-    (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
-    attributes.__id = {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      allowNull: false,
-      primaryKey: true,
-    } as ModelAttributeColumnOptions;
-    attributes.__block_range = {
-      type: DataTypes.RANGE(DataTypes.BIGINT),
-      allowNull: false,
-    } as ModelAttributeColumnOptions;
-  }
-
-  private addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>): void {
-    // TODO, check impact of remove this
-    sequelizeModel.addScope('defaultScope', {
-      attributes: {
-        exclude: ['__id', '__block_range'],
-      },
-    });
-
-    sequelizeModel.addHook('beforeFind', (options) => {
-      (options.where as any).__block_range = {
-        [Op.contains]: this.blockHeight as any,
-      };
-    });
-    sequelizeModel.addHook('beforeValidate', (attributes, options) => {
-      attributes.__block_range = [this.blockHeight, null];
-    });
   }
 
   private validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {

@@ -136,6 +136,7 @@ export function mockProjectUpgradeService(
 
   let currentHeight = startBlock;
   return {
+    isRewindable: true,
     init: jest.fn(),
     initWorker: jest.fn(),
     updateIndexedDeployments: jest.fn(),
@@ -147,6 +148,7 @@ export function mockProjectUpgradeService(
     currentProject: project,
     projects: new Map([[startBlock, project]]),
     getProject: () => project,
+    rewind: () => Promise.resolve(),
   };
 }
 

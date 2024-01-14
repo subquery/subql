@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {DatabaseError, Deferrable, Sequelize, Transaction} from '@subql/x-sequelize';
+import {DatabaseError, Deferrable, ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
@@ -64,20 +64,28 @@ export class StoreCacheService extends BaseCacheService {
       throw new Error('Please use getPoiModel instead');
     }
     if (!this.cachedModels[entity]) {
-      const model = this.sequelize.model(entity);
-      assert(model, `model ${entity} not exists`);
-      this.cachedModels[entity] = new CachedModel(
-        model,
-        this._historical,
-        this.config,
-        this.getNextStoreOperationIndex.bind(this),
-        () => this.flushCache(true),
-        this._useCockroachDb
-      );
+      this.cachedModels[entity] = this.createModel(entity);
     }
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
   }
 
+  createModel(entityName: string): CachedModel<any> {
+    const model = this.sequelize.model(entityName);
+    assert(model, `model ${entityName} not exists`);
+    return new CachedModel(
+      model,
+      this._historical,
+      this.config,
+      this.getNextStoreOperationIndex.bind(this),
+      () => this.flushCache(true),
+      this._useCockroachDb
+    );
+  }
+  updateModels(models: ModelStatic<any>[]): void {
+    models.forEach((m) => {
+      this.cachedModels[m.name] = this.createModel(m.name);
+    });
+  }
   get metadata(): CacheMetadataModel {
     const entity = '_metadata';
     if (!this.cachedModels[entity]) {
