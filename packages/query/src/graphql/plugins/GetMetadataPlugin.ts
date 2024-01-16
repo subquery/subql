@@ -4,12 +4,12 @@
 import {URL} from 'url';
 import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX, TableEstimate} from '@subql/utils';
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
+import {Build} from '@subql/x-postgraphile-core';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import {FieldNode, SelectionNode} from 'graphql';
 import {uniq} from 'lodash';
 import fetch, {Response} from 'node-fetch';
 import {Client} from 'pg';
-import {Build} from 'postgraphile-core';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
@@ -235,9 +235,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
 
         _metadatas(
           after: Cursor
-          before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter
-        ): # first: Int
-        # last: Int
+          before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int
+        ): # last: Int
         # offset: Int
         # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas
