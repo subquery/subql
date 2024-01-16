@@ -4,3 +4,4 @@
 export * from './forceClean.service';
 export * from './forceClean.module';
 export * from './reindex.service';
+export * from './export.service';

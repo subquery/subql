@@ -22,4 +22,8 @@ export const yargsOptions = yargsBuilder({
     const { reindexInit } = require('./subcommands/reindex.init');
     return reindexInit(targetHeight);
   },
+  initExport: (outPath: string, entities: string[]) => {
+    const { exportInit } = require('./subcommands/export.init');
+    return exportInit(outPath, entities);
+  },
 });

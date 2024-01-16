@@ -19,6 +19,10 @@ type YargsOptions<RootO extends Record<string, yargs.Options>, RunO extends Reco
    * */
   initReindex: (targetHeight: number) => void;
   /**
+   * Invoked with export command
+   * */
+  initExport: (outPath: string, entities: string[]) => void;
+  /**
    * Extra options to be added to all commands
    * */
   rootOptions?: RootO;
@@ -65,11 +69,31 @@ export function yargsBuilder<
           yargs.options('targetHeight', {
             type: 'number',
             description: 'set targetHeight',
-            require: true,
+            demandOption: true,
           }),
         handler: (argv) => {
           initLogger(argv.debug as string, argv.outputFmt as 'json' | 'colored', argv.logLevel as string | undefined);
           return options.initReindex(argv.targetHeight);
+        },
+      })
+      .command({
+        command: 'export-csv',
+        describe: 'export to path',
+        builder: (yargs) =>
+          yargs
+            .options('outPath', {
+              type: 'string',
+              description: 'Set output path',
+              demandOption: true,
+            })
+            .options('entities', {
+              type: 'string',
+              description: 'Export entities e.g. entities="one, two, three"',
+              demandOption: true,
+            }),
+        handler: (argv) => {
+          initLogger(argv.debug as string, argv.outputFmt as 'json' | 'colored', argv.logLevel as string | undefined);
+          return options.initExport(argv.outPath, argv.entities.split(','));
         },
       })
       // Note we must have default command $0 at last to avoid override

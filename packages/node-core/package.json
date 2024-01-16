@@ -37,6 +37,8 @@
     "lodash": "^4.17.21",
     "lru-cache": "10.1.0",
     "merkle-tools": "^1.4.1",
+    "pg": "^8.11.3",
+    "pg-copy-streams": "^6.0.6",
     "prom-client": "^14.0.1",
     "source-map": "^0.7.4",
     "tar": "^6.1.11",
@@ -44,7 +46,9 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@types/async-lock": "^1"
+    "@types/async-lock": "^1",
+    "@types/pg": "^8",
+    "@types/pg-copy-streams": "^1.2.5"
   },
   "stableVersion": "7.0.8"
 }
