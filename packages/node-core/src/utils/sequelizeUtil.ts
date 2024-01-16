@@ -2,14 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import NodeUtil from 'node:util';
-import {IndexesOptions, TableName, Utils} from '@subql/x-sequelize';
-import Pino from 'pino';
+import {BigInt, Boolean, DateObj, Float, ID, Int, Json, SequelizeTypes, String} from '@subql/utils';
+import {DataType, DataTypes, IndexesOptions, ModelAttributeColumnOptions, TableName, Utils} from '@subql/x-sequelize';
 import {underscored} from './sync-helper';
 
 // This method is simplified from https://github.com/sequelize/sequelize/blob/066421c00aad61694dcdbb624d4b73dbac7c7b42/packages/core/src/model-definition.ts#L245
 export function modelToTableName(modelName: string): string {
   // Align underscored = true, same as in storeService sequelizeModel
   return Utils.underscoredIf(Utils.pluralize(modelName), true);
+}
+
+export function formatColumnName(columnName: string): string {
+  return Utils.underscoredIf(columnName, true);
 }
 
 // Rewrite due to method is not exported from sequelize
@@ -37,4 +41,37 @@ ${NodeUtil.inspect(index)}`);
     out += '_unique';
   }
   return underscored(out);
+}
+
+export function formatAttributes(columnOptions: ModelAttributeColumnOptions): string {
+  const type = formatDataType(columnOptions.type);
+  const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
+  const primaryKey = columnOptions.primaryKey ? 'PRIMARY KEY' : '';
+  const unique = columnOptions.unique ? 'UNIQUE' : '';
+  const autoIncrement = columnOptions.autoIncrement ? 'AUTO_INCREMENT' : ''; //  PostgreSQL
+
+  // TODO Support relational
+  // const references = options.references ? formatReferences(options.references) :
+
+  return `${type} ${allowNull} ${primaryKey} ${unique} ${autoIncrement}`.trim();
+}
+
+const sequelizeToPostgresTypeMap = {
+  [DataTypes.STRING.name]: (dataType: DataType) => String.sequelizeType,
+  [DataTypes.INTEGER.name]: () => Int.sequelizeType,
+  [DataTypes.BIGINT.name]: () => BigInt.sequelizeType,
+  [DataTypes.UUID.name]: () => ID.sequelizeType,
+  [DataTypes.BOOLEAN.name]: () => Boolean.sequelizeType,
+  [DataTypes.FLOAT.name]: () => Float.sequelizeType,
+  [DataTypes.DATE.name]: () => DateObj.sequelizeType,
+  [DataTypes.JSONB.name]: () => Json.sequelizeType,
+};
+
+export function formatDataType(dataType: DataType): SequelizeTypes {
+  if (typeof dataType === 'string') {
+    return dataType;
+  } else {
+    const formatter = sequelizeToPostgresTypeMap[dataType.key];
+    return formatter(dataType);
+  }
 }

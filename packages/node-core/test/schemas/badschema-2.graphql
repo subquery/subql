@@ -1,0 +1,23 @@
+type EntityOne @entity {
+  id: ID! #id is a required field
+  field1: Int!
+  field2: Int! # no nullability changes, but dataType change
+}
+
+type EntityTwo @entity {
+  id: ID!
+  field1: Int!
+  field2: String
+  field3: BigInt
+  field5: FieldTypeOld!
+}
+
+enum FieldTypeOld {
+  VALUE1
+  VALUE2
+}
+
+enum FieldTypeMod {
+  VALUE1
+  VALUE2
+}

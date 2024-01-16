@@ -38,8 +38,7 @@
   "resolutions": {
     "@polkadot/api": "10.10.1",
     "@polkadot/util": "12.5.1",
-    "node-fetch": "2.6.7",
-    "@subql/x-sequelize": "6.32.0-0.0.2"
+    "node-fetch": "2.6.7"
   },
   "scripts": {
     "build": "yarn workspaces foreach -ptA run build",

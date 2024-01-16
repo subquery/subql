@@ -9,7 +9,7 @@ import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, Temp
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import Cron from 'cron-converter';
-import {isNumber, range, uniq, without, flatten} from 'lodash';
+import {isNumber, range, uniq, without, flatten, chunk} from 'lodash';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
 import {ISubqueryProject, StoreService} from '../indexer';
@@ -87,7 +87,14 @@ export function transformBypassBlocks(bypassBlocks: (number | string)[]): number
 }
 
 export function cleanedBatchBlocks(bypassBlocks: number[], currentBlockBatch: number[]): number[] {
-  return without(currentBlockBatch, ...transformBypassBlocks(bypassBlocks));
+  // Use suggested work around to avoid Maximum call stack size exceeded issue when large numbers of transformedBlocks
+  // https://github.com/lodash/lodash/issues/5552
+  const transformedBlocks = transformBypassBlocks(bypassBlocks);
+  let result = currentBlockBatch;
+  chunk(transformedBlocks, 10000).forEach((chunk) => {
+    result = without(result, ...chunk);
+  });
+  return result;
 }
 
 export async function getEnumDeprecated(sequelize: Sequelize, enumTypeNameDeprecated: string): Promise<unknown[]> {

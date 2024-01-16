@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {DataTypes, Model, ModelAttributes} from '@subql/x-sequelize';
+import {addIdAndBlockRangeAttributes} from '../utils';
 import {StoreService} from './store.service';
 
 describe('Store Service', () => {
@@ -15,7 +16,7 @@ describe('Store Service', () => {
         primaryKey: true,
       },
     } as ModelAttributes<Model<any, any>, any>;
-    storeService.addIdAndBlockRangeAttributes(attributes);
+    addIdAndBlockRangeAttributes(attributes);
     expect(Object.keys(attributes).length).toEqual(3);
     expect((attributes.id as any).primaryKey).toEqual(false);
     expect(attributes.__id).toEqual({

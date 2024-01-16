@@ -103,8 +103,7 @@ export function yargsBuilder<
               },
               'dictionary-registry': {
                 demandOption: false,
-                describe:
-                  'Url to a dictionary registry used to resolve dictionary if one is not provided',
+                describe: 'Url to a dictionary registry used to resolve dictionary if one is not provided',
                 type: 'string',
               },
               'disable-historical': {
@@ -229,6 +228,11 @@ export function yargsBuilder<
                 demandOption: false,
                 describe: 'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
                 type: 'number',
+              },
+              'allow-schema-migration': {
+                demandOption: false,
+                describe: 'Allow schema-migration to occur with project upgrades',
+                type: 'boolean',
               },
               root: {
                 describe:

@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "3.4.9",
+  "version": "3.4.12-0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -31,7 +31,6 @@
     "@subql/testing": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
-    "@subql/x-sequelize": "6.32.0-0.0.2",
     "cron-converter": "^1.0.2",
     "eventemitter2": "^6.4.5",
     "fetch-h2": "3.0.2",
@@ -60,5 +59,6 @@
   "files": [
     "/dist",
     "/bin"
-  ]
+  ],
+  "stableVersion": "3.4.11"
 }

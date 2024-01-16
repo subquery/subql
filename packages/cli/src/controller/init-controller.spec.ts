@@ -71,15 +71,20 @@ describe('Cli can create project (mocked)', () => {
     await expect(validateEthereumProjectManifest(projectPath_eth)).resolves.toBe(true);
     await expect(validateEthereumProjectManifest(projectPath)).resolves.toBe(false);
   });
-  it('fetch templates', async () => {
+
+  // These tests are disabled because they can interfere with the service
+  it.skip('fetch templates', async () => {
     expect((await fetchTemplates()).length).toBeGreaterThan(0);
   });
-  it('fetch networks', async () => {
+
+  it.skip('fetch networks', async () => {
     expect((await fetchNetworks()).length).toBeGreaterThan(0);
   });
-  it('fetch example projects', async () => {
+
+  it.skip('fetch example projects', async () => {
     expect((await fetchExampleProjects('evm', '1')).length).toBeGreaterThan(0);
   });
+
   it('readDefaults using regex', async () => {
     const manifest = (
       await fs.promises.readFile(path.join(__dirname, `../../test/schemaTest/${DEFAULT_TS_MANIFEST}`))

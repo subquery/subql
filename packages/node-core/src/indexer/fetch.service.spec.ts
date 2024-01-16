@@ -53,12 +53,15 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   }
 }
 
-const nodeConfig = {
-  batchSize: 10,
-  unfinalizedBlocks: false,
-  dictionary: '',
-  dictionaryResolver: '',
-} as any as NodeConfig;
+const nodeConfig = new NodeConfig(
+  {
+    batchSize: 10,
+    unfinalizedBlocks: false,
+    dictionary: '',
+    dictionaryResolver: '',
+  } as any as NodeConfig,
+  true
+);
 
 const getNetworkConfig = () =>
   ({

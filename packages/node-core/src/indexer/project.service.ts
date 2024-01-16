@@ -69,6 +69,10 @@ export abstract class BaseProjectService<
         'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service'
       );
     }
+
+    if (this.nodeConfig.unfinalizedBlocks && this.nodeConfig.allowSchemaMigration) {
+      throw new Error('Unfinalized Blocks and Schema Migration cannot be enabled at the same time');
+    }
   }
 
   protected get schema(): string {
@@ -106,13 +110,9 @@ export abstract class BaseProjectService<
       await this.storeService.initCoreTables(this._schema);
       await this.dynamicDsService.init(this.storeService.storeCache.metadata);
       await this.ensureMetadata();
-      const reindexedUpgrade = await this.initUpgradeService();
-
-      await this.initDbSchema();
-
-      await this.initHotSchemaReload();
-
       this._startHeight = await this.getStartHeight();
+
+      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
 
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
@@ -129,7 +129,9 @@ export abstract class BaseProjectService<
       this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
 
       // Set the start height so the right project is used
-      await this.projectUpgradeService.setCurrentHeight(this._startHeight);
+      await this.initDbSchema();
+
+      await this.initHotSchemaReload();
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
@@ -365,10 +367,15 @@ export abstract class BaseProjectService<
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
-  private async initUpgradeService(): Promise<number | undefined> {
-    const metadata = this.storeService.storeCache.metadata;
-
-    const upgradePoint = await this.projectUpgradeService.init(metadata, this.handleProjectChange.bind(this));
+  private async initUpgradeService(startHeight: number): Promise<number | undefined> {
+    const upgradePoint = await this.projectUpgradeService.init(
+      this.storeService.storeCache,
+      startHeight,
+      this.nodeConfig,
+      this.sequelize,
+      this.schema,
+      this.handleProjectChange.bind(this)
+    );
 
     // Called to allow handling the first project
     await this.onProjectChange(this.project);
@@ -390,6 +397,10 @@ export abstract class BaseProjectService<
             );
             process.exit(1);
           }
+          if (!this.projectUpgradeService.isRewindable) {
+            logger.error(`Due to dropped changes in schema migration, project cannot rewind`);
+            process.exit(1);
+          }
           logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
           await this.reindex(upgradePoint);
           return upgradePoint;
@@ -400,8 +411,7 @@ export abstract class BaseProjectService<
   }
 
   private async handleProjectChange(): Promise<void> {
-    // Apply any migrations to the schema
-    if (isMainThread) {
+    if (isMainThread && !this.nodeConfig.allowSchemaMigration) {
       await this.initDbSchema();
     }
 
@@ -426,6 +436,7 @@ export abstract class BaseProjectService<
       this.unfinalizedBlockService,
       this.dynamicDsService,
       this.sequelize,
+      this.projectUpgradeService,
       this.nodeConfig.proofOfIndex ? this.poiService : undefined
       /* Not providing force clean service, it should never be needed */
     );

@@ -1,0 +1,50 @@
+type EntityOne @entity {
+  id: ID!
+  field1: Int! @index(unique: true) # added @index unique
+  field2: String!
+  field3: EntityTwo! # Updated from BigInt to EntityTwo ID
+}
+
+type EntityTwo @entity @compositeIndexes(fields: [["field2", "field3"]]) {
+  id: ID!
+  #    field1: Int! # Dropped field1
+  field2: FieldTypeMod # Updated from nullable to non-nullable
+  field3: Int # Updated from BigInt to Int
+  field4: EntityFour! # Added new field
+}
+
+# Dropped Entity Three
+# Drop index on ID
+#type EntityThree @entity {
+#    id: ID!
+#    field1: Int!
+#    field2: String
+#    field3: BigInt
+#}
+type NewJsonOne @jsonField {
+  one: String!
+  two: Int!
+}
+
+type NewJsonTwo @jsonField {
+  one: String!
+  two: NewJsonOne # Nested Json
+}
+
+enum FieldTypeNew {
+  VALUE1
+  VALUE2
+}
+
+enum FieldTypeMod {
+  VALUE1
+  VALUE2
+  VALUE3
+}
+
+type EntityFour @entity {
+  id: ID!
+  field1: FieldTypeNew!
+  field2: [NewJsonTwo]
+  field3: [EntityTwo] @derivedFrom(field: "field4")
+}

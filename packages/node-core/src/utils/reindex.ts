@@ -1,8 +1,10 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
-import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService} from '../indexer';
+import {IProjectUpgradeService} from '../configure';
+import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
 import {ForceCleanService} from '../subcommands';
 
@@ -17,16 +19,15 @@ const logger = getLogger('Reindex');
  * - poi need to cope with rewind as well. FIXME
  * - in the end, update metadata to targetHeight
  * @param startHeight
- * @param blockOffset
  * @param targetBlockHeight !IMPORTANT! this height is exclusive in the reindex operation
  * @param lastProcessedHeight
  * @param storeService
  * @param unfinalizedBlockService
  * @param dynamicDsService
  * @param sequelize
- * @param PoiService
+ * @param projectUpgradeService
+ * @param poiService
  * @param forceCleanService
- * @param latestSyncedPoiHeight
  */
 export async function reindex(
   startHeight: number,
@@ -36,6 +37,7 @@ export async function reindex(
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
   sequelize: Sequelize,
+  projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
   poiService?: PoiService,
   forceCleanService?: ForceCleanService
 ): Promise<void> {
@@ -63,6 +65,14 @@ export async function reindex(
     await storeService.storeCache.resetCache();
     const transaction = await sequelize.transaction();
     try {
+      /*
+      Must initialize storeService, to ensure all models are loaded, as storeService.init has not been called at this point
+       1. During runtime, model should be already been init
+       2.1 On start, projectUpgrade rewind will sync the sequelize models
+       2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
+    */
+      await projectUpgradeService.rewind(targetBlockHeight, lastProcessedHeight, transaction, storeService);
+
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
         unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains

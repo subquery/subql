@@ -87,17 +87,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^3.7.16":
-  version: 3.7.16
-  resolution: "@apollo/client@npm:3.7.16"
+"@apollo/client@npm:^3.8.8":
+  version: 3.8.8
+  resolution: "@apollo/client@npm:3.8.8"
   dependencies:
     "@graphql-typed-document-node/core": ^3.1.1
-    "@wry/context": ^0.7.0
-    "@wry/equality": ^0.5.0
-    "@wry/trie": ^0.4.0
+    "@wry/equality": ^0.5.6
+    "@wry/trie": ^0.5.0
     graphql-tag: ^2.12.6
     hoist-non-react-statics: ^3.3.2
-    optimism: ^0.16.2
+    optimism: ^0.18.0
     prop-types: ^15.7.2
     response-iterator: ^0.2.6
     symbol-observable: ^4.0.0
@@ -119,7 +118,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 6c0035634a15a92d547f06d9a943e9025bef1929775f3c53eea22bcee86aa0916722a196bb9bed6a51d27a2b6ba587ef00bed3831a29be89ced9b8b63f45cbe7
+  checksum: df01412424b61f0b102b8453dfc611d7a2bdae6921fed31700196939076f1c6774eb942dc52bf6dc3f7212280dc0748998b243e09f60b889d989d9a1f08f30b3
   languageName: node
   linkType: hard
 
@@ -3549,6 +3548,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ethereumjs/common@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@ethereumjs/common@npm:3.2.0"
+  dependencies:
+    "@ethereumjs/util": ^8.1.0
+    crc-32: ^1.2.0
+  checksum: cb9cc11f5c868cb577ba611cebf55046e509218bbb89b47ccce010776dafe8256d70f8f43fab238aec74cf71f62601cd5842bc03a83261200802de365732a14b
+  languageName: node
+  linkType: hard
+
 "@ethereumjs/rlp@npm:^4.0.1":
   version: 4.0.1
   resolution: "@ethereumjs/rlp@npm:4.0.1"
@@ -3558,7 +3567,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethereumjs/util@npm:^8.0.6":
+"@ethereumjs/tx@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "@ethereumjs/tx@npm:4.2.0"
+  dependencies:
+    "@ethereumjs/common": ^3.2.0
+    "@ethereumjs/rlp": ^4.0.1
+    "@ethereumjs/util": ^8.1.0
+    ethereum-cryptography: ^2.0.0
+  checksum: 87a3f5f2452cfbf6712f8847525a80c213210ed453c211c793c5df801fe35ecef28bae17fadd222fcbdd94277478a47e52d2b916a90a6b30cda21f1e0cdaee42
+  languageName: node
+  linkType: hard
+
+"@ethereumjs/util@npm:^8.0.6, @ethereumjs/util@npm:^8.1.0":
   version: 8.1.0
   resolution: "@ethereumjs/util@npm:8.1.0"
   dependencies:
@@ -4784,6 +4805,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@metamask/abi-utils@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@metamask/abi-utils@npm:2.0.2"
+  dependencies:
+    "@metamask/utils": ^8.0.0
+    superstruct: ^1.0.3
+  checksum: 5ec153e7691a4e1dc8738a0ba1a99a354ddb13851fa88a40a19f002f6308310e71c2cee28c3a25d9f7f67e839c7dffe4760e93e308dd17fa725b08d0dc73a3d4
+  languageName: node
+  linkType: hard
+
 "@metamask/eth-sig-util@npm:5.1.0":
   version: 5.1.0
   resolution: "@metamask/eth-sig-util@npm:5.1.0"
@@ -4795,6 +4826,36 @@ __metadata:
     tweetnacl: ^1.0.3
     tweetnacl-util: ^0.15.1
   checksum: c639e3bf91625faeb0230a6314f0b2d05e8f5e2989542d3e0eed1d21b7b286e1860f68629870fd7e568c1a599b3993c4210403fb4c84a625fb1e75ef676eab4f
+  languageName: node
+  linkType: hard
+
+"@metamask/eth-sig-util@npm:^7.0.0":
+  version: 7.0.1
+  resolution: "@metamask/eth-sig-util@npm:7.0.1"
+  dependencies:
+    "@ethereumjs/util": ^8.1.0
+    "@metamask/abi-utils": ^2.0.2
+    "@metamask/utils": ^8.1.0
+    ethereum-cryptography: ^2.1.2
+    tweetnacl: ^1.0.3
+    tweetnacl-util: ^0.15.1
+  checksum: 98d056bd83aeb2d29ec3de09cd18e67d97ea295a59d405a9ce3fe274badd2d4f18da1fe530a266b4c777650855ed75ecd3577decd607a561e938dd7a808c5839
+  languageName: node
+  linkType: hard
+
+"@metamask/utils@npm:^8.0.0, @metamask/utils@npm:^8.1.0":
+  version: 8.2.1
+  resolution: "@metamask/utils@npm:8.2.1"
+  dependencies:
+    "@ethereumjs/tx": ^4.2.0
+    "@noble/hashes": ^1.3.1
+    "@scure/base": ^1.1.3
+    "@types/debug": ^4.1.7
+    debug: ^4.3.4
+    pony-cause: ^2.1.10
+    semver: ^7.5.4
+    superstruct: ^1.0.3
+  checksum: 36a714a17e4949d2040bedb28d4373a22e7e86bb797aa2d59223f9799fd76e662443bcede113719c4e200f5e9d90a9d62feafad5028fff8b9a7a85fface097ca
   languageName: node
   linkType: hard
 
@@ -4969,6 +5030,13 @@ __metadata:
   version: 1.1.2
   resolution: "@noble/hashes@npm:1.1.2"
   checksum: 3c2a8cb7c2e053811032f242155d870c5eb98844d924d69702244d48804cb03b42d4a666c49c2b71164420d8229cb9a6f242b972d50d5bb2f1d673b98b041de2
+  languageName: node
+  linkType: hard
+
+"@noble/hashes@npm:^1.3.1":
+  version: 1.3.3
+  resolution: "@noble/hashes@npm:1.3.3"
+  checksum: 8a6496d1c0c64797339bc694ad06cdfaa0f9e56cd0c3f68ae3666cfb153a791a55deb0af9c653c7ed2db64d537aa3e3054629740d2f2338bb1dcb7ab60cd205b
   languageName: node
   linkType: hard
 
@@ -6292,13 +6360,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/apollo-links@npm:^1.2.3":
-  version: 1.100.0
-  resolution: "@subql/apollo-links@npm:1.100.0"
+"@subql/apollo-links@npm:1.2.5":
+  version: 1.2.5
+  resolution: "@subql/apollo-links@npm:1.2.5"
   dependencies:
+    "@apollo/client": ^3.8.8
     "@metamask/eth-sig-util": 5.1.0
+    "@subql/network-support": 0.1.0
     apollo-link-error: ^1.1.13
-    axios: ^0.27.2
     buffer: ^6.0.3
     cross-fetch: ^4.0.0
     ethers: ^5.6.8
@@ -6306,9 +6375,8 @@ __metadata:
     jwt-decode: ^3.1.2
     lru-cache: ^10.0.1
   peerDependencies:
-    "@apollo/client": "*"
     graphql: "*"
-  checksum: c9347ee402e59227ff932748891702963a31c062c9aacf8dab659a9576a65745a604e0edd51101303d391c7ef69d1c743de375dca9074de3b542c08fb9690b94
+  checksum: 5d8086fb69421fd4424ed0a5680dc6a416b8bd9e06351e1c4911ec1ff28b0f25a2c04fe50bf0ef4e408c87a0dd96ad9e127fd653098283525c62c3fab0002774
   languageName: node
   linkType: hard
 
@@ -6321,7 +6389,7 @@ __metadata:
     "@subql/common-algorand": ^3.1.0
     "@subql/common-concordium": ^3.3.2
     "@subql/common-cosmos": ^4.0.0
-    "@subql/common-ethereum": ^3.1.0
+    "@subql/common-ethereum": ^3.1.2
     "@subql/common-flare": ^3.1.0
     "@subql/common-near": ^3.0.1
     "@subql/common-stellar": ^3.0.0
@@ -6430,12 +6498,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "@subql/common-ethereum@npm:3.1.0"
+"@subql/common-ethereum@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "@subql/common-ethereum@npm:3.1.2"
   dependencies:
-    "@subql/common": ^3.3.0
-    "@subql/types-ethereum": 3.2.0
+    "@subql/common": ^3.3.1
+    "@subql/types-ethereum": 3.2.1
     "@typechain/ethers-v5": ^11.1.1
     js-yaml: ^4.1.0
     pino: ^6.13.3
@@ -6444,7 +6512,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: aaab66fec814f5a540baa645726d5a310725ac60c1a4f3b2e0e9f2bc100a5dd1d12ebe6a9bdaac725dae4a481a9865d3e62f78271bca7e4e33ffaef3c060443e
+  checksum: 1c40488105f76875de76594d580820bd4c4e407bd7ce247aa647046f054fdbedb83469e015212c4546bfd77b8b839aeecda4320b4083ff70b2000125b49887ff
   languageName: node
   linkType: hard
 
@@ -6540,20 +6608,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/network-support@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@subql/network-support@npm:0.1.0"
+  dependencies:
+    "@metamask/eth-sig-util": ^7.0.0
+    cross-fetch: ^4.0.0
+    js-base64: ^3.7.5
+    jwt-decode: ^3.1.2
+    lru-cache: ^10.0.1
+  checksum: 286f4543fa9a76811baf8f04750346079f8e29d5ef8ff763d1e25566a1cb2c52d733bac41cc77c6d76069e6b4c41e35efed81cf9719f12af8661dcf410f33a15
+  languageName: node
+  linkType: hard
+
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
-    "@apollo/client": ^3.7.16
+    "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/apollo-links": ^1.2.3
+    "@subql/apollo-links": 1.2.5
     "@subql/common": "workspace:*"
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
-    "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/async-lock": ^1
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
@@ -6589,7 +6669,6 @@ __metadata:
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
-    "@subql/x-sequelize": 6.32.0-0.0.2
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
     "@types/lodash": ^4.14.178
@@ -6736,13 +6815,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:3.2.0":
-  version: 3.2.0
-  resolution: "@subql/types-ethereum@npm:3.2.0"
+"@subql/types-ethereum@npm:3.2.1":
+  version: 3.2.1
+  resolution: "@subql/types-ethereum@npm:3.2.1"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-    "@subql/types-core": ^0.3.0
-  checksum: 8040cceed0aaca0779f9659be4c7edf690c7c496d92feadb9e2f9cc5c9ce4d3f3818f99e8be5218d7e02b10f409f02c2519c74b84046812d7f55048cf4475bc7
+    "@subql/types-core": ^0.4.0
+  checksum: 86029e52cff449aec9ffad0406cc0b4de1ab95e3127980c07d004d181bc2cc92cae634262fe3c63b46260f4e308e595ba9675d0548ad4529a32bb82619fa5567
   languageName: node
   linkType: hard
 
@@ -6795,7 +6874,7 @@ __metadata:
   dependencies:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
-    "@subql/x-sequelize": 6.32.0-0.0.2
+    "@subql/x-sequelize": 6.32.0-0.0.4
     "@types/semver": ^7
     ansi-styles: ^6.1.0
     chalk: ^4.1.2
@@ -6861,9 +6940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/x-sequelize@npm:6.32.0-0.0.2":
-  version: 6.32.0-0.0.2
-  resolution: "@subql/x-sequelize@npm:6.32.0-0.0.2"
+"@subql/x-sequelize@npm:6.32.0-0.0.4":
+  version: 6.32.0-0.0.4
+  resolution: "@subql/x-sequelize@npm:6.32.0-0.0.4"
   dependencies:
     "@types/debug": ^4.1.7
     "@types/validator": ^13.7.1
@@ -6900,7 +6979,7 @@ __metadata:
       optional: true
     tedious:
       optional: true
-  checksum: e8f7ab7c7be694f4f8892e40e11626ff7a20c6fed7ac7834394e432b77527f57eb04a5cfc25d316599ac481a5b250e24020a337bc03f36d05eb442be571fc432
+  checksum: 1a648338693be8a2516ddfa79134f3f90239804985113ed1931ca154be850fc6d945c5c77d82f589b6d0711d4ad94fd70b468adfabb3f7f5f1e358c7e1d84d71
   languageName: node
   linkType: hard
 
@@ -8295,6 +8374,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@wry/caches@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "@wry/caches@npm:1.0.1"
+  dependencies:
+    tslib: ^2.3.0
+  checksum: 9e89aa8e9e08577b2e4acbe805f406b141ae49c2ac4a2e22acf21fbee68339fa0550e0dee28cf2158799f35bb812326e80212e49e2afd169f39f02ad56ae4ef4
+  languageName: node
+  linkType: hard
+
 "@wry/context@npm:^0.7.0":
   version: 0.7.3
   resolution: "@wry/context@npm:0.7.3"
@@ -8313,30 +8401,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/equality@npm:^0.5.0":
-  version: 0.5.2
-  resolution: "@wry/equality@npm:0.5.2"
+"@wry/equality@npm:^0.5.6":
+  version: 0.5.7
+  resolution: "@wry/equality@npm:0.5.7"
   dependencies:
     tslib: ^2.3.0
-  checksum: 19a01043a0583663924ed9f4ea109818b9b4cb540877ca75ea49545689f54c6bfc69e725a8b3b129a2ac15ea368fd40bbb94c22e7a5e4ec370f7c4697e64b8b1
+  checksum: 892f262fae362df80f199b12658ea6966949539d4a3a50c1acf00d94a367d673a38f8efa1abcb726ae9e5cc5e62fce50c540c70f797b7c8a2c4308b401dfd903
   languageName: node
   linkType: hard
 
-"@wry/trie@npm:^0.3.0":
-  version: 0.3.1
-  resolution: "@wry/trie@npm:0.3.1"
-  dependencies:
-    tslib: ^2.3.0
-  checksum: c3f6b200aefc64b5cd9976b7ed0dd22852eb826d835c5dccd3d03ef788d258af50ca64e8de654e5f812134afdb9d5890f334c8de2276d0dca1751785694654f9
-  languageName: node
-  linkType: hard
-
-"@wry/trie@npm:^0.4.0":
+"@wry/trie@npm:^0.4.3":
   version: 0.4.3
   resolution: "@wry/trie@npm:0.4.3"
   dependencies:
     tslib: ^2.3.0
   checksum: 106e021125cfafd22250a6631a0438a6a3debae7bd73f6db87fe42aa0757fe67693db0dfbe200ae1f60ba608c3e09ddb8a4e2b3527d56ed0a7e02aa0ee4c94e1
+  languageName: node
+  linkType: hard
+
+"@wry/trie@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@wry/trie@npm:0.5.0"
+  dependencies:
+    tslib: ^2.3.0
+  checksum: 92aeea34152bd8485184236fe328d3d05fc98ee3b431d82ee60cf3584dbf68155419c3d65d0ff3731b204ee79c149440a9b7672784a545afddc8d4342fbf21c9
   languageName: node
   linkType: hard
 
@@ -10946,6 +11034,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"crc-32@npm:^1.2.0":
+  version: 1.2.2
+  resolution: "crc-32@npm:1.2.2"
+  bin:
+    crc32: bin/crc32.njs
+  checksum: ad2d0ad0cbd465b75dcaeeff0600f8195b686816ab5f3ba4c6e052a07f728c3e70df2e3ca9fd3d4484dc4ba70586e161ca5a2334ec8bf5a41bf022a6103ff243
+  languageName: node
+  linkType: hard
+
 "crc@npm:^3.5.0":
   version: 3.8.0
   resolution: "crc@npm:3.8.0"
@@ -12326,7 +12423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereum-cryptography@npm:^2.0.0":
+"ethereum-cryptography@npm:^2.0.0, ethereum-cryptography@npm:^2.1.2":
   version: 2.1.2
   resolution: "ethereum-cryptography@npm:2.1.2"
   dependencies:
@@ -18071,13 +18168,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"optimism@npm:^0.16.2":
-  version: 0.16.2
-  resolution: "optimism@npm:0.16.2"
+"optimism@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "optimism@npm:0.18.0"
   dependencies:
+    "@wry/caches": ^1.0.0
     "@wry/context": ^0.7.0
-    "@wry/trie": ^0.3.0
-  checksum: a98ed9a0b8ee2b031010222099b60860d52860bf8182889f2695a7cf2185f21aca59020f78e2b47c0ae7697843caa576798d792967314ff59f6aa7c5d9de7f3a
+    "@wry/trie": ^0.4.3
+    tslib: ^2.3.0
+  checksum: d6ed6a90b05ee886dadfe556c7a30227c66843f51278e51eb843977a6a9368b6c50297fcc63fa514f53d8a5a58f8ddc8049c2356bd4ffac32f8961bcb806254d
   languageName: node
   linkType: hard
 
@@ -18772,6 +18871,13 @@ __metadata:
   version: 7.0.0
   resolution: "pluralize@npm:7.0.0"
   checksum: e3f694924b7c8c03dc9fa40b2312e17787998ac6e20fccace11efa1146046eb9931541bfd247b3ec5535e730d902a5aee7c32681d5bf9a00fc74a72039a3e609
+  languageName: node
+  linkType: hard
+
+"pony-cause@npm:^2.1.10":
+  version: 2.1.10
+  resolution: "pony-cause@npm:2.1.10"
+  checksum: 8b61378f213e61056312dc274a1c79980154e9d864f6ad86e0c8b91a50d3ce900d430995ee24147c9f3caa440dfe7d51c274b488d7f033b65b206522536d7217
   languageName: node
   linkType: hard
 
@@ -21133,6 +21239,13 @@ __metadata:
   peerDependencies:
     graphql: ">=0.10.0"
   checksum: 6979b36e03c0a48e33836cb412941e41bae8743767dff2aa453159cfffa983b879cc80cd4e744e82afbf11062c66899c37f5dca0281253ee240098ada0078533
+  languageName: node
+  linkType: hard
+
+"superstruct@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "superstruct@npm:1.0.3"
+  checksum: 761790bb111e6e21ddd608299c252f3be35df543263a7ebbc004e840d01fcf8046794c274bcb351bdf3eae4600f79d317d085cdbb19ca05803a4361840cc9bb1
   languageName: node
   linkType: hard
 

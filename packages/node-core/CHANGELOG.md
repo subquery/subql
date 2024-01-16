@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.8] - 2024-01-10
+### Fixed
+- Update with util package, improve project initialization query from x-sequelize (#2212)
+
+## [7.0.7] - 2024-01-04
+### Fixed
+- Update with util package, fix `more than one row returned by a subquery used as an expression` error from x-sequelize (#2209)
+
+## [7.0.6] - 2023-12-25
+### Fixed
+- Fix bypassBlock method `cleanedBatchBlocks` could throw Maximum call stack size exceeded error from lodash (#2206)
+
 ## [7.0.5] - 2023-12-20
 ### Fixed
 - Fix issue with metadata cache setting lastProcessedHeight to undefined (#2200)
@@ -526,7 +538,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.8...HEAD
+[7.0.8]: https://github.com/subquery/subql/compare/node-core/7.0.7...node-core/7.0.8
+[7.0.7]: https://github.com/subquery/subql/compare/node-core/7.0.6...node-core/7.0.7
+[7.0.6]: https://github.com/subquery/subql/compare/node-core/7.0.5...node-core/7.0.6
 [7.0.5]: https://github.com/subquery/subql/compare/node-core/7.0.4...node-core/7.0.5
 [7.0.4]: https://github.com/subquery/subql/compare/node-core/7.0.3...node-core/7.0.4
 [7.0.3]: https://github.com/subquery/subql/compare/node-core/7.0.2...node-core/7.0.3

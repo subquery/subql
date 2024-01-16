@@ -4,8 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
+
+## [2.6.2] - 2024-01-10
+### Fixed
+- Update x-sequelize improve `getForeignKeyReferencesQuery` performance in large size DB (#2212)
+
+## [2.6.1] - 2024-01-04
+### Fixed
+- Update x-sequelize, fix `more than one row returned by a subquery used as an expression` error. (#2209)
 
 ## [2.6.0] - 2023-11-10
 ### Changed
@@ -103,7 +110,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.6.2...HEAD
+[2.6.2]: https://github.com/subquery/subql/compare/utils/2.6.1...utils/2.6.2
+[2.6.1]: https://github.com/subquery/subql/compare/utils/2.6.0...utils/2.6.1
 [2.6.0]: https://github.com/subquery/subql/compare/utils/2.5.0...utils/2.6.0
 [2.5.0]: https://github.com/subquery/subql/compare/utils/2.4.4...utils/2.5.0
 [2.4.4]: https://github.com/subquery/subql/compare/v2.4.3...v2.4.4
