@@ -27,7 +27,7 @@ import {
 } from '@subql/types-stellar';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
-import {Horizon} from 'stellar-sdk';
+import {HorizonApi} from 'stellar-sdk/lib/horizon';
 import {SubqlStellarProcessorOptions} from './types';
 
 export class BlockFilter implements StellarBlockFilter {
@@ -47,7 +47,7 @@ export class TransactionFilter implements StellarTransactionFilter {
 
 export class OperationFilter implements StellarOperationFilter {
   @IsOptional()
-  type: Horizon.OperationResponseType;
+  type: HorizonApi.OperationResponseType;
 
   @IsOptional()
   @IsString()

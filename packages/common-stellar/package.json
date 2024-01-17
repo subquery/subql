@@ -19,7 +19,7 @@
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",
-    "stellar-sdk": "^10.4.1"
+    "stellar-sdk": "^11.2.0"
   },
   "peerDependencies": {
     "class-transformer": "*",

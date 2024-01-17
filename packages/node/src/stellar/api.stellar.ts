@@ -13,7 +13,7 @@ import {
   StellarTransaction,
 } from '@subql/types-stellar';
 import { cloneDeep } from 'lodash';
-import { Server, ServerApi } from 'stellar-sdk';
+import { Server, ServerApi } from 'stellar-sdk/lib/horizon';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
@@ -153,6 +153,13 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   }
 
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
+    // If soroban network the latest ledger height behind processing height (network reset)
+    const latestLedgerSequence = (await this.sorobanClient.getLatestLedger())
+      .sequence;
+    if (latestLedgerSequence < height) {
+      return [];
+    }
+
     const { events: events } = await this.sorobanClient.getEvents({
       startLedger: height,
       filters: [],
@@ -240,7 +247,9 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
       const clonedTx = cloneDeep(wrappedTx);
       const operations = this.wrapOperationsForTx(
-        tx.id,
+        // TODO, this include other attribute from HorizonApi.TransactionResponse, but type assertion incorrect
+        // TransactionRecord extends Omit<HorizonApi.TransactionResponse, "created_at">
+        (tx as any).id,
         index + 1,
         sequence,
         operationsForSequence,
@@ -292,8 +301,8 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
         eventsForSequence = await this.getAndWrapEvents(sequence);
       } catch (e) {
         if (e.message === 'start is before oldest ledger') {
-          throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node. 
-                This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
+          throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node.
+                This is because you're trying to access a ledger that is older than the oldest ledger stored in this node.
                 To resolve this issue, you can either:
                 1. Increase the start ledger to a more recent one, or
                 2. Connect to a different node that might have a longer history of ledgers.`);
@@ -385,8 +394,8 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
   handleError(e: Error, height: number): Error {
     if (e.message === 'start is before oldest ledger') {
-      return new Error(`The requested ledger number ${height} is not available on the current blockchain node. 
-      This is because you're trying to access a ledger that is older than the oldest ledger stored in this node. 
+      return new Error(`The requested ledger number ${height} is not available on the current blockchain node.
+      This is because you're trying to access a ledger that is older than the oldest ledger stored in this node.
       To resolve this issue, you can either:
       1. Increase the start ledger to a more recent one, or
       2. Connect to a different node that might have a longer history of ledgers.`);

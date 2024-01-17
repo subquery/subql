@@ -12,11 +12,10 @@ import {
   NodeConfig,
   ApiService,
   IProjectUpgradeService,
-  mainThreadOnly,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import { Sequelize } from '@subql/x-sequelize';
-import { ServerApi } from 'stellar-sdk';
+import { ServerApi } from 'stellar-sdk/lib/horizon';
 import {
   //  generateTimestampReferenceForBlockFilters,
   StellarProjectDs,

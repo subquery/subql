@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { getLogger } from '@subql/node-core';
+import { SorobanRpcEventResponse } from '@subql/types-stellar';
 import { compact, groupBy, last } from 'lodash';
 import { Server, SorobanRpc } from 'soroban-client';
-import { GetEventsRequest } from 'soroban-client/lib/server';
 
 const logger = getLogger('stellar-server');
 const DEFAULT_PAGE_SIZE = 100;
@@ -14,8 +14,8 @@ export class SorobanServer extends Server {
 
   private async fetchEventsForSequence(
     sequence: number,
-    request: GetEventsRequest,
-    accEvents: SorobanRpc.EventResponse[] = [],
+    request: Server.GetEventsRequest,
+    accEvents: SorobanRpcEventResponse[] = [],
   ): Promise<{
     events: SorobanRpc.GetEventsResponse;
     eventsToCache: SorobanRpc.GetEventsResponse;
@@ -24,7 +24,7 @@ export class SorobanServer extends Server {
 
     // Separate the events for the current sequence and the subsequent sequences
     const groupedEvents = groupBy(response.events, (event) =>
-      parseInt(event.ledger) === sequence ? 'events' : 'eventsToCache',
+      event.ledger === sequence ? 'events' : 'eventsToCache',
     );
     const events = compact(groupedEvents.events);
     let eventsToCache = compact(groupedEvents.eventsToCache);
@@ -40,13 +40,19 @@ export class SorobanServer extends Server {
         );
       }
       return {
-        events: { events: newEvents },
-        eventsToCache: { events: eventsToCache },
+        events: { events: newEvents, latestLedger: response.latestLedger },
+        eventsToCache: {
+          events: eventsToCache,
+          latestLedger: response.latestLedger,
+        },
       };
     }
 
     if (response.events.length < DEFAULT_PAGE_SIZE) {
-      return { events: { events: newEvents }, eventsToCache: { events: [] } };
+      return {
+        events: { events: newEvents, latestLedger: response.latestLedger },
+        eventsToCache: { events: [], latestLedger: response.latestLedger },
+      };
     }
 
     // Prepare the next request
@@ -65,8 +71,8 @@ export class SorobanServer extends Server {
     ignoreHeight?: number,
   ): void {
     response.events.forEach((event) => {
-      if (ignoreHeight && ignoreHeight === parseInt(event.ledger)) return;
-      const ledger = parseInt(event.ledger);
+      if (ignoreHeight && ignoreHeight === event.ledger) return;
+      const ledger = event.ledger;
       if (!this.eventsCache[ledger]) {
         this.eventsCache[ledger] = {
           events: [],
@@ -82,7 +88,7 @@ export class SorobanServer extends Server {
   }
 
   async getEvents(
-    request: GetEventsRequest,
+    request: Server.GetEventsRequest,
   ): Promise<SorobanRpc.GetEventsResponse> {
     const sequence = request.startLedger;
 

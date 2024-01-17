@@ -63,7 +63,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     address?: string,
   ): boolean {
     if (!filter) return true;
-    if (filter.account && filter.account !== tx.source_account) {
+    if (filter.account && filter.account !== (tx as any).source_account) {
       return false;
     }
 
@@ -107,13 +107,16 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     filter: SorobanEventFilter,
     address?: string,
   ): boolean {
-    if (address && !stringNormalizedEq(address, event.contractId)) {
+    if (address && !stringNormalizedEq(address, event.contractId.toString())) {
       return false;
     }
 
     if (!filter) return true;
 
-    if (filter.contractId && filter.contractId !== event.contractId) {
+    if (
+      filter.contractId &&
+      filter.contractId !== event.contractId.toString()
+    ) {
       return false;
     }
 
@@ -127,8 +130,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
         if (!event.topic[i]) {
           return false;
         }
-
-        if (topic !== event.topic[i]) {
+        if (topic !== event.topic[i].str()) {
           return false;
         }
       }

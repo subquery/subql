@@ -13,9 +13,12 @@ import {
   StellarTransaction,
   StellarTransactionFilter,
 } from '@subql/types-stellar';
-import { Horizon, ServerApi } from 'stellar-sdk';
+import { nativeToScVal } from 'soroban-client';
+import { Contract } from 'stellar-base';
+import { HorizonApi } from 'stellar-sdk/lib/horizon';
 import { StellarBlockWrapped } from './block.stellar';
 
+const testAddress = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
 describe('StellarBlockWrapped', () => {
   describe('filterBlocksProcessor', () => {
     it('should filter by modulo', () => {
@@ -80,7 +83,7 @@ describe('StellarBlockWrapped', () => {
       } as unknown as StellarOperation;
       const filter: StellarOperationFilter = {
         sourceAccount: 'account2',
-        type: Horizon.OperationResponseType.createAccount,
+        type: HorizonApi.OperationResponseType.createAccount,
       };
 
       const result = StellarBlockWrapped.filterOperationProcessor(
@@ -94,11 +97,11 @@ describe('StellarBlockWrapped', () => {
     it('should pass when source_account and type filter conditions are fulfilled', () => {
       const operation: StellarOperation = {
         source_account: 'account1',
-        type: Horizon.OperationResponseType.createAccount,
+        type: HorizonApi.OperationResponseType.createAccount,
       } as unknown as StellarOperation;
       const filter: StellarOperationFilter = {
         sourceAccount: 'account1',
-        type: Horizon.OperationResponseType.createAccount,
+        type: HorizonApi.OperationResponseType.createAccount,
       };
 
       const result = StellarBlockWrapped.filterOperationProcessor(
@@ -170,16 +173,20 @@ describe('StellarBlockWrapped', () => {
   });
 
   describe('StellarBlockWrapped', function () {
+    const topic1 = nativeToScVal('topic1');
+    const topic2 = nativeToScVal('topic2');
+
     const mockEvent: SorobanEvent = {
+      type: undefined,
       ledger: null,
       transaction: null,
       operation: null,
       ledgerClosedAt: null,
-      contractId: 'testaddress',
+      contractId: new Contract(testAddress),
       id: null,
       pagingToken: null,
       inSuccessfulContractCall: null,
-      topic: ['topic1', 'topic2'],
+      topic: [topic1, topic2],
       value: null,
     };
 
@@ -196,7 +203,7 @@ describe('StellarBlockWrapped', () => {
         StellarBlockWrapped.filterEventProcessor(
           mockEvent,
           mockEventFilterValid,
-          'testaddress',
+          testAddress,
         ),
       ).toEqual(true);
     });
@@ -215,7 +222,7 @@ describe('StellarBlockWrapped', () => {
         StellarBlockWrapped.filterEventProcessor(
           mockEvent,
           mockEventFilterInvalid,
-          'testaddress',
+          testAddress,
         ),
       ).toEqual(false);
     });
@@ -241,7 +248,7 @@ describe('StellarBlockWrapped', () => {
     });
 
     it('should pass filer - valid contractId', function () {
-      mockEventFilterValid.contractId = 'testaddress';
+      mockEventFilterValid.contractId = testAddress;
       expect(
         StellarBlockWrapped.filterEventProcessor(
           mockEvent,
