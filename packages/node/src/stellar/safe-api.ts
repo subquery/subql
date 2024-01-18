@@ -12,7 +12,7 @@ import {
   Transaction,
   xdr,
 } from 'soroban-client';
-import { Durability, GetEventsRequest } from 'soroban-client/lib/server';
+import { Durability } from 'soroban-client/lib/server';
 import { SorobanServer } from './soroban.server';
 
 const logger = getLogger('safe.api.stellar');
@@ -46,7 +46,8 @@ export default class SafeStellarProvider extends SorobanServer {
     throw new Error('Method getContractData is not implemented.');
   }
 
-  //eslint-disable-next-line @typescript-eslint/require-await
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getLedgerEntries(
     keys: xdr.LedgerKey[],
   ): Promise<SorobanRpc.GetLedgerEntriesResponse> {
@@ -61,7 +62,7 @@ export default class SafeStellarProvider extends SorobanServer {
   }
 
   async getEvents(
-    request: GetEventsRequest,
+    request: Server.GetEventsRequest,
   ): Promise<SorobanRpc.GetEventsResponse> {
     return this.baseApi.getEvents({
       startLedger: this.blockHeight,
