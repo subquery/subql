@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.2] - 2024-01-18
+### Fixed
+- Fix undefined on timestamp filter (#237)
+
 ## [3.5.1] - 2024-01-10
 ### Fixed
 - Update node-core with initialization query improvement
@@ -375,7 +379,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.2...HEAD
+[3.5.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.1...node-ethereum/3.5.2
 [3.5.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.0...node-ethereum/3.5.1
 [3.5.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.5...node-ethereum/3.5.0
 [3.4.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.4...node-ethereum/3.4.5
