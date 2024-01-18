@@ -153,17 +153,28 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   }
 
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
-    // If soroban network the latest ledger height behind processing height (network reset)
-    const latestLedgerSequence = (await this.sorobanClient.getLatestLedger())
-      .sequence;
-    if (latestLedgerSequence < height) {
-      return [];
+    // If soroban network the latest ledger height behind processing height (due to network reset)
+    // We check if cached latestLedger behind height, if so get updated and check again.
+    if (
+      !this.sorobanClient.latestLedger ||
+      this.sorobanClient.latestLedger < height
+    ) {
+      const latestLedger = (await this.sorobanClient.getLatestLedger())
+        .sequence;
+      this.sorobanClient.updateCacheLatestLedger(latestLedger);
+      if (this.sorobanClient.latestLedger < height) {
+        logger.warn(
+          `Unable fetch soroban event at block height ${height}, latestLedger on soraban is ${latestLedger}`,
+        );
+        return [];
+      }
     }
 
-    const { events: events } = await this.sorobanClient.getEvents({
-      startLedger: height,
-      filters: [],
-    });
+    const { events: events, latestLedger: latestLedger } =
+      await this.sorobanClient.getEvents({
+        startLedger: height,
+        filters: [],
+      });
     return events.map((event) => {
       const wrappedEvent = {
         ...event,

@@ -11,6 +11,7 @@ const DEFAULT_PAGE_SIZE = 100;
 
 export class SorobanServer extends Server {
   private eventsCache: { [key: number]: SorobanRpc.GetEventsResponse } = {};
+  latestLedger?: number;
 
   private async fetchEventsForSequence(
     sequence: number,
@@ -84,7 +85,14 @@ export class SorobanServer extends Server {
       if (!eventExists) {
         this.eventsCache[ledger].events.push(event);
       }
+      this.updateCacheLatestLedger(response.latestLedger);
     });
+  }
+
+  updateCacheLatestLedger(latestLedger: number): void {
+    if (this.latestLedger && this.latestLedger < latestLedger) {
+      this.latestLedger = latestLedger;
+    }
   }
 
   async getEvents(
