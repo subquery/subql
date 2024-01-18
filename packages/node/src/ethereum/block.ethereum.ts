@@ -30,7 +30,7 @@ export function filterBlocksProcessor(
   if (filter?.modulo && block.number % filter.modulo !== 0) {
     return false;
   }
-  if (filter.timestamp) {
+  if (filter?.timestamp) {
     return filterBlockTimestamp(block, filter as SubqlProjectBlockFilter);
   }
   return true;
