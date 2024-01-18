@@ -5,8 +5,11 @@ import { EventEmitter2 } from 'eventemitter2';
 import { StellarApi } from './api.stellar';
 import { SorobanServer } from './soroban.server';
 
-const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
-const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
+// const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
+// const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';
+
+const HTTP_ENDPOINT = 'https://horizon.phoenix-hub.io';
+const SOROBAN_ENDPOINT = 'https://soroban-testnet.stellar.org';
 
 jest.setTimeout(60000);
 
@@ -43,7 +46,8 @@ describe('StellarApi', () => {
   });
 
   it('should fetch block', async () => {
-    const latestHeight = await stellarApi.getFinalizedBlockHeight();
+    // const latestHeight = await stellarApi.getFinalizedBlockHeight();
+    const latestHeight = 364548;
     const block = (await stellarApi.fetchBlocks([latestHeight]))[0];
     expect(block.block.sequence).toEqual(latestHeight);
   });

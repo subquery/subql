@@ -90,7 +90,7 @@ export class SorobanServer extends Server {
   }
 
   updateCacheLatestLedger(latestLedger: number): void {
-    if (this.latestLedger && this.latestLedger < latestLedger) {
+    if (!this.latestLedger || this.latestLedger < latestLedger) {
       this.latestLedger = latestLedger;
     }
   }

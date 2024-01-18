@@ -164,7 +164,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       this.sorobanClient.updateCacheLatestLedger(latestLedger);
       if (this.sorobanClient.latestLedger < height) {
         logger.warn(
-          `Unable fetch soroban event at block height ${height}, latestLedger on soraban is ${latestLedger}`,
+          `Error: Unable to fetch Soroban events at block height ${height} because the start is after the newest ledger. The latest ledger on Soroban is at ${latestLedger}. Please check the Soroban node. Subquery will treat it as if there are no events for this height.`,
         );
         return [];
       }
