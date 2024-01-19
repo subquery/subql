@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- update soraban client dependencies.(#41)
+
+### Fixed
+- Fixed soraban block could be behind network.(#41)
+- Fix event contract id could be undefined
+
 ## [3.4.2] - 2023-11-30
 ### Fixed
 - Sync with `node-core` 7.0.2

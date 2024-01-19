@@ -115,7 +115,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
 
     if (
       filter.contractId &&
-      filter.contractId !== event.contractId.toString()
+      filter.contractId !== event.contractId?.toString()
     ) {
       return false;
     }
