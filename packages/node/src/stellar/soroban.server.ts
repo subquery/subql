@@ -1,17 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { getLogger } from '@subql/node-core';
 import { SorobanRpcEventResponse } from '@subql/types-stellar';
 import { compact, groupBy, last } from 'lodash';
 import { Server, SorobanRpc } from 'soroban-client';
 
-const logger = getLogger('stellar-server');
 const DEFAULT_PAGE_SIZE = 100;
 
 export class SorobanServer extends Server {
   private eventsCache: { [key: number]: SorobanRpc.GetEventsResponse } = {};
-  latestLedger?: number;
 
   private async fetchEventsForSequence(
     sequence: number,
@@ -85,14 +82,7 @@ export class SorobanServer extends Server {
       if (!eventExists) {
         this.eventsCache[ledger].events.push(event);
       }
-      this.updateCacheLatestLedger(response.latestLedger);
     });
-  }
-
-  updateCacheLatestLedger(latestLedger: number): void {
-    if (!this.latestLedger || this.latestLedger < latestLedger) {
-      this.latestLedger = latestLedger;
-    }
   }
 
   async getEvents(
