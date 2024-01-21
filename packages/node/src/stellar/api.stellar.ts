@@ -297,7 +297,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
           const latestLedger = (await this.sorobanClient.getLatestLedger())
             .sequence;
           throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node.
-                This is because you're trying to access a ledger that is earlier than the latest ledger number ${latestLedger} stored in this node.
+                This is because you're trying to access a ledger that is after the latest ledger number ${latestLedger} stored in this node.
                 To resolve this issue, please check you endpoint node start height`);
         }
 
