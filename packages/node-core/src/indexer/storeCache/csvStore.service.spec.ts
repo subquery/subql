@@ -27,7 +27,7 @@ describe('csv Store Service', () => {
         id: '1463-6',
         amount: 98746560n,
         blockNumber: 1463,
-        date: '2020-05-26T18:03:24.000Z',
+        date: new Date('2020-05-26T18:03:24.000Z'),
         fromId: '13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe',
         toId: '15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn',
         __block_range: {fn: 'int8range', args: [1463, null]},
@@ -39,7 +39,7 @@ describe('csv Store Service', () => {
         id: '1463-6',
         amount: 98746560n,
         blockNumber: 1463,
-        date: '2020-05-26T18:03:24.000Z',
+        date: new Date('2020-05-26T18:03:24.000Z'),
         fromId: '13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe',
         toId: '15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn',
         __block_range: {fn: 'int8range', args: [1463, null]},
@@ -51,8 +51,8 @@ describe('csv Store Service', () => {
 
     expect(csv).toEqual(
       `id,amount,blockNumber,date,fromId,toId,__block_range
-1463-6,98746560,1463,2020-05-26T18:03:24.000Z,13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe,15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn,1463
-1463-6,98746560,1463,2020-05-26T18:03:24.000Z,13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe,15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn,1463
+1463-6,98746560,1463,1590516204000,13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe,15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn,1463
+1463-6,98746560,1463,1590516204000,13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe,15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn,1463
 `
     );
   });
