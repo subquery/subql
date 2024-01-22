@@ -94,7 +94,7 @@ describe('StellarApi', () => {
       { type: { toString: () => 'invoke_host_function' } },
     ]);
     await expect((stellarApi as any).fetchAndWrapLedger(100)).rejects.toThrow(
-      /access a ledger that is earlier than the latest ledger number/,
+      /access a ledger that is after the latest ledger number/,
     );
   });
 });
