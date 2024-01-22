@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Patch encoding issue in tendermint37 client, this is a temporary fix until [this fix](https://github.com/cosmos/cosmjs/pull/1546) in `@cosmjs/tendermint-rpc` is released (#220)
+
 ## [3.4.6] - 2023-12-25
 ### Fixed
 - Update @subql/node-core to fix bypass block maximum call stack size exceeded issue.

@@ -1,0 +1,17 @@
+diff --git a/node_modules/@cosmjs/tendermint-rpc/build/tendermint37/encodings.js b/node_modules/@cosmjs/tendermint-rpc/build/tendermint37/encodings.js
+index 65010d3..b0dadaf 100644
+--- a/node_modules/@cosmjs/tendermint-rpc/build/tendermint37/encodings.js
++++ b/node_modules/@cosmjs/tendermint-rpc/build/tendermint37/encodings.js
+@@ -115,7 +115,11 @@ function assertNotEmpty(value) {
+ exports.assertNotEmpty = assertNotEmpty;
+ // may will run the transform if value is defined, otherwise returns undefined
+ function may(transform, value) {
+-    return value === undefined || value === null ? undefined : transform(value);
++  return value === undefined ||
++  value === null ||
++  (typeof value === "object" && Object.keys(value).length === 0)
++    ? undefined
++    : transform(value);
+ }
+ exports.may = may;
+ function dictionaryToStringMap(obj) {

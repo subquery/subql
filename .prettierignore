@@ -10,3 +10,4 @@
 *.cmd
 *.sh
 *.proto
+*.patch

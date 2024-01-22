@@ -11,7 +11,8 @@
     "start": "nest start",
     "start:dev": "nodemon",
     "start:prod": "node dist/main",
-    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"node-cosmos/\""
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"node-cosmos/\"",
+    "postinstall": "patch-package"
   },
   "homepage": "https://github.com/subquery/subql-cosmos",
   "repository": "github:subquery/subql-cosmos",

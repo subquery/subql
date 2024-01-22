@@ -59,6 +59,7 @@
   },
   "packageManager": "yarn@3.1.1",
   "dependencies": {
-    "@geut/chan": "^3.2.9"
+    "@geut/chan": "^3.2.9",
+    "patch-package": "^8.0.0"
   }
 }
