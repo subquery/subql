@@ -153,28 +153,10 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
   }
 
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
-    // If soroban network the latest ledger height behind processing height (due to network reset)
-    // We check if cached latestLedger behind height, if so get updated and check again.
-    if (
-      !this.sorobanClient.latestLedger ||
-      this.sorobanClient.latestLedger < height
-    ) {
-      const latestLedger = (await this.sorobanClient.getLatestLedger())
-        .sequence;
-      this.sorobanClient.updateCacheLatestLedger(latestLedger);
-      if (this.sorobanClient.latestLedger < height) {
-        logger.warn(
-          `Error: Unable to fetch Soroban events at block height ${height} because the start is after the newest ledger. The latest ledger on Soroban is at ${latestLedger}. Please check the Soroban node. Subquery will treat it as if there are no events for this height.`,
-        );
-        return [];
-      }
-    }
-
-    const { events: events, latestLedger: latestLedger } =
-      await this.sorobanClient.getEvents({
-        startLedger: height,
-        filters: [],
-      });
+    const { events: events } = await this.sorobanClient.getEvents({
+      startLedger: height,
+      filters: [],
+    });
     return events.map((event) => {
       const wrappedEvent = {
         ...event,
@@ -311,6 +293,14 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       try {
         eventsForSequence = await this.getAndWrapEvents(sequence);
       } catch (e) {
+        if (e.message === 'start is after newest ledger') {
+          const latestLedger = (await this.sorobanClient.getLatestLedger())
+            .sequence;
+          throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node.
+                This is because you're trying to access a ledger that is after the latest ledger number ${latestLedger} stored in this node.
+                To resolve this issue, please check you endpoint node start height`);
+        }
+
         if (e.message === 'start is before oldest ledger') {
           throw new Error(`The requested events for ledger number ${sequence} is not available on the current soroban node.
                 This is because you're trying to access a ledger that is older than the oldest ledger stored in this node.

@@ -84,4 +84,17 @@ describe('StellarApi', () => {
     const specName = stellarApi.getSpecName();
     expect(specName).toEqual('Stellar');
   });
+
+  it('handleError - soroban node been reset', async () => {
+    const error = new Error('start is after newest ledger');
+    stellarApi.getAndWrapEvents = jest.fn(() => {
+      throw new Error('start is after newest ledger');
+    });
+    (stellarApi as any).fetchOperationsForLedger = jest.fn((seq: number) => [
+      { type: { toString: () => 'invoke_host_function' } },
+    ]);
+    await expect((stellarApi as any).fetchAndWrapLedger(100)).rejects.toThrow(
+      /access a ledger that is after the latest ledger number/,
+    );
+  });
 });
