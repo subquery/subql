@@ -8,6 +8,7 @@ import {Fn} from '@subql/x-sequelize/types/utils';
 import {flatten, includes, isEqual, uniq, cloneDeep} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {Cacheable} from './cacheable';
+import {CsvStoreService} from './csvStore.service';
 import {SetValueModel} from './setValueModel';
 import {
   ICachedModelControl,
@@ -46,6 +47,7 @@ export class CachedModel<
   private setCache: SetData<T> = {};
   private removeCache: Record<string, RemoveValue> = {};
   readonly hasAssociations: boolean = false;
+  private csvExporters: CsvStoreService[] = [];
 
   flushableRecordCounter = 0;
 
@@ -114,6 +116,10 @@ export class CachedModel<
     }
 
     return this.getCache.get(id);
+  }
+
+  addCsvExporter(cacheState: CsvStoreService): void {
+    this.csvExporters.push(cacheState);
   }
 
   async getByField(
@@ -337,7 +343,11 @@ export class CachedModel<
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
-
+    this.csvExporters.forEach((csvStore: CsvStoreService) => {
+      tx.afterCommit(async () => {
+        await csvStore.export(records);
+      });
+    });
     await dbOperation;
   }
 

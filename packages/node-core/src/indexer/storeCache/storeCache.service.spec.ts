@@ -140,7 +140,6 @@ describe('Store Cache Service historical', () => {
     expect(historicalValue[1].startHeight).toBe(5);
     expect(historicalValue[1].endHeight).toBe(null);
   });
-
   it('getAll, getOneByField and getByField with getFromCache', async () => {
     const appleModel = storeService.getModel<Apple>('apple');
     appleModel.set(
@@ -259,7 +258,7 @@ describe('Store Cache flush with order', () => {
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-    storeService.init(false, true, {} as any, undefined);
+    storeService.init(false, true, {} as any, '', undefined);
   });
 
   it('when set/remove multiple model entities, operation index should added to record in sequential order', () => {
@@ -296,7 +295,7 @@ describe('Store Cache flush with non-historical', () => {
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-    storeService.init(false, false, {} as any, undefined);
+    storeService.init(false, false, {} as any, '', undefined);
   });
 
   it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
@@ -354,7 +353,7 @@ describe('Store cache upper threshold', () => {
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-    storeService.init(false, false, {} as any, undefined);
+    storeService.init(false, false, {} as any, '', undefined);
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {

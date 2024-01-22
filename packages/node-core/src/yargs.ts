@@ -239,6 +239,10 @@ export function yargsBuilder<
                   'This is a hidden flag only used from the main thread to workers. It provides a root directory for the project. This is a temp directory with IPFS and GitHub projects.',
                 type: 'string',
               },
+              'csv-outPath': {
+                describe: 'Path for CSV output.',
+                type: 'string',
+              },
             })
             .hide('root'), // root is hidden because its for internal use
         handler: () => {
