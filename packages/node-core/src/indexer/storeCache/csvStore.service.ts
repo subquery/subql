@@ -24,7 +24,7 @@ export class CsvStoreService {
       if (__block_range !== undefined) {
         writeRecords.push({
           ...orgRecord,
-          __block_range,
+          __block_range: r.blockNumber,
         });
       } else {
         writeRecords.push(orgRecord);

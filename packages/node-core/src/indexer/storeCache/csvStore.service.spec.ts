@@ -9,12 +9,17 @@ import {CsvStoreService} from './csvStore.service';
 
 describe('csv Store Service', () => {
   const csvDirPath = path.join(__dirname, '../../../test/csv-test');
-  const csvFilePath = path.join(csvDirPath, 'test-Test.csv');
+
+  beforeAll(async () => {
+    await fs.promises.mkdir(csvDirPath);
+  });
 
   afterAll(async () => {
-    await promisify(rimraf)(csvFilePath);
+    await promisify(rimraf)(csvDirPath);
   });
   it('Able to export to csv with correct output, No duplicated headers', async () => {
+    const csvFilePath1 = path.join(csvDirPath, 'test-Test.csv');
+
     const csvStore = new CsvStoreService('Test', 'test', path.join(__dirname, '../../../test/csv-test'));
 
     await csvStore.export([
@@ -41,15 +46,34 @@ describe('csv Store Service', () => {
       },
     ]);
 
-    const csvFilePath = path.join(__dirname, '../../../test/csv-test', 'test-Test.csv');
-
     // Read the file after the export operation is complete
-    const csv = await fs.promises.readFile(csvFilePath, 'utf-8');
+    const csv = await fs.promises.readFile(csvFilePath1, 'utf-8');
 
     expect(csv).toEqual(
       `id,amount,blockNumber,date,fromId,toId,__block_range
 1463-6,98746560,1463,2020-05-26T18:03:24.000Z,13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe,15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn,1463
 1463-6,98746560,1463,2020-05-26T18:03:24.000Z,13gkdcmf2pxlw1mdctksezqf541ksy6mszfaehw5vftdpsxe,15zf7zvduiy2eycgn6kwbv2sjpdbsp6vdhs1ytzdgjrcsmhn,1463
+`
+    );
+  });
+  it('JSON serialisation', async () => {
+    const csvFilePath2 = path.join(csvDirPath, 'test-JsonTest.csv');
+
+    const csvStore = new CsvStoreService('JsonTest', 'test', path.join(__dirname, '../../../test/csv-test'));
+
+    await csvStore.export([
+      {
+        id: '1463-6',
+        amount: 98746560n,
+        blockNumber: 1463,
+        jsonField: {field1: 'string', field2: 2, nestedJson: {foo: 'bar'}},
+      },
+    ]);
+
+    const csv = await fs.promises.readFile(csvFilePath2, 'utf-8');
+    expect(csv).toEqual(
+      `id,amount,blockNumber,jsonField
+1463-6,98746560,1463,"{""field1"":""string"",""field2"":2,""nestedJson"":{""foo"":""bar""}}"
 `
     );
   });
