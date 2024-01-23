@@ -57,11 +57,7 @@ export class Migration {
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
-    let effectiveTransaction: Transaction | undefined = transaction;
-
-    if (!effectiveTransaction) {
-      effectiveTransaction = await this.sequelize.transaction();
-    }
+    const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
 
     effectiveTransaction.afterCommit(async () => {
       await Promise.all(this.sequelizeModels.map((m) => m.sync()));
