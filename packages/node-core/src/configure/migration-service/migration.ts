@@ -57,31 +57,31 @@ export class Migration {
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
-    let newTransaction: Transaction | undefined;
-    if (!transaction) {
-      newTransaction = await this.sequelize.transaction();
+    let effectiveTransaction: Transaction | undefined = transaction;
+
+    if (!effectiveTransaction) {
+      effectiveTransaction = await this.sequelize.transaction();
     }
+
+    effectiveTransaction.afterCommit(async () => {
+      await Promise.all(this.sequelizeModels.map((m) => m.sync()));
+    });
 
     try {
       for (const query of this.rawQueries) {
-        await this.sequelize.query(query, {transaction});
+        await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
-      if (newTransaction) {
-        await newTransaction.commit();
+      if (!transaction) {
+        await effectiveTransaction.commit();
       }
     } catch (e) {
-      if (newTransaction) {
-        await newTransaction.rollback();
+      if (!transaction) {
+        await effectiveTransaction.rollback();
       }
       throw e;
     }
 
-    if (transaction) {
-      transaction.afterCommit(async () => {
-        await Promise.all(this.sequelizeModels.map((m) => m.sync()));
-      });
-    }
     return this.sequelizeModels;
   }
 

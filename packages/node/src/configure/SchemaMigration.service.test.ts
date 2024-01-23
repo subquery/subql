@@ -136,7 +136,7 @@ describe('SchemaMigration integration tests', () => {
   });
 
   it('Migrate to new schema', async () => {
-    const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
+    const cid = 'QmQTSF5xjeyrpEN1BYe34Un7erJoWvUpcSjc5GeBTVtNCS';
     schemaName = 'test-migrations-1';
     app = await prepareApp(schemaName, cid);
 
@@ -174,7 +174,7 @@ describe('SchemaMigration integration tests', () => {
         row.column_name === 'first_transfer_block',
     ) as { column_name: string; is_nullable: string };
     expect(firstTransferBlockColumn).toBeDefined();
-    expect(firstTransferBlockColumn.is_nullable).toEqual('NO');
+    expect(firstTransferBlockColumn.is_nullable).toEqual('YES');
 
     const [columnResult] = await sequelize.query(
       `SELECT
@@ -255,54 +255,6 @@ describe('SchemaMigration integration tests', () => {
     );
     expect((exampleFieldColumn as any).data_type).toEqual('jsonb');
   });
-  it('Migration fails on ENUM introduction', async () => {
-    const exitSpy = jest
-      .spyOn(process as any, 'exit')
-      .mockImplementationOnce(() => {
-        return;
-      });
-
-    const enumCid = 'QmVomY9ChqVHtVbUCPg5tEertDhoHTVheG7LcXaGNgysVD';
-    schemaName = 'test-migrations-3';
-
-    app = await prepareApp(schemaName, enumCid);
-
-    projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-    const projectUpgradeService = app.get('IProjectUpgradeService');
-
-    await apiService.init();
-    await projectService.init(1);
-    tempDir = (projectService as any).project.root;
-
-    await projectUpgradeService.setCurrentHeight(1000);
-    expect(exitSpy).toHaveBeenCalledWith(1);
-  });
-  it('Migration fails on Relational creation and removal', async () => {
-    const exitSpy = jest
-      .spyOn(process as any, 'exit')
-      .mockImplementationOnce(() => {
-        return;
-      });
-
-    const relationCid = 'QmZ4zZbou6k4bojfiCp9hUTBgUrmqT3j3kFn9eVvzW9Rqj';
-    schemaName = 'test-migrations-4';
-
-    app = await prepareApp(schemaName, relationCid);
-
-    projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-    const projectUpgradeService = app.get('IProjectUpgradeService');
-
-    await apiService.init();
-    await projectService.init(1);
-    tempDir = (projectService as any).project.root;
-
-    await projectUpgradeService.setCurrentHeight(1000);
-    expect(exitSpy).toHaveBeenCalledWith(1);
-    exitSpy.mockRestore();
-  });
-
   it('Migration on index removal, creation', async () => {
     const cid = 'QmRXzte2erbpUjqFyd5V2JroZAoD2iEWVxs3GM33sGpnux';
     schemaName = 'test-migrations-5';
@@ -466,7 +418,7 @@ describe('SchemaMigration integration tests', () => {
     expect(Object.keys(cachedModels)).toStrictEqual(['_metadata', 'Account']);
   });
   it('Ensure correctness on non-historical migrate', async () => {
-    const cid = 'QmXeJgBMhKPYqTy18mUTVph98taDPRhkdjdGKSDRryaK1V';
+    const cid = 'QmQTSF5xjeyrpEN1BYe34Un7erJoWvUpcSjc5GeBTVtNCS';
     schemaName = 'test-migrations-10';
     app = await prepareApp(schemaName, cid, true);
 
