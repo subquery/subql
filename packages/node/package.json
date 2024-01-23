@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "3.4.6",
+  "version": "3.4.7-0",
   "description": "",
   "author": "SubQuery Pte Ltd",
   "license": "GPL-3.0",
@@ -37,6 +37,7 @@
     "cron-converter": "^1.0.2",
     "eventemitter2": "^6.4.5",
     "lodash": "^4.17.21",
+    "patch-package": "^8.0.0",
     "pg": "^8.7.1",
     "protobufjs": "^6.11.4",
     "reflect-metadata": "^0.1.13",

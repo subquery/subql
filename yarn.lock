@@ -4435,6 +4435,7 @@ __metadata:
     eventemitter2: ^6.4.5
     lodash: ^4.17.21
     nodemon: ^2.0.15
+    patch-package: ^8.0.0
     pg: ^8.7.1
     protobufjs: ^6.11.4
     reflect-metadata: ^0.1.13
@@ -14006,7 +14007,6 @@ __metadata:
     jest: ^27.4.7
     lint-staged: ^12.3.3
     node-fetch: 2.6.7
-    patch-package: ^8.0.0
     prettier: ^2.5.1
     pretty-quick: ^3.1.3
     regenerator-runtime: ^0.13.9
