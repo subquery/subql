@@ -230,7 +230,6 @@ export abstract class BaseFetchService<
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)].flat();
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
@@ -318,9 +317,17 @@ export abstract class BaseFetchService<
 
       const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
 
+      const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
+      assert(details, `Datasources not found for height ${startBlockHeight}`);
+      const {endHeight: rangeEndHeight, value: relevantDS} = details;
+      const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
+
       const enqueuingBlocks =
         handlers.length && this.getModulos().length === handlers.length
-          ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
+          ? this.getEnqueuedModuloBlocks(
+              startBlockHeight,
+              Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight)
+            )
           : range(startBlockHeight, endHeight + 1);
 
       await this.enqueueBlocks(enqueuingBlocks, latestHeight);
