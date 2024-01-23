@@ -3,55 +3,63 @@
 
 import fs from 'fs';
 import path from 'path';
-import {stringify} from 'csv-stringify';
+import {Stringifier, stringify} from 'csv-stringify';
+import {getLogger} from '../../logger';
+import {FileExporter} from './types';
 
-export class CsvStoreService {
-  constructor(private modelName: string, private schema: string, private outputPath: string) {}
+const logger = getLogger('CsvStore');
+export class CsvStoreService implements FileExporter {
+  private fileExist?: boolean;
+  private stringifyStream: Stringifier;
+  constructor(private modelName: string, private outputPath: string) {
+    const writeStream = fs.createWriteStream(this.getCsvFilePath(), {flags: 'a'});
 
-  private getCsvFilePath(): string {
-    // TODO join relative to absolute
-    return path.join(this.outputPath, `${this.schema}-${this.modelName}.csv`);
+    this.stringifyStream = stringify({header: !this.fileExist}).on('error', (err) => {
+      logger.error('Failed to write to CSV', err);
+      process.exit(1);
+    });
+
+    this.stringifyStream.pipe(writeStream);
   }
 
-  async export(records: any[]): Promise<void> {
-    let fileExist: boolean;
-    const csvFilePath = this.getCsvFilePath();
-    const writeRecords: any[] = [];
+  private getCsvFilePath(): string {
+    if (!fs.existsSync(path.resolve(this.outputPath))) {
+      throw new Error(`${this.outputPath} does not exist`);
+    }
+    const filePath = path.resolve(this.outputPath, `${this.modelName}.csv`);
 
-    records.forEach((r: any) => {
+    this.fileExist = fs.existsSync(filePath);
+
+    return filePath;
+  }
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async export(records: any[]): Promise<void> {
+    const writeRecords = records.map((r: any) => {
       // remove store
       const {__block_range, store, ...orgRecord} = r;
       if (__block_range !== undefined) {
-        writeRecords.push({
+        return {
           ...orgRecord,
-          __block_range: r.blockNumber,
-        });
-      } else {
-        writeRecords.push(orgRecord);
+          __block_number: r.blockNumber,
+        };
       }
+      return orgRecord;
     });
 
-    try {
-      await fs.promises.stat(csvFilePath);
-      fileExist = true;
-    } catch (error) {
-      fileExist = false;
-    }
-
-    return new Promise((resolve, reject) => {
-      const writeStream = fs.createWriteStream(csvFilePath, {flags: 'a'});
-
-      stringify(writeRecords, {header: !fileExist})
-        .on('error', (err) => {
-          reject(err);
-        })
-        .pipe(writeStream)
-        .on('finish', () => {
-          resolve();
-        })
-        .on('error', (err) => {
-          reject(err);
-        });
+    writeRecords.forEach((r) => {
+      if (this.modelName === 'Transfer') {
+        console.log(r?.id);
+      }
+      this.stringifyStream.write(r);
     });
+  }
+
+  async shutdown(): Promise<void> {
+    await new Promise((resolve, reject) => {
+      this.stringifyStream.end(() => {
+        resolve(undefined);
+      });
+    });
+    logger.info('Ending CSV stream');
   }
 }

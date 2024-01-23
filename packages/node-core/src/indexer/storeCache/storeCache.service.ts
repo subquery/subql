@@ -16,7 +16,7 @@ import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {CsvStoreService} from './csvStore.service';
-import {ICachedModel, ICachedModelControl} from './types';
+import {FileExporter, ICachedModel, ICachedModelControl} from './types';
 
 const logger = getLogger('StoreCacheService');
 
@@ -33,6 +33,8 @@ export class StoreCacheService extends BaseCacheService {
   private _lastFlushedOperationIndex = 0;
   private _lastFlushTs: Date;
   private _schema?: string;
+
+  private fileExports: FileExporter[] = [];
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     super('StoreCache');
@@ -84,11 +86,20 @@ export class StoreCacheService extends BaseCacheService {
       this._useCockroachDb
     );
     if (this.config.csvOutPath) {
-      assert(this._schema);
-      cachedModel.addCsvExporter(new CsvStoreService(entityName, this._schema, this.config.csvOutPath));
+      const fileStore = new CsvStoreService(entityName, this.config.csvOutPath);
+      this.addFileExporter(cachedModel, fileStore);
     }
 
     return cachedModel;
+  }
+
+  addFileExporter(cachedModel: CachedModel, fileStore: CsvStoreService): void {
+    cachedModel.addFileExporter(fileStore);
+    this.fileExports.push(fileStore);
+  }
+
+  async flushFileExportStores(): Promise<void> {
+    await Promise.all(this.fileExports.map((f) => f.shutdown()));
   }
   updateModels(models: ModelStatic<any>[]): void {
     models.forEach((m) => {

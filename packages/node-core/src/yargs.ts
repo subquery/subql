@@ -240,7 +240,7 @@ export function yargsBuilder<
                 type: 'string',
               },
               'csv-outPath': {
-                describe: 'Path for CSV output.',
+                describe: 'Path for CSV output.  If this is not provided then data will not be output to CSV',
                 type: 'string',
               },
             })

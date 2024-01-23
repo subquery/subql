@@ -6639,7 +6639,7 @@ __metadata:
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
     cross-fetch: ^3.1.6
-    csv: ^6.3.6
+    csv-stringify: ^6.4.5
     dayjs: ^1.10.7
     lodash: ^4.17.21
     lru-cache: 10.1.0
@@ -11228,36 +11228,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-generate@npm:^4.3.1":
-  version: 4.3.1
-  resolution: "csv-generate@npm:4.3.1"
-  checksum: 1ef816a05bc023ea0db998275f08e2571f5a205564747ec0ddfd7d5e7e5bd16b034a4bae612a6ed9f4101d525906ebc98b8adc0d43a70a3a5ea7cc21cd672434
-  languageName: node
-  linkType: hard
-
-"csv-parse@npm:^5.5.3":
-  version: 5.5.3
-  resolution: "csv-parse@npm:5.5.3"
-  checksum: 38399bc4c61b721bc2f52a6262d6000b4e5f391e45b071f6eb087b293a02f867020f7da36adf6f56eb9fb45bd28c82cd223afd35846551fb5ad31bf3d0602961
-  languageName: node
-  linkType: hard
-
 "csv-stringify@npm:^6.4.5":
   version: 6.4.5
   resolution: "csv-stringify@npm:6.4.5"
   checksum: 4da6ceb911735294c970880f295afc8f5e140702bb3f239f2cee2feb7f88f989e25238bae59558ad6b6f16adeb9407e74259f614ed3a9d49d06656aaac4d222e
-  languageName: node
-  linkType: hard
-
-"csv@npm:^6.3.6":
-  version: 6.3.6
-  resolution: "csv@npm:6.3.6"
-  dependencies:
-    csv-generate: ^4.3.1
-    csv-parse: ^5.5.3
-    csv-stringify: ^6.4.5
-    stream-transform: ^3.3.0
-  checksum: f2e2f70a6c4f6bedef86c58ae5c484ef41c88b5607602c8244134fa126e06826b3a9178f1b72db15ccd0e832d9a06dbe20fb5471cc5915887c661449c249824c
   languageName: node
   linkType: hard
 
@@ -20960,13 +20934,6 @@ __metadata:
   dependencies:
     get-iterator: ^1.0.2
   checksum: 0725dd8ddb889829cab70b81a883d5a09cd34272ccd44fad195de9fb900a8588fbf801490b6418ae5e234c128743ad829c50cfcd6686fab3b50bb6e76d59238c
-  languageName: node
-  linkType: hard
-
-"stream-transform@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "stream-transform@npm:3.3.0"
-  checksum: ad9d5a05751fcc67b53e3f8cf64974b613523feb4f5e17aed713a2d9d8e03e8afc741a33f50a2bf1d1896ca6ff9641d291b1e614416009caff3bcd699c80bf8b
   languageName: node
   linkType: hard
 

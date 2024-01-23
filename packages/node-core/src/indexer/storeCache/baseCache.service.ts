@@ -49,9 +49,11 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   abstract _resetCache(): Promise<void> | void;
   abstract isFlushable(): boolean;
   abstract get flushableRecords(): number;
+  abstract flushFileExportStores(): Promise<void>;
 
   async beforeApplicationShutdown(): Promise<void> {
     await timeout(this.flushCache(true), 60, 'Before shutdown flush cache timeout');
     this.logger.info(`Force flush cache successful!`);
+    await this.flushFileExportStores();
   }
 }
