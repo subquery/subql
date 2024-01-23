@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Improve modulo filter performance when there are other data sources (#2152)
 
+### Fixed
+- missing schema migration models (#2226)
+
 ## [7.0.8] - 2024-01-10
 ### Fixed
 - Update with util package, improve project initialization query from x-sequelize (#2212)
