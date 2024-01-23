@@ -3337,9 +3337,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^7.0.8-0":
-  version: 7.0.8-0
-  resolution: "@subql/node-core@npm:7.0.8-0"
+"@subql/node-core@npm:7.0.9-1":
+  version: 7.0.9-1
+  resolution: "@subql/node-core@npm:7.0.9-1"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
@@ -3349,7 +3349,7 @@ __metadata:
     "@subql/common": 3.3.1
     "@subql/testing": 2.1.0
     "@subql/types": 3.3.0
-    "@subql/utils": 2.6.2-0
+    "@subql/utils": 2.6.3-0
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
@@ -3363,7 +3363,7 @@ __metadata:
     tar: ^6.1.11
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 33f35c92258ee8756857c40c833e05ef27e0571e861fc953cf275c67efb78e3ea42108996629247f52874cfb0584fc483c5b4798469c05cb5cab5dac1c3a9e01
+  checksum: f8553ea0f7491b2a91aba0f2471e57adc3cf7f4d37f3086d078376917f73a47eaac640cc1fc49dceacc866db62dc747fa3cad9963b5971e83f22debdb0acbf71
   languageName: node
   linkType: hard
 
@@ -3381,7 +3381,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.3.1-1
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^7.0.8-0
+    "@subql/node-core": 7.0.9-1
     "@subql/testing": ^2.0.2
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -3486,9 +3486,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.6.2-0":
-  version: 2.6.2-0
-  resolution: "@subql/utils@npm:2.6.2-0"
+"@subql/utils@npm:2.6.3-0":
+  version: 2.6.3-0
+  resolution: "@subql/utils@npm:2.6.3-0"
   dependencies:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
@@ -3504,7 +3504,7 @@ __metadata:
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
     tar: ^6.1.11
-  checksum: e7e8eb3403525502723605a4fad0a0dc4e009f1e6229835be59dc219cc43b39283afd0ca0475b5818eca095790bcc9b14b5b55fdf61edc0cfd3766251803d19f
+  checksum: 7f1495963f30837d3bd74ab5f3dcc9d35a50af5cd88104ac055811de559d6946c2de70137bdc325b67e67196e3100bcde669e550be800c5af3e6c237ac9eeaeb
   languageName: node
   linkType: hard
 
