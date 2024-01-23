@@ -9,11 +9,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { loadFromJsonOrYaml } from '@subql/common';
-import {
-  ConnectionPoolService,
-  ConnectionPoolStateManager,
-  NodeConfig,
-} from '@subql/node-core';
+import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -23,20 +19,13 @@ const CHAINID = 'juno-1';
 
 const TEST_BLOCKNUMBER = 3266772;
 
-const ENDPOINT_CHIHUAHUA = 'https://chihuahua-rpc.publicnode.com:443';
-const CHAINID_CHIHUAHUA = 'chihuahua-1';
-const TEST_CHIHUAHUA = 10925390;
-
 const projectsDir = path.join(__dirname, '../../test');
 
-function testCosmosProject(
-  endpoint = ENDPOINT,
-  chainID = CHAINID,
-): SubqueryProject {
+function testCosmosProject(): SubqueryProject {
   return {
     network: {
-      endpoint: [endpoint],
-      chainId: chainID,
+      endpoint: ENDPOINT,
+      chainId: CHAINID,
     },
     dataSources: [],
     id: 'test',
@@ -54,7 +43,6 @@ describe.skip('ApiService', () => {
   const prepareApiService = async () => {
     const module = await Test.createTestingModule({
       providers: [
-        ConnectionPoolStateManager,
         ConnectionPoolService,
         {
           provide: 'ISubqueryProject',
@@ -106,47 +94,5 @@ describe.skip('ApiService', () => {
     const api = apiService.api;
     const txInfos = await api.txInfoByHeight(TEST_BLOCKNUMBER);
     expect(txInfos.length).toEqual(4);
-  });
-});
-
-describe('ApiService Chihuahua', () => {
-  let app: INestApplication;
-  let apiService: ApiService;
-  const prepareApiService = async () => {
-    const module = await Test.createTestingModule({
-      providers: [
-        ConnectionPoolStateManager,
-        ConnectionPoolService,
-        {
-          provide: 'ISubqueryProject',
-          useFactory: () =>
-            testCosmosProject(ENDPOINT_CHIHUAHUA, CHAINID_CHIHUAHUA),
-        },
-        {
-          provide: NodeConfig,
-          useFactory: () => ({}),
-        },
-        EventEmitter2,
-        ApiService,
-        NodeConfig,
-      ],
-      imports: [EventEmitterModule.forRoot()],
-    }).compile();
-    app = module.createNestApplication();
-    await app.init();
-    apiService = app.get(ApiService);
-    await apiService.init();
-  };
-
-  beforeAll(async () => {
-    await prepareApiService();
-  });
-
-  // This is to test https://github.com/cosmos/cosmjs/issues/1543
-  it('chihuahua test, can query block result', async () => {
-    const api = apiService.api;
-    const blockInfo = await api.blockInfo(TEST_CHIHUAHUA);
-    const blockResult = await api.blockResults(TEST_CHIHUAHUA);
-    expect(blockResult).toBeTruthy();
   });
 });

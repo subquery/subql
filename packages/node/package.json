@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "3.4.7-0",
+  "version": "3.4.7-3",
   "description": "",
   "author": "SubQuery Pte Ltd",
   "license": "GPL-3.0",
@@ -11,8 +11,7 @@
     "start": "nest start",
     "start:dev": "nodemon",
     "start:prod": "node dist/main",
-    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"node-cosmos/\"",
-    "postinstall": "patch-package"
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql-cosmos\" --release-prefix=\"node-cosmos/\""
   },
   "homepage": "https://github.com/subquery/subql-cosmos",
   "repository": "github:subquery/subql-cosmos",
@@ -37,7 +36,6 @@
     "cron-converter": "^1.0.2",
     "eventemitter2": "^6.4.5",
     "lodash": "^4.17.21",
-    "patch-package": "^8.0.0",
     "pg": "^8.7.1",
     "protobufjs": "^6.11.4",
     "reflect-metadata": "^0.1.13",
