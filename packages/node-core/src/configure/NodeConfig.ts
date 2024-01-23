@@ -55,7 +55,7 @@ export interface IConfig {
   readonly isTest?: boolean;
   readonly root?: string;
   readonly allowSchemaMigration: boolean;
-  readonly csvOutPath?: string;
+  readonly csvOutDir?: string;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -320,8 +320,8 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.root;
   }
 
-  get csvOutPath(): string | undefined {
-    return this._config.csvOutPath;
+  get csvOutDir(): string | undefined {
+    return this._config.csvOutDir;
   }
 
   merge(config: Partial<IConfig>): this {

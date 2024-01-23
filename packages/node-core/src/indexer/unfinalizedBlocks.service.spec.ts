@@ -236,7 +236,7 @@ describe('UnfinalizedBlocksService', () => {
   it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
     const storeCache = new StoreCacheService(null as any, {storeCacheThreshold: 300} as any, new EventEmitter2());
 
-    storeCache.init(true, false, {} as any, 'example-schema', undefined);
+    storeCache.init(true, false, {} as any, undefined);
 
     storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,

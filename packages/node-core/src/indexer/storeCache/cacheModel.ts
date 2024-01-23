@@ -18,7 +18,7 @@ import {
   GetData,
   FilteredHeightRecords,
   SetValue,
-  FileExporter,
+  Exporter,
 } from './types';
 
 const getCacheOptions = {
@@ -48,7 +48,7 @@ export class CachedModel<
   private setCache: SetData<T> = {};
   private removeCache: Record<string, RemoveValue> = {};
   readonly hasAssociations: boolean = false;
-  private fileExporters: FileExporter[] = [];
+  private fileExporters: Exporter[] = [];
 
   flushableRecordCounter = 0;
 
@@ -344,13 +344,14 @@ export class CachedModel<
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
-    this.fileExporters.forEach((fileStore: FileExporter) => {
+    this.fileExporters.forEach((fileStore: Exporter) => {
       tx.afterCommit(async () => {
         try {
           await fileStore.export(records);
         } catch (e) {
           throw new Error(`Failed to write to csv, ${e}`);
         }
+        console.log('exported to csv');
       });
     });
     await dbOperation;

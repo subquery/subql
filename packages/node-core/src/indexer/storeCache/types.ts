@@ -67,7 +67,11 @@ export type SetData<T> = Record<string, SetValueModel<T>>;
 
 export class GetData<T extends {}> extends LRUCache<string, T, unknown> {}
 
-export interface FileExporter {
+export interface Exporter {
+  /**
+   *
+   * @param record the records for the current commit
+   */
   export: (record: any[]) => Promise<void>;
   shutdown: () => Promise<void>;
 }
