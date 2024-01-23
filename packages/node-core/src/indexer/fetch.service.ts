@@ -317,6 +317,7 @@ export abstract class BaseFetchService<
 
       const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
 
+      // Find current datasources to check if they are only modulo filters, this also limits the range to the current DS set.
       const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
       assert(details, `Datasources not found for height ${startBlockHeight}`);
       const {endHeight: rangeEndHeight, value: relevantDS} = details;
