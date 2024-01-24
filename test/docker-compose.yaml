@@ -3,6 +3,9 @@ version: '3'
 services:
   postgres:
     image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: pg-DockerFile
     ports:
       - 5432:5432
     environment:

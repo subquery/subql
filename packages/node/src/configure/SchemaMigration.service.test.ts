@@ -448,7 +448,7 @@ describe('SchemaMigration integration tests', () => {
       ),
     ).toBe(false);
   });
-  it.skip('On Failed migration, no metadata transaction should be applied', async () => {
+  it('On Failed migration, no metadata transaction should be applied', async () => {
     const processExitSpy = jest
       .spyOn(process, 'exit')
       .mockImplementationOnce((() => {
