@@ -346,12 +346,7 @@ export class CachedModel<
     }
     this.exporters.forEach((store: Exporter) => {
       tx.afterCommit(async () => {
-        try {
-          await store.export(records);
-        } catch (e) {
-          throw new Error(`Failed to write to csv, ${e}`);
-        }
-        console.log('exported to csv');
+        await store.export(records);
       });
     });
     await dbOperation;

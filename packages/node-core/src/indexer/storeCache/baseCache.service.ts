@@ -55,6 +55,6 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
     await timeout(this.flushCache(true), 60, 'Before shutdown flush cache timeout');
     this.logger.info(`Force flush cache successful!`);
     await this.flushExportStores();
-    this.logger.info(`Force flush stream successful!`);
+    this.logger.info(`Force flush exports successful!`);
   }
 }
