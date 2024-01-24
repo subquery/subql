@@ -20,7 +20,7 @@ describe('csv Store Service', () => {
   it('Able to export to csv with correct output, No duplicated headers', async () => {
     const csvFilePath1 = path.join(csvDirPath, 'Test.csv');
 
-    const csvStore = new CsvStoreService('Test', path.join(__dirname, '../../../test/csv-test'));
+    const csvStore = new CsvStoreService('Test', csvDirPath);
 
     await csvStore.export([
       {
@@ -61,7 +61,7 @@ describe('csv Store Service', () => {
   it('JSON serialisation', async () => {
     const csvFilePath2 = path.join(csvDirPath, 'JsonTest.csv');
 
-    const csvStore = new CsvStoreService('JsonTest', path.join(__dirname, '../../../test/csv-test'));
+    const csvStore = new CsvStoreService('JsonTest', csvDirPath);
 
     await csvStore.export([
       {
@@ -72,6 +72,7 @@ describe('csv Store Service', () => {
       },
     ]);
 
+    await csvStore.shutdown();
     const csv = await fs.promises.readFile(csvFilePath2, 'utf-8');
     expect(csv).toEqual(
       `id,amount,blockNumber,jsonField
