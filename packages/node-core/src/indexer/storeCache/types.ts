@@ -69,9 +69,19 @@ export class GetData<T extends {}> extends LRUCache<string, T, unknown> {}
 
 export interface Exporter {
   /**
+   * Exports an array of records.
+   * This method should handle the processing of the provided records.
    *
-   * @param record the records for the current commit
+   * @param records An array of records to be exported.
+   *                These records are of the same type as the database entries
    */
   export: (record: any[]) => Promise<void>;
+  /**
+   * Shuts down the export operation.
+   * This method should ensure that all ongoing export operations are
+   * completed and any resources used are properly released or closed.
+   *
+   * @returns A promise that resolves when the shutdown process is complete.
+   */
   shutdown: () => Promise<void>;
 }

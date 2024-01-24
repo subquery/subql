@@ -48,7 +48,7 @@ export class CachedModel<
   private setCache: SetData<T> = {};
   private removeCache: Record<string, RemoveValue> = {};
   readonly hasAssociations: boolean = false;
-  private fileExporters: Exporter[] = [];
+  private exporters: Exporter[] = [];
 
   flushableRecordCounter = 0;
 
@@ -119,8 +119,8 @@ export class CachedModel<
     return this.getCache.get(id);
   }
 
-  addFileExporter(cacheState: CsvStoreService): void {
-    this.fileExporters.push(cacheState);
+  addExporterStore(cacheState: CsvStoreService): void {
+    this.exporters.push(cacheState);
   }
 
   async getByField(
@@ -344,10 +344,10 @@ export class CachedModel<
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
-    this.fileExporters.forEach((fileStore: Exporter) => {
+    this.exporters.forEach((store: Exporter) => {
       tx.afterCommit(async () => {
         try {
-          await fileStore.export(records);
+          await store.export(records);
         } catch (e) {
           throw new Error(`Failed to write to csv, ${e}`);
         }

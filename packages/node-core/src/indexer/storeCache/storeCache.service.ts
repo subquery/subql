@@ -32,7 +32,7 @@ export class StoreCacheService extends BaseCacheService {
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
   private _lastFlushTs: Date;
-  private fileExports: Exporter[] = [];
+  private exports: Exporter[] = [];
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     super('StoreCache');
@@ -83,20 +83,20 @@ export class StoreCacheService extends BaseCacheService {
       this._useCockroachDb
     );
     if (this.config.csvOutDir) {
-      const fileStore = new CsvStoreService(entityName, this.config.csvOutDir);
-      this.addFileExporter(cachedModel, fileStore);
+      const exporterStore = new CsvStoreService(entityName, this.config.csvOutDir);
+      this.addExporter(cachedModel, exporterStore);
     }
 
     return cachedModel;
   }
 
-  addFileExporter(cachedModel: CachedModel, fileStore: CsvStoreService): void {
-    cachedModel.addFileExporter(fileStore);
-    this.fileExports.push(fileStore);
+  addExporter(cachedModel: CachedModel, exporterStore: CsvStoreService): void {
+    cachedModel.addExporterStore(exporterStore);
+    this.exports.push(exporterStore);
   }
 
-  async flushFileExportStores(): Promise<void> {
-    await Promise.all(this.fileExports.map((f) => f.shutdown()));
+  async flushExportStores(): Promise<void> {
+    await Promise.all(this.exports.map((f) => f.shutdown()));
   }
   updateModels(models: ModelStatic<any>[]): void {
     models.forEach((m) => {

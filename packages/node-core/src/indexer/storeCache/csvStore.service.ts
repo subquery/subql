@@ -56,11 +56,12 @@ export class CsvStoreService implements Exporter {
   async shutdown(): Promise<void> {
     return new Promise((resolve) => {
       this.writeStream.once('finish', () => {
-        console.log('finish stream write', this.modelName);
+        logger.info(`Ending CSV write stream, ${this.modelName}`);
         resolve();
       });
 
       this.stringifyStream.end();
+      logger.info(`${this.modelName} CSV Stream ended`);
     });
   }
 }
