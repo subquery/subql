@@ -15,7 +15,8 @@ import {BaseCacheService} from './baseCache.service';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
-import {ICachedModel, ICachedModelControl} from './types';
+import {CsvStoreService} from './csvStore.service';
+import {Exporter, ICachedModel, ICachedModelControl} from './types';
 
 const logger = getLogger('StoreCacheService');
 
@@ -31,6 +32,7 @@ export class StoreCacheService extends BaseCacheService {
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
   private _lastFlushTs: Date;
+  private exports: Exporter[] = [];
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
     super('StoreCache');
@@ -72,7 +74,7 @@ export class StoreCacheService extends BaseCacheService {
   createModel(entityName: string): CachedModel<any> {
     const model = this.sequelize.model(entityName);
     assert(model, `model ${entityName} not exists`);
-    return new CachedModel(
+    const cachedModel = new CachedModel(
       model,
       this._historical,
       this.config,
@@ -80,6 +82,21 @@ export class StoreCacheService extends BaseCacheService {
       () => this.flushCache(true),
       this._useCockroachDb
     );
+    if (this.config.csvOutDir) {
+      const exporterStore = new CsvStoreService(entityName, this.config.csvOutDir);
+      this.addExporter(cachedModel, exporterStore);
+    }
+
+    return cachedModel;
+  }
+
+  addExporter(cachedModel: CachedModel, exporterStore: CsvStoreService): void {
+    cachedModel.addExporterStore(exporterStore);
+    this.exports.push(exporterStore);
+  }
+
+  async flushExportStores(): Promise<void> {
+    await Promise.all(this.exports.map((f) => f.shutdown()));
   }
   updateModels(models: ModelStatic<any>[]): void {
     models.forEach((m) => {

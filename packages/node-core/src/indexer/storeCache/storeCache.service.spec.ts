@@ -140,7 +140,6 @@ describe('Store Cache Service historical', () => {
     expect(historicalValue[1].startHeight).toBe(5);
     expect(historicalValue[1].endHeight).toBe(null);
   });
-
   it('getAll, getOneByField and getByField with getFromCache', async () => {
     const appleModel = storeService.getModel<Apple>('apple');
     appleModel.set(
