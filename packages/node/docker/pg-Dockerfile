@@ -7,3 +7,6 @@ ENV POSTGRES_PASSWORD 'postgres'
 
 # Copy in the load-extensions script
 COPY load-extensions.sh /docker-entrypoint-initdb.d/
+
+# Convert line endings to LF
+RUN sed -i 's/\r$//' /docker-entrypoint-initdb.d/load-extensions.sh && chmod +x /docker-entrypoint-initdb.d/load-extensions.sh
