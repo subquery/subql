@@ -11,18 +11,16 @@ const logger = getLogger('CsvStore');
 export class CsvStoreService implements Exporter {
   private fileExist?: boolean;
   private stringifyStream: Stringifier;
-  constructor(private modelName: string, private outputPath: string) {
-    const writeStream = fs.createWriteStream(this.getCsvFilePath(), {flags: 'a'});
+  private readonly writeStream: fs.WriteStream;
 
-    this.stringifyStream = stringify({header: !this.fileExist})
-      .on('error', (err) => {
-        logger.error(err, 'Failed to write to CSV');
-        process.exit(1);
-      })
-      .on('data', (chunk) => {
-        console.log('Received a chunk of data.', chunk.toString());
-      });
-    this.stringifyStream.pipe(writeStream);
+  constructor(private modelName: string, private outputPath: string) {
+    this.writeStream = fs.createWriteStream(this.getCsvFilePath(), {flags: 'a'});
+
+    this.stringifyStream = stringify({header: !this.fileExist}).on('error', (err) => {
+      logger.error(err, 'Failed to write to CSV');
+      process.exit(1);
+    });
+    this.stringifyStream.pipe(this.writeStream);
   }
 
   private getCsvFilePath(): string {
@@ -50,7 +48,6 @@ export class CsvStoreService implements Exporter {
       }
       return orgRecord;
     });
-
     writeRecords.forEach((r) => {
       this.stringifyStream.write(r);
     });
@@ -58,33 +55,12 @@ export class CsvStoreService implements Exporter {
 
   async shutdown(): Promise<void> {
     return new Promise((resolve) => {
-      // this.stringifyStream.on('end', (resolver: ()=> void) => {
-      //   console.log('ending stream', this.modelName)
-      //   this.stringifyStream.on('finish', () => {
-      //     console.log('finishing job', this.modelName)
-      this.stringifyStream.end();
-      this.stringifyStream.once('finish', () => {
-        console.log('ending stream', this.modelName);
-        this.stringifyStream.end();
+      this.writeStream.once('finish', () => {
+        console.log('finish stream write', this.modelName);
+        resolve();
       });
-      //   })
-      // })
-      // this.stringifyStream.end(()=> {
-      //   console.log('end called', this.modelName)
-      // });
 
-      // if (this.stringifyStream.writableFinished) {
-      //   resolve();
-      //   return;
-      // }
-
-      // Set up the listener for the 'finish' event
-      // this.stringifyStream.on('finish', () => {
-      //   console.log('Stream finished flushing');
-      //   resolve();
-      // });
-
-      // End the stream
+      this.stringifyStream.end();
     });
   }
 }
