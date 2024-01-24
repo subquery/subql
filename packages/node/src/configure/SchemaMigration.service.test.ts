@@ -125,10 +125,6 @@ describe('SchemaMigration integration tests', () => {
       option,
     );
     await sequelize.authenticate();
-
-    jest.spyOn(process, 'exit').mockImplementationOnce((() => {
-      throw new Error('Failed on exit');
-    }) as any);
   });
 
   afterEach(async () => {
