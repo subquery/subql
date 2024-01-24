@@ -192,15 +192,7 @@ export class WebsocketClient implements RpcStreamingClient {
     baseUrl: string,
     onError: (err: any) => void = defaultErrorHandler,
   ) {
-    // accept host.name:port and assume ws protocol
-
     const url = new URL(baseUrl);
-
-    // Add websocket to pathname
-    if (!url.pathname.includes('websocket')) {
-      // make sure we don't end up with ...//websocket
-      url.pathname += url.pathname.endsWith('/') ? 'websocket' : '/websocket';
-    }
 
     // Ensure protocol
     if (!hasProtocol(baseUrl)) {
