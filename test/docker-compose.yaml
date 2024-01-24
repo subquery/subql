@@ -5,7 +5,7 @@ services:
     image: postgres:15-alpine
     build:
       context: .
-      dockerfile: pg-DockerFile
+      dockerfile: test/pg-DockerFile
     ports:
       - 5432:5432
     environment:
