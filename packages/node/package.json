@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "3.4.7-4",
+  "version": "3.4.7-5",
   "description": "",
   "author": "SubQuery Pte Ltd",
   "license": "GPL-3.0",
@@ -63,5 +63,5 @@
     "/dist",
     "/bin"
   ],
-  "stableVersion": "3.4.7-3"
+  "stableVersion": "3.4.7-4"
 }
