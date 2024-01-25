@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2024-01-25
+### Changed
+- Update `@subql/node-core` with support for CSV exports and schema migrations
+
 ## [3.4.11] - 2024-01-10
 ### Fixed
 - Update with node-core , improve project initialization query from x-sequelize (#2212)
@@ -1097,7 +1101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.4.11...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql/compare/node/3.4.11...node/3.5.0
 [3.4.11]: https://github.com/subquery/subql/compare/node/3.4.10...node/3.4.11
 [3.4.10]: https://github.com/subquery/subql/compare/node/3.4.9...node/3.4.10
 [3.4.9]: https://github.com/subquery/subql/compare/node/3.4.8...node/3.4.9
