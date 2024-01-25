@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.6.0] - 2024-01-25
 ### Changed
-- Update `@subql/node-core` with a performance fix when using modulo filters with other datasources
+- Update @subql/node-core with
+  - a performance fix when using modulo filters with other datasources
+  - support for CSV exports
+  - support for schema migrations
 
 ## [3.5.2] - 2024-01-18
 ### Fixed
@@ -381,7 +386,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.6.0...HEAD
+[3.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.2...node-ethereum/3.6.0
 [3.5.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.1...node-ethereum/3.5.2
 [3.5.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.0...node-ethereum/3.5.1
 [3.5.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.4.5...node-ethereum/3.5.0

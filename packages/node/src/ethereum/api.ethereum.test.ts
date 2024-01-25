@@ -35,9 +35,9 @@ const ds: SubqlRuntimeDatasource = {
   kind: EthereumDatasourceKind.Runtime,
   startBlock: 16258633,
   options: { abi: 'erc721' },
-  assets: {
-    erc721: { file: path.join(__dirname, '../../test/erc721.json') },
-  } as unknown as Map<string, { file: string }>,
+  assets: new Map([
+    ['erc721', { file: path.join(__dirname, '../../test/erc721.json') }],
+  ]),
 };
 
 jest.setTimeout(90000);
