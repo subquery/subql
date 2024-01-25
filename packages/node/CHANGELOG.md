@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2024-01-25
+### Changed
+- Update @subql/node-core with
+  - a performance fix when using modulo filters with other datasources
+  - support for CSV exports
+  - support for schema migrations
+
 ## [3.4.7] - 2024-01-24
 ### Fixed
 - `/websocket` being appended to all websocket urls causing the indexer to hang (#222)
@@ -349,7 +356,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.7...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.7...node-cosmos/3.5.0
 [3.4.7]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.6...node-cosmos/3.4.7
 [3.4.6]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.5...node-cosmos/3.4.6
 [3.4.5]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.4...node-cosmos/3.4.5
