@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for CSV output with flag `--csv-out-dir` (#2224)
+- Support for Schema Migration with `--allow-schema-migration` flag (#2179)
 
 ### Changed
 - Improve modulo filter performance when there are other data sources (#2152)
