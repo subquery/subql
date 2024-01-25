@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [7.1.0] - 2024-01-25
 ### Added
 - Support for CSV output with flag `--csv-out-dir` (#2224)
 - Support for Schema Migration with `--allow-schema-migration` flag (#2179)
@@ -547,7 +549,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.0.8...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.1.0...HEAD
+[7.1.0]: https://github.com/subquery/subql/compare/node-core/7.0.8...node-core/7.1.0
 [7.0.8]: https://github.com/subquery/subql/compare/node-core/7.0.7...node-core/7.0.8
 [7.0.7]: https://github.com/subquery/subql/compare/node-core/7.0.6...node-core/7.0.7
 [7.0.6]: https://github.com/subquery/subql/compare/node-core/7.0.5...node-core/7.0.6
