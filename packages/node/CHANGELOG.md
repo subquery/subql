@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2024-01-25
+### Changed
+- Update @subql/node-core with
+  - a performance fix when using modulo filters with other datasources
+  - support for CSV exports
+  - support for schema migrations
+
 ## [3.5.0] - 2024-01-22
 ### Changed
 - update soraban client dependencies.(#41)
@@ -72,7 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.6.0...HEAD
+[3.6.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.5.0...node-stellar/3.6.0
 [3.5.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.4.2...node-stellar/3.5.0
 [3.4.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.4.1...node-stellar/3.4.2
 [3.4.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.4.0...node-stellar/3.4.1
