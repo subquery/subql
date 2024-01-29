@@ -161,7 +161,7 @@ export class EthereumApi implements ApiWrapper {
     try {
       const [genesisBlock, supportsFinalization, supportsSafe] =
         await Promise.all([
-          this.client.getBlock('earliest'),
+          this.getGenesisBlock(network.chainId),
           this.getSupportsTag('finalized'),
           this.getSupportsTag('safe'),
         ]);
@@ -207,6 +207,20 @@ export class EthereumApi implements ApiWrapper {
         return orig(...args);
       },
     });
+  }
+
+  private async getGenesisBlock(chainId: number): Promise<Block> {
+    const tag = () => {
+      switch (chainId) {
+        // BEVM Canary
+        case 1501:
+          return 4157986;
+        default:
+          return 'earliest';
+      }
+    };
+
+    return this.client.getBlock(tag());
   }
 
   async getFinalizedBlock(): Promise<Block> {
