@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.1] - 2024-01-30
+### Changed
+- Update `@subql/node-core` with updates to `@subql/apollo-links`
+
 ## [3.5.0] - 2024-01-25
 ### Changed
 - Update `@subql/node-core` with support for CSV exports and schema migrations
@@ -1101,7 +1105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.5.1...HEAD
+[3.5.1]: https://github.com/subquery/subql/compare/node/3.5.0...node/3.5.1
 [3.5.0]: https://github.com/subquery/subql/compare/node/3.4.11...node/3.5.0
 [3.4.11]: https://github.com/subquery/subql/compare/node/3.4.10...node/3.4.11
 [3.4.10]: https://github.com/subquery/subql/compare/node/3.4.9...node/3.4.10
