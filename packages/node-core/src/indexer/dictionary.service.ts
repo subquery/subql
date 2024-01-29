@@ -38,6 +38,7 @@ export type MetadataDictionary = {
 };
 
 const logger = getLogger('dictionary');
+const resolverLogger = getLogger('dictionary-resolver');
 
 const distinctErrorEscaped = `Unknown argument \\"distinct\\"`;
 const startHeightEscaped = `Cannot query field \\"startHeight\\"`;
@@ -178,7 +179,7 @@ export class DictionaryService {
       const authHttpLink = dictHttpLink({
         authUrl: this.nodeConfig.dictionaryResolver,
         chainId,
-        logger,
+        logger: resolverLogger,
         httpOptions: {fetch},
         fallbackServiceUrl: dictionaryEndpoint,
       });
