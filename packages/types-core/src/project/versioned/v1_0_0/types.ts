@@ -123,10 +123,18 @@ export interface NodeOptions {
 export interface ParentProject {
   /**
    * The block height at which to switch from the parent project to this project.
+   * @deprecated Please use `untilBlock` instead
    * @type {number}
    * @description The block height to switch from the parent project to this project.
    */
   block: number;
+
+  /**
+   * The block height at which to switch from the parent project to this project.
+   * @type {number}
+   * @description The block height to switch from the parent project to this project.
+   */
+  untilBlock: number;
 
   /**
    * The IPFS CID (Content Identifier) referencing the parent project.

@@ -25,6 +25,7 @@ import {
   IsArray,
   IsNotEmpty,
   Allow,
+  ValidateIf,
 } from 'class-validator';
 import {SemverVersionValidator} from '../../utils';
 import {FileType} from '../base';
@@ -78,7 +79,11 @@ export class BlockFilterImpl implements BlockFilter {
 
 export class ParentProjectModel implements ParentProject {
   @IsNumber()
+  @ValidateIf((obj, value) => value != null || obj.unitlBlock === null || obj.untilBlock === undefined)
   block: number;
+  @IsNumber()
+  @ValidateIf((obj, value) => value != null || obj.block === null || obj.block === undefined)
+  untilBlock: number;
   @IsString()
   reference: string;
 }
