@@ -87,12 +87,17 @@ export function filterTransactionsProcessor(
   ) {
     return false;
   }
-  if (
-    filter.function &&
+  if (filter.function === null || filter.function === '0x') {
+    if (transaction.input !== '0x') {
+      return false;
+    }
+  } else if (
+    filter.function !== undefined &&
     transaction.input.indexOf(functionToSighash(filter.function)) !== 0
   ) {
     return false;
   }
+
   return true;
 }
 

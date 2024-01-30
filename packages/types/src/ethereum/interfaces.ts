@@ -27,8 +27,12 @@ export interface EthereumTransactionFilter {
    * The function sighash or function signature of the call. This is the first 32bytes of the data field
    * @example
    * function: 'setminimumStakingAmount(uint256 amount)',
+   * @example
+   * function: null, // This will filter transactions that have no input
+   * @example
+   * function: '0x, // This will filter transactions that have no input
    * */
-  function?: string;
+  function?: string | null;
 }
 
 /**

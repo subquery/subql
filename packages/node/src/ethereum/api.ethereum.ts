@@ -421,7 +421,9 @@ export class EthereumApi implements ApiWrapper {
   ): Promise<EthereumTransaction<T> | EthereumTransaction> {
     try {
       if (!ds?.options?.abi) {
-        logger.warn('No ABI provided for datasource');
+        if (transaction.input !== '0x') {
+          logger.warn('No ABI provided for datasource');
+        }
         return transaction;
       }
       const assets = await loadAssets(ds);

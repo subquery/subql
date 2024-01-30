@@ -61,7 +61,7 @@ export class TransactionFilter implements EthereumTransactionFilter {
   to?: string;
   @IsOptional()
   @IsString()
-  function?: string;
+  function?: string | null;
 }
 
 export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOptions) {

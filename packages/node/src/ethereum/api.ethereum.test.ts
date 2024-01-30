@@ -187,6 +187,33 @@ describe('Api.ethereum', () => {
     expect(erc721Transfers.length).toBe(2);
   });
 
+  it('Null and 0x (empty) filter support for transaction data', async () => {
+    const beamEndpoint = 'https://mainnet.base.org/';
+    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    await ethApi.init();
+    blockData = await fetchBlock(1104962);
+    // blockData.transactions[0].to = undefined;
+    const result = blockData.transactions.filter((tx) => {
+      if (filterTransactionsProcessor(tx, { function: null })) {
+        return tx.hash;
+      }
+    });
+    expect(result.length).toBe(1);
+    expect(result[0].hash).toBe(
+      '0x182c5381f8fa3332a7bd676b1c819a15119972db52bd5210afead88f18fff642',
+    );
+
+    const result2 = blockData.transactions.filter((tx) => {
+      if (filterTransactionsProcessor(tx, { function: '0x' })) {
+        return tx.hash;
+      }
+    });
+    expect(result2.length).toBe(1);
+    expect(result2[0].hash).toBe(
+      '0x182c5381f8fa3332a7bd676b1c819a15119972db52bd5210afead88f18fff642',
+    );
+  });
+
   it('Null filter support, for undefined transaction.to', async () => {
     const beamEndpoint = 'https://rpc.api.moonbeam.network';
     ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
