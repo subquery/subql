@@ -1,4 +1,4 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 export type FunctionPropertyNames<T> = {
@@ -12,7 +12,6 @@ export type FieldOperators = SingleOperators | ArrayOperators;
 export type FieldsExpression<T> =
   | [field: keyof T, operator: SingleOperators, value: T[keyof T]]
   | [field: keyof T, operator: ArrayOperators, value: Array<T[keyof T]>];
-
 
 export interface Entity {
   id: string;
