@@ -27,12 +27,14 @@ export interface AbiRenderProps {
 export interface AbiInterface {
   name: string;
   type: 'event' | 'function';
-  inputs: {
-    internalType: string;
-    name: string;
-    type: string;
-  }[];
+  inputs: AbiInput[];
 }
+type AbiInput = {
+  internalType: string;
+  components?: AbiInput[];
+  name: string;
+  type: string;
+};
 
 function validateCustomDsDs(d: {kind: string}): boolean {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
@@ -42,6 +44,23 @@ export function joinInputAbiName(abiObject: AbiInterface): string {
   // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
   const inputToSnake = abiObject.inputs.map((obj) => obj.type.replace(/\[\]/g, '_arr').toLowerCase()).join('_');
   return `${abiObject.name}_${inputToSnake}_`;
+}
+
+function inputsToArgs(inputs: AbiInput[]): string {
+  const args = inputs
+    .map((input) => {
+      if (input.components) {
+        const inner = inputsToArgs(input.components);
+        if (input.type === 'tuple[]') {
+          return `${inner}[]`;
+        }
+        return inner;
+      }
+
+      return input.type.toLowerCase();
+    })
+    .join(',');
+  return `(${args})`;
 }
 
 export function prepareSortedAssets(
@@ -119,7 +138,7 @@ export function prepareAbiJob(
         let typeName = abiObject.name;
         let functionName = abiObject.name;
         if (duplicateFunctionNames.includes(abiObject.name)) {
-          functionName = `${abiObject.name}(${abiObject.inputs.map((obj) => obj.type.toLowerCase()).join(',')})`;
+          functionName = `${abiObject.name}${inputsToArgs(abiObject.inputs)}`;
           typeName = joinInputAbiName(abiObject);
         }
         renderProps.functions.push({typeName, functionName});

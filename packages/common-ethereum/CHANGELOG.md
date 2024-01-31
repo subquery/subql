@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Transaction filter function field can now be null (#243)
 
+### Fixed
+- Codegen not matching typechain types with complex arguments (#244)
+
 ## [3.2.0] - 2024-01-08
 ### Added
 - Support for Zilliqa addresses (#231)

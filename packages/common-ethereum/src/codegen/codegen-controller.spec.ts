@@ -57,9 +57,9 @@ describe('Codegen spec', () => {
       artifact: './abis/bad-erc20.json',
     };
 
-    expect(() =>
-      prepareAbiJob(artifactAssetObj, PROJECT_PATH, () => require(path.join(PROJECT_PATH, './abis/bad-erc20.json')))
-    ).toThrow('Provided ABI is not a valid ABI or Artifact');
+    expect(() => prepareAbiJob(artifactAssetObj, PROJECT_PATH, (fp) => require(fp))).toThrow(
+      'Provided ABI is not a valid ABI or Artifact'
+    );
   });
   it('Empty abi json, should throw', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest2');
@@ -117,6 +117,7 @@ describe('Codegen spec', () => {
     };
     expect(prepareSortedAssets([ds], PROJECT_PATH)).toStrictEqual({Erc20: './abis/erc20.json'});
   });
+
   it('read artifact abis', () => {
     const projectPath = path.join(__dirname, '../../test/abiTest');
     const abisAssetObj = {
@@ -127,11 +128,8 @@ describe('Codegen spec', () => {
       artifactErc20: './abis/Erc20.sol/Erc20.json',
     };
 
-    const a = path.join(projectPath, './abis/erc20.json');
-    const b = path.join(projectPath, './abis/Erc20.sol/Erc20.json');
-
-    const abisRendered = prepareAbiJob(abisAssetObj, projectPath, () => require(a));
-    const artifactRendered = prepareAbiJob(artifactAssetObj, projectPath, () => require(b));
+    const abisRendered = prepareAbiJob(abisAssetObj, projectPath, (fp) => require(fp));
+    const artifactRendered = prepareAbiJob(artifactAssetObj, projectPath, (fp) => require(fp));
 
     // exclude name field
     artifactRendered.map((e) => {
@@ -139,6 +137,7 @@ describe('Codegen spec', () => {
     });
     expect(abisRendered).toStrictEqual(expect.objectContaining(artifactRendered));
   });
+
   it('render correct codegen from ejs', async () => {
     const mockJob = {
       name: 'Erc20',
@@ -177,9 +176,11 @@ describe('Codegen spec', () => {
     expect(output.toString()).toMatch(expectedCodegen);
     await promisify(rimraf)(path.join(PROJECT_PATH, 'test.ts'));
   });
+
   it('Correctness on getAbiNames', () => {
     expect(getAbiNames(['Erc721__factory.ts', 'Erc1155__factory.ts', 'index.ts'])).toStrictEqual(['Erc721', 'Erc1155']);
   });
+
   it('Generate correct restructured index.ts', async () => {
     const mockAbiNames = ['Erc721', 'Erc1155', 'Erc1967'];
     const contractsData = await ejs.renderFile(path.resolve(__dirname, '../../templates/contracts-index.ts.ejs'), {
@@ -233,5 +234,18 @@ describe('Codegen spec', () => {
       promisify(rimraf)(path.join(PROJECT_PATH, 'contracts-index.ts')),
       promisify(rimraf)(path.join(PROJECT_PATH, 'factories-index.ts')),
     ]);
+  });
+
+  it('Generates valid function names with complex types', () => {
+    const artifactAssetObj: Record<string, string> = {
+      artifact: './abis/contract_with_overloads.json',
+    };
+
+    const [props] = prepareAbiJob(artifactAssetObj, PROJECT_PATH, (fp: string) => require(fp));
+
+    expect(props.functions[4].functionName).toEqual('deregisterOperatorWithCoordinator(bytes,(uint256,uint256))');
+    expect(props.functions[27].functionName).toEqual(
+      'registerOperatorWithCoordinator(bytes,(uint256,uint256),string,(uint8,address,(uint256,uint256))[],(bytes,bytes32,uint256))'
+    );
   });
 });
