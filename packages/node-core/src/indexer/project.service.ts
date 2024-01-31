@@ -267,7 +267,6 @@ export abstract class BaseProjectService<
     }
   }
 
-  // This is used everywhere but within indexing blocks, see comment on getDataSources for more info
   getAllDataSources(): DS[] {
     assert(isMainThread, 'This method is only avaiable on the main thread');
     const dataSources = this.project.dataSources;
@@ -288,7 +287,6 @@ export abstract class BaseProjectService<
     return [...dataSources.entries()].some(([dsHeight, ds]) => dsHeight > height && ds.length);
   }
 
-  // This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
   async getDataSources(blockHeight?: number): Promise<DS[]> {
     const dataSources = this.project.dataSources;
     const dynamicDs = await this.dynamicDsService.getDynamicDatasources();

@@ -82,11 +82,6 @@ const mockDs: BaseDataSource = {
   },
 };
 
-const projectService = {
-  getStartBlockFromDataSources: jest.fn(() => mockDs.startBlock),
-  getAllDataSources: jest.fn(() => [mockDs]),
-} as any as IProjectService<any>;
-
 const dynamicDsService = {
   deleteTempDsRecords: (height: number) => {
     /* Nothing */
@@ -131,8 +126,27 @@ describe('Fetch Service', () => {
   let blockDispatcher: IBlockDispatcher;
   let dictionaryService: DictionaryService;
   let networkConfig: IProjectNetworkConfig;
+  let dataSources: BaseDataSource[];
 
   beforeEach(() => {
+    dataSources = [mockDs];
+
+    const projectService = {
+      getStartBlockFromDataSources: jest.fn(() => Math.min(...dataSources.map((ds) => ds.startBlock ?? 0))),
+      getAllDataSources: jest.fn(() => dataSources),
+      getDataSourcesMap: jest.fn(() => {
+        // XXX this doesn't consider end blocks
+        const x = new Map();
+        dataSources.map((ds, idx, dss) => {
+          x.set(
+            ds.startBlock ?? 0,
+            dss.filter((d) => (d.startBlock ?? 0) <= (ds.startBlock ?? 0))
+          );
+        });
+        return new BlockHeightMap(x);
+      }),
+    } as any as IProjectService<any>;
+
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
 
@@ -149,10 +163,6 @@ describe('Fetch Service', () => {
       dynamicDsService,
       eventEmitter,
       schedulerRegistry
-    );
-
-    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
-      () => new BlockHeightMap(new Map([[1, [mockDs, mockDs]]]))
     );
   });
 
@@ -184,51 +194,52 @@ describe('Fetch Service', () => {
   });
 
   it('adds bypassBlocks for empty datasources', async () => {
-    (fetchService as any).projectService.getDataSourcesMap = jest.fn().mockReturnValueOnce(
-      new BlockHeightMap(
-        new Map([
-          [
-            1,
+    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
+      () =>
+        new BlockHeightMap(
+          new Map([
             [
-              {startBlock: 1, endBlock: 300},
-              {startBlock: 1, endBlock: 100},
+              1,
+              [
+                {...mockDs, startBlock: 1, endBlock: 300},
+                {...mockDs, startBlock: 1, endBlock: 100},
+              ],
             ],
-          ],
-          [
-            10,
             [
-              {startBlock: 1, endBlock: 300},
-              {startBlock: 1, endBlock: 100},
-              {startBlock: 10, endBlock: 20},
+              10,
+              [
+                {...mockDs, startBlock: 1, endBlock: 300},
+                {...mockDs, startBlock: 1, endBlock: 100},
+                {...mockDs, startBlock: 10, endBlock: 20},
+              ],
             ],
-          ],
-          [
-            21,
             [
-              {startBlock: 1, endBlock: 300},
-              {startBlock: 1, endBlock: 100},
+              21,
+              [
+                {...mockDs, startBlock: 1, endBlock: 300},
+                {...mockDs, startBlock: 1, endBlock: 100},
+              ],
             ],
-          ],
-          [
-            50,
             [
-              {startBlock: 1, endBlock: 300},
-              {startBlock: 1, endBlock: 100},
-              {startBlock: 50, endBlock: 200},
+              50,
+              [
+                {...mockDs, startBlock: 1, endBlock: 300},
+                {...mockDs, startBlock: 1, endBlock: 100},
+                {...mockDs, startBlock: 50, endBlock: 200},
+              ],
             ],
-          ],
-          [
-            101,
             [
-              {startBlock: 1, endBlock: 300},
-              {startBlock: 50, endBlock: 200},
+              101,
+              [
+                {...mockDs, startBlock: 1, endBlock: 300},
+                {...mockDs, startBlock: 50, endBlock: 200},
+              ],
             ],
-          ],
-          [201, [{startBlock: 1, endBlock: 300}]],
-          [301, []],
-          [500, [{startBlock: 500}]],
-        ])
-      )
+            [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
+            [301, []],
+            [500, [{...mockDs, startBlock: 500}]],
+          ])
+        )
     );
 
     await fetchService.init(1);
@@ -364,6 +375,20 @@ describe('Fetch Service', () => {
     // This should include dictionary results interleaved with modulo blocks
     // [2, 4, 6, 8, 10] + [3, 6, 9, 12, 15, 18]. 18 is included because there is a duplicate of 6
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
+  });
+
+  it('enqueues modulo blocks with furture dataSources', async () => {
+    fetchService.modulos = [3];
+    dataSources.push({...mockDs, startBlock: 20});
+
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+
+    await fetchService.init(1);
+
+    expect((fetchService as any).useDictionary).toBeFalsy();
+    // This should include dictionary results interleaved with modulo blocks
+    // [2, 4, 6, 8, 10] + [3, 6, 9, 12, 15, 18]. 18 is included because there is a duplicate of 6
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([3, 6, 9, 12, 15, 18], 18);
   });
 
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {

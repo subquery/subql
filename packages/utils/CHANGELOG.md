@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2024-01-25
+### Added
+- export sequelize support types (#2179)
+
 ## [2.6.2] - 2024-01-10
 ### Fixed
 - Update x-sequelize improve `getForeignKeyReferencesQuery` performance in large size DB (#2212)
@@ -110,7 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.6.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.7.0...HEAD
+[2.7.0]: https://github.com/subquery/subql/compare/utils/2.6.2...utils/2.7.0
 [2.6.2]: https://github.com/subquery/subql/compare/utils/2.6.1...utils/2.6.2
 [2.6.1]: https://github.com/subquery/subql/compare/utils/2.6.0...utils/2.6.1
 [2.6.0]: https://github.com/subquery/subql/compare/utils/2.5.0...utils/2.6.0

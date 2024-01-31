@@ -44,7 +44,14 @@ export interface IProjectService<DS> {
   blockOffset: number | undefined;
   startHeight: number;
   reindex(lastCorrectHeight: number): Promise<void>;
+  /**
+   * This is used everywhere but within indexing blocks, see comment on getDataSources for more info
+   * */
   getAllDataSources(): DS[];
+  /**
+   * This gets used when indexing blocks, it needs to be async to ensure dynamicDs is updated within workers
+   *
+   * */
   getDataSources(blockHeight?: number): Promise<DS[]>;
   getStartBlockFromDataSources(): number;
   getDataSourcesMap(): BlockHeightMap<DS[]>;

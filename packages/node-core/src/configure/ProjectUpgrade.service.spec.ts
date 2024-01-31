@@ -54,6 +54,19 @@ const demoProjects = [
   },
 ] as ISubqueryProject[];
 
+const demoProjectsUntil = [
+  {
+    ...templateProject,
+  },
+  {
+    parent: {
+      untilBlock: 10,
+      reference: '0',
+    },
+    ...templateProject,
+  },
+] as ISubqueryProject[];
+
 const loopProjects = [
   {
     parent: {
@@ -122,6 +135,16 @@ describe('Project Upgrades', () => {
       );
 
       expect([...upgradeService.projects.keys()]).toEqual([1, 10, 20, 30, 40, 50]);
+    });
+
+    it('can load all parent projects with untilBlock field', async () => {
+      const upgradeService = await ProjectUpgradeSevice.create(
+        demoProjectsUntil[1],
+        (id) => Promise.resolve(demoProjectsUntil[parseInt(id, 10)]),
+        1
+      );
+
+      expect([...upgradeService.projects.keys()]).toEqual([1, 10]);
     });
 
     it('can handle projects that somehow refer to each other', async () => {
