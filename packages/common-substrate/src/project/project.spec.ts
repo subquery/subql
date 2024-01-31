@@ -1,8 +1,14 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {getManifestPath, loadFromJsonOrYaml, RunnerQueryBaseModel, SemverVersionValidator, toJsonObject} from '@subql/common';
+import {
+  getManifestPath,
+  loadFromJsonOrYaml,
+  RunnerQueryBaseModel,
+  SemverVersionValidator,
+  toJsonObject,
+} from '@subql/common';
 import {validateSync} from 'class-validator';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
 import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';

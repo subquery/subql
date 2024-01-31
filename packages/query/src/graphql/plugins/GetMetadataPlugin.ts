@@ -1,4 +1,4 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {URL} from 'url';
@@ -235,9 +235,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
 
         _metadatas(
           after: Cursor
-          before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter
-        ): # first: Int
-        # last: Int
+          before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int
+        ): # last: Int
         # offset: Int
         # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas

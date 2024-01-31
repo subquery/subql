@@ -1,4 +1,4 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 // overwrite the official Polkadot HttpProvider: https://github.com/polkadot-js/api/blob/master/packages/rpc-provider/src/http/index.ts
