@@ -9,6 +9,7 @@ import {
   DEFAULT_MULTICHAIN_MANIFEST,
   DEFAULT_MULTICHAIN_TS_MANIFEST,
   DEFAULT_TS_MANIFEST,
+  formatPath,
   tsProjectYamlPath,
 } from '@subql/common';
 import {MultichainProjectManifest} from '@subql/types-core';
@@ -22,11 +23,6 @@ const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `const project = toJsonObject((require('${scriptPath}')).default);` +
   `const yamlOutput = yaml.dump(project);` +
   `writeFileSync('${outputPath}', '# // Auto-generated , DO NOT EDIT\\n' + yamlOutput);`;
-
-// Replaces \ in path on windows that don't work with require
-function formatPath(p: string): string {
-  return p.replace(/\\/g, '/');
-}
 
 export async function buildManifestFromLocation(location: string, command: Command): Promise<string> {
   let directory: string;

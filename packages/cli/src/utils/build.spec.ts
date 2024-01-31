@@ -4,6 +4,7 @@
 import {existsSync, readFileSync, writeFileSync} from 'fs';
 import path from 'path';
 import {Command} from '@oclif/core';
+import {formatPath} from '@subql/common';
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import rimraf from 'rimraf';
@@ -75,4 +76,14 @@ describe('Manifest generation', () => {
 
     writeFileSync(path.join(projectPath, '../subquery-multichain4.yaml'), yaml.dump(multichainContent));
   }, 50000);
+
+  it('Convert winPath to unix', () => {
+    const winAbsolutePath = 'C:\\Users\\example\\Desktop\\project\\src\\types\\proto-interfaces';
+    const winRelativePath = '.\\Desktop\\project\\src\\types\\proto-interfaces';
+    const absoluteP = formatPath(winAbsolutePath);
+    const relativeP = formatPath(winRelativePath);
+
+    expect(absoluteP).toEqual('C:/Users/example/Desktop/project/src/types/proto-interfaces');
+    expect(relativeP).toEqual('./Desktop/project/src/types/proto-interfaces');
+  });
 });

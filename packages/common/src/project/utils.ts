@@ -29,6 +29,11 @@ export function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
 }
 
+// Replaces \ in path on windows that don't work with require
+export function formatPath(p: string): string {
+  return p.replace(/\\/g, '/');
+}
+
 // Input manifest here, we might need to handler other error later on
 export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger) {
   if (JSON.stringify(err.message).includes(RUNNER_ERROR_REGEX)) {
