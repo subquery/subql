@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
+import {ParentProject} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
@@ -55,6 +56,10 @@ const serviceKeys: Array<keyof IProjectUpgradeService> = [
 
 function assertEqual<T>(valueA: T, valueB: T, name: string) {
   assert(valueA === valueB, `Expected ${name} to be equal. expected="${valueA}" parent has="${valueB}"`);
+}
+
+function getParentBlock(parent: ParentProject): number {
+  return parent.untilBlock ?? parent.block;
 }
 
 const logger = getLogger('ProjectUpgradeSevice');
@@ -295,7 +300,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
       // Set the current height to the start of the startProject if not provided
       if (currentHeight === undefined) {
-        currentHeight = startProject.parent?.block ?? projectStartHeight;
+        currentHeight = (startProject.parent && getParentBlock(startProject.parent)) ?? projectStartHeight;
       }
 
       // At the end of the chain
@@ -307,11 +312,11 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         addProject(projectStartHeight, currentProject);
         break;
       }
-      if (currentProject.parent.block) {
-        addProject(currentProject.parent.block, currentProject);
+      if (currentProject.parent && getParentBlock(currentProject.parent)) {
+        addProject(getParentBlock(currentProject.parent), currentProject);
       }
       // At the limit of the start height for Parent
-      if (startHeight !== undefined && startHeight >= currentProject.parent.block) {
+      if (startHeight !== undefined && startHeight >= getParentBlock(currentProject.parent)) {
         break;
       }
 
@@ -319,7 +324,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       nextProject = await loadProject(currentProject.parent.reference).catch((e) => {
         throw new Error(`Failed to load parent project with cid: ${currentProject.parent?.reference}. ${e}`);
       });
-      if (nextProject.parent && nextProject.parent.block > currentProject.parent.block) {
+      if (nextProject.parent && getParentBlock(nextProject.parent) > getParentBlock(currentProject.parent)) {
         throw new Error(
           `Parent project ${currentProject.parent.reference} has a block height that is greater than the current project`
         );
