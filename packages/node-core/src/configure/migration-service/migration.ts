@@ -2,18 +2,32 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SUPPORT_DB} from '@subql/common';
-import {getAllEntitiesRelations, GraphQLEntityField, GraphQLEntityIndex, GraphQLModelsType} from '@subql/utils';
+import {
+  getAllEntitiesRelations,
+  GraphQLEntityField,
+  GraphQLEntityIndex,
+  GraphQLModelsType,
+  GraphQLRelationsType,
+} from '@subql/utils';
 import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
 import {StoreService} from '../../indexer';
+import {getLogger} from '../../logger';
 import {
+  addRelationToMap,
+  commentConstraintQuery,
+  commentTableQuery,
+  constraintDeferrableQuery,
+  createUniqueIndexQuery,
   formatAttributes,
   formatColumnName,
   generateCreateIndexStatement,
   generateCreateTableStatement,
   generateHashedIndexName,
-  modelToTableName,
+  getFkConstraint,
+  modelToTableName, SmartTags,
+  smartTags,
   syncEnums,
 } from '../../utils';
 import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
@@ -26,10 +40,13 @@ import {
 } from '../../utils/sync-helper';
 import {NodeConfig} from '../NodeConfig';
 
+const logger = getLogger('Migration');
+
 export class Migration {
   private sequelizeModels: ModelStatic<any>[] = [];
   private rawQueries: string[] = [];
   private readonly historical: boolean;
+  private extraQueries: string[] = [];
 
   constructor(
     private sequelize: Sequelize,
@@ -199,5 +216,89 @@ export class Migration {
   dropIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {
     const hashedIndexName = generateHashedIndexName(model.name, index);
     this.rawQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
+  }
+
+  createRelation(relation: GraphQLRelationsType): void {
+    const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
+
+    const model = this.sequelize.model(relation.from);
+    const relatedModel = this.sequelize.model(relation.to);
+    // TODO does not create comments on second
+
+    // TODO does create correct indexes
+    if (this.historical) {
+      addRelationToMap(relation, foreignKeyMap, model, relatedModel);
+    } else {
+      switch (relation.type) {
+        case 'belongsTo': {
+          // TODO cockroach support
+          logger.warn(`Relation: ${model.tableName} to ${relatedModel.tableName} is ONLY supported by postgresDB`);
+          // const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          // if (this.dbType !== SUPPORT_DB.cockRoach) {
+          //   this.rawQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
+          // }
+          break;
+        }
+        case 'hasOne': {
+          const rel = model.hasOne(relatedModel, {
+            foreignKey: relation.foreignKey,
+          });
+          const fkConstraint = getFkConstraint(rel.target.tableName, rel.foreignKey);
+          const tags = smartTags({
+            singleForeignFieldName: relation.fieldName,
+          });
+          this.extraQueries.push(
+            commentConstraintQuery(`"${this.schemaName}"."${rel.target.tableName}"`, fkConstraint, tags),
+            createUniqueIndexQuery(this.schemaName, relatedModel.tableName, relation.foreignKey)
+          );
+          break;
+        }
+        case 'hasMany': {
+          const rel = model.hasMany(relatedModel, {
+            foreignKey: relation.foreignKey,
+          });
+          const fkConstraint = getFkConstraint(rel.target.tableName, rel.foreignKey);
+          const tags = smartTags({
+            foreignFieldName: relation.fieldName,
+          });
+          this.extraQueries.push(
+            commentConstraintQuery(`"${this.schemaName}"."${rel.target.tableName}"`, fkConstraint, tags)
+          );
+
+          break;
+        }
+        default:
+          throw new Error('Relation type is not supported');
+      }
+    }
+
+    foreignKeyMap.forEach((keys, tableName) => {
+      const comment = Array.from(keys.values())
+        .map((tags) => smartTags(tags, '|'))
+        .join('\n');
+      const query = commentTableQuery(`"${this.schemaName}"."${tableName}"`, comment);
+      this.extraQueries.push(query);
+    });
+
+    this.addModel(model);
+  }
+  dropRelation(relation: GraphQLRelationsType) {
+    const model = this.sequelize.model(relation.from);
+    const relatedModel = this.sequelize.model(relation.to);
+    // TODO safety for historical
+    switch (relation.type) {
+      case 'belongsTo':
+        // Logic for removing belongsTo relation
+        break;
+      case 'hasOne':
+        // Logic for removing hasOne relation
+        break;
+      case 'hasMany':
+        // Logic for removing hasMany relation
+        break;
+      default:
+        throw new Error('Relation type is not supported for removal');
+    }
+    console.log('drop relation hit');
   }
 }

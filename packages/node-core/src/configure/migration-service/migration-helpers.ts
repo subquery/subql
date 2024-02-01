@@ -81,17 +81,6 @@ export function compareRelations(
       changes.removedRelations.push(rel);
     }
   });
-
-  nextRelations.forEach((nextRel) => {
-    const currentRel = currentRelations.find(
-      (currentRel) =>
-        currentRel.from === nextRel.from && currentRel.to === nextRel.to && currentRel.type === nextRel.type
-    );
-
-    if (currentRel && currentRel.foreignKey !== nextRel.foreignKey) {
-      // TODO handle modified relations
-    }
-  });
 }
 
 export function fieldsAreEqual(field1: GraphQLEntityField, field2: GraphQLEntityField): boolean {
@@ -156,6 +145,8 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
           `${index.fields.join(', ')}${index.unique ? ' (Unique)' : ''}${index.using ? ` Using: ${index.using}` : ''}`
       )
       .join('; ');
+  const formatRelations = (relations: GraphQLRelationsType[]) =>
+    relations.map((relation) => `Field: ${relation.fieldName} From: ${relation.from} To: ${relation.to}`);
 
   if (schemaChanges.addedModels.length) {
     logMessage += `Added Entities: ${formatModels(schemaChanges.addedModels)}\n`;
@@ -163,6 +154,15 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
 
   if (schemaChanges.removedModels.length) {
     logMessage += `Removed Entities: ${formatModels(schemaChanges.removedModels)}\n`;
+  }
+
+  if (schemaChanges.addedRelations.length) {
+    logMessage += `Added Relations: ${formatRelations(schemaChanges.addedRelations)}\n`;
+  }
+
+  // Removing relations
+  if (schemaChanges.removedRelations.length) {
+    logMessage += `Removed Relations: ${formatRelations(schemaChanges.removedRelations)}\n`;
   }
 
   Object.entries(schemaChanges.modifiedModels).forEach(([modelName, changes]) => {
@@ -182,17 +182,9 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
       logMessage += `\tRemoved Indexes: ${formatIndexes(changes.removedIndexes)}\n`;
     }
   });
-
   /*
      // Adding relations
-    if (schemaChanges.addedRelations.length) {
-      logMessage += `Added Relations: ${formatModels(schemaChanges.addedRelations)}\n`;
-    }
 
-    // Removing relations
-    if (schemaChanges.removedRelations.length) {
-      logMessage += `Removed Relations: ${formatModels(schemaChanges.removedRelations)}\n`;
-    }
 
     // Adding enums
     if (schemaChanges.addedEnums.length) {
@@ -203,6 +195,6 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
     if (schemaChanges.removedEnums.length) {
       logMessage += `Removed Enums: ${formatModels(schemaChanges.removedEnums)}\n`;
     }
-     */
+   */
   return logMessage;
 }

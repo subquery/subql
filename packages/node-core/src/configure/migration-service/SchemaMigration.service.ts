@@ -89,10 +89,6 @@ export class SchemaMigrationService {
       throw new Error('Schema Migration currently does not support Enum removal and creation');
     }
 
-    if (removedRelations.length > 0 || addedRelations.length > 0) {
-      throw new Error('Schema Migration currently does not support Relational removal or creation');
-    }
-
     await this.flushCache(true);
     const migrationAction = await Migration.create(
       this.sequelize,
@@ -138,6 +134,18 @@ export class SchemaMigrationService {
           for (const index of modelValue.addedIndexes) {
             migrationAction.createIndex(modelValue.model, index);
           }
+        }
+      }
+
+      if (addedRelations.length) {
+        for (const relationModel of addedRelations) {
+          migrationAction.createRelation(relationModel);
+        }
+      }
+
+      if (removedRelations.length) {
+        for (const relationModel of removedRelations) {
+          migrationAction.dropRelation(relationModel);
         }
       }
 

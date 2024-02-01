@@ -36,6 +36,7 @@ const mockInstance = async (
   cid: string,
   schemaName: string,
   disableHistorical: boolean,
+  timestampField: boolean,
 ) => {
   const argv: Record<string, any> = {
     _: [],
@@ -45,6 +46,7 @@ const mockInstance = async (
     allowSchemaMigration: true,
     ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
     networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
+    timestampField,
   };
   return registerApp<SubqueryProject>(
     argv,
@@ -58,11 +60,13 @@ async function mockRegister(
   cid: string,
   schemaName: string,
   disableHistorical: boolean,
+  timestampField: boolean,
 ): Promise<DynamicModule> {
   const { nodeConfig, project } = await mockInstance(
     cid,
     schemaName,
     disableHistorical,
+    timestampField,
   );
 
   return {
@@ -93,12 +97,13 @@ async function prepareApp(
   schemaName: string,
   cid: string,
   disableHistorical = false,
+  timestampField = true,
 ) {
   const m = await Test.createTestingModule({
     imports: [
       DbModule.forRoot(),
       EventEmitterModule.forRoot(),
-      mockRegister(cid, schemaName, disableHistorical),
+      mockRegister(cid, schemaName, disableHistorical, timestampField),
       ScheduleModule.forRoot(),
       FetchModule,
       MetaModule,
@@ -128,7 +133,7 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterEach(async () => {
-    await sequelize.dropSchema(schemaName, { logging: false });
+    // await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
   });
   afterAll(async () => {
@@ -483,10 +488,11 @@ describe('SchemaMigration integration tests', () => {
 
     processExitSpy.mockRestore();
   });
-  it.skip('support relations on migration', async () => {
-    const cid = 'QmXJwbpr6wcoNeDM3M6xy8FuaiME3N6zvsUTxThmaVfKpz';
-    schemaName = 'test-migrations-13';
-    app = await prepareApp(schemaName, cid);
+  it('add relations on migration', async () => {
+    // const cid = 'QmXJwbpr6wcoNeDM3M6xy8FuaiME3N6zvsUTxThmaVfKpz';
+    const cid = 'QmU4ca4G8Bg8qu1AapmGZyuAjYtZfBNSN9WiubkQai35Bs';
+    schemaName = 'test-migrations-12';
+    app = await prepareApp(schemaName, cid, false, false);
 
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
@@ -498,4 +504,7 @@ describe('SchemaMigration integration tests', () => {
 
     await projectUpgradeService.setCurrentHeight(2000);
   });
+  // todo delete relations
+
+  // todo with and without historical
 });
