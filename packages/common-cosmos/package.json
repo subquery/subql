@@ -14,7 +14,6 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@cosmology/telescope": "^0.104.0",
     "@cosmwasm/ts-codegen": "^0.35.3",
     "@protobufs/cosmos": "^0.1.0",
     "@protobufs/cosmos_proto": "^0.0.10",
@@ -25,6 +24,7 @@
     "@protobufs/tendermint": "^0.0.10",
     "@subql/common": "^3.3.1",
     "@subql/types-cosmos": "workspace:*",
+    "@subql/x-cosmology-telescope": "^1.4.12",
     "fs-extra": "^11.1.1",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.13"

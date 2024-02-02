@@ -1,8 +1,8 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {TelescopeOptions} from '@cosmology/types/types/telescope';
 import {TSBuilderInput, ContractFile} from '@cosmwasm/ts-codegen';
+import {TelescopeOptions} from '@subql/x-cosmology-types/types/telescope';
 
 export const TELESCOPE_OPTS: TelescopeOptions = {
   removeUnusedImports: true,
@@ -54,7 +54,6 @@ export const TELESCOPE_OPTS: TelescopeOptions = {
   aminoEncoding: {
     enabled: false,
     exceptions: {},
-    useRecursiveV2encoding: true,
   },
   lcdClients: {
     enabled: false,

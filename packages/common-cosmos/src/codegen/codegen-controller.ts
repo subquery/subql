@@ -3,10 +3,10 @@
 
 import fs from 'fs';
 import path from 'path';
-import telescope from '@cosmology/telescope';
 import cosmwasmCodegen from '@cosmwasm/ts-codegen';
 import {makeTempDir} from '@subql/common';
 import {CosmosChaintypes, CustomModule, CosmosRuntimeDatasource} from '@subql/types-cosmos';
+import telescope from '@subql/x-cosmology-telescope';
 import {Data} from 'ejs';
 import {copySync} from 'fs-extra';
 import {upperFirst} from 'lodash';
