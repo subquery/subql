@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Bump `common-cosmos` Codegen failing on Windows by using forked version of `telescope`
+- Bump `common-ethereum` with added Nullable transaction filter, and Codegen typechain fix
 
 ## [4.2.5] - 2023-12-22
 ### Fixed
