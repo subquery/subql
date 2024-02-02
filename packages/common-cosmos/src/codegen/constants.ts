@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {TSBuilderInput, ContractFile} from '@cosmwasm/ts-codegen';
-import {TelescopeOptions} from '@subql/x-cosmology-types/types/telescope';
+import {TelescopeOptions} from '@subql/x-cosmology-types';
 
 export const TELESCOPE_OPTS: TelescopeOptions = {
   removeUnusedImports: true,
