@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Codegen failing on Windows by using forked version of `telescope` (#226)
 
+### Changed
+- removed deprecated field `fromPartial` from telescope config (#228)
+
 ## [4.0.0] - 2023-12-14
 ### Fixed
 - Codegen generating types with duplicate names leading to invalid TS. (#216)
