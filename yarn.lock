@@ -4161,7 +4161,7 @@ __metadata:
     "@protobufs/tendermint": ^0.0.10
     "@subql/common": ^3.3.1
     "@subql/types-cosmos": "workspace:*"
-    "@subql/x-cosmology-telescope": ^1.4.12
+    "@subql/x-cosmology-telescope": ^1.4.14
     "@types/bn.js": 4.11.6
     "@types/ejs": ^3.1.2
     "@types/fs-extra": ^11
@@ -4358,48 +4358,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/x-cosmology-ast@npm:^1.4.8":
-  version: 1.4.8
-  resolution: "@subql/x-cosmology-ast@npm:1.4.8"
+"@subql/x-cosmology-ast@npm:^1.4.10":
+  version: 1.4.10
+  resolution: "@subql/x-cosmology-ast@npm:1.4.10"
   dependencies:
     "@babel/parser": ^7.23.6
     "@babel/types": 7.23.6
-    "@subql/x-cosmology-types": ^1.4.2
-    "@subql/x-cosmology-utils": ^1.4.2
+    "@subql/x-cosmology-types": ^1.4.4
+    "@subql/x-cosmology-utils": ^1.4.4
     case: 1.6.3
     dotty: 0.1.2
-  checksum: ae3de29b1406f69044550c1065bc6f64872fea6fdf26d86499ea95836a43082371b936ce7a88c976976e91bfa1cee62e926152998a898f1e97dfe90a9ed87228
+  checksum: f08eca56468a6b2c4eea22250c734de1331488c8a6ad716e874f8da85ff40a469a7f573b15d2ea6b1ca0efefc7cdedbc0fa3ff994cc28169882b5443933760da
   languageName: node
   linkType: hard
 
-"@subql/x-cosmology-proto-parser@npm:^1.4.4":
-  version: 1.4.4
-  resolution: "@subql/x-cosmology-proto-parser@npm:1.4.4"
+"@subql/x-cosmology-proto-parser@npm:^1.4.6":
+  version: 1.4.6
+  resolution: "@subql/x-cosmology-proto-parser@npm:1.4.6"
   dependencies:
     "@cosmology/protobufjs": 6.11.6
-    "@subql/x-cosmology-types": ^1.4.2
-    "@subql/x-cosmology-utils": ^1.4.2
+    "@subql/x-cosmology-types": ^1.4.4
+    "@subql/x-cosmology-utils": ^1.4.4
     dotty: 0.1.2
     glob: 8.0.3
     minimatch: 5.1.0
     mkdirp: 3.0.0
-  checksum: 5745081bc68da44995bbb3eac43b554d7b091a81babb10d10d95e3115705a666d31efc061a24c475230677fceae3bc3e3e6f47b54ae525f91922c3690c88fe0e
+  checksum: 6346648d78a0b7af36543626c2bbe125eb2f751ac195733d2ab177f5c27f6f7902b9ae1ba25f6dc5589f085ab6bf42ea7e9bcdd29ae61082c15f6486e8605696
   languageName: node
   linkType: hard
 
-"@subql/x-cosmology-telescope@npm:^1.4.12":
-  version: 1.4.12
-  resolution: "@subql/x-cosmology-telescope@npm:1.4.12"
+"@subql/x-cosmology-telescope@npm:^1.4.14":
+  version: 1.4.14
+  resolution: "@subql/x-cosmology-telescope@npm:1.4.14"
   dependencies:
     "@babel/generator": ^7.23.6
     "@babel/parser": ^7.23.6
     "@babel/traverse": 7.23.6
     "@babel/types": 7.23.6
     "@cosmwasm/ts-codegen": 0.34.0
-    "@subql/x-cosmology-ast": ^1.4.8
-    "@subql/x-cosmology-proto-parser": ^1.4.4
-    "@subql/x-cosmology-types": ^1.4.2
-    "@subql/x-cosmology-utils": ^1.4.2
+    "@subql/x-cosmology-ast": ^1.4.10
+    "@subql/x-cosmology-proto-parser": ^1.4.6
+    "@subql/x-cosmology-types": ^1.4.4
+    "@subql/x-cosmology-utils": ^1.4.4
     "@types/parse-package-name": 0.1.0
     case: 1.6.3
     dargs: 7.0.0
@@ -4417,26 +4417,26 @@ __metadata:
     shelljs: 0.8.5
   bin:
     telescope: main/telescope.js
-  checksum: e0025f90adc4485a894291c2819701cdc24e6647837517bedfe28a51802094406849a8d0f61a52cae0339e432dc8f28c77983ea443bf13852153fd1804722ae3
+  checksum: a9bcdb64672323ac23d5e40df4aa575734338a58474ec447c71e3e8e07d1d1767052ee005fefe0265c05546f600ac6bb79c7a523a4285753c7a8a084f0f7319d
   languageName: node
   linkType: hard
 
-"@subql/x-cosmology-types@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "@subql/x-cosmology-types@npm:1.4.2"
+"@subql/x-cosmology-types@npm:^1.4.4":
+  version: 1.4.4
+  resolution: "@subql/x-cosmology-types@npm:1.4.4"
   dependencies:
     case: 1.6.3
-  checksum: cee4daf57c72827c3c00ef8ebc86f20a7501d8861a53bf9304574ec7d49fb938b32d3471b1aa38fe9b35f82ac864d1e36dfe975ccdf9b91ff982ff0bafe57049
+  checksum: 987d7ba41aa112db65ad76d863d9fc89726d04d54c8dc7f87da47b017fe39f7a18a70997e5585f6ca195f4b8f03461d73eb3f6675cffd13d5532213c2bbd296f
   languageName: node
   linkType: hard
 
-"@subql/x-cosmology-utils@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "@subql/x-cosmology-utils@npm:1.4.2"
+"@subql/x-cosmology-utils@npm:^1.4.4":
+  version: 1.4.4
+  resolution: "@subql/x-cosmology-utils@npm:1.4.4"
   dependencies:
-    "@subql/x-cosmology-types": ^1.4.2
+    "@subql/x-cosmology-types": ^1.4.4
     dotty: 0.1.2
-  checksum: 86986374428efa10159a535c85c220fc21bdf8fb17c9f7427b8a4e6451d90a256f957549ad55ad37f66477158687fd3ec5ec6658206e8b718e790274cb68aaac
+  checksum: 5ecb20e4b95d34d615a435bbc6ef45a7cebd3ad9ce3457f111a208a2ba4662c58c75e0d123aaec5bec338276d33a109e950393328c63029d5314b0ae86749e8b
   languageName: node
   linkType: hard
 
