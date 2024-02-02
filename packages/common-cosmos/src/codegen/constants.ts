@@ -31,7 +31,6 @@ export const TELESCOPE_OPTS: TelescopeOptions = {
 
       encode: false,
       decode: false,
-      fromPartial: false,
 
       toSDK: false,
       fromSDK: false,
