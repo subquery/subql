@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- Bump `common-cosmos` Codegen failing on Windows by using forked version of `telescope`
-- Bump `common-ethereum` with added Nullable transaction filter, and Codegen typechain fix
+- Bump `common-cosmos` Codegen failing on Windows by using forked version of `telescope` (#2239)
+- Bump `common-ethereum` with added Nullable transaction filter, and Codegen typechain fix (#2239)
 
 ## [4.2.5] - 2023-12-22
 ### Fixed
