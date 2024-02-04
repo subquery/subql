@@ -85,7 +85,7 @@ module.exports = {
       2,
       'line',
       [
-        // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+        // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
         // SPDX-License-Identifier: GPL-3.0
         {pattern: ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors'},
         ' SPDX-License-Identifier: GPL-3.0',
