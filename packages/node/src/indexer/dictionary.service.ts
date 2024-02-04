@@ -7,14 +7,16 @@ import { NETWORK_FAMILY } from '@subql/common';
 import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
+  getLogger,
 } from '@subql/node-core';
 import { MetaData } from '@subql/utils';
 import JSON5 from 'json5';
-import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
 
 const CHAIN_ALIASES_URL =
   'https://raw.githubusercontent.com/subquery/templates/main/chainAliases.json5';
+
+const logger = getLogger('dictionary');
 
 @Injectable()
 export class DictionaryService extends CoreDictionaryService {
@@ -68,10 +70,19 @@ export class DictionaryService extends CoreDictionaryService {
   }
 
   private static async getEvmChainId(): Promise<Record<string, string>> {
-    const response = await fetch(CHAIN_ALIASES_URL);
+    try {
+      // Use fetch added in nodejs 18, it is missing from @types/node though so we need the cast
+      const response = await (global as any).fetch(CHAIN_ALIASES_URL);
+      const raw = await response.text();
 
-    const raw = await response.text();
-    // We use JSON5 here because the file has comments in it
-    return JSON5.parse(raw);
+      // We use JSON5 here because the file has comments in it
+      return JSON5.parse(raw);
+    } catch (e) {
+      logger.warn(
+        e,
+        `Unable to get chain aliases. If you're using a Substrate based network with EVM then the dictionary may not work`,
+      );
+      return {};
+    }
   }
 }

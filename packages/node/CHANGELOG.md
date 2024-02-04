@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - The ability to filter transactions with no input data (#243)
 
+### Fixed
+- Error handling for fetching dictionary chain aliases and switch to built in nodejs fetch (#247)
+
 ## [3.7.0] - 2024-01-30
 ### Added
 - Special support for BEVM Canary (#241)
