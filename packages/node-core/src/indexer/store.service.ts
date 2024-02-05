@@ -378,7 +378,7 @@ export class StoreService {
     });
 
     if (this.historical) {
-      // WARNING these hooks depend on `this.blockHeight` which is a chaning value. DO NOT move this into a function outside of this class
+      // WARNING these hooks depend on `this.blockHeight` which is a changing value. DO NOT move this into a function outside of this class
       sequelizeModel.addScope('defaultScope', {
         attributes: {
           exclude: ['__id', '__block_range'],
