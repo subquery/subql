@@ -116,16 +116,23 @@ describe('sync-helper', () => {
 
   it('Generate SQL statement for table creation with historical', () => {
     const statement = generateCreateTableStatement(mockModel, 'test', true);
-    const expectedStatement = `CREATE TABLE IF NOT EXISTS "test"."test-table" (
+    const expectedStatement = `
+    CREATE TABLE IF NOT EXISTS "test"."test-table" (
       "id" text NOT NULL,
       "amount" numeric NOT NULL,
       "date" timestamp NOT NULL,
       "from_id" text NOT NULL,
       "_id" text NOT NULL PRIMARY KEY,
       "_block_range" int8range NOT NULL,
-      "last_transfer_block" integer, PRIMARY KEY ("_id")
-    );`.trim();
-    expect(statement.trim()).toMatch(expectedStatement);
+      "last_transfer_block" integer
+    );
+  
+COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';
+COMMENT ON COLUMN "test"."test-table"."amount" IS 'Amount that is transferred';
+COMMENT ON COLUMN "test"."test-table"."date" IS 'The date of the transfer';
+COMMENT ON COLUMN "test"."test-table"."from_id" IS 'The account that transfers are made from';
+COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent block on which we see a transfer involving this account';`.trim();
+    expect(statement.trim()).toBe(expectedStatement);
   });
   it('Generate SQL statement for Indexes', () => {
     const statement = generateCreateIndexStatement(
