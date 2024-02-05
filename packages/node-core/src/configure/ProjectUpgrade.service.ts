@@ -18,7 +18,7 @@ type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promis
 
 export interface IProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> {
   init: (
-    storeCacheService: StoreCacheService,
+    storeService: StoreService,
     currentHeight: number,
     config: NodeConfig,
     sequelize: Sequelize,
@@ -130,7 +130,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#currentProject = this.getProject(this.#currentHeight);
   }
   async init(
-    storeCacheService: StoreCacheService,
+    storeService: StoreService,
     currentHeight: number,
     config: NodeConfig,
     sequelize: Sequelize,
@@ -142,12 +142,13 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       return;
     }
     this.#initialized = true;
-    this.#storeCache = storeCacheService;
+    this.#storeCache = storeService.storeCache;
     this.config = config;
 
     this.migrationService = new SchemaMigrationService(
       sequelize,
-      storeCacheService._flushCache.bind(storeCacheService),
+      storeService,
+      storeService.storeCache._flushCache.bind(storeService.storeCache),
       schema,
       config
     );
@@ -228,12 +229,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     if (!this.config.unfinalizedBlocks) {
       assert(this.migrationService, 'MigrationService is undefined');
       if (this.config.allowSchemaMigration) {
-        const modifiedModels = await this.migrationService.run(
-          project.schema,
-          newProject.schema,
-          this.#currentHeight,
-          transaction
-        );
+        const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, transaction);
 
         if (modifiedModels) {
           this.#storeCache?.updateModels(modifiedModels);
