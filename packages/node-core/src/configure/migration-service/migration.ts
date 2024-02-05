@@ -7,7 +7,15 @@ import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Ut
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
 import {StoreService} from '../../indexer';
-import {formatAttributes, formatColumnName, generateHashedIndexName, modelToTableName, syncEnums} from '../../utils';
+import {
+  formatAttributes,
+  formatColumnName,
+  generateCreateIndexStatement,
+  generateCreateTableStatement,
+  generateHashedIndexName,
+  modelToTableName,
+  syncEnums,
+} from '../../utils';
 import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
 import {
   addBlockRangeColumnToIndexes,
@@ -53,10 +61,6 @@ export class Migration {
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
     const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
 
-    effectiveTransaction.afterCommit(async () => {
-      await Promise.all(this.sequelizeModels.map((m) => m.sync()));
-    });
-
     try {
       for (const query of this.rawQueries) {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
@@ -93,6 +97,21 @@ export class Migration {
     return {attributes, indexes};
   }
 
+  private defineSequelizeModel(
+    model: GraphQLModelsType,
+    attributes: ModelAttributes<any>,
+    indexes: IndexesOptions[]
+  ): ModelStatic<any> {
+    return this.sequelize.define(model.name, attributes, {
+      underscored: true,
+      comment: model.description,
+      freezeTableName: false,
+      createdAt: this.config.timestampField,
+      updatedAt: this.config.timestampField,
+      schema: this.schemaName,
+      indexes,
+    });
+  }
   private addModel(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
 
@@ -121,11 +140,19 @@ export class Migration {
       addHistoricalIdIndex(model, indexes);
     }
 
+    const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
+
     updateIndexesName(model.name, indexes, existedIndexes);
 
-    const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
-
     this.addModel(sequelizeModel);
+    this.rawQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName, this.historical));
+
+    if (sequelizeModel.options.indexes) {
+      this.rawQueries.push(
+        ...generateCreateIndexStatement(sequelizeModel.options.indexes, this.schemaName, sequelizeModel.tableName)
+      );
+    }
+
   }
 
   dropTable(model: GraphQLModelsType): void {
@@ -145,7 +172,7 @@ export class Migration {
     const dbTableName = modelToTableName(model.name);
     const dbColumnName = formatColumnName(field.name);
 
-    const formattedAttributes = formatAttributes(columnOptions);
+    const formattedAttributes = formatAttributes(columnOptions, this.schemaName, dbTableName);
     this.rawQueries.push(
       `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
     );

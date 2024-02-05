@@ -22,10 +22,11 @@ import {
   Sequelize,
   Utils,
 } from '@subql/x-sequelize';
+import {ModelIndexesOptions} from '@subql/x-sequelize/types/model';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {getEnumDeprecated} from './project';
-import {generateIndexName, modelToTableName} from './sequelizeUtil';
+import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 
 export interface SmartTags {
   foreignKey?: string;
@@ -394,4 +395,58 @@ export function addRelationToMap(
     default:
       throw new Error('Relation type is not supported');
   }
+}
+
+export function generateCreateTableStatement(
+  model: ModelStatic<Model<any, any>>,
+  schema: string,
+  historical: boolean
+): string {
+  const tableName = model.tableName;
+
+  const attributes = model.getAttributes();
+  const columnDefinitions: string[] = [];
+  // const primaryKeyColumns: string[] = [];
+  const comments: string[] = [];
+
+  Object.keys(attributes).forEach((key) => {
+    const attr = attributes[key];
+    const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema, tableName)}`;
+    columnDefinitions.push(columnDefinition);
+    if (attr.comment) {
+      comments.push(`COMMENT ON COLUMN "${schema}"."${tableName}"."${attr.field}" IS '${attr.comment}';`);
+    }
+    // if (attr.primaryKey) {
+    //   primaryKeyColumns.push(`"${attr.field}"`);
+    // }
+  });
+
+  // const primaryKeyDefinition = `, PRIMARY KEY (${primaryKeyColumns.join(', ')})`
+
+  const tableQuery = `
+    CREATE TABLE IF NOT EXISTS "${schema}"."${tableName}" (
+      ${columnDefinitions.join(',\n      ')}
+    );
+  `;
+
+  return tableQuery.concat(`\n${comments.join('\n')}`).trim();
+}
+
+export function generateCreateIndexStatement(
+  indexes: readonly ModelIndexesOptions[],
+  schema: string,
+  tableName: string
+): string[] {
+  const indexStatements: string[] = [];
+  indexes.forEach((index) => {
+    const fieldsList = index.fields?.map((field) => `"${field}"`).join(', ');
+    const unique = index.unique ? 'UNIQUE' : '';
+    const indexUsed = index.using ? `USING ${index.using}` : '';
+    const indexName = index.name;
+
+    const statement = `CREATE ${unique} INDEX "${indexName}" ON "${schema}"."${tableName}" ${indexUsed} (${fieldsList});`;
+    indexStatements.push(statement);
+  });
+
+  return indexStatements;
 }

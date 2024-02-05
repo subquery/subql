@@ -43,17 +43,38 @@ ${NodeUtil.inspect(index)}`);
   return underscored(out);
 }
 
-export function formatAttributes(columnOptions: ModelAttributeColumnOptions): string {
+export function formatReferences(
+  columnOptions: ModelAttributeColumnOptions,
+  schema: string,
+  tableName: string
+): string {
+  if (!columnOptions.references) {
+    return '';
+  }
+  let referenceStatement = `REFERENCES "${schema}"."${tableName}" ("${(columnOptions?.references as any).key}")`;
+  if (columnOptions.onDelete) {
+    referenceStatement += ` ON DELETE ${columnOptions.onDelete}`;
+  }
+  if (columnOptions.onUpdate) {
+    referenceStatement += ` ON UPDATE ${columnOptions.onUpdate}`;
+  }
+  return referenceStatement;
+}
+
+export function formatAttributes(
+  columnOptions: ModelAttributeColumnOptions,
+  schema: string,
+  tableName: string
+): string {
   const type = formatDataType(columnOptions.type);
   const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
   const primaryKey = columnOptions.primaryKey ? 'PRIMARY KEY' : '';
   const unique = columnOptions.unique ? 'UNIQUE' : '';
   const autoIncrement = columnOptions.autoIncrement ? 'AUTO_INCREMENT' : ''; //  PostgreSQL
 
-  // TODO Support relational
-  // const references = options.references ? formatReferences(options.references) :
+  const references = formatReferences(columnOptions, schema, tableName);
 
-  return `${type} ${allowNull} ${primaryKey} ${unique} ${autoIncrement}`.trim();
+  return `${type} ${allowNull} ${primaryKey} ${unique} ${autoIncrement} ${references}`.trim();
 }
 
 const sequelizeToPostgresTypeMap = {
@@ -65,6 +86,7 @@ const sequelizeToPostgresTypeMap = {
   [DataTypes.FLOAT.name]: () => Float.sequelizeType,
   [DataTypes.DATE.name]: () => DateObj.sequelizeType,
   [DataTypes.JSONB.name]: () => Json.sequelizeType,
+  RANGE: () => 'int8range', // Custom handler for int8range
 };
 
 export function formatDataType(dataType: DataType): SequelizeTypes {
@@ -72,6 +94,9 @@ export function formatDataType(dataType: DataType): SequelizeTypes {
     return dataType;
   } else {
     const formatter = sequelizeToPostgresTypeMap[dataType.key];
+    if (!formatter) {
+      throw new Error(`Unsupported data type: ${dataType.key}`);
+    }
     return formatter(dataType);
   }
 }
