@@ -491,7 +491,7 @@ describe('SchemaMigration integration tests', () => {
   it('add relations on migration', async () => {
     // const cid = 'QmXJwbpr6wcoNeDM3M6xy8FuaiME3N6zvsUTxThmaVfKpz';
     const cid = 'QmU4ca4G8Bg8qu1AapmGZyuAjYtZfBNSN9WiubkQai35Bs';
-    schemaName = 'test-migrations-12';
+    schemaName = 'test-migrations-17';
     app = await prepareApp(schemaName, cid, false, false);
 
     projectService = app.get('IProjectService');

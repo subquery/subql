@@ -6,6 +6,7 @@ import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
+import {SmartTags} from '../../utils';
 import {NodeConfig} from '../NodeConfig';
 import {Migration} from './migration';
 import {
@@ -138,9 +139,13 @@ export class SchemaMigrationService {
       }
 
       if (addedRelations.length) {
+        const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
+
         for (const relationModel of addedRelations) {
-          migrationAction.createRelation(relationModel);
+          migrationAction.createRelation(relationModel, foreignKeyMap);
         }
+        // Comments should be added after
+        migrationAction.addRelationComments(foreignKeyMap);
       }
 
       if (removedRelations.length) {

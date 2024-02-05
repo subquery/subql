@@ -146,7 +146,7 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
       )
       .join('; ');
   const formatRelations = (relations: GraphQLRelationsType[]) =>
-    relations.map((relation) => `Field: ${relation.fieldName} From: ${relation.from} To: ${relation.to}`);
+    relations.map((relation) => `From: ${relation.from} To: ${relation.to}`);
 
   if (schemaChanges.addedModels.length) {
     logMessage += `Added Entities: ${formatModels(schemaChanges.addedModels)}\n`;

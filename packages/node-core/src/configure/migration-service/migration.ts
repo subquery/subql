@@ -18,7 +18,6 @@ import {
   addRelationToMap,
   commentConstraintQuery,
   commentTableQuery,
-  constraintDeferrableQuery,
   createUniqueIndexQuery,
   formatAttributes,
   formatColumnName,
@@ -83,6 +82,10 @@ export class Migration {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
+      for (const query of this.extraQueries) {
+        await this.sequelize.query(query, {transaction: effectiveTransaction});
+      }
+
       if (!transaction) {
         await effectiveTransaction.commit();
       }
@@ -129,13 +132,12 @@ export class Migration {
 
   async createTable(model: GraphQLModelsType): Promise<void> {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
+    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(this.schemaName));
+    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
 
     if (indexes.length > this.config.indexCountLimit) {
       throw new Error(`too many indexes on entity ${model.name}`);
     }
-
-    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(this.schemaName));
-    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
 
     if (this.historical) {
       addBlockRangeColumnToIndexes(indexes);
@@ -162,6 +164,8 @@ export class Migration {
   }
 
   createColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
+    const sequelizeModel = this.createModel(model);
+
     const columnOptions = getColumnOption(field, this.enumTypeMap);
     if (columnOptions.primaryKey) {
       throw new Error('Primary Key migration upgrade is not allowed');
@@ -184,8 +188,10 @@ export class Migration {
         `COMMENT ON COLUMN "${this.schemaName}".${dbTableName}.${dbColumnName} IS '${columnOptions.comment}';`
       );
     }
-    this.addModel(this.createModel(model));
+
+    this.addModel(sequelizeModel);
   }
+
   dropColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
     this.rawQueries.push(
       `ALTER TABLE  "${this.schemaName}"."${modelToTableName(model.name)}" DROP COLUMN IF EXISTS ${formatColumnName(
@@ -206,11 +212,18 @@ export class Migration {
       throw new Error("The 'fields' property is required and cannot be empty.");
     }
 
-    this.rawQueries.push(
-      `CREATE INDEX "${indexOptions.name}" ON "${this.schemaName}"."${formattedTableName}" (${indexOptions.fields.join(
-        ', '
-      )})`
-    );
+    if (this.historical) {
+      addBlockRangeColumnToIndexes([indexOptions]);
+      addHistoricalIdIndex(model, [indexOptions]);
+    }
+
+    const createIndexQuery =
+      `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX "${indexOptions.name}" ` +
+      `ON "${this.schemaName}"."${formattedTableName}" ` +
+      `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
+      `(${indexOptions.fields.join(', ')})`;
+
+    this.rawQueries.push(createIndexQuery);
   }
 
   dropIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {
@@ -218,9 +231,7 @@ export class Migration {
     this.rawQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
   }
 
-  createRelation(relation: GraphQLRelationsType): void {
-    const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
-
+  createRelation(relation: GraphQLRelationsType, foreignKeyMap: Map<string, Map<string, SmartTags>>): void {
     const model = this.sequelize.model(relation.from);
     const relatedModel = this.sequelize.model(relation.to);
     // TODO does not create comments on second
@@ -233,10 +244,6 @@ export class Migration {
         case 'belongsTo': {
           // TODO cockroach support
           logger.warn(`Relation: ${model.tableName} to ${relatedModel.tableName} is ONLY supported by postgresDB`);
-          // const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
-          // if (this.dbType !== SUPPORT_DB.cockRoach) {
-          //   this.rawQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
-          // }
           break;
         }
         case 'hasOne': {
@@ -271,7 +278,9 @@ export class Migration {
           throw new Error('Relation type is not supported');
       }
     }
-
+    this.addModel(model);
+  }
+  addRelationComments(foreignKeyMap: Map<string, Map<string, SmartTags>>): void {
     foreignKeyMap.forEach((keys, tableName) => {
       const comment = Array.from(keys.values())
         .map((tags) => smartTags(tags, '|'))
@@ -279,10 +288,9 @@ export class Migration {
       const query = commentTableQuery(`"${this.schemaName}"."${tableName}"`, comment);
       this.extraQueries.push(query);
     });
-
-    this.addModel(model);
   }
-  dropRelation(relation: GraphQLRelationsType) {
+
+  dropRelation(relation: GraphQLRelationsType): void {
     const model = this.sequelize.model(relation.from);
     const relatedModel = this.sequelize.model(relation.to);
     // TODO safety for historical
