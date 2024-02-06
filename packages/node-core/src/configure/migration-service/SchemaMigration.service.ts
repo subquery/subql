@@ -1,10 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Injectable} from '@nestjs/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
+import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {NodeConfig} from '../NodeConfig';
 import {Migration} from './migration';
@@ -19,10 +19,10 @@ import {
 
 const logger = getLogger('SchemaMigrationService');
 
-@Injectable()
 export class SchemaMigrationService {
   constructor(
     private sequelize: Sequelize,
+    private storeService: StoreService,
     private flushCache: (flushAll?: boolean) => Promise<void>,
     private dbSchema: string,
     private config: NodeConfig
@@ -66,7 +66,6 @@ export class SchemaMigrationService {
   async run(
     currentSchema: GraphQLSchema,
     nextSchema: GraphQLSchema,
-    blockHeight: number,
     transaction: Transaction | undefined
   ): Promise<ModelStatic<any>[] | void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
@@ -95,7 +94,14 @@ export class SchemaMigrationService {
     }
 
     await this.flushCache(true);
-    const migrationAction = await Migration.create(this.sequelize, this.dbSchema, nextSchema, this.config, logger);
+    const migrationAction = await Migration.create(
+      this.sequelize,
+      this.storeService,
+      this.dbSchema,
+      nextSchema,
+      this.config,
+      logger
+    );
 
     logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
 
@@ -108,7 +114,7 @@ export class SchemaMigrationService {
 
       if (addedModels.length) {
         for (const model of addedModels) {
-          await migrationAction.createTable(model, blockHeight);
+          await migrationAction.createTable(model);
         }
       }
 

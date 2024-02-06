@@ -367,7 +367,7 @@ export abstract class BaseProjectService<
 
   private async initUpgradeService(startHeight: number): Promise<number | undefined> {
     const upgradePoint = await this.projectUpgradeService.init(
-      this.storeService.storeCache,
+      this.storeService,
       startHeight,
       this.nodeConfig,
       this.sequelize,

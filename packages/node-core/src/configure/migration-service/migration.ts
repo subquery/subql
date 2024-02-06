@@ -6,22 +6,14 @@ import {getAllEntitiesRelations, GraphQLEntityField, GraphQLEntityIndex, GraphQL
 import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
-import {
-  addRelationToMap,
-  formatAttributes,
-  formatColumnName,
-  generateHashedIndexName,
-  modelToTableName,
-  syncEnums,
-} from '../../utils';
+import {StoreService} from '../../indexer';
+import {formatAttributes, formatColumnName, generateHashedIndexName, modelToTableName, syncEnums} from '../../utils';
 import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
 import {
   addBlockRangeColumnToIndexes,
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
-  addScopeAndBlockHeightHooks,
   getExistedIndexesQuery,
-  SmartTags,
   updateIndexesName,
 } from '../../utils/sync-helper';
 import {NodeConfig} from '../NodeConfig';
@@ -33,6 +25,7 @@ export class Migration {
 
   constructor(
     private sequelize: Sequelize,
+    private storeService: StoreService,
     private schemaName: string,
     private config: NodeConfig,
     private enumTypeMap: Map<string, string>
@@ -42,6 +35,7 @@ export class Migration {
 
   static async create(
     sequelize: Sequelize,
+    storeService: StoreService,
     schemaName: string,
     graphQLSchema: GraphQLSchema,
     config: NodeConfig,
@@ -53,7 +47,7 @@ export class Migration {
       await syncEnums(sequelize, SUPPORT_DB.postgres, e, schemaName, enumTypeMap, logger);
     }
 
-    return new Migration(sequelize, schemaName, config, enumTypeMap);
+    return new Migration(sequelize, storeService, schemaName, config, enumTypeMap);
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
@@ -99,21 +93,6 @@ export class Migration {
     return {attributes, indexes};
   }
 
-  private defineSequelizeModel(
-    model: GraphQLModelsType,
-    attributes: ModelAttributes<any>,
-    indexes: IndexesOptions[]
-  ): ModelStatic<any> {
-    return this.sequelize.define(model.name, attributes, {
-      underscored: true,
-      comment: model.description,
-      freezeTableName: false,
-      createdAt: this.config.timestampField,
-      updatedAt: this.config.timestampField,
-      schema: this.schemaName,
-      indexes,
-    });
-  }
   private addModel(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
 
@@ -124,14 +103,10 @@ export class Migration {
 
   private createModel(model: GraphQLModelsType) {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
-    const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
-    if (this.historical) {
-      addScopeAndBlockHeightHooks(sequelizeModel, undefined);
-    }
-    return sequelizeModel;
+    return this.storeService.defineModel(model, attributes, indexes, this.schemaName);
   }
 
-  async createTable(model: GraphQLModelsType, blockHeight: number): Promise<void> {
+  async createTable(model: GraphQLModelsType): Promise<void> {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
 
     if (indexes.length > this.config.indexCountLimit) {
@@ -146,13 +121,9 @@ export class Migration {
       addHistoricalIdIndex(model, indexes);
     }
 
-    const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
-
     updateIndexesName(model.name, indexes, existedIndexes);
 
-    if (this.historical) {
-      addScopeAndBlockHeightHooks(sequelizeModel, blockHeight);
-    }
+    const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
     this.addModel(sequelizeModel);
   }

@@ -71,7 +71,7 @@ export class StoreCacheService extends BaseCacheService {
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
   }
 
-  createModel(entityName: string): CachedModel<any> {
+  private createModel(entityName: string): CachedModel<any> {
     const model = this.sequelize.model(entityName);
     assert(model, `model ${entityName} not exists`);
     const cachedModel = new CachedModel(

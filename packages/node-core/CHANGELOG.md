@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Update `ParentProject` to use `untilBlock` as and alias for `block` (#2235)
 
+### Fixed
+- Historical queries not using the correct block height (#2243)
+
 ## [7.2.0] - 2024-01-30
 ### Changed
 - Update `@subql/apollo-links` and add specific logger for it

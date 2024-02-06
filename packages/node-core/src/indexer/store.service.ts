@@ -7,14 +7,23 @@ import {getDbType, SUPPORT_DB} from '@subql/common';
 import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
-  GraphQLRelationsType,
   hashName,
   IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
   hexToU8a,
+  GraphQLModelsType,
 } from '@subql/utils';
-import {IndexesOptions, ModelStatic, Op, QueryTypes, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
+import {
+  IndexesOptions,
+  ModelAttributes,
+  ModelStatic,
+  Op,
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  Utils,
+} from '@subql/x-sequelize';
 import {camelCase, flatten, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -23,8 +32,6 @@ import {
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
   addRelationToMap,
-  addScopeAndBlockHeightHooks,
-  addTagsToForeignKeyMap,
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   camelCaseObjectKey,
   commentConstraintQuery,
@@ -40,7 +47,6 @@ import {
   getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
-  getVirtualFkTag,
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
@@ -268,21 +274,7 @@ export class StoreService {
       // Update index query for cockroach db
       this.beforeHandleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
 
-      const sequelizeModel = this.sequelize.define(model.name, attributes, {
-        underscored: true,
-        comment: model.description,
-        freezeTableName: false,
-        createdAt: this.config.timestampField,
-        updatedAt: this.config.timestampField,
-        schema,
-        indexes,
-      });
-
-      if (this.historical) {
-        addScopeAndBlockHeightHooks(sequelizeModel, this._blockHeight);
-        // TODO, remove id and block_range constrain, check id manually
-        // see https://github.com/subquery/subql/issues/1542
-      }
+      const sequelizeModel = this.defineModel(model, attributes, indexes, schema);
 
       if (useSubscription) {
         const triggerName = hashName(schema, 'notify_trigger', sequelizeModel.tableName);
@@ -367,6 +359,45 @@ export class StoreService {
     }
 
     this.afterHandleCockroachIndex();
+  }
+
+  defineModel(
+    model: GraphQLModelsType,
+    attributes: ModelAttributes<any>,
+    indexes: IndexesOptions[],
+    schema: string
+  ): ModelStatic<any> {
+    const sequelizeModel = this.sequelize.define(model.name, attributes, {
+      underscored: true,
+      comment: model.description,
+      freezeTableName: false,
+      createdAt: this.config.timestampField,
+      updatedAt: this.config.timestampField,
+      schema,
+      indexes,
+    });
+
+    if (this.historical) {
+      // WARNING these hooks depend on `this.blockHeight` which is a changing value. DO NOT move this into a function outside of this class
+      sequelizeModel.addScope('defaultScope', {
+        attributes: {
+          exclude: ['__id', '__block_range'],
+        },
+      });
+
+      sequelizeModel.addHook('beforeFind', (options) => {
+        (options.where as any).__block_range = {
+          [Op.contains]: this.blockHeight as any,
+        };
+      });
+      sequelizeModel.addHook('beforeValidate', (attributes, options) => {
+        attributes.__block_range = [this.blockHeight, null];
+      });
+      // TODO, remove id and block_range constrain, check id manually
+      // see https://github.com/subquery/subql/issues/1542
+    }
+
+    return sequelizeModel;
   }
 
   private async useDeprecatePoi(schema: string): Promise<boolean> {

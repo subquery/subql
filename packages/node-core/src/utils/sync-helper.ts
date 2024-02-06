@@ -262,24 +262,6 @@ export function addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesO
   }
 }
 
-export function addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>, blockHeight: number | undefined): void {
-  sequelizeModel.addScope('defaultScope', {
-    attributes: {
-      exclude: ['__id', '__block_range'],
-    },
-  });
-
-  // TODO add blockHeight
-  sequelizeModel.addHook('beforeFind', (options) => {
-    (options.where as any).__block_range = {
-      [Op.contains]: blockHeight as any,
-    };
-  });
-  sequelizeModel.addHook('beforeValidate', (attributes, options) => {
-    attributes.__block_range = [blockHeight, null];
-  });
-}
-
 export function generateHashedIndexName(modelName: string, indexOptions: IndexesOptions): string {
   return blake2AsHex(`${modelName}_${(indexOptions.fields ?? []).join('_')}`, 64).substring(0, 63);
 }

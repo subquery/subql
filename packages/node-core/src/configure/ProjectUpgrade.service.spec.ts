@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {CacheMetadataModel, ISubqueryProject, StoreCacheService} from '../indexer';
+import {CacheMetadataModel, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
@@ -272,13 +272,14 @@ describe('Project Upgrades', () => {
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
         1
       );
+      const storeService = new StoreService({} as any, {} as any, storeCache, project);
 
-      await upgradeService.init(storeCache, 1, {} as NodeConfig, {} as Sequelize, '');
+      await upgradeService.init(storeService, 1, {} as NodeConfig, {} as Sequelize, '');
 
       project = upgradableSubqueryProject(upgradeService);
     });
 
-    it('cant set values other than `currentHeight`', () => {
+    it('cant set values other than `currentHeightg`', () => {
       expect(() => ((project as any).id = 'not possible')).toThrow();
     });
 
