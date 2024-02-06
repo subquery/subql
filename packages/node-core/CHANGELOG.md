@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [7.2.1] - 2024-02-07
 ### Added
 - Update `ParentProject` to use `untilBlock` as and alias for `block` (#2235)
 
@@ -558,7 +560,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.2.1...HEAD
+[7.2.1]: https://github.com/subquery/subql/compare/node-core/7.2.0...node-core/7.2.1
 [7.2.0]: https://github.com/subquery/subql/compare/node-core/7.1.0...node-core/7.2.0
 [7.1.0]: https://github.com/subquery/subql/compare/node-core/7.0.8...node-core/7.1.0
 [7.0.8]: https://github.com/subquery/subql/compare/node-core/7.0.7...node-core/7.0.8
