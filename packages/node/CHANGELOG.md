@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.1] - 2024-02-07
+### Fixed
+- Critical bug introduced in 3.5.0 which broke historical indexing
+
 ## [3.5.0] - 2024-01-25
 ### Changed
 - Update @subql/node-core with
@@ -356,7 +360,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.5.1...HEAD
+[3.5.1]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.5.0...node-cosmos/3.5.1
 [3.5.0]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.7...node-cosmos/3.5.0
 [3.4.7]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.6...node-cosmos/3.4.7
 [3.4.6]: https://github.com/subquery/subql-cosmos/compare/node-cosmos/3.4.5...node-cosmos/3.4.6

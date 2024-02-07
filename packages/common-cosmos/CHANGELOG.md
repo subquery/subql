@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-02-07
+### Changed
+- Update `@subql/common`
+
 ## [4.0.1] - 2024-02-02
 ### Fixed
 - Codegen failing on Windows by using forked version of `telescope` (#226)
@@ -122,7 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix chainTypes not being in deployments
 
 ## [0.0.5] - 2022-06-15
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/4.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/4.0.1...common-cosmos/4.1.0
 [4.0.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/4.0.0...common-cosmos/4.0.1
 [4.0.0]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.2.1...common-cosmos/4.0.0
 [3.2.1]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/3.2.0...common-cosmos/3.2.1
