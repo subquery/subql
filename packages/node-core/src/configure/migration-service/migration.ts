@@ -144,8 +144,7 @@ export class Migration {
 
     updateIndexesName(model.name, indexes, existedIndexes);
 
-    this.addModel(sequelizeModel);
-    this.rawQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName, this.historical));
+    this.rawQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName));
 
     if (sequelizeModel.options.indexes) {
       this.rawQueries.push(
@@ -153,6 +152,7 @@ export class Migration {
       );
     }
 
+    this.addModel(sequelizeModel);
   }
 
   dropTable(model: GraphQLModelsType): void {
@@ -172,7 +172,7 @@ export class Migration {
     const dbTableName = modelToTableName(model.name);
     const dbColumnName = formatColumnName(field.name);
 
-    const formattedAttributes = formatAttributes(columnOptions, this.schemaName, dbTableName);
+    const formattedAttributes = formatAttributes(columnOptions, this.schemaName);
     this.rawQueries.push(
       `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
     );

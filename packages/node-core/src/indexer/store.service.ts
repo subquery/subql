@@ -44,6 +44,8 @@ import {
   createUniqueIndexQuery,
   dropNotifyFunction,
   dropNotifyTrigger,
+  generateCreateIndexStatement,
+  generateCreateTableStatement,
   getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
@@ -232,6 +234,7 @@ export class StoreService {
       logger.warn(`Subscription is not support with ${this.dbType}`);
     }
 
+    const tx = await this.sequelize.transaction();
     const enumTypeMap = new Map<string, string>();
     if (this.historical) {
       const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
@@ -246,6 +249,7 @@ export class StoreService {
     for (const e of this.modelsRelations.enums) {
       await syncEnums(this.sequelize, this.dbType, e, schema, enumTypeMap, logger);
     }
+    const mainQueries: string[] = [];
     const extraQueries = [];
     // Function need to create ahead of triggers
     if (useSubscription) {
@@ -352,7 +356,25 @@ export class StoreService {
       extraQueries.push(query);
     });
 
-    await this.sequelize.sync();
+    Object.entries(this.sequelize.models).forEach(([_, model]) => {
+      const tableQuery = generateCreateTableStatement(model, schema);
+      mainQueries.push(tableQuery);
+
+      if (model.options.indexes) {
+        const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+        mainQueries.push(...indexQuery);
+      }
+    });
+
+    try {
+      for (const query of mainQueries) {
+        await this.sequelize.query(query, {transaction: tx});
+      }
+    } catch (e) {
+      await tx.rollback();
+      throw e;
+    }
+    await tx.commit();
 
     for (const query of extraQueries) {
       await this.sequelize.query(query);

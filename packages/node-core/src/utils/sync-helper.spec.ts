@@ -115,16 +115,16 @@ describe('sync-helper', () => {
   } as unknown as ModelStatic<Model<any, any>>;
 
   it('Generate SQL statement for table creation with historical', () => {
-    const statement = generateCreateTableStatement(mockModel, 'test', true);
+    const statement = generateCreateTableStatement(mockModel, 'test');
     const expectedStatement = `
     CREATE TABLE IF NOT EXISTS "test"."test-table" (
       "id" text NOT NULL,
       "amount" numeric NOT NULL,
       "date" timestamp NOT NULL,
       "from_id" text NOT NULL,
-      "_id" text NOT NULL PRIMARY KEY,
+      "_id" uuid NOT NULL,
       "_block_range" int8range NOT NULL,
-      "last_transfer_block" integer
+      "last_transfer_block" integer, PRIMARY KEY ("_id")
     );
   
 COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';
@@ -159,7 +159,7 @@ COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent 
         },
       };
     }) as any;
-    const statement = generateCreateTableStatement(mockModel, 'test', false);
+    const statement = generateCreateTableStatement(mockModel, 'test');
 
     // Correcting the expected statement to reflect proper SQL syntax
     const expectedStatement = `
@@ -194,7 +194,7 @@ COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and m
       onUpdate: 'CASCADE',
     } as ModelAttributeColumnOptions;
 
-    const statement = formatReferences(attribute, 'test', 'test-table');
+    const statement = formatReferences(attribute, 'test');
     expect(statement).toMatch(`REFERENCES "test"."test-table" ("id") ON DELETE NO ACTION ON UPDATE CASCADE`);
   });
 });

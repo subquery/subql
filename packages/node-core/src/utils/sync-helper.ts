@@ -40,6 +40,8 @@ const tagOrder = {
   singleForeignFieldName: 2,
 };
 
+const timestampKeys = ['created_at', 'updated_at'];
+
 const byTagOrder = (a: [keyof SmartTags, any], b: [keyof SmartTags, any]) => {
   return tagOrder[a[0]] - tagOrder[b[0]];
 };
@@ -397,35 +399,37 @@ export function addRelationToMap(
   }
 }
 
-export function generateCreateTableStatement(
-  model: ModelStatic<Model<any, any>>,
-  schema: string,
-  historical: boolean
-): string {
+export function generateCreateTableStatement(model: ModelStatic<Model<any, any>>, schema: string): string {
   const tableName = model.tableName;
 
   const attributes = model.getAttributes();
   const columnDefinitions: string[] = [];
-  // const primaryKeyColumns: string[] = [];
+  const primaryKeyColumns: string[] = [];
   const comments: string[] = [];
 
   Object.keys(attributes).forEach((key) => {
     const attr = attributes[key];
-    const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema, tableName)}`;
+
+    if (timestampKeys.find((k) => k === attr.field)) {
+      attr.type = 'timestamp with time zone';
+    }
+
+    const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema)}`;
+
     columnDefinitions.push(columnDefinition);
     if (attr.comment) {
       comments.push(`COMMENT ON COLUMN "${schema}"."${tableName}"."${attr.field}" IS '${attr.comment}';`);
     }
-    // if (attr.primaryKey) {
-    //   primaryKeyColumns.push(`"${attr.field}"`);
-    // }
+    if (attr.primaryKey) {
+      primaryKeyColumns.push(`"${attr.field}"`);
+    }
   });
 
-  // const primaryKeyDefinition = `, PRIMARY KEY (${primaryKeyColumns.join(', ')})`
+  const primaryKeyDefinition = `, PRIMARY KEY (${primaryKeyColumns.join(', ')})`;
 
   const tableQuery = `
     CREATE TABLE IF NOT EXISTS "${schema}"."${tableName}" (
-      ${columnDefinitions.join(',\n      ')}
+      ${columnDefinitions.join(',\n      ')}${primaryKeyDefinition}
     );
   `;
 
