@@ -125,9 +125,9 @@ export class Migration {
       addHistoricalIdIndex(model, indexes);
     }
 
-    const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
-
     updateIndexesName(model.name, indexes, existedIndexes);
+
+    const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
     this.rawQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName));
 
