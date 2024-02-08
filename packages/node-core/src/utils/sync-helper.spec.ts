@@ -3,7 +3,12 @@
 
 import {Model, ModelAttributeColumnOptions, ModelStatic} from '@subql/x-sequelize';
 import {formatReferences} from './sequelizeUtil';
-import {generateCreateIndexStatement, generateCreateTableStatement} from './sync-helper';
+import {
+  addForeignKeyStatement,
+  generateCreateIndexStatement,
+  generateCreateTableStatement,
+  sortModels,
+} from './sync-helper';
 
 describe('sync-helper', () => {
   const mockModel = {
@@ -146,7 +151,7 @@ COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent 
     ]);
   });
   it('Generate table statement no historical, no multi primary keys', () => {
-    mockModel.getAttributes = jest.fn(() => {
+    jest.spyOn(mockModel, 'getAttributes').mockImplementationOnce(() => {
       return {
         id: {
           type: 'text',
@@ -158,7 +163,7 @@ COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent 
           field: 'id',
         },
       };
-    }) as any;
+    });
     const statement = generateCreateTableStatement(mockModel, 'test');
 
     // Correcting the expected statement to reflect proper SQL syntax
@@ -195,6 +200,84 @@ COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and m
     } as ModelAttributeColumnOptions;
 
     const statement = formatReferences(attribute, 'test');
-    expect(statement).toMatch(`REFERENCES "test"."test-table" ("id") ON DELETE NO ACTION ON UPDATE CASCADE`);
+    expect(statement).toBe(`REFERENCES "test"."accounts" ("id") ON DELETE NO ACTION ON UPDATE CASCADE`);
+  });
+  it('Ensure correct foreignkey statement', () => {
+    jest.spyOn(mockModel, 'getAttributes').mockImplementationOnce(() => {
+      return {
+        transferIdId: {
+          type: 'text',
+          comment: undefined,
+          allowNull: false,
+          primaryKey: false,
+          field: 'transfer_id_id',
+          references: {
+            model: {
+              schema: 'test',
+              tableName: 'transfers',
+            },
+            key: 'id',
+          },
+          onDelete: 'NO ACTION',
+          onUpdate: 'CASCADE',
+        },
+      } as any;
+    });
+
+    const v = addForeignKeyStatement(mockModel);
+    expect(v[0]).toBe(
+      `ALTER TABLE "test"."test-table"
+      ADD FOREIGN KEY (transfer_id_id) 
+      REFERENCES "test"."transfers" (id) ON DELETE NO ACTION ON UPDATE CASCADE;`
+    );
+  });
+  it('sortModel with toposort on cyclic schema', () => {
+    const mockRelations = [
+      {
+        from: 'Transfer',
+        to: 'Account',
+      },
+      {
+        from: 'Account',
+        to: 'Transfer',
+      },
+    ] as any[];
+    const mockModels = new Map([
+      ['Transfer', {} as any],
+      ['Account', {} as any],
+    ]) as any;
+    expect(sortModels(mockRelations, mockModels)).toBe(null);
+  });
+  it('sortModel with toposort on non cyclic schema', () => {
+    const mockRelations = [
+      {
+        from: 'Transfer',
+        to: 'TestEntity',
+      },
+      {
+        from: 'Account',
+        to: 'TestEntity',
+      },
+    ] as any[];
+    const mockModels = {
+      Transfer: {
+        tableName: 'transfers',
+      },
+      Account: {
+        tableName: 'accounts',
+      },
+      TestEntity: {
+        tableName: 'test_entities',
+      },
+      LonelyEntity: {
+        tableName: 'lonely_Entities',
+      },
+    } as Record<string, any>;
+    expect(sortModels(mockRelations, mockModels)?.map((t) => t.tableName)).toStrictEqual([
+      'lonely_Entities',
+      'accounts',
+      'transfers',
+      'test_entities',
+    ]);
   });
 });

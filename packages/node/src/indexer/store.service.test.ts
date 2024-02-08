@@ -28,6 +28,7 @@ const mockInstance = async (
     dbSchema: schemaName,
     ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
     networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
+    timestampField: false,
   };
   return registerApp<SubqueryProject>(
     argv,
@@ -119,7 +120,7 @@ describe('Store service integration test', () => {
     await sequelize.authenticate();
   });
   afterEach(async () => {
-    // await sequelize.dropSchema(schemaName, { logging: false });
+    await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
   });
 
@@ -153,6 +154,18 @@ describe('Store service integration test', () => {
     const expectedTables = result.map(
       (t: { table_name: string }) => t.table_name,
     );
+
+    const columnResult = await sequelize.query(
+      `
+        SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_schema = '${schemaName}' 
+AND table_name = 'positions';
+`,
+      {
+        type: QueryTypes.SELECT,
+      },
+    );
     expect(expectedTables.sort()).toStrictEqual(
       [
         'factories',
@@ -178,18 +191,6 @@ describe('Store service integration test', () => {
         'token_day_data',
         'token_hour_data',
       ].sort(),
-    );
-
-    const columnResult = await sequelize.query(
-      `
-        SELECT column_name, data_type, is_nullable
-FROM information_schema.columns
-WHERE table_schema = '${schemaName}' 
-AND table_name = 'positions';
-`,
-      {
-        type: QueryTypes.SELECT,
-      },
     );
     expect(
       columnResult.find((c: any) => c.column_name === 'created_at'),
@@ -242,5 +243,103 @@ AND table_name = 'positions';
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
+
+    const [result] = await sequelize.query(
+      `SELECT
+    a.attname AS column_name,
+    pg_catalog.format_type(a.atttypid, a.atttypmod) AS column_type,
+    fk.constraint_name AS foreign_key_constraint_name,
+    fk.reference_table AS foreign_table,
+    fk.reference_column AS foreign_column
+FROM
+    pg_catalog.pg_attribute a
+        LEFT JOIN
+    pg_catalog.pg_class c ON c.oid = a.attrelid
+        LEFT JOIN
+    pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        LEFT JOIN
+    (SELECT
+         pg_constraint.conname AS constraint_name,
+         pg_constraint.conrelid AS conrelid,
+         pg_attribute.attname AS attname,
+         pg_class.relname AS reference_table,
+         pg_attribute2.attname AS reference_column
+     FROM
+         pg_constraint
+             JOIN pg_class ON pg_constraint.conrelid = pg_class.oid
+             JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+             JOIN pg_attribute ON pg_attribute.attrelid = pg_class.oid AND pg_attribute.attnum = ANY(pg_constraint.conkey)
+             JOIN pg_class AS pg_class2 ON pg_class2.oid = pg_constraint.confrelid
+             JOIN pg_attribute AS pg_attribute2 ON pg_attribute2.attrelid = pg_class2.oid AND pg_attribute2.attnum = ANY(pg_constraint.confkey)
+     WHERE
+         pg_constraint.contype = 'f'
+       AND pg_namespace.nspname = '${schemaName}'
+    ) AS fk ON fk.conrelid = c.oid AND fk.attname = a.attname
+WHERE
+    c.relkind = 'r' -- r = ordinary table
+  AND a.attnum > 0 -- positive attnum indicates a real column
+  AND NOT a.attisdropped -- column is not dropped
+  AND c.relname = 'swaps'
+  AND n.nspname = '${schemaName}'
+ORDER BY
+    a.attnum;`,
+    );
+    console.log(result);
+    const expectedForeignKey = result.find(
+      (c: any) => c.column_name === 'token1_id',
+    );
+    expect(expectedForeignKey).toStrictEqual({
+      column_name: 'token1_id',
+      column_type: 'text',
+      foreign_key_constraint_name: 'swaps_token1_id_fkey',
+      foreign_table: 'swaps',
+      foreign_column: 'id',
+    });
+  });
+  //
+
+  it('Cyclic relations on non-historical', async () => {
+    const cid = 'QmTLwdpfE7xsmAtPj3Bep9KKgAPbt2tvXisUHcHys6anSG';
+    schemaName = 'sync-schema-3_5';
+
+    app = await prepareApp(schemaName, cid, true);
+
+    projectService = app.get('IProjectService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+
+    tempDir = (projectService as any).project.root;
+
+    const [result] = await sequelize.query(
+      `
+        SELECT
+    tc.constraint_name, 
+    kcu.column_name, 
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name
+FROM 
+    information_schema.table_constraints AS tc 
+JOIN information_schema.key_column_usage AS kcu
+    ON tc.constraint_name = kcu.constraint_name
+    AND tc.table_schema = kcu.table_schema
+JOIN information_schema.constraint_column_usage AS ccu
+    ON ccu.constraint_name = tc.constraint_name
+    AND ccu.table_schema = tc.table_schema
+WHERE 
+    tc.constraint_type = 'FOREIGN KEY' 
+    AND tc.table_name='accounts' 
+    AND tc.table_schema='${schemaName}'
+        `,
+      { type: QueryTypes.SELECT },
+    );
+
+    expect(result).toStrictEqual({
+      constraint_name: 'accounts_transfer_id_id_fkey',
+      column_name: 'transfer_id_id',
+      foreign_table_name: 'transfers',
+      foreign_column_name: 'id',
+    });
   });
 });

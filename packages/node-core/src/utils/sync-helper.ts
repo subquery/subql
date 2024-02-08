@@ -20,13 +20,16 @@ import {
   Op,
   QueryTypes,
   Sequelize,
+  TableNameWithSchema,
   Utils,
 } from '@subql/x-sequelize';
-import {ModelIndexesOptions} from '@subql/x-sequelize/types/model';
+import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
 import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {getEnumDeprecated} from './project';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Toposort = require('toposort-class');
 
 export interface SmartTags {
   foreignKey?: string;
@@ -399,7 +402,11 @@ export function addRelationToMap(
   }
 }
 
-export function generateCreateTableStatement(model: ModelStatic<Model<any, any>>, schema: string): string {
+export function generateCreateTableStatement(
+  model: ModelStatic<Model<any, any>>,
+  schema: string,
+  withoutForeignKey = false
+): string {
   const tableName = model.tableName;
 
   const attributes = model.getAttributes();
@@ -414,7 +421,7 @@ export function generateCreateTableStatement(model: ModelStatic<Model<any, any>>
       attr.type = 'timestamp with time zone';
     }
 
-    const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema)}`;
+    const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema, withoutForeignKey)}`;
 
     columnDefinitions.push(columnDefinition);
     if (attr.comment) {
@@ -453,4 +460,63 @@ export function generateCreateIndexStatement(
   });
 
   return indexStatements;
+}
+
+export function sortModels(
+  relations: GraphQLRelationsType[],
+  models: {[p: string]: ModelStatic<Model<any, any>>}
+): ModelStatic<any>[] | null {
+  const sorter = new Toposort();
+
+  Object.keys(models).forEach((modelName) => {
+    sorter.add(modelName, []);
+  });
+
+  relations.forEach(({from, to}) => {
+    sorter.add(from, to);
+  });
+
+  let sortedModelNames: string[];
+  try {
+    sortedModelNames = sorter.sort();
+  } catch (error) {
+    // Handle cyclic dependency error by returning null
+    if (error instanceof Error && error.message.startsWith('Cyclic dependency found.')) {
+      return null;
+    } else {
+      throw error;
+    }
+  }
+
+  const sortedModels = sortedModelNames.map((modelName) => models[modelName]).filter(Boolean);
+
+  return sortedModels.length > 0 ? sortedModels : null;
+}
+
+export function addForeignKeyStatement(model: ModelStatic<any>): string[] {
+  const statements: string[] = [];
+  const attributes = model.getAttributes();
+  Object.values(attributes).forEach((columnOptions) => {
+    const references = columnOptions?.references as ModelAttributeColumnReferencesOptions;
+    if (!references) {
+      return;
+    }
+    const foreignTable = references.model as TableNameWithSchema;
+    let statement = `
+    ALTER TABLE "${foreignTable.schema}"."${model.tableName}"
+      ADD FOREIGN KEY (${columnOptions.field}) 
+      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
+    if (columnOptions.onDelete) {
+      statement += ` ON DELETE ${columnOptions.onDelete}`;
+    }
+    if (columnOptions.onUpdate) {
+      statement += ` ON UPDATE ${columnOptions.onUpdate}`;
+    }
+    if (references.deferrable) {
+      statement += ` DEFERRABLE`;
+    }
+    statements.push(`${statement.trim()};`);
+  });
+
+  return statements;
 }

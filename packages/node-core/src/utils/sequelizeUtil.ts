@@ -70,7 +70,11 @@ export function formatReferences(columnOptions: ModelAttributeColumnOptions, sch
   return referenceStatement;
 }
 
-export function formatAttributes(columnOptions: ModelAttributeColumnOptions, schema: string): string {
+export function formatAttributes(
+  columnOptions: ModelAttributeColumnOptions,
+  schema: string,
+  withoutForeignKey: boolean
+): string {
   const type = formatDataType(columnOptions.type);
   const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
   const unique = columnOptions.unique ? 'UNIQUE' : '';
@@ -78,7 +82,7 @@ export function formatAttributes(columnOptions: ModelAttributeColumnOptions, sch
 
   const references = formatReferences(columnOptions, schema);
 
-  return `${type} ${allowNull} ${unique} ${autoIncrement} ${references}`.trim();
+  return `${type} ${allowNull} ${unique} ${autoIncrement} ${withoutForeignKey ? '' : references}`.trim();
 }
 
 const sequelizeToPostgresTypeMap = {

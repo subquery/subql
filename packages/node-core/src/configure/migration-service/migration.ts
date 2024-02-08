@@ -172,7 +172,7 @@ export class Migration {
     const dbTableName = modelToTableName(model.name);
     const dbColumnName = formatColumnName(field.name);
 
-    const formattedAttributes = formatAttributes(columnOptions, this.schemaName);
+    const formattedAttributes = formatAttributes(columnOptions, this.schemaName, false);
     this.rawQueries.push(
       `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
     );

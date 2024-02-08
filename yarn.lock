@@ -6431,6 +6431,7 @@ __metadata:
     prom-client: ^14.0.1
     source-map: ^0.7.4
     tar: ^6.1.11
+    toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
   languageName: unknown

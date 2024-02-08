@@ -29,6 +29,7 @@ import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
   addBlockRangeColumnToIndexes,
+  addForeignKeyStatement,
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
   addRelationToMap,
@@ -52,6 +53,7 @@ import {
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
+  sortModels,
   syncEnums,
   updateIndexesName,
 } from '../utils';
@@ -356,18 +358,37 @@ export class StoreService {
       extraQueries.push(query);
     });
 
-    Object.entries(this.sequelize.models).forEach(([_, model]) => {
-      const tableQuery = generateCreateTableStatement(model, schema);
-      mainQueries.push(tableQuery);
+    const referenceQueries: string[] = [];
+    const sortedModels = sortModels(this.modelsRelations.relations, this.sequelize.models);
 
-      if (model.options.indexes) {
-        const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-        mainQueries.push(...indexQuery);
-      }
-    });
+    if (sortedModels === null) {
+      Object.values(this.sequelize.models).forEach((model) => {
+        const tableQuery = generateCreateTableStatement(model, schema, true);
+        mainQueries.push(tableQuery);
+        if (model.options.indexes) {
+          const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+          mainQueries.push(...indexQuery);
+        }
+        referenceQueries.push(...addForeignKeyStatement(model));
+      });
+    } else {
+      sortedModels.reverse().forEach((model: ModelStatic<any>) => {
+        const tableQuery = generateCreateTableStatement(model, schema);
+        mainQueries.push(tableQuery);
+
+        if (model.options.indexes) {
+          const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+          mainQueries.push(...indexQuery);
+        }
+      });
+    }
 
     try {
       for (const query of mainQueries) {
+        await this.sequelize.query(query, {transaction: tx});
+      }
+
+      for (const query of referenceQueries) {
         await this.sequelize.query(query, {transaction: tx});
       }
     } catch (e) {
