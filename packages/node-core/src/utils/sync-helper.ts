@@ -28,6 +28,7 @@ import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {getEnumDeprecated} from './project';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
+import assert from "assert";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 
@@ -491,32 +492,26 @@ export function sortModels(
   return sortedModels.length > 0 ? sortedModels : null;
 }
 
-export function addForeignKeyStatement(model: ModelStatic<any>): string[] {
-  const statements: string[] = [];
-  const attributes = model.getAttributes();
-  Object.values(attributes).forEach((columnOptions) => {
-    const references = columnOptions?.references as ModelAttributeColumnReferencesOptions;
-    if (!references) {
-      return;
-    }
-    const foreignTable = references.model as TableNameWithSchema;
-    let statement = `
-    ALTER TABLE "${foreignTable.schema}"."${model.tableName}"
-      ADD FOREIGN KEY (${columnOptions.field}) 
-      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" ("${references.key}")`;
-    if (columnOptions.onDelete) {
-      statement += ` ON DELETE ${columnOptions.onDelete}`;
-    }
-    if (columnOptions.onUpdate) {
-      statement += ` ON UPDATE ${columnOptions.onUpdate}`;
-    }
-    if (references.deferrable) {
-      statement += ` DEFERRABLE`;
-    }
-    statements.push(`${statement.trim()};`);
-  });
-
-  return statements;
+export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
+  const references = attribute?.references as ModelAttributeColumnReferencesOptions;
+  if (!references) {
+    return;
+  }
+  const foreignTable = references.model as TableNameWithSchema;
+  let statement = `
+    ALTER TABLE "${foreignTable.schema}"."${tableName}"
+      ADD FOREIGN KEY (${attribute.field}) 
+      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
+  if (attribute.onDelete) {
+    statement += ` ON DELETE ${attribute.onDelete}`;
+  }
+  if (attribute.onUpdate) {
+    statement += ` ON UPDATE ${attribute.onUpdate}`;
+  }
+  if (references.deferrable) {
+    statement += ` DEFERRABLE`;
+  }
+  return `${statement.trim()};`;
 }
 
 export function generateOrderedStatements(
@@ -536,7 +531,13 @@ export function generateOrderedStatements(
         const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
         mainQueries.push(...indexQuery);
       }
-      referenceQueries.push(...addForeignKeyStatement(model));
+      Object.values(model.getAttributes()).forEach(a => {
+        const fkStatement = generateForeignKeyStatement(a, model.tableName)
+        assert(fkStatement)
+        referenceQueries.push(
+            fkStatement
+        );
+      })
     });
   } else {
     sortedModels.reverse().forEach((model: ModelStatic<any>) => {

@@ -133,7 +133,7 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterEach(async () => {
-    // await sequelize.dropSchema(schemaName, { logging: false });
+    await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
   });
   afterAll(async () => {
@@ -488,10 +488,9 @@ describe('SchemaMigration integration tests', () => {
 
     processExitSpy.mockRestore();
   });
-  it('add relations on migration', async () => {
-    // const cid = 'QmXJwbpr6wcoNeDM3M6xy8FuaiME3N6zvsUTxThmaVfKpz';
+  it('add relations on migration with historical', async () => {
     const cid = 'QmU4ca4G8Bg8qu1AapmGZyuAjYtZfBNSN9WiubkQai35Bs';
-    schemaName = 'test-migrations-17';
+    schemaName = 'test-migrations-12';
     app = await prepareApp(schemaName, cid, false, false);
 
     projectService = app.get('IProjectService');
@@ -503,8 +502,126 @@ describe('SchemaMigration integration tests', () => {
     tempDir = (projectService as any).project.root;
 
     await projectUpgradeService.setCurrentHeight(2000);
-  });
-  // todo delete relations
 
-  // todo with and without historical
+    const [indexes] = await sequelize.query(`
+    SELECT
+    idx.indexname AS index_name,
+    idx.indexdef AS index_definition
+FROM
+    pg_indexes idx
+WHERE
+    idx.schemaname = '${schemaName}' -- Replace with your schema name, default is 'public'
+    AND idx.tablename = 'accounts';
+    `);
+
+    expect(indexes).toStrictEqual([
+      {
+        index_definition: `CREATE UNIQUE INDEX accounts_pkey ON "${schemaName}".accounts USING btree (_id)`,
+        index_name: 'accounts_pkey',
+      },
+      {
+        index_definition: `CREATE INDEX "0x4cb388e53e3e30f3" ON "${schemaName}".accounts USING btree (id)`,
+        index_name: '0x4cb388e53e3e30f3',
+      },
+      {
+        index_definition: `CREATE INDEX "0xc1a3a8c963b2bea2" ON "${schemaName}".accounts USING gist (one_to_one_relation_id, _block_range)`,
+        index_name: '0xc1a3a8c963b2bea2',
+      },
+    ]);
+  });
+
+  it('add relations on migration no historical', async () => {
+    const cid = 'QmU4ca4G8Bg8qu1AapmGZyuAjYtZfBNSN9WiubkQai35Bs';
+    schemaName = 'test-migrations-13';
+    app = await prepareApp(schemaName, cid, true, false);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(2000);
+
+    const [result] = await sequelize.query(`
+    SELECT
+    tc.table_name,
+    tc.constraint_name,
+    kcu.column_name,
+    ccu.table_name AS foreign_table_name
+FROM
+    information_schema.table_constraints AS tc
+        JOIN
+    information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+        AND tc.table_schema = kcu.table_schema
+        JOIN
+    information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+        AND ccu.table_schema = tc.table_schema
+WHERE
+    tc.constraint_type = 'FOREIGN KEY'
+  AND tc.table_schema = '${schemaName}';`);
+
+    expect(result.length).toBe(6);
+  });
+  it('drop relational with no historical', async () => {
+    const cid = 'Qmd3UxXvkUu9L5xAwaaJJ3pu5U52MMa5fLZxYYmgcs2EMn';
+    schemaName = 'test-migrations-14';
+    app = await prepareApp(schemaName, cid, true, false);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(4000);
+
+    const [result] = await sequelize.query(`
+    SELECT
+    tc.table_name,
+    tc.constraint_name,
+    kcu.column_name,
+    ccu.table_name AS foreign_table_name
+FROM
+    information_schema.table_constraints AS tc
+        JOIN
+    information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+        AND tc.table_schema = kcu.table_schema
+        JOIN
+    information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+        AND ccu.table_schema = tc.table_schema
+WHERE
+    tc.constraint_type = 'FOREIGN KEY'
+  AND tc.table_schema = '${schemaName}';`);
+
+    expect(result.length).toBe(3);
+  });
+  it('Able to drop table and column with relations', async () => {
+    const cid = 'QmRpysswwMpcmKfQpMTRepi386hUp7QaiZYUhwbM3JcsjC';
+    schemaName = 'test-migrations-15';
+    app = await prepareApp(schemaName, cid, true, false);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(4000);
+
+    const [result] = await sequelize.query(
+      `SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = '${schemaName}'
+`,
+      { type: QueryTypes.SELECT },
+    );
+    console.log(result);
+  });
 });

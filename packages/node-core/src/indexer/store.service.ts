@@ -29,7 +29,7 @@ import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
   addBlockRangeColumnToIndexes,
-  addForeignKeyStatement,
+  generateForeignKeyStatement,
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
   addRelationToMap,

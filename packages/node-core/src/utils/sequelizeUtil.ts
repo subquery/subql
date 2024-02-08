@@ -94,6 +94,7 @@ const sequelizeToPostgresTypeMap = {
   [DataTypes.FLOAT.name]: () => 'double precision', // to maintain compatibility we will use float8
   [DataTypes.DATE.name]: () => DateObj.sequelizeType,
   [DataTypes.JSONB.name]: () => Json.sequelizeType,
+  [DataTypes.RANGE.name]: () => 'int8range',
 };
 
 export function formatDataType(dataType: DataType): SequelizeTypes {

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {SUPPORT_DB} from '@subql/common';
 import {
   getAllEntitiesRelations,
@@ -9,7 +10,15 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
-import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
+import {
+  IndexesOptions,
+  ModelAttributeColumnReferencesOptions,
+  ModelAttributes,
+  ModelStatic,
+  Sequelize,
+  Transaction,
+  Utils,
+} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
 import {StoreService} from '../../indexer';
@@ -23,9 +32,11 @@ import {
   formatColumnName,
   generateCreateIndexStatement,
   generateCreateTableStatement,
+  generateForeignKeyStatement,
   generateHashedIndexName,
   getFkConstraint,
-  modelToTableName, SmartTags,
+  modelToTableName,
+  SmartTags,
   smartTags,
   syncEnums,
 } from '../../utils';
@@ -43,9 +54,10 @@ const logger = getLogger('Migration');
 
 export class Migration {
   private sequelizeModels: ModelStatic<any>[] = [];
-  private rawQueries: string[] = [];
+  private tableQueries: string[] = [];
   private readonly historical: boolean;
   private extraQueries: string[] = [];
+  private relationalQueries: string[] = [];
 
   constructor(
     private sequelize: Sequelize,
@@ -78,7 +90,11 @@ export class Migration {
     const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
 
     try {
-      for (const query of this.rawQueries) {
+      for (const query of this.tableQueries) {
+        await this.sequelize.query(query, {transaction: effectiveTransaction});
+      }
+
+      for (const query of this.relationalQueries) {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
@@ -148,10 +164,10 @@ export class Migration {
 
     const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
-    this.rawQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName));
+    this.tableQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName));
 
     if (sequelizeModel.options.indexes) {
-      this.rawQueries.push(
+      this.tableQueries.push(
         ...generateCreateIndexStatement(sequelizeModel.options.indexes, this.schemaName, sequelizeModel.tableName)
       );
     }
@@ -160,7 +176,9 @@ export class Migration {
   }
 
   dropTable(model: GraphQLModelsType): void {
-    this.rawQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${modelToTableName(model.name)}";`);
+    // TODO check if there are foreign keys that are related to this drop
+    // use sequelize for a check if any foreign keys depends on table
+    this.tableQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${modelToTableName(model.name)}";`);
   }
 
   createColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
@@ -179,12 +197,12 @@ export class Migration {
     const dbColumnName = formatColumnName(field.name);
 
     const formattedAttributes = formatAttributes(columnOptions, this.schemaName, false);
-    this.rawQueries.push(
+    this.tableQueries.push(
       `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
     );
 
     if (columnOptions.comment) {
-      this.rawQueries.push(
+      this.tableQueries.push(
         `COMMENT ON COLUMN "${this.schemaName}".${dbTableName}.${dbColumnName} IS '${columnOptions.comment}';`
       );
     }
@@ -193,7 +211,29 @@ export class Migration {
   }
 
   dropColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
-    this.rawQueries.push(
+    // TODO check if it is droppable
+    //     const [foreignKeys] = await this.sequelize.query(
+    //         `SELECT
+    //     constraint_name
+    // FROM
+    //     information_schema.table_constraints
+    // WHERE
+    //     constraint_type = 'FOREIGN KEY'
+    //     AND table_schema = :schemaName`, {
+    //           replacements: {schemaName: this.schemaName},
+    //           type: QueryTypes.SELECT
+    //         }
+    //     )
+    //     console.log(foreignKeys)
+
+    // Object.values(foreignKeys).find(f => f === getFkConstraint())
+    // const attrs = Object.values(this.sequelize.model(model.name).getAttributes())
+    //     .find(a => {
+    //       const references = a.references as ModelAttributeColumnReferencesOptions
+    //       return references.
+    //     })
+
+    this.tableQueries.push(
       `ALTER TABLE  "${this.schemaName}"."${modelToTableName(model.name)}" DROP COLUMN IF EXISTS ${formatColumnName(
         field.name
       )};`
@@ -206,15 +246,15 @@ export class Migration {
     const formattedTableName = modelToTableName(model.name);
     const indexOptions: IndexesOptions = {...index, fields: index.fields.map((f) => formatColumnName(f))};
 
-    indexOptions.name = generateHashedIndexName(formattedTableName, indexOptions);
-
-    if (!indexOptions.fields || indexOptions.fields.length === 0) {
-      throw new Error("The 'fields' property is required and cannot be empty.");
-    }
-
     if (this.historical) {
       addBlockRangeColumnToIndexes([indexOptions]);
       addHistoricalIdIndex(model, [indexOptions]);
+    }
+
+    indexOptions.name = generateHashedIndexName(model.name, indexOptions);
+
+    if (!indexOptions.fields || indexOptions.fields.length === 0) {
+      throw new Error("The 'fields' property is required and cannot be empty.");
     }
 
     const createIndexQuery =
@@ -223,27 +263,36 @@ export class Migration {
       `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
       `(${indexOptions.fields.join(', ')})`;
 
-    this.rawQueries.push(createIndexQuery);
+    this.tableQueries.push(createIndexQuery);
   }
 
   dropIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {
     const hashedIndexName = generateHashedIndexName(model.name, index);
-    this.rawQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
+    this.tableQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
   }
 
   createRelation(relation: GraphQLRelationsType, foreignKeyMap: Map<string, Map<string, SmartTags>>): void {
     const model = this.sequelize.model(relation.from);
     const relatedModel = this.sequelize.model(relation.to);
-    // TODO does not create comments on second
 
-    // TODO does create correct indexes
+    const memForeignKeyMap = Object.values(model.getAttributes())
+      .filter((a) => a?.references && a?.field && a.references !== 'string')
+      .reduce((map, a) => {
+        // TODO add a type validator
+        assert(a.field);
+        assert(a.references);
+        assert(typeof a.references !== 'string');
+        map.set(a.field, a.references);
+        return map;
+      }, new Map<string, ModelAttributeColumnReferencesOptions>());
     if (this.historical) {
       addRelationToMap(relation, foreignKeyMap, model, relatedModel);
     } else {
       switch (relation.type) {
         case 'belongsTo': {
+          model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
           // TODO cockroach support
-          logger.warn(`Relation: ${model.tableName} to ${relatedModel.tableName} is ONLY supported by postgresDB`);
+          // logger.warn(`Relation: ${model.tableName} to ${relatedModel.tableName} is ONLY supported by postgresDB`);
           break;
         }
         case 'hasOne': {
@@ -271,15 +320,23 @@ export class Migration {
           this.extraQueries.push(
             commentConstraintQuery(`"${this.schemaName}"."${rel.target.tableName}"`, fkConstraint, tags)
           );
-
           break;
         }
         default:
           throw new Error('Relation type is not supported');
       }
+      Object.values(model.getAttributes())
+        .filter((a) => a.references && a.field && !memForeignKeyMap.has(a.field))
+        .forEach((a) => {
+          const relationQuery = generateForeignKeyStatement(a, model.tableName);
+          assert(relationQuery);
+          this.relationalQueries.push(relationQuery);
+        });
     }
+
     this.addModel(model);
   }
+
   addRelationComments(foreignKeyMap: Map<string, Map<string, SmartTags>>): void {
     foreignKeyMap.forEach((keys, tableName) => {
       const comment = Array.from(keys.values())
@@ -291,22 +348,8 @@ export class Migration {
   }
 
   dropRelation(relation: GraphQLRelationsType): void {
-    const model = this.sequelize.model(relation.from);
-    const relatedModel = this.sequelize.model(relation.to);
-    // TODO safety for historical
-    switch (relation.type) {
-      case 'belongsTo':
-        // Logic for removing belongsTo relation
-        break;
-      case 'hasOne':
-        // Logic for removing hasOne relation
-        break;
-      case 'hasMany':
-        // Logic for removing hasMany relation
-        break;
-      default:
-        throw new Error('Relation type is not supported for removal');
-    }
-    console.log('drop relation hit');
+    const fkConstraint = getFkConstraint(relation.from, relation.foreignKey);
+    const dropFkeyStatement = `ALTER TABLE ${relation.from} DROP CONSTRAINT ${fkConstraint} ;`;
+    this.relationalQueries.push(dropFkeyStatement);
   }
 }

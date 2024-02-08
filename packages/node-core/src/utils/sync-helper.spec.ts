@@ -4,10 +4,11 @@
 import {Model, ModelAttributeColumnOptions, ModelStatic} from '@subql/x-sequelize';
 import {formatReferences} from './sequelizeUtil';
 import {
-  addForeignKeyStatement,
+  generateForeignKeyStatement,
   generateCreateIndexStatement,
   generateCreateTableStatement,
   sortModels,
+  getFkConstraint,
 } from './sync-helper';
 
 describe('sync-helper', () => {
@@ -119,6 +120,9 @@ describe('sync-helper', () => {
     },
   } as unknown as ModelStatic<Model<any, any>>;
 
+  it('Ensure correct fkConstraint', () => {
+    expect(getFkConstraint('ManyToManyTestEntities', 'AccountId')).toBe('many_to_many_test_entities_account_id_fkey');
+  });
   it('Generate SQL statement for table creation with historical', () => {
     const statement = generateCreateTableStatement(mockModel, 'test');
     const expectedStatement = [
@@ -220,8 +224,15 @@ describe('sync-helper', () => {
       } as any;
     });
 
-    const v = addForeignKeyStatement(mockModel);
-    expect(v[0]).toBe(
+    const referenceQueries: string[] = [];
+    Object.values(mockModel.getAttributes()).forEach((a) => {
+      const refStatement = generateForeignKeyStatement(a, mockModel.tableName);
+      if (refStatement) {
+        referenceQueries.push(refStatement);
+      }
+    });
+
+    expect(referenceQueries[0]).toBe(
       `ALTER TABLE "test"."test-table"
       ADD FOREIGN KEY (transfer_id_id) 
       REFERENCES "test"."transfers" ("id") ON DELETE NO ACTION ON UPDATE CASCADE;`
