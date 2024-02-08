@@ -45,15 +45,13 @@ import {
   createUniqueIndexQuery,
   dropNotifyFunction,
   dropNotifyTrigger,
-  generateCreateIndexStatement,
-  generateCreateTableStatement,
+  generateOrderedStatements,
   getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
-  sortModels,
   syncEnums,
   updateIndexesName,
 } from '../utils';
@@ -359,29 +357,14 @@ export class StoreService {
     });
 
     const referenceQueries: string[] = [];
-    const sortedModels = sortModels(this.modelsRelations.relations, this.sequelize.models);
 
-    if (sortedModels === null) {
-      Object.values(this.sequelize.models).forEach((model) => {
-        const tableQuery = generateCreateTableStatement(model, schema, true);
-        mainQueries.push(tableQuery);
-        if (model.options.indexes) {
-          const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-          mainQueries.push(...indexQuery);
-        }
-        referenceQueries.push(...addForeignKeyStatement(model));
-      });
-    } else {
-      sortedModels.reverse().forEach((model: ModelStatic<any>) => {
-        const tableQuery = generateCreateTableStatement(model, schema);
-        mainQueries.push(tableQuery);
-
-        if (model.options.indexes) {
-          const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-          mainQueries.push(...indexQuery);
-        }
-      });
-    }
+    generateOrderedStatements(
+      this.sequelize.models,
+      this.modelsRelations.relations,
+      schema,
+      mainQueries,
+      referenceQueries
+    );
 
     try {
       for (const query of mainQueries) {

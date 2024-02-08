@@ -121,23 +121,16 @@ describe('sync-helper', () => {
 
   it('Generate SQL statement for table creation with historical', () => {
     const statement = generateCreateTableStatement(mockModel, 'test');
-    const expectedStatement = `
-    CREATE TABLE IF NOT EXISTS "test"."test-table" (
-      "id" text NOT NULL,
-      "amount" numeric NOT NULL,
-      "date" timestamp NOT NULL,
-      "from_id" text NOT NULL,
-      "_id" uuid NOT NULL,
-      "_block_range" int8range NOT NULL,
-      "last_transfer_block" integer, PRIMARY KEY ("_id")
-    );
-  
-COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';
-COMMENT ON COLUMN "test"."test-table"."amount" IS 'Amount that is transferred';
-COMMENT ON COLUMN "test"."test-table"."date" IS 'The date of the transfer';
-COMMENT ON COLUMN "test"."test-table"."from_id" IS 'The account that transfers are made from';
-COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent block on which we see a transfer involving this account';`.trim();
-    expect(statement.trim()).toBe(expectedStatement);
+    const expectedStatement = [
+      'CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL,\n      "amount" numeric NOT NULL,\n      "date" timestamp NOT NULL,\n      "from_id" text NOT NULL,\n      "_id" UUID NOT NULL,\n      "_block_range" int8range NOT NULL,\n      "last_transfer_block" integer, PRIMARY KEY ("_id"));',
+
+      `COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`,
+      `COMMENT ON COLUMN "test"."test-table"."amount" IS 'Amount that is transferred';`,
+      `COMMENT ON COLUMN "test"."test-table"."date" IS 'The date of the transfer';`,
+      `COMMENT ON COLUMN "test"."test-table"."from_id" IS 'The account that transfers are made from';`,
+      `COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent block on which we see a transfer involving this account';`,
+    ];
+    expect(statement).toStrictEqual(expectedStatement);
   });
   it('Generate SQL statement for Indexes', () => {
     const statement = generateCreateIndexStatement(
@@ -167,14 +160,17 @@ COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent 
     const statement = generateCreateTableStatement(mockModel, 'test');
 
     // Correcting the expected statement to reflect proper SQL syntax
-    const expectedStatement = `
-        CREATE TABLE IF NOT EXISTS "test"."test-table" (
-      "id" text NOT NULL PRIMARY KEY
-    );
-  
-COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`.trim();
+    //     const expectedStatement = `
+    //         CREATE TABLE IF NOT EXISTS "test"."test-table" (
+    //       "id" text NOT NULL PRIMARY KEY
+    //     );
+    //
+    // COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`.trim();
 
-    expect(statement.trim()).toBe(expectedStatement);
+    expect(statement).toStrictEqual([
+      `CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL, PRIMARY KEY ("id"));`,
+      `COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`,
+    ]);
   });
   it('Reference statement', () => {
     const attribute = {
@@ -228,7 +224,7 @@ COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and m
     expect(v[0]).toBe(
       `ALTER TABLE "test"."test-table"
       ADD FOREIGN KEY (transfer_id_id) 
-      REFERENCES "test"."transfers" (id) ON DELETE NO ACTION ON UPDATE CASCADE;`
+      REFERENCES "test"."transfers" ("id") ON DELETE NO ACTION ON UPDATE CASCADE;`
     );
   });
   it('sortModel with toposort on cyclic schema', () => {

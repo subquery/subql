@@ -406,7 +406,7 @@ export function generateCreateTableStatement(
   model: ModelStatic<Model<any, any>>,
   schema: string,
   withoutForeignKey = false
-): string {
+): string[] {
   const tableName = model.tableName;
 
   const attributes = model.getAttributes();
@@ -434,13 +434,11 @@ export function generateCreateTableStatement(
 
   const primaryKeyDefinition = `, PRIMARY KEY (${primaryKeyColumns.join(', ')})`;
 
-  const tableQuery = `
-    CREATE TABLE IF NOT EXISTS "${schema}"."${tableName}" (
-      ${columnDefinitions.join(',\n      ')}${primaryKeyDefinition}
-    );
-  `;
+  const tableQuery = `CREATE TABLE IF NOT EXISTS "${schema}"."${tableName}" (${columnDefinitions.join(
+    ',\n      '
+  )}${primaryKeyDefinition});`;
 
-  return tableQuery.concat(`\n${comments.join('\n')}`).trim();
+  return [tableQuery, ...comments];
 }
 
 export function generateCreateIndexStatement(
@@ -505,7 +503,7 @@ export function addForeignKeyStatement(model: ModelStatic<any>): string[] {
     let statement = `
     ALTER TABLE "${foreignTable.schema}"."${model.tableName}"
       ADD FOREIGN KEY (${columnOptions.field}) 
-      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
+      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" ("${references.key}")`;
     if (columnOptions.onDelete) {
       statement += ` ON DELETE ${columnOptions.onDelete}`;
     }
@@ -519,4 +517,36 @@ export function addForeignKeyStatement(model: ModelStatic<any>): string[] {
   });
 
   return statements;
+}
+
+export function generateOrderedStatements(
+  models: Record<string, ModelStatic<Model<any, any>>>,
+  relations: GraphQLRelationsType[],
+  schema: string,
+  mainQueries: string[],
+  referenceQueries: string[]
+): void {
+  const sortedModels = sortModels(relations, models);
+
+  if (sortedModels === null) {
+    Object.values(models).forEach((model) => {
+      const tableQuery = generateCreateTableStatement(model, schema, true);
+      mainQueries.push(...tableQuery);
+      if (model.options.indexes) {
+        const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+        mainQueries.push(...indexQuery);
+      }
+      referenceQueries.push(...addForeignKeyStatement(model));
+    });
+  } else {
+    sortedModels.reverse().forEach((model: ModelStatic<any>) => {
+      const tableQuery = generateCreateTableStatement(model, schema);
+      mainQueries.push(...tableQuery);
+
+      if (model.options.indexes) {
+        const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+        mainQueries.push(...indexQuery);
+      }
+    });
+  }
 }
