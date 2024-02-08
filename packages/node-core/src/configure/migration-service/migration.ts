@@ -97,21 +97,6 @@ export class Migration {
     return {attributes, indexes};
   }
 
-  private defineSequelizeModel(
-    model: GraphQLModelsType,
-    attributes: ModelAttributes<any>,
-    indexes: IndexesOptions[]
-  ): ModelStatic<any> {
-    return this.sequelize.define(model.name, attributes, {
-      underscored: true,
-      comment: model.description,
-      freezeTableName: false,
-      createdAt: this.config.timestampField,
-      updatedAt: this.config.timestampField,
-      schema: this.schemaName,
-      indexes,
-    });
-  }
   private addModel(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
 
@@ -140,7 +125,7 @@ export class Migration {
       addHistoricalIdIndex(model, indexes);
     }
 
-    const sequelizeModel = this.defineSequelizeModel(model, attributes, indexes);
+    const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
     updateIndexesName(model.name, indexes, existedIndexes);
 
