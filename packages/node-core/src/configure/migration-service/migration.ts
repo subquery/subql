@@ -7,8 +7,10 @@ import {
   getAllEntitiesRelations,
   GraphQLEntityField,
   GraphQLEntityIndex,
+  GraphQLModelsRelationsEnums,
   GraphQLModelsType,
   GraphQLRelationsType,
+  hashName,
 } from '@subql/utils';
 import {
   IndexesOptions,
@@ -25,9 +27,15 @@ import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {
   addRelationToMap,
+  addTagsToForeignKeyMap,
+  BTREE_GIST_EXTENSION_EXIST_QUERY,
   commentConstraintQuery,
   commentTableQuery,
+  constraintDeferrableQuery,
+  createNotifyTrigger,
   createUniqueIndexQuery,
+  dropNotifyFunction,
+  dropNotifyTrigger,
   formatAttributes,
   formatColumnName,
   generateCreateIndexStatement,
@@ -35,10 +43,13 @@ import {
   generateForeignKeyStatement,
   generateHashedIndexName,
   getFkConstraint,
+  getTriggers,
   modelToTableName,
+  NotifyTriggerPayload,
   SmartTags,
   smartTags,
   syncEnums,
+  validateNotifyTriggers,
 } from '../../utils';
 import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
 import {
@@ -50,40 +61,52 @@ import {
 } from '../../utils/sync-helper';
 import {NodeConfig} from '../NodeConfig';
 
-const logger = getLogger('Migration');
+const logger = getLogger('db-manager');
 
 export class Migration {
   private sequelizeModels: ModelStatic<any>[] = [];
   private tableQueries: string[] = [];
   private readonly historical: boolean;
   private extraQueries: string[] = [];
-  private relationalQueries: string[] = [];
+  private foreignKeyMap: Map<string, Map<string, SmartTags>> = new Map<string, Map<string, SmartTags>>();
+  private useSubscription: boolean;
 
   constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
     private schemaName: string,
     private config: NodeConfig,
-    private enumTypeMap: Map<string, string>
+    private enumTypeMap: Map<string, string>,
+    private dbType: SUPPORT_DB
   ) {
     this.historical = !config.disableHistorical;
+    this.useSubscription = config.subscription;
+    if (this.useSubscription && dbType === SUPPORT_DB.cockRoach) {
+      this.useSubscription = false;
+      logger.warn(`Subscription is not support with ${this.dbType}`);
+    }
   }
 
   static async create(
     sequelize: Sequelize,
     storeService: StoreService,
     schemaName: string,
-    graphQLSchema: GraphQLSchema,
+    nextSchema: GraphQLSchema,
+    currentSchema: GraphQLSchema,
     config: NodeConfig,
-    logger: Pino.Logger
+    logger: Pino.Logger,
+    dbType: SUPPORT_DB
   ): Promise<Migration> {
-    const modelsRelationsEnums = getAllEntitiesRelations(graphQLSchema);
+    const modelsRelationsEnums = getAllEntitiesRelations(nextSchema);
+
     const enumTypeMap = new Map<string, string>();
     for (const e of modelsRelationsEnums.enums) {
-      await syncEnums(sequelize, SUPPORT_DB.postgres, e, schemaName, enumTypeMap, logger);
+      await syncEnums(sequelize, dbType, e, schemaName, enumTypeMap, logger);
     }
 
-    return new Migration(sequelize, storeService, schemaName, config, enumTypeMap);
+    const migration = new Migration(sequelize, storeService, schemaName, config, enumTypeMap, dbType);
+    migration.loadExistingForeignKeys(getAllEntitiesRelations(currentSchema));
+    return migration;
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
@@ -91,10 +114,6 @@ export class Migration {
 
     try {
       for (const query of this.tableQueries) {
-        await this.sequelize.query(query, {transaction: effectiveTransaction});
-      }
-
-      for (const query of this.relationalQueries) {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
@@ -133,7 +152,17 @@ export class Migration {
     return {attributes, indexes};
   }
 
-  private addModel(sequelizeModel: ModelStatic<any>): void {
+  private loadExistingForeignKeys(modelsRelationsEnums: GraphQLModelsRelationsEnums): void {
+    for (const relation of modelsRelationsEnums.relations) {
+      const model = this.sequelize.model(relation.from);
+      const relatedModel = this.sequelize.model(relation.to);
+      Object.values(model.associations).forEach(() => {
+        addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
+      });
+    }
+  }
+
+  private addModelToSequelizeCache(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
 
     if (!this.sequelizeModels.find((m) => m.name === modelName)) {
@@ -141,7 +170,7 @@ export class Migration {
     }
   }
 
-  private createModel(model: GraphQLModelsType) {
+  private createSequelizeModel(model: GraphQLModelsType): ModelStatic<any> {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
     return this.storeService.defineModel(model, attributes, indexes, this.schemaName);
   }
@@ -164,7 +193,7 @@ export class Migration {
 
     const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
-    this.tableQueries.push(generateCreateTableStatement(sequelizeModel, this.schemaName));
+    this.tableQueries.push(...generateCreateTableStatement(sequelizeModel, this.schemaName));
 
     if (sequelizeModel.options.indexes) {
       this.tableQueries.push(
@@ -172,17 +201,39 @@ export class Migration {
       );
     }
 
-    this.addModel(sequelizeModel);
+    if (this.useSubscription) {
+      const triggerName = hashName(this.schemaName, 'notify_trigger', sequelizeModel.tableName);
+      const notifyTriggers = await getTriggers(this.sequelize, triggerName);
+      // Triggers not been found
+      if (notifyTriggers.length === 0) {
+        this.extraQueries.push(createNotifyTrigger(this.schemaName, sequelizeModel.tableName));
+      } else {
+        validateNotifyTriggers(triggerName, notifyTriggers as NotifyTriggerPayload[]);
+      }
+    } else {
+      //TODO: DROP TRIGGER IF EXIST is not valid syntax for cockroach, better check trigger exist at first.
+      if (this.dbType !== SUPPORT_DB.cockRoach) {
+        this.extraQueries.push(dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
+      }
+    }
+
+    if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
+      this.extraQueries.push(dropNotifyFunction(this.schemaName));
+    }
+
+    this.addModelToSequelizeCache(sequelizeModel);
   }
 
   dropTable(model: GraphQLModelsType): void {
-    // TODO check if there are foreign keys that are related to this drop
-    // use sequelize for a check if any foreign keys depends on table
-    this.tableQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${modelToTableName(model.name)}";`);
+    const tableName = modelToTableName(model.name);
+
+    // should prioritise dropping the triggers
+    this.tableQueries.unshift(dropNotifyTrigger(this.schemaName, tableName));
+    this.tableQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${tableName}";`);
   }
 
   createColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
-    const sequelizeModel = this.createModel(model);
+    const sequelizeModel = this.createSequelizeModel(model);
 
     const columnOptions = getColumnOption(field, this.enumTypeMap);
     if (columnOptions.primaryKey) {
@@ -202,44 +253,22 @@ export class Migration {
     );
 
     if (columnOptions.comment) {
-      this.tableQueries.push(
+      this.extraQueries.push(
         `COMMENT ON COLUMN "${this.schemaName}".${dbTableName}.${dbColumnName} IS '${columnOptions.comment}';`
       );
     }
 
-    this.addModel(sequelizeModel);
+    this.addModelToSequelizeCache(sequelizeModel);
   }
 
   dropColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
-    // TODO check if it is droppable
-    //     const [foreignKeys] = await this.sequelize.query(
-    //         `SELECT
-    //     constraint_name
-    // FROM
-    //     information_schema.table_constraints
-    // WHERE
-    //     constraint_type = 'FOREIGN KEY'
-    //     AND table_schema = :schemaName`, {
-    //           replacements: {schemaName: this.schemaName},
-    //           type: QueryTypes.SELECT
-    //         }
-    //     )
-    //     console.log(foreignKeys)
-
-    // Object.values(foreignKeys).find(f => f === getFkConstraint())
-    // const attrs = Object.values(this.sequelize.model(model.name).getAttributes())
-    //     .find(a => {
-    //       const references = a.references as ModelAttributeColumnReferencesOptions
-    //       return references.
-    //     })
-
     this.tableQueries.push(
       `ALTER TABLE  "${this.schemaName}"."${modelToTableName(model.name)}" DROP COLUMN IF EXISTS ${formatColumnName(
         field.name
       )};`
     );
 
-    this.addModel(this.createModel(model));
+    this.addModelToSequelizeCache(this.createSequelizeModel(model));
   }
 
   createIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {
@@ -258,7 +287,7 @@ export class Migration {
     }
 
     const createIndexQuery =
-      `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX "${indexOptions.name}" ` +
+      `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS "${indexOptions.name}" ` +
       `ON "${this.schemaName}"."${formattedTableName}" ` +
       `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
       `(${indexOptions.fields.join(', ')})`;
@@ -271,26 +300,20 @@ export class Migration {
     this.tableQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
   }
 
-  createRelation(relation: GraphQLRelationsType, foreignKeyMap: Map<string, Map<string, SmartTags>>): void {
+  createRelation(relation: GraphQLRelationsType): void {
     const model = this.sequelize.model(relation.from);
     const relatedModel = this.sequelize.model(relation.to);
+    if (this.foreignKeyMap.get(model.tableName)?.has(relation.foreignKey)) {
+      return;
+    }
 
-    const memForeignKeyMap = Object.values(model.getAttributes())
-      .filter((a) => a?.references && a?.field && a.references !== 'string')
-      .reduce((map, a) => {
-        // TODO add a type validator
-        assert(a.field);
-        assert(a.references);
-        assert(typeof a.references !== 'string');
-        map.set(a.field, a.references);
-        return map;
-      }, new Map<string, ModelAttributeColumnReferencesOptions>());
     if (this.historical) {
-      addRelationToMap(relation, foreignKeyMap, model, relatedModel);
+      addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
     } else {
       switch (relation.type) {
         case 'belongsTo': {
           model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
           // TODO cockroach support
           // logger.warn(`Relation: ${model.tableName} to ${relatedModel.tableName} is ONLY supported by postgresDB`);
           break;
@@ -325,20 +348,16 @@ export class Migration {
         default:
           throw new Error('Relation type is not supported');
       }
-      Object.values(model.getAttributes())
-        .filter((a) => a.references && a.field && !memForeignKeyMap.has(a.field))
-        .forEach((a) => {
-          const relationQuery = generateForeignKeyStatement(a, model.tableName);
-          assert(relationQuery);
-          this.relationalQueries.push(relationQuery);
-        });
+      const relationQuery = generateForeignKeyStatement(model.getAttributes()[relation.foreignKey], model.tableName);
+      assert(relationQuery);
+      this.tableQueries.push(relationQuery);
     }
 
-    this.addModel(model);
+    this.addModelToSequelizeCache(model);
   }
 
-  addRelationComments(foreignKeyMap: Map<string, Map<string, SmartTags>>): void {
-    foreignKeyMap.forEach((keys, tableName) => {
+  addRelationComments(): void {
+    this.foreignKeyMap.forEach((keys, tableName) => {
       const comment = Array.from(keys.values())
         .map((tags) => smartTags(tags, '|'))
         .join('\n');
@@ -348,8 +367,12 @@ export class Migration {
   }
 
   dropRelation(relation: GraphQLRelationsType): void {
-    const fkConstraint = getFkConstraint(relation.from, relation.foreignKey);
-    const dropFkeyStatement = `ALTER TABLE ${relation.from} DROP CONSTRAINT ${fkConstraint} ;`;
-    this.relationalQueries.push(dropFkeyStatement);
+    if (relation.type !== 'belongsTo') {
+      return;
+    }
+    const tableName = modelToTableName(relation.from);
+    const fkConstraint = getFkConstraint(tableName, relation.foreignKey);
+    const dropFkeyStatement = `ALTER TABLE "${this.schemaName}"."${tableName}" DROP CONSTRAINT ${fkConstraint};`;
+    this.tableQueries.unshift(dropFkeyStatement);
   }
 }

@@ -56,5 +56,48 @@ describe('SchemaMigration', () => {
       const v = (ProjectUpgradeSevice as any).rewindableCheck(projects);
       expect(v).toBe(false);
     });
+    it('Compare relaionas', () => {
+      const relations = [
+        {
+          from: 'Transfer',
+          type: 'belongsTo',
+          to: 'Account',
+          foreignKey: 'fromId',
+        },
+        {
+          from: 'Transfer',
+          type: 'belongsTo',
+          to: 'Account',
+          foreignKey: 'toId',
+        },
+        {
+          from: 'Transfer',
+          type: 'belongsTo',
+          to: 'Account',
+          foreignKey: 'accountValueId',
+        },
+        {
+          from: 'Account',
+          type: 'hasMany',
+          to: 'Transfer',
+          foreignKey: 'fromId',
+          fieldName: 'sentTransfers',
+        },
+        {
+          from: 'Account',
+          type: 'hasMany',
+          to: 'Transfer',
+          foreignKey: 'toId',
+          fieldName: 'recievedTransfers',
+        },
+        {
+          from: 'Account',
+          type: 'hasMany',
+          to: 'Transfer',
+          foreignKey: 'accountValueId',
+          fieldName: 'oneToManyRelation',
+        },
+      ];
+    });
   });
 });

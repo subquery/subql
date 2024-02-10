@@ -1,12 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {SUPPORT_DB} from '@subql/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
-import {SmartTags} from '../../utils';
 import {NodeConfig} from '../NodeConfig';
 import {Migration} from './migration';
 import {
@@ -26,7 +26,8 @@ export class SchemaMigrationService {
     private storeService: StoreService,
     private flushCache: (flushAll?: boolean) => Promise<void>,
     private dbSchema: string,
-    private config: NodeConfig
+    private config: NodeConfig,
+    private dbType: SUPPORT_DB = SUPPORT_DB.postgres
   ) {}
 
   static validateSchemaChanges(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): boolean {
@@ -56,7 +57,6 @@ export class SchemaMigrationService {
       removedEnums: [],
       allEnums: currentData.enums, // TODO support for Enum migration
     };
-
     compareEnums(currentData.enums, nextData.enums, changes);
     compareRelations(currentData.relations, nextData.relations, changes);
     compareModels(currentData.models, nextData.models, changes);
@@ -70,7 +70,6 @@ export class SchemaMigrationService {
     transaction: Transaction | undefined
   ): Promise<ModelStatic<any>[] | void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
-
     const {
       addedEnums,
       addedModels,
@@ -86,6 +85,7 @@ export class SchemaMigrationService {
       return;
     }
 
+    // TODO
     if (addedEnums.length > 0 || removedEnums.length > 0) {
       throw new Error('Schema Migration currently does not support Enum removal and creation');
     }
@@ -96,8 +96,10 @@ export class SchemaMigrationService {
       this.storeService,
       this.dbSchema,
       nextSchema,
+      currentSchema,
       this.config,
-      logger
+      logger,
+      this.dbType
     );
 
     logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
@@ -139,13 +141,11 @@ export class SchemaMigrationService {
       }
 
       if (addedRelations.length) {
-        const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
-
         for (const relationModel of addedRelations) {
-          migrationAction.createRelation(relationModel, foreignKeyMap);
+          migrationAction.createRelation(relationModel);
         }
         // Comments should be added after
-        migrationAction.addRelationComments(foreignKeyMap);
+        migrationAction.addRelationComments();
       }
 
       if (removedRelations.length) {

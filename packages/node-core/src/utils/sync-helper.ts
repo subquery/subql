@@ -28,7 +28,6 @@ import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {getEnumDeprecated} from './project';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
-import assert from "assert";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 
@@ -43,6 +42,11 @@ const tagOrder = {
   foreignFieldName: 1,
   singleForeignFieldName: 2,
 };
+
+export interface NotifyTriggerPayload {
+  triggerName: string;
+  eventManipulation: string;
+}
 
 const timestampKeys = ['created_at', 'updated_at'];
 
@@ -531,13 +535,12 @@ export function generateOrderedStatements(
         const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
         mainQueries.push(...indexQuery);
       }
-      Object.values(model.getAttributes()).forEach(a => {
-        const fkStatement = generateForeignKeyStatement(a, model.tableName)
-        assert(fkStatement)
-        referenceQueries.push(
-            fkStatement
-        );
-      })
+      Object.values(model.getAttributes()).forEach((a) => {
+        const fkStatement = generateForeignKeyStatement(a, model.tableName);
+        if (fkStatement) {
+          referenceQueries.push(fkStatement);
+        }
+      });
     });
   } else {
     sortedModels.reverse().forEach((model: ModelStatic<any>) => {
@@ -550,4 +553,19 @@ export function generateOrderedStatements(
       }
     });
   }
+}
+
+const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
+
+export function validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
+  if (triggers.length !== NotifyTriggerManipulationType.length) {
+    throw new Error(
+      `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
+    );
+  }
+  triggers.map((t) => {
+    if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
+      throw new Error(`Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`);
+    }
+  });
 }

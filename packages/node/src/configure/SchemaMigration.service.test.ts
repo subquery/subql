@@ -36,6 +36,7 @@ const mockInstance = async (
   cid: string,
   schemaName: string,
   disableHistorical: boolean,
+  useSubscription: boolean,
   timestampField: boolean,
 ) => {
   const argv: Record<string, any> = {
@@ -47,6 +48,7 @@ const mockInstance = async (
     ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
     networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
     timestampField,
+    subscription: useSubscription,
   };
   return registerApp<SubqueryProject>(
     argv,
@@ -60,12 +62,14 @@ async function mockRegister(
   cid: string,
   schemaName: string,
   disableHistorical: boolean,
+  useSubscription: boolean,
   timestampField: boolean,
 ): Promise<DynamicModule> {
   const { nodeConfig, project } = await mockInstance(
     cid,
     schemaName,
     disableHistorical,
+    useSubscription,
     timestampField,
   );
 
@@ -97,13 +101,20 @@ async function prepareApp(
   schemaName: string,
   cid: string,
   disableHistorical = false,
-  timestampField = true,
+  useSubscription = false,
+  timestampField = false,
 ) {
   const m = await Test.createTestingModule({
     imports: [
       DbModule.forRoot(),
       EventEmitterModule.forRoot(),
-      mockRegister(cid, schemaName, disableHistorical, timestampField),
+      mockRegister(
+        cid,
+        schemaName,
+        disableHistorical,
+        useSubscription,
+        timestampField,
+      ),
       ScheduleModule.forRoot(),
       FetchModule,
       MetaModule,
@@ -133,7 +144,7 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterEach(async () => {
-    await sequelize.dropSchema(schemaName, { logging: false });
+    // await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
   });
   afterAll(async () => {
@@ -143,7 +154,7 @@ describe('SchemaMigration integration tests', () => {
   it('Migrate to new schema', async () => {
     const cid = 'QmQTSF5xjeyrpEN1BYe34Un7erJoWvUpcSjc5GeBTVtNCS';
     schemaName = 'test-migrations-1';
-    app = await prepareApp(schemaName, cid);
+    app = await prepareApp(schemaName, cid, false);
 
     projectService = app.get('IProjectService');
     const apiService = app.get(ApiService);
@@ -531,6 +542,7 @@ WHERE
   });
 
   it('add relations on migration no historical', async () => {
+    // add a has many and belong to, and one to one
     const cid = 'QmU4ca4G8Bg8qu1AapmGZyuAjYtZfBNSN9WiubkQai35Bs';
     schemaName = 'test-migrations-13';
     app = await prepareApp(schemaName, cid, true, false);
@@ -578,6 +590,8 @@ WHERE
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 
+    await projectUpgradeService.setCurrentHeight(2000);
+
     await projectUpgradeService.setCurrentHeight(4000);
 
     const [result] = await sequelize.query(`
@@ -613,15 +627,51 @@ WHERE
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 
+    await projectUpgradeService.setCurrentHeight(2000);
+
     await projectUpgradeService.setCurrentHeight(4000);
 
-    const [result] = await sequelize.query(
+    const result = await sequelize.query(
       `SELECT table_name
 FROM information_schema.tables
-WHERE table_schema = '${schemaName}'
+WHERE table_schema = :schema
 `,
-      { type: QueryTypes.SELECT },
+      {
+        replacements: { schema: schemaName },
+        type: QueryTypes.SELECT,
+      },
     );
-    console.log(result);
+    expect(result.length).toBe(4);
+    expect(result).not.toContain({ table_name: 'accounts' });
+  });
+  it('create subscription on table creation', async () => {
+    const cid = 'QmbsJ7R6w19YCnRsJT72W8giZGW4pujfHeH1ZPL2qqMYHj';
+    schemaName = 'test-migrations-16';
+    app = await prepareApp(schemaName, cid, true, true);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(2000);
+    const result = await sequelize.query(
+      `SELECT trigger_name
+FROM information_schema.triggers
+WHERE event_object_table = :table AND event_object_schema = :schema ;
+        `,
+      {
+        replacements: {
+          schema: schemaName,
+          table: 'many_to_many_test_entities',
+        },
+        type: QueryTypes.SELECT,
+      },
+    );
+    expect(result.length).toBe(3);
+    expect(result[0]).toEqual({ trigger_name: '0x36bc022fc662d7ff' });
   });
 });

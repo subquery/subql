@@ -121,6 +121,7 @@ describe('sync-helper', () => {
   } as unknown as ModelStatic<Model<any, any>>;
 
   it('Ensure correct fkConstraint', () => {
+    console.log(getFkConstraint('many_to_many_test_entities', 'AccountId'));
     expect(getFkConstraint('ManyToManyTestEntities', 'AccountId')).toBe('many_to_many_test_entities_account_id_fkey');
   });
   it('Generate SQL statement for table creation with historical', () => {

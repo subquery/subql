@@ -54,6 +54,10 @@ import {
   smartTags,
   syncEnums,
   updateIndexesName,
+  sortModels,
+  generateCreateTableStatement,
+  generateCreateIndexStatement,
+  NotifyTriggerPayload,
 } from '../utils';
 import {modelToTableName} from '../utils/sequelizeUtil';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
@@ -76,10 +80,10 @@ interface IndexField {
   type: string;
 }
 
-interface NotifyTriggerPayload {
-  triggerName: string;
-  eventManipulation: string;
-}
+// interface NotifyTriggerPayload {
+//   triggerName: string;
+//   eventManipulation: string;
+// }
 
 class NoInitError extends Error {
   constructor() {
@@ -191,6 +195,7 @@ export class StoreService {
     try {
       await this.syncSchema(schema, this.config.subscription);
     } catch (e: any) {
+      console.trace(e);
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }
@@ -365,8 +370,11 @@ export class StoreService {
       mainQueries,
       referenceQueries
     );
+    console.log('m q store', mainQueries);
+    console.log('e q store', extraQueries);
 
     try {
+      // TODO refactor this to migration.run()
       for (const query of mainQueries) {
         await this.sequelize.query(query, {transaction: tx});
       }
@@ -374,15 +382,15 @@ export class StoreService {
       for (const query of referenceQueries) {
         await this.sequelize.query(query, {transaction: tx});
       }
+
+      for (const query of extraQueries) {
+        await this.sequelize.query(query, {transaction: tx});
+      }
     } catch (e) {
       await tx.rollback();
       throw e;
     }
     await tx.commit();
-
-    for (const query of extraQueries) {
-      await this.sequelize.query(query);
-    }
 
     this.afterHandleCockroachIndex();
   }

@@ -230,7 +230,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       assert(this.migrationService, 'MigrationService is undefined');
       if (this.config.allowSchemaMigration) {
         const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, transaction);
-
         if (modifiedModels) {
           this.#storeCache?.updateModels(modifiedModels);
         }
@@ -265,6 +264,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
           await this.migrate(project, newProject, undefined);
         }
       } catch (e: any) {
+        console.trace(e);
         logger.error(e, `Failed to complete upgrading project`);
         process.exit(1);
       }
