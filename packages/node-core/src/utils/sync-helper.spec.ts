@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {GraphQLModelsType} from '@subql/utils';
 import {Model, ModelAttributeColumnOptions, ModelStatic} from '@subql/x-sequelize';
 import {formatReferences} from './sequelizeUtil';
 import {
@@ -125,7 +126,7 @@ describe('sync-helper', () => {
     expect(getFkConstraint('ManyToManyTestEntities', 'AccountId')).toBe('many_to_many_test_entities_account_id_fkey');
   });
   it('Generate SQL statement for table creation with historical', () => {
-    const statement = generateCreateTableStatement(mockModel, 'test');
+    const statement = generateCreateTableStatement(mockModel, 'test', false);
     const expectedStatement = [
       'CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL,\n      "amount" numeric NOT NULL,\n      "date" timestamp NOT NULL,\n      "from_id" text NOT NULL,\n      "_id" UUID NOT NULL,\n      "_block_range" int8range NOT NULL,\n      "last_transfer_block" integer, PRIMARY KEY ("_id"));',
 
@@ -162,7 +163,7 @@ describe('sync-helper', () => {
         },
       };
     });
-    const statement = generateCreateTableStatement(mockModel, 'test');
+    const statement = generateCreateTableStatement(mockModel, 'test', false);
 
     // Correcting the expected statement to reflect proper SQL syntax
     //     const expectedStatement = `
@@ -250,10 +251,14 @@ describe('sync-helper', () => {
         to: 'Transfer',
       },
     ] as any[];
-    const mockModels = new Map([
-      ['Transfer', {} as any],
-      ['Account', {} as any],
-    ]) as any;
+    const mockModels = [
+      {
+        name: 'Transfer',
+      },
+      {
+        name: 'Account',
+      },
+    ] as GraphQLModelsType[];
     expect(sortModels(mockRelations, mockModels)).toBe(null);
   });
   it('sortModel with toposort on non cyclic schema', () => {
@@ -267,25 +272,20 @@ describe('sync-helper', () => {
         to: 'TestEntity',
       },
     ] as any[];
-    const mockModels = {
-      Transfer: {
-        tableName: 'transfers',
+    const mockModels = [
+      {
+        name: 'Transfer',
       },
-      Account: {
-        tableName: 'accounts',
+      {
+        name: 'Account',
       },
-      TestEntity: {
-        tableName: 'test_entities',
+      {
+        name: 'TestEntity',
       },
-      LonelyEntity: {
-        tableName: 'lonely_Entities',
+      {
+        name: 'LonelyEntity',
       },
-    } as Record<string, any>;
-    expect(sortModels(mockRelations, mockModels)?.map((t) => t.tableName)).toStrictEqual([
-      'lonely_Entities',
-      'accounts',
-      'transfers',
-      'test_entities',
-    ]);
+    ] as GraphQLModelsType[];
+    expect(sortModels(mockRelations, mockModels)).toStrictEqual(['LonelyEntity', 'Account', 'Transfer', 'TestEntity']);
   });
 });

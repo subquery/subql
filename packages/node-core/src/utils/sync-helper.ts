@@ -410,7 +410,7 @@ export function addRelationToMap(
 export function generateCreateTableStatement(
   model: ModelStatic<Model<any, any>>,
   schema: string,
-  withoutForeignKey = false
+  withoutForeignKey: boolean
 ): string[] {
   const tableName = model.tableName;
 
@@ -465,14 +465,11 @@ export function generateCreateIndexStatement(
   return indexStatements;
 }
 
-export function sortModels(
-  relations: GraphQLRelationsType[],
-  models: {[p: string]: ModelStatic<Model<any, any>>}
-): ModelStatic<any>[] | null {
+export function sortModels(relations: GraphQLRelationsType[], models: GraphQLModelsType[]): GraphQLModelsType[] | null {
   const sorter = new Toposort();
 
-  Object.keys(models).forEach((modelName) => {
-    sorter.add(modelName, []);
+  models.forEach((model) => {
+    sorter.add(model.name, []);
   });
 
   relations.forEach(({from, to}) => {
@@ -491,7 +488,9 @@ export function sortModels(
     }
   }
 
-  const sortedModels = sortedModelNames.map((modelName) => models[modelName]).filter(Boolean);
+  const sortedModels = sortedModelNames
+    .map((modelName) => models.find((model) => model.name === modelName))
+    .filter(Boolean) as GraphQLModelsType[];
 
   return sortedModels.length > 0 ? sortedModels : null;
 }
@@ -518,42 +517,42 @@ export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptio
   return `${statement.trim()};`;
 }
 
-export function generateOrderedStatements(
-  models: Record<string, ModelStatic<Model<any, any>>>,
-  relations: GraphQLRelationsType[],
-  schema: string,
-  mainQueries: string[],
-  referenceQueries: string[]
-): void {
-  const sortedModels = sortModels(relations, models);
-
-  if (sortedModels === null) {
-    Object.values(models).forEach((model) => {
-      const tableQuery = generateCreateTableStatement(model, schema, true);
-      mainQueries.push(...tableQuery);
-      if (model.options.indexes) {
-        const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-        mainQueries.push(...indexQuery);
-      }
-      Object.values(model.getAttributes()).forEach((a) => {
-        const fkStatement = generateForeignKeyStatement(a, model.tableName);
-        if (fkStatement) {
-          referenceQueries.push(fkStatement);
-        }
-      });
-    });
-  } else {
-    sortedModels.reverse().forEach((model: ModelStatic<any>) => {
-      const tableQuery = generateCreateTableStatement(model, schema);
-      mainQueries.push(...tableQuery);
-
-      if (model.options.indexes) {
-        const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-        mainQueries.push(...indexQuery);
-      }
-    });
-  }
-}
+// export function generateOrderedStatements(
+//   models: Record<string, ModelStatic<Model<any, any>>>,
+//   relations: GraphQLRelationsType[],
+//   schema: string,
+//   mainQueries: string[],
+//   referenceQueries: string[]
+// ): void {
+//   const sortedModels = sortModels(relations, models);
+//
+//   if (sortedModels === null) {
+//     Object.values(models).forEach((model) => {
+//       const tableQuery = generateCreateTableStatement(model, schema, true);
+//       mainQueries.push(...tableQuery);
+//       if (model.options.indexes) {
+//         const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+//         mainQueries.push(...indexQuery);
+//       }
+//       Object.values(model.getAttributes()).forEach((a) => {
+//         const fkStatement = generateForeignKeyStatement(a, model.tableName);
+//         if (fkStatement) {
+//           referenceQueries.push(fkStatement);
+//         }
+//       });
+//     });
+//   } else {
+//     sortedModels.reverse().forEach((model: ModelStatic<any>) => {
+//       const tableQuery = generateCreateTableStatement(model, schema, );
+//       mainQueries.push(...tableQuery);
+//
+//       if (model.options.indexes) {
+//         const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
+//         mainQueries.push(...indexQuery);
+//       }
+//     });
+//   }
+// }
 
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 

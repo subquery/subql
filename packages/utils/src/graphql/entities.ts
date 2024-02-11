@@ -51,7 +51,15 @@ export function getAllEnums(_schema: GraphQLSchema | string): GraphQLEnumType[] 
 }
 
 // eslint-disable-next-line complexity
-export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelationsEnums {
+export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null): GraphQLModelsRelationsEnums {
+  if (_schema === null) {
+    return {
+      models: [],
+      relations: [],
+      enums: [],
+    };
+  }
+
   const schema = getSchema(_schema);
   const entities = Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.Entity))

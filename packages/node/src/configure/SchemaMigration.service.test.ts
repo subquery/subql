@@ -20,6 +20,7 @@ import { ApiService } from '../indexer/api.service';
 import { FetchModule } from '../indexer/fetch.module';
 import { ProjectService } from '../indexer/project.service';
 import { MetaModule } from '../meta/meta.module';
+import { prepareApp } from '../utils/test.utils';
 import { ConfigureModule } from './configure.module';
 import { SubqueryProject } from './SubqueryProject';
 
@@ -31,101 +32,6 @@ const option: DbOption = {
   database: process.env.DB_DATABASE ?? 'postgres',
   timezone: 'utc',
 };
-
-const mockInstance = async (
-  cid: string,
-  schemaName: string,
-  disableHistorical: boolean,
-  useSubscription: boolean,
-  timestampField: boolean,
-) => {
-  const argv: Record<string, any> = {
-    _: [],
-    disableHistorical,
-    subquery: `ipfs://${cid}`,
-    dbSchema: schemaName,
-    allowSchemaMigration: true,
-    ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
-    networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
-    timestampField,
-    subscription: useSubscription,
-  };
-  return registerApp<SubqueryProject>(
-    argv,
-    SubqueryProject.create.bind(SubqueryProject),
-    jest.fn(),
-    '',
-  );
-};
-
-async function mockRegister(
-  cid: string,
-  schemaName: string,
-  disableHistorical: boolean,
-  useSubscription: boolean,
-  timestampField: boolean,
-): Promise<DynamicModule> {
-  const { nodeConfig, project } = await mockInstance(
-    cid,
-    schemaName,
-    disableHistorical,
-    useSubscription,
-    timestampField,
-  );
-
-  return {
-    module: ConfigureModule,
-    providers: [
-      {
-        provide: NodeConfig,
-        useValue: nodeConfig,
-      },
-      {
-        provide: 'ISubqueryProject',
-        useValue: project,
-      },
-      {
-        provide: 'IProjectUpgradeService',
-        useValue: project,
-      },
-      {
-        provide: 'Null',
-        useValue: null,
-      },
-    ],
-    exports: [NodeConfig, 'ISubqueryProject', 'IProjectUpgradeService', 'Null'],
-  };
-}
-
-async function prepareApp(
-  schemaName: string,
-  cid: string,
-  disableHistorical = false,
-  useSubscription = false,
-  timestampField = false,
-) {
-  const m = await Test.createTestingModule({
-    imports: [
-      DbModule.forRoot(),
-      EventEmitterModule.forRoot(),
-      mockRegister(
-        cid,
-        schemaName,
-        disableHistorical,
-        useSubscription,
-        timestampField,
-      ),
-      ScheduleModule.forRoot(),
-      FetchModule,
-      MetaModule,
-    ],
-    controllers: [],
-  }).compile();
-
-  const app = m.createNestApplication();
-  await app.init();
-  return app;
-}
 
 jest.setTimeout(900000);
 describe('SchemaMigration integration tests', () => {

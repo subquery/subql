@@ -8,22 +8,25 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
+import {sortModels} from '../../utils';
+
+export type ModifiedModels = Record<
+  string,
+  {
+    model: GraphQLModelsType;
+    addedFields: GraphQLEntityField[];
+    removedFields: GraphQLEntityField[];
+
+    addedIndexes: GraphQLEntityIndex[];
+    removedIndexes: GraphQLEntityIndex[];
+  }
+>;
 
 export interface SchemaChangesType {
   addedModels: GraphQLModelsType[];
   removedModels: GraphQLModelsType[];
 
-  modifiedModels: Record<
-    string,
-    {
-      model: GraphQLModelsType;
-      addedFields: GraphQLEntityField[];
-      removedFields: GraphQLEntityField[];
-
-      addedIndexes: GraphQLEntityIndex[];
-      removedIndexes: GraphQLEntityIndex[];
-    }
-  >;
+  modifiedModels: ModifiedModels;
 
   addedRelations: GraphQLRelationsType[];
   removedRelations: GraphQLRelationsType[];

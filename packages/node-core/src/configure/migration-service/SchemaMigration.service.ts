@@ -2,11 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SUPPORT_DB} from '@subql/common';
-import {getAllEntitiesRelations} from '@subql/utils';
+import {
+  getAllEntitiesRelations,
+  GraphQLModelsRelationsEnums,
+  GraphQLModelsType,
+  GraphQLRelationsType,
+} from '@subql/utils';
 import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
+import {sortModels} from '../../utils';
 import {NodeConfig} from '../NodeConfig';
 import {Migration} from './migration';
 import {
@@ -14,6 +20,7 @@ import {
   compareModels,
   compareRelations,
   hasChanged,
+  ModifiedModels,
   schemaChangesLoggerMessage,
   SchemaChangesType,
 } from './migration-helpers';
@@ -21,6 +28,8 @@ import {
 const logger = getLogger('SchemaMigrationService');
 
 export class SchemaMigrationService {
+  private withoutForeignKeys = false;
+
   constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
@@ -43,7 +52,7 @@ export class SchemaMigrationService {
     return true;
   }
 
-  static schemaComparator(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): SchemaChangesType {
+  static schemaComparator(currentSchema: GraphQLSchema | null, nextSchema: GraphQLSchema): SchemaChangesType {
     const currentData = getAllEntitiesRelations(currentSchema);
     const nextData = getAllEntitiesRelations(nextSchema);
 
@@ -57,6 +66,7 @@ export class SchemaMigrationService {
       removedEnums: [],
       allEnums: currentData.enums, // TODO support for Enum migration
     };
+
     compareEnums(currentData.enums, nextData.enums, changes);
     compareRelations(currentData.relations, nextData.relations, changes);
     compareModels(currentData.models, nextData.models, changes);
@@ -64,8 +74,51 @@ export class SchemaMigrationService {
     return changes;
   }
 
+  private orderModelsByRelations(models: GraphQLModelsType[], relations: GraphQLRelationsType[]): GraphQLModelsType[] {
+    const sortedModels = sortModels(relations, models);
+    if (sortedModels === null) {
+      this.withoutForeignKeys = true;
+      return models;
+    } else {
+      this.withoutForeignKeys = false;
+      return sortedModels.reverse();
+    }
+  }
+
+  private alignModelOrder(
+    schemaModels: GraphQLModelsType[],
+    models: GraphQLModelsType[] | ModifiedModels
+  ): GraphQLModelsType[] | ModifiedModels {
+    const orderIndex = schemaModels.reduce((acc: Record<string, number>, model, index) => {
+      acc[model.name] = index;
+      return acc;
+    }, {});
+
+    if (Array.isArray(models)) {
+      return models.sort((a, b) => {
+        const indexA = orderIndex[a.name] ?? Number.MAX_VALUE; // Place unknown models at the end
+        const indexB = orderIndex[b.name] ?? Number.MAX_VALUE;
+        return indexA - indexB;
+      });
+    } else {
+      const modelNames = Object.keys(models);
+      const sortedModelNames = modelNames.sort((a, b) => {
+        const indexA = orderIndex[a] ?? Number.MAX_VALUE;
+        const indexB = orderIndex[b] ?? Number.MAX_VALUE;
+        return indexA - indexB;
+      });
+
+      const sortedModifiedModels: ModifiedModels = {};
+      sortedModelNames.forEach((modelName) => {
+        sortedModifiedModels[modelName] = models[modelName];
+      });
+
+      return sortedModifiedModels;
+    }
+  }
+
   async run(
-    currentSchema: GraphQLSchema,
+    currentSchema: GraphQLSchema | null,
     nextSchema: GraphQLSchema,
     transaction: Transaction | undefined
   ): Promise<ModelStatic<any>[] | void> {
@@ -84,6 +137,14 @@ export class SchemaMigrationService {
       logger.info('No Schema changes');
       return;
     }
+
+    const sortedSchemaModels = this.orderModelsByRelations(
+      getAllEntitiesRelations(nextSchema).models,
+      getAllEntitiesRelations(nextSchema).relations
+    );
+
+    const sortedAddedModels = this.alignModelOrder(sortedSchemaModels, addedModels) as GraphQLModelsType[];
+    const sortedModifiedModels = this.alignModelOrder(sortedSchemaModels, modifiedModels);
 
     // TODO
     if (addedEnums.length > 0 || removedEnums.length > 0) {
@@ -111,13 +172,13 @@ export class SchemaMigrationService {
         }
       }
 
-      if (addedModels.length) {
-        for (const model of addedModels) {
-          await migrationAction.createTable(model);
+      if (sortedAddedModels.length) {
+        for (const model of sortedAddedModels) {
+          await migrationAction.createTable(model, this.withoutForeignKeys);
         }
       }
 
-      if (Object.keys(modifiedModels).length) {
+      if (Object.keys(sortedModifiedModels).length) {
         const entities = Object.keys(modifiedModels);
         for (const model of entities) {
           const modelValue = modifiedModels[model];

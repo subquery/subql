@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import {SUPPORT_DB} from '@subql/common';
 import {
   getAllEntitiesRelations,
@@ -11,28 +10,19 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
+  IndexType,
 } from '@subql/utils';
-import {
-  IndexesOptions,
-  ModelAttributeColumnReferencesOptions,
-  ModelAttributes,
-  ModelStatic,
-  Sequelize,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
+import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import Pino from 'pino';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {
   addRelationToMap,
-  addTagsToForeignKeyMap,
-  BTREE_GIST_EXTENSION_EXIST_QUERY,
   commentConstraintQuery,
   commentTableQuery,
-  constraintDeferrableQuery,
   createNotifyTrigger,
+  createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
   dropNotifyFunction,
   dropNotifyTrigger,
@@ -61,6 +51,8 @@ import {
 } from '../../utils/sync-helper';
 import {NodeConfig} from '../NodeConfig';
 
+type RemovedIndexes = Record<string, IndexesOptions[]>;
+
 const logger = getLogger('db-manager');
 
 export class Migration {
@@ -70,13 +62,14 @@ export class Migration {
   private extraQueries: string[] = [];
   private foreignKeyMap: Map<string, Map<string, SmartTags>> = new Map<string, Map<string, SmartTags>>();
   private useSubscription: boolean;
+  private enumTypeMap: Map<string, string> = new Map<string, string>();
+  private removedIndexes: RemovedIndexes = {};
 
   constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
     private schemaName: string,
     private config: NodeConfig,
-    private enumTypeMap: Map<string, string>,
     private dbType: SUPPORT_DB
   ) {
     this.historical = !config.disableHistorical;
@@ -92,21 +85,32 @@ export class Migration {
     storeService: StoreService,
     schemaName: string,
     nextSchema: GraphQLSchema,
-    currentSchema: GraphQLSchema,
+    currentSchema: GraphQLSchema | null,
     config: NodeConfig,
     logger: Pino.Logger,
     dbType: SUPPORT_DB
   ): Promise<Migration> {
-    const modelsRelationsEnums = getAllEntitiesRelations(nextSchema);
+    // for (const e of modelsRelationsEnums.enums) {
+    //   await syncEnums(sequelize, dbType, e, schemaName, enumTypeMap, logger);
+    // }
 
-    const enumTypeMap = new Map<string, string>();
-    for (const e of modelsRelationsEnums.enums) {
-      await syncEnums(sequelize, dbType, e, schemaName, enumTypeMap, logger);
-    }
-
-    const migration = new Migration(sequelize, storeService, schemaName, config, enumTypeMap, dbType);
-    migration.loadExistingForeignKeys(getAllEntitiesRelations(currentSchema));
+    const migration = new Migration(sequelize, storeService, schemaName, config, dbType);
+    await migration.init(currentSchema, nextSchema);
     return migration;
+  }
+  async init(currentSchema: GraphQLSchema | null, nextSchema: GraphQLSchema): Promise<void> {
+    const modelsRelationsEnums = getAllEntitiesRelations(nextSchema);
+    this.loadExistingForeignKeys(getAllEntitiesRelations(currentSchema));
+    await this.syncEnums(modelsRelationsEnums);
+
+    if (this.useSubscription) {
+      this.extraQueries.push(createSendNotificationTriggerFunction(this.schemaName));
+    }
+  }
+  private async syncEnums(modelRelationsEnums: GraphQLModelsRelationsEnums) {
+    for (const e of modelRelationsEnums.enums) {
+      await syncEnums(this.sequelize, this.dbType, e, this.schemaName, this.enumTypeMap, logger);
+    }
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
@@ -121,15 +125,14 @@ export class Migration {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
-      if (!transaction) {
-        await effectiveTransaction.commit();
-      }
+      await effectiveTransaction.commit();
     } catch (e) {
-      if (!transaction) {
-        await effectiveTransaction.rollback();
-      }
+      await effectiveTransaction.rollback();
+
       throw e;
     }
+
+    this.afterHandleCockroachIndex();
 
     return this.sequelizeModels;
   }
@@ -175,7 +178,7 @@ export class Migration {
     return this.storeService.defineModel(model, attributes, indexes, this.schemaName);
   }
 
-  async createTable(model: GraphQLModelsType): Promise<void> {
+  async createTable(model: GraphQLModelsType, withoutForeignKey: boolean): Promise<void> {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
     const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(this.schemaName));
     const existedIndexes = indexesResult.map((i) => (i as any).indexname);
@@ -189,11 +192,13 @@ export class Migration {
       addHistoricalIdIndex(model, indexes);
     }
 
-    updateIndexesName(model.name, indexes, existedIndexes);
+    updateIndexesName(model.name, indexes, existedIndexes as string[]);
+    // Update index query for cockroach db
+    this.beforeHandleCockroachIndex(this.schemaName, model.name, indexes, existedIndexes as string[]);
 
     const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
-    this.tableQueries.push(...generateCreateTableStatement(sequelizeModel, this.schemaName));
+    this.tableQueries.push(...generateCreateTableStatement(sequelizeModel, this.schemaName, withoutForeignKey));
 
     if (sequelizeModel.options.indexes) {
       this.tableQueries.push(
@@ -220,8 +225,6 @@ export class Migration {
     if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
       this.extraQueries.push(dropNotifyFunction(this.schemaName));
     }
-
-    this.addModelToSequelizeCache(sequelizeModel);
   }
 
   dropTable(model: GraphQLModelsType): void {
@@ -349,8 +352,9 @@ export class Migration {
           throw new Error('Relation type is not supported');
       }
       const relationQuery = generateForeignKeyStatement(model.getAttributes()[relation.foreignKey], model.tableName);
-      assert(relationQuery);
-      this.tableQueries.push(relationQuery);
+      if (relationQuery) {
+        this.tableQueries.push(relationQuery);
+      }
     }
 
     this.addModelToSequelizeCache(model);
@@ -374,5 +378,49 @@ export class Migration {
     const fkConstraint = getFkConstraint(tableName, relation.foreignKey);
     const dropFkeyStatement = `ALTER TABLE "${this.schemaName}"."${tableName}" DROP CONSTRAINT ${fkConstraint};`;
     this.tableQueries.unshift(dropFkeyStatement);
+  }
+
+  // Sequelize model will generate follow query to create hash indexes
+  // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
+  // This will be rejected from cockroach db due to syntax error
+  // To avoid this we need to create index manually and add to extraQueries in order to create index in db
+  private beforeHandleCockroachIndex(
+    schema: string,
+    modelName: string,
+    indexes: IndexesOptions[],
+    existedIndexes: string[]
+  ): void {
+    if (this.dbType !== SUPPORT_DB.cockRoach) {
+      return;
+    }
+    indexes.forEach((index, i) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
+        const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
+          index.fields
+        }) USING HASH;`;
+        this.extraQueries.push(cockroachDbIndexQuery);
+        if (this.removedIndexes[modelName] === undefined) {
+          this.removedIndexes[modelName] = [];
+        }
+        this.removedIndexes[modelName].push(indexes[i]);
+        delete indexes[i];
+      }
+    });
+  }
+
+  // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
+  // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
+  private afterHandleCockroachIndex(): void {
+    if (this.dbType !== SUPPORT_DB.cockRoach) {
+      return;
+    }
+    const removedIndexes = Object.entries(this.removedIndexes);
+    if (removedIndexes.length > 0) {
+      for (const [model, indexes] of removedIndexes) {
+        const sqModel = this.sequelize.model(model);
+        (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
+      }
+    }
   }
 }

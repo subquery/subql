@@ -2,98 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { promisify } from 'util';
-import { DynamicModule, INestApplication } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
-import { Test } from '@nestjs/testing';
-import { DbModule, DbOption, NodeConfig, registerApp } from '@subql/node-core';
+import { INestApplication } from '@nestjs/common';
+import { DbOption } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import rimraf from 'rimraf';
-import { ConfigureModule } from '../configure/configure.module';
-import { SubqueryProject } from '../configure/SubqueryProject';
-import { FetchModule } from '../indexer/fetch.module';
-import { MetaModule } from '../meta/meta.module';
+import { prepareApp } from '../utils/test.utils';
 import { ApiService } from './api.service';
 import { ProjectService } from './project.service';
-
-const mockInstance = async (
-  cid: string,
-  schemaName: string,
-  disableHistorical: boolean,
-) => {
-  const argv: Record<string, any> = {
-    _: [],
-    disableHistorical,
-    subquery: `ipfs://${cid}`,
-    dbSchema: schemaName,
-    ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
-    networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
-    timestampField: false,
-  };
-  return registerApp<SubqueryProject>(
-    argv,
-    SubqueryProject.create.bind(SubqueryProject),
-    jest.fn(),
-    '',
-  );
-};
-
-async function mockRegister(
-  cid: string,
-  schemaName: string,
-  disableHistorical: boolean,
-): Promise<DynamicModule> {
-  const { nodeConfig, project } = await mockInstance(
-    cid,
-    schemaName,
-    disableHistorical,
-  );
-
-  return {
-    module: ConfigureModule,
-    providers: [
-      {
-        provide: NodeConfig,
-        useValue: nodeConfig,
-      },
-      {
-        provide: 'ISubqueryProject',
-        useValue: project,
-      },
-      {
-        provide: 'IProjectUpgradeService',
-        useValue: project,
-      },
-      {
-        provide: 'Null',
-        useValue: null,
-      },
-    ],
-    exports: [NodeConfig, 'ISubqueryProject', 'IProjectUpgradeService', 'Null'],
-  };
-}
-
-async function prepareApp(
-  schemaName: string,
-  cid: string,
-  disableHistorical = false,
-) {
-  const m = await Test.createTestingModule({
-    imports: [
-      DbModule.forRoot(),
-      EventEmitterModule.forRoot(),
-      mockRegister(cid, schemaName, disableHistorical),
-      ScheduleModule.forRoot(),
-      FetchModule,
-      MetaModule,
-    ],
-    controllers: [],
-  }).compile();
-
-  const app = m.createNestApplication();
-  await app.init();
-  return app;
-}
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
@@ -143,14 +58,19 @@ describe('Store service integration test', () => {
 
     tempDir = (projectService as any).project.root;
 
-    const [result] = await sequelize.query(`
+    const [result] = await sequelize.query(
+      `
        SELECT 
           table_name
         FROM 
           information_schema.tables
         WHERE 
-          table_schema = '${schemaName}'; 
-        `);
+          table_schema = :schema; 
+        `,
+      {
+        replacements: { schema: schemaName },
+      },
+    );
     const expectedTables = result.map(
       (t: { table_name: string }) => t.table_name,
     );
@@ -159,11 +79,12 @@ describe('Store service integration test', () => {
       `
         SELECT column_name, data_type, is_nullable
 FROM information_schema.columns
-WHERE table_schema = '${schemaName}' 
+WHERE table_schema = :schema
 AND table_name = 'positions';
 `,
       {
         type: QueryTypes.SELECT,
+        replacements: { schema: schemaName },
       },
     );
     expect(expectedTables.sort()).toStrictEqual(
@@ -193,13 +114,6 @@ AND table_name = 'positions';
       ].sort(),
     );
     expect(
-      columnResult.find((c: any) => c.column_name === 'created_at'),
-    ).toStrictEqual({
-      column_name: 'created_at',
-      data_type: 'timestamp with time zone',
-      is_nullable: 'NO',
-    });
-    expect(
       columnResult.find((c: any) => c.column_name === 'token0_id'),
     ).toStrictEqual({
       column_name: 'token0_id',
@@ -223,7 +137,7 @@ AND table_name = 'positions';
       is_nullable: 'NO',
     });
     expect(
-      columnResult.find((c: any) => c.column_name === 'withdrawn_token0'),
+      columnResult.find((c: any) => c.column_name === '_id'),
     ).toStrictEqual({
       column_name: '_id',
       data_type: 'uuid',
@@ -300,7 +214,7 @@ ORDER BY
 
   it('Cyclic relations on non-historical', async () => {
     const cid = 'QmTLwdpfE7xsmAtPj3Bep9KKgAPbt2tvXisUHcHys6anSG';
-    schemaName = 'sync-schema-3_5';
+    schemaName = 'sync-schema-3';
 
     app = await prepareApp(schemaName, cid, true);
 
@@ -330,9 +244,9 @@ JOIN information_schema.constraint_column_usage AS ccu
 WHERE 
     tc.constraint_type = 'FOREIGN KEY' 
     AND tc.table_name='accounts' 
-    AND tc.table_schema='${schemaName}'
+    AND tc.table_schema= :schema
         `,
-      { type: QueryTypes.SELECT },
+      { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
     );
 
     expect(result).toStrictEqual({
