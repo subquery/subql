@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SUPPORT_DB} from '@subql/common';
-import {
-  getAllEntitiesRelations,
-  GraphQLModelsRelationsEnums,
-  GraphQLModelsType,
-  GraphQLRelationsType,
-} from '@subql/utils';
+import {getAllEntitiesRelations, GraphQLModelsType, GraphQLRelationsType} from '@subql/utils';
 import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {StoreService} from '../../indexer';

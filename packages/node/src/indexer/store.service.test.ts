@@ -187,18 +187,20 @@ FROM
              JOIN pg_attribute AS pg_attribute2 ON pg_attribute2.attrelid = pg_class2.oid AND pg_attribute2.attnum = ANY(pg_constraint.confkey)
      WHERE
          pg_constraint.contype = 'f'
-       AND pg_namespace.nspname = '${schemaName}'
+       AND pg_namespace.nspname = :schema
     ) AS fk ON fk.conrelid = c.oid AND fk.attname = a.attname
 WHERE
     c.relkind = 'r' -- r = ordinary table
   AND a.attnum > 0 -- positive attnum indicates a real column
   AND NOT a.attisdropped -- column is not dropped
   AND c.relname = 'swaps'
-  AND n.nspname = '${schemaName}'
+  AND n.nspname = :schema
 ORDER BY
     a.attnum;`,
+      {
+        replacements: { schema: schemaName },
+      },
     );
-    console.log(result);
     const expectedForeignKey = result.find(
       (c: any) => c.column_name === 'token1_id',
     );

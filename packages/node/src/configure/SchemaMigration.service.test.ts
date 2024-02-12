@@ -2,27 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { promisify } from 'util';
-import { DynamicModule, INestApplication } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
-import { Test } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import {
-  DbModule,
   DbOption,
   generateHashedIndexName,
-  NodeConfig,
-  registerApp,
   StoreCacheService,
 } from '@subql/node-core';
 import { IndexesOptions, QueryTypes, Sequelize } from '@subql/x-sequelize';
 import rimraf from 'rimraf';
 import { ApiService } from '../indexer/api.service';
-import { FetchModule } from '../indexer/fetch.module';
 import { ProjectService } from '../indexer/project.service';
-import { MetaModule } from '../meta/meta.module';
 import { prepareApp } from '../utils/test.utils';
-import { ConfigureModule } from './configure.module';
-import { SubqueryProject } from './SubqueryProject';
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
@@ -88,8 +78,11 @@ describe('SchemaMigration integration tests', () => {
 
     // Query to check the structure of 'accounts' table
     const accountColumns = await sequelize.query(
-      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = '${schemaName}' AND table_name = 'accounts';`,
-      { type: QueryTypes.SELECT },
+      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table ;`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: { schema: schemaName, table: 'accounts' },
+      },
     );
     const firstTransferBlockColumn = accountColumns.find(
       (row: { column_name: string; is_nullable: string }) =>
@@ -106,9 +99,12 @@ describe('SchemaMigration integration tests', () => {
             FROM
                 information_schema.columns
             WHERE
-                table_schema = '${schemaName}'
+                table_schema = :schema
                 AND table_name = 'test_entity_twos'
                 AND column_name = '_block_range';`,
+      {
+        replacements: { schema: schemaName },
+      },
     );
 
     const [indexResult] = await sequelize.query(
@@ -118,8 +114,11 @@ describe('SchemaMigration integration tests', () => {
               FROM
                   pg_indexes
               WHERE
-                  schemaname = '${schemaName}'
+                  schemaname = :schema
                   AND tablename = 'test_entity_twos';`,
+      {
+        replacements: { schema: schemaName },
+      },
     );
 
     expect(columnResult[0]).toStrictEqual({
@@ -199,7 +198,10 @@ describe('SchemaMigration integration tests', () => {
               FROM
                   pg_indexes
               WHERE
-                  schemaname = '${schemaName}';`,
+                  schemaname = :schema ;`,
+      {
+        replacements: { schema: schemaName },
+      },
     );
     const findIndex = (modelName: string, unique: boolean, fields: string[]) =>
       indexResult.find(
@@ -253,8 +255,8 @@ describe('SchemaMigration integration tests', () => {
     await projectService.init(1);
 
     const dbResults = await sequelize.query(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema='${schemaName}';`,
-      { type: QueryTypes.SELECT },
+      `SELECT table_name FROM information_schema.tables WHERE table_schema= :schema;`,
+      { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
     );
     const tableNames: string[] = dbResults.map((row: string[]) => {
       return row[0];
@@ -360,8 +362,11 @@ describe('SchemaMigration integration tests', () => {
             FROM
                 information_schema.columns
             WHERE
-                table_schema = '${schemaName}'
+                table_schema = :schema
                 AND table_name = 'test_entity_twos'`,
+      {
+        replacements: { schema: schemaName },
+      },
     );
 
     expect(
@@ -420,16 +425,21 @@ describe('SchemaMigration integration tests', () => {
 
     await projectUpgradeService.setCurrentHeight(2000);
 
-    const [indexes] = await sequelize.query(`
+    const [indexes] = await sequelize.query(
+      `
     SELECT
     idx.indexname AS index_name,
     idx.indexdef AS index_definition
 FROM
     pg_indexes idx
 WHERE
-    idx.schemaname = '${schemaName}' -- Replace with your schema name, default is 'public'
+    idx.schemaname = :schema 
     AND idx.tablename = 'accounts';
-    `);
+    `,
+      {
+        replacements: { schema: schemaName },
+      },
+    );
 
     expect(indexes).toStrictEqual([
       {
@@ -463,7 +473,8 @@ WHERE
 
     await projectUpgradeService.setCurrentHeight(2000);
 
-    const [result] = await sequelize.query(`
+    const [result] = await sequelize.query(
+      `
     SELECT
     tc.table_name,
     tc.constraint_name,
@@ -479,7 +490,11 @@ FROM
         AND ccu.table_schema = tc.table_schema
 WHERE
     tc.constraint_type = 'FOREIGN KEY'
-  AND tc.table_schema = '${schemaName}';`);
+  AND tc.table_schema = :schema;`,
+      {
+        replacements: { schema: schemaName },
+      },
+    );
 
     expect(result.length).toBe(6);
   });

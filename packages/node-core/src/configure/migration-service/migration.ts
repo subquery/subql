@@ -7,7 +7,6 @@ import {
   GraphQLEntityField,
   GraphQLEntityIndex,
   GraphQLEnumsType,
-  GraphQLModelsRelationsEnums,
   GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
@@ -68,7 +67,7 @@ const logger = getLogger('db-manager');
 
 export class Migration {
   private sequelizeModels: ModelStatic<any>[] = [];
-  private tableQueries: string[] = [];
+  private mainQueries: string[] = [];
   private readonly historical: boolean;
   private extraQueries: string[] = [];
   private foreignKeyMap: Map<string, Map<string, SmartTags>> = new Map<string, Map<string, SmartTags>>();
@@ -95,16 +94,10 @@ export class Migration {
     sequelize: Sequelize,
     storeService: StoreService,
     schemaName: string,
-    nextSchema: GraphQLSchema,
     currentSchema: GraphQLSchema | null,
     config: NodeConfig,
-    logger: Pino.Logger,
     dbType: SUPPORT_DB
   ): Promise<Migration> {
-    // for (const e of modelsRelationsEnums.enums) {
-    //   await syncEnums(sequelize, dbType, e, schemaName, enumTypeMap, logger);
-    // }
-
     const migration = new Migration(sequelize, storeService, schemaName, config, dbType);
     await migration.init(currentSchema);
     return migration;
@@ -150,7 +143,6 @@ ORDER BY t.typname;
     for (const e of enums) {
       const enumTypeName = enumNameToHash(e.name);
       if (!results.find((en) => en.enum_type === enumTypeName)) {
-        console.log('enum', enumTypeName, ' not apart of the db yet');
         continue;
       }
       this.enumTypeMap.set(e.name, `"${this.schemaName}"."${enumTypeName}"`);
@@ -161,7 +153,7 @@ ORDER BY t.typname;
     const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
 
     try {
-      for (const query of this.tableQueries) {
+      for (const query of this.mainQueries) {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
@@ -185,7 +177,6 @@ ORDER BY t.typname;
     attributes: ModelAttributes<any>;
     indexes: IndexesOptions[];
   } {
-    console.log('enum type', this.enumTypeMap);
     const attributes = modelsTypeToModelAttributes(model, this.enumTypeMap);
     if (this.historical) {
       addIdAndBlockRangeAttributes(attributes);
@@ -232,10 +223,10 @@ ORDER BY t.typname;
 
     const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
-    this.tableQueries.push(...generateCreateTableStatement(sequelizeModel, this.schemaName, withoutForeignKey));
+    this.mainQueries.push(...generateCreateTableStatement(sequelizeModel, this.schemaName, withoutForeignKey));
 
     if (sequelizeModel.options.indexes) {
-      this.tableQueries.push(
+      this.mainQueries.push(
         ...generateCreateIndexStatement(sequelizeModel.options.indexes, this.schemaName, sequelizeModel.tableName)
       );
     }
@@ -267,8 +258,8 @@ ORDER BY t.typname;
     const tableName = modelToTableName(model.name);
 
     // should prioritise dropping the triggers
-    this.tableQueries.unshift(dropNotifyTrigger(this.schemaName, tableName));
-    this.tableQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${tableName}";`);
+    this.mainQueries.unshift(dropNotifyTrigger(this.schemaName, tableName));
+    this.mainQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${tableName}";`);
   }
 
   createColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
@@ -287,7 +278,7 @@ ORDER BY t.typname;
     const dbColumnName = formatColumnName(field.name);
 
     const formattedAttributes = formatAttributes(columnOptions, this.schemaName, false);
-    this.tableQueries.push(
+    this.mainQueries.push(
       `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
     );
 
@@ -301,7 +292,7 @@ ORDER BY t.typname;
   }
 
   dropColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
-    this.tableQueries.push(
+    this.mainQueries.push(
       `ALTER TABLE  "${this.schemaName}"."${modelToTableName(model.name)}" DROP COLUMN IF EXISTS ${formatColumnName(
         field.name
       )};`
@@ -331,12 +322,12 @@ ORDER BY t.typname;
       `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
       `(${indexOptions.fields.join(', ')})`;
 
-    this.tableQueries.push(createIndexQuery);
+    this.mainQueries.push(createIndexQuery);
   }
 
   dropIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {
     const hashedIndexName = generateHashedIndexName(model.name, index);
-    this.tableQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
+    this.mainQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
   }
 
   createRelation(relation: GraphQLRelationsType): void {
@@ -389,7 +380,7 @@ ORDER BY t.typname;
       }
       const relationQuery = generateForeignKeyStatement(model.getAttributes()[relation.foreignKey], model.tableName);
       if (relationQuery) {
-        this.tableQueries.push(relationQuery);
+        this.mainQueries.push(relationQuery);
       }
     }
 
@@ -412,16 +403,14 @@ ORDER BY t.typname;
     }
     const tableName = modelToTableName(relation.from);
     const fkConstraint = getFkConstraint(tableName, relation.foreignKey);
-    // TODO remove from sequelize model
 
     const dropFkeyStatement = `ALTER TABLE "${this.schemaName}"."${tableName}" DROP CONSTRAINT ${fkConstraint};`;
-    this.tableQueries.unshift(dropFkeyStatement);
+    this.mainQueries.unshift(dropFkeyStatement);
 
-    // this.addModelToSequelizeCache(sequelizeModel);
+    // TODO remove from sequelize model
+    // Should update sequelize model cache
   }
 
-  // when enum changes happen ?
-  // when is depedent on an enum and enum is changed
   async createEnum(e: GraphQLEnumsType): Promise<void> {
     const queries: string[] = [];
 
@@ -438,23 +427,15 @@ ORDER BY t.typname;
     const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
     if (resultsDeprecated.length !== 0) {
       results = resultsDeprecated;
-      console.log('deprecated');
       type = `"${enumTypeNameDeprecated}"`;
     }
 
     if (results.length === 0) {
-      // await sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
-      //   replacements: e.values,
-      // });
-      console.log('e values', e.values);
       const escapedEnumValues = e.values.map((value) => this.sequelize.escape(value)).join(',');
-
       const createEnumStatement = `CREATE TYPE ${type} as ENUM (${escapedEnumValues});`;
-      console.log('create enum statement', createEnumStatement);
       queries.unshift(createEnumStatement);
     } else {
       const currentValues = results.map((v: any) => v.enum_value);
-      // Assert the existing enum is same
 
       // Make it a function to not execute potentially big joins unless needed
       if (!isEqual(e.values, currentValues)) {
@@ -474,19 +455,16 @@ ORDER BY t.typname;
         `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
       );
       const commentStatement = `COMMENT ON TYPE ${type} IS E${comment}`;
-      console.log('comment statement', commentStatement);
       queries.push(commentStatement);
     }
-    this.tableQueries.unshift(...queries);
-
-    console.log('setting type', type);
+    this.mainQueries.unshift(...queries);
     this.enumTypeMap.set(e.name, type);
   }
 
   dropEnums(e: GraphQLEnumsType): void {
     const enumTypeValue = this.enumTypeMap?.get(e.name);
     if (enumTypeValue) {
-      this.tableQueries.push(`DROP TYPE ${enumTypeValue}`);
+      this.mainQueries.push(`DROP TYPE ${enumTypeValue}`);
 
       this.enumTypeMap.delete(e.name);
     }

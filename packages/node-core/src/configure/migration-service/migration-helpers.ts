@@ -9,7 +9,6 @@ import {
   GraphQLRelationsType,
 } from '@subql/utils';
 import {isEqual} from 'lodash';
-import {sortModels} from '../../utils';
 
 export type ModifiedModels = Record<
   string,
@@ -177,7 +176,6 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
     logMessage += `Added Relations: ${formatRelations(schemaChanges.addedRelations)}\n`;
   }
 
-  // Removing relations
   if (schemaChanges.removedRelations.length) {
     logMessage += `Removed Relations: ${formatRelations(schemaChanges.removedRelations)}\n`;
   }

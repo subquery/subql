@@ -48,6 +48,8 @@ export interface NotifyTriggerPayload {
   eventManipulation: string;
 }
 
+const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
+
 const timestampKeys = ['created_at', 'updated_at'];
 
 const byTagOrder = (a: [keyof SmartTags, any], b: [keyof SmartTags, any]) => {
@@ -516,45 +518,6 @@ export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptio
   }
   return `${statement.trim()};`;
 }
-
-// export function generateOrderedStatements(
-//   models: Record<string, ModelStatic<Model<any, any>>>,
-//   relations: GraphQLRelationsType[],
-//   schema: string,
-//   mainQueries: string[],
-//   referenceQueries: string[]
-// ): void {
-//   const sortedModels = sortModels(relations, models);
-//
-//   if (sortedModels === null) {
-//     Object.values(models).forEach((model) => {
-//       const tableQuery = generateCreateTableStatement(model, schema, true);
-//       mainQueries.push(...tableQuery);
-//       if (model.options.indexes) {
-//         const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-//         mainQueries.push(...indexQuery);
-//       }
-//       Object.values(model.getAttributes()).forEach((a) => {
-//         const fkStatement = generateForeignKeyStatement(a, model.tableName);
-//         if (fkStatement) {
-//           referenceQueries.push(fkStatement);
-//         }
-//       });
-//     });
-//   } else {
-//     sortedModels.reverse().forEach((model: ModelStatic<any>) => {
-//       const tableQuery = generateCreateTableStatement(model, schema, );
-//       mainQueries.push(...tableQuery);
-//
-//       if (model.options.indexes) {
-//         const indexQuery = generateCreateIndexStatement(model.options.indexes, schema, model.tableName);
-//         mainQueries.push(...indexQuery);
-//       }
-//     });
-//   }
-// }
-
-const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
 export function validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
   if (triggers.length !== NotifyTriggerManipulationType.length) {
