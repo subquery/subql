@@ -8,6 +8,7 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
+import {isEqual} from 'lodash';
 import {sortModels} from '../../utils';
 
 export type ModifiedModels = Record<
@@ -33,7 +34,8 @@ export interface SchemaChangesType {
 
   addedEnums: GraphQLEnumsType[];
   removedEnums: GraphQLEnumsType[];
-  allEnums: GraphQLEnumsType[];
+  modifiedEnums: GraphQLEnumsType[];
+  // allEnums: GraphQLEnumsType[];
 }
 
 export function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): boolean {
@@ -60,6 +62,16 @@ export function compareEnums(
 
   changes.addedEnums = nextEnums.filter((e) => !currentEnumNames.has(e.name));
   changes.removedEnums = currentEnums.filter((e) => !nextEnumNames.has(e.name));
+
+  currentEnums.forEach((currentEnum) => {
+    if (nextEnumNames.has(currentEnum.name)) {
+      const nextEnum = nextEnums.find((e) => e.name === currentEnum.name);
+      // Check if there's a difference in the values arrays
+      if (nextEnum && !isEqual(currentEnum.values, nextEnum.values)) {
+        changes.modifiedEnums.push(nextEnum); // Add the nextEnum to modifiedEnums
+      }
+    }
+  });
 }
 
 export function compareRelations(
@@ -150,6 +162,8 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
       .join('; ');
   const formatRelations = (relations: GraphQLRelationsType[]) =>
     relations.map((relation) => `From: ${relation.from} To: ${relation.to}`);
+  const formatEnums = (enums: GraphQLEnumsType[]) =>
+    enums.map((enumType) => `${enumType.name} (${enumType.values.join(', ')})`);
 
   if (schemaChanges.addedModels.length) {
     logMessage += `Added Entities: ${formatModels(schemaChanges.addedModels)}\n`;
@@ -185,19 +199,11 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
       logMessage += `\tRemoved Indexes: ${formatIndexes(changes.removedIndexes)}\n`;
     }
   });
-  /*
-     // Adding relations
-
-
-    // Adding enums
-    if (schemaChanges.addedEnums.length) {
-      logMessage += `Added Enums: ${formatModels(schemaChanges.addedEnums)}\n`;
-    }
-
-    // Removing enums
-    if (schemaChanges.removedEnums.length) {
-      logMessage += `Removed Enums: ${formatModels(schemaChanges.removedEnums)}\n`;
-    }
-   */
+  if (schemaChanges.addedEnums.length) {
+    logMessage += `Added Enums: ${formatEnums(schemaChanges.addedEnums)}\n`;
+  }
+  if (schemaChanges.removedEnums.length) {
+    logMessage += `Removed Enums: ${formatEnums(schemaChanges.removedEnums)}\n`;
+  }
   return logMessage;
 }

@@ -75,6 +75,7 @@ export function formatAttributes(
   schema: string,
   withoutForeignKey: boolean
 ): string {
+  // console.log('column options', columnOptions)
   const type = formatDataType(columnOptions.type);
   const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
   const unique = columnOptions.unique ? 'UNIQUE' : '';

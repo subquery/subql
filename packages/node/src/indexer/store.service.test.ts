@@ -256,4 +256,35 @@ WHERE
       foreign_column_name: 'id',
     });
   });
+  it('Init with enums', async () => {
+    const cid = 'QmVDDxVgmkKzXKcK5YBkEu3Wvzao7uQxear2SVLTUg2bQ1';
+    schemaName = 'sync-schema-4';
+
+    app = await prepareApp(schemaName, cid, true);
+
+    projectService = app.get('IProjectService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+
+    tempDir = (projectService as any).project.root;
+
+    const result = await sequelize.query(
+      `
+      SELECT n.nspname AS schema_name,
+       t.typname AS enum_type,
+       e.enumlabel AS enum_value
+FROM pg_type t
+JOIN pg_enum e ON t.oid = e.enumtypid
+JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+WHERE n.nspname = :schema -- Replace 'public' with your schema name if different
+ORDER BY t.typname, e.enumsortorder;`,
+      { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
+    );
+    expect(result.length).toBe(3);
+    expect(result.map((r: { enum_type: string }) => r.enum_type)).toStrictEqual(
+      ['65c7fd4e5d', '65c7fd4e5d', '65c7fd4e5d'],
+    );
+  });
 });

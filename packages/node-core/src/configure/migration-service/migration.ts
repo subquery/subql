@@ -6,14 +6,24 @@ import {
   getAllEntitiesRelations,
   GraphQLEntityField,
   GraphQLEntityIndex,
+  GraphQLEnumsType,
   GraphQLModelsRelationsEnums,
   GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
   IndexType,
 } from '@subql/utils';
-import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
+import {
+  IndexesOptions,
+  ModelAttributes,
+  ModelStatic,
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  Utils,
+} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
+import {isEqual} from 'lodash';
 import Pino from 'pino';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
@@ -26,19 +36,20 @@ import {
   createUniqueIndexQuery,
   dropNotifyFunction,
   dropNotifyTrigger,
+  enumNameToHash,
   formatAttributes,
   formatColumnName,
   generateCreateIndexStatement,
   generateCreateTableStatement,
   generateForeignKeyStatement,
   generateHashedIndexName,
+  getEnumDeprecated,
   getFkConstraint,
   getTriggers,
   modelToTableName,
   NotifyTriggerPayload,
   SmartTags,
   smartTags,
-  syncEnums,
   validateNotifyTriggers,
 } from '../../utils';
 import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
@@ -95,21 +106,54 @@ export class Migration {
     // }
 
     const migration = new Migration(sequelize, storeService, schemaName, config, dbType);
-    await migration.init(currentSchema, nextSchema);
+    await migration.init(currentSchema);
     return migration;
   }
-  async init(currentSchema: GraphQLSchema | null, nextSchema: GraphQLSchema): Promise<void> {
-    const modelsRelationsEnums = getAllEntitiesRelations(nextSchema);
-    this.loadExistingForeignKeys(getAllEntitiesRelations(currentSchema));
-    await this.syncEnums(modelsRelationsEnums);
+  async init(currentSchema: GraphQLSchema | null): Promise<void> {
+    const CurrentModelsRelationsEnums = getAllEntitiesRelations(currentSchema);
+
+    // Should load all keys and enums of currentSchema, as nextSchema will be added from the migration execution
+    this.loadExistingForeignKeys(CurrentModelsRelationsEnums.relations);
+    await this.loadExisitingEnums(CurrentModelsRelationsEnums.enums);
 
     if (this.useSubscription) {
       this.extraQueries.push(createSendNotificationTriggerFunction(this.schemaName));
     }
   }
-  private async syncEnums(modelRelationsEnums: GraphQLModelsRelationsEnums) {
-    for (const e of modelRelationsEnums.enums) {
-      await syncEnums(this.sequelize, this.dbType, e, this.schemaName, this.enumTypeMap, logger);
+
+  private loadExistingForeignKeys(relations: GraphQLRelationsType[]): void {
+    for (const relation of relations) {
+      const model = this.sequelize.model(relation.from);
+      const relatedModel = this.sequelize.model(relation.to);
+      Object.values(model.associations).forEach(() => {
+        addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
+      });
+    }
+  }
+
+  private async loadExisitingEnums(enums: GraphQLEnumsType[]): Promise<void> {
+    const results = (await this.sequelize.query(
+      `
+    SELECT t.typname AS enum_type
+FROM pg_type t
+         JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+WHERE n.nspname = :schema
+  AND t.typtype = 'e'
+ORDER BY t.typname;
+    `,
+      {
+        replacements: {schema: this.schemaName},
+        type: QueryTypes.SELECT,
+      }
+    )) as {enum_type: string}[];
+
+    for (const e of enums) {
+      const enumTypeName = enumNameToHash(e.name);
+      if (!results.find((en) => en.enum_type === enumTypeName)) {
+        console.log('enum', enumTypeName, ' not apart of the db yet');
+        continue;
+      }
+      this.enumTypeMap.set(e.name, `"${this.schemaName}"."${enumTypeName}"`);
     }
   }
 
@@ -141,6 +185,7 @@ export class Migration {
     attributes: ModelAttributes<any>;
     indexes: IndexesOptions[];
   } {
+    console.log('enum type', this.enumTypeMap);
     const attributes = modelsTypeToModelAttributes(model, this.enumTypeMap);
     if (this.historical) {
       addIdAndBlockRangeAttributes(attributes);
@@ -155,19 +200,8 @@ export class Migration {
     return {attributes, indexes};
   }
 
-  private loadExistingForeignKeys(modelsRelationsEnums: GraphQLModelsRelationsEnums): void {
-    for (const relation of modelsRelationsEnums.relations) {
-      const model = this.sequelize.model(relation.from);
-      const relatedModel = this.sequelize.model(relation.to);
-      Object.values(model.associations).forEach(() => {
-        addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
-      });
-    }
-  }
-
   private addModelToSequelizeCache(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
-
     if (!this.sequelizeModels.find((m) => m.name === modelName)) {
       this.sequelizeModels.push(sequelizeModel);
     }
@@ -225,6 +259,8 @@ export class Migration {
     if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
       this.extraQueries.push(dropNotifyFunction(this.schemaName));
     }
+
+    this.addModelToSequelizeCache(sequelizeModel);
   }
 
   dropTable(model: GraphQLModelsType): void {
@@ -376,8 +412,84 @@ export class Migration {
     }
     const tableName = modelToTableName(relation.from);
     const fkConstraint = getFkConstraint(tableName, relation.foreignKey);
+    // TODO remove from sequelize model
+
     const dropFkeyStatement = `ALTER TABLE "${this.schemaName}"."${tableName}" DROP CONSTRAINT ${fkConstraint};`;
     this.tableQueries.unshift(dropFkeyStatement);
+
+    // this.addModelToSequelizeCache(sequelizeModel);
+  }
+
+  // when enum changes happen ?
+  // when is depedent on an enum and enum is changed
+  async createEnum(e: GraphQLEnumsType): Promise<void> {
+    const queries: string[] = [];
+
+    const enumTypeName = enumNameToHash(e.name);
+    let type = `"${this.schemaName}"."${enumTypeName}"`;
+    let [results] = await this.sequelize.query(
+      `SELECT pg_enum.enumlabel as enum_value
+         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
+      {replacements: [enumTypeName, this.schemaName]}
+    );
+
+    const enumTypeNameDeprecated = `${this.schemaName}_enum_${enumNameToHash(e.name)}`;
+    const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
+    if (resultsDeprecated.length !== 0) {
+      results = resultsDeprecated;
+      console.log('deprecated');
+      type = `"${enumTypeNameDeprecated}"`;
+    }
+
+    if (results.length === 0) {
+      // await sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
+      //   replacements: e.values,
+      // });
+      console.log('e values', e.values);
+      const escapedEnumValues = e.values.map((value) => this.sequelize.escape(value)).join(',');
+
+      const createEnumStatement = `CREATE TYPE ${type} as ENUM (${escapedEnumValues});`;
+      console.log('create enum statement', createEnumStatement);
+      queries.unshift(createEnumStatement);
+    } else {
+      const currentValues = results.map((v: any) => v.enum_value);
+      // Assert the existing enum is same
+
+      // Make it a function to not execute potentially big joins unless needed
+      if (!isEqual(e.values, currentValues)) {
+        throw new Error(
+          `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
+            `,`
+          )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
+        );
+      }
+    }
+    if (this.dbType === SUPPORT_DB.cockRoach) {
+      logger.warn(
+        `Comment on enum ${e.description} is not supported with ${this.dbType}, enum name may display incorrectly in query service`
+      );
+    } else {
+      const comment = this.sequelize.escape(
+        `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
+      );
+      const commentStatement = `COMMENT ON TYPE ${type} IS E${comment}`;
+      console.log('comment statement', commentStatement);
+      queries.push(commentStatement);
+    }
+    this.tableQueries.unshift(...queries);
+
+    console.log('setting type', type);
+    this.enumTypeMap.set(e.name, type);
+  }
+
+  dropEnums(e: GraphQLEnumsType): void {
+    const enumTypeValue = this.enumTypeMap?.get(e.name);
+    if (enumTypeValue) {
+      this.tableQueries.push(`DROP TYPE ${enumTypeValue}`);
+
+      this.enumTypeMap.delete(e.name);
+    }
   }
 
   // Sequelize model will generate follow query to create hash indexes

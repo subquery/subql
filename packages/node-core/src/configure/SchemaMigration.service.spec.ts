@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {buildSchemaFromFile} from '@subql/utils';
+import {compareEnums} from '@subql/node-core/configure/migration-service/migration-helpers';
+import {buildSchemaFromFile, GraphQLEnumsType} from '@subql/utils';
 import {SchemaMigrationService} from './migration-service';
 import {ProjectUpgradeSevice} from './ProjectUpgrade.service';
 
@@ -98,6 +99,32 @@ describe('SchemaMigration', () => {
           fieldName: 'oneToManyRelation',
         },
       ];
+    });
+  });
+  it('compare enums on modified enums', () => {
+    const currentEnums = [
+      {
+        name: 'TestEnum',
+        values: ['GOOD', 'BAD', 'NEUTRAL', 'CHAOS'],
+      } as GraphQLEnumsType,
+    ];
+    const nextEnum = [
+      {
+        name: 'TestEnum',
+        values: ['GOOD', 'BAD', 'NEUTRAL'],
+      } as GraphQLEnumsType,
+    ];
+
+    const changes: any = {
+      addedEnums: [],
+      removedEnums: [],
+      modifiedEnums: [],
+    };
+    compareEnums(currentEnums, nextEnum, changes);
+    expect(changes).toStrictEqual({
+      addedEnums: [],
+      removedEnums: [],
+      modifiedEnums: [{name: 'TestEnum', values: ['GOOD', 'BAD', 'NEUTRAL']}],
     });
   });
 });

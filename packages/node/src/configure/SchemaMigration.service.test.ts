@@ -580,4 +580,41 @@ WHERE event_object_table = :table AND event_object_schema = :schema ;
     expect(result.length).toBe(3);
     expect(result[0]).toEqual({ trigger_name: '0x36bc022fc662d7ff' });
   });
+  it('support enum drop and enum creation', async () => {
+    const cid = 'QmR8LS4vAh9Lj3p38h7AR9XDB9xf563Lc4zpE5sPZPpKbH';
+    schemaName = 'test-migrations-17';
+    app = await prepareApp(schemaName, cid, false, false);
+
+    projectService = app.get('IProjectService');
+    const projectUpgradeService = app.get('IProjectUpgradeService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+    tempDir = (projectService as any).project.root;
+
+    await projectUpgradeService.setCurrentHeight(2000);
+
+    const result = await sequelize.query(
+      `
+      SELECT
+       t.typname AS enum_type,
+       e.enumlabel AS enum_value
+FROM pg_type t
+JOIN pg_enum e ON t.oid = e.enumtypid
+JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+WHERE n.nspname = :schema -- Replace 'public' with your schema name if different
+ORDER BY t.typname, e.enumsortorder;`,
+      { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
+    );
+
+    expect(result.length).toBe(5);
+    expect(result.find((e: any) => e.enum_type === '5fcf5d7ab8')).toEqual({
+      enum_type: '5fcf5d7ab8',
+      enum_value: 'CREATED',
+    });
+    expect(
+      result.find((e: any) => e.enum_type === 'e9b7360cdc'),
+    ).toBeUndefined();
+  });
 });

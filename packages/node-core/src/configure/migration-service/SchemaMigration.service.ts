@@ -64,7 +64,7 @@ export class SchemaMigrationService {
       removedRelations: [],
       addedEnums: [],
       removedEnums: [],
-      allEnums: currentData.enums, // TODO support for Enum migration
+      modifiedEnums: [],
     };
 
     compareEnums(currentData.enums, nextData.enums, changes);
@@ -117,6 +117,7 @@ export class SchemaMigrationService {
     }
   }
 
+  // eslint-disable-next-line complexity
   async run(
     currentSchema: GraphQLSchema | null,
     nextSchema: GraphQLSchema,
@@ -127,15 +128,24 @@ export class SchemaMigrationService {
       addedEnums,
       addedModels,
       addedRelations,
-      allEnums, // TODO enum support
+      modifiedEnums,
       modifiedModels,
       removedEnums,
       removedModels,
       removedRelations,
     } = schemaDifference;
+
     if (!hasChanged(schemaDifference)) {
       logger.info('No Schema changes');
       return;
+    }
+
+    if (modifiedEnums.length > 0) {
+      throw new Error(
+        `Modifying enums is currently not supported. Please revert the changes to the following enums: ${modifiedEnums
+          .map((e) => e.name)
+          .join(', ')}`
+      );
     }
 
     const sortedSchemaModels = this.orderModelsByRelations(
@@ -145,11 +155,6 @@ export class SchemaMigrationService {
 
     const sortedAddedModels = this.alignModelOrder(sortedSchemaModels, addedModels) as GraphQLModelsType[];
     const sortedModifiedModels = this.alignModelOrder(sortedSchemaModels, modifiedModels);
-
-    // TODO
-    if (addedEnums.length > 0 || removedEnums.length > 0) {
-      throw new Error('Schema Migration currently does not support Enum removal and creation');
-    }
 
     await this.flushCache(true);
     const migrationAction = await Migration.create(
@@ -164,8 +169,13 @@ export class SchemaMigrationService {
     );
 
     logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
-
     try {
+      if (addedEnums.length) {
+        for (const enumValue of addedEnums) {
+          await migrationAction.createEnum(enumValue);
+        }
+      }
+
       if (removedModels.length) {
         for (const model of removedModels) {
           migrationAction.dropTable(model);
@@ -212,6 +222,11 @@ export class SchemaMigrationService {
       if (removedRelations.length) {
         for (const relationModel of removedRelations) {
           migrationAction.dropRelation(relationModel);
+        }
+      }
+      if (removedEnums.length) {
+        for (const enumValue of removedEnums) {
+          migrationAction.dropEnums(enumValue);
         }
       }
 
