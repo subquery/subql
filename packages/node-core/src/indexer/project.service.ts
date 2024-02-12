@@ -268,7 +268,7 @@ export abstract class BaseProjectService<
   }
 
   getAllDataSources(): DS[] {
-    assert(isMainThread, 'This method is only avaiable on the main thread');
+    assert(isMainThread, 'This method is only available on the main thread');
     const dataSources = this.project.dataSources;
     const dynamicDs = this.dynamicDsService.dynamicDatasources;
 
