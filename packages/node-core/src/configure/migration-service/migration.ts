@@ -12,12 +12,23 @@ import {
   hashName,
   IndexType,
 } from '@subql/utils';
-import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
+import {
+  IndexesOptions,
+  ModelAttributes,
+  ModelStatic,
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  Utils,
+} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {isEqual} from 'lodash';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {
+  addBlockRangeColumnToIndexes,
+  addHistoricalIdIndex,
+  addIdAndBlockRangeAttributes,
   addRelationToMap,
   commentColumnQuery,
   commentConstraintQuery,
@@ -43,21 +54,18 @@ import {
   generateCreateTableStatement,
   generateForeignKeyStatement,
   generateHashedIndexName,
+  getColumnOption,
   getEnumDeprecated,
+  getExistedIndexesQuery,
   getFkConstraint,
   getTriggers,
+  modelsTypeToModelAttributes,
   modelToTableName,
   NotifyTriggerPayload,
   SmartTags,
   smartTags,
-  validateNotifyTriggers,
-  addBlockRangeColumnToIndexes,
-  addHistoricalIdIndex,
-  addIdAndBlockRangeAttributes,
-  getExistedIndexesQuery,
   updateIndexesName,
-  getColumnOption,
-  modelsTypeToModelAttributes,
+  validateNotifyTriggers,
 } from '../../utils';
 import {NodeConfig} from '../NodeConfig';
 import {loadExistingEnums, loadExistingForeignKeys} from './migration-helpers';
@@ -89,7 +97,8 @@ export class Migration {
     private dbType: SUPPORT_DB,
     // TODO refactor load map funcs
     private initForeignKeyMap: Map<string, Map<string, SmartTags>>,
-    private initEnumTypeMap: Map<string, string>
+    private initEnumTypeMap: Map<string, string>,
+    private existingIndexes: {indexname: string}[]
   ) {
     this.historical = !config.disableHistorical;
     this.useSubscription = config.subscription;
@@ -116,7 +125,20 @@ export class Migration {
     const foreignKeyMap = loadExistingForeignKeys(currentModelsRelationsEnums.relations, sequelize);
     const enumTypeMap = await loadExistingEnums(currentModelsRelationsEnums.enums, schemaName, sequelize);
 
-    const migration = new Migration(sequelize, storeService, schemaName, config, dbType, foreignKeyMap, enumTypeMap);
+    const indexesResult = (await sequelize.query(getExistedIndexesQuery(schemaName), {type: QueryTypes.SELECT})) as {
+      indexname: string;
+    }[];
+
+    const migration = new Migration(
+      sequelize,
+      storeService,
+      schemaName,
+      config,
+      dbType,
+      foreignKeyMap,
+      enumTypeMap,
+      indexesResult
+    );
 
     if (migration.useSubscription) {
       migration.extraQueries.push(createSendNotificationTriggerFunction(schemaName));
@@ -127,6 +149,11 @@ export class Migration {
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
     const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
+
+    if (this.historical) {
+      // Comments should be added after
+      this.addRelationComments();
+    }
 
     try {
       for (const query of this.mainQueries) {
@@ -181,8 +208,7 @@ export class Migration {
 
   async createTable(model: GraphQLModelsType, withoutForeignKey: boolean): Promise<void> {
     const {attributes, indexes} = this.prepareModelAttributesAndIndexes(model);
-    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(this.schemaName));
-    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
+    const existedIndexes = this.existingIndexes.map((i) => (i as any).indexname);
 
     if (indexes.length > this.config.indexCountLimit) {
       throw new Error(`too many indexes on entity ${model.name}`);
@@ -294,13 +320,13 @@ export class Migration {
   createRelation(relation: GraphQLRelationsType): void {
     const model = this.sequelize.model(relation.from);
     const relatedModel = this.sequelize.model(relation.to);
-    if (this.foreignKeyMap.get(model.tableName)?.has(relation.foreignKey)) {
-      return;
-    }
-
     if (this.historical) {
       addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
     } else {
+      if (this.foreignKeyMap.get(model.tableName)?.has(relation.foreignKey)) {
+        return;
+      }
+
       switch (relation.type) {
         case 'belongsTo': {
           model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
@@ -351,7 +377,7 @@ export class Migration {
     this.addModelToSequelizeCache(model);
   }
 
-  addRelationComments(): void {
+  private addRelationComments(): void {
     this.foreignKeyMap.forEach((keys, tableName) => {
       const comment = Array.from(keys.values())
         .map((tags) => smartTags(tags, '|'))

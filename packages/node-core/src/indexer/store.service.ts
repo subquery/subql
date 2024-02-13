@@ -159,12 +159,7 @@ export class StoreService {
     this._modelsRelations = modelsRelations;
 
     try {
-      const start = new Date();
       await this.syncSchema(schema);
-      const end = new Date();
-
-      const diff = end.getTime() - start.getTime();
-      console.log(`syncSchema took ${diff} ms`);
     } catch (e: any) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
@@ -205,7 +200,6 @@ export class StoreService {
   // eslint-disable-next-line complexity
   async syncSchema(schema: string): Promise<void> {
     const tx = await this.sequelize.transaction();
-    // const enumTypeMap = new Map<string, string>();
     if (this.historical) {
       const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
       if (results.length === 0) {
@@ -224,12 +218,14 @@ export class StoreService {
       schema,
       this.config
     );
+    const start = new Date();
     await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
+    const end = new Date();
+    console.log(`schemaMigrationService.Run(): ${end.getTime() - start.getTime()}ms`);
+
     // TODO syncSchema should initalize sequelize models regards of if the schema contains changes
     /*
-
     If project restarts wtih DB already, this would fail, as there are many queries that are only for init
-
      */
     // TODO this should also apply to notifyTriggers on subscription
   }

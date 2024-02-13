@@ -169,8 +169,6 @@ export class SchemaMigrationService {
         for (const relationModel of addedRelations) {
           migrationAction.createRelation(relationModel);
         }
-        // Comments should be added after
-        migrationAction.addRelationComments();
       }
 
       for (const relationModel of removedRelations) {
@@ -179,7 +177,6 @@ export class SchemaMigrationService {
       for (const enumValue of removedEnums) {
         migrationAction.dropEnum(enumValue);
       }
-
       return migrationAction.run(transaction);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');

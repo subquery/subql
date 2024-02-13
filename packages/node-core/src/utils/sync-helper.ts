@@ -495,7 +495,7 @@ export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptio
     statement += ` DEFERRABLE`;
   }
   statement += `;
-  EXCEPTION   
+  EXCEPTION
     WHEN duplicate_object THEN
         RAISE NOTICE 'Constraint already exists. Ignoring...';
   END$$;
