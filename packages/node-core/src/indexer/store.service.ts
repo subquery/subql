@@ -159,7 +159,12 @@ export class StoreService {
     this._modelsRelations = modelsRelations;
 
     try {
+      const start = new Date();
       await this.syncSchema(schema);
+      const end = new Date();
+
+      const diff = end.getTime() - start.getTime();
+      console.log(`syncSchema took ${diff} ms`);
     } catch (e: any) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
@@ -208,6 +213,10 @@ export class StoreService {
       }
     }
 
+    /*
+    On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
+    every start up is a migration
+     */
     const schemaMigrationService = new SchemaMigrationService(
       this.sequelize,
       this,
@@ -216,6 +225,13 @@ export class StoreService {
       this.config
     );
     await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
+    // TODO syncSchema should initalize sequelize models regards of if the schema contains changes
+    /*
+
+    If project restarts wtih DB already, this would fail, as there are many queries that are only for init
+
+     */
+    // TODO this should also apply to notifyTriggers on subscription
   }
 
   defineModel(

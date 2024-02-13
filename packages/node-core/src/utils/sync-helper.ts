@@ -1,15 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SUPPORT_DB} from '@subql/common';
-import {
-  hashName,
-  blake2AsHex,
-  GraphQLEnumsType,
-  IndexType,
-  GraphQLModelsType,
-  GraphQLRelationsType,
-} from '@subql/utils';
+import assert from 'assert';
+import {hashName, blake2AsHex, IndexType, GraphQLModelsType, GraphQLRelationsType} from '@subql/utils';
 import {
   DataTypes,
   IndexesOptions,
@@ -24,9 +17,6 @@ import {
   Utils,
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
-import {isEqual} from 'lodash';
-import Pino from 'pino';
-import {getEnumDeprecated} from './project';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
@@ -83,6 +73,10 @@ export function commentConstraintQuery(table: string, constraint: string, commen
 
 export function commentTableQuery(column: string, comment: string): string {
   return `COMMENT ON TABLE ${column} IS E'${comment}'`;
+}
+
+export function commentColumnQuery(schema: string, table: string, column: string, comment: string): string {
+  return `COMMENT ON COLUMN "${schema}".${table}.${column} IS '${comment}';`;
 }
 
 // This is used when historical is disabled so that we can perform bulk updates
@@ -184,14 +178,26 @@ END;
 $$ LANGUAGE plpgsql;`;
 }
 
+// TODO use idempotent
 export function createNotifyTrigger(schema: string, table: string): string {
   const triggerName = hashName(schema, 'notify_trigger', table);
   const channelName = hashName(schema, 'notify_channel', table);
+  //   return `
+  // CREATE TRIGGER "${triggerName}"
+  //     AFTER INSERT OR UPDATE OR DELETE
+  //     ON "${schema}"."${table}"
+  //     FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');`;
   return `
-CREATE TRIGGER "${triggerName}"
-    AFTER INSERT OR UPDATE OR DELETE
-    ON "${schema}"."${table}"
-    FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');`;
+DO $$
+BEGIN
+    CREATE TRIGGER ${triggerName} AFTER INSERT OR UPDATE OR DELETE 
+    ON "${schema}"."${table}" 
+    FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');
+EXCEPTION   
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Trigger already exists. Ignoring...';
+END$$;
+  `;
 }
 
 export function dropNotifyTrigger(schema: string, table: string): string {
@@ -205,6 +211,7 @@ export function dropNotifyFunction(schema: string): string {
 }
 
 // Hot schema reload, _metadata table
+// Should also use Idempotent
 export function createSchemaTrigger(schema: string, metadataTableName: string): string {
   const triggerName = hashName(schema, 'schema_trigger', metadataTableName);
   return `
@@ -217,6 +224,7 @@ export function createSchemaTrigger(schema: string, metadataTableName: string): 
 }
 
 export function createSchemaTriggerFunction(schema: string): string {
+  // TODO i think this should also not use replace
   return `
   CREATE OR REPLACE FUNCTION "${schema}".schema_notification()
     RETURNS trigger AS $$
@@ -320,65 +328,6 @@ export function addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
   });
 }
 
-// Ref: https://www.graphile.org/postgraphile/enums/
-// Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
-// It is difficult for sequelize use replacement, instead we use escape to avoid injection
-// UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
-// See https://github.com/cockroachdb/cockroach/issues/44135
-export async function syncEnums(
-  sequelize: Sequelize,
-  dbType: SUPPORT_DB,
-  e: GraphQLEnumsType,
-  schema: string,
-  enumTypeMap: Map<string, string>,
-  logger: Pino.Logger
-): Promise<void> {
-  // We shouldn't set the typename to e.name because it could potentially create SQL injection,
-  // using a replacement at the type name location doesn't work.
-  const enumTypeName = enumNameToHash(e.name);
-  let type = `"${schema}"."${enumTypeName}"`;
-  let [results] = await sequelize.query(
-    `SELECT pg_enum.enumlabel as enum_value
-         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
-    {replacements: [enumTypeName, schema]}
-  );
-
-  const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
-  const resultsDeprecated = await getEnumDeprecated(sequelize, enumTypeNameDeprecated);
-  if (resultsDeprecated.length !== 0) {
-    results = resultsDeprecated;
-    type = `"${enumTypeNameDeprecated}"`;
-  }
-
-  if (results.length === 0) {
-    await sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
-      replacements: e.values,
-    });
-  } else {
-    const currentValues = results.map((v: any) => v.enum_value);
-    // Assert the existing enum is same
-
-    // Make it a function to not execute potentially big joins unless needed
-    if (!isEqual(e.values, currentValues)) {
-      throw new Error(
-        `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
-          `,`
-        )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
-      );
-    }
-  }
-  if (dbType === SUPPORT_DB.cockRoach) {
-    logger.warn(
-      `Comment on enum ${e.description} is not supported with ${dbType}, enum name may display incorrectly in query service`
-    );
-  } else {
-    const comment = sequelize.escape(`@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`);
-    await sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
-  }
-  enumTypeMap.set(e.name, type);
-}
-
 export function addRelationToMap(
   relation: GraphQLRelationsType,
   foreignKeys: Map<string, Map<string, SmartTags>>,
@@ -460,7 +409,7 @@ export function generateCreateIndexStatement(
     const indexUsed = index.using ? `USING ${index.using}` : '';
     const indexName = index.name;
 
-    const statement = `CREATE ${unique} INDEX "${indexName}" ON "${schema}"."${tableName}" ${indexUsed} (${fieldsList});`;
+    const statement = `CREATE ${unique} INDEX IF NOT EXISTS "${indexName}" ON "${schema}"."${tableName}" ${indexUsed} (${fieldsList});`;
     indexStatements.push(statement);
   });
 
@@ -497,28 +446,6 @@ export function sortModels(relations: GraphQLRelationsType[], models: GraphQLMod
   return sortedModels.length > 0 ? sortedModels : null;
 }
 
-export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
-  const references = attribute?.references as ModelAttributeColumnReferencesOptions;
-  if (!references) {
-    return;
-  }
-  const foreignTable = references.model as TableNameWithSchema;
-  let statement = `
-    ALTER TABLE "${foreignTable.schema}"."${tableName}"
-      ADD FOREIGN KEY (${attribute.field}) 
-      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
-  if (attribute.onDelete) {
-    statement += ` ON DELETE ${attribute.onDelete}`;
-  }
-  if (attribute.onUpdate) {
-    statement += ` ON UPDATE ${attribute.onUpdate}`;
-  }
-  if (references.deferrable) {
-    statement += ` DEFERRABLE`;
-  }
-  return `${statement.trim()};`;
-}
-
 export function validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
   if (triggers.length !== NotifyTriggerManipulationType.length) {
     throw new Error(
@@ -531,3 +458,73 @@ export function validateNotifyTriggers(triggerName: string, triggers: NotifyTrig
     }
   });
 }
+
+// enums
+export const dropEumStatement = (enumTypeValue: string): string => `DROP TYPE IF EXISTS ${enumTypeValue}`;
+export const commentOnEnumStatement = (type: string, comment: string): string =>
+  `COMMENT ON TYPE ${type} IS E${comment}`;
+export const createEnumStatement = (type: string, enumValues: string): string =>
+  `CREATE TYPE ${type} as ENUM (${enumValues});`;
+
+// relations
+export const dropRelationStatement = (schemaName: string, tableName: string, fkConstraint: string): string =>
+  `ALTER TABLE "${schemaName}"."${tableName}" DROP CONSTRAINT IF EXISTS ${fkConstraint};`;
+export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
+  const references = attribute?.references as ModelAttributeColumnReferencesOptions;
+  if (!references) {
+    return;
+  }
+  const foreignTable = references.model as TableNameWithSchema;
+  assert(attribute.field, 'Missing field on attribute');
+  const fkey = getFkConstraint(tableName, attribute.field);
+  let statement = `
+  DO $$
+  BEGIN
+    ALTER TABLE "${foreignTable.schema}"."${tableName}"
+      ADD 
+      CONSTRAINT ${fkey}
+      FOREIGN KEY (${attribute.field}) 
+      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
+  if (attribute.onDelete) {
+    statement += ` ON DELETE ${attribute.onDelete}`;
+  }
+  if (attribute.onUpdate) {
+    statement += ` ON UPDATE ${attribute.onUpdate}`;
+  }
+  if (references.deferrable) {
+    statement += ` DEFERRABLE`;
+  }
+  statement += `;
+  EXCEPTION   
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint already exists. Ignoring...';
+  END$$;
+`;
+  return `${statement.trim()};`;
+}
+
+// indexes
+export const dropIndexStatement = (schema: string, hashedIndexName: string): string =>
+  `DROP INDEX IF EXISTS "${schema}"."${hashedIndexName}";`;
+export const createIndexStatement = (indexOptions: IndexesOptions, tableName: string, schema: string) => {
+  if (!indexOptions.fields || indexOptions.fields.length === 0) {
+    throw new Error("The 'fields' property is required and cannot be empty.");
+  }
+  return (
+    `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS "${indexOptions.name}" ` +
+    `ON "${schema}"."${tableName}" ` +
+    `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
+    `(${indexOptions.fields.join(', ')})`
+  );
+};
+
+// columns
+export const dropColumnStatement = (schema: string, columnName: string, tableName: string): string =>
+  `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${columnName};`;
+
+export const createColumnStatement = (
+  schema: string,
+  tableName: string,
+  columnName: string,
+  attributes: string
+): string => `ALTER TABLE IF EXISTS "${schema}"."${tableName}" ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;

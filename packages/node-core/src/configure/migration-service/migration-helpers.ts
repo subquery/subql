@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {addRelationToMap, enumNameToHash, SmartTags} from '@subql/node-core';
 import {
   GraphQLEntityField,
   GraphQLEntityIndex,
@@ -8,6 +9,7 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
+import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {isEqual} from 'lodash';
 
 export type ModifiedModels = Record<
@@ -204,4 +206,82 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
     logMessage += `Removed Enums: ${formatEnums(schemaChanges.removedEnums)}\n`;
   }
   return logMessage;
+}
+export function alignModelOrder<T extends GraphQLModelsType[] | ModifiedModels>(
+  schemaModels: GraphQLModelsType[],
+  models: T
+): T {
+  const orderIndex = schemaModels.reduce((acc: Record<string, number>, model, index) => {
+    acc[model.name] = index;
+    return acc;
+  }, {});
+
+  if (Array.isArray(models)) {
+    return models.sort((a, b) => {
+      const indexA = orderIndex[a.name] ?? Number.MAX_VALUE; // Place unknown models at the end
+      const indexB = orderIndex[b.name] ?? Number.MAX_VALUE;
+      return indexA - indexB;
+    }) as T;
+  } else {
+    const modelNames = Object.keys(models);
+    const sortedModelNames = modelNames.sort((a, b) => {
+      const indexA = orderIndex[a] ?? Number.MAX_VALUE;
+      const indexB = orderIndex[b] ?? Number.MAX_VALUE;
+      return indexA - indexB;
+    });
+
+    const sortedModifiedModels: ModifiedModels = {};
+    sortedModelNames.forEach((modelName) => {
+      sortedModifiedModels[modelName] = models[modelName];
+    });
+
+    return sortedModifiedModels as T;
+  }
+}
+
+export function loadExistingForeignKeys(
+  relations: GraphQLRelationsType[],
+  sequelize: Sequelize
+): Map<string, Map<string, SmartTags>> {
+  const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
+  for (const relation of relations) {
+    const model = sequelize.model(relation.from);
+    const relatedModel = sequelize.model(relation.to);
+    Object.values(model.associations).forEach(() => {
+      addRelationToMap(relation, foreignKeyMap, model, relatedModel);
+    });
+  }
+  return foreignKeyMap;
+}
+
+export async function loadExistingEnums(
+  enums: GraphQLEnumsType[],
+  schema: string,
+  sequelize: Sequelize
+): Promise<Map<string, string>> {
+  const enumTypeMap = new Map<string, string>();
+
+  const results = (await sequelize.query(
+    `
+    SELECT t.typname AS enum_type
+FROM pg_type t
+         JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+WHERE n.nspname = :schema
+  AND t.typtype = 'e'
+ORDER BY t.typname;
+    `,
+    {
+      replacements: {schema: schema},
+      type: QueryTypes.SELECT,
+    }
+  )) as {enum_type: string}[];
+
+  for (const e of enums) {
+    const enumTypeName = enumNameToHash(e.name);
+    if (!results.find((en) => en.enum_type === enumTypeName)) {
+      continue;
+    }
+    enumTypeMap.set(e.name, `"${schema}"."${enumTypeName}"`);
+  }
+  return enumTypeMap;
 }

@@ -11,6 +11,7 @@ import {sortModels} from '../../utils';
 import {NodeConfig} from '../NodeConfig';
 import {Migration} from './migration';
 import {
+  alignModelOrder,
   compareEnums,
   compareModels,
   compareRelations,
@@ -80,39 +81,6 @@ export class SchemaMigrationService {
     }
   }
 
-  private alignModelOrder(
-    schemaModels: GraphQLModelsType[],
-    models: GraphQLModelsType[] | ModifiedModels
-  ): GraphQLModelsType[] | ModifiedModels {
-    const orderIndex = schemaModels.reduce((acc: Record<string, number>, model, index) => {
-      acc[model.name] = index;
-      return acc;
-    }, {});
-
-    if (Array.isArray(models)) {
-      return models.sort((a, b) => {
-        const indexA = orderIndex[a.name] ?? Number.MAX_VALUE; // Place unknown models at the end
-        const indexB = orderIndex[b.name] ?? Number.MAX_VALUE;
-        return indexA - indexB;
-      });
-    } else {
-      const modelNames = Object.keys(models);
-      const sortedModelNames = modelNames.sort((a, b) => {
-        const indexA = orderIndex[a] ?? Number.MAX_VALUE;
-        const indexB = orderIndex[b] ?? Number.MAX_VALUE;
-        return indexA - indexB;
-      });
-
-      const sortedModifiedModels: ModifiedModels = {};
-      sortedModelNames.forEach((modelName) => {
-        sortedModifiedModels[modelName] = models[modelName];
-      });
-
-      return sortedModifiedModels;
-    }
-  }
-
-  // eslint-disable-next-line complexity
   async run(
     currentSchema: GraphQLSchema | null,
     nextSchema: GraphQLSchema,
@@ -148,61 +116,52 @@ export class SchemaMigrationService {
       getAllEntitiesRelations(nextSchema).relations
     );
 
-    const sortedAddedModels = this.alignModelOrder(sortedSchemaModels, addedModels) as GraphQLModelsType[];
-    const sortedModifiedModels = this.alignModelOrder(sortedSchemaModels, modifiedModels);
+    const sortedAddedModels = alignModelOrder<GraphQLModelsType[]>(sortedSchemaModels, addedModels);
+    const sortedModifiedModels = alignModelOrder<ModifiedModels>(sortedSchemaModels, modifiedModels);
 
     await this.flushCache(true);
     const migrationAction = await Migration.create(
       this.sequelize,
       this.storeService,
       this.dbSchema,
-      nextSchema,
       currentSchema,
       this.config,
-      logger,
       this.dbType
     );
 
+    // TODO this should only be printed if schema migration is enabled and not store.service sync schema
     logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
     try {
-      if (addedEnums.length) {
-        for (const enumValue of addedEnums) {
-          await migrationAction.createEnum(enumValue);
-        }
+      for (const enumValue of addedEnums) {
+        await migrationAction.createEnum(enumValue);
       }
 
-      if (removedModels.length) {
-        for (const model of removedModels) {
-          migrationAction.dropTable(model);
-        }
+      for (const model of removedModels) {
+        migrationAction.dropTable(model);
       }
 
-      if (sortedAddedModels.length) {
-        for (const model of sortedAddedModels) {
-          await migrationAction.createTable(model, this.withoutForeignKeys);
-        }
+      for (const model of sortedAddedModels) {
+        await migrationAction.createTable(model, this.withoutForeignKeys);
       }
 
-      if (Object.keys(sortedModifiedModels).length) {
-        const entities = Object.keys(modifiedModels);
-        for (const model of entities) {
-          const modelValue = modifiedModels[model];
+      const entities = Object.keys(sortedModifiedModels);
+      for (const model of entities) {
+        const modelValue = sortedModifiedModels[model];
 
-          for (const index of modelValue.removedIndexes) {
-            migrationAction.dropIndex(modelValue.model, index);
-          }
+        for (const index of modelValue.removedIndexes) {
+          migrationAction.dropIndex(modelValue.model, index);
+        }
 
-          for (const field of modelValue.removedFields) {
-            migrationAction.dropColumn(modelValue.model, field);
-          }
+        for (const field of modelValue.removedFields) {
+          migrationAction.dropColumn(modelValue.model, field);
+        }
 
-          for (const field of modelValue.addedFields) {
-            migrationAction.createColumn(modelValue.model, field);
-          }
+        for (const field of modelValue.addedFields) {
+          migrationAction.createColumn(modelValue.model, field);
+        }
 
-          for (const index of modelValue.addedIndexes) {
-            migrationAction.createIndex(modelValue.model, index);
-          }
+        for (const index of modelValue.addedIndexes) {
+          migrationAction.createIndex(modelValue.model, index);
         }
       }
 
@@ -214,15 +173,11 @@ export class SchemaMigrationService {
         migrationAction.addRelationComments();
       }
 
-      if (removedRelations.length) {
-        for (const relationModel of removedRelations) {
-          migrationAction.dropRelation(relationModel);
-        }
+      for (const relationModel of removedRelations) {
+        migrationAction.dropRelation(relationModel);
       }
-      if (removedEnums.length) {
-        for (const enumValue of removedEnums) {
-          migrationAction.dropEnums(enumValue);
-        }
+      for (const enumValue of removedEnums) {
+        migrationAction.dropEnum(enumValue);
       }
 
       return migrationAction.run(transaction);

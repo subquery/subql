@@ -12,29 +12,30 @@ import {
   hashName,
   IndexType,
 } from '@subql/utils';
-import {
-  IndexesOptions,
-  ModelAttributes,
-  ModelStatic,
-  QueryTypes,
-  Sequelize,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
+import {IndexesOptions, ModelAttributes, ModelStatic, Sequelize, Transaction, Utils} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {isEqual} from 'lodash';
-import Pino from 'pino';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {
   addRelationToMap,
+  commentColumnQuery,
   commentConstraintQuery,
+  commentOnEnumStatement,
   commentTableQuery,
+  constraintDeferrableQuery,
+  createColumnStatement,
+  createEnumStatement,
+  createIndexStatement,
   createNotifyTrigger,
   createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
+  dropColumnStatement,
+  dropEumStatement,
+  dropIndexStatement,
   dropNotifyFunction,
   dropNotifyTrigger,
+  dropRelationStatement,
   enumNameToHash,
   formatAttributes,
   formatColumnName,
@@ -50,16 +51,16 @@ import {
   SmartTags,
   smartTags,
   validateNotifyTriggers,
-} from '../../utils';
-import {getColumnOption, modelsTypeToModelAttributes} from '../../utils/graphql';
-import {
   addBlockRangeColumnToIndexes,
   addHistoricalIdIndex,
   addIdAndBlockRangeAttributes,
   getExistedIndexesQuery,
   updateIndexesName,
-} from '../../utils/sync-helper';
+  getColumnOption,
+  modelsTypeToModelAttributes,
+} from '../../utils';
 import {NodeConfig} from '../NodeConfig';
+import {loadExistingEnums, loadExistingForeignKeys} from './migration-helpers';
 
 type RemovedIndexes = Record<string, IndexesOptions[]>;
 
@@ -67,27 +68,40 @@ const logger = getLogger('db-manager');
 
 export class Migration {
   private sequelizeModels: ModelStatic<any>[] = [];
+  /*
+  mainQueries are used for executions, that are not reliant on any prior db operations
+  extraQueries are executions, that are reliant on certain db operations, e.g. comments on foreignKeys or comments on tables, should be executed only after the table has been created
+   */
   private mainQueries: string[] = [];
-  private readonly historical: boolean;
   private extraQueries: string[] = [];
-  private foreignKeyMap: Map<string, Map<string, SmartTags>> = new Map<string, Map<string, SmartTags>>();
+  private readonly historical: boolean;
   private useSubscription: boolean;
-  private enumTypeMap: Map<string, string> = new Map<string, string>();
+  private foreignKeyMap: Map<string, Map<string, SmartTags>>;
+  private enumTypeMap: Map<string, string>;
+  // TODO i think this can be removed
   private removedIndexes: RemovedIndexes = {};
 
-  constructor(
+  private constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
     private schemaName: string,
     private config: NodeConfig,
-    private dbType: SUPPORT_DB
+    private dbType: SUPPORT_DB,
+    // TODO refactor load map funcs
+    private initForeignKeyMap: Map<string, Map<string, SmartTags>>,
+    private initEnumTypeMap: Map<string, string>
   ) {
     this.historical = !config.disableHistorical;
     this.useSubscription = config.subscription;
+
+    // TODO test if this is working, enable, then disable
     if (this.useSubscription && dbType === SUPPORT_DB.cockRoach) {
       this.useSubscription = false;
       logger.warn(`Subscription is not support with ${this.dbType}`);
     }
+
+    this.foreignKeyMap = this.initForeignKeyMap;
+    this.enumTypeMap = this.initEnumTypeMap;
   }
 
   static async create(
@@ -98,55 +112,17 @@ export class Migration {
     config: NodeConfig,
     dbType: SUPPORT_DB
   ): Promise<Migration> {
-    const migration = new Migration(sequelize, storeService, schemaName, config, dbType);
-    await migration.init(currentSchema);
+    const currentModelsRelationsEnums = getAllEntitiesRelations(currentSchema);
+    const foreignKeyMap = loadExistingForeignKeys(currentModelsRelationsEnums.relations, sequelize);
+    const enumTypeMap = await loadExistingEnums(currentModelsRelationsEnums.enums, schemaName, sequelize);
+
+    const migration = new Migration(sequelize, storeService, schemaName, config, dbType, foreignKeyMap, enumTypeMap);
+
+    if (migration.useSubscription) {
+      migration.extraQueries.push(createSendNotificationTriggerFunction(schemaName));
+    }
+
     return migration;
-  }
-  async init(currentSchema: GraphQLSchema | null): Promise<void> {
-    const CurrentModelsRelationsEnums = getAllEntitiesRelations(currentSchema);
-
-    // Should load all keys and enums of currentSchema, as nextSchema will be added from the migration execution
-    this.loadExistingForeignKeys(CurrentModelsRelationsEnums.relations);
-    await this.loadExisitingEnums(CurrentModelsRelationsEnums.enums);
-
-    if (this.useSubscription) {
-      this.extraQueries.push(createSendNotificationTriggerFunction(this.schemaName));
-    }
-  }
-
-  private loadExistingForeignKeys(relations: GraphQLRelationsType[]): void {
-    for (const relation of relations) {
-      const model = this.sequelize.model(relation.from);
-      const relatedModel = this.sequelize.model(relation.to);
-      Object.values(model.associations).forEach(() => {
-        addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
-      });
-    }
-  }
-
-  private async loadExisitingEnums(enums: GraphQLEnumsType[]): Promise<void> {
-    const results = (await this.sequelize.query(
-      `
-    SELECT t.typname AS enum_type
-FROM pg_type t
-         JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-WHERE n.nspname = :schema
-  AND t.typtype = 'e'
-ORDER BY t.typname;
-    `,
-      {
-        replacements: {schema: this.schemaName},
-        type: QueryTypes.SELECT,
-      }
-    )) as {enum_type: string}[];
-
-    for (const e of enums) {
-      const enumTypeName = enumNameToHash(e.name);
-      if (!results.find((en) => en.enum_type === enumTypeName)) {
-        continue;
-      }
-      this.enumTypeMap.set(e.name, `"${this.schemaName}"."${enumTypeName}"`);
-    }
   }
 
   async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
@@ -225,6 +201,7 @@ ORDER BY t.typname;
 
     this.mainQueries.push(...generateCreateTableStatement(sequelizeModel, this.schemaName, withoutForeignKey));
 
+    // TODO double check if this is getting picked up by the indexes methods
     if (sequelizeModel.options.indexes) {
       this.mainQueries.push(
         ...generateCreateIndexStatement(sequelizeModel.options.indexes, this.schemaName, sequelizeModel.tableName)
@@ -278,25 +255,19 @@ ORDER BY t.typname;
     const dbColumnName = formatColumnName(field.name);
 
     const formattedAttributes = formatAttributes(columnOptions, this.schemaName, false);
-    this.mainQueries.push(
-      `ALTER TABLE "${this.schemaName}"."${dbTableName}" ADD COLUMN "${dbColumnName}" ${formattedAttributes};`
-    );
+    this.mainQueries.push(createColumnStatement(this.schemaName, dbTableName, dbColumnName, formattedAttributes));
 
     if (columnOptions.comment) {
-      this.extraQueries.push(
-        `COMMENT ON COLUMN "${this.schemaName}".${dbTableName}.${dbColumnName} IS '${columnOptions.comment}';`
-      );
+      this.extraQueries.push(commentColumnQuery(this.schemaName, dbTableName, dbColumnName, columnOptions.comment));
     }
 
     this.addModelToSequelizeCache(sequelizeModel);
   }
 
   dropColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
-    this.mainQueries.push(
-      `ALTER TABLE  "${this.schemaName}"."${modelToTableName(model.name)}" DROP COLUMN IF EXISTS ${formatColumnName(
-        field.name
-      )};`
-    );
+    const columnName = formatColumnName(field.name);
+    const tableName = modelToTableName(model.name);
+    this.mainQueries.push(dropColumnStatement(this.schemaName, columnName, tableName));
 
     this.addModelToSequelizeCache(this.createSequelizeModel(model));
   }
@@ -312,22 +283,12 @@ ORDER BY t.typname;
 
     indexOptions.name = generateHashedIndexName(model.name, indexOptions);
 
-    if (!indexOptions.fields || indexOptions.fields.length === 0) {
-      throw new Error("The 'fields' property is required and cannot be empty.");
-    }
-
-    const createIndexQuery =
-      `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS "${indexOptions.name}" ` +
-      `ON "${this.schemaName}"."${formattedTableName}" ` +
-      `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
-      `(${indexOptions.fields.join(', ')})`;
-
-    this.mainQueries.push(createIndexQuery);
+    this.mainQueries.push(createIndexStatement(indexOptions, formattedTableName, this.schemaName));
   }
 
   dropIndex(model: GraphQLModelsType, index: GraphQLEntityIndex): void {
     const hashedIndexName = generateHashedIndexName(model.name, index);
-    this.mainQueries.push(`DROP INDEX IF EXISTS "${this.schemaName}"."${hashedIndexName}";`);
+    this.mainQueries.push(dropIndexStatement(this.schemaName, hashedIndexName));
   }
 
   createRelation(relation: GraphQLRelationsType): void {
@@ -344,8 +305,11 @@ ORDER BY t.typname;
         case 'belongsTo': {
           model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
           addRelationToMap(relation, this.foreignKeyMap, model, relatedModel);
-          // TODO cockroach support
-          // logger.warn(`Relation: ${model.tableName} to ${relatedModel.tableName} is ONLY supported by postgresDB`);
+          const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
+          const fkConstraint = getFkConstraint(rel.source.tableName, rel.foreignKey);
+          if (this.dbType !== SUPPORT_DB.cockRoach) {
+            this.extraQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
+          }
           break;
         }
         case 'hasOne': {
@@ -404,8 +368,7 @@ ORDER BY t.typname;
     const tableName = modelToTableName(relation.from);
     const fkConstraint = getFkConstraint(tableName, relation.foreignKey);
 
-    const dropFkeyStatement = `ALTER TABLE "${this.schemaName}"."${tableName}" DROP CONSTRAINT ${fkConstraint};`;
-    this.mainQueries.unshift(dropFkeyStatement);
+    this.mainQueries.unshift(dropRelationStatement(this.schemaName, tableName, fkConstraint));
 
     // TODO remove from sequelize model
     // Should update sequelize model cache
@@ -414,6 +377,11 @@ ORDER BY t.typname;
   async createEnum(e: GraphQLEnumsType): Promise<void> {
     const queries: string[] = [];
 
+    // Ref: https://www.graphile.org/postgraphile/enums/
+    // Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
+    // It is difficult for sequelize use replacement, instead we use escape to avoid injection
+    // UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
+    // See https://github.com/cockroachdb/cockroach/issues/44135
     const enumTypeName = enumNameToHash(e.name);
     let type = `"${this.schemaName}"."${enumTypeName}"`;
     let [results] = await this.sequelize.query(
@@ -432,8 +400,7 @@ ORDER BY t.typname;
 
     if (results.length === 0) {
       const escapedEnumValues = e.values.map((value) => this.sequelize.escape(value)).join(',');
-      const createEnumStatement = `CREATE TYPE ${type} as ENUM (${escapedEnumValues});`;
-      queries.unshift(createEnumStatement);
+      queries.unshift(createEnumStatement(type, escapedEnumValues));
     } else {
       const currentValues = results.map((v: any) => v.enum_value);
 
@@ -454,17 +421,17 @@ ORDER BY t.typname;
       const comment = this.sequelize.escape(
         `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
       );
-      const commentStatement = `COMMENT ON TYPE ${type} IS E${comment}`;
-      queries.push(commentStatement);
+
+      queries.push(commentOnEnumStatement(type, comment));
     }
     this.mainQueries.unshift(...queries);
     this.enumTypeMap.set(e.name, type);
   }
 
-  dropEnums(e: GraphQLEnumsType): void {
+  dropEnum(e: GraphQLEnumsType): void {
     const enumTypeValue = this.enumTypeMap?.get(e.name);
     if (enumTypeValue) {
-      this.mainQueries.push(`DROP TYPE ${enumTypeValue}`);
+      this.mainQueries.push(dropEumStatement(enumTypeValue));
 
       this.enumTypeMap.delete(e.name);
     }
@@ -486,6 +453,7 @@ ORDER BY t.typname;
     indexes.forEach((index, i) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
+        // TODO double check with idempotent on cockroach
         const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
           index.fields
         }) USING HASH;`;
