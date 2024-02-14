@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {DataTypes, Model, ModelAttributes} from '@subql/x-sequelize';
-import {addIdAndBlockRangeAttributes} from '../utils';
+import {addIdAndBlockRangeAttributes} from '../db';
 import {StoreService} from './store.service';
 
 describe('Store Service', () => {

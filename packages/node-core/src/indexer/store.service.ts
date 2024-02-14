@@ -24,15 +24,16 @@ import {
   Utils,
 } from '@subql/x-sequelize';
 import {camelCase, flatten, upperFirst} from 'lodash';
-import {NodeConfig, SchemaMigrationService} from '../configure';
-import {getLogger} from '../logger';
+import {NodeConfig} from '../configure';
 import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
-  camelCaseObjectKey,
   createSchemaTrigger,
   createSchemaTriggerFunction,
   getTriggers,
-} from '../utils';
+  SchemaMigrationService,
+} from '../db';
+import {getLogger} from '../logger';
+import {camelCaseObjectKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
 import {CacheMetadataModel} from './storeCache';
@@ -161,6 +162,7 @@ export class StoreService {
     try {
       await this.syncSchema(schema);
     } catch (e: any) {
+      console.trace(e);
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }
@@ -218,16 +220,7 @@ export class StoreService {
       schema,
       this.config
     );
-    const start = new Date();
     await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
-    const end = new Date();
-    console.log(`schemaMigrationService.Run(): ${end.getTime() - start.getTime()}ms`);
-
-    // TODO syncSchema should initalize sequelize models regards of if the schema contains changes
-    /*
-    If project restarts wtih DB already, this would fail, as there are many queries that are only for init
-     */
-    // TODO this should also apply to notifyTriggers on subscription
   }
 
   defineModel(

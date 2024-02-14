@@ -1,16 +1,40 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {GraphQLModelsType} from '@subql/utils';
-import {Model, ModelAttributeColumnOptions, ModelStatic} from '@subql/x-sequelize';
-import {formatReferences} from './sequelizeUtil';
+import {GraphQLEnumsType, GraphQLModelsType} from '@subql/utils';
+import {Model, ModelAttributeColumnOptions, ModelStatic, Sequelize} from '@subql/x-sequelize';
+import {formatReferences} from '../utils';
 import {
-  generateForeignKeyStatement,
-  generateCreateIndexStatement,
-  generateCreateTableStatement,
   sortModels,
   getFkConstraint,
+  getExistingEnums,
+  generateForeignKeyQuery,
+  generateCreateTableQuery,
+  generateCreateIndexQuery,
 } from './sync-helper';
+
+jest.mock('@subql/x-sequelize', () => {
+  const actualSequelize = jest.requireActual('@subql/x-sequelize');
+  return {
+    ...actualSequelize,
+    Sequelize: jest.fn().mockImplementation(() => ({
+      authenticate: jest.fn(),
+      define: jest.fn().mockReturnValue({
+        findOne: jest.fn(),
+        create: jest.fn((input) => input),
+      }),
+      query: jest.fn(), // Leave this generic for now
+      showAllSchemas: jest.fn().mockResolvedValue(['enum-sync-1']),
+      model: jest.fn().mockReturnValue({upsert: jest.fn()}),
+      sync: jest.fn(),
+      transaction: jest.fn().mockReturnValue({
+        commit: jest.fn(),
+        rollback: jest.fn(),
+        afterCommit: jest.fn(),
+      }),
+    })),
+  };
+});
 
 describe('sync-helper', () => {
   const mockModel = {
@@ -126,7 +150,7 @@ describe('sync-helper', () => {
     expect(getFkConstraint('ManyToManyTestEntities', 'AccountId')).toBe('many_to_many_test_entities_account_id_fkey');
   });
   it('Generate SQL statement for table creation with historical', () => {
-    const statement = generateCreateTableStatement(mockModel, 'test', false);
+    const statement = generateCreateTableQuery(mockModel, 'test', false);
     const expectedStatement = [
       'CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL,\n      "amount" numeric NOT NULL,\n      "date" timestamp NOT NULL,\n      "from_id" text NOT NULL,\n      "_id" UUID NOT NULL,\n      "_block_range" int8range NOT NULL,\n      "last_transfer_block" integer, PRIMARY KEY ("_id"));',
 
@@ -139,7 +163,7 @@ describe('sync-helper', () => {
     expect(statement).toStrictEqual(expectedStatement);
   });
   it('Generate SQL statement for Indexes', () => {
-    const statement = generateCreateIndexStatement(
+    const statement = generateCreateIndexQuery(
       mockModel.options.indexes as any,
       mockModel.schema.name,
       mockModel.tableName
@@ -163,16 +187,7 @@ describe('sync-helper', () => {
         },
       };
     });
-    const statement = generateCreateTableStatement(mockModel, 'test', false);
-
-    // Correcting the expected statement to reflect proper SQL syntax
-    //     const expectedStatement = `
-    //         CREATE TABLE IF NOT EXISTS "test"."test-table" (
-    //       "id" text NOT NULL PRIMARY KEY
-    //     );
-    //
-    // COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`.trim();
-
+    const statement = generateCreateTableQuery(mockModel, 'test', false);
     expect(statement).toStrictEqual([
       `CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL, PRIMARY KEY ("id"));`,
       `COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`,
@@ -228,7 +243,7 @@ describe('sync-helper', () => {
 
     const referenceQueries: string[] = [];
     Object.values(mockModel.getAttributes()).forEach((a) => {
-      const refStatement = generateForeignKeyStatement(a, mockModel.tableName);
+      const refStatement = generateForeignKeyQuery(a, mockModel.tableName);
       if (refStatement) {
         referenceQueries.push(refStatement);
       }
@@ -287,5 +302,34 @@ describe('sync-helper', () => {
       },
     ] as GraphQLModelsType[];
     expect(sortModels(mockRelations, mockModels)).toStrictEqual(['LonelyEntity', 'Account', 'Transfer', 'TestEntity']);
+  });
+  it('Ensure correct enumTypeMap', async () => {
+    const sequelize = new Sequelize() as any;
+    sequelize.query.mockResolvedValue([
+      {enum_value: 'GOOD', type_name: '1a131454ff'},
+      {enum_value: 'BAD', type_name: '1a131454ff'},
+      {enum_value: 'NEUTRAL', type_name: '1a131454ff'},
+      {enum_value: 'CHAOS', type_name: '1a131454ff'},
+      {enum_value: 'DROP', type_name: 'e9b7360cdc'},
+    ]);
+
+    const v = await getExistingEnums('enum-sync-1', sequelize);
+
+    const expectedMap = [
+      [
+        '1a131454ff',
+        {
+          enumValues: ['GOOD', 'BAD', 'NEUTRAL', 'CHAOS'],
+        },
+      ],
+      [
+        'e9b7360cdc',
+        {
+          enumValues: ['DROP'],
+        },
+      ],
+    ];
+
+    expect(Array.from(v.entries())).toEqual(expectedMap);
   });
 });

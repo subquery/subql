@@ -17,7 +17,7 @@ import {
   Utils,
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
-import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
+import {formatAttributes, generateIndexName, modelToTableName} from '../utils';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 
@@ -178,19 +178,13 @@ END;
 $$ LANGUAGE plpgsql;`;
 }
 
-// TODO use idempotent
 export function createNotifyTrigger(schema: string, table: string): string {
   const triggerName = hashName(schema, 'notify_trigger', table);
   const channelName = hashName(schema, 'notify_channel', table);
-  //   return `
-  // CREATE TRIGGER "${triggerName}"
-  //     AFTER INSERT OR UPDATE OR DELETE
-  //     ON "${schema}"."${table}"
-  //     FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');`;
   return `
 DO $$
 BEGIN
-    CREATE TRIGGER ${triggerName} AFTER INSERT OR UPDATE OR DELETE 
+    CREATE TRIGGER "${triggerName}" AFTER INSERT OR UPDATE OR DELETE 
     ON "${schema}"."${table}" 
     FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');
 EXCEPTION   
@@ -224,7 +218,6 @@ export function createSchemaTrigger(schema: string, metadataTableName: string): 
 }
 
 export function createSchemaTriggerFunction(schema: string): string {
-  // TODO i think this should also not use replace
   return `
   CREATE OR REPLACE FUNCTION "${schema}".schema_notification()
     RETURNS trigger AS $$
@@ -358,7 +351,7 @@ export function addRelationToMap(
   }
 }
 
-export function generateCreateTableStatement(
+export function generateCreateTableQuery(
   model: ModelStatic<Model<any, any>>,
   schema: string,
   withoutForeignKey: boolean
@@ -397,23 +390,23 @@ export function generateCreateTableStatement(
   return [tableQuery, ...comments];
 }
 
-export function generateCreateIndexStatement(
+export function generateCreateIndexQuery(
   indexes: readonly ModelIndexesOptions[],
   schema: string,
   tableName: string
 ): string[] {
-  const indexStatements: string[] = [];
+  const indexQueries: string[] = [];
   indexes.forEach((index) => {
     const fieldsList = index.fields?.map((field) => `"${field}"`).join(', ');
     const unique = index.unique ? 'UNIQUE' : '';
     const indexUsed = index.using ? `USING ${index.using}` : '';
     const indexName = index.name;
 
-    const statement = `CREATE ${unique} INDEX IF NOT EXISTS "${indexName}" ON "${schema}"."${tableName}" ${indexUsed} (${fieldsList});`;
-    indexStatements.push(statement);
+    const query = `CREATE ${unique} INDEX IF NOT EXISTS "${indexName}" ON "${schema}"."${tableName}" ${indexUsed} (${fieldsList});`;
+    indexQueries.push(query);
   });
 
-  return indexStatements;
+  return indexQueries;
 }
 
 export function sortModels(relations: GraphQLRelationsType[], models: GraphQLModelsType[]): GraphQLModelsType[] | null {
@@ -459,17 +452,73 @@ export function validateNotifyTriggers(triggerName: string, triggers: NotifyTrig
   });
 }
 
+export async function getExistingForeignKeys(schema: string, sequelize: Sequelize): Promise<string[]> {
+  const results = (await sequelize.query(
+    `
+        SELECT
+          tc.constraint_name
+        FROM
+          information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+                 ON tc.constraint_name = kcu.constraint_name
+                   AND tc.table_schema = kcu.table_schema
+            JOIN information_schema.constraint_column_usage AS ccu
+                 ON ccu.constraint_name = tc.constraint_name
+                   AND ccu.table_schema = tc.table_schema
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND tc.table_schema = :schema;
+    `,
+    {
+      replacements: {schema: schema},
+      type: QueryTypes.SELECT,
+    }
+  )) as {constraint_name: string}[];
+  return results.map((r) => r.constraint_name);
+}
+
+export async function getExistingEnums(
+  schema: string,
+  sequelize: Sequelize
+): Promise<Map<string, {enumValues: string[]; name?: string}>> {
+  const enumTypeMap = new Map<string, {enumValues: string[]; name?: string}>();
+
+  const results = (await sequelize.query(
+    `
+        SELECT pg_enum.enumlabel as enum_value, t.typname as type_name
+        FROM pg_type t
+               JOIN pg_enum ON pg_enum.enumtypid = t.oid
+               JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+        WHERE n.nspname = :schema
+        ORDER BY t.typname, enumsortorder;
+    `,
+    {
+      replacements: {schema: schema},
+      type: QueryTypes.SELECT,
+    }
+  )) as {enum_value: string; type_name: string}[];
+
+  results.forEach(({enum_value, type_name}) => {
+    if (!enumTypeMap.has(type_name)) {
+      enumTypeMap.set(type_name, {enumValues: [enum_value]});
+    } else {
+      enumTypeMap.get(type_name)?.enumValues.push(enum_value);
+    }
+  });
+
+  return enumTypeMap;
+}
+
 // enums
-export const dropEumStatement = (enumTypeValue: string): string => `DROP TYPE IF EXISTS ${enumTypeValue}`;
-export const commentOnEnumStatement = (type: string, comment: string): string =>
-  `COMMENT ON TYPE ${type} IS E${comment}`;
-export const createEnumStatement = (type: string, enumValues: string): string =>
-  `CREATE TYPE ${type} as ENUM (${enumValues});`;
+export const dropEnumQuery = (enumTypeValue: string, schema: string): string =>
+  `DROP TYPE IF EXISTS "${schema}"."${enumTypeValue}"`;
+export const commentOnEnumQuery = (type: string, comment: string): string => `COMMENT ON TYPE ${type} IS E${comment};`;
+export const createEnumQuery = (type: string, enumValues: string): string =>
+  `CREATE TYPE ${type} AS ENUM (${enumValues});`;
 
 // relations
-export const dropRelationStatement = (schemaName: string, tableName: string, fkConstraint: string): string =>
+export const dropRelationQuery = (schemaName: string, tableName: string, fkConstraint: string): string =>
   `ALTER TABLE "${schemaName}"."${tableName}" DROP CONSTRAINT IF EXISTS ${fkConstraint};`;
-export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
+export function generateForeignKeyQuery(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
   const references = attribute?.references as ModelAttributeColumnReferencesOptions;
   if (!references) {
     return;
@@ -477,7 +526,7 @@ export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptio
   const foreignTable = references.model as TableNameWithSchema;
   assert(attribute.field, 'Missing field on attribute');
   const fkey = getFkConstraint(tableName, attribute.field);
-  let statement = `
+  let query = `
   DO $$
   BEGIN
     ALTER TABLE "${foreignTable.schema}"."${tableName}"
@@ -486,27 +535,27 @@ export function generateForeignKeyStatement(attribute: ModelAttributeColumnOptio
       FOREIGN KEY (${attribute.field}) 
       REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
   if (attribute.onDelete) {
-    statement += ` ON DELETE ${attribute.onDelete}`;
+    query += ` ON DELETE ${attribute.onDelete}`;
   }
   if (attribute.onUpdate) {
-    statement += ` ON UPDATE ${attribute.onUpdate}`;
+    query += ` ON UPDATE ${attribute.onUpdate}`;
   }
   if (references.deferrable) {
-    statement += ` DEFERRABLE`;
+    query += ` DEFERRABLE`;
   }
-  statement += `;
+  query += `;
   EXCEPTION
     WHEN duplicate_object THEN
         RAISE NOTICE 'Constraint already exists. Ignoring...';
   END$$;
 `;
-  return `${statement.trim()};`;
+  return `${query.trim()};`;
 }
 
 // indexes
-export const dropIndexStatement = (schema: string, hashedIndexName: string): string =>
+export const dropIndexQuery = (schema: string, hashedIndexName: string): string =>
   `DROP INDEX IF EXISTS "${schema}"."${hashedIndexName}";`;
-export const createIndexStatement = (indexOptions: IndexesOptions, tableName: string, schema: string) => {
+export const createIndexQuery = (indexOptions: IndexesOptions, tableName: string, schema: string) => {
   if (!indexOptions.fields || indexOptions.fields.length === 0) {
     throw new Error("The 'fields' property is required and cannot be empty.");
   }
@@ -519,12 +568,8 @@ export const createIndexStatement = (indexOptions: IndexesOptions, tableName: st
 };
 
 // columns
-export const dropColumnStatement = (schema: string, columnName: string, tableName: string): string =>
+export const dropColumnQuery = (schema: string, columnName: string, tableName: string): string =>
   `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${columnName};`;
 
-export const createColumnStatement = (
-  schema: string,
-  tableName: string,
-  columnName: string,
-  attributes: string
-): string => `ALTER TABLE IF EXISTS "${schema}"."${tableName}" ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;
+export const createColumnQuery = (schema: string, tableName: string, columnName: string, attributes: string): string =>
+  `ALTER TABLE IF EXISTS "${schema}"."${tableName}" ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;

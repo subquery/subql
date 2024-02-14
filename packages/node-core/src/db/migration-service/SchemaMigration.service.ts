@@ -5,10 +5,10 @@ import {SUPPORT_DB} from '@subql/common';
 import {getAllEntitiesRelations, GraphQLModelsType, GraphQLRelationsType} from '@subql/utils';
 import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
+import {NodeConfig} from '../../configure';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
-import {sortModels} from '../../utils';
-import {NodeConfig} from '../NodeConfig';
+import {sortModels} from '../sync-helper';
 import {Migration} from './migration';
 import {
   alignModelOrder,
@@ -124,16 +124,17 @@ export class SchemaMigrationService {
       this.sequelize,
       this.storeService,
       this.dbSchema,
-      currentSchema,
       this.config,
       this.dbType
     );
 
-    // TODO this should only be printed if schema migration is enabled and not store.service sync schema
-    logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
+    if (this.config.debug) {
+      logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
+    }
+
     try {
       for (const enumValue of addedEnums) {
-        await migrationAction.createEnum(enumValue);
+        migrationAction.createEnum(enumValue);
       }
 
       for (const model of removedModels) {
@@ -165,10 +166,8 @@ export class SchemaMigrationService {
         }
       }
 
-      if (addedRelations.length) {
-        for (const relationModel of addedRelations) {
-          migrationAction.createRelation(relationModel);
-        }
+      for (const relationModel of addedRelations) {
+        migrationAction.createRelation(relationModel);
       }
 
       for (const relationModel of removedRelations) {

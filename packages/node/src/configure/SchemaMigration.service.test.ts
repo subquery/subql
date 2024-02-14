@@ -40,7 +40,7 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterEach(async () => {
-    // await sequelize.dropSchema(schemaName, { logging: false });
+    await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
   });
   afterAll(async () => {

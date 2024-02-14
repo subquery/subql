@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {compareEnums} from '@subql/node-core/configure/migration-service/migration-helpers';
 import {buildSchemaFromFile, GraphQLEnumsType} from '@subql/utils';
-import {SchemaMigrationService} from './migration-service';
-import {ProjectUpgradeSevice} from './ProjectUpgrade.service';
+import {ProjectUpgradeSevice} from '../../configure';
+import {compareEnums} from './migration-helpers';
+import {SchemaMigrationService} from './SchemaMigration.service';
 
 describe('SchemaMigration', () => {
   describe('comparator', () => {
