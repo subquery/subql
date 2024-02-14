@@ -129,7 +129,7 @@ export class SchemaMigrationService {
     );
 
     if (this.config.debug) {
-      logger.info(`${schemaChangesLoggerMessage(schemaDifference)}`);
+      logger.debug(`${schemaChangesLoggerMessage(schemaDifference)}`);
     }
 
     try {

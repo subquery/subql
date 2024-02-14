@@ -45,6 +45,7 @@ describe('SchemaMigration integration tests', () => {
   });
   afterAll(async () => {
     await promisify(rimraf)(tempDir);
+    await sequelize?.close();
   });
 
   it('Migrate to new schema', async () => {
