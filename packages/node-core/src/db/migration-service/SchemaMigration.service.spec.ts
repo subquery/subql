@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {buildSchemaFromFile} from '@subql/utils';
-import {SchemaMigrationService} from './migration-service';
-import {ProjectUpgradeSevice} from './ProjectUpgrade.service';
+import {buildSchemaFromFile, GraphQLEnumsType} from '@subql/utils';
+import {ProjectUpgradeSevice} from '../../configure';
+import {compareEnums} from './migration-helpers';
+import {SchemaMigrationService} from './SchemaMigration.service';
 
 describe('SchemaMigration', () => {
   describe('comparator', () => {
-    const oldSchemaPath = path.join(__dirname, '../../test/schemas/oldSchema.graphql');
-    const newSchemaPath = path.join(__dirname, '../../test/schemas/newSchema.graphql');
-    const badSchemaPath = path.join(__dirname, '../../test/schemas/badSchema.graphql');
+    const oldSchemaPath = path.join(__dirname, '../../../test/schemas/oldSchema.graphql');
+    const newSchemaPath = path.join(__dirname, '../../../test/schemas/newSchema.graphql');
+    const badSchemaPath = path.join(__dirname, '../../../test/schemas/badSchema.graphql');
 
     it('ensure comparator correctness', () => {
       const currentSchema = buildSchemaFromFile(oldSchemaPath);
@@ -34,7 +35,7 @@ describe('SchemaMigration', () => {
         - Entity - field
         - Modify Enum
        */
-      const expectResult = require('../../test/schemas/schemaDiff.json');
+      const expectResult = require('../../../test/schemas/schemaDiff.json');
       expect(JSON.parse(JSON.stringify(result))).toStrictEqual(expectResult);
     });
     it('Determine isRewindable', () => {
@@ -55,6 +56,32 @@ describe('SchemaMigration', () => {
 
       const v = (ProjectUpgradeSevice as any).rewindableCheck(projects);
       expect(v).toBe(false);
+    });
+  });
+  it('compare enums on modified enums', () => {
+    const currentEnums = [
+      {
+        name: 'TestEnum',
+        values: ['GOOD', 'BAD', 'NEUTRAL', 'CHAOS'],
+      } as GraphQLEnumsType,
+    ];
+    const nextEnum = [
+      {
+        name: 'TestEnum',
+        values: ['GOOD', 'BAD', 'NEUTRAL'],
+      } as GraphQLEnumsType,
+    ];
+
+    const changes: any = {
+      addedEnums: [],
+      removedEnums: [],
+      modifiedEnums: [],
+    };
+    compareEnums(currentEnums, nextEnum, changes);
+    expect(changes).toStrictEqual({
+      addedEnums: [],
+      removedEnums: [],
+      modifiedEnums: [{name: 'TestEnum', values: ['GOOD', 'BAD', 'NEUTRAL']}],
     });
   });
 });

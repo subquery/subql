@@ -7,11 +7,11 @@ import {ParentProject} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
+import {SchemaMigrationService} from '../db';
 import {ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
-import {SchemaMigrationService} from './migration-service';
 import {NodeConfig} from './NodeConfig';
 
 type OnProjectUpgradeCallback<P> = (height: number, project: P) => void | Promise<void>;
@@ -230,7 +230,6 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
       assert(this.migrationService, 'MigrationService is undefined');
       if (this.config.allowSchemaMigration) {
         const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, transaction);
-
         if (modifiedModels) {
           this.#storeCache?.updateModels(modifiedModels);
         }

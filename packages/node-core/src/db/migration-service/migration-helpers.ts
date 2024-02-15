@@ -8,29 +8,32 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
+import {isEqual} from 'lodash';
+
+export type ModifiedModels = Record<
+  string,
+  {
+    model: GraphQLModelsType;
+    addedFields: GraphQLEntityField[];
+    removedFields: GraphQLEntityField[];
+
+    addedIndexes: GraphQLEntityIndex[];
+    removedIndexes: GraphQLEntityIndex[];
+  }
+>;
 
 export interface SchemaChangesType {
   addedModels: GraphQLModelsType[];
   removedModels: GraphQLModelsType[];
 
-  modifiedModels: Record<
-    string,
-    {
-      model: GraphQLModelsType;
-      addedFields: GraphQLEntityField[];
-      removedFields: GraphQLEntityField[];
-
-      addedIndexes: GraphQLEntityIndex[];
-      removedIndexes: GraphQLEntityIndex[];
-    }
-  >;
+  modifiedModels: ModifiedModels;
 
   addedRelations: GraphQLRelationsType[];
   removedRelations: GraphQLRelationsType[];
 
   addedEnums: GraphQLEnumsType[];
   removedEnums: GraphQLEnumsType[];
-  allEnums: GraphQLEnumsType[];
+  modifiedEnums: GraphQLEnumsType[];
 }
 
 export function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): boolean {
@@ -57,6 +60,16 @@ export function compareEnums(
 
   changes.addedEnums = nextEnums.filter((e) => !currentEnumNames.has(e.name));
   changes.removedEnums = currentEnums.filter((e) => !nextEnumNames.has(e.name));
+
+  currentEnums.forEach((currentEnum) => {
+    if (nextEnumNames.has(currentEnum.name)) {
+      const nextEnum = nextEnums.find((e) => e.name === currentEnum.name);
+      // Check if there's a difference in the values arrays
+      if (nextEnum && !isEqual(currentEnum.values, nextEnum.values)) {
+        changes.modifiedEnums.push(nextEnum); // Add the nextEnum to modifiedEnums
+      }
+    }
+  });
 }
 
 export function compareRelations(
@@ -79,17 +92,6 @@ export function compareRelations(
   currentRelations.forEach((rel) => {
     if (!nextRelationsMap.has(relationKey(rel))) {
       changes.removedRelations.push(rel);
-    }
-  });
-
-  nextRelations.forEach((nextRel) => {
-    const currentRel = currentRelations.find(
-      (currentRel) =>
-        currentRel.from === nextRel.from && currentRel.to === nextRel.to && currentRel.type === nextRel.type
-    );
-
-    if (currentRel && currentRel.foreignKey !== nextRel.foreignKey) {
-      // TODO handle modified relations
     }
   });
 }
@@ -156,6 +158,10 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
           `${index.fields.join(', ')}${index.unique ? ' (Unique)' : ''}${index.using ? ` Using: ${index.using}` : ''}`
       )
       .join('; ');
+  const formatRelations = (relations: GraphQLRelationsType[]) =>
+    relations.map((relation) => `From: ${relation.from} To: ${relation.to}`);
+  const formatEnums = (enums: GraphQLEnumsType[]) =>
+    enums.map((enumType) => `${enumType.name} (${enumType.values.join(', ')})`);
 
   if (schemaChanges.addedModels.length) {
     logMessage += `Added Entities: ${formatModels(schemaChanges.addedModels)}\n`;
@@ -163,6 +169,14 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
 
   if (schemaChanges.removedModels.length) {
     logMessage += `Removed Entities: ${formatModels(schemaChanges.removedModels)}\n`;
+  }
+
+  if (schemaChanges.addedRelations.length) {
+    logMessage += `Added Relations: ${formatRelations(schemaChanges.addedRelations)}\n`;
+  }
+
+  if (schemaChanges.removedRelations.length) {
+    logMessage += `Removed Relations: ${formatRelations(schemaChanges.removedRelations)}\n`;
   }
 
   Object.entries(schemaChanges.modifiedModels).forEach(([modelName, changes]) => {
@@ -182,27 +196,42 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
       logMessage += `\tRemoved Indexes: ${formatIndexes(changes.removedIndexes)}\n`;
     }
   });
-
-  /*
-     // Adding relations
-    if (schemaChanges.addedRelations.length) {
-      logMessage += `Added Relations: ${formatModels(schemaChanges.addedRelations)}\n`;
-    }
-
-    // Removing relations
-    if (schemaChanges.removedRelations.length) {
-      logMessage += `Removed Relations: ${formatModels(schemaChanges.removedRelations)}\n`;
-    }
-
-    // Adding enums
-    if (schemaChanges.addedEnums.length) {
-      logMessage += `Added Enums: ${formatModels(schemaChanges.addedEnums)}\n`;
-    }
-
-    // Removing enums
-    if (schemaChanges.removedEnums.length) {
-      logMessage += `Removed Enums: ${formatModels(schemaChanges.removedEnums)}\n`;
-    }
-     */
+  if (schemaChanges.addedEnums.length) {
+    logMessage += `Added Enums: ${formatEnums(schemaChanges.addedEnums)}\n`;
+  }
+  if (schemaChanges.removedEnums.length) {
+    logMessage += `Removed Enums: ${formatEnums(schemaChanges.removedEnums)}\n`;
+  }
   return logMessage;
+}
+export function alignModelOrder<T extends GraphQLModelsType[] | ModifiedModels>(
+  schemaModels: GraphQLModelsType[],
+  models: T
+): T {
+  const orderIndex = schemaModels.reduce((acc: Record<string, number>, model, index) => {
+    acc[model.name] = index;
+    return acc;
+  }, {});
+
+  if (Array.isArray(models)) {
+    return models.sort((a, b) => {
+      const indexA = orderIndex[a.name] ?? Number.MAX_VALUE; // Place unknown models at the end
+      const indexB = orderIndex[b.name] ?? Number.MAX_VALUE;
+      return indexA - indexB;
+    }) as T;
+  } else {
+    const modelNames = Object.keys(models);
+    const sortedModelNames = modelNames.sort((a, b) => {
+      const indexA = orderIndex[a] ?? Number.MAX_VALUE;
+      const indexB = orderIndex[b] ?? Number.MAX_VALUE;
+      return indexA - indexB;
+    });
+
+    const sortedModifiedModels: ModifiedModels = {};
+    sortedModelNames.forEach((modelName) => {
+      sortedModifiedModels[modelName] = models[modelName];
+    });
+
+    return sortedModifiedModels as T;
+  }
 }

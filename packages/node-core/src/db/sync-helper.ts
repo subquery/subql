@@ -1,15 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SUPPORT_DB} from '@subql/common';
-import {
-  hashName,
-  blake2AsHex,
-  GraphQLEnumsType,
-  IndexType,
-  GraphQLModelsType,
-  GraphQLRelationsType,
-} from '@subql/utils';
+import assert from 'assert';
+import {hashName, blake2AsHex, IndexType, GraphQLModelsType, GraphQLRelationsType} from '@subql/utils';
 import {
   DataTypes,
   IndexesOptions,
@@ -20,12 +13,14 @@ import {
   Op,
   QueryTypes,
   Sequelize,
+  TableNameWithSchema,
   Utils,
 } from '@subql/x-sequelize';
-import {isEqual} from 'lodash';
-import Pino from 'pino';
-import {getEnumDeprecated} from './project';
-import {generateIndexName, modelToTableName} from './sequelizeUtil';
+import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
+import {EnumType} from '../utils';
+import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Toposort = require('toposort-class');
 
 export interface SmartTags {
   foreignKey?: string;
@@ -38,6 +33,15 @@ const tagOrder = {
   foreignFieldName: 1,
   singleForeignFieldName: 2,
 };
+
+export interface NotifyTriggerPayload {
+  triggerName: string;
+  eventManipulation: string;
+}
+
+const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
+
+const timestampKeys = ['created_at', 'updated_at'];
 
 const byTagOrder = (a: [keyof SmartTags, any], b: [keyof SmartTags, any]) => {
   return tagOrder[a[0]] - tagOrder[b[0]];
@@ -70,6 +74,10 @@ export function commentConstraintQuery(table: string, constraint: string, commen
 
 export function commentTableQuery(column: string, comment: string): string {
   return `COMMENT ON TABLE ${column} IS E'${comment}'`;
+}
+
+export function commentColumnQuery(schema: string, table: string, column: string, comment: string): string {
+  return `COMMENT ON COLUMN "${schema}".${table}.${column} IS '${comment}';`;
 }
 
 // This is used when historical is disabled so that we can perform bulk updates
@@ -175,10 +183,16 @@ export function createNotifyTrigger(schema: string, table: string): string {
   const triggerName = hashName(schema, 'notify_trigger', table);
   const channelName = hashName(schema, 'notify_channel', table);
   return `
-CREATE TRIGGER "${triggerName}"
-    AFTER INSERT OR UPDATE OR DELETE
-    ON "${schema}"."${table}"
-    FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');`;
+DO $$
+BEGIN
+    CREATE TRIGGER "${triggerName}" AFTER INSERT OR UPDATE OR DELETE 
+    ON "${schema}"."${table}" 
+    FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');
+EXCEPTION   
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Trigger already exists. Ignoring...';
+END$$;
+  `;
 }
 
 export function dropNotifyTrigger(schema: string, table: string): string {
@@ -192,6 +206,7 @@ export function dropNotifyFunction(schema: string): string {
 }
 
 // Hot schema reload, _metadata table
+// Should also use Idempotent
 export function createSchemaTrigger(schema: string, metadataTableName: string): string {
   const triggerName = hashName(schema, 'schema_trigger', metadataTableName);
   return `
@@ -307,65 +322,6 @@ export function addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
   });
 }
 
-// Ref: https://www.graphile.org/postgraphile/enums/
-// Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
-// It is difficult for sequelize use replacement, instead we use escape to avoid injection
-// UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
-// See https://github.com/cockroachdb/cockroach/issues/44135
-export async function syncEnums(
-  sequelize: Sequelize,
-  dbType: SUPPORT_DB,
-  e: GraphQLEnumsType,
-  schema: string,
-  enumTypeMap: Map<string, string>,
-  logger: Pino.Logger
-): Promise<void> {
-  // We shouldn't set the typename to e.name because it could potentially create SQL injection,
-  // using a replacement at the type name location doesn't work.
-  const enumTypeName = enumNameToHash(e.name);
-  let type = `"${schema}"."${enumTypeName}"`;
-  let [results] = await sequelize.query(
-    `SELECT pg_enum.enumlabel as enum_value
-         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
-    {replacements: [enumTypeName, schema]}
-  );
-
-  const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
-  const resultsDeprecated = await getEnumDeprecated(sequelize, enumTypeNameDeprecated);
-  if (resultsDeprecated.length !== 0) {
-    results = resultsDeprecated;
-    type = `"${enumTypeNameDeprecated}"`;
-  }
-
-  if (results.length === 0) {
-    await sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
-      replacements: e.values,
-    });
-  } else {
-    const currentValues = results.map((v: any) => v.enum_value);
-    // Assert the existing enum is same
-
-    // Make it a function to not execute potentially big joins unless needed
-    if (!isEqual(e.values, currentValues)) {
-      throw new Error(
-        `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
-          `,`
-        )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
-      );
-    }
-  }
-  if (dbType === SUPPORT_DB.cockRoach) {
-    logger.warn(
-      `Comment on enum ${e.description} is not supported with ${dbType}, enum name may display incorrectly in query service`
-    );
-  } else {
-    const comment = sequelize.escape(`@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`);
-    await sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
-  }
-  enumTypeMap.set(e.name, type);
-}
-
 export function addRelationToMap(
   relation: GraphQLRelationsType,
   foreignKeys: Map<string, Map<string, SmartTags>>,
@@ -395,3 +351,223 @@ export function addRelationToMap(
       throw new Error('Relation type is not supported');
   }
 }
+
+export function generateCreateTableQuery(
+  model: ModelStatic<Model<any, any>>,
+  schema: string,
+  withoutForeignKey: boolean
+): string[] {
+  const tableName = model.tableName;
+
+  const attributes = model.getAttributes();
+  const columnDefinitions: string[] = [];
+  const primaryKeyColumns: string[] = [];
+  const comments: string[] = [];
+
+  Object.keys(attributes).forEach((key) => {
+    const attr = attributes[key];
+
+    if (timestampKeys.find((k) => k === attr.field)) {
+      attr.type = 'timestamp with time zone';
+    }
+
+    const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema, withoutForeignKey)}`;
+
+    columnDefinitions.push(columnDefinition);
+    if (attr.comment) {
+      comments.push(`COMMENT ON COLUMN "${schema}"."${tableName}"."${attr.field}" IS '${attr.comment}';`);
+    }
+    if (attr.primaryKey) {
+      primaryKeyColumns.push(`"${attr.field}"`);
+    }
+  });
+
+  const primaryKeyDefinition = `, PRIMARY KEY (${primaryKeyColumns.join(', ')})`;
+
+  const tableQuery = `CREATE TABLE IF NOT EXISTS "${schema}"."${tableName}" (${columnDefinitions.join(
+    ',\n      '
+  )}${primaryKeyDefinition});`;
+
+  return [tableQuery, ...comments];
+}
+
+export function generateCreateIndexQuery(
+  indexes: readonly ModelIndexesOptions[],
+  schema: string,
+  tableName: string
+): string[] {
+  const indexQueries: string[] = [];
+  indexes.forEach((index) => {
+    const fieldsList = index.fields?.map((field) => `"${field}"`).join(', ');
+    const unique = index.unique ? 'UNIQUE' : '';
+    const indexUsed = index.using ? `USING ${index.using}` : '';
+    const indexName = index.name;
+
+    const query = `CREATE ${unique} INDEX IF NOT EXISTS "${indexName}" ON "${schema}"."${tableName}" ${indexUsed} (${fieldsList});`;
+    indexQueries.push(query);
+  });
+
+  return indexQueries;
+}
+
+export function sortModels(relations: GraphQLRelationsType[], models: GraphQLModelsType[]): GraphQLModelsType[] | null {
+  const sorter = new Toposort();
+
+  models.forEach((model) => {
+    sorter.add(model.name, []);
+  });
+
+  relations.forEach(({from, to}) => {
+    sorter.add(from, to);
+  });
+
+  let sortedModelNames: string[];
+  try {
+    sortedModelNames = sorter.sort();
+  } catch (error) {
+    // Handle cyclic dependency error by returning null
+    if (error instanceof Error && error.message.startsWith('Cyclic dependency found.')) {
+      return null;
+    } else {
+      throw error;
+    }
+  }
+
+  const sortedModels = sortedModelNames
+    .map((modelName) => models.find((model) => model.name === modelName))
+    .filter(Boolean) as GraphQLModelsType[];
+
+  return sortedModels.length > 0 ? sortedModels : null;
+}
+
+export function validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
+  if (triggers.length !== NotifyTriggerManipulationType.length) {
+    throw new Error(
+      `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
+    );
+  }
+  triggers.map((t) => {
+    if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
+      throw new Error(`Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`);
+    }
+  });
+}
+
+export async function getExistingForeignKeys(schema: string, sequelize: Sequelize): Promise<string[]> {
+  const results = (await sequelize.query(
+    `
+        SELECT
+          tc.constraint_name
+        FROM
+          information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+                 ON tc.constraint_name = kcu.constraint_name
+                   AND tc.table_schema = kcu.table_schema
+            JOIN information_schema.constraint_column_usage AS ccu
+                 ON ccu.constraint_name = tc.constraint_name
+                   AND ccu.table_schema = tc.table_schema
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND tc.table_schema = :schema;
+    `,
+    {
+      replacements: {schema: schema},
+      type: QueryTypes.SELECT,
+    }
+  )) as {constraint_name: string}[];
+  return results.map((r) => r.constraint_name);
+}
+
+export async function getExistingEnums(schema: string, sequelize: Sequelize): Promise<Map<string, EnumType>> {
+  const enumTypeMap = new Map<string, EnumType>();
+
+  const results = (await sequelize.query(
+    `
+        SELECT pg_enum.enumlabel as enum_value, t.typname as type_name
+        FROM pg_type t
+               JOIN pg_enum ON pg_enum.enumtypid = t.oid
+               JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+        WHERE n.nspname = :schema
+        ORDER BY t.typname, enumsortorder;
+    `,
+    {
+      replacements: {schema: schema},
+      type: QueryTypes.SELECT,
+    }
+  )) as {enum_value: string; type_name: string}[];
+
+  results.forEach(({enum_value, type_name}) => {
+    if (!enumTypeMap.has(type_name)) {
+      enumTypeMap.set(type_name, {enumValues: [enum_value]});
+    } else {
+      enumTypeMap.get(type_name)?.enumValues.push(enum_value);
+    }
+  });
+
+  return enumTypeMap;
+}
+
+// enums
+export const dropEnumQuery = (enumTypeValue: string, schema: string): string =>
+  `DROP TYPE IF EXISTS "${schema}"."${enumTypeValue}"`;
+export const commentOnEnumQuery = (type: string, comment: string): string => `COMMENT ON TYPE ${type} IS E${comment};`;
+export const createEnumQuery = (type: string, enumValues: string): string =>
+  `CREATE TYPE ${type} AS ENUM (${enumValues});`;
+
+// relations
+export const dropRelationQuery = (schemaName: string, tableName: string, fkConstraint: string): string =>
+  `ALTER TABLE "${schemaName}"."${tableName}" DROP CONSTRAINT IF EXISTS ${fkConstraint};`;
+export function generateForeignKeyQuery(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
+  const references = attribute?.references as ModelAttributeColumnReferencesOptions;
+  if (!references) {
+    return;
+  }
+  const foreignTable = references.model as TableNameWithSchema;
+  assert(attribute.field, 'Missing field on attribute');
+  const fkey = getFkConstraint(tableName, attribute.field);
+  let query = `
+  DO $$
+  BEGIN
+    ALTER TABLE "${foreignTable.schema}"."${tableName}"
+      ADD 
+      CONSTRAINT ${fkey}
+      FOREIGN KEY (${attribute.field}) 
+      REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
+  if (attribute.onDelete) {
+    query += ` ON DELETE ${attribute.onDelete}`;
+  }
+  if (attribute.onUpdate) {
+    query += ` ON UPDATE ${attribute.onUpdate}`;
+  }
+  if (references.deferrable) {
+    query += ` DEFERRABLE`;
+  }
+  query += `;
+  EXCEPTION
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint already exists. Ignoring...';
+  END$$;
+`;
+  return `${query.trim()};`;
+}
+
+// indexes
+export const dropIndexQuery = (schema: string, hashedIndexName: string): string =>
+  `DROP INDEX IF EXISTS "${schema}"."${hashedIndexName}";`;
+export const createIndexQuery = (indexOptions: IndexesOptions, tableName: string, schema: string) => {
+  if (!indexOptions.fields || indexOptions.fields.length === 0) {
+    throw new Error("The 'fields' property is required and cannot be empty.");
+  }
+  return (
+    `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS "${indexOptions.name}" ` +
+    `ON "${schema}"."${tableName}" ` +
+    `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
+    `(${indexOptions.fields.join(', ')})`
+  );
+};
+
+// columns
+export const dropColumnQuery = (schema: string, columnName: string, tableName: string): string =>
+  `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${columnName};`;
+
+export const createColumnQuery = (schema: string, tableName: string, columnName: string, attributes: string): string =>
+  `ALTER TABLE IF EXISTS "${schema}"."${tableName}" ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;

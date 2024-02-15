@@ -8,7 +8,6 @@ import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   hashName,
-  IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
   hexToU8a,
@@ -26,34 +25,15 @@ import {
 } from '@subql/x-sequelize';
 import {camelCase, flatten, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
-import {getLogger} from '../logger';
 import {
-  addBlockRangeColumnToIndexes,
-  addHistoricalIdIndex,
-  addIdAndBlockRangeAttributes,
-  addRelationToMap,
   BTREE_GIST_EXTENSION_EXIST_QUERY,
-  camelCaseObjectKey,
-  commentConstraintQuery,
-  commentTableQuery,
-  constraintDeferrableQuery,
-  createNotifyTrigger,
   createSchemaTrigger,
   createSchemaTriggerFunction,
-  createSendNotificationTriggerFunction,
-  createUniqueIndexQuery,
-  dropNotifyFunction,
-  dropNotifyTrigger,
-  getExistedIndexesQuery,
-  getFkConstraint,
   getTriggers,
-  modelsTypeToModelAttributes,
-  SmartTags,
-  smartTags,
-  syncEnums,
-  updateIndexesName,
-} from '../utils';
-import {modelToTableName} from '../utils/sequelizeUtil';
+  SchemaMigrationService,
+} from '../db';
+import {getLogger} from '../logger';
+import {camelCaseObjectKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
 import {CacheMetadataModel} from './storeCache';
@@ -63,7 +43,6 @@ import {ISubqueryProject} from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
-const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
 type RemovedIndexes = Record<string, IndexesOptions[]>;
 
@@ -72,11 +51,6 @@ interface IndexField {
   fieldName: string;
   isUnique: boolean;
   type: string;
-}
-
-interface NotifyTriggerPayload {
-  triggerName: string;
-  eventManipulation: string;
 }
 
 class NoInitError extends Error {
@@ -88,7 +62,6 @@ class NoInitError extends Error {
 @Injectable()
 export class StoreService {
   poiRepo?: PoiRepo;
-  private removedIndexes: RemovedIndexes = {};
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
   private _metaDataRepo?: MetadataRepo;
@@ -187,7 +160,7 @@ export class StoreService {
     this._modelsRelations = modelsRelations;
 
     try {
-      await this.syncSchema(schema, this.config.subscription);
+      await this.syncSchema(schema);
     } catch (e: any) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
@@ -226,13 +199,8 @@ export class StoreService {
   }
 
   // eslint-disable-next-line complexity
-  async syncSchema(schema: string, useSubscription: boolean): Promise<void> {
-    if (useSubscription && this.dbType === SUPPORT_DB.cockRoach) {
-      useSubscription = false;
-      logger.warn(`Subscription is not support with ${this.dbType}`);
-    }
-
-    const enumTypeMap = new Map<string, string>();
+  async syncSchema(schema: string): Promise<void> {
+    const tx = await this.sequelize.transaction();
     if (this.historical) {
       const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
       if (results.length === 0) {
@@ -240,125 +208,18 @@ export class StoreService {
       }
     }
 
-    const [indexesResult] = await this.sequelize.query(getExistedIndexesQuery(schema));
-    const existedIndexes = indexesResult.map((i) => (i as any).indexname);
-
-    for (const e of this.modelsRelations.enums) {
-      await syncEnums(this.sequelize, this.dbType, e, schema, enumTypeMap, logger);
-    }
-    const extraQueries = [];
-    // Function need to create ahead of triggers
-    if (useSubscription) {
-      extraQueries.push(createSendNotificationTriggerFunction(schema));
-    }
-    for (const model of this.modelsRelations.models) {
-      const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
-      const indexes = model.indexes.map(({fields, unique, using}) => ({
-        fields: fields.map((field) => Utils.underscoredIf(field, true)),
-        unique,
-        using,
-      }));
-      if (indexes.length > this.config.indexCountLimit) {
-        throw new Error(`too many indexes on entity ${model.name}`);
-      }
-      if (this.historical) {
-        addIdAndBlockRangeAttributes(attributes);
-        addBlockRangeColumnToIndexes(indexes);
-        addHistoricalIdIndex(model, indexes);
-      }
-      // Hash indexes name to ensure within postgres limit
-      // Also check with existed indexes for previous logic, if existed index is valid then ignore it.
-      // only update index name as it is new index or not found (it is might be an over length index name)
-      updateIndexesName(model.name, indexes, existedIndexes as string[]);
-
-      // Update index query for cockroach db
-      this.beforeHandleCockroachIndex(schema, model.name, indexes, existedIndexes as string[], extraQueries);
-
-      const sequelizeModel = this.defineModel(model, attributes, indexes, schema);
-
-      if (useSubscription) {
-        const triggerName = hashName(schema, 'notify_trigger', sequelizeModel.tableName);
-        const notifyTriggers = await getTriggers(this.sequelize, triggerName);
-        // Triggers not been found
-        if (notifyTriggers.length === 0) {
-          extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
-        } else {
-          this.validateNotifyTriggers(triggerName, notifyTriggers as NotifyTriggerPayload[]);
-        }
-      } else {
-        //TODO: DROP TRIGGER IF EXIST is not valid syntax for cockroach, better check trigger exist at first.
-        if (this.dbType !== SUPPORT_DB.cockRoach) {
-          extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
-        }
-      }
-    }
-    // We have to drop the function after all triggers depend on it are removed
-    if (!useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
-      extraQueries.push(dropNotifyFunction(schema));
-    }
-
-    const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
-    for (const relation of this.modelsRelations.relations) {
-      const model = this.sequelize.model(relation.from);
-      const relatedModel = this.sequelize.model(relation.to);
-      if (this.historical) {
-        addRelationToMap(relation, foreignKeyMap, model, relatedModel);
-        continue;
-      }
-      switch (relation.type) {
-        case 'belongsTo': {
-          const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
-          const fkConstraint = getFkConstraint(rel.source.tableName, rel.foreignKey);
-          if (this.dbType !== SUPPORT_DB.cockRoach) {
-            extraQueries.push(constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
-          }
-          break;
-        }
-        case 'hasOne': {
-          const rel = model.hasOne(relatedModel, {
-            foreignKey: relation.foreignKey,
-          });
-          const fkConstraint = getFkConstraint(rel.target.tableName, rel.foreignKey);
-          const tags = smartTags({
-            singleForeignFieldName: relation.fieldName,
-          });
-          extraQueries.push(
-            commentConstraintQuery(`"${schema}"."${rel.target.tableName}"`, fkConstraint, tags),
-            createUniqueIndexQuery(schema, relatedModel.tableName, relation.foreignKey)
-          );
-          break;
-        }
-        case 'hasMany': {
-          const rel = model.hasMany(relatedModel, {
-            foreignKey: relation.foreignKey,
-          });
-          const fkConstraint = getFkConstraint(rel.target.tableName, rel.foreignKey);
-          const tags = smartTags({
-            foreignFieldName: relation.fieldName,
-          });
-          extraQueries.push(commentConstraintQuery(`"${schema}"."${rel.target.tableName}"`, fkConstraint, tags));
-
-          break;
-        }
-        default:
-          throw new Error('Relation type is not supported');
-      }
-    }
-    foreignKeyMap.forEach((keys, tableName) => {
-      const comment = Array.from(keys.values())
-        .map((tags) => smartTags(tags, '|'))
-        .join('\n');
-      const query = commentTableQuery(`"${schema}"."${tableName}"`, comment);
-      extraQueries.push(query);
-    });
-
-    await this.sequelize.sync();
-
-    for (const query of extraQueries) {
-      await this.sequelize.query(query);
-    }
-
-    this.afterHandleCockroachIndex();
+    /*
+    On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
+    every start up is a migration
+     */
+    const schemaMigrationService = new SchemaMigrationService(
+      this.sequelize,
+      this,
+      this.storeCache._flushCache.bind(this.storeCache),
+      schema,
+      this.config
+    );
+    await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
   }
 
   defineModel(
@@ -458,65 +319,6 @@ export class StoreService {
       return !disableHistorical;
     }
   }
-
-  // Sequelize model will generate follow query to create hash indexes
-  // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
-  // This will be rejected from cockroach db due to syntax error
-  // To avoid this we need to create index manually and add to extraQueries in order to create index in db
-  private beforeHandleCockroachIndex(
-    schema: string,
-    modelName: string,
-    indexes: IndexesOptions[],
-    existedIndexes: string[],
-    extraQueries: string[]
-  ): void {
-    if (this.dbType !== SUPPORT_DB.cockRoach) {
-      return;
-    }
-    indexes.forEach((index, i) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
-        const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${schema}"."${modelToTableName(modelName)}"(${
-          index.fields
-        }) USING HASH;`;
-        extraQueries.push(cockroachDbIndexQuery);
-        if (this.removedIndexes[modelName] === undefined) {
-          this.removedIndexes[modelName] = [];
-        }
-        this.removedIndexes[modelName].push(indexes[i]);
-        delete indexes[i];
-      }
-    });
-  }
-
-  // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
-  // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
-  private afterHandleCockroachIndex(): void {
-    if (this.dbType !== SUPPORT_DB.cockRoach) {
-      return;
-    }
-    const removedIndexes = Object.entries(this.removedIndexes);
-    if (removedIndexes.length > 0) {
-      for (const [model, indexes] of removedIndexes) {
-        const sqModel = this.sequelize.model(model);
-        (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
-      }
-    }
-  }
-
-  private validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
-    if (triggers.length !== NotifyTriggerManipulationType.length) {
-      throw new Error(
-        `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
-      );
-    }
-    triggers.map((t) => {
-      if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
-        throw new Error(`Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`);
-      }
-    });
-  }
-
   setBlockHeight(blockHeight: number): void {
     this._blockHeight = blockHeight;
     if (this.config.proofOfIndex) {

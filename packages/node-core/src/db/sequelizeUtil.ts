@@ -1,9 +1,18 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import NodeUtil from 'node:util';
-import {BigInt, Boolean, DateObj, Float, ID, Int, Json, SequelizeTypes, String} from '@subql/utils';
-import {DataType, DataTypes, IndexesOptions, ModelAttributeColumnOptions, TableName, Utils} from '@subql/x-sequelize';
+import {BigInt, Boolean, DateObj, Int, Json, SequelizeTypes, String} from '@subql/utils';
+import {
+  DataType,
+  DataTypes,
+  IndexesOptions,
+  ModelAttributeColumnOptions,
+  TableName,
+  Utils,
+  TableNameWithSchema,
+} from '@subql/x-sequelize';
 import {underscored} from './sync-helper';
 
 // This method is simplified from https://github.com/sequelize/sequelize/blob/066421c00aad61694dcdbb624d4b73dbac7c7b42/packages/core/src/model-definition.ts#L245
@@ -43,28 +52,50 @@ ${NodeUtil.inspect(index)}`);
   return underscored(out);
 }
 
-export function formatAttributes(columnOptions: ModelAttributeColumnOptions): string {
+export function formatReferences(columnOptions: ModelAttributeColumnOptions, schema: string): string {
+  if (!columnOptions.references) {
+    return '';
+  }
+  assert(typeof columnOptions.references !== 'string', 'reference is type string');
+  assert(typeof columnOptions.references.model !== 'string', 'reference.model is type string');
+  let referenceStatement = `REFERENCES "${schema}"."${
+    (columnOptions.references.model as TableNameWithSchema).tableName
+  }" ("${columnOptions.references.key}")`;
+  if (columnOptions.onDelete) {
+    referenceStatement += ` ON DELETE ${columnOptions.onDelete}`;
+  }
+  if (columnOptions.onUpdate) {
+    referenceStatement += ` ON UPDATE ${columnOptions.onUpdate}`;
+  }
+  return referenceStatement;
+}
+
+export function formatAttributes(
+  columnOptions: ModelAttributeColumnOptions,
+  schema: string,
+  withoutForeignKey: boolean
+): string {
+  // console.log('column options', columnOptions)
   const type = formatDataType(columnOptions.type);
   const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
-  const primaryKey = columnOptions.primaryKey ? 'PRIMARY KEY' : '';
   const unique = columnOptions.unique ? 'UNIQUE' : '';
   const autoIncrement = columnOptions.autoIncrement ? 'AUTO_INCREMENT' : ''; //  PostgreSQL
 
-  // TODO Support relational
-  // const references = options.references ? formatReferences(options.references) :
+  const references = formatReferences(columnOptions, schema);
 
-  return `${type} ${allowNull} ${primaryKey} ${unique} ${autoIncrement}`.trim();
+  return `${type} ${allowNull} ${unique} ${autoIncrement} ${withoutForeignKey ? '' : references}`.trim();
 }
 
 const sequelizeToPostgresTypeMap = {
   [DataTypes.STRING.name]: (dataType: DataType) => String.sequelizeType,
   [DataTypes.INTEGER.name]: () => Int.sequelizeType,
   [DataTypes.BIGINT.name]: () => BigInt.sequelizeType,
-  [DataTypes.UUID.name]: () => ID.sequelizeType,
+  [DataTypes.UUID.name]: () => DataTypes.UUID,
   [DataTypes.BOOLEAN.name]: () => Boolean.sequelizeType,
-  [DataTypes.FLOAT.name]: () => Float.sequelizeType,
+  [DataTypes.FLOAT.name]: () => 'double precision', // to maintain compatibility we will use float8
   [DataTypes.DATE.name]: () => DateObj.sequelizeType,
   [DataTypes.JSONB.name]: () => Json.sequelizeType,
+  [DataTypes.RANGE.name]: () => 'int8range',
 };
 
 export function formatDataType(dataType: DataType): SequelizeTypes {
@@ -72,6 +103,9 @@ export function formatDataType(dataType: DataType): SequelizeTypes {
     return dataType;
   } else {
     const formatter = sequelizeToPostgresTypeMap[dataType.key];
+    if (!formatter) {
+      throw new Error(`Unsupported data type: ${dataType.key}`);
+    }
     return formatter(dataType);
   }
 }
