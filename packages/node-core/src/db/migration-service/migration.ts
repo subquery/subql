@@ -68,7 +68,6 @@ export class Migration {
     this.historical = !config.disableHistorical;
     this.useSubscription = config.subscription;
 
-    // TODO test if this is working, enable, then disable
     if (this.useSubscription && dbType === SUPPORT_DB.cockRoach) {
       this.useSubscription = false;
       logger.warn(`Subscription is not support with ${this.dbType}`);

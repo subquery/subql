@@ -169,8 +169,8 @@ describe('sync-helper', () => {
       mockModel.tableName
     );
     expect(statement).toStrictEqual([
-      `CREATE  INDEX "0xf48017d5c5d3d768" ON "test"."${mockModel.tableName}" USING gist ("from_id", "_block_range");`,
-      `CREATE  INDEX "0xb91efc8ed4021e6e" ON "test"."${mockModel.tableName}"  ("id");`,
+      `CREATE  INDEX IF NOT EXISTS "0xf48017d5c5d3d768" ON "test"."${mockModel.tableName}" USING gist ("from_id", "_block_range");`,
+      `CREATE  INDEX IF NOT EXISTS "0xb91efc8ed4021e6e" ON "test"."${mockModel.tableName}"  ("id");`,
     ]);
   });
   it('Generate table statement no historical, no multi primary keys', () => {
@@ -250,9 +250,17 @@ describe('sync-helper', () => {
     });
 
     expect(referenceQueries[0]).toBe(
-      `ALTER TABLE "test"."test-table"
-      ADD FOREIGN KEY (transfer_id_id) 
-      REFERENCES "test"."transfers" ("id") ON DELETE NO ACTION ON UPDATE CASCADE;`
+      `DO $$
+  BEGIN
+    ALTER TABLE "test"."test-table"
+      ADD 
+      CONSTRAINT test-table_transfer_id_id_fkey
+      FOREIGN KEY (transfer_id_id) 
+      REFERENCES "test"."transfers" (id) ON DELETE NO ACTION ON UPDATE CASCADE;
+  EXCEPTION
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint already exists. Ignoring...';
+  END$$;;`
     );
   });
   it('sortModel with toposort on cyclic schema', () => {
@@ -301,7 +309,20 @@ describe('sync-helper', () => {
         name: 'LonelyEntity',
       },
     ] as GraphQLModelsType[];
-    expect(sortModels(mockRelations, mockModels)).toStrictEqual(['LonelyEntity', 'Account', 'Transfer', 'TestEntity']);
+    expect(sortModels(mockRelations, mockModels)).toEqual([
+      {
+        name: 'LonelyEntity',
+      },
+      {
+        name: 'Account',
+      },
+      {
+        name: 'Transfer',
+      },
+      {
+        name: 'TestEntity',
+      },
+    ]);
   });
   it('Ensure correct enumTypeMap', async () => {
     const sequelize = new Sequelize() as any;

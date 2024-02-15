@@ -95,14 +95,10 @@
       "type": "hasMany"
     }
   ],
-  "allEnums": [
-    {
-      "name": "FieldTypeOld",
-      "values": ["VALUE1", "VALUE2"]
-    },
+  "modifiedEnums": [
     {
       "name": "FieldTypeMod",
-      "values": ["VALUE1", "VALUE2"]
+      "values": ["VALUE1", "VALUE2", "VALUE3"]
     }
   ],
   "modifiedModels": {
