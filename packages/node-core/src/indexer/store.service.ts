@@ -162,7 +162,6 @@ export class StoreService {
     try {
       await this.syncSchema(schema);
     } catch (e: any) {
-      console.trace(e);
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }

@@ -1,9 +1,9 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {GraphQLEnumsType, GraphQLModelsType} from '@subql/utils';
+import {GraphQLModelsType} from '@subql/utils';
 import {Model, ModelAttributeColumnOptions, ModelStatic, Sequelize} from '@subql/x-sequelize';
-import {formatReferences} from '../utils';
+import {formatReferences} from './sequelizeUtil';
 import {
   sortModels,
   getFkConstraint,

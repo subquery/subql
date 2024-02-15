@@ -17,7 +17,8 @@ import {
   Utils,
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
-import {formatAttributes, generateIndexName, modelToTableName} from '../utils';
+import {EnumType} from '../utils';
+import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 
@@ -476,11 +477,8 @@ export async function getExistingForeignKeys(schema: string, sequelize: Sequeliz
   return results.map((r) => r.constraint_name);
 }
 
-export async function getExistingEnums(
-  schema: string,
-  sequelize: Sequelize
-): Promise<Map<string, {enumValues: string[]; name?: string}>> {
-  const enumTypeMap = new Map<string, {enumValues: string[]; name?: string}>();
+export async function getExistingEnums(schema: string, sequelize: Sequelize): Promise<Map<string, EnumType>> {
+  const enumTypeMap = new Map<string, EnumType>();
 
   const results = (await sequelize.query(
     `

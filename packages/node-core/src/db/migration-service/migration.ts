@@ -24,15 +24,9 @@ import {isEqual} from 'lodash';
 import {NodeConfig} from '../../configure/NodeConfig';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
-import {
-  formatAttributes,
-  formatColumnName,
-  getColumnOption,
-  modelsTypeToModelAttributes,
-  modelToTableName,
-} from '../../utils';
+import {EnumType, getColumnOption, modelsTypeToModelAttributes} from '../../utils';
+import {formatAttributes, formatColumnName, modelToTableName} from '../sequelizeUtil';
 import * as syncHelper from '../sync-helper';
-import {getFkConstraint} from '../sync-helper';
 
 type RemovedIndexes = Record<string, IndexesOptions[]>;
 
@@ -52,7 +46,7 @@ export class Migration {
     string,
     Map<string, syncHelper.SmartTags>
   >();
-  private enumTypeMap: Map<string, {enumValues: string[]; name?: string; type?: string}>;
+  private enumTypeMap: Map<string, EnumType>;
   private removedIndexes: RemovedIndexes = {};
 
   private constructor(
@@ -62,7 +56,7 @@ export class Migration {
     private readonly config: NodeConfig,
     private readonly dbType: SUPPORT_DB,
     private readonly existingForeignKeys: string[], // this the source of truth from the db
-    private initEnumTypeMap: Map<string, {enumValues: string[]; name?: string; type?: string}>,
+    private initEnumTypeMap: Map<string, EnumType>,
     private existingIndexes: {indexname: string}[]
   ) {
     this.historical = !config.disableHistorical;

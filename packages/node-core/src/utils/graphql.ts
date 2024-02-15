@@ -15,9 +15,15 @@ import {
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
 
+export interface EnumType {
+  enumValues: string[];
+  name?: string;
+  type?: string;
+}
+
 export function modelsTypeToModelAttributes(
   modelType: GraphQLModelsType,
-  enums: Map<string, {enumValues: string[]; name?: string; type?: string}>
+  enums: Map<string, EnumType>
 ): ModelAttributes {
   const fields = modelType.fields;
   return Object.values(fields).reduce((acc, field) => {
@@ -26,12 +32,11 @@ export function modelsTypeToModelAttributes(
   }, {} as ModelAttributes<any>);
 }
 
-export function getColumnOption(
-  field: GraphQLEntityField,
-  enums: Map<string, {enumValues: string[]; name?: string; type?: string}>
-): ModelAttributeColumnOptions {
+export function getColumnOption(field: GraphQLEntityField, enums: Map<string, EnumType>): ModelAttributeColumnOptions {
   const allowNull = field.nullable;
   const enumType = Array.from(enums.values()).find((entry) => entry.name === field.type)?.type;
+
+  if (field.isEnum && !enumType) throw new Error('Unable to get enum type');
 
   const type = field.isEnum
     ? `${enumType}${field.isArray ? '[]' : ''}`
@@ -39,7 +44,7 @@ export function getColumnOption(
     ? getTypeByScalarName('Json')?.sequelizeType
     : getTypeByScalarName(field.type)?.sequelizeType;
 
-  if (type === undefined || type === 'undefined') {
+  if (type === undefined) {
     throw new Error('Unable to get model type');
   }
 
