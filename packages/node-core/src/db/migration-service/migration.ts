@@ -133,7 +133,7 @@ export class Migration {
     attributes: ModelAttributes<any>;
     indexes: IndexesOptions[];
   } {
-    const attributes = modelsTypeToModelAttributes(model, this.enumTypeMap);
+    const attributes = modelsTypeToModelAttributes(model, this.enumTypeMap, this.schemaName);
     if (this.historical) {
       syncHelper.addIdAndBlockRangeAttributes(attributes);
     }
@@ -224,7 +224,7 @@ export class Migration {
   createColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {
     const sequelizeModel = this.createSequelizeModel(model);
 
-    const columnOptions = getColumnOption(field, this.enumTypeMap);
+    const columnOptions = getColumnOption(field, this.enumTypeMap, this.schemaName);
     if (columnOptions.primaryKey) {
       throw new Error('Primary Key migration upgrade is not allowed');
     }
@@ -254,7 +254,6 @@ export class Migration {
     const columnName = formatColumnName(field.name);
     const tableName = modelToTableName(model.name);
     this.mainQueries.push(syncHelper.dropColumnQuery(this.schemaName, columnName, tableName));
-
     this.addModelToSequelizeCache(this.createSequelizeModel(model));
   }
 

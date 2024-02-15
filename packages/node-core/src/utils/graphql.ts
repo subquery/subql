@@ -14,6 +14,7 @@ import {
   GraphQLEntityField,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
+import {enumNameToHash} from '../db';
 
 export interface EnumType {
   enumValues: string[];
@@ -23,18 +24,34 @@ export interface EnumType {
 
 export function modelsTypeToModelAttributes(
   modelType: GraphQLModelsType,
-  enums: Map<string, EnumType>
+  enums: Map<string, EnumType>,
+  schema: string
 ): ModelAttributes {
   const fields = modelType.fields;
   return Object.values(fields).reduce((acc, field) => {
-    acc[field.name] = getColumnOption(field, enums);
+    acc[field.name] = getColumnOption(field, enums, schema);
     return acc;
   }, {} as ModelAttributes<any>);
 }
 
-export function getColumnOption(field: GraphQLEntityField, enums: Map<string, EnumType>): ModelAttributeColumnOptions {
+export function getColumnOption(
+  field: GraphQLEntityField,
+  enums: Map<string, EnumType>,
+  schema: string
+): ModelAttributeColumnOptions {
   const allowNull = field.nullable;
-  const enumType = Array.from(enums.values()).find((entry) => entry.name === field.type)?.type;
+
+  let enumType: string | null = null;
+  if (field.isEnum) {
+    const enumTypeName = enumNameToHash(field.type);
+    const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(field.type)}`;
+
+    [enumTypeName, enumTypeNameDeprecated].forEach((t) => {
+      if (enums.has(t)) {
+        enumType = t === enumTypeNameDeprecated ? `"${t}"` : `"${schema}"."${enumTypeName}"`;
+      }
+    });
+  }
 
   if (field.isEnum && !enumType) throw new Error('Unable to get enum type');
 
