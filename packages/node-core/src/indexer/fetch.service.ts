@@ -5,14 +5,16 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval, SchedulerRegistry} from '@nestjs/schedule';
-import {DictionaryQueryEntry, BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {BaseDataSource, IProjectNetworkConfig, IBlock} from '@subql/types-core';
 import {range, uniq, without} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {checkMemoryUsage, cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
-import {DictionaryService} from './dictionary.service';
+import {IDictionary, mergeNumAndBlocksToNums} from './dictionary';
+import {DictionaryService} from './dictionary/dictionary.service';
+import {getBlockHeight, mergeNumAndBlocks} from './dictionary/utils';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IProjectService} from './types';
 
@@ -21,8 +23,9 @@ const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
   DS extends BaseDataSource,
-  B extends IBlockDispatcher,
-  D extends DictionaryService
+  B extends IBlockDispatcher<FB>,
+  D extends IDictionary<DS, FB>,
+  FB
 > implements OnApplicationShutdown
 {
   private _latestBestHeight?: number;
@@ -30,8 +33,6 @@ export abstract class BaseFetchService<
   private isShutdown = false;
   private batchSizeScale = 1;
   private bypassBlocks: number[] = [];
-
-  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryQueryEntry[];
 
   // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
   protected abstract getFinalizedHeight(): Promise<number>;
@@ -55,7 +56,7 @@ export abstract class BaseFetchService<
     protected projectService: IProjectService<DS>,
     protected networkConfig: IProjectNetworkConfig,
     protected blockDispatcher: B,
-    protected dictionaryService: D,
+    protected dictionaryService: DictionaryService<DS, FB, D>,
     private dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry
@@ -81,19 +82,9 @@ export abstract class BaseFetchService<
     this.isShutdown = true;
   }
 
-  private updateDictionary(): void {
-    return this.dictionaryService.buildDictionaryEntryMap<DS>(
-      this.projectService.getDataSourcesMap(),
-      this.buildDictionaryQueryEntries.bind(this)
-    );
-  }
-
   private get useDictionary(): boolean {
-    return (
-      this.dictionaryService.useDictionary &&
-      !!this.dictionaryService.queriesMap?.get(
-        this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
-      )?.length
+    return this.dictionaryService.useDictionary(
+      this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
     );
   }
 
@@ -136,11 +127,13 @@ export abstract class BaseFetchService<
     );
 
     if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
-      this.updateDictionary();
       //  We pass in genesis hash in order validate dictionary metadata, genesisHash should always exist in apiService.
       //  Call metadata here, other network should align with this
       //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
-      await this.dictionaryService.initValidation(this.getGenesisHash());
+      await this.dictionaryService.initDictionaries();
+      // Update all dictionaries execute before find one usable dictionary
+      this.updateDictionary();
+      // Find one usable dictionary at start
     }
 
     await this.preLoopHook({startHeight});
@@ -149,8 +142,8 @@ export abstract class BaseFetchService<
     void this.startLoop(startHeight);
   }
 
-  getLatestFinalizedHeight(): number {
-    return this.latestFinalizedHeight;
+  private updateDictionary(): void {
+    return this.dictionaryService.buildDictionaryEntryMap(this.projectService.getDataSourcesMap());
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -220,30 +213,24 @@ export abstract class BaseFetchService<
    * @param startBlockHeight
    * @param endBlockHeight is either FinalizedHeight or BestHeight, ensure ModuloBlocks not greater than this number
    */
-  getEnqueuedModuloBlocks(startBlockHeight: number, endBlockHeight: number): number[] {
+  getEnqueuedModuloBlocks(startBlockHeight: number, endBlockHeight: number): (IBlock<FB> | number)[] {
     return this.getModuloBlocks(
       startBlockHeight,
       Math.min(this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight, endBlockHeight)
     ).slice(0, this.nodeConfig.batchSize);
   }
 
+  // eslint-disable-next-line complexity
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
+    const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)];
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
         ? this.blockDispatcher.latestBufferedHeight + 1
         : initBlockHeight;
     };
-
-    if (this.useDictionary && this.dictionaryService.startHeight > getStartBlockHeight()) {
-      logger.warn(
-        `Dictionary start height ${
-          this.dictionaryService.startHeight
-        } is beyond indexing height ${getStartBlockHeight()}, skipping dictionary for now`
-      );
-    }
 
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
@@ -264,46 +251,39 @@ export abstract class BaseFetchService<
 
       if (
         this.useDictionary &&
-        startBlockHeight >= this.dictionaryService.startHeight &&
+        // TODO, do we still need to check useDictionary method here, this will
+        this.dictionaryService.useDictionary(startBlockHeight) &&
         startBlockHeight < this.latestFinalizedHeight
       ) {
-        /* queryEndBlock needs to be limited by the latest height or the maximum value of endBlock in datasources.
-         * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
-         */
-        const queryEndBlock = Math.min(
-          startBlockHeight + this.nodeConfig.dictionaryQuerySize,
-          this.latestFinalizedHeight
-        );
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
-            queryEndBlock,
-            scaledBatchSize
+            scaledBatchSize,
+            this.latestFinalizedHeight
           );
 
           if (startBlockHeight !== getStartBlockHeight()) {
             logger.debug(`Queue was reset for new DS, discarding dictionary query result`);
             continue;
           }
-
           if (dictionary) {
-            let {batchBlocks} = dictionary;
-
+            const {batchBlocks} = dictionary;
+            // the last block returned from batch should have max height in this batch
             const moduloBlocks = this.getModuloBlocks(
               startBlockHeight,
               // If the results fill the batch size then use the last block in the reesults
-              batchBlocks.length >= scaledBatchSize ? Math.max(...batchBlocks) : queryEndBlock
+              // If batchBlocks.length >= scaledBatchSize we can confident say that batchBlocks length is greater than 0, then getBlockHeight should return a valid value
+              batchBlocks.length >= scaledBatchSize
+                ? getBlockHeight(batchBlocks[batchBlocks.length - 1])
+                : dictionary.queryEndBlock
             );
-            batchBlocks = uniq(batchBlocks.concat(moduloBlocks)).sort((a, b) => a - b);
-            if (batchBlocks.length === 0) {
+            const mergedBlocks = mergeNumAndBlocks(moduloBlocks, batchBlocks);
+            if (mergedBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              await this.blockDispatcher.enqueueBlocks(
-                [],
-                Math.min(dictionary.queryEndBlock, dictionary._metadata.lastProcessedHeight)
-              );
+              await this.enqueueBlocks([], dictionary.lastBufferedHeight);
             } else {
-              const maxBlockSize = Math.min(batchBlocks.length, this.blockDispatcher.freeSize);
-              const enqueueBlocks = batchBlocks.slice(0, maxBlockSize);
+              const maxBlockSize = Math.min(mergedBlocks.length, this.blockDispatcher.freeSize);
+              const enqueueBlocks = mergedBlocks.slice(0, maxBlockSize);
               await this.enqueueBlocks(enqueueBlocks, latestHeight);
             }
             continue; // skip nextBlockRange() way
@@ -313,35 +293,20 @@ export abstract class BaseFetchService<
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
+      } else {
+        const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
+
+        const enqueuingBlocks =
+          handlers.length && this.getModulos().length === handlers.length
+            ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
+            : range(startBlockHeight, endHeight + 1);
+
+        await this.enqueueBlocks(enqueuingBlocks, latestHeight);
       }
-
-      const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
-
-      // Find current datasources to check if they are only modulo filters, this also limits the range to the current DS set.
-      const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
-      assert(details, `Datasources not found for height ${startBlockHeight}`);
-      const {endHeight: rangeEndHeight, value: relevantDS} = details;
-      const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
-
-      const enqueuingBlocks =
-        handlers.length && this.getModulos().length === handlers.length
-          ? this.getEnqueuedModuloBlocks(
-              startBlockHeight,
-              Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight)
-            )
-          : range(startBlockHeight, endHeight + 1);
-
-      await this.enqueueBlocks(enqueuingBlocks, latestHeight);
     }
   }
 
-  /**
-   *
-   * @param enqueuingBlocks
-   * @param latestHeight ensure LatestBufferHeight get updated if enqueuingBlocks is empty
-   * @private
-   */
-  private async enqueueBlocks(enqueuingBlocks: number[], latestHeight: number): Promise<void> {
+  private async enqueueBlocks(enqueuingBlocks: (IBlock<FB> | number)[], latestHeight: number): Promise<void> {
     const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
     await this.blockDispatcher.enqueueBlocks(
       cleanedBatchBlocks,
@@ -356,22 +321,29 @@ export abstract class BaseFetchService<
    * @param latestHeight
    * @private
    */
-  private getLatestBufferHeight(cleanedBatchBlocks: number[], rawBatchBlocks: number[], latestHeight: number): number {
+  private getLatestBufferHeight(
+    cleanedBatchBlocks: (IBlock<FB> | number)[],
+    rawBatchBlocks: (IBlock<FB> | number)[],
+    latestHeight: number
+  ): number {
     // When both BatchBlocks are empty, mean no blocks to enqueue and full synced,
     // we are safe to update latestBufferHeight to this number
     if (cleanedBatchBlocks.length === 0 && rawBatchBlocks.length === 0) {
       return latestHeight;
     }
-    return Math.max(...cleanedBatchBlocks, ...rawBatchBlocks);
+    return Math.max(...mergeNumAndBlocksToNums(cleanedBatchBlocks, rawBatchBlocks));
   }
-  private filteredBlockBatch(currentBatchBlocks: number[]): number[] {
+
+  private filteredBlockBatch(currentBatchBlocks: (number | IBlock<FB>)[]): (number | IBlock<FB>)[] {
     if (!this.bypassBlocks.length || !currentBatchBlocks) {
       return currentBatchBlocks;
     }
 
     const cleanedBatch = cleanedBatchBlocks(this.bypassBlocks, currentBatchBlocks);
 
-    const pollutedBlocks = this.bypassBlocks.filter((b) => b < Math.max(...currentBatchBlocks));
+    const pollutedBlocks = this.bypassBlocks.filter(
+      (b) => b < Math.max(...mergeNumAndBlocksToNums(currentBatchBlocks, []))
+    );
     if (pollutedBlocks.length) {
       logger.info(`Bypassing blocks: ${pollutedBlocks}`);
     }

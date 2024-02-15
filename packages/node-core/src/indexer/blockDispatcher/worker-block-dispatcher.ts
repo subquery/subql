@@ -5,6 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {IBlock} from '@subql/types-core';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
@@ -13,7 +14,6 @@ import {PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -42,8 +42,8 @@ function initAutoQueue<T>(
   return new AutoQueue(workers * batchSize * 2, 1, timeout, name);
 }
 
-export abstract class WorkerBlockDispatcher<DS, W extends Worker>
-  extends BaseBlockDispatcher<AutoQueue<void>, DS>
+export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
+  extends BaseBlockDispatcher<AutoQueue<void>, DS, B>
   implements OnApplicationShutdown
 {
   protected workers: W[] = [];
@@ -100,8 +100,16 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       await Promise.all(this.workers.map((w) => w.terminate()));
     }
   }
+  async enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): Promise<void> {
+    assert(
+      heights.every((h) => typeof h === 'number'),
+      'When worker enqueue block, heights must be of type number'
+    );
+    // @ts-ignore
+    await this._enqueueBlocks(heights, latestBufferHeight);
+  }
 
-  async enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
+  private async _enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
     // In the case where factors of batchSize is equal to bypassBlock or when heights is []
     // to ensure block is bypassed, we set the latestBufferHeight to the heights
     // make sure lastProcessedHeight in metadata is updated

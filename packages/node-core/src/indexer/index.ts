@@ -12,7 +12,7 @@ export * from './store.service';
 export * from './inMemoryCache.service';
 export * from './storeCache';
 export * from './worker';
-export * from './dictionary.service';
+export * from './dictionary';
 export * from './sandbox';
 export * from './smartBatch.service';
 export * from './blockDispatcher';

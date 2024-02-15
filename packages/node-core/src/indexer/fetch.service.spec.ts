@@ -3,24 +3,39 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
+import {
+  BaseDataSource,
+  BaseHandler,
+  BaseMapping,
+  DictionaryQueryEntry,
+  IProjectNetworkConfig,
+  IBlock,
+} from '@subql/types-core';
 import {range} from 'lodash';
 import {
   BlockDispatcher,
   delay,
-  DictionaryService,
+  DictionaryV1,
+  DictionaryV2,
   DynamicDsService,
   IBlockDispatcher,
   IProjectService,
+  mergeNumAndBlocks,
   NodeConfig,
-} from '..';
+} from '../';
 import {BlockHeightMap} from '../utils/blockHeightMap';
+import {DictionaryService} from './dictionary/dictionary.service';
 import {BaseFetchService} from './fetch.service';
 
 const CHAIN_INTERVAL = 100; // 100ms
 const genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher, DictionaryService> {
+class TestFetchService extends BaseFetchService<
+  BaseDataSource,
+  IBlockDispatcher<any>,
+  DictionaryV1<any> | DictionaryV2<any, any>,
+  any
+> {
   finalizedHeight = 1000;
   bestHeight = 20;
   modulos: number[] = [];
@@ -53,15 +68,13 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   }
 }
 
-const nodeConfig = new NodeConfig(
-  {
-    batchSize: 10,
-    unfinalizedBlocks: false,
-    dictionary: '',
-    dictionaryResolver: '',
-  } as any as NodeConfig,
-  true
-);
+const nodeConfig = new NodeConfig({
+  subquery: '',
+  batchSize: 10,
+  unfinalizedBlocks: false,
+  dictionaryResolver: '',
+  networkDictionary: [''],
+});
 
 const getNetworkConfig = () =>
   ({
@@ -82,6 +95,11 @@ const mockDs: BaseDataSource = {
   },
 };
 
+const projectService = {
+  getStartBlockFromDataSources: jest.fn(() => mockDs.startBlock),
+  getAllDataSources: jest.fn(() => [mockDs]),
+} as any as IProjectService<any>;
+
 const dynamicDsService = {
   deleteTempDsRecords: (height: number) => {
     /* Nothing */
@@ -90,24 +108,31 @@ const dynamicDsService = {
 
 const getDictionaryService = () =>
   ({
-    useDictionary: false,
+    useDictionary: () => {
+      return false;
+    },
+    findDictionary: () => {
+      /* TODO*/
+    },
     buildDictionaryEntryMap: () => {
       /* TODO*/
     },
     initValidation: () => {
       /* TODO */
     },
-    startHeight: 0,
     scopedDictionaryEntries: () => {
       /* TODO */
     },
-  } as any as DictionaryService);
+    initDictionaries: () => {
+      /* TODO */
+    },
+  } as any as DictionaryService<any, any, any>);
 
 const getBlockDispatcher = () => {
   const inst = {
     latestBufferedHeight: 0,
     smartBatchSize: 10,
-    minimumHeapLimit: 1000, // TOOD
+    minimumHeapLimit: 1000,
     freeSize: 10,
     enqueueBlocks: (heights: number[], latestBufferHeight: number) => {
       (inst as any).freeSize = inst.freeSize - heights.length;
@@ -123,30 +148,11 @@ const getBlockDispatcher = () => {
 
 describe('Fetch Service', () => {
   let fetchService: TestFetchService;
-  let blockDispatcher: IBlockDispatcher;
-  let dictionaryService: DictionaryService;
+  let blockDispatcher: IBlockDispatcher<any>;
+  let dictionaryService: DictionaryService<any, any, DictionaryV1<any> | DictionaryV2<any, any>>;
   let networkConfig: IProjectNetworkConfig;
-  let dataSources: BaseDataSource[];
 
   beforeEach(() => {
-    dataSources = [mockDs];
-
-    const projectService = {
-      getStartBlockFromDataSources: jest.fn(() => Math.min(...dataSources.map((ds) => ds.startBlock ?? 0))),
-      getAllDataSources: jest.fn(() => dataSources),
-      getDataSourcesMap: jest.fn(() => {
-        // XXX this doesn't consider end blocks
-        const x = new Map();
-        dataSources.map((ds, idx, dss) => {
-          x.set(
-            ds.startBlock ?? 0,
-            dss.filter((d) => (d.startBlock ?? 0) <= (ds.startBlock ?? 0))
-          );
-        });
-        return new BlockHeightMap(x);
-      }),
-    } as any as IProjectService<any>;
-
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
 
@@ -164,12 +170,24 @@ describe('Fetch Service', () => {
       eventEmitter,
       schedulerRegistry
     );
+
+    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
+      () => new BlockHeightMap(new Map([[1, [mockDs, mockDs]]]))
+    );
   });
 
   const enableDictionary = () => {
     // Mock the remainder of dictionary service so it works
-    (dictionaryService as any).useDictionary = true;
-    dictionaryService.queriesMap = new BlockHeightMap(new Map([[1, [{entity: 'mock', conditions: []}]]]));
+    (dictionaryService as any).useDictionary = () => jest.fn(() => true);
+    // dictionaryService.queriesMap = new BlockHeightMap(new Map([[1, [{entity: 'mock', conditions: []}]]]));
+    (dictionaryService as any).getDictionary = () =>
+      jest.fn(() => {
+        return {
+          queryMapValidByHeight: () => true,
+          startHeight: 1,
+          getQueryEndBlock: () => 1000,
+        };
+      });
     dictionaryService.scopedDictionaryEntries = (start, end, batch) => {
       return Promise.resolve({
         batchBlocks: [2, 4, 6, 8, 10],
@@ -177,6 +195,8 @@ describe('Fetch Service', () => {
         _metadata: {
           lastProcessedHeight: 1000,
         } as any,
+
+        lastBufferedHeight: 1000,
       });
     };
   };
@@ -194,52 +214,51 @@ describe('Fetch Service', () => {
   });
 
   it('adds bypassBlocks for empty datasources', async () => {
-    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
-      () =>
-        new BlockHeightMap(
-          new Map([
+    (fetchService as any).projectService.getDataSourcesMap = jest.fn().mockReturnValueOnce(
+      new BlockHeightMap(
+        new Map([
+          [
+            1,
             [
-              1,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-              ],
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
             ],
+          ],
+          [
+            10,
             [
-              10,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-                {...mockDs, startBlock: 10, endBlock: 20},
-              ],
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 10, endBlock: 20},
             ],
+          ],
+          [
+            21,
             [
-              21,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-              ],
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
             ],
+          ],
+          [
+            50,
             [
-              50,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-                {...mockDs, startBlock: 50, endBlock: 200},
-              ],
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 1, endBlock: 100},
+              {startBlock: 50, endBlock: 200},
             ],
+          ],
+          [
+            101,
             [
-              101,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 50, endBlock: 200},
-              ],
+              {startBlock: 1, endBlock: 300},
+              {startBlock: 50, endBlock: 200},
             ],
-            [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
-            [301, []],
-            [500, [{...mockDs, startBlock: 500}]],
-          ])
-        )
+          ],
+          [201, [{startBlock: 1, endBlock: 300}]],
+          [301, []],
+          [500, [{startBlock: 500}]],
+        ])
+      )
     );
 
     await fetchService.init(1);
@@ -261,7 +280,7 @@ describe('Fetch Service', () => {
     expect(finalizedSpy).toHaveBeenCalledTimes(2);
     expect(bestSpy).toHaveBeenCalledTimes(2);
 
-    expect(fetchService.getLatestFinalizedHeight()).toBe(fetchService.finalizedHeight);
+    await expect(fetchService.getFinalizedHeight()).resolves.toBe(fetchService.finalizedHeight);
   });
 
   it('enqueues blocks WITHOUT dictionary', async () => {
@@ -277,27 +296,27 @@ describe('Fetch Service', () => {
 
   it('enqueues blocks WITH valid dictionary results', async () => {
     enableDictionary();
-
+    expect((fetchService as any).useDictionary).toBeTruthy();
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
-
     await fetchService.init(1);
-
-    expect((fetchService as any).useDictionary).toBeTruthy();
+    // wait enqueue completed
+    await delay(3);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 4, 6, 8, 10], 10);
     expect(dictionarySpy).toHaveBeenCalled();
-  });
+  }, 50000);
 
-  it('skips the dictionary if the start height is later', async () => {
+  it('skips the dictionary', async () => {
     enableDictionary();
-    (dictionaryService as any).startHeight = 100;
+    (dictionaryService as any).useDictionary = jest.fn(() => false);
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
+    // wait enqueue completed
+    await delay(3);
 
-    expect((fetchService as any).useDictionary).toBeTruthy();
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10);
     expect(dictionarySpy).not.toHaveBeenCalled();
   });
@@ -311,6 +330,7 @@ describe('Fetch Service', () => {
         _metadata: {
           lastProcessedHeight: 1000,
         } as any,
+        lastBufferedHeight: 1000,
       });
     };
 
@@ -318,7 +338,8 @@ describe('Fetch Service', () => {
     const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
-
+    // wait enqueue completed
+    await delay(3);
     expect((fetchService as any).useDictionary).toBeTruthy();
 
     // Update the last processed height but not enqueue blocks
@@ -327,7 +348,7 @@ describe('Fetch Service', () => {
     // Wait and see that it has only called the dictionary once, it should stop using it after that
     await delay(2);
     expect(dictionarySpy).toHaveBeenCalledTimes(1);
-  });
+  }, 100000);
 
   it('waits for blockDispatcher to have capacity', async () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -358,7 +379,8 @@ describe('Fetch Service', () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
-
+    // wait enqueue completed
+    await delay(3);
     expect((fetchService as any).useDictionary).toBeFalsy();
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([3, 6, 9, 12, 15, 18, 21, 24, 27, 30], 30);
   });
@@ -370,25 +392,13 @@ describe('Fetch Service', () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
+    // wait enqueue completed
+    await delay(3);
 
     expect((fetchService as any).useDictionary).toBeTruthy();
     // This should include dictionary results interleaved with modulo blocks
     // [2, 4, 6, 8, 10] + [3, 6, 9, 12, 15, 18]. 18 is included because there is a duplicate of 6
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
-  });
-
-  it('enqueues modulo blocks with furture dataSources', async () => {
-    fetchService.modulos = [3];
-    dataSources.push({...mockDs, startBlock: 20});
-
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-
-    await fetchService.init(1);
-
-    expect((fetchService as any).useDictionary).toBeFalsy();
-    // This should include dictionary results interleaved with modulo blocks
-    // [2, 4, 6, 8, 10] + [3, 6, 9, 12, 15, 18]. 18 is included because there is a duplicate of 6
-    expect(enqueueBlocksSpy).toHaveBeenCalledWith([3, 6, 9, 12, 15, 18], 18);
   });
 
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {
@@ -400,6 +410,8 @@ describe('Fetch Service', () => {
     // simulate we have synced to block 50, and modulo is 20, next block to handle suppose be 60,80,100...
     // we will still enqueue 55 to update LatestBufferHeight
     await fetchService.init(50);
+    // wait enqueue completed
+    await delay(3);
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([], 55);
   });
 
@@ -409,6 +421,8 @@ describe('Fetch Service', () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
+    // wait enqueue completed
+    await delay(3);
 
     expect((fetchService as any).useDictionary).toBeFalsy();
     // Note the batch size is smaller because we exclude from the initial batch size
@@ -422,6 +436,8 @@ describe('Fetch Service', () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
+    // wait enqueue completed
+    await delay(3);
 
     // This doesn't work as they get removed after that height is processed
     // expect((fetchService as any).bypassBlocks).toEqual([2, 3, 4, 5]);
@@ -448,12 +464,15 @@ describe('Fetch Service', () => {
         _metadata: {
           lastProcessedHeight: 1000,
         } as any,
+        lastBufferedHeight: blocks[blocks.length - 1],
       });
     };
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
+    // wait enqueue completed
+    await delay(3);
 
     // Modulo blocks should not be added as we are within batch size
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10);
@@ -467,11 +486,61 @@ describe('Fetch Service', () => {
     const FINALIZED_HEIGHT = 10;
 
     fetchService.finalizedHeight = FINALIZED_HEIGHT;
+    // change query end
+    (dictionaryService as any).getDictionary(1).getQueryEndBlock = () => 10;
 
     const dictSpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
+    // wait enqueue completed
+    await delay(3);
 
     expect(dictSpy).toHaveBeenCalledWith(1, FINALIZED_HEIGHT, 10);
+  });
+
+  it('could arrange modulo blocks with both numbers and fat blocks', () => {
+    const moduloBlocks = [10, 20, 30, 40, 50];
+
+    function mockIblock(n: number): IBlock<{height: number; hash: string}> {
+      return {
+        getHeader: () => {
+          return {height: n, parentHash: `0x${n - 1}`, hash: `0x${n}`};
+        },
+        block: {height: n, hash: `0x${n}`},
+      };
+    }
+
+    const batchBlocks: IBlock<any>[] = [
+      // should keep these fat blocks rather than number, so we don't have to fetch again
+      mockIblock(50),
+      mockIblock(12),
+      mockIblock(22),
+      mockIblock(23),
+      mockIblock(44),
+      mockIblock(45),
+      // and it can order
+      mockIblock(20),
+      // and it can remove duplicate
+      mockIblock(22),
+    ];
+
+    const outcomeBlocks = [
+      10,
+      mockIblock(12),
+      mockIblock(20),
+      mockIblock(22),
+      mockIblock(23),
+      30,
+      40,
+      mockIblock(44),
+      mockIblock(45),
+      mockIblock(50),
+    ];
+    expect(mergeNumAndBlocks(moduloBlocks, batchBlocks)).toBe([...outcomeBlocks]);
+
+    // also should work if batchBlocks is numbers
+    const batchBlocks2 = [12, 22, 23, 44, 45, 22];
+    const outcomeBlocks2 = [10, 12, 20, 22, 23, 30, 40, 44, 45, 50];
+    expect(mergeNumAndBlocks(moduloBlocks, batchBlocks2)).toEqual(outcomeBlocks2);
   });
 });

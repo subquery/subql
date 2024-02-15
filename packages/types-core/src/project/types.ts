@@ -151,7 +151,7 @@ export interface ProjectNetworkConfig {
    *
    * @type {string}
    */
-  dictionary?: string;
+  dictionary?: string | string[];
 
   /**
    * An array of block numbers or block ranges to bypass (optional).
@@ -184,4 +184,13 @@ export interface DictionaryQueryCondition {
 export interface DictionaryQueryEntry {
   entity: string;
   conditions: DictionaryQueryCondition[];
+}
+
+export interface IBlock<B> {
+  getHeader(): {
+    hash: string;
+    height: number;
+    parentHash?: string;
+  };
+  block: B;
 }

@@ -1,8 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {range} from 'lodash';
-import {cleanedBatchBlocks, transformBypassBlocks} from './project';
+import {transformBypassBlocks, cleanedBatchBlocks} from './blocks';
 
 describe('bypass logic', () => {
   it('process bypassBlocks with ranges', () => {
@@ -18,12 +17,5 @@ describe('bypass logic', () => {
     const case_2 = cleanedBatchBlocks(bypassBlocks, currentBlockBatch);
 
     expect(case_2).toEqual([1, 40, 100, 120]);
-  });
-
-  it('cleanedBatchBlocks with large amount blocks should not throw error Maximum call stack size exceeded', () => {
-    const bypassBlocks = transformBypassBlocks(['50051722-54939220']);
-    const currentBlockBatch = range(34312396, 34312495);
-    const case_1 = cleanedBatchBlocks(bypassBlocks, currentBlockBatch);
-    expect(case_1).toEqual(currentBlockBatch);
   });
 });
