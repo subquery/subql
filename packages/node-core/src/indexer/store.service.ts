@@ -198,7 +198,6 @@ export class StoreService {
     }
   }
 
-  // eslint-disable-next-line complexity
   async syncSchema(schema: string): Promise<void> {
     const tx = await this.sequelize.transaction();
     if (this.historical) {
