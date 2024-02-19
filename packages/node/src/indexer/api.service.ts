@@ -263,27 +263,16 @@ export class ApiService
     return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
   }
 
+  // Overrides the super function because of the specVer
   async fetchBlocks(
     heights: number[],
     overallSpecVer?: number,
     numAttempts = MAX_RECONNECT_ATTEMPTS,
   ): Promise<LightBlockContent[]> {
-    let reconnectAttempts = 0;
-    while (reconnectAttempts < numAttempts) {
-      try {
-        const apiInstance = this.connectionPoolService.api;
-        return await apiInstance.fetchBlocks(heights, overallSpecVer);
-      } catch (e: any) {
-        logger.error(
-          e,
-          `Failed to fetch blocks ${heights[0]}...${
-            heights[heights.length - 1]
-          }`,
-        );
-
-        reconnectAttempts++;
-      }
-    }
-    throw new Error(`Maximum number of retries (${numAttempts}) reached.`);
+    return this.retryFetch(async () => {
+      // Get the latest fetch function from the provider
+      const apiInstance = this.connectionPoolService.api;
+      return apiInstance.fetchBlocks(heights, overallSpecVer);
+    }, numAttempts);
   }
 }

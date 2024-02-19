@@ -69,6 +69,7 @@ export abstract class BaseWorkerService<
         return;
       }
       logger.error(e, `Failed to fetch block ${height}`);
+      throw e;
     }
   }
 
