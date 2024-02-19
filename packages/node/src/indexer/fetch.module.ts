@@ -24,7 +24,8 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './blockDispatcher';
-import { DictionaryService } from './dictionary.service';
+import { SubstrateDictionaryV1 } from './dictionary';
+import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
@@ -121,16 +122,18 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     IndexingBenchmarkService,
     PoiBenchmarkService,
     {
-      provide: DictionaryService,
+      provide: SubstrateDictionaryService,
       useFactory: async (
         project: SubqueryProject,
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
+        dsProcessorService: DsProcessorService,
       ) => {
-        const dictionaryService = await DictionaryService.create(
+        const dictionaryService = new SubstrateDictionaryService(
           project,
           nodeConfig,
           eventEmitter,
+          dsProcessorService,
         );
         return dictionaryService;
       },

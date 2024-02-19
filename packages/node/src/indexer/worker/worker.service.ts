@@ -11,7 +11,7 @@ import {
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { ApiService } from '../api.service';
-import { SpecVersion } from '../dictionary.service';
+import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent, isFullBlock, LightBlockContent } from '../types';
@@ -52,7 +52,7 @@ export class WorkerService extends BaseWorkerService<
       specChanged ? undefined : this.workerRuntimeService.parentSpecVersion,
     );
 
-    return block;
+    return block.block;
   }
 
   protected toBlockResponse(block: BlockContent): FetchBlockResponse {

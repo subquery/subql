@@ -15,6 +15,7 @@ import {
   ConnectionPoolService,
   ApiService as BaseApiService,
 } from '@subql/node-core';
+import { IBlock } from '@subql/types-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';
@@ -41,7 +42,7 @@ export class ApiService
   extends BaseApiService<
     ApiPromise,
     ApiAt,
-    BlockContent[] | LightBlockContent[]
+    IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
   >
   implements OnApplicationShutdown
 {
@@ -267,7 +268,7 @@ export class ApiService
     heights: number[],
     overallSpecVer?: number,
     numAttempts = MAX_RECONNECT_ATTEMPTS,
-  ): Promise<LightBlockContent[]> {
+  ): Promise<IBlock<LightBlockContent>[]> {
     let reconnectAttempts = 0;
     while (reconnectAttempts < numAttempts) {
       try {

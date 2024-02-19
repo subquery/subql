@@ -4,10 +4,7 @@
 import { Injectable } from '@nestjs/common';
 import { profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
-import {
-  DictionaryService,
-  SpecVersionDictionary,
-} from '../dictionary.service';
+import { SpecVersionDictionary, SubstrateDictionaryV1 } from '../dictionary';
 import {
   BaseRuntimeService,
   SPEC_VERSION_BLOCK_GAP,
@@ -19,15 +16,15 @@ export class RuntimeService extends BaseRuntimeService {
 
   constructor(
     protected apiService: ApiService,
-    protected dictionaryService?: DictionaryService,
+    protected dictionaryV1?: SubstrateDictionaryV1,
   ) {
     super(apiService);
   }
 
   // get latest specVersions from dictionary
   async syncDictionarySpecVersions(): Promise<void> {
-    const response = this.dictionaryService.useDictionary
-      ? await this.dictionaryService.getSpecVersions()
+    const response = (this.dictionaryV1 as any).useDictionary
+      ? await this.dictionaryV1.getSpecVersions()
       : undefined;
     if (response !== undefined) {
       this.specVersionMap = response;
@@ -38,7 +35,7 @@ export class RuntimeService extends BaseRuntimeService {
     if (raw === undefined) {
       this.specVersionMap = [];
     }
-    this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
+    this.specVersionMap = this.dictionaryV1.parseSpecVersions(raw);
   }
 
   // main runtime responsible for sync from dictionary

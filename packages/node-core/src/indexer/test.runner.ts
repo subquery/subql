@@ -3,6 +3,7 @@
 
 import {Inject, Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing';
+import {IBlock} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
 import {isEqual} from 'lodash';
@@ -28,7 +29,7 @@ export class TestRunner<A, SA, B, DS> {
   private passedTests = 0;
   private failedTests = 0;
   constructor(
-    @Inject('IApi') protected readonly apiService: IApi<A, SA, B[]>,
+    @Inject('IApi') protected readonly apiService: IApi<A, SA, IBlock<B>[]>,
     protected readonly storeService: StoreService,
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,
@@ -42,7 +43,7 @@ export class TestRunner<A, SA, B, DS> {
       block: B,
       handler: string,
       indexerManager: IIndexerManager<B, DS>,
-      apiService?: IApi<A, SA, B[]>
+      apiService?: IApi<A, SA, IBlock<B>[]>
     ) => Promise<void>
   ): Promise<{
     passedTests: number;
@@ -67,7 +68,7 @@ export class TestRunner<A, SA, B, DS> {
       logger.debug('Running handler');
 
       try {
-        await indexBlock(block, test.handler, this.indexerManager, this.apiService);
+        await indexBlock(block.block, test.handler, this.indexerManager, this.apiService);
         await this.storeService.storeCache.flushCache(true, true);
       } catch (e: any) {
         logger.warn(`Test: ${test.name} field due to runtime error`, e);

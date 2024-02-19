@@ -23,6 +23,7 @@ import {
   SubstrateExtrinsic,
   BlockHeader,
 } from '@subql/types';
+import { IBlock } from '@subql/types-core';
 import { last, merge, range } from 'lodash';
 import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../indexer/apiPromise.connection';
@@ -363,7 +364,7 @@ export async function fetchBlocksBatches(
   api: ApiPromise,
   blockArray: number[],
   overallSpecVer?: number,
-): Promise<BlockContent[]> {
+): Promise<IBlock<BlockContent>[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
@@ -388,10 +389,20 @@ export async function fetchBlocksBatches(
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
 
     wrappedBlock.block.header;
+
     return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
+      getHeader: () => {
+        return {
+          hash: block.hash.toString(),
+          height: block.block.header.number.toNumber(),
+          parentHash: block.block.header.parentHash.toString(),
+        };
+      },
+      block: {
+        block: wrappedBlock,
+        extrinsics: wrappedExtrinsics,
+        events: wrappedEvents,
+      },
     };
   });
 }
@@ -400,7 +411,7 @@ export async function fetchBlocksBatches(
 export async function fetchLightBlock(
   api: ApiPromise,
   height: number,
-): Promise<LightBlockContent> {
+): Promise<IBlock<LightBlockContent>> {
   const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
     logger.error(`failed to fetch BlockHash ${height}`);
     throw ApiPromiseConnection.handleError(e);
@@ -423,17 +434,25 @@ export async function fetchLightBlock(
     block: { header },
     events: events.toArray(),
   };
-
   return {
-    block: blockHeader,
-    events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
+    block: {
+      block: blockHeader,
+      events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
+    },
+    getHeader: () => {
+      return {
+        hash: blockHeader.block.header.hash.toString(),
+        height: blockHeader.block.header.number.toNumber(),
+        parentHash: blockHeader.block.header.parentHash.toString(),
+      };
+    },
   };
 }
 
 export async function fetchBlocksBatchesLight(
   api: ApiPromise,
   blockArray: number[],
-): Promise<LightBlockContent[]> {
+): Promise<IBlock<LightBlockContent>[]> {
   return Promise.all(blockArray.map((height) => fetchLightBlock(api, height)));
 }
 

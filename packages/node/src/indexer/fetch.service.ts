@@ -18,7 +18,11 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
-import { SubstrateCustomHandler, SubstrateDatasource } from '@subql/types';
+import {
+  SubstrateCustomHandler,
+  SubstrateDatasource,
+  SubstrateBlock,
+} from '@subql/types';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
@@ -29,7 +33,9 @@ import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
-import { DictionaryService } from './dictionary.service';
+import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
+import { SubstrateDictionaryV1 } from './dictionary/v1';
+import { SubstrateDictionaryV2 } from './dictionary/v2';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
@@ -76,7 +82,8 @@ function callFilterToQueryEntry(
 export class FetchService extends BaseFetchService<
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
-  DictionaryService
+  SubstrateDictionaryV1 | SubstrateDictionaryV2,
+  SubstrateBlock
 > {
   constructor(
     private apiService: ApiService,
@@ -85,7 +92,7 @@ export class FetchService extends BaseFetchService<
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: ISubstrateBlockDispatcher,
-    dictionaryService: DictionaryService,
+    dictionaryService: SubstrateDictionaryService,
     private dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
@@ -107,89 +114,6 @@ export class FetchService extends BaseFetchService<
 
   get api(): ApiPromise {
     return this.apiService.unsafeApi;
-  }
-
-  // eslint-disable-next-line complexity
-  protected buildDictionaryQueryEntries(
-    dataSources: SubstrateDatasource[],
-  ): DictionaryQueryEntry[] {
-    const queryEntries: DictionaryQueryEntry[] = [];
-
-    for (const ds of dataSources) {
-      const plugin = isCustomDs(ds)
-        ? this.dsProcessorService.getDsProcessor(ds)
-        : undefined;
-      for (const handler of ds.mapping.handlers) {
-        const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        let filterList: SubstrateRuntimeHandlerFilter[];
-        if (isCustomDs(ds)) {
-          const processor = plugin.handlerProcessors[handler.kind];
-          if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(
-              (handler as SubstrateCustomHandler).filter,
-              ds,
-            );
-            if (queryEntry) {
-              queryEntries.push(queryEntry);
-              continue;
-            }
-          }
-          filterList =
-            this.getBaseHandlerFilters<SubstrateRuntimeHandlerFilter>(
-              ds,
-              handler.kind,
-            );
-        } else {
-          filterList = [handler.filter];
-        }
-        // Filter out any undefined
-        filterList = filterList.filter(Boolean);
-        if (!filterList.length) return [];
-        switch (baseHandlerKind) {
-          case SubstrateHandlerKind.Block:
-            for (const filter of filterList as SubstrateBlockFilter[]) {
-              if (filter.modulo === undefined) {
-                return [];
-              }
-            }
-            break;
-          case SubstrateHandlerKind.Call: {
-            for (const filter of filterList as SubstrateCallFilter[]) {
-              if (
-                filter.module !== undefined ||
-                filter.method !== undefined ||
-                filter.isSigned !== undefined ||
-                filter.success !== undefined
-              ) {
-                queryEntries.push(callFilterToQueryEntry(filter));
-              } else {
-                return [];
-              }
-            }
-            break;
-          }
-          case SubstrateHandlerKind.Event: {
-            for (const filter of filterList as SubstrateEventFilter[]) {
-              if (filter.module !== undefined || filter.method !== undefined) {
-                queryEntries.push(eventFilterToQueryEntry(filter));
-              } else {
-                return [];
-              }
-            }
-            break;
-          }
-          default:
-        }
-      }
-    }
-
-    return uniqBy(
-      queryEntries,
-      (item) =>
-        `${item.entity}|${JSON.stringify(
-          sortBy(item.conditions, (c) => c.field),
-        )}`,
-    );
   }
 
   protected async getFinalizedHeight(): Promise<number> {
@@ -250,39 +174,5 @@ export class FetchService extends BaseFetchService<
     // setup parentSpecVersion
     await this.runtimeService.specChanged(startHeight);
     await this.runtimeService.prefetchMeta(startHeight);
-  }
-
-  private getBaseHandlerKind(
-    ds: SubstrateDataSource,
-    handler: SubstrateHandler,
-  ): SubstrateHandlerKind {
-    if (isRuntimeDs(ds) && isBaseHandler(handler)) {
-      return handler.kind;
-    } else if (isCustomDs(ds) && isCustomHandler(handler)) {
-      const plugin = this.dsProcessorService.getDsProcessor(ds);
-      const baseHandler =
-        plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
-      if (!baseHandler) {
-        throw new Error(
-          `handler type ${handler.kind} not found in processor for ${ds.kind}`,
-        );
-      }
-      return baseHandler;
-    }
-  }
-
-  private getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
-    ds: SubstrateDataSource,
-    handlerKind: string,
-  ): T[] {
-    if (isCustomDs(ds)) {
-      const plugin = this.dsProcessorService.getDsProcessor(ds);
-      const processor = plugin.handlerProcessors[handlerKind];
-      return processor.baseFilter instanceof Array
-        ? (processor.baseFilter as T[])
-        : ([processor.baseFilter] as T[]);
-    } else {
-      throw new Error(`Expected a custom datasource here`);
-    }
   }
 }

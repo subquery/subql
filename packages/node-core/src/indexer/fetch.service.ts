@@ -372,6 +372,10 @@ export abstract class BaseFetchService<
     this.blockDispatcher.flushQueue(blockHeight);
   }
 
+  getLatestFinalizedHeight(): number {
+    return this.latestFinalizedHeight;
+  }
+
   resetForIncorrectBestBlock(blockHeight: number): void {
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);

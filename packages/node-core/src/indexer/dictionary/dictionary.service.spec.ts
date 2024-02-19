@@ -3,7 +3,8 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
-import {IBlock, NodeConfig} from '../..';
+import {IBlock} from '@subql/types-core';
+import {NodeConfig} from '../..';
 import {DictionaryService} from './dictionary.service';
 import {DictionaryResponse} from './types';
 import {testDictionaryV1} from './v1/dictionaryV1.test';

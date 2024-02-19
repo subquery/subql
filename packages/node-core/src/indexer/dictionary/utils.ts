@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {IBlock} from '@subql/types-core';
 import {uniq} from 'lodash';
-import {IBlock} from './types';
 
 export function getBlockHeight<B>(block: number | IBlock<B>): number {
   if (typeof block === 'number') {

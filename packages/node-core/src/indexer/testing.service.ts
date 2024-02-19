@@ -5,7 +5,7 @@ import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing/interfaces';
-import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {BaseDataSource, IBlock, IProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
 import {cloneDeep} from 'lodash';
 import {IApi} from '../api.service';
@@ -59,7 +59,7 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
     block: B,
     handler: string,
     indexerManager: IIndexerManager<B, DS>,
-    apiService?: IApi<A, SA, B[]>
+    apiService?: IApi<A, SA, IBlock<B>[]>
   ): Promise<void> {
     await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }

@@ -8,7 +8,7 @@ import { profiler } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
-import { SpecVersion } from './../dictionary.service';
+import { SpecVersion } from '../dictionary';
 export const SPEC_VERSION_BLOCK_GAP = 100;
 type GetLatestFinalizedHeight = () => number;
 

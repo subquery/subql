@@ -4,10 +4,10 @@
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { ApiService } from '../api.service';
 import {
-  DictionaryService,
+  SubstrateDictionaryV1,
   SpecVersion,
   SpecVersionDictionary,
-} from '../dictionary.service';
+} from '../dictionary';
 import { SPEC_VERSION_BLOCK_GAP } from './base-runtime.service';
 import { RuntimeService } from './runtimeService';
 
@@ -57,7 +57,7 @@ const getApiService = (): ApiService =>
     },
   } as any);
 
-const getDictionaryService = (): DictionaryService =>
+const getDictionaryService = (): SubstrateDictionaryV1 =>
   ({
     useDictionary: false,
     getSpecVersions: (): Promise<SpecVersion[]> => {
@@ -70,7 +70,7 @@ const getDictionaryService = (): DictionaryService =>
 
 describe('Runtime service', () => {
   let runtimeService: RuntimeService;
-  let dictionaryService: DictionaryService;
+  let dictionaryService: SubstrateDictionaryV1;
   let apiService: ApiService;
 
   beforeEach(() => {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Injectable } from '@nestjs/common';
-import { SpecVersion } from '../dictionary.service';
+import { SpecVersion } from '../dictionary';
 import { BaseRuntimeService } from './base-runtime.service';
 
 @Injectable()
