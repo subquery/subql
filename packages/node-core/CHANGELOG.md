@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing Suites should run with unfinalizedBlocks `false` (#2258)
 
 ### Changed
-- Throw error earlier when failing to fetch blocks when workers are enabled (#2256)
+- Improve error handling when fetching blocks (#2256)
 
 ## [7.2.1] - 2024-02-07
 ### Added
