@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Schema Migration support for Enums, Relations, Subscription (#2251)
-- 
 ### Fixed
 - Fixed non-atomic schema migration execution (#2244)
+- Testing Suites should run with unfinalizedBlocks `false` (#2258)
 
 ## [7.2.1] - 2024-02-07
 ### Added
