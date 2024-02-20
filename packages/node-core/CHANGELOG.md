@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Schema Migration support for Enums, Relations, Subscription (#2251)
+- Check that the project start height is below the current chain height (#2259)
 
 ### Fixed
 - Fixed non-atomic schema migration execution (#2244)
