@@ -6,7 +6,6 @@ import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
 import {IBlock} from '@subql/types-core';
-import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
@@ -15,7 +14,6 @@ import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -83,28 +81,18 @@ export abstract class BlockDispatcher<B, DS>
     this.processQueue.abort();
   }
 
-  enqueueBlocks(heightsBlocks: (IBlock<B> | number)[], latestBufferHeight: number): void {
+  enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight: number): void {
     // In the case where factors of batchSize is equal to bypassBlock or when heights is []
     // to ensure block is bypassed, we set the latestBufferHeight to the heights
     // make sure lastProcessedHeight in metadata is updated
-    if (!!latestBufferHeight && !heightsBlocks.length) {
-      heightsBlocks = [latestBufferHeight];
+    if (!heights.length) {
+      heights = [latestBufferHeight];
     }
-    let startBlockHeight: number;
-    let endBlockHeight: number;
-    try {
-      const startBlock = heightsBlocks[0];
-      const endBlock = heightsBlocks[heightsBlocks.length - 1];
-      startBlockHeight = getBlockHeight(startBlock);
-      endBlockHeight = getBlockHeight(endBlock);
-      logger.info(
-        `Enqueueing fat blocks ${startBlockHeight}...${endBlockHeight}, total ${heightsBlocks.length} blocks`
-      );
-    } catch (e) {
-      throw new Error(`Enqueue blocks failed, ${e}`);
-    }
-    this.queue.putMany(heightsBlocks);
-    this.latestBufferedHeight = latestBufferHeight ?? endBlockHeight ?? this.latestBufferedHeight;
+    const startBlockHeight = getBlockHeight(heights[0]);
+    const endBlockHeight = getBlockHeight(heights[heights.length - 1]);
+    logger.info(`Enqueueing blocks ${startBlockHeight}...${endBlockHeight}, total ${heights.length} blocks`);
+    this.queue.putMany(heights);
+    this.latestBufferedHeight = latestBufferHeight;
     void this.fetchBlocksFromQueue();
   }
 
@@ -157,24 +145,23 @@ export abstract class BlockDispatcher<B, DS>
             if (memoryLock.isLocked()) {
               await memoryLock.waitForUnlock();
             }
-            if (typeof blockOrNum === 'number') {
-              const [block] = await this.fetchBlocksBatches([blockOrNum]);
-              this.smartBatchService.addToSizeBuffer([block]);
-              return block;
-            } else {
-              // return block
+            if (typeof blockOrNum !== 'number') {
+              // Type is of block
               return blockOrNum;
             }
+            const [block] = await this.fetchBlocksBatches([blockOrNum]);
+            this.smartBatchService.addToSizeBuffer([block]);
+            return block;
           })
           .then(
             (block) => {
-              const height = block.getHeader().height;
+              const {height} = block.getHeader();
 
               return this.processQueue.put(async () => {
                 // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
                 // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
                 const peeked = this.queue.peek();
-                if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < getBlockHeight(blockOrNum))) {
+                if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < height)) {
                   logger.info(`Queue was reset for new DS, discarding fetched blocks`);
                   return;
                 }
@@ -205,7 +192,7 @@ export abstract class BlockDispatcher<B, DS>
                 // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
                 return;
               }
-              logger.error(e, `Failed to fetch block ${blockOrNum}.`);
+              logger.error(e, `Failed to fetch block ${getBlockHeight(blockOrNum)}.`);
               throw e;
             }
           )

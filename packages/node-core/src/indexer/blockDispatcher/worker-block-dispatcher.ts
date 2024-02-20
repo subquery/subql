@@ -103,10 +103,9 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
   async enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): Promise<void> {
     assert(
       heights.every((h) => typeof h === 'number'),
-      'When worker enqueue block, heights must be of type number'
+      'Worker block dispatcher only supports enqueuing numbers, not blocks.'
     );
-    // @ts-ignore
-    await this._enqueueBlocks(heights, latestBufferHeight);
+    await this._enqueueBlocks(heights as number[], latestBufferHeight);
   }
 
   private async _enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
