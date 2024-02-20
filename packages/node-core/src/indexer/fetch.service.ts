@@ -127,10 +127,9 @@ export abstract class BaseFetchService<
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
     if (startHeight > this.latestHeight()) {
-      logger.warn(
-        `The startBlock of dataSources in your project manifest ${startHeight} is higher than the current chain height (${this.latestHeight()}). Please adjust your startBlock to be less that the current chain height.`
+      throw new Error(
+        `The startBlock of dataSources in your project manifest (${startHeight}) is higher than the current chain height (${this.latestHeight()}). Please adjust your startBlock to be less that the current chain height.`
       );
-      process.exit(1);
     }
 
     this.schedulerRegistry.addInterval(
