@@ -138,7 +138,7 @@ describe('GraphqlTypes', () => {
 
 // export use in dictionary service test
 // eslint-disable-next-line jest/no-export
-export class testDictionaryV1 extends DictionaryV1<any> {
+export class testDictionaryV1 extends DictionaryV1<any, any> {
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryQueryEntry[] {
     return HAPPY_PATH_CONDITIONS;
   }

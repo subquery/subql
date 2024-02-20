@@ -184,17 +184,20 @@ export function buildDictionaryV1QueryEntries<
 
 const logger = getLogger('substrate-dictionary-V1');
 
-export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDsInterface> {
+export class SubstrateDictionaryV1 extends DictionaryV1<
+  SubstrateDsInterface,
+  DsProcessor<SubstrateDatasource>
+> {
   private project: SubqueryProject | undefined;
 
-  private constructor(
+  constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    dictionaryUrl: string,
-    protected getDsProcessor: <P extends DsProcessor<SubstrateDatasource>>(
+    protected getDsProcessor: (
       ds: SubstrateDatasource,
-    ) => P,
+    ) => DsProcessor<SubstrateDatasource>,
+    dictionaryUrl?: string,
     chainId?: string,
   ) {
     super(
@@ -204,24 +207,6 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDsInterface> {
       eventEmitter,
     );
     this.project = project;
-  }
-
-  static create(
-    project: SubqueryProject,
-    nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
-    getDsProcessor: <P extends DsProcessor<SubstrateDatasource>>(
-      ds: SubstrateDatasource,
-    ) => P,
-    dictionaryUrl?: string,
-  ): SubstrateDictionaryV1 {
-    return new SubstrateDictionaryV1(
-      project,
-      nodeConfig,
-      eventEmitter,
-      dictionaryUrl,
-      getDsProcessor,
-    );
   }
 
   buildDictionaryQueryEntries(

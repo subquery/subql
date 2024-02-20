@@ -137,7 +137,12 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         );
         return dictionaryService;
       },
-      inject: ['ISubqueryProject', NodeConfig, EventEmitter2],
+      inject: [
+        'ISubqueryProject',
+        NodeConfig,
+        EventEmitter2,
+        DsProcessorService,
+      ],
     },
     SandboxService,
     DsProcessorService,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {IBlock} from '@subql/types-core';
+import {DsProcessor, IBlock} from '@subql/types-core';
 import axios, {AxiosInstance} from 'axios';
 import {DictionaryResponse, DictionaryVersion} from '..';
 import {NodeConfig} from '../../../configure';
@@ -51,8 +51,9 @@ export async function subqlFilterBlocksCapabilities(
 export abstract class DictionaryV2<
   FB,
   DS,
+  P extends DsProcessor<DS>,
   QE extends DictionaryV2QueryEntry = DictionaryV2QueryEntry
-> extends CoreDictionary<DS, FB> {
+> extends CoreDictionary<DS, FB, P> {
   queriesMap?: BlockHeightMap<QE>;
   protected _metadata: DictionaryV2Metadata | undefined;
   protected dictionaryApi: AxiosInstance;
@@ -70,7 +71,10 @@ export abstract class DictionaryV2<
     this._dictionaryVersion = DictionaryVersion.v2Complete;
   }
 
-  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryV2QueryEntry;
+  protected abstract buildDictionaryQueryEntries(
+    dataSources: DS[],
+    getDsProcessor?: (ds: DS) => P
+  ): DictionaryV2QueryEntry;
 
   async init(): Promise<void> {
     this._metadata = await subqlFilterBlocksCapabilities(this.dictionaryEndpoint);

@@ -33,7 +33,7 @@ const genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a7
 class TestFetchService extends BaseFetchService<
   BaseDataSource,
   IBlockDispatcher<any>,
-  DictionaryV1<any> | DictionaryV2<any, any>,
+  DictionaryV1<any, any> | DictionaryV2<any, any, any>,
   any
 > {
   finalizedHeight = 1000;
@@ -149,7 +149,7 @@ const getBlockDispatcher = () => {
 describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher<any>;
-  let dictionaryService: DictionaryService<any, any, DictionaryV1<any> | DictionaryV2<any, any>>;
+  let dictionaryService: DictionaryService<any, any, DictionaryV1<any, any> | DictionaryV2<any, any, any>>;
   let networkConfig: IProjectNetworkConfig;
 
   beforeEach(() => {

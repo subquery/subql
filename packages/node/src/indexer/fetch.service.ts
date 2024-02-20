@@ -162,11 +162,8 @@ export class FetchService extends BaseFetchService<
   protected async preLoopHook({ startHeight }): Promise<void> {
     this.runtimeService.init(this.getLatestFinalizedHeight.bind(this));
 
-    if (this.dictionaryService.useDictionary) {
-      // const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
-      // this.runtimeService.setSpecVersionMap(rawSpecVersions);
-
-      await this.runtimeService.syncDictionarySpecVersions();
+    if (this.dictionaryService.useDictionary(startHeight)) {
+      await this.runtimeService.syncDictionarySpecVersions(startHeight);
     } else {
       this.runtimeService.setSpecVersionMap(undefined);
     }

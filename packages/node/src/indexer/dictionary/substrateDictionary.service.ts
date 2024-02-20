@@ -10,15 +10,10 @@ import {
   NodeConfig,
 } from '@subql/node-core';
 import { DictionaryService } from '@subql/node-core/indexer/dictionary/dictionary.service';
-import {
-  SubstrateBlock,
-  SubstrateCustomDatasource,
-  SubstrateDatasource,
-  SubstrateDatasourceProcessor,
-} from '@subql/types';
-import { DsProcessor } from '@subql/types-core';
+import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
+import { SpecVersion, SpecVersionDictionary } from './types';
 import { SubstrateDictionaryV1 } from './v1/substrateDictionaryV1';
 import { SubstrateDictionaryV2 } from './v2';
 
@@ -46,9 +41,8 @@ export class SubstrateDictionaryService extends DictionaryService<
     }
 
     // Current We now only accept either resolver dictionary or multiple dictionaries
-    // TODO, this may move to core dictionary service
     if (this.nodeConfig.dictionaryResolver) {
-      const resolverDictionary = SubstrateDictionaryV1.create(
+      const resolverDictionary = new SubstrateDictionaryV1(
         this.project,
         this.nodeConfig,
         this.eventEmitter,
@@ -56,14 +50,15 @@ export class SubstrateDictionaryService extends DictionaryService<
       );
       dictionaries = [resolverDictionary];
     } else {
-      dictionaries = endpoints.map((endpoint) =>
-        SubstrateDictionaryV1.create(
-          this.project,
-          this.nodeConfig,
-          this.eventEmitter,
-          this.dsProcessorService.getDsProcessor.bind(this),
-          endpoint,
-        ),
+      dictionaries = endpoints.map(
+        (endpoint) =>
+          new SubstrateDictionaryV1(
+            this.project,
+            this.nodeConfig,
+            this.eventEmitter,
+            this.dsProcessorService.getDsProcessor.bind(this),
+            endpoint,
+          ),
       );
     }
     return dictionaries;
@@ -89,10 +84,13 @@ export class SubstrateDictionaryService extends DictionaryService<
   async initDictionaries() {
     const dictionaryV1Endpoints = [];
     const dictionaryV2Endpoints = [];
-    // TODO, change this to project.network.dictionary when rebase with main, this require update in type-core
-    this.project.network.dictionary;
-    if (this.nodeConfig.networkDictionaries) {
-      for (const endpoint of this.nodeConfig.networkDictionaries) {
+    const dictionaryEndpoints: string[] = !Array.isArray(
+      this.project.network.dictionary,
+    )
+      ? [this.project.network.dictionary]
+      : this.project.network.dictionary;
+    if (dictionaryEndpoints) {
+      for (const endpoint of dictionaryEndpoints) {
         const version = await inspectDictionaryVersion(
           endpoint,
           this.nodeConfig.dictionaryTimeout,
@@ -128,5 +126,29 @@ export class SubstrateDictionaryService extends DictionaryService<
     chainId?: string,
   ) {
     super(chainId ?? project.network.chainId, nodeConfig, eventEmitter);
+  }
+
+  async getSpecVersions(): Promise<SpecVersion[]> {
+    const currentDictionary = this._dictionaries[
+      this._currentDictionaryIndex
+    ] as SubstrateDictionaryV1;
+    if (!currentDictionary) {
+      throw new Error(
+        `Runtime service getSpecVersions use current dictionary failed`,
+      );
+    }
+    return currentDictionary.getSpecVersions();
+  }
+
+  parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
+    const currentDictionary = this._dictionaries[
+      this._currentDictionaryIndex
+    ] as SubstrateDictionaryV1;
+    if (!currentDictionary) {
+      throw new Error(
+        `Runtime service parseSpecVersions use current dictionary failed`,
+      );
+    }
+    return currentDictionary.parseSpecVersions(raw);
   }
 }

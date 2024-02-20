@@ -4,7 +4,7 @@
 import {ApolloClient, ApolloLink, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {dictHttpLink} from '@subql/apollo-links';
-import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core';
+import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry, DsProcessor} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData as DictionaryV1Metadata} from '@subql/utils';
 import fetch from 'cross-fetch';
 import {buildDictQueryFragment, DictionaryVersion, distinctErrorEscaped, startHeightEscaped} from '..';
@@ -20,7 +20,7 @@ import {DictionaryResponse} from '../types';
 
 const logger = getLogger('dictionary v1');
 
-export abstract class DictionaryV1<DS> extends CoreDictionary<DS, undefined> {
+export abstract class DictionaryV1<DS, P extends DsProcessor<DS>> extends CoreDictionary<DS, undefined, P> {
   queriesMap?: BlockHeightMap<DictionaryV1QueryEntry[]>;
   protected _metadata: DictionaryV1Metadata | undefined;
   private _client: ApolloClient<NormalizedCacheObject>;
@@ -66,7 +66,7 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<DS, undefined> {
     this._dictionaryVersion = DictionaryVersion.v1;
   }
 
-  abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryV1QueryEntry[];
+  abstract buildDictionaryQueryEntries(dataSources: DS[], getDsProcessor?: (ds: DS) => P): DictionaryV1QueryEntry[];
 
   async init(): Promise<void> {
     const {query} = this.metadataQuery();

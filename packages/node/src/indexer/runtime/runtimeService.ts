@@ -4,7 +4,11 @@
 import { Injectable } from '@nestjs/common';
 import { profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
-import { SpecVersionDictionary, SubstrateDictionaryV1 } from '../dictionary';
+import {
+  SpecVersionDictionary,
+  SubstrateDictionaryService,
+  SubstrateDictionaryV1,
+} from '../dictionary';
 import {
   BaseRuntimeService,
   SPEC_VERSION_BLOCK_GAP,
@@ -16,15 +20,15 @@ export class RuntimeService extends BaseRuntimeService {
 
   constructor(
     protected apiService: ApiService,
-    protected dictionaryV1?: SubstrateDictionaryV1,
+    protected dictionaryService?: SubstrateDictionaryService,
   ) {
     super(apiService);
   }
 
   // get latest specVersions from dictionary
-  async syncDictionarySpecVersions(): Promise<void> {
-    const response = (this.dictionaryV1 as any).useDictionary
-      ? await this.dictionaryV1.getSpecVersions()
+  async syncDictionarySpecVersions(height: number): Promise<void> {
+    const response = this.dictionaryService.useDictionary(height)
+      ? await this.dictionaryService.getSpecVersions()
       : undefined;
     if (response !== undefined) {
       this.specVersionMap = response;
@@ -35,7 +39,7 @@ export class RuntimeService extends BaseRuntimeService {
     if (raw === undefined) {
       this.specVersionMap = [];
     }
-    this.specVersionMap = this.dictionaryV1.parseSpecVersions(raw);
+    this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
   }
 
   // main runtime responsible for sync from dictionary
@@ -53,7 +57,7 @@ export class RuntimeService extends BaseRuntimeService {
       blockSpecVersion = await this.getSpecFromApi(blockHeight);
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         // Ask to sync local specVersionMap with dictionary
-        await this.syncDictionarySpecVersions();
+        await this.syncDictionarySpecVersions(blockHeight);
         syncedDictionary = true;
       }
     }
