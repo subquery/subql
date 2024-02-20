@@ -7,33 +7,8 @@ import {IBlock} from '@subql/types-core';
 import fetch from 'cross-fetch';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
-import {timeout} from '../../utils';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
-import {DictionaryResponse, DictionaryVersion, IDictionary, IDictionaryCtrl} from './types';
-import {subqlFilterBlocksCapabilities} from './v2';
-import {DictionaryV2Metadata} from './';
-
-export async function inspectDictionaryVersion(
-  endpoint: string,
-  timeoutSec: number
-): Promise<DictionaryVersion | undefined> {
-  let resp: DictionaryV2Metadata;
-  const timeoutMsg = 'Inspect dictionary version timeout';
-  try {
-    resp = await timeout(subqlFilterBlocksCapabilities(endpoint), timeoutSec, timeoutMsg);
-    if (resp.supported.includes('complete')) {
-      return DictionaryVersion.v2Complete;
-    } else {
-      return DictionaryVersion.v2Basic;
-    }
-  } catch (e: any) {
-    if (e.message === timeoutMsg) {
-      return undefined;
-    }
-    logger.warn(`${e}. Try to use dictionary V1`);
-    return DictionaryVersion.v1;
-  }
-}
+import {DictionaryResponse, IDictionary, IDictionaryCtrl} from './types';
 
 const logger = getLogger('DictionaryService');
 export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> implements IDictionaryCtrl<DS, FB> {
@@ -78,18 +53,7 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> i
   private findDictionary(height: number, skipDictionaryIndex: number[] = []) {
     // remove dictionary not valid
     this._dictionaries = this._dictionaries.filter((d) => d.heightValidation(height));
-    const v2Index = this._dictionaries?.findIndex((d) => d.version === DictionaryVersion.v2Complete && d.metadataValid);
-    const v1Index = (this._currentDictionaryIndex = this._dictionaries?.findIndex(
-      (d) => d.version === DictionaryVersion.v1 && d.metadataValid
-    ));
-    // If workers are enable, we only support v1.
-    // Otherwise, prioritise v2
-    if (this.nodeConfig.workers !== undefined) {
-      this._currentDictionaryIndex = v1Index >= 0 ? v1Index : undefined;
-      logger.info('When workers currently only support v1 Dictionary, will use v1 dictionary');
-    } else {
-      this._currentDictionaryIndex = v2Index >= 0 ? v2Index : v1Index >= 0 ? v1Index : undefined;
-    }
+    this._currentDictionaryIndex = this._dictionaries.findIndex((d) => d.metadataValid);
   }
 
   useDictionary(height: number): boolean {

@@ -4,12 +4,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
-import {
-  DictionaryVersion,
-  inspectDictionaryVersion,
-  NodeConfig,
-} from '@subql/node-core';
-import { DictionaryService } from '@subql/node-core/indexer/dictionary/dictionary.service';
+import { NodeConfig, DictionaryService } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
@@ -23,7 +18,7 @@ export class SubstrateDictionaryService extends DictionaryService<
   SubstrateBlock,
   SubstrateDictionaryV1 | SubstrateDictionaryV2
 > {
-  protected async initDictionariesV1(
+  private async initDictionariesV1(
     endpoints: string[],
   ): Promise<SubstrateDictionaryV1[]> {
     if (!this.project) {
@@ -64,7 +59,7 @@ export class SubstrateDictionaryService extends DictionaryService<
     return dictionaries;
   }
 
-  protected initDictionariesV2(endpoints: string[]): SubstrateDictionaryV2[] {
+  private initDictionariesV2(endpoints: string[]): SubstrateDictionaryV2[] {
     if (!this.project) {
       throw new Error(`Project in Dictionary service not initialized `);
     }
@@ -91,20 +86,16 @@ export class SubstrateDictionaryService extends DictionaryService<
       : this.project.network.dictionary;
     if (dictionaryEndpoints) {
       for (const endpoint of dictionaryEndpoints) {
-        const version = await inspectDictionaryVersion(
+        const isV2 = await SubstrateDictionaryV2.isDictionaryV2(
           endpoint,
           this.nodeConfig.dictionaryTimeout,
         );
 
-        if (version === DictionaryVersion.v1) {
-          dictionaryV1Endpoints.push(endpoint);
-        } else if (
-          version === DictionaryVersion.v2Complete ||
-          version === DictionaryVersion.v2Basic
-        ) {
+        if (isV2) {
           dictionaryV2Endpoints.push(endpoint);
         } else {
-          // When version is undefined, indicate the dictionary is not valid, do not use it
+          // TODO validate dictionary v1 endpoint
+          dictionaryV1Endpoints.push(endpoint);
         }
       }
     }

@@ -2,55 +2,50 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SubstrateDatasource} from '@subql/types';
-import {DsProcessor, IBlock} from '@subql/types-core';
-import {DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core/dist/project/types';
-import {MetaData as DictionaryV1Metadata} from '@subql/utils';
-import {IDictionary, DictionaryV2Metadata, DictionaryV2QueryEntry, DictionaryResponse, DictionaryVersion} from '../';
+import {IBlock} from '@subql/types-core';
 import {NodeConfig} from '../../configure';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
+import {DictionaryResponse, IDictionary} from './types';
 
-export abstract class CoreDictionary<DS, FB, P extends DsProcessor<DS>> implements IDictionary<DS, FB> {
-  queriesMap?: BlockHeightMap<DictionaryV1QueryEntry[] | DictionaryV2QueryEntry>;
+export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQueryEntry */>
+  implements IDictionary<DS, FB>
+{
+  // TODO make protected, need to fix up tests
+  queriesMap?: BlockHeightMap<E>;
   protected _startHeight?: number;
-  protected _metadata: DictionaryV1Metadata | DictionaryV2Metadata | undefined;
+  protected _metadata?: M;
   metadataValid: boolean | undefined;
-  protected _dictionaryVersion: DictionaryVersion | undefined;
 
   constructor(
     readonly dictionaryEndpoint: string | undefined,
     protected chainId: string,
     protected readonly nodeConfig: NodeConfig,
-    protected readonly eventEmitter: EventEmitter2,
-    protected getDsProcessor?: (ds: DS) => P
+    protected readonly eventEmitter: EventEmitter2
   ) {}
 
   abstract getData(
     startBlock: number,
     queryEndBlock: number,
     limit: number
-  ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined>;
+  ): Promise<DictionaryResponse<IBlock | number> | undefined>;
   abstract init(): Promise<void>;
-  protected abstract dictionaryValidation(
-    metaData?: DictionaryV1Metadata | DictionaryV2Metadata,
-    startBlockHeight?: number
-  ): boolean;
-  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryV1QueryEntry[] | DictionaryV2QueryEntry;
+  protected abstract dictionaryValidation(metaData?: M, startBlockHeight?: number): boolean;
+  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): E;
   abstract queryMapValidByHeight(height: number): boolean;
   abstract getQueryEndBlock(startHeight: number, apiFinalizedHeight: number): number;
-
-  get version(): DictionaryVersion {
-    if (!this._dictionaryVersion) {
-      throw new Error(`Dictionary version not been inspected`);
-    }
-    return this._dictionaryVersion;
-  }
 
   get startHeight(): number {
     if (this._startHeight === undefined) {
       throw new Error('Dictionary start height is not set');
     }
     return this._startHeight;
+  }
+
+  protected get metadata(): M {
+    if (!this._metadata) {
+      throw new Error(`DictionaryV2 hasn't been initialized`);
+    }
+    return this._metadata;
   }
 
   protected get useDictionary(): boolean {
@@ -75,7 +70,7 @@ export abstract class CoreDictionary<DS, FB, P extends DsProcessor<DS>> implemen
   }
 
   // Base validation is required, and specific validation for each network should be implemented accordingly
-  protected validateChainMeta(metaData: DictionaryV1Metadata | DictionaryV2Metadata): boolean {
+  protected validateChainMeta(metaData: M): boolean {
     return true;
     // TODO, bring this back if v2 response return chainId
     // return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;

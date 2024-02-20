@@ -9,12 +9,6 @@ export type DictionaryResponse<B = number> = {
   lastBufferedHeight: number;
 };
 
-export enum DictionaryVersion {
-  v1 = 'v1',
-  v2Basic = 'v2Basic',
-  v2Complete = 'v2Complete',
-}
-
 export interface IDictionary<DS, FB> {
   metadataValid: boolean | undefined;
   getData(
@@ -25,7 +19,6 @@ export interface IDictionary<DS, FB> {
   init(): Promise<void>;
   queryMapValidByHeight(height: number): boolean;
   getQueryEndBlock(startHeight: number, apiFinalizedHeight: number): number;
-  version: DictionaryVersion;
   startHeight: number;
   heightValidation(height: number): boolean;
   updateQueriesMap(dataSources: BlockHeightMap<DS[]>): void;

@@ -8,7 +8,6 @@ import {DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
 import {NodeConfig} from '../../../configure';
 import {BlockHeightMap} from '../../../utils/blockHeightMap';
-import {DictionaryVersion} from '../types';
 import {DictionaryV1} from './dictionaryV1';
 import {getGqlType} from './utils';
 
@@ -138,7 +137,7 @@ describe('GraphqlTypes', () => {
 
 // export use in dictionary service test
 // eslint-disable-next-line jest/no-export
-export class testDictionaryV1 extends DictionaryV1<any, any> {
+export class testDictionaryV1 extends DictionaryV1<any> {
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryQueryEntry[] {
     return HAPPY_PATH_CONDITIONS;
   }
@@ -172,10 +171,6 @@ describe('Dictionary V1', () => {
   });
 
   describe('coreDictionary', () => {
-    it('get version of this dictionary', () => {
-      expect(dictionary.version).toEqual(DictionaryVersion.v1);
-    });
-
     it('set startHeight of this dictionary', () => {
       // After metadata init, it should set startHeight of this dictionary
       expect(dictionary.startHeight).toEqual(1);

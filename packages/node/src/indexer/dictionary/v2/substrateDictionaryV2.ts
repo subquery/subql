@@ -41,7 +41,6 @@ export function buildDictionaryV2QueryEntry(
 export class SubstrateDictionaryV2 extends DictionaryV2<
   SubstrateBlock,
   SubstrateDatasource,
-  undefined,
   SubstrateDictionaryV2QueryEntry
 > {
   protected buildDictionaryQueryEntries(

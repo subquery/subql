@@ -186,7 +186,7 @@ export interface DictionaryQueryEntry {
   conditions: DictionaryQueryCondition[];
 }
 
-export interface IBlock<B> {
+export interface IBlock<B = any> {
   getHeader(): {
     hash: string;
     height: number;

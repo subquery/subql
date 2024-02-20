@@ -15,10 +15,9 @@ import {range} from 'lodash';
 import {
   BlockDispatcher,
   delay,
-  DictionaryV1,
-  DictionaryV2,
   DynamicDsService,
   IBlockDispatcher,
+  IDictionary,
   IProjectService,
   mergeNumAndBlocks,
   NodeConfig,
@@ -30,12 +29,7 @@ import {BaseFetchService} from './fetch.service';
 const CHAIN_INTERVAL = 100; // 100ms
 const genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-class TestFetchService extends BaseFetchService<
-  BaseDataSource,
-  IBlockDispatcher<any>,
-  DictionaryV1<any, any> | DictionaryV2<any, any, any>,
-  any
-> {
+class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher<any>, IDictionary<any, any>, any> {
   finalizedHeight = 1000;
   bestHeight = 20;
   modulos: number[] = [];
@@ -149,7 +143,7 @@ const getBlockDispatcher = () => {
 describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher<any>;
-  let dictionaryService: DictionaryService<any, any, DictionaryV1<any, any> | DictionaryV2<any, any, any>>;
+  let dictionaryService: DictionaryService<any, any, IDictionary<any, any>>;
   let networkConfig: IProjectNetworkConfig;
 
   beforeEach(() => {

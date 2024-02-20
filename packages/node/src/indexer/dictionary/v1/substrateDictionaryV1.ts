@@ -21,8 +21,8 @@ import {
   DictionaryQueryEntry as DictionaryV1QueryEntry,
   DsProcessor,
 } from '@subql/types-core';
-import { buildQuery, GqlNode, GqlQuery, MetaData } from '@subql/utils';
-import { groupBy, partition, sortBy, uniqBy } from 'lodash';
+import { buildQuery, GqlNode, GqlQuery } from '@subql/utils';
+import { sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../../../utils/project';
 import { SpecVersion, SpecVersionDictionary } from '../types';
@@ -184,12 +184,7 @@ export function buildDictionaryV1QueryEntries<
 
 const logger = getLogger('substrate-dictionary-V1');
 
-export class SubstrateDictionaryV1 extends DictionaryV1<
-  SubstrateDsInterface,
-  DsProcessor<SubstrateDatasource>
-> {
-  private project: SubqueryProject | undefined;
-
+export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDsInterface> {
   constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
@@ -206,7 +201,6 @@ export class SubstrateDictionaryV1 extends DictionaryV1<
       nodeConfig,
       eventEmitter,
     );
-    this.project = project;
   }
 
   buildDictionaryQueryEntries(

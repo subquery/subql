@@ -4,25 +4,26 @@
 import {ApolloClient, ApolloLink, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {dictHttpLink} from '@subql/apollo-links';
-import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry, DsProcessor} from '@subql/types-core';
+import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData as DictionaryV1Metadata} from '@subql/utils';
 import fetch from 'cross-fetch';
-import {buildDictQueryFragment, DictionaryVersion, distinctErrorEscaped, startHeightEscaped} from '..';
 import {NodeConfig} from '../../../configure';
 import {IndexerEvent} from '../../../events';
 import {getLogger} from '../../../logger';
 import {profiler} from '../../../profiler';
 import {timeout} from '../../../utils';
-import {BlockHeightMap} from '../../../utils/blockHeightMap';
 import {CoreDictionary} from '../coreDictionary';
-
 import {DictionaryResponse} from '../types';
+import {buildDictQueryFragment, distinctErrorEscaped, startHeightEscaped} from './utils';
 
 const logger = getLogger('dictionary v1');
 
-export abstract class DictionaryV1<DS, P extends DsProcessor<DS>> extends CoreDictionary<DS, undefined, P> {
-  queriesMap?: BlockHeightMap<DictionaryV1QueryEntry[]>;
-  protected _metadata: DictionaryV1Metadata | undefined;
+export abstract class DictionaryV1<DS> extends CoreDictionary<
+  DS,
+  undefined,
+  DictionaryV1Metadata,
+  DictionaryV1QueryEntry[]
+> {
   private _client: ApolloClient<NormalizedCacheObject>;
   private useDistinct = true;
   private useStartHeight = true;
@@ -63,10 +64,9 @@ export abstract class DictionaryV1<DS, P extends DsProcessor<DS>> extends CoreDi
         },
       },
     });
-    this._dictionaryVersion = DictionaryVersion.v1;
   }
 
-  abstract buildDictionaryQueryEntries(dataSources: DS[], getDsProcessor?: (ds: DS) => P): DictionaryV1QueryEntry[];
+  abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryV1QueryEntry[];
 
   async init(): Promise<void> {
     const {query} = this.metadataQuery();
@@ -92,13 +92,6 @@ export abstract class DictionaryV1<DS, P extends DsProcessor<DS>> extends CoreDi
       logger.error(err, `Failed to get dictionary metadata`);
       return;
     }
-  }
-
-  private get metadata(): DictionaryV1Metadata {
-    if (!this._metadata) {
-      throw new Error(`dictionary _metadata haven't init yet`);
-    }
-    return this._metadata;
   }
 
   getQueryEndBlock(startBlockHeight: number, apiFinalizedHeight: number): number {

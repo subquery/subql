@@ -2,17 +2,24 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {DsProcessor, IBlock} from '@subql/types-core';
+import {IBlock} from '@subql/types-core';
 import axios, {AxiosInstance} from 'axios';
-import {DictionaryResponse, DictionaryVersion} from '..';
 import {NodeConfig} from '../../../configure';
-import {BlockHeightMap} from '../../../utils/blockHeightMap';
+import {timeout} from '../../../utils';
 import {CoreDictionary} from '../coreDictionary';
+import {DictionaryResponse} from '../types';
 import {DictionaryV2Metadata, DictionaryV2QueryEntry} from './types';
 
 const FAT_META_QUERY_METHOD = `subql_filterBlocksCapabilities`;
 
-export async function subqlFilterBlocksCapabilities(
+type DictionaryV2Capabilities = {
+  genesisHash: string;
+  availableBlocks: {startHeight: number; endHeight: number}[];
+  supportedResponses: ('basic' | 'complete')[];
+  filters: any[]; // TODO
+};
+
+async function subqlFilterBlocksCapabilities(
   endpoint: string,
   axiosInstance?: AxiosInstance
 ): Promise<DictionaryV2Metadata> {
@@ -28,18 +35,37 @@ export async function subqlFilterBlocksCapabilities(
     id: 1,
   };
   try {
-    const response = await axiosInstance.post(endpoint, requestData, {
+    const response = await axiosInstance.post<{
+      result?: DictionaryV2Capabilities;
+      error?: {code: number; message: string};
+    }>(endpoint, requestData, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
+
+    if (response.status >= 400) {
+      // TODO provide better error
+      throw new Error('Invalid response');
+    }
+
+    if (response.data.error) {
+      throw new Error(response.data.error.message);
+    }
+
+    const {result} = response.data;
+
+    if (!result) {
+      throw new Error('Malformed response');
+    }
+
     const metadata: DictionaryV2Metadata = {
       chain: '1', //TODO, need chain for v2 meta
-      start: response.data.result.availableBlocks[0].startHeight,
-      end: response.data.result.availableBlocks[0].endHeight,
-      genesisHash: response.data.result.genesisHash,
-      filters: response.data.result.filters,
-      supported: response.data.result.supportedResponses,
+      start: result.availableBlocks[0].startHeight,
+      end: result.availableBlocks[0].endHeight,
+      genesisHash: result.genesisHash,
+      filters: result.filters,
+      supported: result.supportedResponses,
     };
     return metadata;
   } catch (error) {
@@ -51,11 +77,8 @@ export async function subqlFilterBlocksCapabilities(
 export abstract class DictionaryV2<
   FB,
   DS,
-  P extends DsProcessor<DS>,
   QE extends DictionaryV2QueryEntry = DictionaryV2QueryEntry
-> extends CoreDictionary<DS, FB, P> {
-  queriesMap?: BlockHeightMap<QE>;
-  protected _metadata: DictionaryV2Metadata | undefined;
+> extends CoreDictionary<DS, FB, DictionaryV2Metadata, QE> {
   protected dictionaryApi: AxiosInstance;
 
   constructor(
@@ -68,24 +91,25 @@ export abstract class DictionaryV2<
     this.dictionaryApi = axios.create({
       baseURL: dictionaryEndpoint,
     });
-    this._dictionaryVersion = DictionaryVersion.v2Complete;
   }
 
-  protected abstract buildDictionaryQueryEntries(
-    dataSources: DS[],
-    getDsProcessor?: (ds: DS) => P
-  ): DictionaryV2QueryEntry;
+  static async isDictionaryV2(endpoint: string, timeoutSec = 1): Promise<boolean> {
+    let resp: DictionaryV2Metadata;
+    const timeoutMsg = 'Inspect dictionary version timeout';
+    try {
+      resp = await timeout(subqlFilterBlocksCapabilities(endpoint), timeoutSec, timeoutMsg);
+      return resp.supported.includes('complete') || resp.supported.includes('basic');
+    } catch (e: any) {
+      // TODO does it make sense to log here?
+      return false;
+    }
+  }
+
+  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): QE;
 
   async init(): Promise<void> {
     this._metadata = await subqlFilterBlocksCapabilities(this.dictionaryEndpoint);
     this.setDictionaryStartHeight(this._metadata.start);
-  }
-
-  protected get metadata(): DictionaryV2Metadata {
-    if (!this._metadata) {
-      throw new Error(`DictionaryV2 hasn't been initialized`);
-    }
-    return this._metadata;
   }
 
   getQueryEndBlock(startBlockHeight: number, apiFinalizedHeight: number): number {
