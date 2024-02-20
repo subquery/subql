@@ -126,6 +126,12 @@ export abstract class BaseFetchService<
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
+    if (startHeight > this.latestHeight()) {
+      throw new Error(
+        `The startBlock of dataSources in your project manifest (${startHeight}) is higher than the current chain height (${this.latestHeight()}). Please adjust your startBlock to be less that the current chain height.`
+      );
+    }
+
     this.schedulerRegistry.addInterval(
       'getFinalizedBlockHead',
       setInterval(() => void this.getFinalizedBlockHead(), interval)
@@ -227,6 +233,10 @@ export abstract class BaseFetchService<
     ).slice(0, this.nodeConfig.batchSize);
   }
 
+  private latestHeight(): number {
+    return this.nodeConfig.unfinalizedBlocks ? this.latestBestHeight : this.latestFinalizedHeight;
+  }
+
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
@@ -255,7 +265,7 @@ export abstract class BaseFetchService<
         continue;
       }
 
-      const latestHeight = this.nodeConfig.unfinalizedBlocks ? this.latestBestHeight : this.latestFinalizedHeight;
+      const latestHeight = this.latestHeight();
 
       if (this.blockDispatcher.freeSize < scaledBatchSize || startBlockHeight > latestHeight) {
         await delay(1);
