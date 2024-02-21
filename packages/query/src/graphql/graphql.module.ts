@@ -122,7 +122,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       subscriptions: true,
       dynamicJson: true,
       graphileBuildOptions: {
-        connectionFilterRelations: true,
+        connectionFilterRelations: false, // We use our own forked version with historical support
+
         // cockroach db does not support pgPartition
         pgUsePartitionedParent: this.dbType !== SUPPORT_DB.cockRoach,
       },
