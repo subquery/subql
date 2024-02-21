@@ -4,7 +4,7 @@
 import axios from 'axios';
 import {errorHandle} from '../utils';
 
-interface createProjectType {
+interface CreateProjectResponse {
   key: string;
 }
 export const suffixFormat = (value: string) => {
@@ -24,29 +24,27 @@ export async function createProject(
   apiVersion: string,
   dedicateDB: string | undefined,
   url: string
-): Promise<createProjectType> {
+): Promise<CreateProjectResponse> {
   try {
-    const result = (
-      await axios({
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-        method: 'post',
-        url: 'subqueries',
-        baseURL: url,
-        data: {
-          apiVersion: `v${apiVersion}`,
-          description: description,
-          gitRepository: gitRepository,
-          key: `${organization}/${suffixFormat(project_name)}`,
-          logoUrl: logoUrl,
-          name: project_name,
-          subtitle: subtitle,
-          dedicateDBKey: dedicateDB,
-        },
-      })
-    ).data;
-    return result;
+    const res = await axios<CreateProjectResponse>({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      method: 'post',
+      url: 'subqueries',
+      baseURL: url,
+      data: {
+        apiVersion: `v${apiVersion}`,
+        description: description,
+        gitRepository: gitRepository,
+        key: `${organization}/${suffixFormat(project_name)}`,
+        logoUrl: logoUrl,
+        name: project_name,
+        subtitle: subtitle,
+        dedicateDBKey: dedicateDB,
+      },
+    });
+    return res.data as unknown as CreateProjectResponse;
   } catch (e) {
     errorHandle(e, 'Failed to create project:');
   }

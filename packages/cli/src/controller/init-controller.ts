@@ -8,7 +8,7 @@ import {promisify} from 'util';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
-import axios from 'axios';
+import {Axios} from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
 import git from 'simple-git';
@@ -55,17 +55,16 @@ export interface Template {
     examples: ExampleProjectInterface[];
   }[];
 }
+
+const axios = new Axios({baseURL: BASE_TEMPLATE_URl});
+
 // GET /all
 // https://templates.subquery.network/all
 export async function fetchTemplates(): Promise<Template[]> {
   try {
-    return (
-      await axios({
-        method: 'get',
-        url: '/all', // /networks
-        baseURL: BASE_TEMPLATE_URl,
-      })
-    ).data?.templates as Template[];
+    const res = await axios.get<{templates: Template[]}>('/all');
+
+    return res.data.templates;
   } catch (e) {
     errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/all`);
   }
@@ -75,13 +74,8 @@ export async function fetchTemplates(): Promise<Template[]> {
 // https://templates.subquery.network/networks
 export async function fetchNetworks(): Promise<Template[]> {
   try {
-    return (
-      await axios({
-        method: 'get',
-        url: '/networks',
-        baseURL: BASE_TEMPLATE_URl,
-      })
-    ).data.results as Template[];
+    const res = await axios.get<{results: Template[]}>('/networks');
+    return res.data.results;
   } catch (e) {
     errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/networks`);
   }
@@ -93,13 +87,12 @@ export async function fetchExampleProjects(
   networkCode: string
 ): Promise<ExampleProjectInterface[]> {
   try {
-    return (
-      await axios({
-        method: 'get',
-        url: `/networks/${familyCode}/${networkCode}`,
-        baseURL: BASE_TEMPLATE_URl,
-      })
-    ).data.results as ExampleProjectInterface[];
+    const res = await axios.get<{results: ExampleProjectInterface[]}>(`/networks/${familyCode}/${networkCode}`, {
+      headers: {'Content-Type': 'application/json'},
+    });
+
+    // Not sure why but res.data is a string sometimes - stwiname
+    return (typeof res.data === 'string' ? JSON.parse(res.data) : res.data).results;
   } catch (e) {
     errorHandle(e, `Update to reach endpoint ${familyCode}/${networkCode}`);
   }
