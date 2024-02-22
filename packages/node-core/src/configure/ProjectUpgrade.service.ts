@@ -108,6 +108,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   #currentProject: P;
 
   #storeCache?: StoreCacheService;
+  #storeService?: StoreService;
+  #schema?: string;
   #initialized = false;
 
   private config?: NodeConfig;
@@ -129,6 +131,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     this.#currentHeight = currentHeight;
     this.#currentProject = this.getProject(this.#currentHeight);
   }
+
   async init(
     storeService: StoreService,
     currentHeight: number,
@@ -143,6 +146,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
     this.#initialized = true;
     this.#storeCache = storeService.storeCache;
+    this.#storeService = storeService;
+    this.#schema = schema;
     this.config = config;
 
     this.migrationService = new SchemaMigrationService(
@@ -232,6 +237,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
         const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, transaction);
         if (modifiedModels) {
           this.#storeCache?.updateModels(modifiedModels);
+          assert(this.#schema, 'Schema is undefined');
+          await this.#storeService?.updateModels(this.#schema, getAllEntitiesRelations(newProject.schema));
         }
       }
     }
