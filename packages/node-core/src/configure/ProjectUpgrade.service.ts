@@ -297,6 +297,9 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     let nextProject = startProject;
 
     const addProject = (height: number, project: P) => {
+      if (projects.has(height)) {
+        throw new Error(`Project already exists at height ${height}`);
+      }
       this.validateProject(startProject, project);
       projects.set(height, project);
     };

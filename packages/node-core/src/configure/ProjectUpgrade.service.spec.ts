@@ -163,6 +163,34 @@ describe('Project Upgrades', () => {
       expect([...upgradeService.projects.keys()]).toEqual([20, 30, 40, 50]);
     });
 
+    // It would be a user error to do this but its still possible. In reality the last project should have no parent
+    it('can use the correct project when the parent upgrades at the start height', async () => {
+      const projects = [
+        {
+          id: '0',
+          network: {
+            chainId: '1',
+          },
+          dataSources: [{startBlock: 10}],
+        },
+        {
+          id: '1',
+          parent: {
+            block: 10,
+            reference: '0',
+          },
+          network: {
+            chainId: '1',
+          },
+          dataSources: [{startBlock: 10}],
+        },
+      ] as ISubqueryProject[];
+
+      await expect(() =>
+        ProjectUpgradeService.create(projects[1], (id) => Promise.resolve(projects[parseInt(id, 10)]))
+      ).rejects.toThrow('Project already exists at height 10');
+    });
+
     it('can load all parent projects upto and including startHeight', async () => {
       const upgradeService = await ProjectUpgradeService.create(
         demoProjects[5],
