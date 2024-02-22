@@ -265,10 +265,6 @@ export abstract class BaseProjectService<
     return this.storeService.storeCache.metadata.find('lastProcessedHeight');
   }
 
-  private async getStartHeight(): Promise<number> {
-    return (await this.nextProcessHeight()) ?? this.getStartBlockFromDataSources();
-  }
-
   private async nextProcessHeight(): Promise<number | undefined> {
     const lastProcessedHeight = await this.getLastProcessedHeight();
 
