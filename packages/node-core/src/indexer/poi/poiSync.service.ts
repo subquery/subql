@@ -200,10 +200,10 @@ export class PoiSyncService implements OnApplicationShutdown {
   private validateSyncedPoi(poi: ProofOfIndex, assertLocation: string) {
     if (!poi.parentHash || !poi.hash) {
       let errMsg = `[${assertLocation}] Found synced poi at height ${poi.id} is not valid, please check DB. `;
-      if (!(poi as any).parentHash) {
+      if (!poi.parentHash) {
         errMsg = errMsg.concat(`\n Poi ${poi.id} parent hash is not defined.`);
       }
-      if (!(poi as any).hash) {
+      if (!poi.hash) {
         errMsg = errMsg.concat(`\n Poi ${poi.id} hash is not defined.`);
       }
       throw new Error(errMsg);
