@@ -111,17 +111,11 @@ export abstract class BaseProjectService<
       await this.dynamicDsService.init(this.storeService.storeCache.metadata);
       await this.ensureMetadata();
 
-      // Get current height
-      // Set project based on current height (upgrades service)
-      // if current height not set it should use the oldest parent
-      // Init DB - This will use the schema of the current project if not already init
-      // Rewind unfinalized blocks
-      // if rewind set current project
-      // Project upgrade service find common ancestor
-      // Rewind if necessary
-      // Update start height based on current height and rewinds
-
-      /* START NEW*/
+      /**
+       * WARNING: The order of the following steps is very important.
+       *  * The right project needs to be used based on the start height which can change depending on rewinds
+       *  * The DB needs to be init for unfinalized and project upgrades to run any rewinds
+       * */
 
       this._startHeight = await this.nextProcessHeight();
 
@@ -156,33 +150,6 @@ export abstract class BaseProjectService<
       if (reindexedUpgrade !== undefined) {
         this._startHeight = reindexedUpgrade;
       }
-
-      /* END NEW */
-
-      // this._startHeight = await this.getStartHeight();
-
-      // // TODO set current project with current start height
-
-      // // These need to be init before upgrade and unfinalized services because they may cause rewinds.
-      // await this.initDbSchema();
-      // await this.initHotSchemaReload();
-
-      // if (this.nodeConfig.proofOfIndex) {
-      //   // Prepare for poi migration and creation
-      //   await this.poiService.init(this.schema);
-      //   // Sync poi from createdPoi to syncedPoi
-      //   await this.poiSyncService.init(this.schema);
-      //   void this.poiSyncService.syncPoi(undefined);
-      // }
-
-      // // Init upgrade service and run any rewinds if project ancestry changed
-      // const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
-
-      // // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
-      // const reindexedUnfinalized = await this.initUnfinalizedInternal();
-
-      // // Find the new start height based on some rewinding
-      // this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
