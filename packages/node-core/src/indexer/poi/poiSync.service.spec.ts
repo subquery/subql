@@ -318,4 +318,32 @@ describe('Poi Service sync', () => {
     // Should be empty
     expect((poiSyncService as any).syncedPoiQueue.size).toBe(0);
   }, 500000);
+
+  it('found SyncedProofOfIndex is not complete will throw', async () => {
+    // await createGenesisPoi(poiSyncService);
+    // mock poi repo
+    const genesisPoi = {
+      id: 100,
+      chainBlockHash: new Uint8Array(),
+      hash: new Uint8Array(),
+      parentHash: null,
+      operationHashRoot: new Uint8Array(),
+    };
+    (poiSyncService as any)._poiRepo = {
+      getPoiById: (id = 100) => {
+        return genesisPoi;
+      },
+      getFirst: () => {
+        return genesisPoi;
+      },
+      bulkUpsert: jest.fn(),
+      getPoiBlocksByRange: jest.fn(),
+    };
+    (poiSyncService as any)._projectId = 'test';
+    (poiSyncService as any).updateMetadataSyncedPoi = jest.fn(); // Mock upsert metadata
+    (poiSyncService as any).getMetadataLatestSyncedPoi = jest.fn(() => 100);
+    await (poiSyncService as any).ensureGenesisPoi();
+    await expect((poiSyncService as any).syncLatestSyncedPoiFromDb()).rejects.toThrow();
+    poiSyncService.poiRepo.bulkUpsert = jest.fn();
+  }, 500000);
 });
