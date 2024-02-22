@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed non-atomic schema migration execution (#2244)
 - Testing Suites should run with unfinalizedBlocks `false` (#2258)
+- StoreService not being fully in sync with db (#2264)
 
 ### Changed
 - Improve error handling when fetching blocks (#2256)
