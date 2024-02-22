@@ -14369,9 +14369,9 @@ __metadata:
   linkType: hard
 
 "ip@npm:^1.1.5":
-  version: 1.1.6
-  resolution: "ip@npm:1.1.6"
-  checksum: 3e5f72b447fd292801491f03091ef1221fbc37de527d3bf306b297e3e58530e7ad80ae92a2f716d8a25fbb6e16afe05cbcb7cef671107ddb37ac7a1693158c6b
+  version: 1.1.9
+  resolution: "ip@npm:1.1.9"
+  checksum: b6d91fd45a856e3bd6d4f601ea0619d90f3517638f6918ebd079f959a8a6308568d8db5ef4fdf037e0d9cfdcf264f46833dfeea81ca31309cf0a7eb4b1307b84
   languageName: node
   linkType: hard
 
