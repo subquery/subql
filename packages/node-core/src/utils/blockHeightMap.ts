@@ -73,6 +73,7 @@ export class BlockHeightMap<T> {
       };
     });
   }
+
   getWithinRange(startHeight: number, endHeight: number): Map<number, T> {
     const result = new Map<number, T>();
     let previousKey = null;
@@ -94,6 +95,7 @@ export class BlockHeightMap<T> {
 
     return result;
   }
+
   map<T2>(fn: (value: T) => T2): BlockHeightMap<T2> {
     const newMap = new Map<number, T2>();
 

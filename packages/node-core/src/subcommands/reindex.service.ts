@@ -5,7 +5,7 @@ import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
-import {NodeConfig, ProjectUpgradeSevice} from '../configure';
+import {NodeConfig, ProjectUpgradeService} from '../configure';
 import {CacheMetadataModel, IUnfinalizedBlocksService, StoreService, ISubqueryProject, PoiService} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
@@ -23,7 +23,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly poiService: PoiService,
-    @Inject('IProjectUpgradeService') private readonly projectUpgradeService: ProjectUpgradeSevice,
+    @Inject('IProjectUpgradeService') private readonly projectUpgradeService: ProjectUpgradeService,
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,

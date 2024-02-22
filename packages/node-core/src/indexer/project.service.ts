@@ -110,9 +110,29 @@ export abstract class BaseProjectService<
       await this.storeService.initCoreTables(this._schema);
       await this.dynamicDsService.init(this.storeService.storeCache.metadata);
       await this.ensureMetadata();
-      this._startHeight = await this.getStartHeight();
 
-      // Set the start height so the right project is used
+      // Get current height
+      // Set project based on current height (upgrades service)
+      // if current height not set it should use the oldest parent
+      // Init DB - This will use the schema of the current project if not already init
+      // Rewind unfinalized blocks
+      // if rewind set current project
+      // Project upgrade service find common ancestor
+      // Rewind if necessary
+      // Update start height based on current height and rewinds
+
+      /* START NEW*/
+
+      this._startHeight = await this.nextProcessHeight();
+
+      // Nothing is indexed, set the first project is the right project and continue setup
+      if (this._startHeight === undefined) {
+        const firstHeight = Math.min(...this.projectUpgradeService.projects.keys());
+        await this.projectUpgradeService.setCurrentHeight(firstHeight);
+        this._startHeight = firstHeight;
+      }
+
+      // These need to be init before upgrade and unfinalized services because they may cause rewinds.
       await this.initDbSchema();
       await this.initHotSchemaReload();
 
@@ -123,13 +143,46 @@ export abstract class BaseProjectService<
         await this.poiSyncService.init(this.schema);
         void this.poiSyncService.syncPoi(undefined);
       }
-      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
 
       // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
       const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
-      // Find the new start height based on some rewinding
-      this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
+      if (reindexedUnfinalized !== undefined) {
+        this._startHeight = reindexedUnfinalized;
+      }
+
+      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
+
+      if (reindexedUpgrade !== undefined) {
+        this._startHeight = reindexedUpgrade;
+      }
+
+      /* END NEW */
+
+      // this._startHeight = await this.getStartHeight();
+
+      // // TODO set current project with current start height
+
+      // // These need to be init before upgrade and unfinalized services because they may cause rewinds.
+      // await this.initDbSchema();
+      // await this.initHotSchemaReload();
+
+      // if (this.nodeConfig.proofOfIndex) {
+      //   // Prepare for poi migration and creation
+      //   await this.poiService.init(this.schema);
+      //   // Sync poi from createdPoi to syncedPoi
+      //   await this.poiSyncService.init(this.schema);
+      //   void this.poiSyncService.syncPoi(undefined);
+      // }
+
+      // // Init upgrade service and run any rewinds if project ancestry changed
+      // const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
+
+      // // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
+      // const reindexedUnfinalized = await this.initUnfinalizedInternal();
+
+      // // Find the new start height based on some rewinding
+      // this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
@@ -172,6 +225,7 @@ export abstract class BaseProjectService<
   }
 
   private async initDbSchema(): Promise<void> {
+    console.log('INIT DB', this.project.id);
     await initDbSchema(this.project, this.schema, this.storeService);
   }
 
@@ -245,15 +299,16 @@ export abstract class BaseProjectService<
   }
 
   private async getStartHeight(): Promise<number> {
-    let startHeight: number;
+    return (await this.nextProcessHeight()) ?? this.getStartBlockFromDataSources();
+  }
+
+  private async nextProcessHeight(): Promise<number | undefined> {
     const lastProcessedHeight = await this.getLastProcessedHeight();
 
     if (hasValue(lastProcessedHeight)) {
-      startHeight = Number(lastProcessedHeight) + 1;
-    } else {
-      startHeight = this.getStartBlockFromDataSources();
+      return Number(lastProcessedHeight) + 1;
     }
-    return startHeight;
+    return undefined;
   }
 
   getStartBlockFromDataSources(): number {
