@@ -112,7 +112,9 @@ export abstract class BaseProjectService<
       await this.ensureMetadata();
       this._startHeight = await this.getStartHeight();
 
-      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
+      // Set the start height so the right project is used
+      await this.initDbSchema();
+      await this.initHotSchemaReload();
 
       if (this.nodeConfig.proofOfIndex) {
         // Prepare for poi migration and creation
@@ -121,17 +123,13 @@ export abstract class BaseProjectService<
         await this.poiSyncService.init(this.schema);
         void this.poiSyncService.syncPoi(undefined);
       }
+      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
 
       // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
       const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
       // Find the new start height based on some rewinding
       this._startHeight = Math.min(...[this._startHeight, reindexedUpgrade, reindexedUnfinalized].filter(hasValue));
-
-      // Set the start height so the right project is used
-      await this.initDbSchema();
-
-      await this.initHotSchemaReload();
 
       // Flush any pending operations to set up DB
       await this.storeService.storeCache.flushCache(true, true);
@@ -365,6 +363,10 @@ export abstract class BaseProjectService<
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
+  /**
+   * If the source project has changed this will align the ancestry of project upgrades. This can result in data being reindexed
+   * @returns {number | undefined} - The height to continue indexing from
+   * */
   private async initUpgradeService(startHeight: number): Promise<number | undefined> {
     const upgradePoint = await this.projectUpgradeService.init(
       this.storeService,
@@ -401,7 +403,7 @@ export abstract class BaseProjectService<
           }
           logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
           await this.reindex(upgradePoint);
-          return upgradePoint;
+          return upgradePoint + 1;
         }
       }
     }
