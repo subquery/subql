@@ -13,16 +13,7 @@ import {
   hexToU8a,
   GraphQLModelsType,
 } from '@subql/utils';
-import {
-  IndexesOptions,
-  ModelAttributes,
-  ModelStatic,
-  Op,
-  QueryTypes,
-  Sequelize,
-  Transaction,
-  Utils,
-} from '@subql/x-sequelize';
+import {IndexesOptions, ModelAttributes, ModelStatic, Op, QueryTypes, Sequelize, Transaction} from '@subql/x-sequelize';
 import {camelCase, flatten, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {
@@ -43,8 +34,6 @@ import {ISubqueryProject} from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
-
-type RemovedIndexes = Record<string, IndexesOptions[]>;
 
 interface IndexField {
   entityName: string;
@@ -165,12 +154,7 @@ export class StoreService {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }
-    try {
-      this._modelIndexedFields = await this.getAllIndexFields(schema);
-    } catch (e: any) {
-      logger.error(e, `Having a problem when get indexed fields`);
-      process.exit(1);
-    }
+    await this.updateModels(schema, modelsRelations);
   }
 
   async initHotSchemaReloadQueries(schema: string): Promise<void> {
@@ -219,6 +203,16 @@ export class StoreService {
       this.config
     );
     await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
+  }
+
+  async updateModels(schema: string, modelsRelations: GraphQLModelsRelationsEnums): Promise<void> {
+    this._modelsRelations = modelsRelations;
+    try {
+      this._modelIndexedFields = await this.getAllIndexFields(schema);
+    } catch (e: any) {
+      logger.error(e, `Having a problem when get indexed fields`);
+      process.exit(1);
+    }
   }
 
   defineModel(
