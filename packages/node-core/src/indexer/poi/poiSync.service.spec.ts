@@ -205,7 +205,7 @@ describe('Poi Service sync', () => {
     await poiSyncService.syncPoi(102);
     expect(spyOnPoiCreation).toHaveBeenCalled();
     expect(spyOnCreateDefaultBlock).not.toHaveBeenCalled();
-  }, 50000);
+  });
 
   it('sync poi block in discontinuous range,should get default block created', async () => {
     await createGenesisPoi(poiSyncService);
@@ -242,7 +242,7 @@ describe('Poi Service sync', () => {
     expect(spyOnCreateDefaultBlock).toHaveBeenCalledTimes(1);
     // Set block 101,102,103,104,105
     expect(spyOnSetLatestSyncedPoi).toHaveBeenCalledTimes(5);
-  }, 50000);
+  });
 
   it('if sync poi block out of order, it will throw', async () => {
     await createGenesisPoi(poiSyncService);
@@ -273,7 +273,7 @@ describe('Poi Service sync', () => {
         },
       ])
     ).rejects.toThrow(/Sync poi block out of order, latest synced poi height/);
-  }, 50000);
+  });
 
   it('could stop sync and clear', async () => {
     await createGenesisPoi(poiSyncService);
@@ -317,5 +317,33 @@ describe('Poi Service sync', () => {
     expect((poiSyncService as any)._latestSyncedPoi).toBeUndefined();
     // Should be empty
     expect((poiSyncService as any).syncedPoiQueue.size).toBe(0);
-  }, 500000);
+  });
+
+  it('found SyncedProofOfIndex is not complete will throw', async () => {
+    // await createGenesisPoi(poiSyncService);
+    // mock poi repo
+    const genesisPoi = {
+      id: 100,
+      chainBlockHash: new Uint8Array(),
+      hash: new Uint8Array(),
+      parentHash: null,
+      operationHashRoot: new Uint8Array(),
+    };
+    (poiSyncService as any)._poiRepo = {
+      getPoiById: (id = 100) => {
+        return genesisPoi;
+      },
+      getFirst: () => {
+        return genesisPoi;
+      },
+      bulkUpsert: jest.fn(),
+      getPoiBlocksByRange: jest.fn(),
+    };
+    (poiSyncService as any)._projectId = 'test';
+    (poiSyncService as any).updateMetadataSyncedPoi = jest.fn(); // Mock upsert metadata
+    (poiSyncService as any).getMetadataLatestSyncedPoi = jest.fn(() => 100);
+    await (poiSyncService as any).ensureGenesisPoi();
+    await expect((poiSyncService as any).syncLatestSyncedPoiFromDb()).rejects.toThrow();
+    poiSyncService.poiRepo.bulkUpsert = jest.fn();
+  });
 });
