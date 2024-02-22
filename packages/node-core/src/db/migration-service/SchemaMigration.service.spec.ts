@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {buildSchemaFromFile, GraphQLEnumsType} from '@subql/utils';
-import {ProjectUpgradeSevice} from '../../configure';
+import {ProjectUpgradeService} from '../../configure';
 import {compareEnums} from './migration-helpers';
 import {SchemaMigrationService} from './SchemaMigration.service';
 
@@ -54,7 +54,7 @@ describe('SchemaMigration', () => {
         [3, {schema: currentSchema}],
       ]);
 
-      const v = (ProjectUpgradeSevice as any).rewindableCheck(projects);
+      const v = (ProjectUpgradeService as any).rewindableCheck(projects);
       expect(v).toBe(false);
     });
   });

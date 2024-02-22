@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {sqlIterator} from '../../db';
@@ -10,7 +9,6 @@ import {getLogger} from '../../logger';
 import {PoiRepo} from '../entities';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
-import {ISubqueryProject} from '../types';
 
 const logger = getLogger('PoiService');
 
@@ -24,12 +22,7 @@ export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
   private _poiRepo?: CachePoiModel;
 
-  constructor(
-    protected readonly nodeConfig: NodeConfig,
-    private storeCache: StoreCacheService,
-    private eventEmitter: EventEmitter2,
-    @Inject('ISubqueryProject') private project: ISubqueryProject
-  ) {}
+  constructor(protected readonly nodeConfig: NodeConfig, private storeCache: StoreCacheService) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;

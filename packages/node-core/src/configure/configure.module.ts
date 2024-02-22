@@ -8,7 +8,7 @@ import {ISubqueryProject} from '../indexer';
 import {getLogger, setDebugFilter} from '../logger';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
 import {IConfig, NodeConfig} from './NodeConfig';
-import {IProjectUpgradeService, ProjectUpgradeSevice, upgradableSubqueryProject} from './ProjectUpgrade.service';
+import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
 const logger = getLogger('configure');
 
@@ -167,7 +167,7 @@ export async function registerApp<P extends ISubqueryProject>(
     );
   };
 
-  const projectUpgradeService = await ProjectUpgradeSevice.create(project, createParentProject);
+  const projectUpgradeService = await ProjectUpgradeService.create(project, createParentProject);
 
   const upgradeableProject = upgradableSubqueryProject(projectUpgradeService);
 

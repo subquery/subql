@@ -62,13 +62,13 @@ function getParentBlock(parent: ParentProject): number {
   return parent.untilBlock ?? parent.block;
 }
 
-const logger = getLogger('ProjectUpgradeSevice');
+const logger = getLogger('ProjectUpgradeService');
 
 /*
   We setup a proxy here so that we can have a class that matches ISubquery project but will change when we set the current height to the correct project
 */
 export function upgradableSubqueryProject<P extends ISubqueryProject>(
-  upgradeService: ProjectUpgradeSevice<P>
+  upgradeService: ProjectUpgradeService<P>
 ): P & IProjectUpgradeService<P> {
   return new Proxy<P & IProjectUpgradeService<P>>(upgradeService as any, {
     set() {
@@ -103,7 +103,7 @@ export function upgradableSubqueryProject<P extends ISubqueryProject>(
   });
 }
 
-export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject> implements IProjectUpgradeService<P> {
+export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject> implements IProjectUpgradeService<P> {
   #currentHeight: number;
   #currentProject: P;
 
@@ -192,6 +192,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
   get currentHeight(): number {
     return this.#currentHeight;
   }
+
   async rewind(
     targetBlockHeight: number,
     lastProcessedHeight: number,
@@ -244,6 +245,10 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     }
   }
 
+  /**
+   * Sets the current project and handles project changes
+   * Project change effects only happen after init has been called
+   * */
   async setCurrentHeight(height: number): Promise<void> {
     this.#currentHeight = height;
     const newProjectDetails = this._projects.getDetails(height);
@@ -255,7 +260,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     const project = this.#currentProject;
     this.#currentProject = newProject;
 
-    if (hasChanged) {
+    if (hasChanged && this.#initialized) {
       if (isMainThread) {
         try {
           await this.updateIndexedDeployments(newProject.id, startHeight);
@@ -283,7 +288,7 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     startProject: P, // The project passed in via application start
     loadProject: (ipfsCid: string) => Promise<P>,
     startHeight?: number // How far back we need to load parent versions
-  ): Promise<ProjectUpgradeSevice<P>> {
+  ): Promise<ProjectUpgradeService<P>> {
     const projects: Map<number, P> = new Map();
 
     let currentProject = startProject;
@@ -292,6 +297,9 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
     let nextProject = startProject;
 
     const addProject = (height: number, project: P) => {
+      if (projects.has(height)) {
+        throw new Error(`Project already exists at height ${height}`);
+      }
       this.validateProject(startProject, project);
       projects.set(height, project);
     };
@@ -340,8 +348,8 @@ export class ProjectUpgradeSevice<P extends ISubqueryProject = ISubqueryProject>
 
     const isRewindable = this.rewindableCheck(projects);
 
-    assert(currentHeight, 'Unable to determine current height from projects');
-    return new ProjectUpgradeSevice(new BlockHeightMap(projects), currentHeight, isRewindable);
+    const firstProjectHeight = Math.min(...projects.keys());
+    return new ProjectUpgradeService(new BlockHeightMap(projects), firstProjectHeight, isRewindable);
   }
 
   getProject(height: number): P {
