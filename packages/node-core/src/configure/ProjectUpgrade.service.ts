@@ -247,7 +247,8 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
   /**
    * Sets the current project and handles project changes
-   * Project change effects only happen after init has been called */
+   * Project change effects only happen after init has been called
+   * */
   async setCurrentHeight(height: number): Promise<void> {
     this.#currentHeight = height;
     const newProjectDetails = this._projects.getDetails(height);
@@ -344,8 +345,8 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
     const isRewindable = this.rewindableCheck(projects);
 
-    assert(currentHeight, 'Unable to determine current height from projects');
-    return new ProjectUpgradeService(new BlockHeightMap(projects), currentHeight, isRewindable);
+    const firstProjectHeight = Math.min(...projects.keys());
+    return new ProjectUpgradeService(new BlockHeightMap(projects), firstProjectHeight, isRewindable);
   }
 
   getProject(height: number): P {

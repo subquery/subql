@@ -119,11 +119,9 @@ export abstract class BaseProjectService<
 
       this._startHeight = await this.nextProcessHeight();
 
-      // Nothing is indexed, set the first project is the right project and continue setup
+      // Nothing is indexed, the first project is the default so we can use that start height
       if (this._startHeight === undefined) {
-        const firstHeight = Math.min(...this.projectUpgradeService.projects.keys());
-        await this.projectUpgradeService.setCurrentHeight(firstHeight);
-        this._startHeight = firstHeight;
+        this._startHeight = this.projectUpgradeService.currentHeight;
       }
 
       // These need to be init before upgrade and unfinalized services because they may cause rewinds.
@@ -192,7 +190,6 @@ export abstract class BaseProjectService<
   }
 
   private async initDbSchema(): Promise<void> {
-    console.log('INIT DB', this.project.id);
     await initDbSchema(this.project, this.schema, this.storeService);
   }
 
