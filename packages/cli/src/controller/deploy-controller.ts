@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Axios} from 'axios';
+import axios, {Axios} from 'axios';
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -19,7 +19,7 @@ function getAxiosInstance(url: string, authToken?: string): Axios {
     headers.Authorization = `Bearer ${authToken}`;
   }
 
-  return new Axios({
+  return axios.create({
     baseURL: url,
     headers,
   });
