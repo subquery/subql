@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Server } from 'soroban-client/lib/server';
+import { SorobanRpc } from 'stellar-sdk';
 import { SorobanServer } from './soroban.server';
 
 const DEFAULT_PAGE_SIZE = 100;
@@ -13,7 +13,7 @@ describe('SorobanServer', () => {
 
   beforeEach(() => {
     server = new SorobanServer(url);
-    spy = jest.spyOn(Server.prototype, 'getEvents');
+    spy = jest.spyOn(SorobanRpc.Server.prototype, 'getEvents');
   });
 
   afterEach(() => {
@@ -25,7 +25,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response).toEqual({ events: [] });
     expect(spy).toHaveBeenCalledTimes(1);
@@ -43,7 +43,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response).toEqual({
       events: [{ id: '1', ledger: 1, pagingToken: '1' }],
@@ -63,7 +63,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response.events.length).toBe(DEFAULT_PAGE_SIZE - 1);
     expect(spy).toHaveBeenCalledTimes(1);
@@ -79,7 +79,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response).toEqual({ events: [] });
     expect(spy).toHaveBeenCalledTimes(1);
@@ -92,7 +92,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response).toEqual({ events: [{ ledger: 1, pagingToken: '1' }] });
     expect(spy).toHaveBeenCalledTimes(0);
@@ -117,7 +117,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response.events.length).toBe(DEFAULT_PAGE_SIZE + 5);
     expect(spy).toHaveBeenCalledTimes(2);
@@ -141,7 +141,7 @@ describe('SorobanServer', () => {
 
     const response = await server.getEvents({
       startLedger: 1,
-    } as Server.GetEventsRequest);
+    } as SorobanRpc.Server.GetEventsRequest);
 
     expect(response).toEqual({
       events: [

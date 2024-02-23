@@ -1,8 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SorobanRpc} from 'soroban-client';
-import {Contract, xdr} from 'stellar-base';
+import {SorobanRpc, Contract, xdr} from 'stellar-sdk';
 import {HorizonApi, ServerApi} from 'stellar-sdk/lib/horizon';
 import {BaseEffectRecord} from 'stellar-sdk/lib/horizon/types/effects';
 import {BlockWrapper} from '../interfaces';
@@ -48,7 +47,7 @@ export interface SorobanRpcEventResponse extends SorobanRpcBaseEventResponse {
 
 interface SorobanRpcBaseEventResponse {
   id: string;
-  type: SorobanRpc.EventType;
+  type: SorobanRpc.Api.EventType;
   ledger: number;
   ledgerClosedAt: string;
   pagingToken: string;

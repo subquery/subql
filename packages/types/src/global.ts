@@ -1,9 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Server} from 'soroban-client';
+import {SorobanRpc} from 'stellar-sdk';
 import '@subql/types-core/dist/global';
 
 declare global {
-  const api: Server;
+  const api: SorobanRpc.Server;
 }

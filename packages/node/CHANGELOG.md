@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Remove soroban client and use stellar sdk, fix decode issue with `scVal` (#46)
+
 ## [3.6.1] - 2024-02-07
 ### Fixed
 - Critical bug introduced in 3.6.0 which broke historical indexing

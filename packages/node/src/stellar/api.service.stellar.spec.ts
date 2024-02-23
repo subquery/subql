@@ -8,6 +8,7 @@ import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
 import { ConnectionPoolStateManager } from '@subql/node-core/dist';
 import { GraphQLSchema } from 'graphql';
 import { range, some } from 'lodash';
+import { scValToNative } from 'stellar-sdk';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiService } from './api.service.stellar';
 import { StellarApi } from './api.stellar';
@@ -120,5 +121,59 @@ describe('StellarApiService', () => {
     await expect(
       (api as any).fetchBlocks(range(50000, 50100)),
     ).rejects.toThrow();
+  });
+});
+
+// Skip test as rpc is pruned and block can be missing,
+// To test this, find any block with transfer event first
+describe.skip('testnet StellarApiService', () => {
+  let apiService: StellarApiService;
+  let app: INestApplication;
+
+  function testSubqueryProject2(
+    endpoint: string,
+    sorobanEndpoint: string,
+  ): SubqueryProject {
+    return {
+      network: {
+        endpoint: [endpoint],
+        sorobanEndpoint,
+        chainId: 'Test SDF Network ; September 2015',
+      },
+      dataSources: [],
+      id: 'test',
+      root: './',
+      schema: new GraphQLSchema({}),
+      templates: [],
+    } as unknown as SubqueryProject;
+  }
+
+  beforeEach(async () => {
+    [apiService, app] = await prepareApiService(
+      'https://horizon-testnet.stellar.org',
+      'https://soroban-testnet.stellar.org',
+      testSubqueryProject2(
+        'https://horizon-testnet.stellar.org',
+        'https://soroban-testnet.stellar.org',
+      ),
+    );
+  });
+
+  it('should fetch blocks, and decode address', async () => {
+    const blocks = await apiService.fetchBlocks([228236]);
+    expect(blocks).toBeDefined();
+
+    const block228236 = blocks[0];
+    const transferEvent = block228236.events.find(
+      (e) => e.id === '0000980266155778048-0000000001',
+    );
+
+    const [sys, from, to] = transferEvent.topic;
+    const decodedFrom = scValToNative(from).toString();
+    const decodedTo = scValToNative(to).toString();
+
+    console.log(scValToNative(sys));
+    console.log(decodedFrom);
+    console.log(decodedTo);
   });
 });

@@ -13,8 +13,7 @@ import {
   StellarTransaction,
   StellarTransactionFilter,
 } from '@subql/types-stellar';
-import { nativeToScVal } from 'soroban-client';
-import { Contract } from 'stellar-base';
+import { nativeToScVal, Contract } from 'stellar-sdk';
 import { HorizonApi } from 'stellar-sdk/lib/horizon';
 import { StellarBlockWrapped } from './block.stellar';
 

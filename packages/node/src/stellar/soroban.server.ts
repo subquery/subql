@@ -3,20 +3,20 @@
 
 import { SorobanRpcEventResponse } from '@subql/types-stellar';
 import { compact, groupBy, last } from 'lodash';
-import { Server, SorobanRpc } from 'soroban-client';
+import { SorobanRpc } from 'stellar-sdk';
 
 const DEFAULT_PAGE_SIZE = 100;
 
-export class SorobanServer extends Server {
-  private eventsCache: { [key: number]: SorobanRpc.GetEventsResponse } = {};
+export class SorobanServer extends SorobanRpc.Server {
+  private eventsCache: { [key: number]: SorobanRpc.Api.GetEventsResponse } = {};
 
   private async fetchEventsForSequence(
     sequence: number,
-    request: Server.GetEventsRequest,
+    request: SorobanRpc.Server.GetEventsRequest,
     accEvents: SorobanRpcEventResponse[] = [],
   ): Promise<{
-    events: SorobanRpc.GetEventsResponse;
-    eventsToCache: SorobanRpc.GetEventsResponse;
+    events: SorobanRpc.Api.GetEventsResponse;
+    eventsToCache: SorobanRpc.Api.GetEventsResponse;
   }> {
     const response = await super.getEvents(request);
 
@@ -65,7 +65,7 @@ export class SorobanServer extends Server {
   }
 
   private updateEventCache(
-    response: SorobanRpc.GetEventsResponse,
+    response: SorobanRpc.Api.GetEventsResponse,
     ignoreHeight?: number,
   ): void {
     response.events.forEach((event) => {
@@ -74,7 +74,7 @@ export class SorobanServer extends Server {
       if (!this.eventsCache[ledger]) {
         this.eventsCache[ledger] = {
           events: [],
-        } as SorobanRpc.GetEventsResponse;
+        } as SorobanRpc.Api.GetEventsResponse;
       }
       const eventExists = this.eventsCache[ledger].events.some(
         (existingEvent) => existingEvent.id === event.id,
@@ -86,8 +86,8 @@ export class SorobanServer extends Server {
   }
 
   async getEvents(
-    request: Server.GetEventsRequest,
-  ): Promise<SorobanRpc.GetEventsResponse> {
+    request: SorobanRpc.Server.GetEventsRequest,
+  ): Promise<SorobanRpc.Api.GetEventsResponse> {
     const sequence = request.startLedger;
 
     if (this.eventsCache[sequence]) {

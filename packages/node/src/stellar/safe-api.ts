@@ -1,27 +1,29 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { Memo, MemoType, Operation } from '@stellar/stellar-base';
 import { getLogger } from '@subql/node-core';
 import {
   Account,
   Address,
   Contract,
   FeeBumpTransaction,
-  Server,
   SorobanRpc,
   Transaction,
   xdr,
-} from 'soroban-client';
-import { Durability } from 'soroban-client/lib/server';
+} from 'stellar-sdk';
+import { Durability } from 'stellar-sdk/lib/soroban';
+
+// import { Durability } from 'soroban-client/lib/server';
 import { SorobanServer } from './soroban.server';
 
 const logger = getLogger('safe.api.stellar');
 
 export default class SafeStellarProvider extends SorobanServer {
   private blockHeight: number;
-  private baseApi: Server;
+  private baseApi: SorobanRpc.Server;
 
-  constructor(baseApi: Server, blockHeight: number) {
+  constructor(baseApi: SorobanRpc.Server, blockHeight: number) {
     super(baseApi.serverURL.toString());
     this.blockHeight = blockHeight;
     this.baseApi = baseApi;
@@ -33,7 +35,7 @@ export default class SafeStellarProvider extends SorobanServer {
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async getHealth(): Promise<SorobanRpc.GetHealthResponse> {
+  async getHealth(): Promise<SorobanRpc.Api.GetHealthResponse> {
     throw new Error('Method getHealth is not implemented.');
   }
 
@@ -42,7 +44,7 @@ export default class SafeStellarProvider extends SorobanServer {
     contract: string | Address | Contract,
     key: xdr.ScVal,
     durability: Durability = Durability.Persistent,
-  ): Promise<SorobanRpc.LedgerEntryResult> {
+  ): Promise<SorobanRpc.Api.LedgerEntryResult> {
     throw new Error('Method getContractData is not implemented.');
   }
 
@@ -50,20 +52,20 @@ export default class SafeStellarProvider extends SorobanServer {
   // eslint-disable-next-line @typescript-eslint/require-await
   async getLedgerEntries(
     keys: xdr.LedgerKey[],
-  ): Promise<SorobanRpc.GetLedgerEntriesResponse> {
+  ): Promise<SorobanRpc.Api.GetLedgerEntriesResponse> {
     throw new Error('Method getLedgerEntries is not implemented.');
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async getTransaction(
     hash: string,
-  ): Promise<SorobanRpc.GetTransactionResponse> {
+  ): Promise<SorobanRpc.Api.GetTransactionResponse> {
     throw new Error('Method getTransaction is not implemented.');
   }
 
   async getEvents(
-    request: Server.GetEventsRequest,
-  ): Promise<SorobanRpc.GetEventsResponse> {
+    request: SorobanRpc.Server.GetEventsRequest,
+  ): Promise<SorobanRpc.Api.GetEventsResponse> {
     return this.baseApi.getEvents({
       startLedger: this.blockHeight,
       filters: [],
@@ -71,34 +73,33 @@ export default class SafeStellarProvider extends SorobanServer {
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async getNetwork(): Promise<SorobanRpc.GetNetworkResponse> {
+  async getNetwork(): Promise<SorobanRpc.Api.GetNetworkResponse> {
     throw new Error('Method getNetwork is not implemented.');
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async getLatestLedger(): Promise<SorobanRpc.GetLatestLedgerResponse> {
+  async getLatestLedger(): Promise<SorobanRpc.Api.GetLatestLedgerResponse> {
     throw new Error('Method getLatestLedger is not implemented.');
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async simulateTransaction(
     transaction: Transaction | FeeBumpTransaction,
-  ): Promise<SorobanRpc.SimulateTransactionResponse> {
+  ): Promise<SorobanRpc.Api.SimulateTransactionResponse> {
     throw new Error('Method simulateTransaction is not implemented.');
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async prepareTransaction(
     transaction: Transaction | FeeBumpTransaction,
-    networkPassphrase?: string,
-  ): Promise<Transaction | FeeBumpTransaction> {
+  ): Promise<Transaction<Memo<MemoType>, Operation[]>> {
     throw new Error('Method prepareTransaction is not implemented.');
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
   async sendTransaction(
     transaction: Transaction | FeeBumpTransaction,
-  ): Promise<SorobanRpc.SendTransactionResponse> {
+  ): Promise<SorobanRpc.Api.SendTransactionResponse> {
     throw new Error('Method sendTransaction is not implemented.');
   }
 

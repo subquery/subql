@@ -3128,6 +3128,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stellar/js-xdr@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@stellar/js-xdr@npm:3.1.0"
+  checksum: 1b95f4888486b44199ab38ac37d195aef655518daa3b77fbcd375ec8823daad98608efa5e29f5be4680cad536d40559d7e9f613802b2b0ed000a19e1490999cf
+  languageName: node
+  linkType: hard
+
 "@stellar/stellar-base@npm:10.0.1":
   version: 10.0.1
   resolution: "@stellar/stellar-base@npm:10.0.1"
@@ -3143,6 +3150,25 @@ __metadata:
     sodium-native:
       optional: true
   checksum: 5c0f4a6b7f14f653f31180197cc8caf252b9c2b21d75ccbcfc9a36c06837baa6f7c66feee4c90a91c710c53214be8c39ccdebd7841686b3464213b2d68f746ac
+  languageName: node
+  linkType: hard
+
+"@stellar/stellar-base@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "@stellar/stellar-base@npm:11.0.0"
+  dependencies:
+    "@stellar/js-xdr": ^3.1.0
+    base32.js: ^0.1.0
+    bignumber.js: ^9.1.2
+    buffer: ^6.0.3
+    sha.js: ^2.3.6
+    sodium-native: ^4.0.8
+    tweetnacl: ^1.0.3
+    typescript: ^5.3.3
+  dependenciesMeta:
+    sodium-native:
+      optional: true
+  checksum: fe6321756eee395da45d0a038d2e236a13756dcf900adca205399f96a6d175608b57973a9a6f29c0194ec35f4f3fb35c0c7a0b6dec484ae2da7df2263e303c76
   languageName: node
   linkType: hard
 
@@ -3268,8 +3294,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^7.5.2
-    soroban-client: ^1.0.1
-    stellar-sdk: ^11.2.0
+    stellar-sdk: ^11.2.2
     yargs: ^16.2.0
   peerDependencies:
     "@subql/utils": "*"
@@ -3319,8 +3344,7 @@ __metadata:
   resolution: "@subql/types-stellar@workspace:packages/types"
   dependencies:
     "@subql/types-core": ^0.5.0
-    soroban-client: ^1.0.1
-    stellar-sdk: ^11.2.0
+    stellar-sdk: ^11.2.2
   languageName: unknown
   linkType: soft
 
@@ -4536,17 +4560,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.6.0":
-  version: 1.6.1
-  resolution: "axios@npm:1.6.1"
-  dependencies:
-    follow-redirects: ^1.15.0
-    form-data: ^4.0.0
-    proxy-from-env: ^1.1.0
-  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
-  languageName: node
-  linkType: hard
-
 "axios@npm:^1.6.5":
   version: 1.6.5
   resolution: "axios@npm:1.6.5"
@@ -4555,6 +4568,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: e28d67b2d9134cb4608c44d8068b0678cfdccc652742e619006f27264a30c7aba13b2cd19c6f1f52ae195b5232734925928fb192d5c85feea7edd2f273df206d
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.7":
+  version: 1.6.7
+  resolution: "axios@npm:1.6.7"
+  dependencies:
+    follow-redirects: ^1.15.4
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: 87d4d429927d09942771f3b3a6c13580c183e31d7be0ee12f09be6d5655304996bb033d85e54be81606f4e89684df43be7bf52d14becb73a12727bf33298a082
   languageName: node
   linkType: hard
 
@@ -4754,7 +4778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.1.1, bignumber.js@npm:^9.1.2":
+"bignumber.js@npm:^9.1.2":
   version: 9.1.2
   resolution: "bignumber.js@npm:9.1.2"
   checksum: 582c03af77ec9cb0ebd682a373ee6c66475db94a4325f92299621d544aa4bd45cb45fd60001610e94aef8ae98a0905fa538241d9638d4422d57abbeeac6fadaf
@@ -6718,7 +6742,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.9, follow-redirects@npm:^1.15.0":
+"follow-redirects@npm:^1.14.9":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
   peerDependenciesMeta:
@@ -11436,6 +11460,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sodium-native@npm:^4.0.8":
+  version: 4.0.10
+  resolution: "sodium-native@npm:4.0.10"
+  dependencies:
+    node-gyp: latest
+    node-gyp-build: ^4.6.0
+  checksum: e19063ff15e7872589b019710d9d46f30a996a32ea58903ba035a04978e354f19cbfaf273ee3b63d3b5cf388101ddccf8089ba885377e3a621ae63971de4c246
+  languageName: node
+  linkType: hard
+
 "sonic-boom@npm:^1.0.2":
   version: 1.4.1
   resolution: "sonic-boom@npm:1.4.1"
@@ -11452,19 +11486,6 @@ __metadata:
   dependencies:
     atomic-sleep: ^1.0.0
   checksum: c7f9c89f931d7f60f8e0741551a729f0d81e6dc407a99420fc847a9a4c25af048a615b1188ab3c4f1fb3708fe4904973ddab6ebcc8ed5b78b50ab81a99045910
-  languageName: node
-  linkType: hard
-
-"soroban-client@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "soroban-client@npm:1.0.1"
-  dependencies:
-    axios: ^1.6.0
-    bignumber.js: ^9.1.1
-    buffer: ^6.0.3
-    stellar-base: 10.0.0
-    urijs: ^1.19.1
-  checksum: 0fc40abd3581b8931d14f58cf3b2dd9a2843f9514a528b9fb3c69a5958d57a146f905d09960e41ebf14c8728be411eeb49716759d720a1ec554333bbe3d8662d
   languageName: node
   linkType: hard
 
@@ -11545,24 +11566,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stellar-base@npm:10.0.0":
-  version: 10.0.0
-  resolution: "stellar-base@npm:10.0.0"
-  dependencies:
-    "@stellar/js-xdr": ^3.0.1
-    base32.js: ^0.1.0
-    bignumber.js: ^9.1.2
-    buffer: ^6.0.3
-    sha.js: ^2.3.6
-    sodium-native: ^4.0.1
-    tweetnacl: ^1.0.3
-  dependenciesMeta:
-    sodium-native:
-      optional: true
-  checksum: 92b00bf5ba681fa7a33ee8fd9b19ef9bfe37380634e721b5656e02802b94fc0415faf370f35e4876c4b3efbcae1ed25cc332d7eb173a054fa456465e0eac0a66
-  languageName: node
-  linkType: hard
-
 "stellar-sdk@npm:^11.2.0":
   version: 11.2.0
   resolution: "stellar-sdk@npm:11.2.0"
@@ -11575,6 +11578,22 @@ __metadata:
     toml: ^3.0.0
     urijs: ^1.19.1
   checksum: 75ce87974c5b4ac94b7d7a39a1cc6d5077cd8ed3aa93d05de05c8ab9adbf34efc9108484ddec2a6dd4f4e24100a4a1c6ce416403b7da593d9da2aaa1c9670b66
+  languageName: node
+  linkType: hard
+
+"stellar-sdk@npm:^11.2.2":
+  version: 11.2.2
+  resolution: "stellar-sdk@npm:11.2.2"
+  dependencies:
+    "@stellar/stellar-base": ^11.0.0
+    axios: ^1.6.7
+    bignumber.js: ^9.1.2
+    eventsource: ^2.0.2
+    randombytes: ^2.1.0
+    toml: ^3.0.0
+    typescript: ^5.3.3
+    urijs: ^1.19.1
+  checksum: 0d32279653987a7a93ee62f4f4f2a58feba8f0609449c049225a28ebfd3c0a3db680202de8766319290a94e37b379d089c526ee6f0ca6c3cf964cfb9bf8afccf
   languageName: node
   linkType: hard
 
@@ -12302,6 +12321,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:^5.3.3":
+  version: 5.3.3
+  resolution: "typescript@npm:5.3.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 2007ccb6e51bbbf6fde0a78099efe04dc1c3dfbdff04ca3b6a8bc717991862b39fd6126c0c3ebf2d2d98ac5e960bcaa873826bb2bb241f14277034148f41f6a2
+  languageName: node
+  linkType: hard
+
 "typescript@patch:typescript@^4.9.5#~builtin<compat/typescript>":
   version: 4.9.5
   resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=493e53"
@@ -12309,6 +12338,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@^5.3.3#~builtin<compat/typescript>":
+  version: 5.3.3
+  resolution: "typescript@patch:typescript@npm%3A5.3.3#~builtin<compat/typescript>::version=5.3.3&hash=493e53"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: f61375590b3162599f0f0d5b8737877ac0a7bc52761dbb585d67e7b8753a3a4c42d9a554c4cc929f591ffcf3a2b0602f65ae3ce74714fd5652623a816862b610
   languageName: node
   linkType: hard
 

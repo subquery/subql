@@ -138,7 +138,6 @@ export class IndexerManager extends BaseIndexerManager<
         for (const effect of operation.effects) {
           await this.indexEffect(effect, dataSources, getVM);
         }
-
         for (const event of operation.events) {
           await this.indexEvent(event, dataSources, getVM);
         }

@@ -40,8 +40,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "soroban-client": "^1.0.1",
-    "stellar-sdk": "^11.2.0",
+    "stellar-sdk": "^11.2.2",
     "yargs": "^16.2.0"
   },
   "peerDependencies": {
