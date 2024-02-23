@@ -87,12 +87,7 @@ export async function fetchExampleProjects(
   networkCode: string
 ): Promise<ExampleProjectInterface[]> {
   try {
-    const res = await axiosInstance.get<{results: ExampleProjectInterface[]}>(
-      `/networks/${familyCode}/${networkCode}`,
-      {
-        headers: {'Content-Type': 'application/json'},
-      }
-    );
+    const res = await axiosInstance.get<{results: ExampleProjectInterface[]}>(`/networks/${familyCode}/${networkCode}`);
 
     // Not sure why but res.data is a string sometimes - stwiname
     return (typeof res.data === 'string' ? JSON.parse(res.data) : res.data).results;
