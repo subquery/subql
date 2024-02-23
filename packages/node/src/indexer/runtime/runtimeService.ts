@@ -38,8 +38,9 @@ export class RuntimeService extends BaseRuntimeService {
   setSpecVersionMap(raw: SpecVersionDictionary | undefined): void {
     if (raw === undefined) {
       this.specVersionMap = [];
+    } else {
+      this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
     }
-    this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
   }
 
   // main runtime responsible for sync from dictionary

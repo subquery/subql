@@ -29,7 +29,8 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> i
 
   private getDictionary(height: number): D | undefined {
     if (this._dictionaries.length === 0) {
-      throw new Error(`No dictionaries available to use`);
+      logger.debug(`No dictionaries available to use`);
+      return undefined;
     }
     // If current dictionary is valid, use current one instead of find a dictionary
     if (
