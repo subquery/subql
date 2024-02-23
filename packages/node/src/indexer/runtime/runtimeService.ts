@@ -7,7 +7,6 @@ import { ApiService } from '../api.service';
 import {
   SpecVersionDictionary,
   SubstrateDictionaryService,
-  SubstrateDictionaryV1,
 } from '../dictionary';
 import {
   BaseRuntimeService,
@@ -27,6 +26,7 @@ export class RuntimeService extends BaseRuntimeService {
 
   // get latest specVersions from dictionary
   async syncDictionarySpecVersions(height: number): Promise<void> {
+    // must check useDictionary before get SpecVersion, this will give the right dictionary to fetch SpecVersions
     const response = this.dictionaryService.useDictionary(height)
       ? await this.dictionaryService.getSpecVersions()
       : undefined;

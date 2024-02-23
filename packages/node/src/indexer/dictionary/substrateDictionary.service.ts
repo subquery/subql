@@ -82,9 +82,11 @@ export class SubstrateDictionaryService extends DictionaryService<
     const dictionaryEndpoints: string[] = !Array.isArray(
       this.project.network.dictionary,
     )
-      ? [this.project.network.dictionary]
+      ? !this.project.network.dictionary
+        ? []
+        : [this.project.network.dictionary]
       : this.project.network.dictionary;
-    if (dictionaryEndpoints) {
+    if (dictionaryEndpoints.length) {
       for (const endpoint of dictionaryEndpoints) {
         const isV2 = await SubstrateDictionaryV2.isDictionaryV2(
           endpoint,
