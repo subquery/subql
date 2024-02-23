@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.1] - 2024-02-23
+### Changed
+- Bump axios from 0.27.0 to 0.28.0 (#2262)
+
 ## [3.4.0] - 2024-02-07
 ### Added
 - Update `ParentProject` to use `untilBlock` as and alias for `block` (#2235)
@@ -347,7 +351,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/3.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/3.4.1...HEAD
+[3.4.1]: https://github.com/subquery/subql/compare/common/3.4.0...common/3.4.1
 [3.4.0]: https://github.com/subquery/subql/compare/common/3.3.1...common/3.4.0
 [3.3.1]: https://github.com/subquery/subql/compare/common/3.3.0...common/3.3.1
 [3.3.0]: https://github.com/subquery/subql/compare/common/3.2.0...common/3.3.0

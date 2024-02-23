@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [7.3.0] - 2024-02-23
 ### Added
 - Schema Migration support for Enums, Relations, Subscription (#2251)
 - Check that the project start height is below the current chain height (#2259)
@@ -17,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Improve error handling when fetching blocks (#2256)
+- Lock `@subql/apollo-links` to `1.3.2`
 
 ## [7.2.1] - 2024-02-07
 ### Added
@@ -572,7 +575,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.3.0...HEAD
+[7.3.0]: https://github.com/subquery/subql/compare/node-core/7.2.1...node-core/7.3.0
 [7.2.1]: https://github.com/subquery/subql/compare/node-core/7.2.0...node-core/7.2.1
 [7.2.0]: https://github.com/subquery/subql/compare/node-core/7.1.0...node-core/7.2.0
 [7.1.0]: https://github.com/subquery/subql/compare/node-core/7.0.8...node-core/7.1.0
