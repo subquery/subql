@@ -12,6 +12,7 @@ import {
   PoiSyncService,
   BaseProjectService,
   IProjectUpgradeService,
+  profiler,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { SubqueryProject, CosmosProjectDs } from '../configure/SubqueryProject';
@@ -61,6 +62,12 @@ export class ProjectService extends BaseProjectService<
       unfinalizedBlockService,
     );
   }
+
+  @profiler()
+  async init(startHeight?: number): Promise<void> {
+    return super.init(startHeight);
+  }
+
   protected async getBlockTimestamp(height: number): Promise<Date> {
     const response = await this.apiService.api.blockInfo(height);
     return new Date(toRfc3339WithNanoseconds(response.block.header.time));
