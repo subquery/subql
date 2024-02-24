@@ -12,7 +12,7 @@ import {
   InMemoryCacheService,
   PoiService,
   PoiSyncService,
-  ProjectUpgradeSevice,
+  ProjectUpgradeService,
   StoreService,
   TestRunner,
 } from '@subql/node-core';
@@ -50,7 +50,7 @@ import { TestingService } from './testing.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        projectUpgradeService: ProjectUpgradeSevice,
+        projectUpgradeService: ProjectUpgradeService,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {

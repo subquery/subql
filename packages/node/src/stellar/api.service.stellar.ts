@@ -13,7 +13,7 @@ import {
   NetworkMetadataPayload,
   getLogger,
   IndexerEvent,
-  ProjectUpgradeSevice,
+  ProjectUpgradeService,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import {
@@ -39,7 +39,7 @@ export class StellarApiService extends ApiService<
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     @Inject('IProjectUpgradeService')
-    private projectUpgradeService: ProjectUpgradeSevice,
+    private projectUpgradeService: ProjectUpgradeService,
     connectionPoolService: ConnectionPoolService<StellarApiConnection>,
     eventEmitter: EventEmitter2,
   ) {

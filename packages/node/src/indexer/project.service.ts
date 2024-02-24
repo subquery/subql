@@ -12,6 +12,7 @@ import {
   NodeConfig,
   ApiService,
   IProjectUpgradeService,
+  profiler,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import { Sequelize } from '@subql/x-sequelize';
@@ -67,6 +68,11 @@ export class ProjectService extends BaseProjectService<
       eventEmitter,
       unfinalizedBlockService,
     );
+  }
+
+  @profiler()
+  async init(startHeight?: number): Promise<void> {
+    return super.init(startHeight);
   }
 
   protected async getBlockTimestamp(height: number): Promise<Date> {

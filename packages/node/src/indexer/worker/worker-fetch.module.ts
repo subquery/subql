@@ -10,7 +10,7 @@ import {
   WorkerDynamicDsService,
   ConnectionPoolStateManager,
   WorkerConnectionPoolStateManager,
-  ProjectUpgradeSevice,
+  ProjectUpgradeService,
   InMemoryCacheService,
   WorkerInMemoryCacheService,
 } from '@subql/node-core';
@@ -43,7 +43,7 @@ import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.servi
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        projectUpgradeService: ProjectUpgradeSevice,
+        projectUpgradeService: ProjectUpgradeService,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
       ) => {
