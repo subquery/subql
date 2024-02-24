@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.8.0] - 2024-02-23
 ### Fixed
 - Remove unnecessary logging relating to light blocks (#249)
+
+### Changed
+- Updates to match changes in `@subql/node-core` to 7.3.0
 
 ## [3.7.1] - 2024-02-07
 ### Added
@@ -400,7 +405,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.7.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.8.0...HEAD
+[3.8.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.7.1...node-ethereum/3.8.0
 [3.7.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.7.0...node-ethereum/3.7.1
 [3.7.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.6.0...node-ethereum/3.7.0
 [3.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.5.2...node-ethereum/3.6.0
