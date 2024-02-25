@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated with node-core to support both versions of dictionaries. Now also support multiple dictionary endpoints, indexer will fetch and switch dictionaries base on available blocks (#2257)
+
 ## [3.6.0] - 2024-02-23
 ### Changed
 - Update `@subql/node-core` to 7.3.0

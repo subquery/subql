@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add IBlock interface for block content of all networks, also support dictionary to be array type (#2257) 
+
 ## [3.3.1] - 2024-02-07
 ### Changed
 - Update `@subql/types-core`
