@@ -144,6 +144,7 @@ export class PoiSyncService implements OnApplicationShutdown {
           }
           if (poiBlocks.length !== 0) {
             await this.syncPoiJob(poiBlocks);
+            // await this.flushSyncedBlocks()
           }
           // Slows down getPoiBlocksByRange when almost catch up last created poi
           if (poiBlocks.length < DEFAULT_FETCH_RANGE) {
@@ -196,6 +197,19 @@ export class PoiSyncService implements OnApplicationShutdown {
     return;
   }
 
+  private validateSyncedPoi(poi: ProofOfIndex, assertLocation: string) {
+    if (!poi.parentHash || !poi.hash) {
+      let errMsg = `[${assertLocation}] Found synced poi at height ${poi.id} is not valid, please check DB. `;
+      if (!poi.parentHash) {
+        errMsg = errMsg.concat(`\n Poi ${poi.id} parent hash is not defined.`);
+      }
+      if (!poi.hash) {
+        errMsg = errMsg.concat(`\n Poi ${poi.id} hash is not defined.`);
+      }
+      throw new Error(errMsg);
+    }
+  }
+
   /**
    * Get latestSyncedPoi from metadata, and find from the Poi table and set it into the service.
    * This should only been called when service sync been called and _latestSyncedPoi is not set.
@@ -207,11 +221,8 @@ export class PoiSyncService implements OnApplicationShutdown {
     if (latestSyncedPoiHeight !== undefined) {
       const recordedPoi = await this.poiRepo.getPoiById(latestSyncedPoiHeight);
       if (recordedPoi) {
-        if (isSyncedProofOfIndex(recordedPoi)) {
-          this.setLatestSyncedPoi(recordedPoi);
-        } else {
-          throw new Error(`Found synced poi at height ${latestSyncedPoiHeight} is not valid, please check DB`);
-        }
+        this.validateSyncedPoi(recordedPoi, 'syncLatestSyncedPoiFromDb');
+        this.setLatestSyncedPoi(recordedPoi);
       } else {
         throw new Error(`Can not find latestSyncedPoiHeight ${latestSyncedPoiHeight}`);
       }
@@ -245,6 +256,7 @@ export class PoiSyncService implements OnApplicationShutdown {
         `Set latest synced poi out of order, current height ${this.latestSyncedPoi.id}, new height ${poiBlock.id} `
       );
     }
+    this.validateSyncedPoi(poiBlock, 'setLatestSyncedPoi');
     this._latestSyncedPoi = poiBlock;
     this.eventEmitter.emit(PoiEvent.LatestSyncedPoi, {
       height: poiBlock.id,

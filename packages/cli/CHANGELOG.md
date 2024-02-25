@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.7] - 2024-02-23
+### Changed
+- Bump axios from 0.27.0 to 0.28.0 (#2262)
+
 ## [4.2.6] - 2024-02-02
 ### Fixed
 - Bump `common-cosmos` Codegen failing on Windows by using forked version of `telescope` (#2239)
@@ -523,7 +527,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.6...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.7...HEAD
+[4.2.7]: https://github.com/subquery/subql/compare/cli/4.2.6...cli/4.2.7
 [4.2.6]: https://github.com/subquery/subql/compare/cli/4.2.5...cli/4.2.6
 [4.2.5]: https://github.com/subquery/subql/compare/cli/4.2.4...cli/4.2.5
 [4.2.4]: https://github.com/subquery/subql/compare/cli/4.2.3...cli/4.2.4

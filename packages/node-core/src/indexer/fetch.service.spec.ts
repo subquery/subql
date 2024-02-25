@@ -491,4 +491,10 @@ describe('Fetch Service', () => {
 
     expect(dictSpy).toHaveBeenCalledWith(1, FINALIZED_HEIGHT, 10);
   });
+
+  it('throws if the start block is greater than the chain latest height', async () => {
+    await expect(() => fetchService.init(1001)).rejects.toThrow(
+      `The startBlock of dataSources in your project manifest (1001) is higher than the current chain height (1000). Please adjust your startBlock to be less that the current chain height.`
+    );
+  });
 });

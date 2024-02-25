@@ -201,7 +201,7 @@ export abstract class BlockDispatcher<B, DS>
               // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
               return;
             }
-            logger.warn(e, 'Failed to enqueue fetched block to process');
+            logger.error(e, 'Failed to enqueue fetched block to process');
             process.exit(1);
           });
 

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.2] - 2024-02-23
+### Changed
+- version bump with `@subql/common`
+
 ## [3.3.1] - 2024-02-07
 ### Changed
 - Update `@subql/common`
@@ -128,7 +132,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.3.2...HEAD
+[3.3.2]: https://github.com/subquery/subql/compare/common-substrate/3.3.1...common-substrate/3.3.2
 [3.3.1]: https://github.com/subquery/subql/compare/common-substrate/3.2.1...common-substrate/3.3.1
 [3.2.1]: https://github.com/subquery/subql/compare/common-substrate/3.2.0...common-substrate/3.2.1
 [3.2.0]: https://github.com/subquery/subql/compare/common-substrate/3.1.2...common-substrate/3.2.0

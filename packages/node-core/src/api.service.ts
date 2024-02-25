@@ -43,17 +43,29 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
   private timeouts: Record<string, NodeJS.Timeout | undefined> = {};
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B> {
+    return this.retryFetch(async () => {
+      // Get the latest fetch function from the provider
+      const apiInstance = this.connectionPoolService.api;
+      return apiInstance.fetchBlocks(heights);
+    }, numAttempts);
+  }
+
+  protected async retryFetch(fn: () => Promise<B>, numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B> {
     let reconnectAttempts = 0;
+    let lastError: Error | null = null;
     while (reconnectAttempts < numAttempts) {
       try {
-        // Get the latest fetch function from the provider
-        const apiInstance = this.connectionPoolService.api;
-        return await apiInstance.fetchBlocks(heights);
+        return await fn();
       } catch (e: any) {
-        logger.error(e, `Failed to fetch blocks ${heights[0]}...${heights[heights.length - 1]}`);
-
+        lastError = e;
         reconnectAttempts++;
       }
+    }
+    if (lastError !== null) {
+      logger.error(
+        `Maximum number of retries (${numAttempts}) reached. See the following error for the underlying reason.`
+      );
+      throw lastError;
     }
     throw new Error(`Maximum number of retries (${numAttempts}) reached.`);
   }

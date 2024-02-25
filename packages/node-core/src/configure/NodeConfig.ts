@@ -272,7 +272,7 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
   }
 
   get unfinalizedBlocks(): boolean {
-    return !!this._config.unfinalizedBlocks;
+    return this._isTest ? false : !!this._config.unfinalizedBlocks;
   }
 
   get isPostgresSecureConnection(): boolean {

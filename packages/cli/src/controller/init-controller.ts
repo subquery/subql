@@ -55,17 +55,16 @@ export interface Template {
     examples: ExampleProjectInterface[];
   }[];
 }
+
+const axiosInstance = axios.create({baseURL: BASE_TEMPLATE_URl});
+
 // GET /all
 // https://templates.subquery.network/all
 export async function fetchTemplates(): Promise<Template[]> {
   try {
-    return (
-      await axios({
-        method: 'get',
-        url: '/all', // /networks
-        baseURL: BASE_TEMPLATE_URl,
-      })
-    ).data?.templates as Template[];
+    const res = await axiosInstance.get<{templates: Template[]}>('/all');
+
+    return res.data.templates;
   } catch (e) {
     errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/all`);
   }
@@ -75,13 +74,8 @@ export async function fetchTemplates(): Promise<Template[]> {
 // https://templates.subquery.network/networks
 export async function fetchNetworks(): Promise<Template[]> {
   try {
-    return (
-      await axios({
-        method: 'get',
-        url: '/networks',
-        baseURL: BASE_TEMPLATE_URl,
-      })
-    ).data.results as Template[];
+    const res = await axiosInstance.get<{results: Template[]}>('/networks');
+    return res.data.results;
   } catch (e) {
     errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/networks`);
   }
@@ -93,13 +87,8 @@ export async function fetchExampleProjects(
   networkCode: string
 ): Promise<ExampleProjectInterface[]> {
   try {
-    return (
-      await axios({
-        method: 'get',
-        url: `/networks/${familyCode}/${networkCode}`,
-        baseURL: BASE_TEMPLATE_URl,
-      })
-    ).data.results as ExampleProjectInterface[];
+    const res = await axiosInstance.get<{results: ExampleProjectInterface[]}>(`/networks/${familyCode}/${networkCode}`);
+    return res.data.results;
   } catch (e) {
     errorHandle(e, `Update to reach endpoint ${familyCode}/${networkCode}`);
   }
