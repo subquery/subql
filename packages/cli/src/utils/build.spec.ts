@@ -3,7 +3,6 @@
 
 import {existsSync, readFileSync, writeFileSync} from 'fs';
 import path from 'path';
-import {Command} from '@oclif/core';
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import rimraf from 'rimraf';
@@ -21,9 +20,7 @@ describe('Manifest generation', () => {
 
   it('should build ts manifest from multichain file', async () => {
     const projectPath = path.join(__dirname, '../../test/tsManifestTest/subquery-multichain.ts');
-    await expect(
-      buildManifestFromLocation(projectPath, {log: console.log} as unknown as Command)
-    ).resolves.toBeDefined();
+    await expect(buildManifestFromLocation(projectPath, console.log.bind(console))).resolves.toBeDefined();
     expect(existsSync(path.join(projectPath, '../project1.yaml'))).toBe(true);
     expect(existsSync(path.join(projectPath, '../project2.yaml'))).toBe(true);
     expect(existsSync(path.join(projectPath, '../subquery-multichain.yaml'))).toBe(true);
@@ -37,14 +34,12 @@ describe('Manifest generation', () => {
 
   it('throws error on unknown file in multichain manifest', async () => {
     const projectPath = path.join(__dirname, '../../test/tsManifestTest/subquery-multichain2.ts');
-    await expect(buildManifestFromLocation(projectPath, {log: console.log} as unknown as Command)).rejects.toThrow();
+    await expect(buildManifestFromLocation(projectPath, console.log.bind(console))).rejects.toThrow();
   }, 50000);
 
   it('allows both ts and yaml file in multichain manifest', async () => {
     const projectPath = path.join(__dirname, '../../test/tsManifestTest/subquery-multichain3.ts');
-    await expect(
-      buildManifestFromLocation(projectPath, {log: console.log} as unknown as Command)
-    ).resolves.toBeDefined();
+    await expect(buildManifestFromLocation(projectPath, console.log.bind(console))).resolves.toBeDefined();
     expect(existsSync(path.join(projectPath, '../project1.yaml'))).toBe(true);
     expect(existsSync(path.join(projectPath, '../project3.yaml'))).toBe(true);
     expect(existsSync(path.join(projectPath, '../subquery-multichain3.yaml'))).toBe(true);
@@ -58,9 +53,7 @@ describe('Manifest generation', () => {
 
   it('should build ts manifest from yaml multichain file', async () => {
     const projectPath = path.join(__dirname, '../../test/tsManifestTest/subquery-multichain4.yaml');
-    await expect(
-      buildManifestFromLocation(projectPath, {log: console.log} as unknown as Command)
-    ).resolves.toBeDefined();
+    await expect(buildManifestFromLocation(projectPath, console.log.bind(console))).resolves.toBeDefined();
     expect(existsSync(path.join(projectPath, '../project1.yaml'))).toBe(true);
     expect(existsSync(path.join(projectPath, '../project2.yaml'))).toBe(true);
 

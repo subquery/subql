@@ -28,10 +28,17 @@ export default class Build extends Command {
       assert(existsSync(location), 'Argument `location` is not a valid directory or file');
       const directory = lstatSync(location).isDirectory() ? location : path.dirname(location);
 
-      const tsManifest = getTsManifest(location, this);
+      const tsManifest = getTsManifest(location);
 
       if (tsManifest) {
-        await buildManifestFromLocation(tsManifest, this);
+        await buildManifestFromLocation(
+          tsManifest,
+          flags.silent
+            ? () => {
+                /* No-op */
+              }
+            : this.log.bind(this)
+        );
       }
 
       // Get the output location from the project package.json main field
@@ -70,7 +77,7 @@ export default class Build extends Command {
         }
       }
       await runWebpack(buildEntries, directory, outputDir, isDev, true);
-      if (!flags.slient) {
+      if (!flags.silent) {
         this.log('Building and packing code ...');
         this.log('Done!');
       }
