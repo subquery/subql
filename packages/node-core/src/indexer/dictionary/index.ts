@@ -6,5 +6,3 @@ export * from './v2';
 export * from './types';
 export * from './dictionary.service';
 export * from './utils';
-
-// export * from './coreDictionary.service';

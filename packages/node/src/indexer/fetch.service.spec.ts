@@ -4,16 +4,13 @@
 import {
   SubstrateBlockHandler,
   SubstrateCallHandler,
-  SubstrateCustomDatasource,
   SubstrateDatasource,
   SubstrateDatasourceKind,
-  SubstrateDatasourceProcessor,
   SubstrateEventHandler,
   SubstrateHandlerKind,
   SubstrateRuntimeHandler,
 } from '@subql/types';
 import { DictionaryQueryEntry } from '@subql/types-core';
-import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 import { ProjectService } from './project.service';
 
@@ -24,37 +21,6 @@ const projectService: ProjectService = {
       makeDs([callHandler]),
       makeDs([eventHandler, { ...blockHandler, filter: { modulo: 2 } }]),
     ];
-  },
-} as any;
-
-const dsProcessorService: DsProcessorService = {
-  getDsProcessor: (
-    ds: SubstrateCustomDatasource,
-  ): SubstrateDatasourceProcessor<any, any> => {
-    return {
-      kind: 'substrate/Jsonfy',
-      validate: (ds, assets) => true,
-      dsFilterProcessor: (ds, api) => true,
-      handlerProcessors: {
-        'substrate/JsonfyCall': {
-          baseHandlerKind: SubstrateHandlerKind.Call,
-          baseFilter: [{ method: '', module: '' }],
-          dictionaryQuery: (filter, ds) => {
-            return {
-              entity: 'json',
-              conditions: [
-                { field: 'filter1', value: filter.filter1 },
-                { field: 'filter2', value: filter.filter2 },
-              ],
-            };
-          },
-        } as any,
-        'substrate/JsonfyEvent': {
-          baseHandlerKind: SubstrateHandlerKind.Event,
-          baseFilter: [{ method: 'foo', module: 'bar' }],
-        } as any,
-      },
-    };
   },
 } as any;
 
@@ -100,7 +66,6 @@ describe('FetchSevice', () => {
       {} as any, // Project
       null, // BlockDispatcher,
       null, // DictionaryService
-      dsProcessorService,
       null, // DynamicDsService
       null, // UnfinalizedBlocks
       null, // EventEmitter

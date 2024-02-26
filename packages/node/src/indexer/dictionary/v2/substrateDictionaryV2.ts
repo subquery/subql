@@ -5,25 +5,17 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubstrateDataSource } from '@subql/common-substrate';
 import {
   NodeConfig,
-  FatDictionaryResponse,
   DictionaryV2,
-  RawFatDictionaryResponseData,
   DictionaryResponse,
   getLogger,
   DictionaryV2QueryEntry,
 } from '@subql/node-core';
-import {
-  SubstrateBlock,
-  SubstrateCallFilter,
-  SubstrateDatasource,
-  SubstrateHandlerKind,
-} from '@subql/types';
+import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { IBlock } from '@subql/types-core';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { SubstrateDictionaryV2QueryEntry } from './types';
 
 const MIN_FAT_FETCH_LIMIT = 200;
-const FAT_BLOCKS_QUERY_METHOD = `subql_filterBlocks`;
 
 const logger = getLogger('eth-dictionary v2');
 

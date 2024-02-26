@@ -10,13 +10,13 @@ import {DictionaryResponse} from './types';
 import {testDictionaryV1} from './v1/dictionaryV1.test';
 import {DictionaryV2, DictionaryV2QueryEntry} from './v2';
 
-interface testFB {
+interface TestFB {
   gasLimit: bigint;
   gasUsed: bigint;
   hash: string;
 }
 
-class testDictionaryV2 extends DictionaryV2<testFB, any, any> {
+class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryV2QueryEntry {
     return {};
   }
@@ -25,12 +25,12 @@ class testDictionaryV2 extends DictionaryV2<testFB, any, any> {
     startBlock: number,
     queryEndBlock: number,
     limit: number
-  ): Promise<DictionaryResponse<IBlock<testFB>> | undefined> {
+  ): Promise<DictionaryResponse<IBlock<TestFB>> | undefined> {
     return Promise.resolve(undefined);
   }
 }
 
-class testDictionaryService extends DictionaryService<any, testFB, any> {
+class testDictionaryService extends DictionaryService<any, TestFB, any> {
   async initDictionaries(): Promise<void> {
     // Mock version inspection completed
     const dictionaryV1Endpoints = [
@@ -45,7 +45,7 @@ class testDictionaryService extends DictionaryService<any, testFB, any> {
       )
     );
     const dictionariesV2 = dictionaryV2Endpoints.map(
-      (endpoint) => new testDictionaryV2(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
+      (endpoint) => new TestDictionaryV2(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
     );
     this.init([...dictionariesV1, ...dictionariesV2]);
   }

@@ -6,37 +6,16 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 
-import {
-  isCustomDs,
-  isRuntimeDs,
-  SubstrateBlockFilter,
-  SubstrateCallFilter,
-  SubstrateDataSource,
-  SubstrateEventFilter,
-  SubstrateHandler,
-  SubstrateHandlerKind,
-  SubstrateRuntimeHandlerFilter,
-} from '@subql/common-substrate';
+import { isCustomDs, SubstrateHandlerKind } from '@subql/common-substrate';
 import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
-import {
-  SubstrateCustomHandler,
-  SubstrateDatasource,
-  SubstrateBlock,
-} from '@subql/types';
-import {
-  DictionaryQueryCondition,
-  DictionaryQueryEntry,
-} from '@subql/types-core';
-import { sortBy, uniqBy } from 'lodash';
+import { SubstrateDatasource, SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
 import { SubstrateDictionaryV1 } from './dictionary/v1';
 import { SubstrateDictionaryV2 } from './dictionary/v2';
-import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
@@ -47,36 +26,6 @@ import {
 
 const BLOCK_TIME_VARIANCE = 5000; //ms
 const INTERVAL_PERCENT = 0.9;
-
-function eventFilterToQueryEntry(
-  filter: SubstrateEventFilter,
-): DictionaryQueryEntry {
-  return {
-    entity: 'events',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'event',
-        value: filter.method,
-      },
-    ],
-  };
-}
-
-function callFilterToQueryEntry(
-  filter: SubstrateCallFilter,
-): DictionaryQueryEntry {
-  return {
-    entity: 'extrinsics',
-    conditions: Object.keys(filter).map(
-      (key) =>
-        ({
-          field: key === 'method' ? 'call' : key,
-          value: filter[key],
-        } as DictionaryQueryCondition),
-    ),
-  };
-}
 
 @Injectable()
 export class FetchService extends BaseFetchService<
@@ -93,7 +42,6 @@ export class FetchService extends BaseFetchService<
     @Inject('IBlockDispatcher')
     blockDispatcher: ISubstrateBlockDispatcher,
     dictionaryService: SubstrateDictionaryService,
-    private dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,

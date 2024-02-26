@@ -5,13 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import {Inject} from '@nestjs/common';
 import {BaseCustomDataSource, BaseDataSource, DsProcessor, IProjectNetworkConfig} from '@subql/types-core';
-import {Rule} from 'eslint';
 import {VMScript} from 'vm2';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {Sandbox, SandboxOption} from './sandbox';
 import {ISubqueryProject} from './types';
-import Node = Rule.Node;
 
 const logger = getLogger('ds-sandbox');
 

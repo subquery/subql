@@ -24,7 +24,6 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './blockDispatcher';
-import { SubstrateDictionaryV1 } from './dictionary';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
