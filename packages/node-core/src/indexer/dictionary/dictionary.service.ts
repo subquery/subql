@@ -64,9 +64,11 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>>
   private findDictionary(height: number, skipDictionaryIndex: Set<number>) {
     // DO NOT remove dictionary not valid
     // As they can be valid for different block range, or work for other query
-    this._currentDictionaryIndex = this._dictionaries.findIndex(
+    const index = this._dictionaries.findIndex(
       (d, index) => d.heightValidation(height) && !skipDictionaryIndex.has(index)
     );
+    // If not find any, then still set undefined.
+    this._currentDictionaryIndex = index < 0 ? undefined : index;
   }
 
   useDictionary(height: number): boolean {
