@@ -1,10 +1,9 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {assert} from 'console';
+import assert from 'assert';
 import {existsSync, lstatSync, readFileSync, writeFileSync} from 'fs';
 import path from 'path';
-import {Command} from '@oclif/core';
 import {
   DEFAULT_MULTICHAIN_MANIFEST,
   DEFAULT_MULTICHAIN_TS_MANIFEST,
@@ -28,7 +27,7 @@ function formatPath(p: string): string {
   return p.replace(/\\/g, '/');
 }
 
-export async function buildManifestFromLocation(location: string, command: Command): Promise<string> {
+export async function buildManifestFromLocation(location: string, log: (...args: any[]) => void): Promise<string> {
   let directory: string;
   let projectManifestEntry: string;
   // lstatSync will throw if location not exist
@@ -39,19 +38,19 @@ export async function buildManifestFromLocation(location: string, command: Comma
     directory = path.dirname(location);
     projectManifestEntry = location;
   } else {
-    command.error('Argument `location` is not a valid directory or file');
+    throw new Error('Argument `location` is not a valid directory or file');
   }
 
   // We compile from TypeScript every time, even if the current YAML file exists, to ensure that the YAML file remains up-to-date with the latest changes
   try {
     //we could have a multichain yaml with ts projects inside it
     const projectYamlPath = projectManifestEntry.endsWith('.ts')
-      ? await generateManifestFromTs(projectManifestEntry, command)
+      ? await generateManifestFromTs(projectManifestEntry, log)
       : projectManifestEntry;
 
     if (isMultichain(projectYamlPath)) {
-      const tsManifests = getTsManifestsFromMultichain(projectYamlPath, command);
-      await Promise.all(tsManifests.map((manifest) => generateManifestFromTs(manifest, command)));
+      const tsManifests = getTsManifestsFromMultichain(projectYamlPath);
+      await Promise.all(tsManifests.map((manifest) => generateManifestFromTs(manifest, log)));
       replaceTsReferencesInMultichain(projectYamlPath);
     }
   } catch (e) {
@@ -62,7 +61,10 @@ export async function buildManifestFromLocation(location: string, command: Comma
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function generateManifestFromTs(projectManifestEntry: string, command: Command): Promise<string> {
+export async function generateManifestFromTs(
+  projectManifestEntry: string,
+  log: (...args: any[]) => void
+): Promise<string> {
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
   try {
@@ -78,7 +80,7 @@ export async function generateManifestFromTs(projectManifestEntry: string, comma
     // Run compiled code
     eval(script);
 
-    command.log(`Project manifest generated to ${projectYamlPath}`);
+    log(`Project manifest generated to ${projectYamlPath}`);
 
     return projectYamlPath;
   } catch (error) {
@@ -87,7 +89,7 @@ export async function generateManifestFromTs(projectManifestEntry: string, comma
 }
 
 //Returns either the single chain ts manifest or the multichain ts/yaml manifest
-export function getTsManifest(location: string, command: Command): string {
+export function getTsManifest(location: string): string {
   let manifest: string;
 
   if (lstatSync(location).isDirectory()) {
@@ -117,7 +119,7 @@ export function getTsManifest(location: string, command: Command): string {
   return null;
 }
 
-function getTsManifestsFromMultichain(location: string, command: Command): string[] {
+function getTsManifestsFromMultichain(location: string): string[] {
   const multichainContent = yaml.load(readFileSync(location, 'utf8')) as MultichainProjectManifest;
 
   if (!multichainContent || !multichainContent.projects) {

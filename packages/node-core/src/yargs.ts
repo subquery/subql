@@ -152,12 +152,6 @@ export function yargsBuilder<
                 type: 'number',
                 default: 100,
               },
-              'scale-batch-size': {
-                type: 'boolean',
-                demandOption: false,
-                describe: 'scale batch size based on memory usage',
-                default: false,
-              },
               'store-cache-threshold': {
                 demandOption: false,
                 describe: 'Store cache will flush data to the database when number of records excess this threshold',

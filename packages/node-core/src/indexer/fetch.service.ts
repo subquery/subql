@@ -4,13 +4,13 @@
 import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {Interval, SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource, IProjectNetworkConfig, IBlock} from '@subql/types-core';
+import {SchedulerRegistry} from '@nestjs/schedule';
+import {BaseDataSource, IProjectNetworkConfig, IBlock, DictionaryQueryEntry} from '@subql/types-core';
 import {range, uniq, without} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {checkMemoryUsage, cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
+import {cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {IDictionary, mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
@@ -19,7 +19,6 @@ import {DynamicDsService} from './dynamic-ds.service';
 import {IProjectService} from './types';
 
 const logger = getLogger('FetchService');
-const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
   DS extends BaseDataSource,
@@ -31,7 +30,6 @@ export abstract class BaseFetchService<
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
-  private batchSizeScale = 1;
   private bypassBlocks: number[] = [];
 
   // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
@@ -150,17 +148,6 @@ export abstract class BaseFetchService<
 
   private updateDictionary(): void {
     return this.dictionaryService.buildDictionaryEntryMap(this.projectService.getDataSourcesMap());
-  }
-
-  @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale(): void {
-    if (this.nodeConfig.scaleBatchSize) {
-      const scale = checkMemoryUsage(this.batchSizeScale, this.nodeConfig);
-
-      if (this.batchSizeScale !== scale) {
-        this.batchSizeScale = scale;
-      }
-    }
   }
 
   async getFinalizedBlockHead(): Promise<void> {

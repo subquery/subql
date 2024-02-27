@@ -50,7 +50,6 @@ export interface IConfig {
   readonly storeCacheUpperLimit: number;
   readonly storeGetCacheSize: number;
   readonly storeCacheAsync: boolean;
-  readonly scaleBatchSize?: boolean;
   readonly storeFlushInterval: number;
   readonly isTest?: boolean;
   readonly root?: string;
@@ -277,10 +276,6 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get isPostgresSecureConnection(): boolean {
     return !!this._config.pgCa;
-  }
-
-  get scaleBatchSize(): boolean {
-    return !!this._config.scaleBatchSize;
   }
 
   get postgresCACert(): string | undefined {
