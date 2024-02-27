@@ -32,10 +32,10 @@ export default class Codegen extends Command {
       or multichain ts manifest
       or multichain yaml manifest containing single chain ts project paths
     */
-    const tsManifest = getTsManifest(projectPath, this);
+    const tsManifest = getTsManifest(projectPath);
 
     if (tsManifest) {
-      await buildManifestFromLocation(tsManifest, this);
+      await buildManifestFromLocation(tsManifest, this.log.bind(this));
     }
 
     const {manifests, root} = getProjectRootAndManifest(projectPath);

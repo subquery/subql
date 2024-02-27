@@ -68,14 +68,26 @@ export default class Publish extends Command {
 
     const directoryCid = Array.from(fileToCidMap).find(([file]) => file === '');
 
-    if (directoryCid) {
-      this.log(`SubQuery Multichain Project uploaded to IPFS: ${directoryCid[1]}`);
-    }
-
-    fileToCidMap.forEach((cid, file) => {
-      if (file !== '') {
-        this.log(`${directoryCid ? '- This includes' : 'SubQuery Project'} ${file} uploaded to IPFS: ${cid}`);
+    if (!flags.output) {
+      if (directoryCid) {
+        this.log(`SubQuery Multichain Project uploaded to IPFS: ${directoryCid[1]}`);
       }
-    });
+
+      fileToCidMap.forEach((cid, file) => {
+        if (file !== '') {
+          this.log(`${directoryCid ? '- This includes' : 'SubQuery Project'} ${file} uploaded to IPFS: ${cid}`);
+        }
+      });
+    } else {
+      if (directoryCid) {
+        this.log(directoryCid[1]);
+      } else {
+        fileToCidMap.forEach((cid, file) => {
+          if (file !== '') {
+            this.log(cid);
+          }
+        });
+      }
+    }
   }
 }
