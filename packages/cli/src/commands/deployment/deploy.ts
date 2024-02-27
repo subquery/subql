@@ -210,6 +210,7 @@ export default class Deploy extends Command {
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
 
+      // Managed service does some interesting things: `disableStoreCacheAsync: true` -> `--store-cache-async=true`, we are just inverting it to resolve logging confusion.
       if (
         deploymentOutput.configuration.config.indexer &&
         deploymentOutput.configuration.config.indexer.disableStoreCacheAsync === false
