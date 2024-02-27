@@ -109,7 +109,7 @@ export default class Deploy extends Command {
       historicalData: !flags.disableHistorical,
       unfinalizedBlocks: flags.indexerUnfinalized,
       storeCacheThreshold: flags.indexerStoreCacheThreshold,
-      disableStoreCacheAsync: flags.indexerDisableStoreCacheAsync,
+      disableStoreCacheAsync: flags.indexerStoreCacheAsync,
     };
 
     if (!dict) {
@@ -176,7 +176,11 @@ export default class Deploy extends Command {
     ];
 
     if (flags.indexerWorkers) {
-      chains[0].extraParams.workers.num = flags.indexerWorkers;
+      chains[0].extraParams = {
+        workers: {
+          num: flags.indexerWorkers,
+        },
+      };
     }
 
     if (projectInfo !== undefined) {
