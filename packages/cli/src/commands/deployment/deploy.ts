@@ -52,7 +52,7 @@ export default class Deploy extends Command {
       description: 'Disable the store cache flushishng data asyncronously relative to indexing data',
       required: false,
     }),
-    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 30', required: false}),
+    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
 
     //query flags
     queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
