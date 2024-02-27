@@ -10,7 +10,7 @@ import {range, uniq, without} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {checkMemoryUsage, cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
+import {cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {DictionaryService} from './dictionary.service';
 import {DynamicDsService} from './dynamic-ds.service';
@@ -28,7 +28,6 @@ export abstract class BaseFetchService<
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
-  private batchSizeScale = 1;
   private bypassBlocks: number[] = [];
 
   protected abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryQueryEntry[];
@@ -157,17 +156,6 @@ export abstract class BaseFetchService<
 
   getLatestFinalizedHeight(): number {
     return this.latestFinalizedHeight;
-  }
-
-  @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale(): void {
-    if (this.nodeConfig.scaleBatchSize) {
-      const scale = checkMemoryUsage(this.batchSizeScale, this.nodeConfig);
-
-      if (this.batchSizeScale !== scale) {
-        this.batchSizeScale = scale;
-      }
-    }
   }
 
   async getFinalizedBlockHead(): Promise<void> {
