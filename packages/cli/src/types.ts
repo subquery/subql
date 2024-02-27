@@ -90,6 +90,7 @@ export interface DeploymentDataType {
       query: Record<string, unknown>;
       indexer: {
         batchSize: number;
+        disableStoreCacheAsync?: boolean;
       };
       role: string;
       chainId: string;

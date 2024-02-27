@@ -48,8 +48,8 @@ export default class Deploy extends Command {
       description: 'The number of items kept in the cache before flushing',
       required: false,
     }),
-    indexerStoreCacheAsync: Flags.boolean({
-      description: 'If enabled the store cache will flush data asyncronously relative to indexing data.',
+    disableIndexerStoreCacheAsync: Flags.boolean({
+      description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
       required: false,
     }),
     indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
@@ -109,7 +109,7 @@ export default class Deploy extends Command {
       historicalData: !flags.disableHistorical,
       unfinalizedBlocks: flags.indexerUnfinalized,
       storeCacheThreshold: flags.indexerStoreCacheThreshold,
-      disableStoreCacheAsync: flags.indexerStoreCacheAsync,
+      disableStoreCacheAsync: !flags.disableIndexerStoreCacheAsync,
     };
 
     if (!dict) {
@@ -209,6 +209,14 @@ export default class Deploy extends Command {
         chains,
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
+
+      if (
+        deploymentOutput.configuration.config.indexer &&
+        deploymentOutput.configuration.config.indexer.disableStoreCacheAsync === false
+      ) {
+        deploymentOutput.configuration.config.indexer.disableStoreCacheAsync = true;
+      }
+
       this.log(`Project: ${deploymentOutput.projectKey}
       \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}
