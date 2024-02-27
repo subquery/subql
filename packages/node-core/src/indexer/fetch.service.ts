@@ -4,7 +4,7 @@
 import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {Interval, SchedulerRegistry} from '@nestjs/schedule';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import {DictionaryQueryEntry, BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {range, uniq, without} from 'lodash';
 import {NodeConfig} from '../configure';
@@ -17,7 +17,6 @@ import {DynamicDsService} from './dynamic-ds.service';
 import {IProjectService} from './types';
 
 const logger = getLogger('FetchService');
-const CHECK_MEMORY_INTERVAL = 60000;
 
 export abstract class BaseFetchService<
   DS extends BaseDataSource,
