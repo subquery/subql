@@ -18,7 +18,7 @@ export interface IDictionary<DS, FB> {
   ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined>;
   init(): Promise<void>;
   queryMapValidByHeight(height: number): boolean;
-  getQueryEndBlock(startHeight: number, apiFinalizedHeight: number): number;
+  getQueryEndBlock(targetEndHeight: number, apiFinalizedHeight: number): number;
   startHeight: number;
   heightValidation(height: number): boolean;
   updateQueriesMap(dataSources: BlockHeightMap<DS[]>): void;
@@ -32,5 +32,5 @@ export interface IDictionaryCtrl<DS, FB> {
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number
-  ): Promise<(DictionaryResponse<number | IBlock<FB>> & {queryEndBlock: number}) | undefined>;
+  ): Promise<DictionaryResponse<number | IBlock<FB>> | undefined>;
 }

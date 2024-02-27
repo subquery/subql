@@ -1,6 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
+import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {IBlock} from '@subql/types-core';
@@ -11,7 +13,9 @@ import {BlockHeightMap} from '../../utils/blockHeightMap';
 import {DictionaryResponse, IDictionary, IDictionaryCtrl} from './types';
 
 const logger = getLogger('DictionaryService');
-export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> implements IDictionaryCtrl<DS, FB> {
+export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>>
+  implements IDictionaryCtrl<DS, FB>, OnApplicationShutdown
+{
   protected _dictionaries: D[] = [];
 
   protected _currentDictionaryIndex: number | undefined;
@@ -21,13 +25,18 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> i
     protected readonly eventEmitter: EventEmitter2
   ) {}
 
+  onApplicationShutdown(): void {
+    this._dictionaries = [];
+    this._currentDictionaryIndex = undefined;
+  }
+
   abstract initDictionaries(): Promise<void>;
 
   init(dictionaries: D[]): void {
     this._dictionaries = dictionaries;
   }
 
-  private getDictionary(height: number): D | undefined {
+  private getDictionary(height: number, skipDictionaryIndex: Set<number> = new Set()): D | undefined {
     if (this._dictionaries.length === 0) {
       logger.debug(`No dictionaries available to use`);
       return undefined;
@@ -35,11 +44,12 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> i
     // If current dictionary is valid, use current one instead of find a dictionary
     if (
       this._currentDictionaryIndex !== undefined &&
+      !skipDictionaryIndex.has(this._currentDictionaryIndex) &&
       this._dictionaries[this._currentDictionaryIndex].heightValidation(height)
     ) {
       return this._dictionaries[this._currentDictionaryIndex];
     } else {
-      this.findDictionary(height);
+      this.findDictionary(height, skipDictionaryIndex);
       if (this._currentDictionaryIndex === undefined) {
         logger.warn(`No supported dictionary found`);
         return undefined;
@@ -51,10 +61,12 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> i
   }
 
   // Find the next valid dictionary
-  private findDictionary(height: number, skipDictionaryIndex: number[] = []) {
-    // remove dictionary not valid
-    this._dictionaries = this._dictionaries.filter((d) => d.heightValidation(height));
-    this._currentDictionaryIndex = this._dictionaries.findIndex((d) => d.metadataValid);
+  private findDictionary(height: number, skipDictionaryIndex: Set<number>) {
+    // DO NOT remove dictionary not valid
+    // As they can be valid for different block range, or work for other query
+    this._currentDictionaryIndex = this._dictionaries.findIndex(
+      (d, index) => d.heightValidation(height) && !skipDictionaryIndex.has(index)
+    );
   }
 
   useDictionary(height: number): boolean {
@@ -75,29 +87,35 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>> i
   async scopedDictionaryEntries(
     startBlockHeight: number,
     scaledBatchSize: number,
-    latestFinalizedHeight: number //api FinalizedHeight
-  ): Promise<(DictionaryResponse<number | IBlock<FB>> & {queryEndBlock: number}) | undefined> {
-    const dictionary = this.getDictionary(startBlockHeight);
-    if (!dictionary) return undefined;
-
-    /* queryEndBlock needs to be limited by the latest height or the maximum value of endBlock in datasources.
-     * Dictionaries could be in the future depending on if they index unfinalized blocks or the node is using an RPC endpoint that is behind.
-     *
-     * DictionaryV1 should use start + dictionaryQuerySize compare with api latestFinalizedHeight
-     * DictionaryV2 should use start + dictionaryQuerySize compare with dictionary metadata endHeight( same as lastProcessedHeight)
-     *
-     * */
-    const queryEndBlock = dictionary.getQueryEndBlock(startBlockHeight, latestFinalizedHeight);
-
-    const dict = await dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
-    // Check undefined
-    if (!dict) return undefined;
-
-    // Return the queryEndBlock to know if the scoped entry changed it.
-    return {
-      ...dict,
-      queryEndBlock,
-    };
+    latestFinalizedHeight: number, //api FinalizedHeight
+    skipDictionaryIndex: Set<number> = new Set<number>()
+  ): Promise<DictionaryResponse<number | IBlock<FB>> | undefined> {
+    // Initialize skipDictionaryIndex as an empty array
+    // Attempt to get data from the current dictionary
+    // const result = await this.tryGetDictionaryData(startBlockHeight, scaledBatchSize, latestFinalizedHeight, skipDictionaryIndex);
+    let result: DictionaryResponse<number | IBlock<FB>> | undefined;
+    const dictionary = this.getDictionary(startBlockHeight, skipDictionaryIndex);
+    if (!dictionary) {
+      return undefined;
+    }
+    try {
+      const queryEndBlock = dictionary.getQueryEndBlock(startBlockHeight + scaledBatchSize, latestFinalizedHeight);
+      result = await dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
+    } catch (error: any) {
+      // Handle errors by skipping the current dictionary
+      assert(
+        this._currentDictionaryIndex !== undefined,
+        new Error(`try get next dictionary but _currentDictionaryIndex is undefined`)
+      );
+      skipDictionaryIndex.add(this._currentDictionaryIndex);
+      return this.scopedDictionaryEntries(
+        startBlockHeight,
+        scaledBatchSize,
+        latestFinalizedHeight,
+        skipDictionaryIndex
+      );
+    }
+    return result;
   }
 
   protected async resolveDictionary(

@@ -32,7 +32,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   protected abstract dictionaryValidation(metaData?: M, startBlockHeight?: number): boolean;
   protected abstract buildDictionaryQueryEntries(dataSources: DS[]): E;
   abstract queryMapValidByHeight(height: number): boolean;
-  abstract getQueryEndBlock(startHeight: number, apiFinalizedHeight: number): number;
+  abstract getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number;
 
   get startHeight(): number {
     if (this._startHeight === undefined) {

@@ -94,12 +94,8 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     }
   }
 
-  getQueryEndBlock(startBlockHeight: number, apiFinalizedHeight: number): number {
-    return Math.min(
-      startBlockHeight + this.nodeConfig.dictionaryQuerySize,
-      apiFinalizedHeight,
-      this.metadata.lastProcessedHeight
-    );
+  getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number {
+    return Math.min(targetBlockHeight, apiFinalizedHeight, this.metadata.lastProcessedHeight);
   }
 
   protected get client(): ApolloClient<NormalizedCacheObject> {

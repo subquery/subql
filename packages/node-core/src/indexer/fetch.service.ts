@@ -279,14 +279,7 @@ export abstract class BaseFetchService<
           if (dictionary) {
             const {batchBlocks} = dictionary;
             // the last block returned from batch should have max height in this batch
-            const moduloBlocks = this.getModuloBlocks(
-              startBlockHeight,
-              // If the results fill the batch size then use the last block in the reesults
-              // If batchBlocks.length >= scaledBatchSize we can confident say that batchBlocks length is greater than 0, then getBlockHeight should return a valid value
-              batchBlocks.length >= scaledBatchSize
-                ? getBlockHeight(batchBlocks[batchBlocks.length - 1])
-                : dictionary.queryEndBlock
-            );
+            const moduloBlocks = this.getModuloBlocks(startBlockHeight, dictionary.lastBufferedHeight);
             const mergedBlocks = mergeNumAndBlocks(moduloBlocks, batchBlocks);
             if (mergedBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
@@ -352,7 +345,7 @@ export abstract class BaseFetchService<
     const cleanedBatch = cleanedBatchBlocks(this.bypassBlocks, currentBatchBlocks);
 
     const pollutedBlocks = this.bypassBlocks.filter(
-      (b) => b < Math.max(...mergeNumAndBlocksToNums(currentBatchBlocks, []))
+      (b) => b < Math.max(...currentBatchBlocks.map((b) => getBlockHeight(b)))
     );
     if (pollutedBlocks.length) {
       logger.info(`Bypassing blocks: ${pollutedBlocks}`);
