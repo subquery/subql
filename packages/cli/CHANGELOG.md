@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Publish command output flag not working (#2270)
 
+### Changed
+- Update deployemnt flags to match managed service (#2274)
+
 ## [4.2.7] - 2024-02-23
 ### Changed
 - Bump axios from 0.27.0 to 0.28.0 (#2262)
