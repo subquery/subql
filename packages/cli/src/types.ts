@@ -88,10 +88,7 @@ export interface DeploymentDataType {
   configuration: {
     config: {
       query: Record<string, unknown>;
-      indexer: {
-        batchSize: number;
-        disableStoreCacheAsync?: boolean;
-      };
+      indexer: IndexerAdvancedOpts;
       role: string;
       chainId: string;
     };
