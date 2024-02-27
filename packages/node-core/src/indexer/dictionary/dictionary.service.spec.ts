@@ -3,34 +3,12 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
-import {IBlock} from '@subql/types-core';
 import {NodeConfig} from '../..';
 import {DictionaryService} from './dictionary.service';
-import {DictionaryResponse} from './types';
-import {testDictionaryV1} from './v1/dictionaryV1.test';
-import {DictionaryV2, DictionaryV2QueryEntry} from './v2';
+import {TestDictionaryV1} from './v1/dictionaryV1.test';
+import {TestDictionaryV2, TestFB} from './v2/dictionaryV2.test';
 
-interface TestFB {
-  gasLimit: bigint;
-  gasUsed: bigint;
-  hash: string;
-}
-
-class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
-  buildDictionaryQueryEntries(dataSources: any[]): DictionaryV2QueryEntry {
-    return {};
-  }
-
-  async getData(
-    startBlock: number,
-    queryEndBlock: number,
-    limit: number
-  ): Promise<DictionaryResponse<IBlock<TestFB>> | undefined> {
-    return Promise.resolve(undefined);
-  }
-}
-
-class testDictionaryService extends DictionaryService<any, TestFB, any> {
+class TestDictionaryService extends DictionaryService<any, TestFB, any> {
   async initDictionaries(): Promise<void> {
     // Mock version inspection completed
     const dictionaryV1Endpoints = [
@@ -41,7 +19,7 @@ class testDictionaryService extends DictionaryService<any, TestFB, any> {
 
     const dictionariesV1 = await Promise.all(
       dictionaryV1Endpoints.map(
-        (endpoint) => new testDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
+        (endpoint) => new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
       )
     );
     const dictionariesV2 = dictionaryV2Endpoints.map(
@@ -52,7 +30,7 @@ class testDictionaryService extends DictionaryService<any, TestFB, any> {
 }
 
 describe('Dictionary service', function () {
-  let dictionaryService: testDictionaryService;
+  let dictionaryService: TestDictionaryService;
 
   beforeEach(async () => {
     const nodeConfig = new NodeConfig({
@@ -68,7 +46,7 @@ describe('Dictionary service', function () {
       ],
     });
 
-    dictionaryService = new testDictionaryService('0xchainId', nodeConfig, new EventEmitter2());
+    dictionaryService = new TestDictionaryService('0xchainId', nodeConfig, new EventEmitter2());
     await dictionaryService.initDictionaries();
     await Promise.all((dictionaryService as any)._dictionaries.map((d: any) => d.init()));
   });

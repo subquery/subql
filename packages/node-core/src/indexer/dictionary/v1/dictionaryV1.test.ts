@@ -137,7 +137,7 @@ describe('GraphqlTypes', () => {
 
 // export use in dictionary service test
 // eslint-disable-next-line jest/no-export
-export class testDictionaryV1 extends DictionaryV1<any> {
+export class TestDictionaryV1 extends DictionaryV1<any> {
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryQueryEntry[] {
     return HAPPY_PATH_CONDITIONS;
   }
@@ -156,15 +156,15 @@ async function prepareDictionary(
   chainId = DICTIONARY_CHAINID,
   nfg = nodeConfig,
   dsM = dsMap
-): Promise<testDictionaryV1> {
-  const dictionary = new testDictionaryV1(endpoint, chainId, nfg, new EventEmitter2());
+): Promise<TestDictionaryV1> {
+  const dictionary = new TestDictionaryV1(endpoint, chainId, nfg, new EventEmitter2());
   await dictionary.init();
   dictionary.updateQueriesMap(dsM);
   return dictionary;
 }
 
 describe('Dictionary V1', () => {
-  let dictionary: testDictionaryV1;
+  let dictionary: TestDictionaryV1;
 
   beforeAll(async () => {
     dictionary = await prepareDictionary();
@@ -287,7 +287,7 @@ describe('Dictionary V1', () => {
 });
 
 describe('Individual dictionary V1 test', () => {
-  let dictionary: testDictionaryV1;
+  let dictionary: TestDictionaryV1;
   it('return undefined when dictionary api failed', async () => {
     const nodeConfig = new NodeConfig({
       subquery: 'asdf',
