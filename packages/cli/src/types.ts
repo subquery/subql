@@ -25,7 +25,7 @@ export interface IndexerAdvancedOpts {
   unfinalizedBlocks?: boolean;
   proofOfIndex?: boolean;
   storeCacheThreshold?: number;
-  disableStoreCacheAsync?: boolean;
+  disableStoreCacheAsync?: boolean; // Managed service does some interesting things: `disableStoreCacheAsync: true` -> `--store-cache-async=true` and default is false
 }
 
 export type ProjectSpecV0_0_1 = ProjectSpecBase;

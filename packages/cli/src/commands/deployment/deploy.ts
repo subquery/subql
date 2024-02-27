@@ -48,8 +48,8 @@ export default class Deploy extends Command {
       description: 'The number of items kept in the cache before flushing',
       required: false,
     }),
-    indexerDisableStoreCacheAsync: Flags.boolean({
-      description: 'Disable the store cache flushishng data asyncronously relative to indexing data',
+    indexerStoreCacheAsync: Flags.boolean({
+      description: 'If enabled the store cache will flush data asyncronously relative to indexing data.',
       required: false,
     }),
     indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
