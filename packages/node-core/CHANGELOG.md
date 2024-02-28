@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `scale-batch-size` flag as it had no use (#2275)
 
+### Fixed
+- Drop subscription triggers and notifiy_functions (#2277)
+
 ## [7.3.0] - 2024-02-23
 ### Added
 - Schema Migration support for Enums, Relations, Subscription (#2251)
