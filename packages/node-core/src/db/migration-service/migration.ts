@@ -20,7 +20,7 @@ import {
   Transaction,
   Utils,
 } from '@subql/x-sequelize';
-import {isEqual} from 'lodash';
+import {isEqual, uniq} from 'lodash';
 import {NodeConfig} from '../../configure/NodeConfig';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
@@ -113,7 +113,7 @@ export class Migration {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
-      for (const query of this.extraQueries) {
+      for (const query of uniq(this.extraQueries)) {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
@@ -207,11 +207,7 @@ export class Migration {
       }
     }
 
-    if (
-      !this.extraQueries.includes(syncHelper.dropNotifyFunction(this.schemaName)) &&
-      !this.useSubscription &&
-      this.dbType !== SUPPORT_DB.cockRoach
-    ) {
+    if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
       this.extraQueries.push(syncHelper.dropNotifyFunction(this.schemaName));
     }
 

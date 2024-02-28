@@ -298,7 +298,6 @@ ORDER BY t.typname, e.enumsortorder;`,
   it('Able to drop notification triggers and functions', async () => {
     // if subscription is no longer enabled should be able to drop all prior triggers and functions related to subscription
     const cid = 'Qma3HraGKnH5Gte2WVs4sAAY6z5nBSqVuVq7Ef3eVQQPvz';
-
     schemaName = 'sync-schema-5';
 
     // simulate start with subscription then without subscription
