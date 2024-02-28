@@ -20,7 +20,7 @@ import {
   Transaction,
   Utils,
 } from '@subql/x-sequelize';
-import {isEqual} from 'lodash';
+import {isEqual, uniq} from 'lodash';
 import {NodeConfig} from '../../configure/NodeConfig';
 import {StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
@@ -113,7 +113,7 @@ export class Migration {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
-      for (const query of this.extraQueries) {
+      for (const query of uniq(this.extraQueries)) {
         await this.sequelize.query(query, {transaction: effectiveTransaction});
       }
 
@@ -202,7 +202,8 @@ export class Migration {
     } else {
       //TODO: DROP TRIGGER IF EXIST is not valid syntax for cockroach, better check trigger exist at first.
       if (this.dbType !== SUPPORT_DB.cockRoach) {
-        this.extraQueries.push(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
+        // trigger drop should be prioritized
+        this.extraQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
       }
     }
 
