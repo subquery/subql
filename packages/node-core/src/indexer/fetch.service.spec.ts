@@ -3,14 +3,7 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {
-  BaseDataSource,
-  BaseHandler,
-  BaseMapping,
-  DictionaryQueryEntry,
-  IProjectNetworkConfig,
-  IBlock,
-} from '@subql/types-core';
+import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
 import {range} from 'lodash';
 import {
   BlockDispatcher,
@@ -19,7 +12,6 @@ import {
   IBlockDispatcher,
   IDictionary,
   IProjectService,
-  mergeNumAndBlocks,
   NodeConfig,
 } from '../';
 import {BlockHeightMap} from '../utils/blockHeightMap';
@@ -29,7 +21,7 @@ import {BaseFetchService} from './fetch.service';
 const CHAIN_INTERVAL = 100; // 100ms
 const genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher<any>, IDictionary<any, any>, any> {
+class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher<any>, any> {
   finalizedHeight = 1000;
   bestHeight = 20;
   modulos: number[] = [];
@@ -120,7 +112,7 @@ const getDictionaryService = () =>
     initDictionaries: () => {
       /* TODO */
     },
-  } as any as DictionaryService<any, any, any>);
+  } as any as DictionaryService<any, any>);
 
 const getBlockDispatcher = () => {
   const inst = {
@@ -143,7 +135,7 @@ const getBlockDispatcher = () => {
 describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher<any>;
-  let dictionaryService: DictionaryService<any, any, IDictionary<any, any>>;
+  let dictionaryService: DictionaryService<any, any>;
   let networkConfig: IProjectNetworkConfig;
 
   beforeEach(() => {

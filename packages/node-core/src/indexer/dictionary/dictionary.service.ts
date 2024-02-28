@@ -13,10 +13,8 @@ import {BlockHeightMap} from '../../utils/blockHeightMap';
 import {DictionaryResponse, IDictionary, IDictionaryCtrl} from './types';
 
 const logger = getLogger('DictionaryService');
-export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>>
-  implements IDictionaryCtrl<DS, FB>, OnApplicationShutdown
-{
-  protected _dictionaries: D[] = [];
+export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, FB>, OnApplicationShutdown {
+  protected _dictionaries: IDictionary<DS, FB>[] = [];
 
   protected _currentDictionaryIndex: number | undefined;
   constructor(
@@ -32,11 +30,11 @@ export abstract class DictionaryService<DS, FB, D extends IDictionary<DS, FB>>
 
   abstract initDictionaries(): Promise<void>;
 
-  init(dictionaries: D[]): void {
+  init(dictionaries: IDictionary<DS, FB>[]): void {
     this._dictionaries = dictionaries;
   }
 
-  private getDictionary(height: number, skipDictionaryIndex: Set<number> = new Set()): D | undefined {
+  private getDictionary(height: number, skipDictionaryIndex: Set<number> = new Set()): IDictionary<DS, FB> | undefined {
     if (this._dictionaries.length === 0) {
       logger.debug(`No dictionaries available to use`);
       return undefined;

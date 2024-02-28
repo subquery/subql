@@ -8,7 +8,7 @@ import {DictionaryService} from './dictionary.service';
 import {TestDictionaryV1} from './v1/dictionaryV1.test';
 import {TestDictionaryV2, TestFB} from './v2/dictionaryV2.test';
 
-class TestDictionaryService extends DictionaryService<any, TestFB, any> {
+class TestDictionaryService extends DictionaryService<any, TestFB> {
   async initDictionaries(): Promise<void> {
     // Mock version inspection completed
     const dictionaryV1Endpoints = [

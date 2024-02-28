@@ -15,8 +15,7 @@ import { SubstrateDictionaryV2 } from './v2';
 @Injectable()
 export class SubstrateDictionaryService extends DictionaryService<
   SubstrateDatasource,
-  SubstrateBlock,
-  SubstrateDictionaryV1 | SubstrateDictionaryV2
+  SubstrateBlock
 > {
   private async initDictionariesV1(
     endpoints: string[],
