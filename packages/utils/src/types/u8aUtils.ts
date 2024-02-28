@@ -12,7 +12,7 @@ import {hexToU8a, numberToHex} from '@polkadot/util';
 
 export function negativeToU8a(num: number) {
   if (num > 0) {
-    throw new Error(`number must be negative`);
+    return numberToU8a(num);
   }
   const hexString = `0${numberToHex(Math.abs(num))}`;
   return hexToU8a(hexString);
