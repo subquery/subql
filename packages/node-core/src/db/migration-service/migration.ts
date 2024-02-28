@@ -202,11 +202,16 @@ export class Migration {
     } else {
       //TODO: DROP TRIGGER IF EXIST is not valid syntax for cockroach, better check trigger exist at first.
       if (this.dbType !== SUPPORT_DB.cockRoach) {
-        this.extraQueries.push(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
+        // trigger drop should be prioritized
+        this.extraQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
       }
     }
 
-    if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
+    if (
+      !this.extraQueries.includes(syncHelper.dropNotifyFunction(this.schemaName)) &&
+      !this.useSubscription &&
+      this.dbType !== SUPPORT_DB.cockRoach
+    ) {
       this.extraQueries.push(syncHelper.dropNotifyFunction(this.schemaName));
     }
 
