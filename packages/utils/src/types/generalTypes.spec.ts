@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {isU8a, numberToU8a} from '@polkadot/util';
+import {isU8a, numberToU8a, u8aConcat} from '@polkadot/util';
 import {u8aEq} from '@subql/utils';
 import {getTypeByScalarName} from '../types';
 import {wrappedNumToU8a} from './u8aUtils';
@@ -35,5 +35,7 @@ describe('general types', () => {
     expect(isU8a(testArray)).toBeTruthy();
     expect(isU8a(testArray2)).toBeTruthy();
     expect(isU8a(testArray4)).toBeTruthy();
+
+    expect(u8aEq(u8aConcat(new Uint8Array([0]), wrappedNumToU8a(1000)), wrappedNumToU8a(-1000))).toBeTruthy();
   });
 });
