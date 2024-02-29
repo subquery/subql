@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.1] - 2024-03-01
+### Fixed
+- Update `@subql/node-core` to fix Poi generation issue with negative integer, also drop subscription triggers and notifiy_functions
+
 ## [3.8.0] - 2024-02-23
 ### Fixed
 - Remove unnecessary logging relating to light blocks (#249)
@@ -405,7 +409,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.8.1...HEAD
+[3.8.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.8.0...node-ethereum/3.8.1
 [3.8.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.7.1...node-ethereum/3.8.0
 [3.7.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.7.0...node-ethereum/3.7.1
 [3.7.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.6.0...node-ethereum/3.7.0
