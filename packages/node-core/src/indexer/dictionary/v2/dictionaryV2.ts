@@ -70,7 +70,7 @@ async function subqlFilterBlocksCapabilities(
     return metadata;
   } catch (error) {
     // Handle the error as needed
-    throw new Error(`Dictionary v2 get capacity failed ${error}`);
+    throw new Error(`Dictionary v2 get capability failed ${error}`);
   }
 }
 
