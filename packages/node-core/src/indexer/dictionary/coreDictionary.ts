@@ -72,7 +72,5 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   // Base validation is required, and specific validation for each network should be implemented accordingly
   protected validateChainMeta(metaData: M): boolean {
     return true;
-    // TODO, bring this back if v2 response return chainId
-    // return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;
   }
 }
