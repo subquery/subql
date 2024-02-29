@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.3.1] - 2023-11-13
 ### Changed
-- Updates to match changes in 
+- Updates to match changes in '@subql/node-core' (#34) 
   - Dictionary service to use dictionary registry
   - Use yargs from node core
 
