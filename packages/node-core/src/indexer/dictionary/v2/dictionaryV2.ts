@@ -120,7 +120,7 @@ export abstract class DictionaryV2<
     startBlock: number,
     queryEndBlock: number,
     limit: number
-  ): Promise<DictionaryResponse<IBlock<FB>> | undefined>;
+  ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined>;
 
   queryMapValidByHeight(height: number): boolean {
     // we can not use map.has method here, has method only return true when value for corresponding key is set
