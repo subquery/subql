@@ -8,7 +8,7 @@ import {wrappedNumToU8a} from '../u8aUtils';
 export const Int = new TypeClass(
   'Int',
   (data: number): Uint8Array => {
-    return data < 0 ? wrappedNumToU8a(data) : numberToU8a(data);
+    return wrappedNumToU8a(data);
   },
   'number',
   'Int',
