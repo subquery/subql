@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.9.1] - 2024-02-29
 ### Fixed
 - Relation filters not taking into account block height when historical is enabled (#2276)
 
@@ -252,7 +254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
-- `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
+-  annotation is now supported in 
   - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
   - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
@@ -281,7 +283,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.9.1...HEAD
+[2.9.1]: https://github.com/subquery/subql/compare/query/2.9.0...query/2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/query/2.8.0...query/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/query/2.7.0...query/2.8.0
 [2.7.0]: https://github.com/subquery/subql/compare/query/2.6.0...query2.7.0
