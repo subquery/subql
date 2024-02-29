@@ -49,11 +49,10 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
-import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 import {PgDistinctPlugin} from './PgDistinctPlugin';
-import {makeAddPgTableOrderByPlugin, orderByAscDesc} from 'postgraphile';
 import PgConnectionArgOrderBy from './PgOrderByUnique';
+import historicalPlugins from './historical';
 
 /* eslint-enable */
 
@@ -102,6 +101,7 @@ export const pgDefaultPlugins = [
 const plugins = [
   ...defaultPlugins,
   ...pgDefaultPlugins,
+  ...historicalPlugins,
   PgConnectionArgOrderBy,
   PgSimplifyInflectorPlugin,
   PgManyToManyPlugin,
@@ -109,7 +109,6 @@ const plugins = [
   smartTagsPlugin,
   GetMetadataPlugin,
   PgAggregationPlugin,
-  PgBlockHeightPlugin,
   PgRowByVirtualIdPlugin,
   PgDistinctPlugin,
   makeAddInflectorsPlugin((inflectors) => {

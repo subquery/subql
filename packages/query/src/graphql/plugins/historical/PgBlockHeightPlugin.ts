@@ -2,8 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {QueryBuilder} from '@subql/x-graphile-build-pg';
-import {Plugin} from 'graphile-build';
+import {Plugin, Context} from 'graphile-build';
 import {GraphQLString} from 'graphql';
+import {makeRangeQuery, hasBlockRange} from './utils';
+
+function addRangeQuery(queryBuilder: QueryBuilder, sql: any) {
+  queryBuilder.where(makeRangeQuery(queryBuilder.getTableAlias(), queryBuilder.context.args.blockHeight, sql));
+}
+
+// Save blockHeight to context, so it gets passed down to children
+function addQueryContext(queryBuilder: QueryBuilder, sql: any, blockHeight: any) {
+  if (!queryBuilder.context.args?.blockHeight || !queryBuilder.parentQueryBuilder) {
+    queryBuilder.context.args = {blockHeight: sql.fragment`${sql.value(blockHeight)}::bigint`};
+  }
+}
 
 export const PgBlockHeightPlugin: Plugin = (builder) => {
   // Adds blockHeight condition to join clause when joining a table that has _block_range column
@@ -20,23 +32,19 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
           isPgForwardRelationField,
           pgFieldIntrospection,
         },
-      }
+      }: Context<any>
     ) => {
       if (!isPgBackwardRelationField && !isPgForwardRelationField && !isPgBackwardSingleRelationField) {
         return field;
       }
-      if (
-        !pgFieldIntrospection?.attributes?.some(({name}) => name === '_block_range') &&
-        !pgFieldIntrospection?.class?.attributes?.some(({name}) => name === '_block_range')
-      ) {
+      if (!hasBlockRange(pgFieldIntrospection)) {
         return field;
       }
 
-      addArgDataGenerator(() => ({
+      addArgDataGenerator(({blockHeight}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          queryBuilder.where(
-            sql.fragment`${queryBuilder.getTableAlias()}._block_range @> ${queryBuilder.context.args.blockHeight}`
-          );
+          addQueryContext(queryBuilder, sql, blockHeight);
+          addRangeQuery(queryBuilder, sql);
         },
       }));
       return field;
@@ -53,24 +61,17 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
       if (!isPgRowByUniqueConstraintField && !isPgFieldConnection) {
         return args;
       }
-      if (
-        !pgFieldIntrospection?.attributes?.some(({name}) => name === '_block_range') &&
-        !pgFieldIntrospection?.class?.attributes?.some(({name}) => name === '_block_range')
-      ) {
+      if (!hasBlockRange(pgFieldIntrospection)) {
         return args;
       }
 
       addArgDataGenerator(({blockHeight}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          // Save blockHeight to context, so it gets passed down to children
-          if (!queryBuilder.context.args?.blockHeight || !queryBuilder.parentQueryBuilder) {
-            queryBuilder.context.args = {blockHeight: sql.fragment`${sql.value(blockHeight)}::bigint`};
-          }
-          queryBuilder.where(
-            sql.fragment`${queryBuilder.getTableAlias()}._block_range @> ${queryBuilder.context.args.blockHeight}`
-          );
+          addQueryContext(queryBuilder, sql, blockHeight);
+          addRangeQuery(queryBuilder, sql);
         },
       }));
+
       return extend(args, {
         blockHeight: {
           description: 'Block height',
