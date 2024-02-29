@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.3.0] - 2024-02-29
 ### Fixed
 - Publish command output flag not working (#2270)
 
@@ -532,7 +534,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.2.7...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.3.0...HEAD
+[4.3.0]: https://github.com/subquery/subql/compare/cli/4.2.7...cli/4.3.0
 [4.2.7]: https://github.com/subquery/subql/compare/cli/4.2.6...cli/4.2.7
 [4.2.6]: https://github.com/subquery/subql/compare/cli/4.2.5...cli/4.2.6
 [4.2.5]: https://github.com/subquery/subql/compare/cli/4.2.4...cli/4.2.5

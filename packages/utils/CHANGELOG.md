@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.1] - 2024-02-29
 ### Fixed
-- Fixed Int hashCode method failed due to original method not support negative value
+- Fixed Int hashCode method failed due to original method not support negative value (#2278)
 
 ## [2.7.0] - 2024-01-25
 ### Added
@@ -117,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.7.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.7.1...HEAD
+[2.7.1]: https://github.com/subquery/subql/compare/utils/2.7.0...utils/2.7.1
 [2.7.0]: https://github.com/subquery/subql/compare/utils/2.6.2...utils/2.7.0
 [2.6.2]: https://github.com/subquery/subql/compare/utils/2.6.1...utils/2.6.2
 [2.6.1]: https://github.com/subquery/subql/compare/utils/2.6.0...utils/2.6.1
