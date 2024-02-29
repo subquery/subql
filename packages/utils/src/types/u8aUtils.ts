@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {hexToU8a, numberToHex} from '@polkadot/util';
+import {numberToU8a, u8aConcat} from '@polkadot/util';
 
 /**
  * Due to current polkadotjs `numberToU8a` not support negative number,
@@ -10,10 +10,9 @@ import {hexToU8a, numberToHex} from '@polkadot/util';
  * @param byteArray
  */
 
-export function negativeToU8a(num: number) {
+export function wrappedNumToU8a(num: number) {
   if (num > 0) {
     return numberToU8a(num);
   }
-  const hexString = `0${numberToHex(Math.abs(num))}`;
-  return hexToU8a(hexString);
+  return u8aConcat(new Uint8Array([0]), numberToU8a(Math.abs(num)));
 }
