@@ -83,10 +83,22 @@ const testOperations = [
 const testOperations2 = [
   {
     operation: OperationType.Set,
-    entityType: 'StarterEntity',
+    entityType: 'IndexEra',
     data: {
       id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
       field1: 41914,
+    },
+  },
+];
+
+// negative in the field
+const testOperations3 = [
+  {
+    operation: OperationType.Set,
+    entityType: 'StarterEntity',
+    data: {
+      id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
+      field1: -1,
     },
   },
 ];
@@ -237,5 +249,13 @@ describe('StoreOperations', () => {
     expect(() => operationStack.put(falseOperation.operation, falseOperation.entityType, falseOperation.data)).toThrow(
       `Remove operation only accept data in string type`
     );
+  });
+
+  it('could generate operation hash with negative value', () => {
+    const operationStack = new StoreOperations(models);
+    for (const o of testOperations3) {
+      operationStack.put(o.operation, o.entityType, o.data);
+    }
+    expect(() => operationStack.makeOperationMerkleTree()).not.toThrow();
   });
 });

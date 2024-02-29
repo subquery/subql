@@ -3,11 +3,12 @@
 
 import {numberToU8a} from '@polkadot/util';
 import {TypeClass} from '../TypeClass';
+import {wrappedNumToU8a} from '../u8aUtils';
 
 export const Int = new TypeClass(
   'Int',
   (data: number): Uint8Array => {
-    return numberToU8a(data);
+    return wrappedNumToU8a(data);
   },
   'number',
   'Int',

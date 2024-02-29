@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed Int hashCode method failed due to original method not support negative value
+
 ## [2.7.0] - 2024-01-25
 ### Added
 - export sequelize support types (#2179)
