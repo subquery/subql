@@ -37,6 +37,8 @@ export interface GraphQLModelsType {
 
   indexes: GraphQLEntityIndex[];
 
+  fullText?: GraphQLFullTextType;
+
   description?: string;
 }
 
@@ -71,6 +73,12 @@ export interface GraphQLEntityIndex {
   unique?: boolean;
 
   using?: IndexType;
+}
+
+export interface GraphQLFullTextType {
+  fields: string[];
+
+  language?: string;
 }
 
 export interface GraphQLRelationsType {
