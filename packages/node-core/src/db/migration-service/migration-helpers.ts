@@ -40,16 +40,23 @@ export interface SchemaChangesType {
   modifiedEnums: GraphQLEnumsType[];
 }
 
+/**
+ *  Checks that 2 string arrays are the same independent of order
+ * */
+function arrayUnorderedMatch(a?: string[], b?: string[]): boolean {
+  return a?.sort().join(',') === b?.sort().join(',');
+}
+
 function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): boolean {
   return (
-    index1.fields.sort().join(',') === index2.fields.sort().join(',') &&
+    arrayUnorderedMatch(index1.fields, index2.fields) &&
     index1.unique === index2.unique &&
     index1.using === index2.using
   );
 }
 
 function fullTextEqual(a?: GraphQLFullTextType, b?: GraphQLFullTextType): boolean {
-  return a?.fields.sort().join(', ') === b?.fields.sort().join(', ') && a?.language === b?.language;
+  return arrayUnorderedMatch(a?.fields, b?.fields) && a?.language === b?.language;
 }
 
 export function hasChanged(changes: SchemaChangesType): boolean {
@@ -144,8 +151,6 @@ export function compareModels(
 
       const addedFullText = !fullTextEqual(model.fullText, currentModel.fullText) ? model.fullText : undefined;
       const removedFullText = !fullTextEqual(model.fullText, currentModel.fullText) ? currentModel.fullText : undefined;
-
-      console.log('HERE', addedFullText, removedFullText);
 
       if (
         addedFields.length ||
