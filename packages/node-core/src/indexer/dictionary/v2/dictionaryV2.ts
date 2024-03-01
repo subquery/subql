@@ -51,7 +51,6 @@ async function subqlFilterBlocksCapabilities(
     });
 
     if (response.status >= 400) {
-      // TODO provide better error
       throw new Error(`[${response.status}]: ${response.statusText}`);
     }
 
