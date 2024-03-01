@@ -17,6 +17,7 @@ import {
   splitEndpoints,
   updateDeployment,
 } from '../../controller/deploy-controller';
+import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
@@ -39,7 +40,20 @@ export default class Deploy extends Command {
     indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
     indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
     disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
-    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 30', required: false}),
+    indexerUnfinalized: Flags.boolean({
+      description: 'Index unfinalized blocks (requires Historical to be enabled)',
+      required: false,
+    }),
+    indexerStoreCacheThreshold: Flags.integer({
+      description: 'The number of items kept in the cache before flushing',
+      required: false,
+    }),
+    disableIndexerStoreCacheAsync: Flags.boolean({
+      description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
+      required: false,
+    }),
+    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
+
     //query flags
     queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
     querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
@@ -80,20 +94,22 @@ export default class Deploy extends Command {
       endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, null, true);
     }
 
-    const queryAD = {
+    const queryAD: QueryAdvancedOpts = {
       unsafe: flags.queryUnsafe,
       subscription: flags.querySubscription,
       queryTimeout: flags.queryTimeout,
       maxConnection: flags.queryMaxConnection,
-      Aggregate: flags.queryAggregate,
+      aggregate: flags.queryAggregate,
     };
 
-    const indexerAD = {
+    const indexerAD: IndexerAdvancedOpts = {
       unsafe: flags.indexerUnsafe,
       batchSize: flags.indexerBatchSize,
       subscription: flags.indexerSubscription,
       historicalData: !flags.disableHistorical,
-      workers: flags.indexerWorkers,
+      unfinalizedBlocks: flags.indexerUnfinalized,
+      storeCacheThreshold: flags.indexerStoreCacheThreshold,
+      disableStoreCacheAsync: !flags.disableIndexerStoreCacheAsync,
     };
 
     if (!dict) {
@@ -147,7 +163,7 @@ export default class Deploy extends Command {
       }
     }
     const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
-    const chains = [
+    const chains: V3DeploymentIndexerType[] = [
       {
         cid: ipfsCID,
         dictEndpoint: dict,
@@ -158,6 +174,14 @@ export default class Deploy extends Command {
         },
       },
     ];
+
+    if (flags.indexerWorkers) {
+      chains[0].extraParams = {
+        workers: {
+          num: flags.indexerWorkers,
+        },
+      };
+    }
 
     if (projectInfo !== undefined) {
       await updateDeployment(
@@ -185,6 +209,15 @@ export default class Deploy extends Command {
         chains,
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
+
+      // Managed service does some interesting things: `disableStoreCacheAsync: true` -> `--store-cache-async=true`, we are just inverting it to resolve logging confusion.
+      if (
+        deploymentOutput.configuration.config.indexer &&
+        deploymentOutput.configuration.config.indexer.disableStoreCacheAsync === false
+      ) {
+        deploymentOutput.configuration.config.indexer.disableStoreCacheAsync = true;
+      }
+
       this.log(`Project: ${deploymentOutput.projectKey}
       \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}
