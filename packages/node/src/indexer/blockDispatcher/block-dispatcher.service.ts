@@ -96,7 +96,7 @@ export class BlockDispatcherService
       ? undefined
       : await this.runtimeService.getRuntimeVersion(block.block.block);
     return this.indexerManager.indexBlock(
-      block.block,
+      block,
       await this.projectService.getDataSources(
         this.getBlockHeight(block.block),
       ),

@@ -42,7 +42,7 @@ export abstract class BaseIndexerManager<
   HandlerInputMap extends HandlerInputTypeMap<FilterMap>
 > implements IIndexerManager<B, DS>
 {
-  abstract indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
+  abstract indexBlock(block: IBlock<B>, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
   abstract getBlockHeight(block: B): number;
   abstract getBlockHash(block: B): string;
 
@@ -75,12 +75,12 @@ export abstract class BaseIndexerManager<
   }
 
   protected async internalIndexBlock(
-    block: B,
+    block: IBlock<B>,
     dataSources: DS[],
     getApi: () => Promise<SA>
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
-    const blockHeight = this.getBlockHeight(block);
+    const blockHeight = block.getHeader().height;
 
     const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
@@ -91,7 +91,7 @@ export abstract class BaseIndexerManager<
 
     // Only index block if we're not going to reindex
     if (!reindexBlockHeight) {
-      await this.indexBlockData(block, filteredDataSources, async (ds: DS) => {
+      await this.indexBlockData(block.block, filteredDataSources, async (ds: DS) => {
         // Injected runtimeVersion from fetch service might be outdated
         apiAt = apiAt ?? (await getApi());
 
@@ -115,12 +115,12 @@ export abstract class BaseIndexerManager<
 
     return {
       dynamicDsCreated,
-      blockHash: this.getBlockHash(block),
+      blockHash: block.getHeader().hash,
       reindexBlockHeight,
     };
   }
 
-  protected async processUnfinalizedBlocks(block: B): Promise<number | undefined> {
+  protected async processUnfinalizedBlocks(block: IBlock<B>): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks) {
       return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }

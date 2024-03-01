@@ -6,6 +6,7 @@ import {
   BaseTemplateDataSource,
   CommonSubqueryProject,
   Entity,
+  IBlock,
   IProjectNetworkConfig,
 } from '@subql/types-core';
 import {GraphQLSchema} from 'graphql';
@@ -37,7 +38,7 @@ export type OperationEntity = {
 };
 
 export interface IIndexerManager<B, DS> {
-  indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
+  indexBlock(block: IBlock<B>, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
 }
 
 export interface IProjectService<DS> {

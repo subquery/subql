@@ -14,8 +14,6 @@ import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
-import { SubstrateDictionaryV1 } from './dictionary/v1';
-import { SubstrateDictionaryV2 } from './dictionary/v2';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
@@ -31,7 +29,6 @@ const INTERVAL_PERCENT = 0.9;
 export class FetchService extends BaseFetchService<
   SubstrateDatasource,
   ISubstrateBlockDispatcher,
-  SubstrateDictionaryV1 | SubstrateDictionaryV2,
   SubstrateBlock
 > {
   constructor(

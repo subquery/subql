@@ -128,7 +128,7 @@ export abstract class DictionaryV2<
   protected async coreGetData<RFB>(
     startBlock: number,
     queryEndBlock: number,
-    limit: number
+    limit: number = MIN_FAT_FETCH_LIMIT
   ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined> {
     const queryDetails = this.queriesMap?.getDetails(startBlock);
     const conditions = queryDetails?.value;

@@ -40,7 +40,7 @@ export class TestRunner<A, SA, B, DS> {
     test: SubqlTest,
     sandbox: TestSandbox,
     indexBlock: (
-      block: B,
+      block: IBlock<B>,
       handler: string,
       indexerManager: IIndexerManager<B, DS>,
       apiService?: IApi<A, SA, IBlock<B>[]>
@@ -68,7 +68,7 @@ export class TestRunner<A, SA, B, DS> {
       logger.debug('Running handler');
 
       try {
-        await indexBlock(block.block, test.handler, this.indexerManager, this.apiService);
+        await indexBlock(block, test.handler, this.indexerManager, this.apiService);
         await this.storeService.storeCache.flushCache(true, true);
       } catch (e: any) {
         logger.warn(`Test: ${test.name} field due to runtime error`, e);

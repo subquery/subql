@@ -37,11 +37,6 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
   }
 
   @mainThreadOnly()
-  protected blockToHeader(block: BlockContent): Header {
-    return substrateHeaderToHeader(block.block.block.header);
-  }
-
-  @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
     return substrateHeaderToHeader(
       await this.apiService.api.rpc.chain.getHeader(

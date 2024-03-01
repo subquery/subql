@@ -56,7 +56,7 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
   abstract getTestRunner(): Promise<[close: () => Promise<void>, runner: TestRunner<A, SA, B, DS>]>; // TestRunner will be create with a new app instance
 
   async indexBlock(
-    block: B,
+    block: IBlock<B>,
     handler: string,
     indexerManager: IIndexerManager<B, DS>,
     apiService?: IApi<A, SA, IBlock<B>[]>

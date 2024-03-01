@@ -30,6 +30,7 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
+import { IBlock } from '@subql/types-core';
 import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService as SubstrateApiService } from './api.service';
@@ -82,12 +83,12 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: BlockContent | LightBlockContent,
+    block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
     runtimeVersion: RuntimeVersion,
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
-      this.getApi(block, runtimeVersion),
+      this.getApi(block.block, runtimeVersion),
     );
   }
 

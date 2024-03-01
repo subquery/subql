@@ -8,8 +8,8 @@ import {
   HostUnfinalizedBlocks,
   IUnfinalizedBlocksService,
 } from '@subql/node-core';
+import { IBlock } from '@subql/types-core';
 import { BlockContent } from '../types';
-import { substrateHeaderToHeader } from '../unfinalizedBlocks.service';
 
 @Injectable()
 export class WorkerUnfinalizedBlocksService
@@ -22,11 +22,14 @@ export class WorkerUnfinalizedBlocksService
   }
 
   async processUnfinalizedBlocks(
-    block: BlockContent,
+    block: IBlock<BlockContent>,
   ): Promise<number | undefined> {
-    return this.host.unfinalizedBlocksProcess(
-      substrateHeaderToHeader(block.block.block.header),
-    );
+    const header = block.getHeader();
+    return this.host.unfinalizedBlocksProcess({
+      blockHeight: header.height,
+      blockHash: header.hash,
+      parentHash: header.parentHash,
+    });
   }
 
   async processUnfinalizedBlockHeader(

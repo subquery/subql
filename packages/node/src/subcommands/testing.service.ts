@@ -12,6 +12,7 @@ import {
   SubqlProjectDs,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
+import { IBlock } from '@subql/types-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
@@ -64,14 +65,14 @@ export class TestingService extends BaseTestingService<
   }
 
   async indexBlock(
-    block: BlockContent | LightBlockContent,
+    block: IBlock<BlockContent | LightBlockContent>,
     handler: string,
     indexerManager: IndexerManager,
     apiService: ApiService,
   ): Promise<void> {
     const runtimeVersion =
       await apiService.unsafeApi.rpc.state.getRuntimeVersion(
-        block.block.block.header.hash,
+        block.block.block.block.header.hash,
       );
 
     await indexerManager.indexBlock(
