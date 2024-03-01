@@ -3,7 +3,13 @@
 
 import { promisify } from 'util';
 import { INestApplication } from '@nestjs/common';
-import { DbOption } from '@subql/node-core';
+import {
+  createNotifyTrigger,
+  createSendNotificationTriggerFunction,
+  DbOption,
+  getFunctions,
+  getTriggers,
+} from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import rimraf from 'rimraf';
 import { prepareApp } from '../utils/test.utils';
@@ -288,5 +294,58 @@ ORDER BY t.typname, e.enumsortorder;`,
     expect(result.map((r: { enum_type: string }) => r.enum_type)).toStrictEqual(
       ['65c7fd4e5d', '65c7fd4e5d', '65c7fd4e5d'],
     );
+  });
+  it('Able to drop notification triggers and functions', async () => {
+    // if subscription is no longer enabled should be able to drop all prior triggers and functions related to subscription
+    const cid = 'Qma3HraGKnH5Gte2WVs4sAAY6z5nBSqVuVq7Ef3eVQQPvz';
+    schemaName = 'sync-schema-5';
+
+    // simulate start with subscription then without subscription
+    const initQueries = [
+      `CREATE SCHEMA IF NOT EXISTS "${schemaName}";`,
+      ` CREATE TABLE IF NOT EXISTS "${schemaName}"."transfers" ("id" text NOT NULL,
+            "amount" numeric NOT NULL,
+            "block_number" integer NOT NULL,
+            "date" timestamp NOT NULL,
+            "from_id" text NOT NULL,
+            "to_id" text NOT NULL,
+            "_id" UUID NOT NULL,
+            "_block_range" int8range NOT NULL, PRIMARY KEY ("_id"));`,
+      `CREATE TABLE IF NOT EXISTS "${schemaName}"."accounts" ("id" text NOT NULL,
+          "public_key" text NOT NULL,
+          "first_transfer_block" integer,
+          "last_transfer_block" integer,
+          "_id" UUID NOT NULL,
+          "_block_range" int8range NOT NULL, PRIMARY KEY ("_id"));`,
+      createSendNotificationTriggerFunction(schemaName),
+      createNotifyTrigger(schemaName, 'transfers'),
+      createNotifyTrigger(schemaName, 'accounts'),
+    ];
+    for (const q of initQueries) {
+      await sequelize.query(q);
+    }
+
+    app = await prepareApp(schemaName, cid, false, false);
+
+    projectService = app.get('IProjectService');
+    const apiService = app.get(ApiService);
+
+    await apiService.init();
+    await projectService.init(1);
+
+    tempDir = (projectService as any).project.root;
+
+    const accountTrigger = await getTriggers(sequelize, '0xe2ae28f317df40c5');
+    const transferTrigger = await getTriggers(sequelize, '0x2416ab4b88a0cdac');
+
+    const functions = await getFunctions(
+      sequelize,
+      schemaName,
+      'send_notification',
+    );
+
+    expect(accountTrigger.length).toBe(0);
+    expect(transferTrigger.length).toBe(0);
+    expect(functions.length).toBe(0);
   });
 });

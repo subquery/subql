@@ -139,6 +139,7 @@ describe('CLI deploy, delete, promote', () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     expect(validator.valid).toBe(true);
   });
+
   it('to throw error for invalid ipfsCID', async () => {
     await expect(ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV)).rejects.toThrow(
       'Failed to validate IPFS CID: fake is not a valid subquery deployment id!'
@@ -152,6 +153,7 @@ describe('CLI deploy, delete, promote', () => {
       'https://api.subquery.network/sq/subquery/polkadot-dictionary'
     );
   });
+
   it('reDeploy to Hosted Service', async () => {
     const {ipfs, org, projectName, type} = projectSpec;
     const newIPFS = 'QmbKvrzwSmzTZi5jrhEpa6yDDHQXRURi5S4ztLgJLpBxAi';

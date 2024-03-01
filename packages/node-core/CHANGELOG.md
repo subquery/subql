@@ -5,11 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Removed
-- `scale-batch-size` flag as it had no use (#2275)
 
 ### Added
 - Add service to support for dictionary v2 (#2257)
+
+## [7.3.1] - 2024-02-29
+### Removed
+- `scale-batch-size` flag as it had no use (#2275)
+
+### Fixed
+- Drop subscription triggers and notifiy_functions (#2277)
+- Fix poi issue due to Int hashCode failed (#2278)
 
 ## [7.3.0] - 2024-02-23
 ### Added
@@ -580,7 +586,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.3.1...HEAD
+[7.3.1]: https://github.com/subquery/subql/compare/node-core/7.3.0...node-core/7.3.1
 [7.3.0]: https://github.com/subquery/subql/compare/node-core/7.2.1...node-core/7.3.0
 [7.2.1]: https://github.com/subquery/subql/compare/node-core/7.2.0...node-core/7.2.1
 [7.2.0]: https://github.com/subquery/subql/compare/node-core/7.1.0...node-core/7.2.0

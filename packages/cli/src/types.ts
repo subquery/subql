@@ -11,18 +11,21 @@ export interface ProjectSpecBase {
 }
 
 export interface QueryAdvancedOpts {
-  unsafe?: boolean | undefined;
-  subscription?: boolean | undefined;
-  queryTimeout?: number | undefined;
-  maxConnection?: number | undefined;
-  Aggregate?: boolean | undefined;
+  unsafe?: boolean;
+  subscription?: boolean;
+  queryTimeout?: number;
+  maxConnection?: number;
+  aggregate?: boolean;
 }
 export interface IndexerAdvancedOpts {
-  unsafe?: boolean | undefined;
-  batchSize?: number | undefined;
-  subscription?: boolean | undefined;
-  historicalData?: boolean | undefined;
-  workers?: number | undefined;
+  unsafe?: boolean;
+  batchSize?: number;
+  subscription?: boolean;
+  historicalData?: boolean;
+  unfinalizedBlocks?: boolean;
+  proofOfIndex?: boolean;
+  storeCacheThreshold?: number;
+  disableStoreCacheAsync?: boolean; // Managed service does some interesting things: `disableStoreCacheAsync: true` -> `--store-cache-async=true` and default is false
 }
 
 export type ProjectSpecV0_0_1 = ProjectSpecBase;
@@ -85,9 +88,7 @@ export interface DeploymentDataType {
   configuration: {
     config: {
       query: Record<string, unknown>;
-      indexer: {
-        batchSize: number;
-      };
+      indexer: IndexerAdvancedOpts;
       role: string;
       chainId: string;
     };
@@ -137,5 +138,10 @@ export interface V3DeploymentIndexerType {
   indexerImageVersion: string;
   indexerAdvancedSettings: {
     indexer: IndexerAdvancedOpts;
+  };
+  extraParams?: {
+    workers?: {
+      num?: number;
+    };
   };
 }

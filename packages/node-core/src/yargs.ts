@@ -170,7 +170,7 @@ export function yargsBuilder<
               },
               'store-cache-async': {
                 demandOption: false,
-                describe: 'If enabled the store cache will flush data asyncronously relative to indexing data',
+                describe: 'If enabled the store cache will flush data asynchronously relative to indexing data',
                 type: 'boolean',
               },
               'store-flush-interval': {
