@@ -124,7 +124,7 @@ export abstract class DictionaryV2<
     result: RawFatDictionaryResponseData<RFB>
   ): DictionaryResponse<IBlock<FB>> | undefined;
 
-  protected async coreGetData<RFB>(
+ async getData<RFB>(
     startBlock: number,
     queryEndBlock: number,
     limit: number = MIN_FAT_FETCH_LIMIT
