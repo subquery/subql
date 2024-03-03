@@ -72,7 +72,7 @@ export class TestingService extends BaseTestingService<
   ): Promise<void> {
     const runtimeVersion =
       await apiService.unsafeApi.rpc.state.getRuntimeVersion(
-        block.block.block.block.header.hash,
+        block.getHeader().hash,
       );
 
     await indexerManager.indexBlock(
