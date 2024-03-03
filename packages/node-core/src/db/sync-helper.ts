@@ -593,7 +593,7 @@ export const dropColumnQuery = (schema: string, columnName: string, tableName: s
   `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${columnName};`;
 
 export const createColumnQuery = (schema: string, table: string, columnName: string, attributes: string): string =>
-  `ALTER TABLE IF EXISTS ${escapedName(schema, table)} ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;
+  `ALTER TABLE ${escapedName(schema, table)} ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;
 
 // fullTextSearch
 const TS_VECTOR_COL = '_tsv';
