@@ -8,7 +8,7 @@ export function makeRangeQuery(tableName: SQL, blockHeight: SQL, sql: any): SQL 
 }
 
 // Used to filter out _block_range attributes
-export function hasBlockRange(entity: PgEntity): boolean {
+export function hasBlockRange(entity?: PgEntity): boolean {
   if (!entity) {
     return true;
   }
