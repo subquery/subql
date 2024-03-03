@@ -120,7 +120,7 @@ export abstract class DictionaryV2<
     return Math.min(targetBlockHeight, this.metadata.end);
   }
 
-  abstract convertResponseBlocks<RFB>(
+  protected abstract convertResponseBlocks<RFB>(
     result: RawFatDictionaryResponseData<RFB>
   ): DictionaryResponse<IBlock<FB>> | undefined;
 
