@@ -11,6 +11,7 @@ import {ICachedModelControl} from './types';
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
+type IncrementalMetadataKey = typeof incrementKeys[number];
 
 export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
@@ -81,14 +82,13 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
-  private async incrementJsonbCount(key: MetadataKey, amount = 1, tx?: Transaction): Promise<void> {
+  private async incrementJsonbCount(key: IncrementalMetadataKey, amount = 1, tx?: Transaction): Promise<void> {
     const schema = this.model.options.schema;
 
     if (!this.model.sequelize) {
       throw new Error(`Sequelize is not available on ${this.model.name}`);
     }
 
-    //      `UPDATE ${table} SET value = (COALESCE(value->0):: int + ${amount})::text::jsonb WHERE key ='${key}'`,
     await this.model.sequelize.query(
       `
           INSERT INTO ${schema}."_metadata" (key, value, "createdAt", "updatedAt")
