@@ -367,7 +367,7 @@ describe('utils that handle schema.graphql', () => {
 
   it('can read fulltext directive', () => {
     const graphqlSchema = gql`
-      type StarterEntity @entity @fulltext(fields: ["field2", "field3"], language: "english") {
+      type StarterEntity @entity @fullText(fields: ["field2", "field3"], language: "english") {
         id: ID! #id is a required field
         field1: Int!
         field2: String #field2 is an optional field
@@ -378,12 +378,12 @@ describe('utils that handle schema.graphql', () => {
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const entities = getAllEntitiesRelations(schema);
 
-    expect(entities.models?.[0].indexes[0].fields).toEqual(['field1', 'field2']);
+    expect(entities.models?.[0].fullText?.fields).toEqual(['field1', 'field2']);
   });
 
   it('can throw fulltext directive when field doesnt exist on entity', () => {
     const graphqlSchema = gql`
-      type StarterEntity @entity @fulltext(fields: ["field2", "not_exits"], language: "english") {
+      type StarterEntity @entity @fullText(fields: ["field2", "not_exits"], language: "english") {
         id: ID! #id is a required field
         field1: Int!
         field2: String #field2 is an optional field
@@ -399,7 +399,7 @@ describe('utils that handle schema.graphql', () => {
 
   it('can throw fulltext directive when field isnt a string', () => {
     const graphqlSchema = gql`
-      type StarterEntity @entity @fulltext(fields: ["field1"], language: "english") {
+      type StarterEntity @entity @fullText(fields: ["field1"], language: "english") {
         id: ID! #id is a required field
         field1: Int!
         field2: String #field2 is an optional field
