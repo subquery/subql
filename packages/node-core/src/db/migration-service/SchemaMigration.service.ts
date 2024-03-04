@@ -164,6 +164,14 @@ export class SchemaMigrationService {
         for (const index of modelValue.addedIndexes) {
           migrationAction.createIndex(modelValue.model, index);
         }
+
+        if (modelValue.removedFullText) {
+          migrationAction.dropFullText(modelValue.model);
+        }
+
+        if (modelValue.addedFullText) {
+          migrationAction.createFullText(modelValue.model);
+        }
       }
 
       for (const relationModel of addedRelations) {

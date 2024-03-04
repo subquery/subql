@@ -29,6 +29,7 @@ import {buildSchemaFromFile} from './schema';
 import {
   FieldScalar,
   GraphQLEntityField,
+  GraphQLFullTextType,
   GraphQLJsonFieldType,
   GraphQLJsonObjectType,
   GraphQLModelsRelationsEnums,
@@ -196,6 +197,38 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
         });
       });
     }
+
+    // Fulltext Search
+    const fullTextDirective = schema.getDirective('fullText');
+    const fullTextDirectiveVal = getDirectiveValues(fullTextDirective, entity.astNode) as GraphQLFullTextType;
+
+    if (fullTextDirectiveVal) {
+      if (!fullTextDirectiveVal.fields.length) {
+        throw new Error(`Expected fullText directive to have at least one field on entity ${entity.name}`);
+      }
+
+      // Make fields unique
+      fullTextDirectiveVal.fields = [...new Set(fullTextDirectiveVal.fields)];
+
+      fullTextDirectiveVal.fields.forEach((searchField, index) => {
+        const field = newModel.fields.find((f) => [searchField, `${searchField}Id`].includes(f.name));
+        if (!field) {
+          throw new Error(`Field "${searchField}" in fullText directive doesn't exist on entity "${entity.name}"`);
+        }
+
+        if (!['String', 'ID'].includes(field.type)) {
+          throw new Error(`fullText directive fields only supports String types`);
+        }
+
+        // If the field is a realation, we rename the field to include _id
+        if (field.name === `${searchField}Id`) {
+          fullTextDirectiveVal.fields[index] = `${searchField}_id`;
+        }
+      });
+
+      newModel.fullText = fullTextDirectiveVal;
+    }
+
     modelRelations.models.push(newModel);
   }
   validateRelations(modelRelations);

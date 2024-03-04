@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Fulltext search plugin to sanitise search input (#2280)
 
 ## [2.9.1] - 2024-02-29
 ### Fixed
@@ -254,7 +256,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
-- `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
+-  annotation is now supported in 
   - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
   - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 

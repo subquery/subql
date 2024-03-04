@@ -5,6 +5,7 @@ import {
   GraphQLEntityField,
   GraphQLEntityIndex,
   GraphQLEnumsType,
+  GraphQLFullTextType,
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
@@ -19,6 +20,9 @@ export type ModifiedModels = Record<
 
     addedIndexes: GraphQLEntityIndex[];
     removedIndexes: GraphQLEntityIndex[];
+
+    addedFullText?: GraphQLFullTextType;
+    removedFullText?: GraphQLFullTextType;
   }
 >;
 
@@ -36,12 +40,23 @@ export interface SchemaChangesType {
   modifiedEnums: GraphQLEnumsType[];
 }
 
-export function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): boolean {
+/**
+ *  Checks that 2 string arrays are the same independent of order
+ * */
+function arrayUnorderedMatch(a?: string[], b?: string[]): boolean {
+  return a?.sort().join(',') === b?.sort().join(',');
+}
+
+function indexesEqual(index1: GraphQLEntityIndex, index2: GraphQLEntityIndex): boolean {
   return (
-    index1.fields.join(',') === index2.fields.join(',') &&
+    arrayUnorderedMatch(index1.fields, index2.fields) &&
     index1.unique === index2.unique &&
     index1.using === index2.using
   );
+}
+
+function fullTextEqual(a?: GraphQLFullTextType, b?: GraphQLFullTextType): boolean {
+  return arrayUnorderedMatch(a?.fields, b?.fields) && a?.language === b?.language;
 }
 
 export function hasChanged(changes: SchemaChangesType): boolean {
@@ -96,7 +111,7 @@ export function compareRelations(
   });
 }
 
-export function fieldsAreEqual(field1: GraphQLEntityField, field2: GraphQLEntityField): boolean {
+function fieldsAreEqual(field1: GraphQLEntityField, field2: GraphQLEntityField): boolean {
   return (
     field1.name === field2.name &&
     field1.type === field2.type &&
@@ -134,13 +149,25 @@ export function compareModels(
       const addedIndexes = model.indexes.filter((index) => !currentModel.indexes.some((i) => indexesEqual(i, index)));
       const removedIndexes = currentModel.indexes.filter((index) => !model.indexes.some((i) => indexesEqual(i, index)));
 
-      if (addedFields.length || removedFields.length || addedIndexes.length || removedIndexes.length) {
+      const addedFullText = !fullTextEqual(model.fullText, currentModel.fullText) ? model.fullText : undefined;
+      const removedFullText = !fullTextEqual(model.fullText, currentModel.fullText) ? currentModel.fullText : undefined;
+
+      if (
+        addedFields.length ||
+        removedFields.length ||
+        addedIndexes.length ||
+        removedIndexes.length ||
+        addedFullText ||
+        removedFullText
+      ) {
         changes.modifiedModels[model.name] = {
           model,
           addedFields,
           removedFields,
           addedIndexes,
           removedIndexes,
+          addedFullText,
+          removedFullText,
         };
       }
     }
@@ -194,6 +221,13 @@ export function schemaChangesLoggerMessage(schemaChanges: SchemaChangesType): st
     }
     if (changes.removedIndexes.length) {
       logMessage += `\tRemoved Indexes: ${formatIndexes(changes.removedIndexes)}\n`;
+    }
+
+    if (changes.addedFullText) {
+      logMessage += `\tAdded FullText: ${changes.addedFullText.fields.join(', ')}\n`;
+    }
+    if (changes.removedFullText) {
+      logMessage += `\tRemoved FullText\n`;
     }
   });
   if (schemaChanges.addedEnums.length) {

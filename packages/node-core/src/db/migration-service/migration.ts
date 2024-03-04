@@ -1,11 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'node:assert';
 import {SUPPORT_DB} from '@subql/common';
 import {
   GraphQLEntityField,
   GraphQLEntityIndex,
   GraphQLEnumsType,
+  GraphQLFullTextType,
   GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
@@ -190,6 +192,10 @@ export class Migration {
       );
     }
 
+    if (model.fullText) {
+      this.createFullText(model);
+    }
+
     if (this.useSubscription) {
       const triggerName = hashName(this.schemaName, 'notify_trigger', sequelizeModel.tableName);
       const notifyTriggers = await syncHelper.getTriggers(this.sequelize, triggerName);
@@ -305,7 +311,7 @@ export class Migration {
             singleForeignFieldName: relation.fieldName,
           });
           this.extraQueries.push(
-            syncHelper.commentConstraintQuery(`"${this.schemaName}"."${rel.target.tableName}"`, fkConstraint, tags),
+            syncHelper.commentConstraintQuery(this.schemaName, rel.target.tableName, fkConstraint, tags),
             syncHelper.createUniqueIndexQuery(this.schemaName, relatedModel.tableName, relation.foreignKey)
           );
           break;
@@ -320,7 +326,7 @@ export class Migration {
             foreignFieldName: relation.fieldName,
           });
           this.extraQueries.push(
-            syncHelper.commentConstraintQuery(`"${this.schemaName}"."${rel.target.tableName}"`, fkConstraint, tags)
+            syncHelper.commentConstraintQuery(this.schemaName, rel.target.tableName, fkConstraint, tags)
           );
           break;
         }
@@ -344,7 +350,7 @@ export class Migration {
       const comment = Array.from(keys.values())
         .map((tags) => syncHelper.smartTags(tags, '|'))
         .join('\n');
-      const query = syncHelper.commentTableQuery(`"${this.schemaName}"."${tableName}"`, comment);
+      const query = syncHelper.commentTableQuery(this.schemaName, tableName, comment);
       this.extraQueries.push(query);
     });
   }
@@ -423,6 +429,34 @@ export class Migration {
         this.enumTypeMap.delete(typeName);
       }
     });
+  }
+
+  createFullText(model: GraphQLModelsType): void {
+    assert(model.fullText, `Expected fullText to exist on model ${model.name}`);
+
+    const table = modelToTableName(model.name);
+
+    const queries = [
+      syncHelper.createTsVectorColumnQuery(this.schemaName, table, model.fullText.fields, model.fullText.language),
+      syncHelper.createTsVectorCommentQuery(this.schemaName, table),
+      syncHelper.createTsVectorIndexQuery(this.schemaName, table),
+      syncHelper.createSearchFunctionQuery(this.schemaName, table),
+      syncHelper.commentSearchFunctionQuery(this.schemaName, table),
+    ];
+
+    this.mainQueries.push(...queries);
+  }
+
+  dropFullText(model: GraphQLModelsType): void {
+    const table = modelToTableName(model.name);
+
+    const queries = [
+      syncHelper.dropSearchFunctionQuery(this.schemaName, table),
+      syncHelper.dropTsVectorIndexQuery(this.schemaName, table),
+      syncHelper.dropTsVectorColumnQuery(this.schemaName, table),
+    ];
+
+    this.mainQueries.push(...queries);
   }
 
   // Sequelize model will generate follow query to create hash indexes
