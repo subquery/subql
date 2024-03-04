@@ -14,8 +14,8 @@ import {
   RateLimitError,
   TimeoutError,
   IApiConnectionSpecific,
+  IBlock,
 } from '@subql/node-core';
-import { IBlock } from '@subql/types-core';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent, LightBlockContent } from './types';
 import { createCachedProvider } from './x-provider/cachedProvider';

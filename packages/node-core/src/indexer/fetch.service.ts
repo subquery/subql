@@ -5,7 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource, IProjectNetworkConfig, IBlock} from '@subql/types-core';
+import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {range, without} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
@@ -16,7 +16,7 @@ import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {getBlockHeight, mergeNumAndBlocks} from './dictionary/utils';
 import {DynamicDsService} from './dynamic-ds.service';
-import {IProjectService} from './types';
+import {IBlock, IProjectService} from './types';
 
 const logger = getLogger('FetchService');
 

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Injectable } from '@nestjs/common';
-import { Header as SubstrateHeader } from '@polkadot/types/interfaces';
 import {
   BaseUnfinalizedBlocksService,
   getLogger,
@@ -11,18 +10,9 @@ import {
   NodeConfig,
   StoreCacheService,
 } from '@subql/node-core';
+import { substrateHeaderToHeader } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { BlockContent, LightBlockContent } from './types';
-
-export function substrateHeaderToHeader(header: SubstrateHeader): Header {
-  return {
-    blockHeight: header.number.toNumber(),
-    blockHash: header.hash.toHex(),
-    parentHash: header.parentHash.toHex(),
-  };
-}
-
-const logger = getLogger('unfinalized-service');
 
 @Injectable()
 export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<

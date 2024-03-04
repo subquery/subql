@@ -9,10 +9,10 @@ import {
   DictionaryResponse,
   getLogger,
   DictionaryV2QueryEntry,
-  RawFatDictionaryResponseData,
+  RawDictionaryResponseData,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
-import { IBlock } from '@subql/types-core';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { SubstrateDictionaryV2QueryEntry } from './types';
 
@@ -70,12 +70,12 @@ export class SubstrateDictionaryV2 extends DictionaryV2<
     queryEndBlock: number,
     limit = MIN_FAT_FETCH_LIMIT,
   ): Promise<DictionaryResponse<IBlock<SubstrateBlock> | number> | undefined> {
-    return this.coreGetData(startBlock, queryEndBlock, limit);
+    return this.getData(startBlock, queryEndBlock, limit);
   }
 
   // TODO, complete this once substrate support v2
   convertResponseBlocks(
-    result: RawFatDictionaryResponseData<any>,
+    result: RawDictionaryResponseData<any>,
   ): DictionaryResponse<IBlock<SubstrateBlock>> | undefined {
     return undefined;
   }

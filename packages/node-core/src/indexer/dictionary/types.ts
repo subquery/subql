@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IBlock} from '@subql/types-core';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
+import {IBlock} from '../types';
 
 export type DictionaryResponse<B = number> = {
   batchBlocks: B[];
@@ -19,7 +19,6 @@ export interface IDictionary<DS, FB> {
   init(): Promise<void>;
   queryMapValidByHeight(height: number): boolean;
   getQueryEndBlock(targetEndHeight: number, apiFinalizedHeight: number): number;
-  startHeight: number;
   heightValidation(height: number): boolean;
   updateQueriesMap(dataSources: BlockHeightMap<DS[]>): void;
 }

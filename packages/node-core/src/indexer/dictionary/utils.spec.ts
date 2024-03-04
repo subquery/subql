@@ -1,13 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IBlock} from '@subql/types-core';
+import {IBlock} from '../types';
 import {mergeNumAndBlocks, mergeNumAndBlocksToNums} from './utils';
 
 function mockIblock(n: number): IBlock<{height: number; hash: string}> {
   return {
     getHeader: () => {
-      return {height: n, parentHash: `0x${n - 1}`, hash: `0x${n}`};
+      return {blockHeight: n, parentHash: `0x${n - 1}`, blockHash: `0x${n}`};
     },
     block: {height: n, hash: `0x${n}`},
   };
@@ -56,7 +56,7 @@ it('mergeNumAndBlocksToNums, turn all blocks into number', () => {
   function mockIblock(n: number): IBlock<{height: number; hash: string}> {
     return {
       getHeader: () => {
-        return {height: n, parentHash: `0x${n - 1}`, hash: `0x${n}`};
+        return {blockHeight: n, parentHash: `0x${n - 1}`, blockHash: `0x${n}`};
       },
       block: {height: n, hash: `0x${n}`},
     };

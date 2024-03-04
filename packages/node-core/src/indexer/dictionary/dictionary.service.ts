@@ -5,11 +5,11 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
-import {IBlock} from '@subql/types-core';
 import fetch from 'cross-fetch';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
+import {IBlock} from '../types';
 import {DictionaryResponse, IDictionary, IDictionaryCtrl} from './types';
 
 const logger = getLogger('DictionaryService');
@@ -87,20 +87,28 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
   async scopedDictionaryEntries(
     startBlockHeight: number,
     scaledBatchSize: number,
+    latestFinalizedHeight: number //api FinalizedHeight
+  ): Promise<DictionaryResponse<number | IBlock<FB>> | undefined> {
+    const skipDictionaryIndex: Set<number> = new Set<number>();
+    return this._scopedDictionaryEntries(startBlockHeight, scaledBatchSize, latestFinalizedHeight, skipDictionaryIndex);
+  }
+
+  private async _scopedDictionaryEntries(
+    startBlockHeight: number,
+    scaledBatchSize: number,
     latestFinalizedHeight: number, //api FinalizedHeight
     skipDictionaryIndex: Set<number> = new Set<number>()
   ): Promise<DictionaryResponse<number | IBlock<FB>> | undefined> {
     // Initialize skipDictionaryIndex as an empty array
     // Attempt to get data from the current dictionary
     // const result = await this.tryGetDictionaryData(startBlockHeight, scaledBatchSize, latestFinalizedHeight, skipDictionaryIndex);
-    let result: DictionaryResponse<number | IBlock<FB>> | undefined;
     const dictionary = this.getDictionary(startBlockHeight, skipDictionaryIndex);
     if (!dictionary) {
       return undefined;
     }
     try {
       const queryEndBlock = dictionary.getQueryEndBlock(startBlockHeight + scaledBatchSize, latestFinalizedHeight);
-      result = await dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
+      return dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
     } catch (error: any) {
       // Handle errors by skipping the current dictionary
       assert(
@@ -108,14 +116,13 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
         new Error(`try get next dictionary but _currentDictionaryIndex is undefined`)
       );
       skipDictionaryIndex.add(this._currentDictionaryIndex);
-      return this.scopedDictionaryEntries(
+      return this._scopedDictionaryEntries(
         startBlockHeight,
         scaledBatchSize,
         latestFinalizedHeight,
         skipDictionaryIndex
       );
     }
-    return result;
   }
 
   protected async resolveDictionary(

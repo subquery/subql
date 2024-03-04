@@ -6,7 +6,6 @@ import {
   BaseTemplateDataSource,
   CommonSubqueryProject,
   Entity,
-  IBlock,
   IProjectNetworkConfig,
 } from '@subql/types-core';
 import {GraphQLSchema} from 'graphql';
@@ -58,3 +57,14 @@ export interface IProjectService<DS> {
   getDataSourcesMap(): BlockHeightMap<DS[]>;
   hasDataSourcesAfterHeight(height: number): boolean;
 }
+
+export interface IBlock<B = any> {
+  getHeader(): Header;
+  block: B;
+}
+
+export type Header = {
+  blockHeight: number;
+  blockHash: string;
+  parentHash: string | undefined;
+};

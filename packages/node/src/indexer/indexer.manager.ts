@@ -21,6 +21,7 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
+  IBlock,
 } from '@subql/node-core';
 import {
   LightSubstrateEvent,
@@ -30,7 +31,6 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { IBlock } from '@subql/types-core';
 import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService as SubstrateApiService } from './api.service';

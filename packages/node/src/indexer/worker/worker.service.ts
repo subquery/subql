@@ -8,9 +8,9 @@ import {
   ProcessBlockResponse,
   BaseWorkerService,
   IProjectUpgradeService,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { IBlock } from '@subql/types-core';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';

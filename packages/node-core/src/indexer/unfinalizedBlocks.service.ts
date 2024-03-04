@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {IBlock} from '@subql/types-core';
 import {isEqual, last} from 'lodash';
 import {NodeConfig} from '../configure';
+import {Header, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
 import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
@@ -20,11 +20,6 @@ export const POI_NOT_ENABLED_ERROR_MESSAGE = 'Poi is not enabled, unable to chec
 
 const UNFINALIZED_THRESHOLD = 200;
 
-export type Header = {
-  blockHeight: number;
-  blockHash: string;
-  parentHash: string | undefined;
-};
 type UnfinalizedBlocks = Header[];
 
 export interface IUnfinalizedBlocksService<B> {
@@ -48,12 +43,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   @mainThreadOnly()
   protected blockToHeader(block: IBlock<B>): Header {
-    const header = block.getHeader();
-    return {
-      blockHash: header.hash,
-      blockHeight: header.height,
-      parentHash: header.parentHash,
-    };
+    return block.getHeader();
   }
 
   private set unfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks) {

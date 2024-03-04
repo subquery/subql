@@ -14,8 +14,8 @@ import {
   profilerWrap,
   ConnectionPoolService,
   ApiService as BaseApiService,
+  IBlock,
 } from '@subql/node-core';
-import { IBlock } from '@subql/types-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';

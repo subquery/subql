@@ -5,12 +5,11 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
-import {IBlock} from '@subql/types-core';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {PoiSyncService} from '../../indexer';
+import {IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
@@ -105,10 +104,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       heights.every((h) => typeof h === 'number'),
       'Worker block dispatcher only supports enqueuing numbers, not blocks.'
     );
-    await this._enqueueBlocks(heights as number[], latestBufferHeight);
-  }
 
-  private async _enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
     // In the case where factors of batchSize is equal to bypassBlock or when heights is []
     // to ensure block is bypassed, we set the latestBufferHeight to the heights
     // make sure lastProcessedHeight in metadata is updated
@@ -125,7 +121,9 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
         const workerIdx = await this.getNextWorkerIndex();
         const batchSize = Math.min(heights.length - startIndex, await this.maxBatchSize(workerIdx));
         await Promise.all(
-          heights.slice(startIndex, startIndex + batchSize).map((height) => this.enqueueBlock(height, workerIdx))
+          heights
+            .slice(startIndex, startIndex + batchSize)
+            .map((height) => this.enqueueBlock(height as number, workerIdx))
         );
         startIndex += batchSize;
       }
@@ -135,10 +133,10 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
        * worker1: 1,3,5
        * worker2: 2,4,6
        */
-      heights.map(async (height) => this.enqueueBlock(height, await this.getNextWorkerIndex()));
+      heights.map(async (height) => this.enqueueBlock(height as number, await this.getNextWorkerIndex()));
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights) ?? this.latestBufferedHeight;
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
   }
 
   private async enqueueBlock(height: number, workerIdx: number): Promise<void> {

@@ -3,7 +3,6 @@
 
 import {Inject, Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing';
-import {IBlock} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
 import {isEqual} from 'lodash';
@@ -12,7 +11,7 @@ import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
-import {IIndexerManager} from './types';
+import {IBlock, IIndexerManager} from './types';
 
 const logger = getLogger('test-runner');
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {BaseCustomDataSource, BaseDataSource, IBlock} from '@subql/types-core';
+import {BaseCustomDataSource, BaseDataSource} from '@subql/types-core';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -11,7 +11,7 @@ import {ProcessBlockResponse} from './blockDispatcher';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
-import {IIndexerManager} from './types';
+import {IBlock, IIndexerManager} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
@@ -80,7 +80,7 @@ export abstract class BaseIndexerManager<
     getApi: () => Promise<SA>
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
-    const blockHeight = block.getHeader().height;
+    const blockHeight = block.getHeader().blockHeight;
 
     const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
@@ -115,7 +115,7 @@ export abstract class BaseIndexerManager<
 
     return {
       dynamicDsCreated,
-      blockHash: block.getHeader().hash,
+      blockHash: block.getHeader().blockHash,
       reindexBlockHeight,
     };
   }

@@ -6,9 +6,9 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {DEFAULT_MANIFEST, mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
+import {DEFAULT_MANIFEST, IPFS_WRITE_ENDPOINT, mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
-import {create} from 'ipfs-http-client';
+import {create, CID} from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
@@ -96,7 +96,10 @@ describe('Cli publish', () => {
     const ipfs = create({url: ipfsEndpoint});
 
     //test string
-    const cid = await uploadFile({path: '', content: 'Test for upload string to ipfs'}, testAuth);
+    const cid = await uploadFile(
+      {path: '', content: 'Test for uploaaaaaad string to ipfsaaaa'},
+      'MTA0MzE2NTc=HW6qsPzHCUWFwJD7iyJ7'
+    );
     console.log(`upload file cid: ${cid}`);
   });
 
@@ -149,5 +152,19 @@ describe('Cli publish', () => {
       obj: {abc: 111},
     });
     expect(mapToObject(mockMap)).toStrictEqual({'1': 'aaa', '2': 'bbb'});
+  });
+
+  it(`pin test`, async () => {
+    // only enable when test locally
+    const ipfsWrite = create({
+      url: IPFS_WRITE_ENDPOINT,
+      headers: {Authorization: `Bearer ${'MTA0MzE2NTc=HW6qsPzHCUWFwJD7iyJ7'}`},
+    });
+    const PIN_SERVICE = 'onfinality';
+
+    const cid = CID.parse('QmVvX8wY78KzfbGaiPNaVamLB1Gs7f6HunZYFqojANS1cC');
+
+    await ipfsWrite.pin.remote.add(cid, {service: PIN_SERVICE});
+    return cid.toString();
   });
 });

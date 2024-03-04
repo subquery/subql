@@ -3,13 +3,12 @@
 
 // import { Header } from '@polkadot/types/interfaces';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {IBlock} from '@subql/types-core';
+import {Header, IBlock} from '../indexer';
 import {StoreCacheService, CacheMetadataModel} from './storeCache';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,
   BaseUnfinalizedBlocksService,
-  Header,
 } from './unfinalizedBlocks.service';
 
 /* Notes:
@@ -62,7 +61,7 @@ function mockStoreCache(): StoreCacheService {
 function mockBlock(height: number, hash: string, parentHash?: string): IBlock<any> {
   return {
     getHeader: () => {
-      return {height: height, parentHash: parentHash ?? '', hash: hash};
+      return {blockHeight: height, parentHash: parentHash ?? '', blockHash: hash};
     },
     block: {
       header: {

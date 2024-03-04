@@ -5,7 +5,7 @@ import {existsSync, readdirSync, statSync} from 'fs';
 import path from 'path';
 import {Injectable} from '@nestjs/common';
 import {SubqlTest} from '@subql/testing/interfaces';
-import {BaseDataSource, IBlock, IProjectNetworkConfig} from '@subql/types-core';
+import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
 import {cloneDeep} from 'lodash';
 import {IApi} from '../api.service';
@@ -13,7 +13,7 @@ import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {SandboxOption, TestSandbox} from './sandbox';
 import {TestRunner} from './test.runner';
-import {ISubqueryProject, IIndexerManager} from './types';
+import {ISubqueryProject, IIndexerManager, IBlock} from './types';
 
 const logger = getLogger('subql-testing');
 

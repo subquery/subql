@@ -10,17 +10,14 @@ import { isCustomDs, SubstrateHandlerKind } from '@subql/common-substrate';
 import { NodeConfig, BaseFetchService, getModulos } from '@subql/node-core';
 import { SubstrateDatasource, SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { calcInterval } from '../utils/substrate';
+import { calcInterval, substrateHeaderToHeader } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
-import {
-  substrateHeaderToHeader,
-  UnfinalizedBlocksService,
-} from './unfinalizedBlocks.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const BLOCK_TIME_VARIANCE = 5000; //ms
 const INTERVAL_PERCENT = 0.9;

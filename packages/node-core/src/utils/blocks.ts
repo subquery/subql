@@ -1,9 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {IBlock} from '@subql/types-core';
 import {chunk, flatten, isNumber, range, uniq, without} from 'lodash';
-import {getBlockHeight} from '../indexer';
+import {getBlockHeight, IBlock} from '../indexer';
 
 export function cleanedBatchBlocks<FB>(
   bypassBlocks: number[],

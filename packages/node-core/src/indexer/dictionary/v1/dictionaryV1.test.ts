@@ -188,7 +188,7 @@ describe('Dictionary V1', () => {
 
     it('able to build queryEntryMap', () => {
       dictionary.updateQueriesMap(dsMap);
-      const _map = dictionary.queriesMap?.getAll();
+      const _map = (dictionary as any).queriesMap?.getAll();
 
       assert(_map, 'Map should exist');
 
@@ -218,23 +218,23 @@ describe('Dictionary V1', () => {
           HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
         );
       }
-      dictionary.queriesMap = new BlockHeightMap(dictionaryQueryMap);
+      (dictionary as any).queriesMap = new BlockHeightMap(dictionaryQueryMap);
       let queryEndBlock = 150;
 
       // queryEndBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
-      expect(dictionary.queriesMap?.getSafe(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+      expect((dictionary as any).queriesMap?.getSafe(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
 
       queryEndBlock = 500;
 
       // queryEndBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
-      expect(dictionary.queriesMap?.getSafe(queryEndBlock)).toEqual([
+      expect((dictionary as any).queriesMap?.getSafe(queryEndBlock)).toEqual([
         HAPPY_PATH_CONDITIONS[0],
         HAPPY_PATH_CONDITIONS[1],
       ]);
 
       queryEndBlock = 5000;
       // queryEndBlock > all dictionaryQuery
-      expect(dictionary.queriesMap?.getSafe(queryEndBlock)).toEqual([
+      expect((dictionary as any).queriesMap?.getSafe(queryEndBlock)).toEqual([
         HAPPY_PATH_CONDITIONS[0],
         HAPPY_PATH_CONDITIONS[1],
         HAPPY_PATH_CONDITIONS[2],
@@ -242,7 +242,7 @@ describe('Dictionary V1', () => {
 
       queryEndBlock = 50;
       // queryEndBlock < min dictionaryQuery
-      expect(dictionary.queriesMap?.getSafe(queryEndBlock)).toEqual(undefined);
+      expect((dictionary as any).queriesMap?.getSafe(queryEndBlock)).toEqual(undefined);
     });
   });
 

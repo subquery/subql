@@ -13,9 +13,9 @@ import {
   ProcessBlockResponse,
   IProjectUpgradeService,
   PoiSyncService,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { IBlock } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
 import { DynamicDsService } from '../dynamic-ds.service';

@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ParentProject, RunnerSpecs, BaseDataSource, BaseTemplateDataSource} from './versioned';
+import {BaseDataSource, BaseTemplateDataSource, ParentProject, RunnerSpecs} from './versioned';
 
 /**
  * Represents a common subquery project configuration.
@@ -184,13 +184,4 @@ export interface DictionaryQueryCondition {
 export interface DictionaryQueryEntry {
   entity: string;
   conditions: DictionaryQueryCondition[];
-}
-
-export interface IBlock<B = any> {
-  getHeader(): {
-    hash: string;
-    height: number;
-    parentHash?: string;
-  };
-  block: B;
 }

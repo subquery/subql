@@ -4,7 +4,6 @@
 import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {IBlock} from '@subql/types-core';
 import {hexToU8a, u8aEq} from '@subql/utils';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {IndexerEvent, PoiEvent} from '../../events';
@@ -16,7 +15,7 @@ import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
-import {IProjectService, ISubqueryProject} from '../types';
+import {IBlock, IProjectService, ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
 

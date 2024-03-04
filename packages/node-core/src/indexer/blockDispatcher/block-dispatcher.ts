@@ -5,11 +5,10 @@ import {getHeapStatistics} from 'v8';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
-import {IBlock} from '@subql/types-core';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {getBlockHeight, PoiSyncService} from '../../indexer';
+import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
@@ -155,22 +154,22 @@ export abstract class BlockDispatcher<B, DS>
           })
           .then(
             (block) => {
-              const {height} = block.getHeader();
+              const {blockHeight} = block.getHeader();
 
               return this.processQueue.put(async () => {
                 // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
                 // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
                 const peeked = this.queue.peek();
-                if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < height)) {
+                if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < blockHeight)) {
                   logger.info(`Queue was reset for new DS, discarding fetched blocks`);
                   return;
                 }
 
                 try {
-                  await this.preProcessBlock(height);
+                  await this.preProcessBlock(blockHeight);
                   // Inject runtimeVersion here to enhance api.at preparation
                   const processBlockResponse = await this.indexBlock(block);
-                  await this.postProcessBlock(height, processBlockResponse);
+                  await this.postProcessBlock(blockHeight, processBlockResponse);
 
                   //set block to null for garbage collection
                   (block as any) = null;
@@ -181,7 +180,9 @@ export abstract class BlockDispatcher<B, DS>
                   }
                   logger.error(
                     e,
-                    `Failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
+                    `Failed to index block at height ${blockHeight} ${
+                      e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
+                    }`
                   );
                   throw e;
                 }

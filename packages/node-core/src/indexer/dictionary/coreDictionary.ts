@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {IBlock} from '@subql/types-core';
+import {FieldSelector} from '@subql/node-core';
 import {NodeConfig} from '../../configure';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
+import {IBlock} from '../types';
 import {DictionaryResponse, IDictionary} from './types';
 
 export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQueryEntry */>
   implements IDictionary<DS, FB>
 {
-  // TODO make protected, need to fix up tests
-  queriesMap?: BlockHeightMap<E>;
+  protected queriesMap?: BlockHeightMap<E>;
   protected _startHeight?: number;
   protected _metadata?: M;
   metadataValid: boolean | undefined;
@@ -26,7 +26,8 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   abstract getData(
     startBlock: number,
     queryEndBlock: number,
-    limit: number
+    limit: number,
+    fieldSelector?: FieldSelector
   ): Promise<DictionaryResponse<IBlock | number> | undefined>;
   abstract init(): Promise<void>;
   protected abstract dictionaryValidation(metaData?: M, startBlockHeight?: number): boolean;

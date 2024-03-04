@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {threadId} from 'node:worker_threads';
-import {BaseDataSource, IBlock} from '@subql/types-core';
+import {BaseDataSource} from '@subql/types-core';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
-import {IProjectService} from '../types';
+import {IBlock, IProjectService} from '../types';
 import {BlockUnavailableError, isBlockUnavailableError} from './utils';
 
 export type FetchBlockResponse = {specVersion: number; parentHash: string} | undefined;

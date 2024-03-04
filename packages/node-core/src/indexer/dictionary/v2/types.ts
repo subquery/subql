@@ -5,7 +5,11 @@ export interface V2MetadataFilters {
   [key: string]: string[];
 }
 
-export interface RawFatDictionaryResponseData<RFB> {
+export interface FieldSelector {
+  [key: string]: boolean | FieldSelector;
+}
+
+export interface RawDictionaryResponseData<RFB> {
   blocks: RFB[]; //raw fat blocks
   BlockRange: number[];
   GenesisHash: string;

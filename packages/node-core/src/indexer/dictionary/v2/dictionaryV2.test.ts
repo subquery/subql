@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {IBlock} from '@subql/types-core';
-import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawFatDictionaryResponseData} from '../';
+import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
+import {IBlock} from '../../types';
 
 jest.setTimeout(50000);
 
@@ -28,9 +28,7 @@ export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
     return Promise.resolve(undefined);
   }
 
-  convertResponseBlocks<RFB>(
-    result: RawFatDictionaryResponseData<RFB>
-  ): DictionaryResponse<IBlock<TestFB>> | undefined {
+  convertResponseBlocks<RFB>(result: RawDictionaryResponseData<RFB>): DictionaryResponse<IBlock<TestFB>> | undefined {
     return undefined;
   }
 }

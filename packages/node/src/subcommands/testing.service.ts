@@ -10,9 +10,9 @@ import {
   NestLogger,
   TestRunner,
   SubqlProjectDs,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { IBlock } from '@subql/types-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
@@ -72,7 +72,7 @@ export class TestingService extends BaseTestingService<
   ): Promise<void> {
     const runtimeVersion =
       await apiService.unsafeApi.rpc.state.getRuntimeVersion(
-        block.getHeader().hash,
+        block.getHeader().blockHash,
       );
 
     await indexerManager.indexBlock(
