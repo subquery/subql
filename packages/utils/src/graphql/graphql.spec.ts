@@ -378,12 +378,12 @@ describe('utils that handle schema.graphql', () => {
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const entities = getAllEntitiesRelations(schema);
 
-    expect(entities.models?.[0].fullText?.fields).toEqual(['field1', 'field2']);
+    expect(entities.models?.[0].fullText?.fields).toEqual(['field2', 'field3']);
   });
 
   it('can throw fulltext directive when field doesnt exist on entity', () => {
     const graphqlSchema = gql`
-      type StarterEntity @entity @fullText(fields: ["field2", "not_exits"], language: "english") {
+      type StarterEntity @entity @fullText(fields: ["field2", "not_exists"], language: "english") {
         id: ID! #id is a required field
         field1: Int!
         field2: String #field2 is an optional field
@@ -392,7 +392,7 @@ describe('utils that handle schema.graphql', () => {
     `;
 
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
-    expect(getAllEntitiesRelations(schema)).toThrow(
+    expect(() => getAllEntitiesRelations(schema)).toThrow(
       `Field "not_exists" in fullText directive doesn't exist on entity "StarterEntity"`
     );
   });
@@ -408,6 +408,6 @@ describe('utils that handle schema.graphql', () => {
     `;
 
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
-    expect(getAllEntitiesRelations(schema)).toThrow(`fullText directive fields only supports String types`);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(`fullText directive fields only supports String types`);
   });
 });
