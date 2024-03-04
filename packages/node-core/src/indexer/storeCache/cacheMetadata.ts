@@ -81,12 +81,17 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
-  private async incrementJsonbCount(key: string, amount = 1, tx?: Transaction): Promise<void> {
+  private async incrementJsonbCount(key: MetadataKey, amount = 1, tx?: Transaction): Promise<void> {
     const table = this.model.getTableName();
 
     if (!this.model.sequelize) {
       throw new Error(`Sequelize is not available on ${this.model.name}`);
     }
+
+    await this.model.findOrCreate({
+      where: {key: key},
+      defaults: {key: key, value: 0},
+    });
 
     await this.model.sequelize.query(
       `UPDATE ${table} SET value = (COALESCE(value->0):: int + ${amount})::text::jsonb WHERE key ='${key}'`,
@@ -117,7 +122,9 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
         updateOnDuplicate: ['key', 'value'],
       }),
       ...incrementKeys
-        .map((key) => this.setCache[key] && this.incrementJsonbCount(key, this.setCache[key] as number, tx))
+        .map((key) =>
+          this.setCache[key] !== undefined ? this.incrementJsonbCount(key, this.setCache[key] as number, tx) : undefined
+        )
         .filter(Boolean),
       this.model.destroy({where: {key: this.removeCache}}),
     ]);
