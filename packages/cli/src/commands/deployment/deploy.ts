@@ -109,7 +109,7 @@ export default class Deploy extends Command {
       historicalData: !flags.disableHistorical,
       unfinalizedBlocks: flags.indexerUnfinalized,
       storeCacheThreshold: flags.indexerStoreCacheThreshold,
-      storeCacheAsync: !flags.disableIndexerStoreCacheAsync,
+      disableStoreCacheAsync: flags.disableIndexerStoreCacheAsync,
     };
 
     if (!dict) {

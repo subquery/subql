@@ -25,7 +25,7 @@ export interface IndexerAdvancedOpts {
   unfinalizedBlocks?: boolean;
   proofOfIndex?: boolean;
   storeCacheThreshold?: number;
-  storeCacheAsync?: boolean;
+  disableStoreCacheAsync?: boolean;
 }
 
 export type ProjectSpecV0_0_1 = ProjectSpecBase;
