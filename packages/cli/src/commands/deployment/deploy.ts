@@ -109,7 +109,7 @@ export default class Deploy extends Command {
       historicalData: !flags.disableHistorical,
       unfinalizedBlocks: flags.indexerUnfinalized,
       storeCacheThreshold: flags.indexerStoreCacheThreshold,
-      disableStoreCacheAsync: !flags.disableIndexerStoreCacheAsync,
+      disableStoreCacheAsync: flags.disableIndexerStoreCacheAsync,
     };
 
     if (!dict) {
@@ -209,14 +209,6 @@ export default class Deploy extends Command {
         chains,
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
-
-      // Managed service does some interesting things: `disableStoreCacheAsync: true` -> `--store-cache-async=true`, we are just inverting it to resolve logging confusion.
-      if (
-        deploymentOutput.configuration.config.indexer &&
-        deploymentOutput.configuration.config.indexer.disableStoreCacheAsync === false
-      ) {
-        deploymentOutput.configuration.config.indexer.disableStoreCacheAsync = true;
-      }
 
       this.log(`Project: ${deploymentOutput.projectKey}
       \nStatus: ${chalk.blue(deploymentOutput.status)}
