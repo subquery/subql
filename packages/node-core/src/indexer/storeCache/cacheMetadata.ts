@@ -82,19 +82,21 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
   }
 
   private async incrementJsonbCount(key: MetadataKey, amount = 1, tx?: Transaction): Promise<void> {
-    const table = this.model.getTableName();
+    const schema = this.model.options.schema;
 
     if (!this.model.sequelize) {
       throw new Error(`Sequelize is not available on ${this.model.name}`);
     }
 
-    await this.model.findOrCreate({
-      where: {key: key},
-      defaults: {key: key, value: 0},
-    });
-
+    //      `UPDATE ${table} SET value = (COALESCE(value->0):: int + ${amount})::text::jsonb WHERE key ='${key}'`,
     await this.model.sequelize.query(
-      `UPDATE ${table} SET value = (COALESCE(value->0):: int + ${amount})::text::jsonb WHERE key ='${key}'`,
+      `
+          INSERT INTO ${schema}."_metadata" (key, value, "createdAt", "updatedAt")
+          VALUES ('${key}', '0'::jsonb, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT (key) DO
+          UPDATE SET value = (COALESCE(${schema}."_metadata".value->>0)::int + '${amount}')::text::jsonb,
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE ${this.model.options.schema}."_metadata".key = '${key}';`,
       tx && {transaction: tx}
     );
   }
