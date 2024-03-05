@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2024-03-05
+### Changed
+- Update `@subql/node-core` to 7.4.0
+
 ## [3.6.1] - 2024-02-29
 ### Fixed
 - Update `@subql/node-core` to fix Poi generation issue with negative integer, also drop subscription triggers and notifiy_functions
@@ -1117,7 +1121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.7.0...HEAD
+[3.7.0]: https://github.com/subquery/subql/compare/node/3.6.1...node/3.7.0
 [3.6.1]: https://github.com/subquery/subql/compare/node/3.6.0...node/3.6.1
 [3.6.0]: https://github.com/subquery/subql/compare/node/3.5.3...node/3.6.0
 [3.5.3]: https://github.com/subquery/subql/compare/node/3.5.1...node/3.5.3
