@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Fix missing incrememnt keys on `_metadata` table (#2283)
+- Fixed unexpected `store` on testing suite Entity (#2285)
+
 ### Added
 - Support for Full Text Search (#2280)
 
