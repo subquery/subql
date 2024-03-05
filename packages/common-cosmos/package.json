@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@cosmwasm/ts-codegen": "^0.35.3",
+    "@cosmwasm/ts-codegen": "^0.35.7",
     "@protobufs/cosmos": "^0.1.0",
     "@protobufs/cosmos_proto": "^0.0.10",
     "@protobufs/cosmwasm": "^0.1.1",
