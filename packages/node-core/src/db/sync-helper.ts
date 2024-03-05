@@ -72,12 +72,18 @@ function escapedName(...args: string[]): string {
   return args.map((a) => `"${a}"`).join('.');
 }
 
-function commentOn(type: 'CONSTRAINT' | 'TABLE' | 'COLUMN' | 'FUNCTION', entity: string, comment: string): string {
-  return `COMMENT ON ${type} ${entity} IS E'${comment}'`;
+function commentOn(
+  type: 'CONSTRAINT' | 'TABLE' | 'COLUMN' | 'FUNCTION',
+  entity: string,
+  comment: string,
+  constraint?: string
+): string {
+  const constraintPart = constraint ? `${constraint} ON ` : '';
+  return `COMMENT ON ${type} ${constraintPart}${entity} IS E'${comment}';`;
 }
 
 export function commentConstraintQuery(schema: string, table: string, constraint: string, comment: string): string {
-  return commentOn('CONSTRAINT', escapedName(schema, table), comment);
+  return commentOn('CONSTRAINT', escapedName(schema, table), comment, constraint);
 }
 
 export function commentTableQuery(schema: string, table: string, comment: string): string {

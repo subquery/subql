@@ -154,11 +154,11 @@ describe('sync-helper', () => {
     const expectedStatement = [
       'CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL,\n      "amount" numeric NOT NULL,\n      "date" timestamp NOT NULL,\n      "from_id" text NOT NULL,\n      "_id" UUID NOT NULL,\n      "_block_range" int8range NOT NULL,\n      "last_transfer_block" integer, PRIMARY KEY ("_id"));',
 
-      `COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`,
-      `COMMENT ON COLUMN "test"."test-table"."amount" IS 'Amount that is transferred';`,
-      `COMMENT ON COLUMN "test"."test-table"."date" IS 'The date of the transfer';`,
-      `COMMENT ON COLUMN "test"."test-table"."from_id" IS 'The account that transfers are made from';`,
-      `COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS 'The most recent block on which we see a transfer involving this account';`,
+      `COMMENT ON COLUMN "test"."test-table"."id" IS E'id field is always required and must look like this';`,
+      `COMMENT ON COLUMN "test"."test-table"."amount" IS E'Amount that is transferred';`,
+      `COMMENT ON COLUMN "test"."test-table"."date" IS E'The date of the transfer';`,
+      `COMMENT ON COLUMN "test"."test-table"."from_id" IS E'The account that transfers are made from';`,
+      `COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS E'The most recent block on which we see a transfer involving this account';`,
     ];
     expect(statement).toStrictEqual(expectedStatement);
   });
@@ -190,7 +190,7 @@ describe('sync-helper', () => {
     const statement = generateCreateTableQuery(mockModel, 'test', false);
     expect(statement).toStrictEqual([
       `CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL, PRIMARY KEY ("id"));`,
-      `COMMENT ON COLUMN "test"."test-table"."id" IS 'id field is always required and must look like this';`,
+      `COMMENT ON COLUMN "test"."test-table"."id" IS E'id field is always required and must look like this';`,
     ]);
   });
   it('Reference statement', () => {
