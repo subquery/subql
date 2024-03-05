@@ -35,11 +35,9 @@ describe('cacheMetadata integration', () => {
   it('Ensure increment keys are created on _metadata table', async () => {
     schema = '"metadata-test-1"';
     await sequelize.createSchema(schema, {});
-    await sequelize.query(
-      `CREATE TABLE IF NOT EXISTS ${schema}."_metadata" ("key" VARCHAR(255) , "value" JSONB, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL, PRIMARY KEY ("key"));`
-    );
-
     const metaDataRepo = await MetadataFactory(sequelize, schema, false, '1');
+
+    await metaDataRepo.sync();
 
     const cacheMetadataModel = new CacheMetadataModel(metaDataRepo);
 
