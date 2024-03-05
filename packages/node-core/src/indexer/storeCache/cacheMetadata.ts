@@ -11,6 +11,7 @@ import {ICachedModelControl} from './types';
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
+type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
 
 export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
@@ -77,19 +78,25 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     metadata.map((m) => this.set(m.key, m.value));
   }
 
-  setIncrement(key: 'processedBlockCount' | 'schemaMigrationCount', amount = 1): void {
+  setIncrement(key: IncrementalMetadataKey, amount = 1): void {
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
-  private async incrementJsonbCount(key: string, amount = 1, tx?: Transaction): Promise<void> {
-    const table = this.model.getTableName();
+  private async incrementJsonbCount(key: IncrementalMetadataKey, amount = 1, tx?: Transaction): Promise<void> {
+    const schemaTable = this.model.getTableName();
 
     if (!this.model.sequelize) {
       throw new Error(`Sequelize is not available on ${this.model.name}`);
     }
 
     await this.model.sequelize.query(
-      `UPDATE ${table} SET value = (COALESCE(value->0):: int + ${amount})::text::jsonb WHERE key ='${key}'`,
+      `
+          INSERT INTO ${schemaTable} (key, value, "createdAt", "updatedAt")
+          VALUES ('${key}', '0'::jsonb, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT (key) DO
+          UPDATE SET value = (COALESCE(${schemaTable}.value->>0)::int + '${amount}')::text::jsonb,
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE ${schemaTable}.key = '${key}';`,
       tx && {transaction: tx}
     );
   }
@@ -117,7 +124,11 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
         updateOnDuplicate: ['key', 'value'],
       }),
       ...incrementKeys
-        .map((key) => this.setCache[key] && this.incrementJsonbCount(key, this.setCache[key] as number, tx))
+        .map((key) =>
+          this.setCache[key] !== undefined
+            ? this.incrementJsonbCount(key as IncrementalMetadataKey, this.setCache[key] as number, tx)
+            : undefined
+        )
         .filter(Boolean),
       this.model.destroy({where: {key: this.removeCache}}),
     ]);

@@ -68,16 +68,34 @@ export function getUniqConstraint(tableName: string, field: string): string {
   return [tableName, field, 'uindex'].map(underscored).join('_');
 }
 
-export function commentConstraintQuery(table: string, constraint: string, comment: string): string {
-  return `COMMENT ON CONSTRAINT ${constraint} ON ${table} IS E'${comment}'`;
+function escapedName(...args: string[]): string {
+  return args.map((a) => `"${a}"`).join('.');
 }
 
-export function commentTableQuery(column: string, comment: string): string {
-  return `COMMENT ON TABLE ${column} IS E'${comment}'`;
+function commentOn(
+  type: 'CONSTRAINT' | 'TABLE' | 'COLUMN' | 'FUNCTION',
+  entity: string,
+  comment: string,
+  constraint?: string
+): string {
+  const constraintPart = constraint ? `${constraint} ON ` : '';
+  return `COMMENT ON ${type} ${constraintPart}${entity} IS E'${comment}';`;
+}
+
+export function commentConstraintQuery(schema: string, table: string, constraint: string, comment: string): string {
+  return commentOn('CONSTRAINT', escapedName(schema, table), comment, constraint);
+}
+
+export function commentTableQuery(schema: string, table: string, comment: string): string {
+  return commentOn('TABLE', escapedName(schema, table), comment);
 }
 
 export function commentColumnQuery(schema: string, table: string, column: string, comment: string): string {
-  return `COMMENT ON COLUMN "${schema}".${table}.${column} IS '${comment}';`;
+  return commentOn('COLUMN', escapedName(schema, table, column), comment);
+}
+
+export function commentOnFunction(schema: string, functionName: string, comment: string): string {
+  return commentOn('FUNCTION', escapedName(schema, functionName), comment);
 }
 
 // This is used when historical is disabled so that we can perform bulk updates
@@ -195,14 +213,22 @@ END$$;
   `;
 }
 
-export function dropNotifyTrigger(schema: string, table: string): string {
-  const triggerName = hashName(schema, 'notify_trigger', table);
+function dropTrigger(schema: string, table: string, triggerName: string): string {
   return `DROP TRIGGER IF EXISTS "${triggerName}"
     ON "${schema}"."${table}";`;
 }
 
+export function dropNotifyTrigger(schema: string, table: string): string {
+  const triggerName = hashName(schema, 'notify_trigger', table);
+  return dropTrigger(schema, table, triggerName);
+}
+
+function dropFunction(schema: string, functionName: string): string {
+  return `DROP FUNCTION IF EXISTS "${schema}"."${functionName}";`;
+}
+
 export function dropNotifyFunction(schema: string): string {
-  return `DROP FUNCTION IF EXISTS "${schema}".send_notification()`;
+  return dropFunction(schema, 'send_notification');
 }
 
 // Hot schema reload, _metadata table
@@ -215,7 +241,7 @@ export function createSchemaTrigger(schema: string, metadataTableName: string): 
     ON "${schema}"."${metadataTableName}"
     FOR EACH ROW
     WHEN ( new.key = 'schemaMigrationCount')
-    EXECUTE FUNCTION "${schema}".schema_notification()`;
+    EXECUTE FUNCTION "${schema}".schema_notification();`;
 }
 
 export function createSchemaTriggerFunction(schema: string): string {
@@ -246,7 +272,7 @@ const DEFAULT_SQL_EXE_BATCH = 2000;
  * Improve SQL which could potentially increase DB IO significantly,
  * this executes it by batch size, and in ASC id order
  **/
-export const sqlIterator = (tableName: string, sql: string, batch: number = DEFAULT_SQL_EXE_BATCH) => {
+export const sqlIterator = (tableName: string, sql: string, batch: number = DEFAULT_SQL_EXE_BATCH): string => {
   return `
   DO $$
   DECLARE
@@ -367,6 +393,8 @@ export function generateCreateTableQuery(
   Object.keys(attributes).forEach((key) => {
     const attr = attributes[key];
 
+    assert(attr.field, 'Expected field to be set on attribute');
+
     if (timestampKeys.find((k) => k === attr.field)) {
       attr.type = 'timestamp with time zone';
     }
@@ -375,7 +403,7 @@ export function generateCreateTableQuery(
 
     columnDefinitions.push(columnDefinition);
     if (attr.comment) {
-      comments.push(`COMMENT ON COLUMN "${schema}"."${tableName}"."${attr.field}" IS '${attr.comment}';`);
+      comments.push(commentColumnQuery(schema, tableName, attr.field, attr.comment));
     }
     if (attr.primaryKey) {
       primaryKeyColumns.push(`"${attr.field}"`);
@@ -443,7 +471,7 @@ export function sortModels(relations: GraphQLRelationsType[], models: GraphQLMod
 export function validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
   if (triggers.length !== NotifyTriggerManipulationType.length) {
     throw new Error(
-      `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
+      `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers`
     );
   }
   triggers.map((t) => {
@@ -508,7 +536,7 @@ export async function getExistingEnums(schema: string, sequelize: Sequelize): Pr
 
 // enums
 export const dropEnumQuery = (enumTypeValue: string, schema: string): string =>
-  `DROP TYPE IF EXISTS "${schema}"."${enumTypeValue}"`;
+  `DROP TYPE IF EXISTS "${schema}"."${enumTypeValue}";`;
 export const commentOnEnumQuery = (type: string, comment: string): string => `COMMENT ON TYPE ${type} IS E${comment};`;
 export const createEnumQuery = (type: string, enumValues: string): string =>
   `CREATE TYPE ${type} AS ENUM (${enumValues});`;
@@ -516,6 +544,7 @@ export const createEnumQuery = (type: string, enumValues: string): string =>
 // relations
 export const dropRelationQuery = (schemaName: string, tableName: string, fkConstraint: string): string =>
   `ALTER TABLE "${schemaName}"."${tableName}" DROP CONSTRAINT IF EXISTS ${fkConstraint};`;
+
 export function generateForeignKeyQuery(attribute: ModelAttributeColumnOptions, tableName: string): string | void {
   const references = attribute?.references as ModelAttributeColumnReferencesOptions;
   if (!references) {
@@ -561,7 +590,7 @@ export const createIndexQuery = (indexOptions: IndexesOptions, tableName: string
     `CREATE ${indexOptions.unique ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS "${indexOptions.name}" ` +
     `ON "${schema}"."${tableName}" ` +
     `${indexOptions.using ? `USING ${indexOptions.using} ` : ''}` +
-    `(${indexOptions.fields.join(', ')})`
+    `(${indexOptions.fields.join(', ')});`
   );
 };
 
@@ -569,5 +598,50 @@ export const createIndexQuery = (indexOptions: IndexesOptions, tableName: string
 export const dropColumnQuery = (schema: string, columnName: string, tableName: string): string =>
   `ALTER TABLE  "${schema}"."${modelToTableName(tableName)}" DROP COLUMN IF EXISTS ${columnName};`;
 
-export const createColumnQuery = (schema: string, tableName: string, columnName: string, attributes: string): string =>
-  `ALTER TABLE IF EXISTS "${schema}"."${tableName}" ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;
+export const createColumnQuery = (schema: string, table: string, columnName: string, attributes: string): string =>
+  `ALTER TABLE ${escapedName(schema, table)} ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;
+
+// fullTextSearch
+const TS_VECTOR_COL = '_tsv';
+
+export const dropTsVectorColumnQuery = (schema: string, table: string): string =>
+  dropColumnQuery(schema, table, TS_VECTOR_COL);
+export const createTsVectorColumnQuery = (
+  schema: string,
+  table: string,
+  fields: string[],
+  language = 'english'
+): string => {
+  const generated = `GENERATED ALWAYS as (to_tsvector('pg_catalog.${language}', ${fields
+    .map((field) => `coalesce(${escapedName(field)}, '')`)
+    .join(` || ' ' || `)})) STORED`;
+  return createColumnQuery(schema, table, TS_VECTOR_COL, `tsvector ${generated}`);
+};
+
+export const createTsVectorCommentQuery = (schema: string, table: string): string =>
+  commentColumnQuery(schema, table, TS_VECTOR_COL, '@omit all');
+
+const tsVectorIndexName = (schema: string, table: string) => hashName(schema, 'fulltext_idx', table);
+export const dropTsVectorIndexQuery = (schema: string, table: string): string =>
+  dropIndexQuery(schema, tsVectorIndexName(schema, table));
+
+export const createTsVectorIndexQuery = (schema: string, table: string): string =>
+  createIndexQuery({using: 'gist', fields: [TS_VECTOR_COL], name: tsVectorIndexName(schema, table)}, table, schema);
+
+const searchFunctionName = (schema: string, table: string): string => hashName(schema, 'search', table);
+export const dropSearchFunctionQuery = (schema: string, table: string): string =>
+  dropFunction(schema, searchFunctionName(schema, table));
+export const createSearchFunctionQuery = (schema: string, table: string): string => {
+  const functionName = searchFunctionName(schema, table);
+  return `
+create or replace function ${escapedName(schema, functionName)}(search text)
+  returns setof ${escapedName(schema, table)} as $$
+    select *
+    from ${escapedName(schema, table)} as "table"
+    where "table"."${TS_VECTOR_COL}" @@ to_tsquery(search)
+  $$ language sql stable;
+  `;
+};
+
+export const commentSearchFunctionQuery = (schema: string, table: string): string =>
+  commentOnFunction(schema, searchFunctionName(schema, table), `@name search_${table}`);
