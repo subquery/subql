@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
@@ -304,6 +305,14 @@ export class EthereumApi implements ApiWrapper {
     try {
       const block = await this.getBlockPromise(blockNumber, true);
       const logsRaw = await this.client.getLogs({ blockHash: block.hash });
+
+      // Certain RPC may not accommodate for blockHash, and would return wrong logs
+      if (logsRaw.length) {
+        assert(
+          logsRaw.every((l) => l.blockHash === block.hash),
+          `Log BlockHash does not match block: ${blockNumber}`,
+        );
+      }
 
       block.logs = logsRaw.map((l) => formatLog(l, block));
       block.transactions = block.transactions.map((tx) => ({

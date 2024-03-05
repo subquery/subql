@@ -329,4 +329,31 @@ describe('Api.ethereum', () => {
 
     expect((ethApi as any).supportsFinalized).toBeFalsy();
   });
+  it('Assert blockHash on logs and block', async () => {
+    ethApi = new EthereumApi(
+      'https://rpc.ankr.com/xdc',
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
+    await ethApi.init();
+
+    const mockBlockNumber = 72194336;
+    const mockBlockHash = 'mockBlockHash';
+    const mockIncorrectBlockHash = 'mockIncorrectBlockHash';
+
+    jest.spyOn(ethApi as any, 'getBlockPromise').mockResolvedValueOnce({
+      hash: mockBlockHash,
+      transactions: [],
+    });
+
+    jest
+      .spyOn((ethApi as any).client, 'getLogs')
+      .mockResolvedValueOnce([
+        { blockHash: mockIncorrectBlockHash, transactionHash: 'tx1' },
+      ]);
+
+    await expect(ethApi.fetchBlock(mockBlockNumber)).rejects.toThrow(
+      `Log BlockHash does not match block: ${mockBlockNumber}`,
+    );
+  });
 });
