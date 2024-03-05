@@ -93,21 +93,9 @@ export abstract class DictionaryV2<
     });
   }
 
-  static async isDictionaryV2(endpoint: string, timeoutSec = 1): Promise<boolean> {
-    let resp: DictionaryV2Metadata;
-    const timeoutMsg = 'Inspect dictionary version timeout';
-    try {
-      resp = await timeout(subqlFilterBlocksCapabilities(endpoint), timeoutSec, timeoutMsg);
-      return resp.supported.includes('complete') || resp.supported.includes('basic');
-    } catch (e: any) {
-      // TODO does it make sense to log here?
-      return false;
-    }
-  }
-
   protected abstract buildDictionaryQueryEntries(dataSources: DS[]): QE;
 
-  async init(): Promise<void> {
+  protected async init(): Promise<void> {
     this._metadata = await subqlFilterBlocksCapabilities(this.dictionaryEndpoint);
     this.setDictionaryStartHeight(this._metadata.start);
   }

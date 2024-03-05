@@ -23,7 +23,7 @@ export class SubstrateDictionaryService extends DictionaryService<
     if (!this.project) {
       throw new Error(`Project in Dictionary service not initialized `);
     }
-    let dictionaries: SubstrateDictionaryV1[] = [];
+    let dictionaries: SubstrateDictionaryV1[];
 
     const registryDictionary = await this.resolveDictionary(
       NETWORK_FAMILY.substrate,
@@ -36,7 +36,7 @@ export class SubstrateDictionaryService extends DictionaryService<
 
     // Current We now only accept either resolver dictionary or multiple dictionaries
     if (this.nodeConfig.dictionaryResolver) {
-      const resolverDictionary = new SubstrateDictionaryV1(
+      const resolverDictionary = await SubstrateDictionaryV1.create(
         this.project,
         this.nodeConfig,
         this.eventEmitter,
@@ -44,40 +44,23 @@ export class SubstrateDictionaryService extends DictionaryService<
       );
       dictionaries = [resolverDictionary];
     } else {
-      dictionaries = endpoints.map(
-        (endpoint) =>
-          new SubstrateDictionaryV1(
+      dictionaries = await Promise.all(
+        endpoints.map((endpoint) =>
+          SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
             this.eventEmitter,
             this.dsProcessorService.getDsProcessor.bind(this),
             endpoint,
           ),
+        ),
       );
     }
     return dictionaries;
   }
 
-  private initDictionariesV2(endpoints: string[]): SubstrateDictionaryV2[] {
-    if (!this.project) {
-      throw new Error(`Project in Dictionary service not initialized `);
-    }
-    const dictionaries = endpoints.map(
-      (endpoint) =>
-        new SubstrateDictionaryV2(
-          endpoint,
-          this.nodeConfig,
-          this.eventEmitter,
-          this.project,
-          this.project.network.chainId,
-        ),
-    );
-    return dictionaries;
-  }
-
   async initDictionaries() {
     const dictionaryV1Endpoints = [];
-    const dictionaryV2Endpoints = [];
     const dictionaryEndpoints: string[] = !Array.isArray(
       this.project.network.dictionary,
     )
@@ -86,28 +69,26 @@ export class SubstrateDictionaryService extends DictionaryService<
         : [this.project.network.dictionary]
       : this.project.network.dictionary;
     if (dictionaryEndpoints.length) {
+      const dictionariesV2: SubstrateDictionaryV2[] = [];
       for (const endpoint of dictionaryEndpoints) {
-        const isV2 = await SubstrateDictionaryV2.isDictionaryV2(
-          endpoint,
-          this.nodeConfig.dictionaryTimeout,
-        );
-
-        if (isV2) {
-          dictionaryV2Endpoints.push(endpoint);
-        } else {
-          // TODO validate dictionary v1 endpoint
+        try {
+          const dictionaryV2 = await SubstrateDictionaryV2.create(
+            endpoint,
+            this.nodeConfig,
+            this.eventEmitter,
+            this.project,
+            this.project.network.chainId,
+          );
+          dictionariesV2.push(dictionaryV2);
+        } catch (e) {
           dictionaryV1Endpoints.push(endpoint);
         }
       }
+      this.init([
+        ...(await this.initDictionariesV1(dictionaryV1Endpoints)),
+        ...dictionariesV2,
+      ]);
     }
-    // Init for dictionary service, construct all dictionaries
-    this.init([
-      ...(await this.initDictionariesV1(dictionaryV1Endpoints)),
-      ...this.initDictionariesV2(dictionaryV2Endpoints),
-    ]);
-
-    // Init matadata for all dictionaries
-    await Promise.all(this._dictionaries.map((d) => d.init()));
   }
 
   constructor(

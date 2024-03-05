@@ -158,7 +158,7 @@ async function prepareDictionary(
   dsM = dsMap
 ): Promise<TestDictionaryV1> {
   const dictionary = new TestDictionaryV1(endpoint, chainId, nfg, new EventEmitter2());
-  await dictionary.init();
+  await (dictionary as any).init();
   dictionary.updateQueriesMap(dsM);
   return dictionary;
 }
@@ -253,7 +253,7 @@ describe('Dictionary V1', () => {
   }, 500000);
 
   it('init metadata and get metadata', async () => {
-    await dictionary.init();
+    await (dictionary as any).init();
     const metadata = (dictionary as any).metadata;
     expect(metadata.startHeight).toBe(1);
     expect(metadata.genesisHash).toBe('0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3');

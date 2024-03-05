@@ -68,7 +68,7 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
 
   abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryV1QueryEntry[];
 
-  async init(): Promise<void> {
+  protected async init(): Promise<void> {
     const {query} = this.metadataQuery();
     try {
       const resp = await timeout(

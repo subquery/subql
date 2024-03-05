@@ -16,7 +16,6 @@ export interface IDictionary<DS, FB> {
     queryEndBlock: number,
     limit: number
   ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined>;
-  init(): Promise<void>;
   queryMapValidByHeight(height: number): boolean;
   getQueryEndBlock(targetEndHeight: number, apiFinalizedHeight: number): number;
   heightValidation(height: number): boolean;

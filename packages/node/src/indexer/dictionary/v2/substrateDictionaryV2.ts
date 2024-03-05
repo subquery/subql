@@ -16,19 +16,17 @@ import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { SubstrateDictionaryV2QueryEntry } from './types';
 
-const MIN_FAT_FETCH_LIMIT = 200;
-
-const logger = getLogger('eth-dictionary v2');
+const MIN_FETCH_LIMIT = 200;
 
 export function buildDictionaryV2QueryEntry(
   dataSources: SubstrateDataSource[],
 ): SubstrateDictionaryV2QueryEntry {
-  const fatDictionaryConditions: SubstrateDictionaryV2QueryEntry = {
+  const dictionaryConditions: SubstrateDictionaryV2QueryEntry = {
     logs: [],
     transactions: [],
   };
   //TODO
-  return fatDictionaryConditions;
+  return dictionaryConditions;
 }
 
 export class SubstrateDictionaryV2 extends DictionaryV2<
@@ -57,6 +55,24 @@ export class SubstrateDictionaryV2 extends DictionaryV2<
     );
   }
 
+  static async create(
+    endpoint: string,
+    nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
+    project: SubqueryProject,
+    chainId?: string,
+  ): Promise<SubstrateDictionaryV2> {
+    const dictionary = new SubstrateDictionaryV2(
+      endpoint,
+      nodeConfig,
+      eventEmitter,
+      project,
+      chainId,
+    );
+    await dictionary.init();
+    return dictionary;
+  }
+
   /**
    *
    * @param startBlock
@@ -68,7 +84,7 @@ export class SubstrateDictionaryV2 extends DictionaryV2<
   async getData(
     startBlock: number,
     queryEndBlock: number,
-    limit = MIN_FAT_FETCH_LIMIT,
+    limit = MIN_FETCH_LIMIT,
   ): Promise<DictionaryResponse<IBlock<SubstrateBlock> | number> | undefined> {
     return this.getData(startBlock, queryEndBlock, limit);
   }

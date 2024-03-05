@@ -203,6 +203,28 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDsInterface> {
     );
   }
 
+  static async create(
+    project: SubqueryProject,
+    nodeConfig: NodeConfig,
+    eventEmitter: EventEmitter2,
+    getDsProcessor: (
+      ds: SubstrateDatasource,
+    ) => DsProcessor<SubstrateDatasource>,
+    dictionaryUrl?: string,
+    chainId?: string,
+  ): Promise<SubstrateDictionaryV1> {
+    const dictionary = new SubstrateDictionaryV1(
+      project,
+      nodeConfig,
+      eventEmitter,
+      getDsProcessor,
+      dictionaryUrl,
+      chainId,
+    );
+    await dictionary.init();
+    return dictionary;
+  }
+
   buildDictionaryQueryEntries(
     dataSources: SubstrateDsInterface[],
   ): DictionaryV1QueryEntry[] {

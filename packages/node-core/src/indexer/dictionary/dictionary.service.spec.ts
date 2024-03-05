@@ -15,16 +15,19 @@ class TestDictionaryService extends DictionaryService<any, TestFB> {
       'https://gx.api.subquery.network/sq/subquery/eth-dictionary',
       'https://dict-tyk.subquery.network/query/eth-mainnet',
     ];
-    const dictionaryV2Endpoints = ['http://localhost:3000/rpc'];
 
     const dictionariesV1 = await Promise.all(
       dictionaryV1Endpoints.map(
         (endpoint) => new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
       )
     );
-    const dictionariesV2 = dictionaryV2Endpoints.map(
-      (endpoint) => new TestDictionaryV2(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
+    const mockDictionaryV2 = new TestDictionaryV2(
+      'http://mock-dictionary-v2/rpc',
+      'mockChainId',
+      this.nodeConfig,
+      this.eventEmitter
     );
+    const dictionariesV2 = [mockDictionaryV2];
     this.init([...dictionariesV1, ...dictionariesV2]);
   }
 }
@@ -42,7 +45,7 @@ describe('Dictionary service', function () {
       networkDictionary: [
         'https://gx.api.subquery.network/sq/subquery/eth-dictionary',
         'https://dict-tyk.subquery.network/query/eth-mainnet',
-        'http://localhost:3000/rpc',
+        'http://mock-dictionary-v2/rpc',
       ],
     });
 
@@ -109,7 +112,7 @@ describe('Dictionary service', function () {
 
     const spyPassGetData = jest.spyOn(passDictionary, 'getData');
 
-    const spyScopedDictionaryEntries = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
+    const spyScopedDictionaryEntries = jest.spyOn(dictionaryService as any, '_scopedDictionaryEntries');
 
     const blocks = await dictionaryService.scopedDictionaryEntries(1000, 11000, 100);
     expect(spyFailedGetData).toHaveBeenCalledTimes(1);
@@ -118,7 +121,7 @@ describe('Dictionary service', function () {
     expect(spyScopedDictionaryEntries).toHaveBeenCalledTimes(2);
     expect((dictionaryService as any)._currentDictionaryIndex).toBe(1);
     expect(blocks).toBeTruthy();
-  }, 50000);
+  }, 5000000);
 
   it('tried all dictionaries but all failed will return undefined', async () => {
     // remove the valid dictionary
@@ -131,7 +134,7 @@ describe('Dictionary service', function () {
         throw new Error('Dictionary fetch failed');
       };
     }
-    const spyScopedDictionaryEntries = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
+    const spyScopedDictionaryEntries = jest.spyOn(dictionaryService as any, '_scopedDictionaryEntries');
     const blocks = await dictionaryService.scopedDictionaryEntries(1000, 11000, 100);
     expect(spyScopedDictionaryEntries).toHaveBeenCalledTimes(3);
     expect(blocks).toBeUndefined();

@@ -29,7 +29,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
     limit: number,
     fieldSelector?: FieldSelector
   ): Promise<DictionaryResponse<IBlock | number> | undefined>;
-  abstract init(): Promise<void>;
+  protected abstract init(): Promise<void>;
   protected abstract dictionaryValidation(metaData?: M, startBlockHeight?: number): boolean;
   protected abstract buildDictionaryQueryEntries(dataSources: DS[]): E;
   abstract queryMapValidByHeight(height: number): boolean;
