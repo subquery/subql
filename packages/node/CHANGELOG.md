@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] - 2024-03-06
+### Changed
+- Update `@subql/node-core` to 7.4.0
+
 ## [3.8.1] - 2024-03-01
 ### Fixed
 - Update `@subql/node-core` to fix Poi generation issue with negative integer, also drop subscription triggers and notifiy_functions
@@ -94,7 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.8.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.9.0...HEAD
+[3.9.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.8.1...node-stellar/3.9.0
 [3.8.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.8.0...node-stellar/3.8.1
 [3.8.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.6.1...node-stellar/3.8.0
 [3.6.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.6.0...node-stellar/3.6.1
