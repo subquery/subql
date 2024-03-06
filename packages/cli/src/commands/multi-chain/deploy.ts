@@ -203,7 +203,7 @@ export default class MultiChainDeploy extends Command {
 
       if (!endpoints[validator.chainId]) {
         if (flags.useDefaults) {
-          throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'));
+          throw new Error(chalk.red('Please ensure a endpoint valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'));
         }
 
         endpoints[validator.chainId] = await promptWithDefaultValues(cli, `Enter endpoint for ${multichainProjectPath}`, undefined, null, true);
