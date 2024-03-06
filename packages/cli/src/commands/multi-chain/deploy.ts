@@ -158,7 +158,7 @@ export default class MultiChainDeploy extends Command {
           queryVersion = queryAvailableVersions[0];
         }
       } catch (e) {
-        throw new Error(chalk.bgRedBright('Indexer version is required'));
+        throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
 
