@@ -17,35 +17,52 @@ export class SubstrateDictionaryService extends DictionaryService<
   SubstrateDatasource,
   SubstrateBlock
 > {
-  private async initDictionariesV1(
-    endpoints: string[],
-  ): Promise<SubstrateDictionaryV1[]> {
+  async initDictionaries() {
+    let dictionaryV1Endpoints: string[] = [];
+    const dictionariesV2: SubstrateDictionaryV2[] = [];
+
     if (!this.project) {
       throw new Error(`Project in Dictionary service not initialized `);
     }
-    let dictionaries: SubstrateDictionaryV1[];
-
-    const registryDictionary = await this.resolveDictionary(
+    const registryDictionaries = await this.resolveDictionary(
       NETWORK_FAMILY.substrate,
       this.project.network.chainId,
       this.nodeConfig.dictionaryRegistry,
     );
-    if (registryDictionary !== undefined) {
-      endpoints.push(registryDictionary);
+
+    const dictionaryEndpoints: string[] = (
+      !Array.isArray(this.project.network.dictionary)
+        ? !this.project.network.dictionary
+          ? []
+          : [this.project.network.dictionary]
+        : this.project.network.dictionary
+    ).concat(registryDictionaries);
+
+    for (const endpoint of dictionaryEndpoints) {
+      try {
+        const dictionaryV2 = await SubstrateDictionaryV2.create(
+          endpoint,
+          this.nodeConfig,
+          this.eventEmitter,
+          this.project,
+          this.project.network.chainId,
+        );
+        dictionariesV2.push(dictionaryV2);
+      } catch (e) {
+        dictionaryV1Endpoints.push(endpoint);
+      }
     }
 
-    // Current We now only accept either resolver dictionary or multiple dictionaries
     if (this.nodeConfig.dictionaryResolver) {
-      const resolverDictionary = await SubstrateDictionaryV1.create(
-        this.project,
-        this.nodeConfig,
-        this.eventEmitter,
-        this.dsProcessorService.getDsProcessor.bind(this),
-      );
-      dictionaries = [resolverDictionary];
-    } else {
-      dictionaries = await Promise.all(
-        endpoints.map((endpoint) =>
+      // Create a v1 dictionary with dictionary resolver
+      // future resolver should a URL, and fetched from registryDictionaries
+      dictionaryV1Endpoints = dictionaryV1Endpoints.concat([undefined]);
+    }
+    // v2 should be prioritised
+    this.init([
+      ...dictionariesV2,
+      ...(await Promise.all(
+        dictionaryV1Endpoints.map((endpoint) =>
           SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
@@ -54,41 +71,8 @@ export class SubstrateDictionaryService extends DictionaryService<
             endpoint,
           ),
         ),
-      );
-    }
-    return dictionaries;
-  }
-
-  async initDictionaries() {
-    const dictionaryV1Endpoints = [];
-    const dictionaryEndpoints: string[] = !Array.isArray(
-      this.project.network.dictionary,
-    )
-      ? !this.project.network.dictionary
-        ? []
-        : [this.project.network.dictionary]
-      : this.project.network.dictionary;
-    if (dictionaryEndpoints.length) {
-      const dictionariesV2: SubstrateDictionaryV2[] = [];
-      for (const endpoint of dictionaryEndpoints) {
-        try {
-          const dictionaryV2 = await SubstrateDictionaryV2.create(
-            endpoint,
-            this.nodeConfig,
-            this.eventEmitter,
-            this.project,
-            this.project.network.chainId,
-          );
-          dictionariesV2.push(dictionaryV2);
-        } catch (e) {
-          dictionaryV1Endpoints.push(endpoint);
-        }
-      }
-      this.init([
-        ...(await this.initDictionariesV1(dictionaryV1Endpoints)),
-        ...dictionariesV2,
-      ]);
-    }
+      )),
+    ]);
   }
 
   constructor(

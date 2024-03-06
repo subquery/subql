@@ -129,7 +129,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     networkFamily: NETWORK_FAMILY,
     chainId: string,
     registryUrl: string
-  ): Promise<string | undefined> {
+  ): Promise<string[] | undefined> {
     try {
       const response = await fetch(registryUrl);
 
@@ -141,8 +141,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       const dictionaries = dictionaryJson[networkFamily.toLowerCase()][chainId];
 
       if (Array.isArray(dictionaries) && dictionaries.length > 0) {
-        // TODO choose alternatives
-        return dictionaries[0];
+        return dictionaries;
       }
     } catch (error: any) {
       logger.error(error, 'An error occurred while fetching the dictionary:');

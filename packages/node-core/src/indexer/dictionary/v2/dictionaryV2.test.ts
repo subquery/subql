@@ -32,9 +32,9 @@ export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
     return undefined;
   }
 }
-
 // mock init and metadata
-function patchMockDictionary(dictionary: DictionaryV2<any, any>) {
+// eslint-disable-next-line jest/no-export
+export function patchMockDictionary(dictionary: DictionaryV2<any, any>) {
   (dictionary as any).init = () => {
     ((dictionary as any)._metadata = {
       start: 1,

@@ -6,7 +6,7 @@ import {NETWORK_FAMILY} from '@subql/common';
 import {NodeConfig} from '../..';
 import {DictionaryService} from './dictionary.service';
 import {TestDictionaryV1} from './v1/dictionaryV1.test';
-import {TestDictionaryV2, TestFB} from './v2/dictionaryV2.test';
+import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.test';
 
 class TestDictionaryService extends DictionaryService<any, TestFB> {
   async initDictionaries(): Promise<void> {
@@ -27,6 +27,7 @@ class TestDictionaryService extends DictionaryService<any, TestFB> {
       this.nodeConfig,
       this.eventEmitter
     );
+    patchMockDictionary(mockDictionaryV2);
     const dictionariesV2 = [mockDictionaryV2];
     this.init([...dictionariesV1, ...dictionariesV2]);
   }
@@ -63,7 +64,7 @@ describe('Dictionary service', function () {
       'https://github.com/subquery/templates/raw/main/dist/dictionary.json'
     );
 
-    expect(dictUrl).toEqual('https://dict-tyk.subquery.network/query/eth-mainnet');
+    expect(dictUrl).toEqual(['https://dict-tyk.subquery.network/query/eth-mainnet']);
   });
 
   it('init Dictionaries with mutiple endpoints, can be valid and non-valid', () => {
