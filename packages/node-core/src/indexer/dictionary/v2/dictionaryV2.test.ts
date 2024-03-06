@@ -78,12 +78,12 @@ describe('Individual dictionary V2 test', () => {
 
 describe('determine dictionary V2 version', () => {
   it('if not supported dictionary endpoint, v2 should throw error if init failed', async () => {
-    const dictionaryV1 = new TestDictionaryV2(
+    const dictionaryV2 = new TestDictionaryV2(
       'https://dict-tyk.subquery.network/query/eth-mainnet/rpc',
       '0x21121',
       nodeConfig,
       new EventEmitter2()
     );
-    await expect((dictionaryV1 as any).init()).rejects.toThrow();
+    await expect((dictionaryV2 as any).init()).rejects.toThrow();
   });
 });

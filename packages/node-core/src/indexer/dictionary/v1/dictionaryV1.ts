@@ -259,4 +259,8 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     ];
     return buildQuery([], nodes);
   }
+
+  protected validateChainMeta(metaData: DictionaryV1Metadata): boolean {
+    return metaData.chain === this.chainId || metaData.genesisHash === this.chainId;
+  }
 }

@@ -69,9 +69,4 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   updateQueriesMap(dataSources: BlockHeightMap<DS[]>): void {
     this.queriesMap = dataSources.map((d) => this.buildDictionaryQueryEntries(d));
   }
-
-  // Base validation is required, and specific validation for each network should be implemented accordingly
-  protected validateChainMeta(metaData: M): boolean {
-    return true;
-  }
 }

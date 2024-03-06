@@ -19,6 +19,7 @@ export interface DictionaryV2Metadata {
   start: number;
   end: number;
   genesisHash: string;
+  chainId: string;
   filters: V2MetadataFilters;
   supported: string[];
 }

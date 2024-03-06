@@ -7,7 +7,6 @@ import {utils} from 'ethers';
 import {FieldSelector, getBlockHeight} from '../';
 import {NodeConfig} from '../../../configure';
 import {getLogger} from '../../../logger';
-import {timeout} from '../../../utils';
 import {IBlock} from '../../types';
 import {CoreDictionary} from '../coreDictionary';
 import {DictionaryResponse} from '../types';
@@ -23,6 +22,7 @@ type DictionaryV2Capabilities = {
   availableBlocks: {startHeight: number; endHeight: number}[];
   supportedResponses: ('basic' | 'complete')[];
   filters: V2MetadataFilters;
+  chainId: string;
 };
 
 async function subqlFilterBlocksCapabilities(
@@ -70,6 +70,7 @@ async function subqlFilterBlocksCapabilities(
     genesisHash: result.genesisHash,
     filters: result.filters,
     supported: result.supportedResponses,
+    chainId: result.chainId,
   };
   return metadata;
 }
@@ -179,5 +180,9 @@ export abstract class DictionaryV2<
       startBlockHeight >= this.metadata.start &&
       startBlockHeight < this.metadata.end;
     return this.metadataValid;
+  }
+
+  protected validateChainMeta(metaData: DictionaryV2Metadata): boolean {
+    return metaData.genesisHash === this.chainId || metaData.chainId === this.chainId;
   }
 }
