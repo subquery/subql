@@ -11,7 +11,7 @@ import {
   ValidateDataType,
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
-
+import {multichainDataFieldType} from "../types";
 function getAxiosInstance(url: string, authToken?: string): Axios {
   const headers: Record<string, string> = {};
 
@@ -192,4 +192,20 @@ export interface EndpointType {
   network: string;
   endpoint: string;
   chainId: string;
+}
+
+export function splitMultichainDataFields(fieldStr: string): multichainDataFieldType  {
+  let result: multichainDataFieldType={};
+
+  splitEndpoints(String(fieldStr)).forEach(unparsedRow=>{
+    let regexpResult: string[] =unparsedRow.match(/(.*?):(.*)/);
+    if (regexpResult) {
+      regexpResult=Object.values(regexpResult);
+      if (regexpResult && regexpResult.length==6) {
+        result[regexpResult[1]]=regexpResult[2];
+      }
+    }
+  });
+
+  return result;
 }

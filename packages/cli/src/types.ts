@@ -145,3 +145,8 @@ export interface V3DeploymentIndexerType {
     };
   };
 }
+
+
+export interface multichainDataFieldType {
+  [key: string]: string
+}
