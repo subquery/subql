@@ -1,13 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {deleteDeployment} from '../../controller/deploy-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
-
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Delete extends Command {
   static description = 'Delete Deployment';
@@ -20,7 +17,7 @@ export default class Delete extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Delete);
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
+    const authToken = await checkToken();
     let deploymentID: number = +flags.deploymentID;
     let project_name: string = flags.project_name;
     let org: string = flags.org;
