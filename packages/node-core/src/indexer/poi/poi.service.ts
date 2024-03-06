@@ -98,7 +98,7 @@ export class PoiService implements OnApplicationShutdown {
         }
         if (!checkResult.hash_nullable) {
           queries.push(`ALTER TABLE ${tableName} ALTER COLUMN "hash" DROP NOT NULL;`);
-          queries.push(sqlIterator(tableName, `UPDATE ${tableName} SET hash = NULL;`));
+          queries.push(sqlIterator(tableName, `UPDATE ${tableName} SET hash = NULL`));
           queries.push(
             sqlIterator(
               tableName,

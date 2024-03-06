@@ -94,8 +94,10 @@ export class TestRunner<A, SA, B, DS> {
         if (!actualEntity) {
           failedAttributes.push(`\t\tExpected entity was not found`);
         } else {
-          const attributes = actualEntity;
-          Object.keys(attributes).map((attr) => {
+          Object.keys(actualEntity).forEach((attr) => {
+            // EntityClass has private store on it, don't need to check it.
+            if (attr === 'store') return;
+
             const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
             const actualAttr = (actualEntity as Record<string, any>)[attr] ?? null;
 

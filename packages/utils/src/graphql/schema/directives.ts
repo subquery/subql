@@ -9,4 +9,5 @@ export const directives = gql`
   directive @jsonField(indexed: Boolean) on OBJECT
   directive @index(unique: Boolean) on FIELD_DEFINITION
   directive @compositeIndexes(fields: [[String]]!) on OBJECT
+  directive @fullText(fields: [String!], language: String) on OBJECT
 `;

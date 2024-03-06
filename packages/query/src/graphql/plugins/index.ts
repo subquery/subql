@@ -53,6 +53,7 @@ import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 import {PgDistinctPlugin} from './PgDistinctPlugin';
 import PgConnectionArgOrderBy from './PgOrderByUnique';
 import historicalPlugins from './historical';
+import {PgSearchPlugin} from './PgSearchPlugin';
 
 /* eslint-enable */
 
@@ -111,6 +112,7 @@ const plugins = [
   PgAggregationPlugin,
   PgRowByVirtualIdPlugin,
   PgDistinctPlugin,
+  PgSearchPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();

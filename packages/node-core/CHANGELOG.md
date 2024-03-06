@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.4.0] - 2024-03-05
+### Fixed
+- Fix missing incrememnt keys on `_metadata` table (#2283)
+- Fixed unexpected `store` on testing suite Entity (#2285)
+
+### Added
+- Support for Full Text Search (#2280)
+
 ## [7.3.1] - 2024-02-29
 ### Removed
 - `scale-batch-size` flag as it had no use (#2275)
@@ -583,7 +591,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.4.0...HEAD
+[7.4.0]: https://github.com/subquery/subql/compare/node-core/7.3.1...node-core/7.4.0
 [7.3.1]: https://github.com/subquery/subql/compare/node-core/7.3.0...node-core/7.3.1
 [7.3.0]: https://github.com/subquery/subql/compare/node-core/7.2.1...node-core/7.3.0
 [7.2.1]: https://github.com/subquery/subql/compare/node-core/7.2.0...node-core/7.2.1

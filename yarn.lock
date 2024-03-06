@@ -6631,6 +6631,7 @@ __metadata:
     lodash: ^4.17.21
     nodemon: ^2.0.15
     pg: ^8.7.1
+    pg-tsquery: ^8.4.2
     postgraphile: ^4.13.0
     postgraphile-plugin-connection-filter: ^2.2.2
     reflect-metadata: ^0.1.13
@@ -18725,6 +18726,13 @@ __metadata:
   peerDependencies:
     pg: ">=6.1.0 <9"
   checksum: a9ada8a0113d9ea24e435acd627f080512c5b15248afefb0a67e4d01415c8d692b25d731cce58345b0cbef6fab334471b5cb4c5e7a07dc85ded98160aa61cbc2
+  languageName: node
+  linkType: hard
+
+"pg-tsquery@npm:^8.4.2":
+  version: 8.4.2
+  resolution: "pg-tsquery@npm:8.4.2"
+  checksum: 1ab466096775573285f16ec6b2fa93906a6203f2013bb739c6c38a7b9e858cb8f55cb0bd2c7b97167edb38bae4fda2c288822f41c6a1e6507866cc1afd52ff36
   languageName: node
   linkType: hard
 
