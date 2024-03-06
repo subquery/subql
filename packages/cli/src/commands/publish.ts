@@ -1,18 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
-import {resolveToAbsolutePath} from '../utils';
+import {checkToken, resolveToAbsolutePath} from '../utils';
 import Build from './build';
-
-const ACCESS_TOKEN_PATH = path.resolve(
-  process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'],
-  '.subql/SUBQL_ACCESS_TOKEN'
-);
 
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
@@ -37,19 +31,7 @@ export default class Publish extends Command {
     // Make sure build first, generated project yaml could be added to the project (instead of ts)
     const project = getProjectRootAndManifest(location);
 
-    let authToken: string;
-
-    if (process.env.SUBQL_ACCESS_TOKEN) {
-      authToken = process.env.SUBQL_ACCESS_TOKEN;
-    } else if (existsSync(ACCESS_TOKEN_PATH)) {
-      try {
-        authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
-      } catch (e) {
-        throw new Error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
-      }
-    } else {
-      throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
-    }
+    const authToken = await checkToken();
 
     const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));
 

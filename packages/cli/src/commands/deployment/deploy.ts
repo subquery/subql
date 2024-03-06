@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
@@ -19,8 +18,6 @@ import {
 } from '../../controller/deploy-controller';
 import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
-
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
@@ -72,7 +69,7 @@ export default class Deploy extends Command {
     const {flags} = await this.parse(Deploy);
     let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
 
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
+    const authToken = await checkToken();
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
     projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
@@ -159,7 +156,7 @@ export default class Deploy extends Command {
           queryVersion = queryVersions[0];
         }
       } catch (e) {
-        throw new Error(chalk.bgRedBright('Indexer version is required'));
+        throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
     const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
