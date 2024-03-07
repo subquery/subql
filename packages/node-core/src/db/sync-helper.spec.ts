@@ -3,7 +3,7 @@
 
 import {GraphQLModelsType} from '@subql/utils';
 import {Model, ModelAttributeColumnOptions, ModelStatic, Sequelize} from '@subql/x-sequelize';
-import {formatReferences} from './sequelizeUtil';
+import {formatDataType, formatReferences} from './sequelizeUtil';
 import {
   sortModels,
   getFkConstraint,
@@ -352,5 +352,10 @@ describe('sync-helper', () => {
     ];
 
     expect(Array.from(v.entries())).toEqual(expectedMap);
+  });
+  it('sequelize to correct postgres type map', () => {
+    // TODO this should be using {types: postgres: ['jsonb']} instead of its key
+    const v = formatDataType({key: 'JSONB'} as any);
+    expect(v.toString()).toBe('JSONB');
   });
 });
