@@ -16,71 +16,35 @@ import {
   projectsInfo,
   splitEndpoints,
   updateDeployment,
+  default_command_flags,
+  generateDeploymentChain,
+  generateAdvancedQueryOptions,
+  executeProjectDeployment
 } from '../../controller/deploy-controller';
-import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType} from '../../types';
+import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType, deploymentFlagsInterface} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
-
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
-  static flags = {
-    org: Flags.string({description: 'Enter organization name'}),
-    projectName: Flags.string({description: 'Enter project name'}),
+  static flags = Object.assign(default_command_flags(), {
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
-
-    type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
-    indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
-    queryVersion: Flags.string({description: 'Enter query-version', required: false}),
-    dict: Flags.string({description: 'Enter dictionary', required: false}),
     endpoint: Flags.string({description: 'Enter endpoint', required: true}),
-    //indexer set up flags
-    indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-    indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
-    indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
-    disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
-    indexerUnfinalized: Flags.boolean({
-      description: 'Index unfinalized blocks (requires Historical to be enabled)',
-      required: false,
-    }),
-    indexerStoreCacheThreshold: Flags.integer({
-      description: 'The number of items kept in the cache before flushing',
-      required: false,
-    }),
-    disableIndexerStoreCacheAsync: Flags.boolean({
-      description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
-      required: false,
-    }),
-    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
-
-    //query flags
-    queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-    querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
-    queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
-    queryMaxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
-    queryAggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
-
-    useDefaults: Flags.boolean({
-      char: 'd',
-      description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
-      required: false,
-    }),
-  };
+  });
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
     let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
 
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
+    const authToken = await checkToken();
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
     projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
-    const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
-    queryVersion = addV(queryVersion);
-    indexerVersion = addV(indexerVersion);
+    const validator = await ipfsCID_validate(String(ipfsCID), authToken, ROOT_API_URL_PROD);
+    queryVersion = addV(String(queryVersion));
+    indexerVersion = addV(String(indexerVersion));
 
     if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
@@ -93,24 +57,6 @@ export default class Deploy extends Command {
 
       endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, null, true);
     }
-
-    const queryAD: QueryAdvancedOpts = {
-      unsafe: flags.queryUnsafe,
-      subscription: flags.querySubscription,
-      queryTimeout: flags.queryTimeout,
-      maxConnection: flags.queryMaxConnection,
-      aggregate: flags.queryAggregate,
-    };
-
-    const indexerAD: IndexerAdvancedOpts = {
-      unsafe: flags.indexerUnsafe,
-      batchSize: flags.indexerBatchSize,
-      subscription: flags.indexerSubscription,
-      historicalData: !flags.disableHistorical,
-      unfinalizedBlocks: flags.indexerUnfinalized,
-      storeCacheThreshold: flags.indexerStoreCacheThreshold,
-      disableStoreCacheAsync: flags.disableIndexerStoreCacheAsync,
-    };
 
     if (!dict) {
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
@@ -162,54 +108,35 @@ export default class Deploy extends Command {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
     }
-    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
-    const chains: V3DeploymentIndexerType[] = [
-      {
-        cid: ipfsCID,
-        dictEndpoint: dict,
-        endpoint: splitEndpoints(endpoint),
-        indexerImageVersion: indexerVersion,
-        indexerAdvancedSettings: {
-          indexer: indexerAD,
-        },
-      },
-    ];
+    const projectInfo = await projectsInfo(authToken, String(org), String(projectName), ROOT_API_URL_PROD, String(flags.type));
+    const chains: V3DeploymentIndexerType[] = [];
+    chains.push(
+      generateDeploymentChain({
+        cid: String(ipfsCID),
+        dictEndpoint: String(dict),
+        endpoint: splitEndpoints(String(endpoint)),
+        flags: flags as unknown as deploymentFlagsInterface,
+        indexerImageVersion: String(indexerVersion)
+      })
+    );
 
-    if (flags.indexerWorkers) {
-      chains[0].extraParams = {
-        workers: {
-          num: flags.indexerWorkers,
-        },
-      };
-    }
 
-    if (projectInfo !== undefined) {
-      await updateDeployment(
-        org,
-        projectName,
-        projectInfo.id,
-        authToken,
-        ipfsCID,
-        queryVersion,
-        queryAD,
-        chains,
-        ROOT_API_URL_PROD
-      );
+    this.log('Deploying SubQuery project to Hosted Service');
+
+    let deploymentOutput = await executeProjectDeployment({
+      authToken: authToken,
+      chains: chains,
+      flags: flags as unknown as deploymentFlagsInterface,
+      ipfsCID: String(ipfsCID),
+      org: String(org),
+      projectInfo: projectInfo,
+      projectName: String(projectName),
+      queryVersion: queryVersion
+    });
+
+    if (!deploymentOutput) {
       this.log(`Project: ${projectName} has been re-deployed`);
     } else {
-      this.log('Deploying SubQuery project to Hosted Service');
-      const deploymentOutput = await createDeployment(
-        org,
-        projectName,
-        authToken,
-        ipfsCID,
-        queryVersion,
-        flags.type,
-        queryAD,
-        chains,
-        ROOT_API_URL_PROD
-      ).catch((e) => this.error(e));
-
       this.log(`Project: ${deploymentOutput.projectKey}
       \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}
@@ -224,5 +151,10 @@ export default class Deploy extends Command {
       \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
       `);
     }
+
+
+
+
+
   }
 }

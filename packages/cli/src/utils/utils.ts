@@ -30,7 +30,8 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
 }
 
 export function addV(str: string | undefined) {
-  if (str && !str.includes('v')) {
+  // replaced includes to first byte.
+  if (str && str[0]!=='v') {
     return `v${str}`;
   }
   return str;
@@ -57,9 +58,13 @@ export async function promptWithDefaultValues(
   return promptValue;
 }
 
-export async function checkToken(authToken_ENV: string, token_path: string): Promise<string> {
-  let authToken = authToken_ENV;
-  if (authToken_ENV) return authToken_ENV;
+export async function checkToken(authToken_ENV?: string|undefined, token_path?: string|undefined): Promise<string> {
+  if (!token_path) {
+    token_path= path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
+  }
+  let authToken = authToken_ENV || process.env.SUBQL_ACCESS_TOKEN;
+  if (authToken) return authToken;
+
   if (existsSync(token_path)) {
     try {
       authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(token_path, 'utf8');
@@ -68,8 +73,9 @@ export async function checkToken(authToken_ENV: string, token_path: string): Pro
     }
   } else {
     authToken = await cli.prompt('Token cannot be found, Enter token');
-    return authToken;
   }
+
+  return authToken;
 }
 
 export function errorHandle(e: any, msg: string): Error {

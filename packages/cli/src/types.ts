@@ -150,3 +150,49 @@ export interface V3DeploymentIndexerType {
 export interface multichainDataFieldType {
   [key: string]: string
 }
+
+
+export interface projectDeploymentInterface {
+  org: string;
+  projectName: string;
+  chains: V3DeploymentIndexerType[];
+  projectInfo: ProjectDataType,
+  flags: deploymentFlagsInterface,
+  ipfsCID: string,
+  queryVersion: string,
+  authToken: string
+}
+
+export interface deploymentFlagsInterface {
+  org: string;
+  projectName: string;
+  type: string;
+  indexerVersion: string;
+  queryVersion: string;
+  dict: string;
+  endpoint: string;
+  indexerUnsafe: boolean;
+  indexerBatchSize: number;
+  indexerSubscription: boolean;
+  disableHistorical: boolean;
+  indexerUnfinalized: boolean;
+  indexerStoreCacheThreshold: number;
+  disableIndexerStoreCacheAsync: boolean;
+  indexerWorkers?: number;
+  ipfsCID?: string;
+  location?: string;
+  queryUnsafe: boolean;
+  querySubscription: boolean;
+  queryTimeout: boolean;
+  queryMaxConnection: boolean;
+  queryAggregate: boolean;
+  useDefaults: boolean;
+}
+
+export interface generateDeploymentChainInterface {
+  cid: string;
+  dictEndpoint: string;
+  endpoint: string[];
+  indexerImageVersion: string;
+  flags: deploymentFlagsInterface;
+}
