@@ -13,10 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for Full Text Search (#2280)
 
-## [7.4.0] - 2024-03-05
-### Fixed
-- Memory leak with workers and large number of (dynamic) datasources (#2292)
-
 ## [7.3.1] - 2024-02-29
 ### Removed
 - `scale-batch-size` flag as it had no use (#2275)
