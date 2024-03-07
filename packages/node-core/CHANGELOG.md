@@ -6,10 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- Add missing `bytes` scalar type (#2293)
+- Memory leak with workers and large number of (dynamic) datasources (#2292)
 - Fix missing incrememnt keys on `_metadata` table (#2283)
 - Fixed unexpected `store` on testing suite Entity (#2285)
-- Memory leak with workers and large number of (dynamic) datasources (#2292)
+- Add missing `bytes` scalar type (#2293)
 
 ### Added
 - Support for Full Text Search (#2280)
