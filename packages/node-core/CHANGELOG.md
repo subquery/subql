@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [7.4.1] - 2024-03-08
 ### Fixed
 - Memory leak with workers and large number of (dynamic) datasources (#2292)
 - Add missing `bytes` scalar type (#2293)
@@ -594,7 +596,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.4.1...HEAD
+[7.4.1]: https://github.com/subquery/subql/compare/node-core/7.4.0...node-core/7.4.1
 [7.4.0]: https://github.com/subquery/subql/compare/node-core/7.3.1...node-core/7.4.0
 [7.3.1]: https://github.com/subquery/subql/compare/node-core/7.3.0...node-core/7.3.1
 [7.3.0]: https://github.com/subquery/subql/compare/node-core/7.2.1...node-core/7.3.0
