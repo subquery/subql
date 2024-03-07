@@ -35,6 +35,9 @@ RUN rm /app.tgz && \
     yarn cache clean && \
     rm -rf /root/.npm /root/.cache
 
+# Make the user not ROOT
+USER 1000
+
 # Set Entry point and command
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node-ethereum/bin/run"]
 CMD ["-f","/app"]
