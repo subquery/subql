@@ -129,7 +129,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     networkFamily: NETWORK_FAMILY,
     chainId: string,
     registryUrl: string
-  ): Promise<string[] | undefined> {
+  ): Promise<string[]> {
     try {
       const response = await fetch(registryUrl);
 
