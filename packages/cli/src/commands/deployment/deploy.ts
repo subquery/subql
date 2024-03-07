@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
@@ -105,7 +104,7 @@ export default class Deploy extends Command {
           queryVersion = queryVersions[0];
         }
       } catch (e) {
-        throw new Error(chalk.bgRedBright('Indexer version is required'));
+        throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
     const projectInfo = await projectsInfo(authToken, String(org), String(projectName), ROOT_API_URL_PROD, String(flags.type));

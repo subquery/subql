@@ -16,7 +16,6 @@ import {
 import {
   insertBlockFiltersCronSchedules,
   loadProjectTemplates,
-  SubqlProjectDs,
   updateDataSourcesV1_0_0,
   ISubqueryProject,
 } from '@subql/node-core';
@@ -35,10 +34,10 @@ import { getChainTypes } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
 
-export type SubstrateProjectDs = SubqlProjectDs<SubstrateDatasource>;
+export type SubstrateProjectDs = SubstrateDatasource;
 export type SubqlProjectDsTemplate =
-  | SubqlProjectDs<RuntimeDatasourceTemplate>
-  | SubqlProjectDs<CustomDatasourceTemplate>;
+  | RuntimeDatasourceTemplate
+  | CustomDatasourceTemplate;
 
 export type SubqlProjectBlockFilter = SubstrateBlockFilter & {
   cronSchedule?: {

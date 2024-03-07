@@ -1,13 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
 import {createProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
-
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Create_project extends Command {
   static description = 'Create Project on Hosted Service';
@@ -28,7 +25,7 @@ export default class Create_project extends Command {
     const {flags} = await this.parse(Create_project);
 
     let {gitRepo, org, projectName} = flags;
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
+    const authToken = await checkToken();
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
     projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');

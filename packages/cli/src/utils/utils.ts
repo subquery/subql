@@ -13,6 +13,7 @@ import ejs from 'ejs';
 import inquirer, {Inquirer} from 'inquirer';
 import JSON5 from 'json5';
 import rimraf from 'rimraf';
+import {ACCESS_TOKEN_PATH} from '../constants';
 
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
@@ -29,7 +30,7 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   }
 }
 
-export function addV(str: string | undefined) {
+export function addV(str: string | undefined):string {
   // replaced includes to first byte.
   if (str && str[0]!=='v') {
     return `v${str}`;
@@ -58,28 +59,27 @@ export async function promptWithDefaultValues(
   return promptValue;
 }
 
-export async function checkToken(authToken_ENV?: string|undefined, token_path?: string|undefined): Promise<string> {
-  if (!token_path) {
-    token_path= path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
-  }
-  let authToken = authToken_ENV || process.env.SUBQL_ACCESS_TOKEN;
-  if (authToken) return authToken;
-
+export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promise<string> {
+  const envToken = process.env.SUBQL_ACCESS_TOKEN;
+  if (envToken) return envToken;
   if (existsSync(token_path)) {
     try {
-      authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(token_path, 'utf8');
+      const authToken = readFileSync(token_path, 'utf8');
+      if (!authToken) {
+        return await cli.prompt('Token cannot be found, Enter token');
+      }
     } catch (e) {
-      return (authToken = await cli.prompt('Token cannot be found, Enter token'));
+      return cli.prompt('Token cannot be found, Enter token');
     }
   } else {
-    authToken = await cli.prompt('Token cannot be found, Enter token');
+    return cli.prompt('Token cannot be found, Enter token');
   }
 
   return authToken;
 }
 
 export function errorHandle(e: any, msg: string): Error {
-  if ((axios.isAxiosError(e) as any) && e?.response?.data) {
+  if (axios.isAxiosError(e) && e?.response?.data) {
     throw new Error(`${msg} ${e.response.data.message ?? e.response.data}`);
   }
 

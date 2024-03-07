@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import NodeUtil from 'node:util';
-import {BigInt, Boolean, DateObj, Int, Json, SequelizeTypes, String} from '@subql/utils';
+import {BigInt, Boolean, Bytes, DateObj, Int, Json, SequelizeTypes, String} from '@subql/utils';
 import {
   DataType,
   DataTypes,
@@ -75,7 +75,6 @@ export function formatAttributes(
   schema: string,
   withoutForeignKey: boolean
 ): string {
-  // console.log('column options', columnOptions)
   const type = formatDataType(columnOptions.type);
   const allowNull = columnOptions.allowNull === false ? 'NOT NULL' : '';
   const unique = columnOptions.unique ? 'UNIQUE' : '';
@@ -86,6 +85,7 @@ export function formatAttributes(
   return `${type} ${allowNull} ${unique} ${autoIncrement} ${withoutForeignKey ? '' : references}`.trim();
 }
 
+// TODO this should be using TypeClass.types['dbType'] instead of TypeClass.key
 const sequelizeToPostgresTypeMap = {
   [DataTypes.STRING.name]: (dataType: DataType) => String.sequelizeType,
   [DataTypes.INTEGER.name]: () => Int.sequelizeType,
@@ -96,6 +96,7 @@ const sequelizeToPostgresTypeMap = {
   [DataTypes.DATE.name]: () => DateObj.sequelizeType,
   [DataTypes.JSONB.name]: () => Json.sequelizeType,
   [DataTypes.RANGE.name]: () => 'int8range',
+  [DataTypes.BLOB.name]: () => 'bytea',
 };
 
 export function formatDataType(dataType: DataType): SequelizeTypes {

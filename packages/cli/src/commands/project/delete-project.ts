@@ -1,13 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {deleteProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
-
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Delete_project extends Command {
   static description = 'Delete Project on Hosted Service';
@@ -19,7 +16,7 @@ export default class Delete_project extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Delete_project);
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
+    const authToken = await checkToken();
     let {org, projectName} = flags;
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
