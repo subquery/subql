@@ -110,9 +110,8 @@ export async function getEnumDeprecated(sequelize: Sequelize, enumTypeNameDeprec
 }
 
 type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
-export type SubqlProjectDs<DS extends BaseDataSource> = DS & {
-  mapping: DS['mapping'] & {entryScript: string};
-};
+// TODO remove this type, it would result in a breaking change though
+export type SubqlProjectDs<DS extends BaseDataSource> = DS;
 
 export function getModulos<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
   dataSources: DS[],
@@ -165,12 +164,12 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
         }
         return {
           ...dataSource,
-          mapping: {...dataSource.mapping, entryScript, file},
+          mapping: {...dataSource.mapping, file},
         };
       } else {
         return {
           ...dataSource,
-          mapping: {...dataSource.mapping, entryScript, file},
+          mapping: {...dataSource.mapping, file},
         };
       }
     })
