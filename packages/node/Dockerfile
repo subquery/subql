@@ -23,13 +23,21 @@ FROM node:18-alpine
 COPY --from=builder /app/packages/node/app.tgz /app.tgz
 
 # Install production dependencies
-RUN apk add --no-cache tini curl git && \
-    tar -xzvf /app.tgz --strip 1 && \
-    rm /app.tgz && \
-    yarn install --production && \
+RUN apk add --no-cache tini curl git &&  \
+    apk add --no-cache python3 make g++ &&  \
+    npm install -g node-gyp
+
+# Install the app
+RUN npm i -g app.tgz
+
+# Clean up unused deps
+RUN rm /app.tgz && \
     yarn cache clean && \
     rm -rf /root/.npm /root/.cache
 
+# Make the user not ROOT
+USER 1000
+
 # Set Entry point and command
-ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node-stellar/bin/run"]
 CMD ["-f","/app"]
