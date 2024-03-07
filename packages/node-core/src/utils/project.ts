@@ -110,9 +110,11 @@ export async function getEnumDeprecated(sequelize: Sequelize, enumTypeNameDeprec
 }
 
 type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
-export type SubqlProjectDs<DS extends BaseDataSource> = DS & {
-  mapping: DS['mapping'] & {entryScript: string};
-};
+// TODO remove this type, it would result in a breaking change though
+/**
+ * @deprecated Please unwrap the datasource from this type
+ * */
+export type SubqlProjectDs<DS extends BaseDataSource> = DS;
 
 export function getModulos<DS extends BaseDataSource, CDS extends DS & BaseCustomDataSource>(
   dataSources: DS[],
@@ -142,7 +144,7 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
   reader: Reader,
   root: string,
   isCustomDs: IsCustomDs<DS, CDS>
-): Promise<SubqlProjectDs<DS | CDS>[]> {
+): Promise<(DS | CDS)[]> {
   // force convert to updated ds
   return Promise.all(
     _dataSources.map(async (dataSource) => {
@@ -165,12 +167,12 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
         }
         return {
           ...dataSource,
-          mapping: {...dataSource.mapping, entryScript, file},
+          mapping: {...dataSource.mapping, file},
         };
       } else {
         return {
           ...dataSource,
-          mapping: {...dataSource.mapping, entryScript, file},
+          mapping: {...dataSource.mapping, file},
         };
       }
     })
@@ -310,7 +312,7 @@ export async function loadProjectTemplates<T extends BaseDataSource & TemplateBa
   root: string,
   reader: Reader,
   isCustomDs: IsCustomDs<BaseDataSource, BaseCustomDataSource>
-): Promise<SubqlProjectDs<T>[]> {
+): Promise<T[]> {
   if (!templates || !templates.length) {
     return [];
   }
@@ -318,7 +320,7 @@ export async function loadProjectTemplates<T extends BaseDataSource & TemplateBa
   return dsTemplates.map((ds, index) => ({
     ...ds,
     name: templates[index].name,
-  })) as SubqlProjectDs<T>[]; // How to get rid of cast here?
+  })) as T[]; // How to get rid of cast here?
 }
 
 export function getStartHeight(dataSources: BaseDataSource[]): number {

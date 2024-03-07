@@ -75,7 +75,6 @@ function testSubqueryProject_1(): SubqueryProject {
         startBlock: 1,
         mapping: {
           file: '',
-          entryScript: '',
           handlers: [
             { handler: 'testSandbox', kind: SubstrateHandlerKind.Event },
           ],
@@ -85,7 +84,6 @@ function testSubqueryProject_1(): SubqueryProject {
         kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
-          entryScript: '',
           file: '',
           handlers: [
             { handler: 'testSandbox', kind: SubstrateHandlerKind.Event },
@@ -114,7 +112,6 @@ function testSubqueryProject_2(): SubqueryProject {
         startBlock: 1,
         mapping: {
           file: '',
-          entryScript: `console.log('test handler runtime0')`,
           handlers: [
             { handler: 'testSandbox', kind: SubstrateHandlerKind.Event },
           ],
