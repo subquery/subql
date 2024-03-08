@@ -16,7 +16,7 @@ import {CoreDictionary} from '../coreDictionary';
 import {DictionaryResponse} from '../types';
 import {buildDictQueryFragment, distinctErrorEscaped, startHeightEscaped} from './utils';
 
-const logger = getLogger('dictionary v1');
+const logger = getLogger('dictionary-v1');
 
 export abstract class DictionaryV1<DS> extends CoreDictionary<
   DS,
