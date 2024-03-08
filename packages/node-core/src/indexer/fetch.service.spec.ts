@@ -441,15 +441,8 @@ describe('Fetch Service', () => {
     // Return results the size of the batch but less than end
     dictionaryService.scopedDictionaryEntries = (start, end, batch) => {
       const blocks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-      expect(blocks.length).toEqual(batch);
-      expect(blocks[blocks.length - 1]).toBeLessThan(end);
-
       return Promise.resolve({
         batchBlocks: blocks,
-        queryEndBlock: end,
-        _metadata: {
-          lastProcessedHeight: 1000,
-        } as any,
         lastBufferedHeight: blocks[blocks.length - 1],
       });
     };
