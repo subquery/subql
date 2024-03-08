@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add service to support for dictionary v2 (#2257)
 
+## [7.4.1] - 2024-03-08
+### Fixed
+- Memory leak with workers and large number of (dynamic) datasources (#2292)
+- Add missing `bytes` scalar type (#2293)
+
 ## [7.4.0] - 2024-03-05
 ### Fixed
 - Fix missing incrememnt keys on `_metadata` table (#2283)
@@ -594,7 +599,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.4.1...HEAD
+[7.4.1]: https://github.com/subquery/subql/compare/node-core/7.4.0...node-core/7.4.1
 [7.4.0]: https://github.com/subquery/subql/compare/node-core/7.3.1...node-core/7.4.0
 [7.3.1]: https://github.com/subquery/subql/compare/node-core/7.3.0...node-core/7.3.1
 [7.3.0]: https://github.com/subquery/subql/compare/node-core/7.2.1...node-core/7.3.0

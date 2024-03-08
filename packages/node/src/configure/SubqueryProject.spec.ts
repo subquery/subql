@@ -16,23 +16,12 @@ import {
   SubstrateCustomDataSourceImpl,
   isCustomDs,
 } from '@subql/common-substrate';
-import {
-  loadDataSourceScript,
-  saveFile,
-  SubqlProjectDs,
-  updateDataSourcesEntry,
-  updateDataSourcesV1_0_0,
-  updateProcessor,
-} from '@subql/node-core';
+import { updateDataSourcesV1_0_0 } from '@subql/node-core';
 import {
   SubstrateCustomDatasource,
   SubstrateRuntimeDatasource,
 } from '@subql/types';
-import {
-  BaseCustomDataSource,
-  BaseDataSource,
-  Reader,
-} from '@subql/types-core';
+import { Reader } from '@subql/types-core';
 import { SubqueryProject } from './SubqueryProject';
 
 // eslint-disable-next-line jest/no-export

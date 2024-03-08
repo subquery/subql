@@ -25,7 +25,6 @@ function getTestProject(
         processor: { file: 'test/jsonfy.js' },
         startBlock: 1,
         mapping: {
-          entryScript: '',
           handlers: [{ handler: 'testSandbox', kind: 'substrate/JsonfyEvent' }],
         },
       },

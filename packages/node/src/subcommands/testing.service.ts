@@ -25,7 +25,7 @@ export class TestingService extends BaseTestingService<
   ApiPromise,
   ApiAt,
   BlockContent | LightBlockContent,
-  SubqlProjectDs<SubstrateDatasource>
+  SubstrateDatasource
 > {
   constructor(
     nodeConfig: NodeConfig,
@@ -37,12 +37,7 @@ export class TestingService extends BaseTestingService<
   async getTestRunner(): Promise<
     [
       close: () => Promise<void>,
-      runner: TestRunner<
-        ApiPromise,
-        ApiAt,
-        BlockContent,
-        SubqlProjectDs<SubstrateDatasource>
-      >,
+      runner: TestRunner<ApiPromise, ApiAt, BlockContent, SubstrateDatasource>,
     ]
   > {
     const testContext = await NestFactory.createApplicationContext(
