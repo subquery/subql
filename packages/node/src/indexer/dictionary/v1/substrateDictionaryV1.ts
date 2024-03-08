@@ -15,12 +15,7 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import { NodeConfig, DictionaryV1, timeout, getLogger } from '@subql/node-core';
-import {
-  CustomDatasourceTemplate,
-  SubstrateBlockFilter,
-  SubstrateCustomDatasource,
-  SubstrateDatasource,
-} from '@subql/types';
+import { SubstrateBlockFilter, SubstrateDatasource } from '@subql/types';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry as DictionaryV1QueryEntry,
@@ -188,9 +183,7 @@ export function buildDictionaryV1QueryEntries<
 
 const logger = getLogger('substrate-dictionary-V1');
 
-export class SubstrateDictionaryV1 extends DictionaryV1<
-  CustomDatasourceTemplate | SubstrateCustomDatasource
-> {
+export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
   constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
@@ -232,7 +225,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<
   }
 
   buildDictionaryQueryEntries(
-    dataSources: SubstrateCustomDatasource[],
+    dataSources: SubstrateDataSource[],
   ): DictionaryV1QueryEntry[] {
     return buildDictionaryV1QueryEntries(dataSources, this.getDsProcessor);
   }
