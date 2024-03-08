@@ -57,7 +57,7 @@ describe('DictionaryService', () => {
 
     expect(specVersions.length).toBeGreaterThan(0);
     dictionaryService.onApplicationShutdown();
-  }, 500000);
+  }, 50000);
 });
 
 const makeDs = (handlers: SubstrateRuntimeHandler[]) => {
