@@ -16,7 +16,6 @@ import {
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
-  SubqlProjectDs,
 } from '@subql/node-core';
 import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import {
@@ -32,11 +31,11 @@ import { updateDatasourcesFlare } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
 
-export type EthereumProjectDs = SubqlProjectDs<SubqlEthereumDataSource>;
+export type EthereumProjectDs = SubqlEthereumDataSource;
 
 export type EthereumProjectDsTemplate =
-  | SubqlProjectDs<RuntimeDatasourceTemplate>
-  | SubqlProjectDs<CustomDatasourceTemplate>;
+  | RuntimeDatasourceTemplate
+  | CustomDatasourceTemplate;
 
 export type SubqlProjectBlockFilter = EthereumBlockFilter & {
   cronSchedule?: {

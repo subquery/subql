@@ -21,7 +21,6 @@ const mockTempDs: EthereumProjectDsTemplate[] = [
     kind: EthereumDatasourceKind.Runtime,
     assets: new Map(),
     mapping: {
-      entryScript: '',
       file: '',
       handlers: [
         {
@@ -39,7 +38,6 @@ const mockTempDs: EthereumProjectDsTemplate[] = [
     kind: EthereumDatasourceKind.Runtime,
     assets: new Map(),
     mapping: {
-      entryScript: '',
       file: '',
       handlers: [
         {
