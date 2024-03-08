@@ -142,9 +142,12 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
 
       if (Array.isArray(dictionaries) && dictionaries.length > 0) {
         return dictionaries;
+      } else {
+        return [dictionaries];
       }
     } catch (error: any) {
       logger.error(error, 'An error occurred while fetching the dictionary:');
+      return [];
     }
   }
 }

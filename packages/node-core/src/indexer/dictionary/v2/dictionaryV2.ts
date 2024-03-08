@@ -111,13 +111,11 @@ export abstract class DictionaryV2<
 
   async getData<RFB>(
     startBlock: number,
-    queryEndBlock: number,
+    endBlock: number,
     limit: number = MIN_FETCH_LIMIT,
     fieldSelector: FieldSelector
   ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined> {
-    const queryDetails = this.queriesMap?.getDetails(startBlock);
-    const conditions = queryDetails?.value;
-
+    const {conditions, queryEndBlock} = this.getQueryConditions(startBlock, endBlock);
     if (!conditions) {
       return undefined;
     }

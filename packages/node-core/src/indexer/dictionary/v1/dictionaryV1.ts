@@ -116,15 +116,11 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
   @profiler()
   async getData(
     startBlock: number,
-    queryEndBlock: number,
+    endBlock: number,
     batchSize: number
   ): Promise<DictionaryResponse<number> | undefined> {
-    const queryDetails = this.queriesMap?.getDetails(startBlock);
-    const conditions = queryDetails?.value ?? [];
-    queryEndBlock =
-      queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock ? queryDetails.endHeight : queryEndBlock;
-
-    if (!conditions) {
+    const {conditions, queryEndBlock} = this.getQueryConditions(startBlock, endBlock);
+    if (!conditions || conditions.length === 0) {
       return undefined;
     }
 

@@ -12,7 +12,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   implements IDictionary<DS, FB>
 {
   protected queriesMap?: BlockHeightMap<E>;
-  protected _startHeight?: number;
+  protected _startHeight = 1;
   protected _metadata?: M;
   metadataValid: boolean | undefined;
 
@@ -36,9 +36,6 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   abstract getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number;
 
   get startHeight(): number {
-    if (this._startHeight === undefined) {
-      throw new Error('Dictionary start height is not set');
-    }
     return this._startHeight;
   }
 
@@ -68,5 +65,16 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
 
   updateQueriesMap(dataSources: BlockHeightMap<DS[]>): void {
     this.queriesMap = dataSources.map((d) => this.buildDictionaryQueryEntries(d));
+  }
+
+  protected getQueryConditions(
+    startBlock: number,
+    queryEndBlock: number
+  ): {queryEndBlock: number; conditions: E | undefined} {
+    const queryDetails = this.queriesMap?.getDetails(startBlock);
+    const conditions = queryDetails?.value;
+    queryEndBlock =
+      queryDetails?.endHeight && queryDetails?.endHeight < queryEndBlock ? queryDetails.endHeight : queryEndBlock;
+    return {queryEndBlock, conditions};
   }
 }
