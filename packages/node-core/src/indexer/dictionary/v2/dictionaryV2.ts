@@ -151,10 +151,6 @@ export abstract class DictionaryV2<
       }
       const result = this.convertResponseBlocks(response.data.result);
       this.metadata.end = response.data.result.BlockRange[1];
-      logger.debug(
-        'NUM DICT RESULTS',
-        result?.batchBlocks.map((b) => getBlockHeight(b))
-      );
       return result;
     } catch (error: any) {
       logger.error(error, `Dictionary query failed. request: ${JSON.stringify(requestData, null, 2)}`);
