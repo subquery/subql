@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {FieldSelector} from '@subql/node-core';
 import {NodeConfig} from '../../configure';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
 import {IBlock} from '../types';
 import {DictionaryResponse, IDictionary} from './types';
+import {FieldSelector} from './v2';
 
 export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQueryEntry */>
   implements IDictionary<DS, FB>
