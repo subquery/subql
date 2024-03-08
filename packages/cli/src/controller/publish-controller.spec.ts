@@ -94,6 +94,7 @@ describe('Cli publish', () => {
   it(`upload file to ipfs`, async () => {
     // only enable when test locally
     const ipfs = create({url: ipfsEndpoint});
+
     //test string
     const cid = await uploadFile({path: '', content: 'Test for upload string to ipfs'}, testAuth);
     console.log(`upload file cid: ${cid}`);
