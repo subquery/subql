@@ -153,18 +153,4 @@ describe('Cli publish', () => {
     });
     expect(mapToObject(mockMap)).toStrictEqual({'1': 'aaa', '2': 'bbb'});
   });
-
-  it(`pin test`, async () => {
-    // only enable when test locally
-    const ipfsWrite = create({
-      url: IPFS_WRITE_ENDPOINT,
-      headers: {Authorization: `Bearer ${'MTA0MzE2NTc=HW6qsPzHCUWFwJD7iyJ7'}`},
-    });
-    const PIN_SERVICE = 'onfinality';
-
-    const cid = CID.parse('QmVvX8wY78KzfbGaiPNaVamLB1Gs7f6HunZYFqojANS1cC');
-
-    await ipfsWrite.pin.remote.add(cid, {service: PIN_SERVICE});
-    return cid.toString();
-  });
 });
