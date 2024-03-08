@@ -15,7 +15,12 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import { NodeConfig, DictionaryV1, timeout, getLogger } from '@subql/node-core';
-import { SubstrateBlockFilter, SubstrateDatasource } from '@subql/types';
+import {
+  CustomDatasourceTemplate,
+  SubstrateBlockFilter,
+  SubstrateCustomDatasource,
+  SubstrateDatasource,
+} from '@subql/types';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry as DictionaryV1QueryEntry,
@@ -26,7 +31,6 @@ import { sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../../../utils/project';
 import { SpecVersion, SpecVersionDictionary } from '../types';
-import { SubstrateDsInterface } from '../utils';
 
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
@@ -184,7 +188,9 @@ export function buildDictionaryV1QueryEntries<
 
 const logger = getLogger('substrate-dictionary-V1');
 
-export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDsInterface> {
+export class SubstrateDictionaryV1 extends DictionaryV1<
+  CustomDatasourceTemplate | SubstrateCustomDatasource
+> {
   constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
@@ -226,7 +232,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDsInterface> {
   }
 
   buildDictionaryQueryEntries(
-    dataSources: SubstrateDsInterface[],
+    dataSources: SubstrateCustomDatasource[],
   ): DictionaryV1QueryEntry[] {
     return buildDictionaryV1QueryEntries(dataSources, this.getDsProcessor);
   }
