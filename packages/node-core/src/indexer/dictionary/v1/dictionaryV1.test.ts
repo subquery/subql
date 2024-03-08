@@ -17,7 +17,6 @@ const mockDS = [
     kind: SubstrateDatasourceKind.Runtime,
     startBlock: 100,
     mapping: {
-      entryScript: '',
       handlers: [
         {
           handler: 'handleTest',
@@ -36,7 +35,6 @@ const mockDS = [
     kind: SubstrateDatasourceKind.Runtime,
     startBlock: 500,
     mapping: {
-      entryScript: '',
       handlers: [
         {
           handler: 'handleTest',
@@ -56,7 +54,6 @@ const mockDS = [
     kind: SubstrateDatasourceKind.Runtime,
     startBlock: 1000,
     mapping: {
-      entryScript: '',
       handlers: [
         {
           handler: 'handleTest',
