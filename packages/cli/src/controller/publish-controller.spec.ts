@@ -6,9 +6,9 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {DEFAULT_MANIFEST, IPFS_WRITE_ENDPOINT, mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
+import {DEFAULT_MANIFEST, mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
-import {create, CID} from 'ipfs-http-client';
+import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
@@ -94,12 +94,8 @@ describe('Cli publish', () => {
   it(`upload file to ipfs`, async () => {
     // only enable when test locally
     const ipfs = create({url: ipfsEndpoint});
-
     //test string
-    const cid = await uploadFile(
-      {path: '', content: 'Test for uploaaaaaad string to ipfsaaaa'},
-      'MTA0MzE2NTc=HW6qsPzHCUWFwJD7iyJ7'
-    );
+    const cid = await uploadFile({path: '', content: 'Test for upload string to ipfs'}, testAuth);
     console.log(`upload file cid: ${cid}`);
   });
 
