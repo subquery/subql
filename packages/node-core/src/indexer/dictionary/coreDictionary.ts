@@ -60,7 +60,8 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
 
   // filter dictionary with start height
   heightValidation(height: number): boolean {
-    return this.dictionaryValidation(this._metadata, height);
+    // validate metadata, and then validate query maps
+    return this.dictionaryValidation(this._metadata, height) && this.queryMapValidByHeight(height);
   }
 
   updateQueriesMap(dataSources: BlockHeightMap<DS[]>): void {

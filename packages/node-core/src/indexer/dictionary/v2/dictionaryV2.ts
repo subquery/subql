@@ -4,7 +4,7 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import axios, {AxiosInstance} from 'axios';
 import {utils} from 'ethers';
-import {FieldSelector, getBlockHeight} from '../';
+import {FieldSelector} from '../';
 import {NodeConfig} from '../../../configure';
 import {getLogger} from '../../../logger';
 import {IBlock} from '../../types';
@@ -162,7 +162,11 @@ export abstract class DictionaryV2<
   queryMapValidByHeight(height: number): boolean {
     // we can not use map.has method here, has method only return true when value for corresponding key is set
     // but in BlockHeightMap it need to return any map <= key value, see `getDetails` method
-    return !!this.queriesMap?.get(height);
+    try {
+      return !!this.queriesMap?.get(height);
+    } catch (e) {
+      return false;
+    }
   }
 
   protected dictionaryValidation(metaData?: DictionaryV2Metadata, startBlockHeight?: number): boolean {

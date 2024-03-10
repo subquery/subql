@@ -146,7 +146,8 @@ mockDS.forEach((ds, index, dataSources) => {
   m.set(ds.startBlock, dataSources.slice(0, index + 1));
 });
 
-const dsMap = new BlockHeightMap(m);
+// eslint-disable-next-line jest/no-export
+export const dsMap = new BlockHeightMap(m);
 
 async function prepareDictionary(
   endpoint = DICTIONARY_ENDPOINT,

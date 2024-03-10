@@ -5,6 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
 import {IBlock} from '../../types';
+import {dsMap as mockedDsMap} from '../v1/dictionaryV1.test';
 
 jest.setTimeout(50000);
 
@@ -19,13 +20,6 @@ export interface TestFB {
 export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryV2QueryEntry {
     return {};
-  }
-  async getData(
-    startBlock: number,
-    queryEndBlock: number,
-    limit: number
-  ): Promise<DictionaryResponse<IBlock<TestFB>> | undefined> {
-    return Promise.resolve(undefined);
   }
 
   convertResponseBlocks<RFB>(result: RawDictionaryResponseData<RFB>): DictionaryResponse<IBlock<TestFB>> | undefined {
@@ -74,6 +68,13 @@ describe('Individual dictionary V2 test', () => {
     const queryEndBlock2 = dictionary.getQueryEndBlock(10000000000, 10000000000);
     expect(queryEndBlock2).toBe((dictionary as any)._metadata.end);
   }, 500000);
+
+  it('can determine current dictionary query map is valid with block height', async () => {
+    await (dictionary as any).init();
+    dictionary.updateQueriesMap(mockedDsMap);
+    expect(dictionary.queryMapValidByHeight(105)).toBeTruthy();
+    expect(dictionary.queryMapValidByHeight(1)).toBeFalsy();
+  });
 });
 
 describe('determine dictionary V2 version', () => {

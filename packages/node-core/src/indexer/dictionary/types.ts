@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {FieldSelector} from '@subql/node-core/indexer';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
 import {IBlock} from '../types';
 
@@ -13,8 +14,9 @@ export interface IDictionary<DS, FB> {
   metadataValid: boolean | undefined;
   getData(
     startBlock: number,
-    queryEndBlock: number,
-    limit: number
+    endBlock: number,
+    limit: number,
+    fieldSelector?: FieldSelector
   ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined>;
   queryMapValidByHeight(height: number): boolean;
   getQueryEndBlock(targetEndHeight: number, apiFinalizedHeight: number): number;

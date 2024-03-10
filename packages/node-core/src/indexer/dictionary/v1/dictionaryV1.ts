@@ -179,7 +179,11 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
   }
 
   queryMapValidByHeight(height: number): boolean {
-    return !!this.queriesMap?.get(height)?.length;
+    try {
+      return !!this.queriesMap?.get(height)?.length;
+    } catch (e) {
+      return false;
+    }
   }
 
   protected dictionaryValidation(metaData?: DictionaryV1Metadata, startBlockHeight?: number): boolean {

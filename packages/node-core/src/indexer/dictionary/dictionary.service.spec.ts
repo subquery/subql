@@ -27,6 +27,7 @@ class TestDictionaryService extends DictionaryService<any, TestFB> {
       this.nodeConfig,
       this.eventEmitter
     );
+
     patchMockDictionary(mockDictionaryV2);
     const dictionariesV2 = [mockDictionaryV2];
     this.init([...dictionariesV1, ...dictionariesV2]);
