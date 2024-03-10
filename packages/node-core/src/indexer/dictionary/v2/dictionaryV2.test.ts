@@ -23,7 +23,10 @@ export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
   }
 
   convertResponseBlocks<RFB>(result: RawDictionaryResponseData<RFB>): DictionaryResponse<IBlock<TestFB>> | undefined {
-    return undefined;
+    return {
+      batchBlocks: result.blocks as IBlock<TestFB>[],
+      lastBufferedHeight: (result.blocks as number[])[result.blocks.length - 1],
+    };
   }
 }
 // mock init and metadata
@@ -49,6 +52,7 @@ const nodeConfig = new NodeConfig({
   dictionaryTimeout: 10,
   dictionaryResolver: false,
 });
+
 describe('Individual dictionary V2 test', () => {
   const dictionary = new TestDictionaryV2('http://mock-dictionary-v2/rpc', '0x21121', nodeConfig, new EventEmitter2());
   patchMockDictionary(dictionary);
@@ -67,6 +71,44 @@ describe('Individual dictionary V2 test', () => {
     // should use dictionary metadata end, mock that api and targetHeight are beyond dictionary metadata
     const queryEndBlock2 = dictionary.getQueryEndBlock(10000000000, 10000000000);
     expect(queryEndBlock2).toBe((dictionary as any)._metadata.end);
+  }, 500000);
+
+  it('can get data', async () => {
+    await (dictionary as any).init();
+    dictionary.updateQueriesMap(mockedDsMap);
+    // mock api return
+    (dictionary as any).dictionaryApi = {
+      post: () => {
+        return {
+          status: 200,
+          data: {
+            result: {
+              blocks: [105, 205, 600, 705],
+              BlockRange: [1, 1000000],
+              GenesisHash: 'mockedGenesisHash',
+            },
+          },
+        };
+      },
+    };
+
+    const data = await dictionary.getData(100, 1100, 100, {event: {}, method: {}});
+    expect(data?.batchBlocks).toStrictEqual([105, 205, 600, 705]);
+    expect(data?.lastBufferedHeight).toBe(705);
+    // can update metadata block height
+    expect((dictionary as any).metadata.end).toBe(1000000);
+
+    // can throw error if response failed
+    (dictionary as any).dictionaryApi = {
+      post: () => {
+        throw new Error('Mock post error');
+      },
+    };
+    await expect(() => dictionary.getData(100, 1100, 100, {event: {}, method: {}})).rejects.toThrow(
+      'Dictionary get capability failed Error: Mock post error'
+    );
+
+    jest.clearAllMocks();
   }, 500000);
 
   it('can determine current dictionary query map is valid with block height', async () => {
