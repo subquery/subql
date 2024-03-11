@@ -41,7 +41,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
 
   protected get metadata(): M {
     if (!this._metadata) {
-      throw new Error(`DictionaryV2 hasn't been initialized`);
+      throw new Error(`Dictionary metadata hasn't been initialized`);
     }
     return this._metadata;
   }
