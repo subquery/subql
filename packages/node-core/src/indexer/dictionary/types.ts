@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FieldSelector} from '@subql/node-core/indexer';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
+import {FieldSelector} from '../dictionary/v2';
 import {IBlock} from '../types';
 
 export type DictionaryResponse<B = number> = {

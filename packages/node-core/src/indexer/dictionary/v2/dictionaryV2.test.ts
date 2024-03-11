@@ -36,6 +36,7 @@ export function patchMockDictionary(dictionary: DictionaryV2<any, any>) {
     ((dictionary as any)._metadata = {
       start: 1,
       end: 100000,
+      chainId: 'mockChainId',
       genesisHash: '0x21121',
       filters: {
         complete: ['block', 'transaction'],

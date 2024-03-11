@@ -179,7 +179,7 @@ describe('Dictionary V1', () => {
     });
 
     it('validate dictionary with a height', () => {
-      expect(dictionary.heightValidation(1)).toBeTruthy();
+      expect(dictionary.heightValidation(100)).toBeTruthy();
       const beyond500 = (dictionary as any).metadata.lastProcessedHeight + 500;
       expect(dictionary.heightValidation(beyond500)).toBeFalsy();
     });
@@ -198,7 +198,7 @@ describe('Dictionary V1', () => {
       dictionary.updateQueriesMap(dsMap);
 
       // Out of range of scoped entries
-      const result = await dictionary.getData(0, 99, 10);
+      const result = await dictionary.getData(100, 199, 10);
       expect(result?.batchBlocks.length).toEqual(0);
 
       const result2 = await dictionary.getData(1000, 10000, 10);
@@ -276,12 +276,14 @@ describe('Dictionary V1', () => {
     expect(dic).toBeUndefined();
   }, 500000);
 
-  it('should use metadata last process height at end of query height', () => {
-    const fakeApiFinalHeight = 400010000;
-    const endBlock = dictionary.getQueryEndBlock(1, fakeApiFinalHeight);
+  it('should use metadata last process height at end of query height', async () => {
+    await (dictionary as any).init();
+    const fakeApiFinalHeight = 40001;
+    // assume already synced up with chain
     // 1 + dictionaryQuerySize
+    const endBlock = dictionary.getQueryEndBlock(10001, fakeApiFinalHeight);
     expect(endBlock).toEqual(10001);
-  }, 500000);
+  }, 50000);
 });
 
 describe('Individual dictionary V1 test', () => {

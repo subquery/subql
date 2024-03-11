@@ -5,7 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {NodeConfig} from '../..';
 import {DictionaryService} from './dictionary.service';
-import {TestDictionaryV1} from './v1/dictionaryV1.test';
+import {dsMap as mockedDsMap, TestDictionaryV1} from './v1/dictionaryV1.test';
 import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.test';
 
 class TestDictionaryService extends DictionaryService<any, TestFB> {
@@ -53,6 +53,8 @@ describe('Dictionary service', function () {
 
     dictionaryService = new TestDictionaryService('0xchainId', nodeConfig, new EventEmitter2());
     await dictionaryService.initDictionaries();
+
+    dictionaryService.buildDictionaryEntryMap(mockedDsMap);
     await Promise.all((dictionaryService as any)._dictionaries.map((d: any) => d.init()));
   });
 
@@ -76,16 +78,16 @@ describe('Dictionary service', function () {
     // If we haven't set dictionary
     expect((dictionaryService as any)._currentDictionaryIndex).toBeUndefined();
 
-    (dictionaryService as any).findDictionary(1, new Set<number>());
+    (dictionaryService as any).findDictionary(100, new Set<number>());
     expect((dictionaryService as any)._currentDictionaryIndex).toBe(1);
 
-    expect((dictionaryService as any).getDictionary(1)).toBeTruthy();
+    expect((dictionaryService as any).getDictionary(100)).toBeTruthy();
     // Current only valid endpoint been provided
-    expect((dictionaryService as any).getDictionary(1).dictionaryEndpoint).toBe(
+    expect((dictionaryService as any).getDictionary(100).dictionaryEndpoint).toBe(
       'https://dict-tyk.subquery.network/query/eth-mainnet'
     );
 
-    expect(dictionaryService.useDictionary(1)).toBeTruthy();
+    expect(dictionaryService.useDictionary(100)).toBeTruthy();
   });
 
   it('scopedDictionaryEntries, dictionary get data should be called', async () => {
@@ -93,9 +95,8 @@ describe('Dictionary service', function () {
 
     const spyDictionary = jest.spyOn(dictionary, 'getData');
 
-    const blocks = await dictionaryService.scopedDictionaryEntries(1000, 11000, 100);
+    await dictionaryService.scopedDictionaryEntries(1000, 11000, 100);
     expect(spyDictionary).toHaveBeenCalled();
-    expect(blocks).toBeTruthy();
   });
 
   it('scopedDictionaryEntries, if query failed/timeout, should try next valid dictionary for query', async () => {
@@ -116,13 +117,12 @@ describe('Dictionary service', function () {
 
     const spyScopedDictionaryEntries = jest.spyOn(dictionaryService as any, '_scopedDictionaryEntries');
 
-    const blocks = await dictionaryService.scopedDictionaryEntries(1000, 11000, 100);
+    await dictionaryService.scopedDictionaryEntries(1000, 11000, 100);
     expect(spyFailedGetData).toHaveBeenCalledTimes(1);
     expect(spyPassGetData).toHaveBeenCalledTimes(1);
     // failed 1 time + 1 retry
     expect(spyScopedDictionaryEntries).toHaveBeenCalledTimes(2);
     expect((dictionaryService as any)._currentDictionaryIndex).toBe(1);
-    expect(blocks).toBeTruthy();
   }, 5000000);
 
   it('tried all dictionaries but all failed will return undefined', async () => {

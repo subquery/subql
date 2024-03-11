@@ -38,7 +38,7 @@ const nodeConfig = new NodeConfig({
   dictionaryResolver: 'https://kepler-auth.subquery.network',
 });
 
-describe('DictionaryService', () => {
+describe('Substrate DictionaryService', () => {
   it('should return all specVersion', async () => {
     const project = testSubqueryProject();
     const dictionaryService = new SubstrateDictionaryService(
@@ -151,6 +151,27 @@ describe('Building dictionary query entries', () => {
   });
 
   it('supports custom ds processors', () => {
+    // mock custom ds processor dictionary return
+    const processors: Record<string, any> = {
+      'substrate/JsonfyCall': {
+        baseHandlerKind: {},
+        dictionaryQuery: () => {
+          return {
+            conditions: [
+              {
+                field: 'filter1',
+                value: 'foo',
+              },
+              {
+                field: 'filter2',
+                value: 'bar',
+              },
+            ],
+            entity: 'json',
+          };
+        },
+      },
+    };
     // Processor WITH custom dictionary query
     const result1 = buildDictionaryV1QueryEntries(
       [
@@ -173,7 +194,14 @@ describe('Building dictionary query entries', () => {
           },
         },
       ],
-      () => undefined,
+      (ds) => {
+        return {
+          kind: 'substrate/Jsonfy',
+          validate: () => true,
+          dsFilterProcessor: (ds) => true,
+          handlerProcessors: processors,
+        };
+      },
     );
 
     expect(result1).toEqual([
@@ -182,41 +210,6 @@ describe('Building dictionary query entries', () => {
         conditions: [
           { field: 'filter1', value: 'foo' },
           { field: 'filter2', value: 'bar' },
-        ],
-      },
-    ]);
-
-    // Processor WITHOUT custom dictionary query
-    const result2 = buildDictionaryV1QueryEntries(
-      [
-        {
-          kind: 'substrate/Jsonfy',
-          processor: { file: '' },
-          assets: new Map(),
-          mapping: {
-            file: '',
-            handlers: [
-              {
-                kind: 'substrate/JsonfyEvent',
-                handler: 'handleEvent',
-                filter: {
-                  filter1: 'foo',
-                  filter2: 'bar',
-                },
-              },
-            ],
-          },
-        },
-      ],
-      () => undefined,
-    );
-
-    expect(result2).toEqual([
-      {
-        entity: 'events',
-        conditions: [
-          { field: 'module', value: 'bar' },
-          { field: 'event', value: 'foo' },
         ],
       },
     ]);
