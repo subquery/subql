@@ -168,6 +168,10 @@ describe('Dictionary V1', () => {
     dictionary = await prepareDictionary();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('coreDictionary', () => {
     it('set startHeight of this dictionary', () => {
       // After metadata init, it should set startHeight of this dictionary
@@ -276,8 +280,7 @@ describe('Dictionary V1', () => {
     expect(dic).toBeUndefined();
   }, 500000);
 
-  it('should use metadata last process height at end of query height', async () => {
-    await (dictionary as any).init();
+  it('should use metadata last process height at end of query height', () => {
     const fakeApiFinalHeight = 40001;
     // assume already synced up with chain
     // 1 + dictionaryQuerySize
