@@ -164,7 +164,7 @@ async function prepareDictionary(
 describe('Dictionary V1', () => {
   let dictionary: TestDictionaryV1;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     dictionary = await prepareDictionary();
   });
 
