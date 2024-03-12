@@ -74,8 +74,6 @@ export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promis
   } else {
     return cli.prompt('Token cannot be found, Enter token');
   }
-
-  return authToken;
 }
 
 export function errorHandle(e: any, msg: string): Error {

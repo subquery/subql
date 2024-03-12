@@ -15,25 +15,26 @@ import {
   projectsInfo,
   splitEndpoints,
   updateDeployment,
-  default_command_flags,
+  defaultCommandFlags,
   generateDeploymentChain,
   generateAdvancedQueryOptions,
   executeProjectDeployment
 } from '../../controller/deploy-controller';
-import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType, deploymentFlagsInterface} from '../../types';
+import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType, DeploymentFlagsInterface} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
-  static flags = Object.assign(default_command_flags(), {
+  static flags = Object.assign(defaultCommandFlags(), {
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
     endpoint: Flags.string({description: 'Enter endpoint', required: true}),
   });
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
-    let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
+    let _flags: DeploymentFlagsInterface = flags as unknown as DeploymentFlagsInterface;
+    let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = _flags;
 
     const authToken = await checkToken();
 
@@ -41,16 +42,16 @@ export default class Deploy extends Command {
     projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
-    const validator = await ipfsCID_validate(String(ipfsCID), authToken, ROOT_API_URL_PROD);
-    queryVersion = addV(String(queryVersion));
-    indexerVersion = addV(String(indexerVersion));
+    const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
+    queryVersion = addV(queryVersion);
+    indexerVersion = addV(indexerVersion);
 
     if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
     }
 
     if (!endpoint) {
-      if (flags.useDefaults) {
+      if (_flags.useDefaults) {
         throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag'));
       }
 
@@ -59,7 +60,7 @@ export default class Deploy extends Command {
 
     if (!dict) {
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
-      if (!flags.useDefaults && !validateDictEndpoint) {
+      if (!_flags.useDefaults && !validateDictEndpoint) {
         dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
         dict = validateDictEndpoint;
@@ -74,7 +75,7 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!flags.useDefaults) {
+        if (!_flags.useDefaults) {
           indexerVersion = await promptWithDefaultValues(
             inquirer,
             'Enter indexer version',
@@ -97,7 +98,7 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!flags.useDefaults) {
+        if (!_flags.useDefaults) {
           const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
           queryVersion = response;
         } else {
@@ -107,49 +108,33 @@ export default class Deploy extends Command {
         throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
-    const projectInfo = await projectsInfo(authToken, String(org), String(projectName), ROOT_API_URL_PROD, String(flags.type));
+    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, _flags.type);
     const chains: V3DeploymentIndexerType[] = [];
     chains.push(
       generateDeploymentChain({
-        cid: String(ipfsCID),
-        dictEndpoint: String(dict),
-        endpoint: splitEndpoints(String(endpoint)),
-        flags: flags as unknown as deploymentFlagsInterface,
-        indexerImageVersion: String(indexerVersion)
+        cid: ipfsCID,
+        dictEndpoint: dict,
+        endpoint: splitEndpoints(endpoint),
+        flags: _flags,
+        indexerImageVersion: indexerVersion
       })
     );
 
 
     this.log('Deploying SubQuery project to Hosted Service');
 
-    let deploymentOutput = await executeProjectDeployment({
+    await executeProjectDeployment({
+      log: this.log,
       authToken: authToken,
       chains: chains,
-      flags: flags as unknown as deploymentFlagsInterface,
-      ipfsCID: String(ipfsCID),
-      org: String(org),
+      flags: _flags,
+      ipfsCID: ipfsCID,
+      org: org,
       projectInfo: projectInfo,
-      projectName: String(projectName),
+      projectName: projectName,
       queryVersion: queryVersion
     });
 
-    if (!deploymentOutput) {
-      this.log(`Project: ${projectName} has been re-deployed`);
-    } else {
-      this.log(`Project: ${deploymentOutput.projectKey}
-      \nStatus: ${chalk.blue(deploymentOutput.status)}
-      \nDeploymentID: ${deploymentOutput.id}
-      \nDeployment Type: ${deploymentOutput.type}
-      \nIndexer version: ${deploymentOutput.indexerImage}
-      \nQuery version: ${deploymentOutput.queryImage}
-      \nEndpoint: ${deploymentOutput.endpoint}
-      \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
-      \nQuery URL: ${deploymentOutput.queryUrl}
-      \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
-      \nAdvanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
-      \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
-      `);
-    }
 
 
 

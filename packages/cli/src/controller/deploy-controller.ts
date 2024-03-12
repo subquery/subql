@@ -9,15 +9,16 @@ import {
   V3DeploymentIndexerType,
   V3DeploymentInput,
   ValidateDataType,
-  projectDeploymentInterface,
-  generateDeploymentChainInterface,
-  deploymentFlagsInterface
+  ProjectDeploymentInterface,
+  GenerateDeploymentChainInterface,
+  DeploymentFlagsInterface
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
-import {multichainDataFieldType} from "../types";
+import {MultichainDataFieldType} from "../types";
 import {Flags} from "@oclif/core";
 import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from "../constants";
 import chalk from "chalk";
+import {FlagInput} from "@oclif/core/lib/interfaces/parser";
 
 function getAxiosInstance(url: string, authToken?: string): Axios {
   const headers: Record<string, string> = {};
@@ -204,8 +205,8 @@ export interface EndpointType {
   chainId: string;
 }
 
-export function splitMultichainDataFields(fieldStr: string): multichainDataFieldType {
-  let result: multichainDataFieldType = {};
+export function splitMultichainDataFields(fieldStr: string): MultichainDataFieldType {
+  let result: MultichainDataFieldType = {};
 
   splitEndpoints(String(fieldStr)).forEach(unparsedRow => {
     let regexpResult: string[] = unparsedRow.match(/(.*?):(.*)/);
@@ -220,7 +221,7 @@ export function splitMultichainDataFields(fieldStr: string): multichainDataField
   return result;
 }
 
-export function default_command_flags() {
+export function defaultCommandFlags(): & FlagInput<{ [flag: string]: any; }>{
   return {
     org: Flags.string({description: 'Enter organization name'}),
       projectName: Flags.string({description: 'Enter project name'}),
@@ -266,7 +267,7 @@ export function default_command_flags() {
 }
 
 
-export function generateDeploymentChain(row: generateDeploymentChainInterface) {
+export function generateDeploymentChain(row: GenerateDeploymentChainInterface) {
   return {
     cid: row.cid,
     dictEndpoint: row.dictEndpoint,
@@ -293,7 +294,7 @@ export function generateDeploymentChain(row: generateDeploymentChainInterface) {
   };
 }
 
-export function generateAdvancedQueryOptions(flags: deploymentFlagsInterface): QueryAdvancedOpts {
+export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): QueryAdvancedOpts {
   return {
     unsafe: !!flags.queryUnsafe,
     subscription: !!flags.querySubscription,
@@ -305,7 +306,7 @@ export function generateAdvancedQueryOptions(flags: deploymentFlagsInterface): Q
 
 
 
-export async function executeProjectDeployment(data: projectDeploymentInterface): Promise<DeploymentDataType | void> {
+export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
   let deploymentOutput: DeploymentDataType | void = undefined;
 
   if (data.projectInfo !== undefined) {
@@ -320,6 +321,7 @@ export async function executeProjectDeployment(data: projectDeploymentInterface)
       data.chains,
       ROOT_API_URL_PROD
     );
+    data.log(`Project: ${data.projectName} has been re-deployed`);
   } else {
     deploymentOutput = await createDeployment(
       data.org,
@@ -328,10 +330,27 @@ export async function executeProjectDeployment(data: projectDeploymentInterface)
       data.ipfsCID,
       data.queryVersion,
       data.flags.type,
-      generateAdvancedQueryOptions(data.flags as unknown as deploymentFlagsInterface),
+      generateAdvancedQueryOptions(data.flags as unknown as DeploymentFlagsInterface),
       data.chains,
       ROOT_API_URL_PROD
     ).catch((e) => {throw e});
+
+    if (deploymentOutput)
+    {
+      data.log(`Project: ${deploymentOutput.projectKey}
+      \nStatus: ${chalk.blue(deploymentOutput.status)}
+      \nDeploymentID: ${deploymentOutput.id}
+      \nDeployment Type: ${deploymentOutput.type}
+      \nIndexer version: ${deploymentOutput.indexerImage}
+      \nQuery version: ${deploymentOutput.queryImage}
+      \nEndpoint: ${deploymentOutput.endpoint}
+      \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
+      \nQuery URL: ${deploymentOutput.queryUrl}
+      \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
+      \nAdvanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
+      \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
+      `);
+    }
   }
   return deploymentOutput;
 }

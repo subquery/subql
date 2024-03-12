@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RunnerSpecs} from '@subql/types-core';
+import {Command} from "@oclif/core";
 
 export interface ProjectSpecBase {
   name: string;
@@ -147,23 +148,25 @@ export interface V3DeploymentIndexerType {
 }
 
 
-export interface multichainDataFieldType {
+export interface MultichainDataFieldType {
   [key: string]: string
 }
 
 
-export interface projectDeploymentInterface {
+export interface ProjectDeploymentInterface {
   org: string;
   projectName: string;
   chains: V3DeploymentIndexerType[];
   projectInfo: ProjectDataType,
-  flags: deploymentFlagsInterface,
+  flags: DeploymentFlagsInterface,
   ipfsCID: string,
   queryVersion: string,
   authToken: string
+  log: any
 }
 
-export interface deploymentFlagsInterface {
+export interface DeploymentFlagsInterface {
+  ipfs?: string;
   org: string;
   projectName: string;
   type: string;
@@ -189,10 +192,11 @@ export interface deploymentFlagsInterface {
   useDefaults: boolean;
 }
 
-export interface generateDeploymentChainInterface {
+export interface GenerateDeploymentChainInterface {
   cid: string;
   dictEndpoint: string;
   endpoint: string[];
   indexerImageVersion: string;
-  flags: deploymentFlagsInterface;
+  flags: DeploymentFlagsInterface;
 }
+
