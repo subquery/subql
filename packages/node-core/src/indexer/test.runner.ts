@@ -11,7 +11,7 @@ import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
-import {IIndexerManager} from './types';
+import {IBlock, IIndexerManager} from './types';
 
 const logger = getLogger('test-runner');
 
@@ -28,7 +28,7 @@ export class TestRunner<A, SA, B, DS> {
   private passedTests = 0;
   private failedTests = 0;
   constructor(
-    @Inject('IApi') protected readonly apiService: IApi<A, SA, B[]>,
+    @Inject('IApi') protected readonly apiService: IApi<A, SA, IBlock<B>[]>,
     protected readonly storeService: StoreService,
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,
@@ -39,10 +39,10 @@ export class TestRunner<A, SA, B, DS> {
     test: SubqlTest,
     sandbox: TestSandbox,
     indexBlock: (
-      block: B,
+      block: IBlock<B>,
       handler: string,
       indexerManager: IIndexerManager<B, DS>,
-      apiService?: IApi<A, SA, B[]>
+      apiService?: IApi<A, SA, IBlock<B>[]>
     ) => Promise<void>
   ): Promise<{
     passedTests: number;

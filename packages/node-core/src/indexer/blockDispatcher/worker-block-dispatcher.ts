@@ -9,11 +9,10 @@ import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {PoiSyncService} from '../../indexer';
+import {IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
-import {PoiService} from '../poi/poi.service';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -42,8 +41,8 @@ function initAutoQueue<T>(
   return new AutoQueue(workers * batchSize * 2, 1, timeout, name);
 }
 
-export abstract class WorkerBlockDispatcher<DS, W extends Worker>
-  extends BaseBlockDispatcher<AutoQueue<void>, DS>
+export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
+  extends BaseBlockDispatcher<AutoQueue<void>, DS, B>
   implements OnApplicationShutdown
 {
   protected workers: W[] = [];
@@ -100,8 +99,12 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       await Promise.all(this.workers.map((w) => w.terminate()));
     }
   }
+  async enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): Promise<void> {
+    assert(
+      heights.every((h) => typeof h === 'number'),
+      'Worker block dispatcher only supports enqueuing numbers, not blocks.'
+    );
 
-  async enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
     // In the case where factors of batchSize is equal to bypassBlock or when heights is []
     // to ensure block is bypassed, we set the latestBufferHeight to the heights
     // make sure lastProcessedHeight in metadata is updated
@@ -118,7 +121,9 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
         const workerIdx = await this.getNextWorkerIndex();
         const batchSize = Math.min(heights.length - startIndex, await this.maxBatchSize(workerIdx));
         await Promise.all(
-          heights.slice(startIndex, startIndex + batchSize).map((height) => this.enqueueBlock(height, workerIdx))
+          heights
+            .slice(startIndex, startIndex + batchSize)
+            .map((height) => this.enqueueBlock(height as number, workerIdx))
         );
         startIndex += batchSize;
       }
@@ -128,10 +133,10 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
        * worker1: 1,3,5
        * worker2: 2,4,6
        */
-      heights.map(async (height) => this.enqueueBlock(height, await this.getNextWorkerIndex()));
+      heights.map(async (height) => this.enqueueBlock(height as number, await this.getNextWorkerIndex()));
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights) ?? this.latestBufferedHeight;
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
   }
 
   private async enqueueBlock(height: number, workerIdx: number): Promise<void> {

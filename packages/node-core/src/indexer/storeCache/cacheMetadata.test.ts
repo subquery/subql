@@ -1,8 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {CacheMetadataModel, DbOption, MetadataFactory} from '@subql/node-core';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
+import {MetadataFactory} from '../';
+import {DbOption} from '../../';
+import {CacheMetadataModel} from './cacheMetadata';
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',

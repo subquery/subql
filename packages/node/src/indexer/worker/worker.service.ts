@@ -8,10 +8,11 @@ import {
   ProcessBlockResponse,
   BaseWorkerService,
   IProjectUpgradeService,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { ApiService } from '../api.service';
-import { SpecVersion } from '../dictionary.service';
+import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent, isFullBlock, LightBlockContent } from '../types';
@@ -41,7 +42,7 @@ export class WorkerService extends BaseWorkerService<
   protected async fetchChainBlock(
     height: number,
     { specVersion },
-  ): Promise<BlockContent | LightBlockContent> {
+  ): Promise<IBlock<BlockContent | LightBlockContent>> {
     const specChanged = await this.workerRuntimeService.specChanged(
       height,
       specVersion,
@@ -63,12 +64,12 @@ export class WorkerService extends BaseWorkerService<
   }
 
   protected async processFetchedBlock(
-    block: BlockContent | LightBlockContent,
+    block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
   ): Promise<ProcessBlockResponse> {
-    const runtimeVersion = !isFullBlock(block)
+    const runtimeVersion = !isFullBlock(block.block)
       ? undefined
-      : await this.workerRuntimeService.getRuntimeVersion(block.block);
+      : await this.workerRuntimeService.getRuntimeVersion(block.block.block);
 
     return this.indexerManager.indexBlock(block, dataSources, runtimeVersion);
   }

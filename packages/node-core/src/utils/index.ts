@@ -12,3 +12,5 @@ export * from './blockSizeBuffer';
 export * from './configure';
 export * from './reindex';
 export * from './decorators';
+export * from './blocks';
+export * from './blockHeightMap';

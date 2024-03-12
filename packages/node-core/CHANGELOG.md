@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add service to support for dictionary v2 (#2257)
+
 ## [7.4.1] - 2024-03-08
 ### Fixed
 - Memory leak with workers and large number of (dynamic) datasources (#2292)

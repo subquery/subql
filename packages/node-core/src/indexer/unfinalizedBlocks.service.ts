@@ -4,7 +4,9 @@
 import assert from 'assert';
 import {isEqual, last} from 'lodash';
 import {NodeConfig} from '../configure';
+import {Header, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
+import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
 import {StoreCacheService} from './storeCache';
@@ -18,16 +20,11 @@ export const POI_NOT_ENABLED_ERROR_MESSAGE = 'Poi is not enabled, unable to chec
 
 const UNFINALIZED_THRESHOLD = 200;
 
-export type Header = {
-  blockHeight: number;
-  blockHash: string;
-  parentHash: string;
-};
 type UnfinalizedBlocks = Header[];
 
 export interface IUnfinalizedBlocksService<B> {
   init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined>;
-  processUnfinalizedBlocks(block: B | undefined): Promise<number | undefined>;
+  processUnfinalizedBlocks(block: IBlock<B> | undefined): Promise<number | undefined>;
   processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined>;
   resetUnfinalizedBlocks(): void;
   resetLastFinalizedVerifiedHeight(): void;
@@ -39,10 +36,15 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   private _finalizedHeader?: Header;
   protected lastCheckedBlockHeight?: number;
 
-  protected abstract blockToHeader(block: B): Header;
+  // protected abstract blockToHeader(block: B): Header;
   protected abstract getFinalizedHead(): Promise<Header>;
   protected abstract getHeaderForHash(hash: string): Promise<Header>;
   protected abstract getHeaderForHeight(height: number): Promise<Header>;
+
+  @mainThreadOnly()
+  protected blockToHeader(block: IBlock<B>): Header {
+    return block.getHeader();
+  }
 
   private set unfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks) {
     this._unfinalizedBlocks = unfinalizedBlocks;
@@ -112,7 +114,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return;
   }
 
-  async processUnfinalizedBlocks(block?: B): Promise<number | undefined> {
+  async processUnfinalizedBlocks(block?: IBlock<B>): Promise<number | undefined> {
     return this.processUnfinalizedBlockHeader(block ? this.blockToHeader(block) : undefined);
   }
 
@@ -190,6 +192,10 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
         header = await this.getHeaderForHeight(lastVerifiableBlock.blockHeight);
       } else {
         while (lastVerifiableBlock.blockHeight !== header.blockHeight) {
+          assert(
+            header.parentHash,
+            'When iterate back parent hashes to find matching height, we expect parentHash to be exist'
+          );
           header = await this.getHeaderForHash(header.parentHash);
         }
       }
@@ -219,6 +225,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
       }
 
       // Get the new parent
+      assert(checkingHeader.parentHash, 'Expect checking header parentHash to be exist');
       checkingHeader = await this.getHeaderForHash(checkingHeader.parentHash);
     }
 

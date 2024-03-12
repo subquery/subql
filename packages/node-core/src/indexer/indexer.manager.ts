@@ -11,7 +11,7 @@ import {ProcessBlockResponse} from './blockDispatcher';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
-import {IIndexerManager} from './types';
+import {IBlock, IIndexerManager} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
@@ -34,7 +34,7 @@ export abstract class BaseIndexerManager<
   SA, // Api Type
   A, // SafeApi Type
   B, // Block Type
-  API extends IApi<A, SA, B[]>,
+  API extends IApi<A, SA, IBlock<B>[]>,
   DS extends BaseDataSource,
   CDS extends DS & BaseCustomDataSource, // Custom datasource
   FilterMap extends FilterTypeMap,
@@ -42,7 +42,7 @@ export abstract class BaseIndexerManager<
   HandlerInputMap extends HandlerInputTypeMap<FilterMap>
 > implements IIndexerManager<B, DS>
 {
-  abstract indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
+  abstract indexBlock(block: IBlock<B>, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
   abstract getBlockHeight(block: B): number;
   abstract getBlockHash(block: B): string;
 
@@ -75,12 +75,12 @@ export abstract class BaseIndexerManager<
   }
 
   protected async internalIndexBlock(
-    block: B,
+    block: IBlock<B>,
     dataSources: DS[],
     getApi: () => Promise<SA>
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
-    const blockHeight = this.getBlockHeight(block);
+    const blockHeight = block.getHeader().blockHeight;
 
     const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
@@ -91,7 +91,7 @@ export abstract class BaseIndexerManager<
 
     // Only index block if we're not going to reindex
     if (!reindexBlockHeight) {
-      await this.indexBlockData(block, filteredDataSources, async (ds: DS) => {
+      await this.indexBlockData(block.block, filteredDataSources, async (ds: DS) => {
         // Injected runtimeVersion from fetch service might be outdated
         apiAt = apiAt ?? (await getApi());
 
@@ -115,12 +115,12 @@ export abstract class BaseIndexerManager<
 
     return {
       dynamicDsCreated,
-      blockHash: this.getBlockHash(block),
+      blockHash: block.getHeader().blockHash,
       reindexBlockHeight,
     };
   }
 
-  protected async processUnfinalizedBlocks(block: B): Promise<number | undefined> {
+  protected async processUnfinalizedBlocks(block: IBlock<B>): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks) {
       return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }
@@ -152,10 +152,10 @@ export abstract class BaseIndexerManager<
     if (!ds.length) {
       logger.error(
         `Issue detected with data sources: \n
-        Either all data sources have a 'startBlock' greater than the current indexed block height (${blockHeight}), 
+        Either all data sources have a 'startBlock' greater than the current indexed block height (${blockHeight}),
         or they have an 'endBlock' less than the current block. \n
         Solution options: \n
-        1. Adjust 'startBlock' in project.yaml to be less than or equal to ${blockHeight}, 
+        1. Adjust 'startBlock' in project.yaml to be less than or equal to ${blockHeight},
            and 'endBlock' to be greater than or equal to ${blockHeight}. \n
         2. Delete your database and start again with the currently specified 'startBlock' and 'endBlock'.`
       );

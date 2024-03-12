@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
@@ -21,6 +21,7 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
+  IBlock,
 } from '@subql/node-core';
 import {
   LightSubstrateEvent,
@@ -32,7 +33,7 @@ import {
 } from '@subql/types';
 import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
-import { ApiService } from './api.service';
+import { ApiService as SubstrateApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -49,7 +50,7 @@ export class IndexerManager extends BaseIndexerManager<
   ApiAt,
   ApiPromise,
   BlockContent | LightBlockContent,
-  ApiService,
+  SubstrateApiService,
   SubstrateDatasource,
   SubstrateCustomDataSource,
   typeof FilterTypeMap,
@@ -61,7 +62,7 @@ export class IndexerManager extends BaseIndexerManager<
   protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
 
   constructor(
-    apiService: ApiService,
+    apiService: SubstrateApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService<ApiAt>,
     dsProcessorService: DsProcessorService,
@@ -82,12 +83,12 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: BlockContent | LightBlockContent,
+    block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
     runtimeVersion: RuntimeVersion,
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
-      this.getApi(block, runtimeVersion),
+      this.getApi(block.block, runtimeVersion),
     );
   }
 

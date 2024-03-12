@@ -26,7 +26,7 @@ import {
   getWorkerService,
   IBaseIndexerWorker,
 } from '@subql/node-core';
-import { SpecVersion } from '../dictionary.service';
+import { SpecVersion } from '../dictionary';
 import { ProjectService } from '../project.service';
 import { WorkerModule } from './worker.module';
 import { WorkerService } from './worker.service';

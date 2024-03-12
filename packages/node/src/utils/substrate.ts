@@ -9,10 +9,10 @@ import {
   EventRecord,
   RuntimeVersion,
   SignedBlock,
-  Header,
+  Header as SubstrateHeader,
 } from '@polkadot/types/interfaces';
 import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
-import { getLogger } from '@subql/node-core';
+import { getLogger, IBlock, Header } from '@subql/node-core';
 import {
   SpecVersionRange,
   SubstrateBlockFilter,
@@ -31,6 +31,14 @@ const logger = getLogger('fetch');
 const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
 const DEFAULT_TIME = new BN(6_000);
 const A_DAY = new BN(24 * 60 * 60 * 1000);
+
+export function substrateHeaderToHeader(header: SubstrateHeader): Header {
+  return {
+    blockHeight: header.number.toNumber(),
+    blockHash: header.hash.toHex(),
+    parentHash: header.parentHash.toHex(),
+  };
+}
 
 export function wrapBlock(
   signedBlock: SignedBlock,
@@ -280,7 +288,7 @@ export async function getBlockByHeight(
 export async function getHeaderByHeight(
   api: ApiPromise,
   height: number,
-): Promise<Header> {
+): Promise<SubstrateHeader> {
   const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
     logger.error(`failed to fetch BlockHash ${height}`);
     throw ApiPromiseConnection.handleError(e);
@@ -325,7 +333,7 @@ export async function fetchBlocksArray(
 export async function fetchHeaderArray(
   api: ApiPromise,
   blockArray: number[],
-): Promise<Header[]> {
+): Promise<SubstrateHeader[]> {
   return Promise.all(
     blockArray.map(async (height) => getHeaderByHeight(api, height)),
   );
@@ -363,7 +371,7 @@ export async function fetchBlocksBatches(
   api: ApiPromise,
   blockArray: number[],
   overallSpecVer?: number,
-): Promise<BlockContent[]> {
+): Promise<IBlock<BlockContent>[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
@@ -387,11 +395,13 @@ export async function fetchBlocksBatches(
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
 
-    wrappedBlock.block.header;
     return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
+      getHeader: () => substrateHeaderToHeader(wrappedBlock.block.header),
+      block: {
+        block: wrappedBlock,
+        extrinsics: wrappedExtrinsics,
+        events: wrappedEvents,
+      },
     };
   });
 }
@@ -400,7 +410,7 @@ export async function fetchBlocksBatches(
 export async function fetchLightBlock(
   api: ApiPromise,
   height: number,
-): Promise<LightBlockContent> {
+): Promise<IBlock<LightBlockContent>> {
   const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
     logger.error(`failed to fetch BlockHash ${height}`);
     throw ApiPromiseConnection.handleError(e);
@@ -423,17 +433,21 @@ export async function fetchLightBlock(
     block: { header },
     events: events.toArray(),
   };
-
   return {
-    block: blockHeader,
-    events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
+    block: {
+      block: blockHeader,
+      events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
+    },
+    getHeader: () => {
+      return substrateHeaderToHeader(blockHeader.block.header);
+    },
   };
 }
 
 export async function fetchBlocksBatchesLight(
   api: ApiPromise,
   blockArray: number[],
-): Promise<LightBlockContent[]> {
+): Promise<IBlock<LightBlockContent>[]> {
   return Promise.all(blockArray.map((height) => fetchLightBlock(api, height)));
 }
 

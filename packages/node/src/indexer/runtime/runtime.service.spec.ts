@@ -4,10 +4,10 @@
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { ApiService } from '../api.service';
 import {
-  DictionaryService,
   SpecVersion,
   SpecVersionDictionary,
-} from '../dictionary.service';
+  SubstrateDictionaryService,
+} from '../dictionary';
 import { SPEC_VERSION_BLOCK_GAP } from './base-runtime.service';
 import { RuntimeService } from './runtimeService';
 
@@ -57,20 +57,28 @@ const getApiService = (): ApiService =>
     },
   } as any);
 
-const getDictionaryService = (): DictionaryService =>
+const getDictionaryService = (): SubstrateDictionaryService =>
   ({
-    useDictionary: false,
+    useDictionary: (height: number) => {
+      return false;
+    },
     getSpecVersions: (): Promise<SpecVersion[]> => {
       return Promise.resolve(specVersions);
     },
     parseSpecVersions: (raw: SpecVersionDictionary): SpecVersion[] => {
       throw new Error('Not implemented');
     },
+    initDictionariesV1: () => {
+      //TODO
+    },
+    initDictionariesV2: () => {
+      //TODO
+    },
   } as any);
 
 describe('Runtime service', () => {
   let runtimeService: RuntimeService;
-  let dictionaryService: DictionaryService;
+  let dictionaryService: SubstrateDictionaryService;
   let apiService: ApiService;
 
   beforeEach(() => {
@@ -104,10 +112,10 @@ describe('Runtime service', () => {
   });
 
   it('use dictionary and specVersionMap to get block specVersion', async () => {
-    (dictionaryService as any).useDictionary = true;
+    (dictionaryService as any).useDictionary = (height: number) => true;
 
     // This is called in fetchService.preLoopHook
-    await runtimeService.syncDictionarySpecVersions();
+    await runtimeService.syncDictionarySpecVersions(29233);
 
     const metaSpy = jest.spyOn(apiService.api.rpc.state, 'getRuntimeVersion');
 
@@ -117,7 +125,7 @@ describe('Runtime service', () => {
   });
 
   it('getSpecVersion will fetch the spec version if its not in the map', async () => {
-    (dictionaryService as any).useDictionary = true;
+    (dictionaryService as any).useDictionary = (height: number) => true;
 
     const height = 3967204;
 
@@ -130,22 +138,4 @@ describe('Runtime service', () => {
     expect(apiSpy).toHaveBeenCalled();
     expect(dictSpy).toHaveBeenCalled();
   });
-
-  // OLD tests from fetch.service, unsure how to implements
-  // it('use api to get block specVersion when blockHeight out of specVersionMap', () => {
-
-  // });
-
-  // it('only fetch SpecVersion from dictionary once', () => {
-
-  // });
-
-  // it('update specVersionMap once when specVersion map is out', () => {
-
-  // });
-
-  // // Was skipped previously
-  // it('prefetch meta for different specVersion range', () => {
-
-  // });
 });

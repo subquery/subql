@@ -15,7 +15,7 @@ import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
-import {IProjectService, ISubqueryProject} from '../types';
+import {IBlock, IProjectService, ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
@@ -25,9 +25,9 @@ export type ProcessBlockResponse = {
   reindexBlockHeight: number | null;
 };
 
-export interface IBlockDispatcher {
-  enqueueBlocks(heights: number[], latestBufferHeight?: number): void | Promise<void>;
-
+export interface IBlockDispatcher<B> {
+  // now within enqueueBlock should handle getLatestBufferHeight
+  enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight: number): void | Promise<void>;
   queueSize: number;
   freeSize: number;
   latestBufferedHeight: number;
@@ -44,7 +44,7 @@ function isNullMerkelRoot(operationHash: Uint8Array): boolean {
   return u8aEq(operationHash, NULL_MERKEL_ROOT);
 }
 
-export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBlockDispatcher {
+export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IBlockDispatcher<B> {
   protected _latestBufferedHeight = 0;
   protected _processedBlockCount = 0;
   protected _latestProcessedHeight = 0;
@@ -65,7 +65,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS> implements IBloc
     protected dynamicDsService: DynamicDsService<any>
   ) {}
 
-  abstract enqueueBlocks(heights: number[], latestBufferHeight?: number): void | Promise<void>;
+  abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
     this._onDynamicDsCreated = onDynamicDsCreated;
