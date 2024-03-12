@@ -107,8 +107,8 @@ describe('UnfinalizedBlocksService', () => {
     await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(112, '0xabc112'));
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
-      mockBlock(111, '0xabc111'),
-      mockBlock(112, '0xabc112'),
+      mockBlock(111, '0xabc111').block.header,
+      mockBlock(112, '0xabc112').block.header,
     ]);
   });
 
@@ -131,7 +131,7 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([mockBlock(113, '0xabc113')]);
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([mockBlock(113, '0xabc113').block.header]);
   });
 
   it('can handle a fork and rewind to the last finalized height', async () => {
@@ -209,8 +209,12 @@ describe('UnfinalizedBlocksService', () => {
 
     (unfinalizedBlocksService as any).lastCheckedBlockHeight = 110;
 
-    await (unfinalizedBlocksService as any).registerUnfinalizedBlock(mockBlock(111, '0xabc111', null as any));
-    await (unfinalizedBlocksService as any).registerUnfinalizedBlock(mockBlock(112, '0xabc112', null as any));
+    await (unfinalizedBlocksService as any).registerUnfinalizedBlock(
+      mockBlock(111, '0xabc111', null as any).block.header
+    );
+    await (unfinalizedBlocksService as any).registerUnfinalizedBlock(
+      mockBlock(112, '0xabc112', null as any).block.header
+    );
 
     // Forked block
     unfinalizedBlocksService.registerFinalizedBlock(mockBlock(120, '0xabc120f', '0xabc119f').block.header);

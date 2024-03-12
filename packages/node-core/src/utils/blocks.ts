@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {chunk, flatten, isNumber, range, uniq, without} from 'lodash';
-import {getBlockHeight, IBlock} from '../indexer';
+import {getBlockHeight} from '../indexer/dictionary';
+import {IBlock} from '../indexer/types';
 
 export function cleanedBatchBlocks<FB>(
   bypassBlocks: number[],
