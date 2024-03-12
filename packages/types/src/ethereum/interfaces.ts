@@ -105,7 +105,10 @@ export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   v: bigint;
   r: string;
   s: string;
-  receipt: () => Promise<EthereumReceipt>;
+  /**
+   * @return {EthereumReceipt} This return type is generic because some networks may return more fields such as OP based networks. This allows your to override the type easily
+   **/
+  receipt: <R extends EthereumReceipt = EthereumReceipt>() => Promise<R>;
   logs?: EthereumLog[];
   accessList?: string[];
   chainId?: string; // Hex string , example: "0x1"

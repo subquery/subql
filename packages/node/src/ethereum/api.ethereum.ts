@@ -28,11 +28,14 @@ import {
 import CacheableLookup from 'cacheable-lookup';
 import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
-import { CeloJsonRpcBatchProvider } from './ethers/celo/celo-json-rpc-batch-provider';
-import { CeloJsonRpcProvider } from './ethers/celo/celo-json-rpc-provider';
-import { CeloWsProvider } from './ethers/celo/celo-ws-provider';
+import {
+  CeloJsonRpcBatchProvider,
+  CeloJsonRpcProvider,
+  CeloWsProvider,
+} from './ethers/celo/celo-provider';
 import { JsonRpcBatchProvider } from './ethers/json-rpc-batch-provider';
 import { JsonRpcProvider } from './ethers/json-rpc-provider';
+import { OPFormatterMixin } from './ethers/op/op-provider';
 import { ConnectionInfo } from './ethers/web';
 import SafeEthProvider from './safe-api';
 import {
@@ -135,10 +138,10 @@ export class EthereumApi implements ApiWrapper {
       searchParams.forEach((value, name, searchParams) => {
         (connection.headers as any)[name] = value;
       });
-      this.client = new JsonRpcBatchProvider(connection);
-      this.nonBatchClient = new JsonRpcProvider(connection);
+      this.client = new (OPFormatterMixin(JsonRpcBatchProvider))(connection);
+      this.nonBatchClient = new (OPFormatterMixin(JsonRpcProvider))(connection);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
-      this.client = new WebSocketProvider(this.endpoint);
+      this.client = new (OPFormatterMixin(WebSocketProvider))(this.endpoint);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);
     }

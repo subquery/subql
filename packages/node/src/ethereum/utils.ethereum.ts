@@ -119,10 +119,10 @@ export function formatTransaction(
   } as EthereumTransaction;
 }
 
-export function formatReceipt(
+export function formatReceipt<R extends EthereumReceipt = EthereumReceipt>(
   receipt: Record<string, any>,
   block: EthereumBlock,
-): EthereumReceipt {
+): R {
   return {
     ...receipt,
     from: handleAddress(receipt.from),
@@ -137,5 +137,5 @@ export function formatReceipt(
     toJSON(): string {
       return JSON.stringify(omit(this, ['toJSON']));
     },
-  } as unknown as EthereumReceipt;
+  } as unknown as R;
 }
