@@ -17,7 +17,7 @@ import {
   InMemoryCacheService,
   createIndexerWorker as createIndexerWorkerCore,
 } from '@subql/node-core';
-import { SubstrateDatasource } from '@subql/types';
+import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';
 import { DynamicDsService } from '../dynamic-ds.service';
@@ -32,7 +32,11 @@ type IndexerWorker = IIndexerWorker & {
 
 @Injectable()
 export class WorkerBlockDispatcherService
-  extends WorkerBlockDispatcher<SubstrateDatasource, IndexerWorker>
+  extends WorkerBlockDispatcher<
+    SubstrateDatasource,
+    IndexerWorker,
+    SubstrateBlock
+  >
   implements OnApplicationShutdown
 {
   private runtimeService: RuntimeService;

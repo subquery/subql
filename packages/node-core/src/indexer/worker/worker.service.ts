@@ -7,7 +7,7 @@ import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
-import {IProjectService} from '../types';
+import {IBlock, IProjectService} from '../types';
 import {BlockUnavailableError, isBlockUnavailableError} from './utils';
 
 export type FetchBlockResponse = {specVersion: number; parentHash: string} | undefined;
@@ -27,14 +27,14 @@ export abstract class BaseWorkerService<
   DS extends BaseDataSource = BaseDataSource,
   E = {} /* Extra params for fetching blocks. Substrate uses specVersion in here*/
 > {
-  private fetchedBlocks: Record<string, B> = {};
+  private fetchedBlocks: Record<string, IBlock<B>> = {};
   private _isIndexing = false;
 
   private queue: AutoQueue<R>;
 
-  protected abstract fetchChainBlock(heights: number, extra: E): Promise<B>;
+  protected abstract fetchChainBlock(heights: number, extra: E): Promise<IBlock<B>>;
   protected abstract toBlockResponse(block: B): R;
-  protected abstract processFetchedBlock(block: B, dataSources: DS[]): Promise<ProcessBlockResponse>;
+  protected abstract processFetchedBlock(block: IBlock<B>, dataSources: DS[]): Promise<ProcessBlockResponse>;
 
   constructor(
     private projectService: IProjectService<DS>,
@@ -62,7 +62,7 @@ export abstract class BaseWorkerService<
 
         const block = this.fetchedBlocks[height];
         // Return info to get the runtime version, this lets the worker thread know
-        return this.toBlockResponse(block);
+        return this.toBlockResponse(block.block);
       });
     } catch (e: any) {
       if (isTaskFlushedError(e)) {

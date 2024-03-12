@@ -143,9 +143,9 @@ export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfi
   @IsString({each: true})
   @IsOptional()
   endpoint: string | string[];
-  @IsString()
+  @IsString({each: true})
   @IsOptional()
-  dictionary?: string;
+  dictionary: string | string[];
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()

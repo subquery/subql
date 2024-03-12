@@ -48,7 +48,9 @@ describe('substrate utils', () => {
   });
 
   it('filters a signed extrinsic', async () => {
-    const [block] = await fetchBlocksBatches(api, [16832854]);
+    const [iblock] = await fetchBlocksBatches(api, [16832854]);
+
+    const block = iblock.block;
 
     expect(
       filterExtrinsic(block.extrinsics[0], { isSigned: true }),

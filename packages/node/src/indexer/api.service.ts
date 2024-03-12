@@ -14,6 +14,7 @@ import {
   profilerWrap,
   ConnectionPoolService,
   ApiService as BaseApiService,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -41,7 +42,7 @@ export class ApiService
   extends BaseApiService<
     ApiPromise,
     ApiAt,
-    BlockContent[] | LightBlockContent[]
+    IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
   >
   implements OnApplicationShutdown
 {
@@ -268,7 +269,7 @@ export class ApiService
     heights: number[],
     overallSpecVer?: number,
     numAttempts = MAX_RECONNECT_ATTEMPTS,
-  ): Promise<LightBlockContent[]> {
+  ): Promise<IBlock<LightBlockContent>[]> {
     return this.retryFetch(async () => {
       // Get the latest fetch function from the provider
       const apiInstance = this.connectionPoolService.api;

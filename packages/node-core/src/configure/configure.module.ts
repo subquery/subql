@@ -137,7 +137,7 @@ export async function registerApp<P extends ISubqueryProject>(
     omitBy(
       {
         endpoint: config.networkEndpoints,
-        dictionary: config.networkDictionary,
+        dictionary: config.networkDictionaries,
       },
       isNil
     )
@@ -160,7 +160,7 @@ export async function registerApp<P extends ISubqueryProject>(
         // Apply the network endpoint and dictionary from the source project to the parent projects if they are not defined in the config
         {
           endpoint: config.networkEndpoints ?? project.network.endpoint,
-          dictionary: config.networkDictionary ?? project.network.dictionary,
+          dictionary: config.networkDictionaries ?? project.network.dictionary,
         },
         isNil
       )

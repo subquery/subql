@@ -14,6 +14,7 @@ import {
   RateLimitError,
   TimeoutError,
   IApiConnectionSpecific,
+  IBlock,
 } from '@subql/node-core';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent, LightBlockContent } from './types';
@@ -37,7 +38,7 @@ export class ApiPromiseConnection
     IApiConnectionSpecific<
       ApiPromise,
       ApiAt,
-      BlockContent[] | LightBlockContent[]
+      IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
     >
 {
   readonly networkMeta: NetworkMetadataPayload;
@@ -98,7 +99,7 @@ export class ApiPromiseConnection
   async fetchBlocks(
     heights: number[],
     overallSpecVer?: number,
-  ): Promise<BlockContent[] | LightBlockContent[]> {
+  ): Promise<IBlock<BlockContent>[] | IBlock<LightBlockContent>[]> {
     const blocks = await this.fetchBlocksBatches()(
       this.unsafeApi,
       heights,

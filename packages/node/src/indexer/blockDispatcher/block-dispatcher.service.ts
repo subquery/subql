@@ -13,6 +13,7 @@ import {
   ProcessBlockResponse,
   IProjectUpgradeService,
   PoiSyncService,
+  IBlock,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -61,7 +62,7 @@ export class BlockDispatcherService
       dynamicDsService,
       async (
         blockNums: number[],
-      ): Promise<BlockContent[] | LightBlockContent[]> => {
+      ): Promise<IBlock<BlockContent>[] | IBlock<LightBlockContent>[]> => {
         const specChanged = await this.runtimeService.specChanged(
           blockNums[blockNums.length - 1],
         );
@@ -89,14 +90,16 @@ export class BlockDispatcherService
   }
 
   protected async indexBlock(
-    block: BlockContent | LightBlockContent,
+    block: IBlock<BlockContent> | IBlock<LightBlockContent>,
   ): Promise<ProcessBlockResponse> {
-    const runtimeVersion = !isFullBlock(block)
+    const runtimeVersion = !isFullBlock(block.block)
       ? undefined
-      : await this.runtimeService.getRuntimeVersion(block.block);
+      : await this.runtimeService.getRuntimeVersion(block.block.block);
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getDataSources(this.getBlockHeight(block)),
+      await this.projectService.getDataSources(
+        this.getBlockHeight(block.block),
+      ),
       runtimeVersion,
     );
   }

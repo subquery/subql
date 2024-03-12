@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { IBlockDispatcher } from '@subql/node-core';
+import { SubstrateBlock } from '@subql/types';
 import { RuntimeService } from '../runtime/runtimeService';
 
-export interface ISubstrateBlockDispatcher extends IBlockDispatcher {
+export interface ISubstrateBlockDispatcher
+  extends IBlockDispatcher<SubstrateBlock> {
   init(
     onDynamicDsCreated: (height: number) => Promise<void>,
     runtimeService?: RuntimeService,

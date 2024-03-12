@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NodeConfig} from '../configure';
-import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {BaseProjectService} from './project.service';

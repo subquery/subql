@@ -28,6 +28,40 @@ class DsPluginSandbox<P> extends Sandbox {
   }
 }
 
+export function getDsProcessor<
+  P,
+  DS extends BaseDataSource = BaseDataSource,
+  CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource
+>(
+  ds: CDS,
+  isCustomDs: (ds: any) => boolean,
+  processorCache: Record<string, P>,
+  root: string,
+  chainId: string,
+  nodeConfig: NodeConfig
+): P {
+  if (!isCustomDs(ds)) {
+    throw new Error(`data source is not a custom data source`);
+  }
+  if (!processorCache[ds.processor.file]) {
+    const sandbox = new DsPluginSandbox<P>(
+      {
+        root: root,
+        entry: ds.processor.file,
+        chainId: chainId,
+      },
+      nodeConfig
+    );
+    try {
+      processorCache[ds.processor.file] = sandbox.getDsPlugin();
+    } catch (e: any) {
+      logger.error(e, `not supported ds @${ds.kind}`);
+      throw e;
+    }
+  }
+  return processorCache[ds.processor.file] as unknown as P;
+}
+
 export abstract class BaseDsProcessorService<
   DS extends BaseDataSource = BaseDataSource,
   CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource,

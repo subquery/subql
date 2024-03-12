@@ -6,10 +6,10 @@ import { Injectable } from '@nestjs/common';
 import {
   Header,
   HostUnfinalizedBlocks,
+  IBlock,
   IUnfinalizedBlocksService,
 } from '@subql/node-core';
 import { BlockContent } from '../types';
-import { substrateHeaderToHeader } from '../unfinalizedBlocks.service';
 
 @Injectable()
 export class WorkerUnfinalizedBlocksService
@@ -22,11 +22,9 @@ export class WorkerUnfinalizedBlocksService
   }
 
   async processUnfinalizedBlocks(
-    block: BlockContent,
+    block: IBlock<BlockContent>,
   ): Promise<number | undefined> {
-    return this.host.unfinalizedBlocksProcess(
-      substrateHeaderToHeader(block.block.block.header),
-    );
+    return this.host.unfinalizedBlocksProcess(block.getHeader());
   }
 
   async processUnfinalizedBlockHeader(

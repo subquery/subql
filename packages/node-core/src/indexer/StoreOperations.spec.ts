@@ -210,6 +210,26 @@ const models = [
     ],
     indexes: <any[]>[],
   },
+  {
+    name: 'IndexEra',
+    fields: [
+      {
+        name: 'id',
+        type: 'ID',
+        isArray: false,
+        nullable: false,
+        isEnum: false,
+      },
+      {
+        name: 'field1',
+        type: 'Int',
+        isArray: false,
+        nullable: false,
+        isEnum: false,
+      },
+    ],
+    indexes: <any[]>[],
+  },
 ];
 
 describe('StoreOperations', () => {

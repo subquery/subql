@@ -11,13 +11,13 @@ import {StoreCacheService} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
 import {WorkerBlockDispatcher} from './worker-block-dispatcher';
 
-class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any> {
+class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any, any> {
   async fetchBlock(worker: any, height: number): Promise<void> {
     return Promise.resolve();
   }
 }
 describe('WorkerBlockDispatcher', () => {
-  let dispatcher: WorkerBlockDispatcher<any, any>;
+  let dispatcher: WorkerBlockDispatcher<any, any, any>;
 
   // Mock workers
   const mockWorkers = [

@@ -37,7 +37,7 @@ export type OperationEntity = {
 };
 
 export interface IIndexerManager<B, DS> {
-  indexBlock(block: B, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
+  indexBlock(block: IBlock<B>, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
 }
 
 export interface IProjectService<DS> {
@@ -57,3 +57,14 @@ export interface IProjectService<DS> {
   getDataSourcesMap(): BlockHeightMap<DS[]>;
   hasDataSourcesAfterHeight(height: number): boolean;
 }
+
+export interface IBlock<B = any> {
+  getHeader(): Header;
+  block: B;
+}
+
+export type Header = {
+  blockHeight: number;
+  blockHash: string;
+  parentHash: string | undefined;
+};

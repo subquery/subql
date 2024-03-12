@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {range} from 'lodash';
-import {cleanedBatchBlocks, transformBypassBlocks} from './project';
+import {transformBypassBlocks, cleanedBatchBlocks} from './blocks';
 
 describe('bypass logic', () => {
   it('process bypassBlocks with ranges', () => {

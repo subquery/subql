@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common';
 import { profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
 import {
-  DictionaryService,
   SpecVersionDictionary,
-} from '../dictionary.service';
+  SubstrateDictionaryService,
+} from '../dictionary';
 import {
   BaseRuntimeService,
   SPEC_VERSION_BLOCK_GAP,
@@ -19,14 +19,15 @@ export class RuntimeService extends BaseRuntimeService {
 
   constructor(
     protected apiService: ApiService,
-    protected dictionaryService?: DictionaryService,
+    protected dictionaryService?: SubstrateDictionaryService,
   ) {
     super(apiService);
   }
 
   // get latest specVersions from dictionary
-  async syncDictionarySpecVersions(): Promise<void> {
-    const response = this.dictionaryService.useDictionary
+  async syncDictionarySpecVersions(height: number): Promise<void> {
+    // must check useDictionary before get SpecVersion, this will give the right dictionary to fetch SpecVersions
+    const response = this.dictionaryService.useDictionary(height)
       ? await this.dictionaryService.getSpecVersions()
       : undefined;
     if (response !== undefined) {
@@ -37,8 +38,9 @@ export class RuntimeService extends BaseRuntimeService {
   setSpecVersionMap(raw: SpecVersionDictionary | undefined): void {
     if (raw === undefined) {
       this.specVersionMap = [];
+    } else {
+      this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
     }
-    this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
   }
 
   // main runtime responsible for sync from dictionary
@@ -56,7 +58,7 @@ export class RuntimeService extends BaseRuntimeService {
       blockSpecVersion = await this.getSpecFromApi(blockHeight);
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         // Ask to sync local specVersionMap with dictionary
-        await this.syncDictionarySpecVersions();
+        await this.syncDictionarySpecVersions(blockHeight);
         syncedDictionary = true;
       }
     }

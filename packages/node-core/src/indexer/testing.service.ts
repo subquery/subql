@@ -13,7 +13,7 @@ import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {SandboxOption, TestSandbox} from './sandbox';
 import {TestRunner} from './test.runner';
-import {ISubqueryProject, IIndexerManager} from './types';
+import {ISubqueryProject, IIndexerManager, IBlock} from './types';
 
 const logger = getLogger('subql-testing');
 
@@ -56,10 +56,10 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
   abstract getTestRunner(): Promise<[close: () => Promise<void>, runner: TestRunner<A, SA, B, DS>]>; // TestRunner will be create with a new app instance
 
   async indexBlock(
-    block: B,
+    block: IBlock<B>,
     handler: string,
     indexerManager: IIndexerManager<B, DS>,
-    apiService?: IApi<A, SA, B[]>
+    apiService?: IApi<A, SA, IBlock<B>[]>
   ): Promise<void> {
     await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }

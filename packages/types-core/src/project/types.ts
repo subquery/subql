@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ParentProject, RunnerSpecs, BaseDataSource, BaseTemplateDataSource} from './versioned';
+import {BaseDataSource, BaseTemplateDataSource, ParentProject, RunnerSpecs} from './versioned';
 
 /**
  * Represents a common subquery project configuration.
@@ -151,7 +151,7 @@ export interface ProjectNetworkConfig {
    *
    * @type {string}
    */
-  dictionary?: string;
+  dictionary?: string | string[];
 
   /**
    * An array of block numbers or block ranges to bypass (optional).
