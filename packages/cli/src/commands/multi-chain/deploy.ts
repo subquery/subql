@@ -6,10 +6,10 @@ import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
-import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
+import {ROOT_API_URL_PROD} from '../../constants';
 import YAML from 'yaml'
 import {
-  defaultCommandFlags,
+  DefaultDeployFlags,
   dictionaryEndpoints,
   executeProjectDeployment,
   generateDeploymentChain,
@@ -19,7 +19,7 @@ import {
   projectsInfo,
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
-import {DeploymentFlagsInterface, MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
+import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
 import {getMultichainManifestPath, getProjectRootAndManifest} from "@subql/common";
 import fs from "fs";
@@ -28,19 +28,18 @@ import {uploadToIpfs} from "../../controller/publish-controller";
 export default class MultiChainDeploy extends Command {
   static description = 'Multi-chain deployment to hosted service';
 
-  static flags = Object.assign(defaultCommandFlags(), {
+  static flags = Object.assign(DefaultDeployFlags, {
     location: Flags.string({char: 'f', description: 'from project folder or specify manifest file', required: true}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
   });
 
   async run(): Promise<void> {
     const {flags} = await this.parse(MultiChainDeploy);
-    let _flags: DeploymentFlagsInterface = flags as unknown as DeploymentFlagsInterface;
-    let {dict, endpoint, indexerVersion, org, projectName, queryVersion} = _flags;
+    let {dict, endpoint, indexerVersion, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken();
 
-    const location = _flags.location ? resolveToAbsolutePath(_flags.location) : process.cwd();
+    const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
 
     // Make sure build first, generated project yaml could be added to the project (instead of ts)
     const project = getProjectRootAndManifest(location);
@@ -53,11 +52,11 @@ export default class MultiChainDeploy extends Command {
     }
 
     multichainManifestPath = path.join(project.root, multichainManifestPath);
-    let multichainManifestObject=YAML.parse(
+    let multichainManifestObject = YAML.parse(
       fs.readFileSync(multichainManifestPath, 'utf8')
     )
 
-    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, _flags.ipfs).catch(
+    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
       (e) => this.error(e)
     );
 
@@ -67,12 +66,12 @@ export default class MultiChainDeploy extends Command {
     // Multichain query descriptor
     const ipfsCID = fileToCidMap.get(path.basename(multichainManifestPath));
 
-    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, _flags.type);
+    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
 
     let endpoints: MultichainDataFieldType = splitMultichainDataFields(endpoint);
     let dictionaries: MultichainDataFieldType = splitMultichainDataFields(dict);
-    let indexerVersions: MultichainDataFieldType =  splitMultichainDataFields(indexerVersion);
+    let indexerVersions: MultichainDataFieldType = splitMultichainDataFields(indexerVersion);
 
     if (!queryVersion) {
       try {
@@ -82,7 +81,7 @@ export default class MultiChainDeploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!_flags.useDefaults) {
+        if (!flags.useDefaults) {
           queryVersion = await promptWithDefaultValues(inquirer, `Enter query version`, null, queryAvailableVersions, true);
         } else {
           queryVersion = queryAvailableVersions[0];
@@ -93,9 +92,8 @@ export default class MultiChainDeploy extends Command {
     }
     queryVersion = addV(queryVersion);
 
-    for await (let [multichainProjectPath,multichainProjectCid] of fileToCidMap)
-    {
-      if (!multichainProjectPath || multichainProjectPath==path.basename(multichainManifestPath)) continue;
+    for await (let [multichainProjectPath, multichainProjectCid] of fileToCidMap) {
+      if (!multichainProjectPath || multichainProjectPath == path.basename(multichainManifestPath)) continue;
 
       const validator = await ipfsCID_validate(multichainProjectCid, authToken, ROOT_API_URL_PROD);
 
@@ -103,8 +101,7 @@ export default class MultiChainDeploy extends Command {
         throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
       }
 
-      if (!indexerVersions[validator.chainId])
-      {
+      if (!indexerVersions[validator.chainId]) {
         try {
           const indexerAvailableVersions = await imageVersions(
             validator.manifestRunner.node.name,
@@ -112,7 +109,7 @@ export default class MultiChainDeploy extends Command {
             authToken,
             ROOT_API_URL_PROD
           );
-          if (!_flags.useDefaults) {
+          if (!flags.useDefaults) {
             indexerVersions[validator.chainId] = await promptWithDefaultValues(
               inquirer,
               `Enter indexer version for ${multichainProjectPath}`,
@@ -132,7 +129,7 @@ export default class MultiChainDeploy extends Command {
 
 
       if (!endpoints[validator.chainId]) {
-        if (_flags.useDefaults) {
+        if (flags.useDefaults) {
           throw new Error(chalk.red('Please ensure a endpoint valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'));
         }
 
@@ -140,10 +137,9 @@ export default class MultiChainDeploy extends Command {
       }
 
 
-      if (!dictionaries[validator.chainId])
-      {
+      if (!dictionaries[validator.chainId]) {
         const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
-        if (!_flags.useDefaults && !validateDictEndpoint) {
+        if (!flags.useDefaults && !validateDictEndpoint) {
           dictionaries[validator.chainId] = await promptWithDefaultValues(cli, `Enter dictionary for ${multichainProjectPath}`, validateDictEndpoint, null, false);
         } else {
           dictionaries[validator.chainId] = validateDictEndpoint;
@@ -156,7 +152,7 @@ export default class MultiChainDeploy extends Command {
           cid: multichainProjectCid,
           dictEndpoint: dictionaries[validator.chainId],
           endpoint: [endpoints[validator.chainId]],
-          flags: _flags,
+          flags: flags,
           indexerImageVersion: indexerVersions[validator.chainId]
         })
       );
@@ -168,7 +164,7 @@ export default class MultiChainDeploy extends Command {
       log: this.log,
       authToken: authToken,
       chains: chains,
-      flags: _flags,
+      flags: flags,
       ipfsCID: ipfsCID,
       org: org,
       projectInfo: projectInfo,

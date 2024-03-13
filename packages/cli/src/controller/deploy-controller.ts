@@ -212,7 +212,7 @@ export function splitMultichainDataFields(fieldStr: string): MultichainDataField
     let regexpResult: string[] = unparsedRow.match(/(.*?):(.*)/);
     if (regexpResult) {
       regexpResult = Object.values(regexpResult);
-      if (regexpResult && regexpResult.length == 6 && ['http','https','ws','wss'].indexOf(regexpResult[1])===-1 ) {
+      if (regexpResult && regexpResult.length == 6 && ['http', 'https', 'ws', 'wss'].indexOf(regexpResult[1]) === -1) {
         result[regexpResult[1]] = regexpResult[2];
       }
     }
@@ -221,10 +221,10 @@ export function splitMultichainDataFields(fieldStr: string): MultichainDataField
   return result;
 }
 
-export function defaultCommandFlags(): & FlagInput<{ [flag: string]: any; }>{
-  return {
+export const DefaultDeployFlags: FlagInput<DeploymentFlagsInterface> =
+  {
     org: Flags.string({description: 'Enter organization name'}),
-      projectName: Flags.string({description: 'Enter project name'}),
+    projectName: Flags.string({description: 'Enter project name'}),
     // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
     type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
@@ -238,17 +238,17 @@ export function defaultCommandFlags(): & FlagInput<{ [flag: string]: any; }>{
     indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
     disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
     indexerUnfinalized: Flags.boolean({
-    description: 'Index unfinalized blocks (requires Historical to be enabled)',
-    required: false,
-  }),
+      description: 'Index unfinalized blocks (requires Historical to be enabled)',
+      required: false,
+    }),
     indexerStoreCacheThreshold: Flags.integer({
-    description: 'The number of items kept in the cache before flushing',
-    required: false,
-  }),
+      description: 'The number of items kept in the cache before flushing',
+      required: false,
+    }),
     disableIndexerStoreCacheAsync: Flags.boolean({
-    description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
-    required: false,
-  }),
+      description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
+      required: false,
+    }),
     indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
 
     //query flags
@@ -259,12 +259,11 @@ export function defaultCommandFlags(): & FlagInput<{ [flag: string]: any; }>{
     queryAggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
 
     useDefaults: Flags.boolean({
-    char: 'd',
-    description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
-    required: false,
-  }),
-  }
-}
+      char: 'd',
+      description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
+      required: false,
+    })
+  };
 
 
 export function generateDeploymentChain(row: GenerateDeploymentChainInterface) {
@@ -305,7 +304,6 @@ export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): Q
 }
 
 
-
 export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
   let deploymentOutput: DeploymentDataType | void = undefined;
 
@@ -330,13 +328,14 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       data.ipfsCID,
       data.queryVersion,
       data.flags.type,
-      generateAdvancedQueryOptions(data.flags as unknown as DeploymentFlagsInterface),
+      generateAdvancedQueryOptions(data.flags),
       data.chains,
       ROOT_API_URL_PROD
-    ).catch((e) => {throw e});
+    ).catch((e) => {
+      throw e
+    });
 
-    if (deploymentOutput)
-    {
+    if (deploymentOutput) {
       data.log(`Project: ${deploymentOutput.projectKey}
       \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}

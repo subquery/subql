@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {RunnerSpecs} from '@subql/types-core';
-import {Command} from "@oclif/core";
 
 export interface ProjectSpecBase {
   name: string;
@@ -186,8 +185,8 @@ export interface DeploymentFlagsInterface {
   location?: string;
   queryUnsafe: boolean;
   querySubscription: boolean;
-  queryTimeout: boolean;
-  queryMaxConnection: boolean;
+  queryTimeout: number;
+  queryMaxConnection: number;
   queryAggregate: boolean;
   useDefaults: boolean;
 }

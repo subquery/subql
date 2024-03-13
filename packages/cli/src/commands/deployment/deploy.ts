@@ -5,36 +5,32 @@ import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
-import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
+import {ROOT_API_URL_PROD} from '../../constants';
 import {
-  createDeployment,
+  DefaultDeployFlags,
   dictionaryEndpoints,
+  executeProjectDeployment,
+  generateDeploymentChain,
   imageVersions,
   ipfsCID_validate,
   processEndpoints,
   projectsInfo,
-  splitEndpoints,
-  updateDeployment,
-  defaultCommandFlags,
-  generateDeploymentChain,
-  generateAdvancedQueryOptions,
-  executeProjectDeployment
+  splitEndpoints
 } from '../../controller/deploy-controller';
-import {IndexerAdvancedOpts, QueryAdvancedOpts, V3DeploymentIndexerType, DeploymentFlagsInterface} from '../../types';
+import {V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
-  static flags = Object.assign(defaultCommandFlags(), {
+  static flags = Object.assign(DefaultDeployFlags, {
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
     endpoint: Flags.string({description: 'Enter endpoint', required: true}),
   });
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
-    let _flags: DeploymentFlagsInterface = flags as unknown as DeploymentFlagsInterface;
-    let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = _flags;
+    let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken();
 
@@ -51,7 +47,7 @@ export default class Deploy extends Command {
     }
 
     if (!endpoint) {
-      if (_flags.useDefaults) {
+      if (flags.useDefaults) {
         throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag'));
       }
 
@@ -60,7 +56,7 @@ export default class Deploy extends Command {
 
     if (!dict) {
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
-      if (!_flags.useDefaults && !validateDictEndpoint) {
+      if (!flags.useDefaults && !validateDictEndpoint) {
         dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
         dict = validateDictEndpoint;
@@ -75,7 +71,7 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!_flags.useDefaults) {
+        if (!flags.useDefaults) {
           indexerVersion = await promptWithDefaultValues(
             inquirer,
             'Enter indexer version',
@@ -98,7 +94,7 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!_flags.useDefaults) {
+        if (!flags.useDefaults) {
           const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
           queryVersion = response;
         } else {
@@ -108,14 +104,14 @@ export default class Deploy extends Command {
         throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
-    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, _flags.type);
+    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
     chains.push(
       generateDeploymentChain({
         cid: ipfsCID,
         dictEndpoint: dict,
         endpoint: splitEndpoints(endpoint),
-        flags: _flags,
+        flags: flags,
         indexerImageVersion: indexerVersion
       })
     );
@@ -127,7 +123,7 @@ export default class Deploy extends Command {
       log: this.log,
       authToken: authToken,
       chains: chains,
-      flags: _flags,
+      flags: flags,
       ipfsCID: ipfsCID,
       org: org,
       projectInfo: projectInfo,
