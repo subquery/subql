@@ -35,7 +35,6 @@ export default class MultiChainDeploy extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(MultiChainDeploy);
-    const {dict, endpoint, indexerVersion, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken();
 
@@ -60,20 +59,20 @@ export default class MultiChainDeploy extends Command {
       (e) => this.error(e)
     );
 
-    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
-    projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
+    flags.org = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
+    flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
 
     // Multichain query descriptor
     const ipfsCID = fileToCidMap.get(path.basename(multichainManifestPath));
 
-    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
+    const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
 
-    const endpoints: MultichainDataFieldType = splitMultichainDataFields(endpoint);
-    const dictionaries: MultichainDataFieldType = splitMultichainDataFields(dict);
-    const indexerVersions: MultichainDataFieldType = splitMultichainDataFields(indexerVersion);
+    const endpoints: MultichainDataFieldType = splitMultichainDataFields(flags.endpoint);
+    const dictionaries: MultichainDataFieldType = splitMultichainDataFields(flags.dict);
+    const indexerVersions: MultichainDataFieldType = splitMultichainDataFields(flags.indexerVersion);
 
-    if (!queryVersion) {
+    if (!flags.queryVersion) {
       try {
         const queryAvailableVersions = await imageVersions(
           multichainManifestObject.query.name,
@@ -82,15 +81,15 @@ export default class MultiChainDeploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          queryVersion = await promptWithDefaultValues(inquirer, `Enter query version`, null, queryAvailableVersions, true);
+          flags.queryVersion = await promptWithDefaultValues(inquirer, `Enter query version`, null, queryAvailableVersions, true);
         } else {
-          queryVersion = queryAvailableVersions[0];
+          flags.queryVersion = queryAvailableVersions[0];
         }
       } catch (e) {
         throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
-    queryVersion = addV(queryVersion);
+    flags.queryVersion = addV(flags.queryVersion);
 
     for await (const [multichainProjectPath, multichainProjectCid] of fileToCidMap) {
       if (!multichainProjectPath || multichainProjectPath === path.basename(multichainManifestPath)) continue;
@@ -166,10 +165,10 @@ export default class MultiChainDeploy extends Command {
       chains: chains,
       flags: flags,
       ipfsCID: ipfsCID,
-      org: org,
+      org: flags.org,
       projectInfo: projectInfo,
-      projectName: projectName,
-      queryVersion: queryVersion
+      projectName: flags.projectName,
+      queryVersion: flags.queryVersion
     });
 
   }

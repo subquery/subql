@@ -30,40 +30,39 @@ export default class Deploy extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
-    const {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken();
 
-    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
-    projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
-    ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
+    flags.org = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
+    flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
+    flags.ipfsCID = await valueOrPrompt(flags.ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
-    const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
-    queryVersion = addV(queryVersion);
-    indexerVersion = addV(indexerVersion);
+    const validator = await ipfsCID_validate(flags.ipfsCID, authToken, ROOT_API_URL_PROD);
+    flags.queryVersion = addV(flags.queryVersion);
+    flags.indexerVersion = addV(flags.indexerVersion);
 
     if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
     }
 
-    if (!endpoint) {
+    if (!flags.endpoint) {
       if (flags.useDefaults) {
         throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag'));
       }
 
-      endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, null, true);
+      flags.endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, null, true);
     }
 
-    if (!dict) {
+    if (!flags.dict) {
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults && !validateDictEndpoint) {
-        dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
+        flags.dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
-        dict = validateDictEndpoint;
+        flags.dict = validateDictEndpoint;
       }
     }
 
-    if (!indexerVersion) {
+    if (!flags.indexerVersion) {
       try {
         const indexerVersions = await imageVersions(
           validator.manifestRunner.node.name,
@@ -72,7 +71,7 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          indexerVersion = await promptWithDefaultValues(
+          flags.indexerVersion = await promptWithDefaultValues(
             inquirer,
             'Enter indexer version',
             null,
@@ -80,13 +79,13 @@ export default class Deploy extends Command {
             true
           );
         } else {
-          indexerVersion = indexerVersions[0];
+          flags.indexerVersion = indexerVersions[0];
         }
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
     }
-    if (!queryVersion) {
+    if (!flags.queryVersion) {
       try {
         const queryVersions = await imageVersions(
           validator.manifestRunner.query.name,
@@ -96,23 +95,23 @@ export default class Deploy extends Command {
         );
         if (!flags.useDefaults) {
           const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
-          queryVersion = response;
+          flags.queryVersion = response;
         } else {
-          queryVersion = queryVersions[0];
+          flags.queryVersion = queryVersions[0];
         }
       } catch (e) {
         throw new Error(chalk.bgRedBright('Query version is required'));
       }
     }
-    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
+    const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
     chains.push(
       generateDeploymentChain({
-        cid: ipfsCID,
-        dictEndpoint: dict,
-        endpoint: splitEndpoints(endpoint),
+        cid: flags.ipfsCID,
+        dictEndpoint: flags.dict,
+        endpoint: splitEndpoints(flags.endpoint),
         flags: flags,
-        indexerImageVersion: indexerVersion
+        indexerImageVersion: flags.indexerVersion
       })
     );
 
@@ -124,11 +123,11 @@ export default class Deploy extends Command {
       authToken: authToken,
       chains: chains,
       flags: flags,
-      ipfsCID: ipfsCID,
-      org: org,
-      projectInfo: projectInfo,
-      projectName: projectName,
-      queryVersion: queryVersion
+      ipfsCID: flags.ipfsCID,
+      org: flags.org,
+      projectInfo: flags.projectInfo,
+      projectName: flags.projectName,
+      queryVersion: flags.queryVersion
     });
 
 
