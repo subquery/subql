@@ -30,7 +30,7 @@ export default class Deploy extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
-    let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
+    const {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken();
 

@@ -1,13 +1,15 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from "fs";
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {getMultichainManifestPath, getProjectRootAndManifest} from "@subql/common";
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
-import {ROOT_API_URL_PROD} from '../../constants';
 import YAML from 'yaml'
+import {ROOT_API_URL_PROD} from '../../constants';
 import {
   DefaultDeployFlags,
   dictionaryEndpoints,
@@ -19,11 +21,9 @@ import {
   projectsInfo,
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
+import {uploadToIpfs} from "../../controller/publish-controller";
 import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
-import {getMultichainManifestPath, getProjectRootAndManifest} from "@subql/common";
-import fs from "fs";
-import {uploadToIpfs} from "../../controller/publish-controller";
 
 export default class MultiChainDeploy extends Command {
   static description = 'Multi-chain deployment to hosted service';
@@ -35,7 +35,7 @@ export default class MultiChainDeploy extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(MultiChainDeploy);
-    let {dict, endpoint, indexerVersion, org, projectName, queryVersion} = flags;
+    const {dict, endpoint, indexerVersion, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken();
 
@@ -52,7 +52,7 @@ export default class MultiChainDeploy extends Command {
     }
 
     multichainManifestPath = path.join(project.root, multichainManifestPath);
-    let multichainManifestObject = YAML.parse(
+    const multichainManifestObject = YAML.parse(
       fs.readFileSync(multichainManifestPath, 'utf8')
     )
 
@@ -69,9 +69,9 @@ export default class MultiChainDeploy extends Command {
     const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
 
-    let endpoints: MultichainDataFieldType = splitMultichainDataFields(endpoint);
-    let dictionaries: MultichainDataFieldType = splitMultichainDataFields(dict);
-    let indexerVersions: MultichainDataFieldType = splitMultichainDataFields(indexerVersion);
+    const endpoints: MultichainDataFieldType = splitMultichainDataFields(endpoint);
+    const dictionaries: MultichainDataFieldType = splitMultichainDataFields(dict);
+    const indexerVersions: MultichainDataFieldType = splitMultichainDataFields(indexerVersion);
 
     if (!queryVersion) {
       try {
@@ -92,8 +92,8 @@ export default class MultiChainDeploy extends Command {
     }
     queryVersion = addV(queryVersion);
 
-    for await (let [multichainProjectPath, multichainProjectCid] of fileToCidMap) {
-      if (!multichainProjectPath || multichainProjectPath == path.basename(multichainManifestPath)) continue;
+    for await (const [multichainProjectPath, multichainProjectCid] of fileToCidMap) {
+      if (!multichainProjectPath || multichainProjectPath === path.basename(multichainManifestPath)) continue;
 
       const validator = await ipfsCID_validate(multichainProjectCid, authToken, ROOT_API_URL_PROD);
 

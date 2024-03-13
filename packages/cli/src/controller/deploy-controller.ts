@@ -1,7 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Flags} from "@oclif/core";
+import {FlagInput} from "@oclif/core/lib/interfaces/parser";
 import axios, {Axios} from 'axios';
+import chalk from "chalk";
+import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from "../constants";
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -11,14 +15,10 @@ import {
   ValidateDataType,
   ProjectDeploymentInterface,
   GenerateDeploymentChainInterface,
-  DeploymentFlagsInterface
+  DeploymentFlagsInterface,
+  MultichainDataFieldType
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
-import {MultichainDataFieldType} from "../types";
-import {Flags} from "@oclif/core";
-import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from "../constants";
-import chalk from "chalk";
-import {FlagInput} from "@oclif/core/lib/interfaces/parser";
 
 function getAxiosInstance(url: string, authToken?: string): Axios {
   const headers: Record<string, string> = {};
@@ -206,13 +206,13 @@ export interface EndpointType {
 }
 
 export function splitMultichainDataFields(fieldStr: string): MultichainDataFieldType {
-  let result: MultichainDataFieldType = {};
+  const result: MultichainDataFieldType = {};
 
   splitEndpoints(String(fieldStr)).forEach(unparsedRow => {
     let regexpResult: string[] = unparsedRow.match(/(.*?):(.*)/);
     if (regexpResult) {
       regexpResult = Object.values(regexpResult);
-      if (regexpResult && regexpResult.length == 6 && ['http', 'https', 'ws', 'wss'].indexOf(regexpResult[1]) === -1) {
+      if (regexpResult && regexpResult.length === 6 && ['http', 'https', 'ws', 'wss'].indexOf(regexpResult[1]) === -1) {
         result[regexpResult[1]] = regexpResult[2];
       }
     }
@@ -305,7 +305,7 @@ export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): Q
 
 
 export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
-  let deploymentOutput: DeploymentDataType | void = undefined;
+  let deploymentOutput: DeploymentDataType | void;
 
   if (data.projectInfo !== undefined) {
     await updateDeployment(
