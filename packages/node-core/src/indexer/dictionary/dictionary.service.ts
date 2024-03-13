@@ -107,7 +107,10 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       return undefined;
     }
     try {
-      const queryEndBlock = dictionary.getQueryEndBlock(startBlockHeight + scaledBatchSize, latestFinalizedHeight);
+      const queryEndBlock = dictionary.getQueryEndBlock(
+        startBlockHeight + this.nodeConfig.dictionaryQuerySize,
+        latestFinalizedHeight
+      );
       return dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
     } catch (error: any) {
       // Handle errors by skipping the current dictionary
