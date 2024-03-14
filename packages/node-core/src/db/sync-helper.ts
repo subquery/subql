@@ -10,7 +10,6 @@ import {
   ModelAttributeColumnOptions,
   ModelAttributes,
   ModelStatic,
-  Op,
   QueryTypes,
   Sequelize,
   TableNameWithSchema,
@@ -21,6 +20,20 @@ import {EnumType} from '../utils';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
+
+export type Query = {
+  sql: string;
+  replacements?: any[]; // TODO be stricter with type
+};
+
+/**
+ * @deprecated use Query instead for increased security
+ * */
+export type QueryString = Query | string;
+
+export function isQuery(input: QueryString): input is Query {
+  return (input as any).sql;
+}
 
 export interface SmartTags {
   foreignKey?: string;
@@ -77,24 +90,24 @@ function commentOn(
   entity: string,
   comment: string,
   constraint?: string
-): string {
+): Query {
   const constraintPart = constraint ? `${constraint} ON ` : '';
-  return `COMMENT ON ${type} ${constraintPart}${entity} IS E'${comment}';`;
+  return {sql: `COMMENT ON ${type} ${constraintPart}${entity} IS ?;`, replacements: [comment]};
 }
 
-export function commentConstraintQuery(schema: string, table: string, constraint: string, comment: string): string {
+export function commentConstraintQuery(schema: string, table: string, constraint: string, comment: string): Query {
   return commentOn('CONSTRAINT', escapedName(schema, table), comment, constraint);
 }
 
-export function commentTableQuery(schema: string, table: string, comment: string): string {
+export function commentTableQuery(schema: string, table: string, comment: string): Query {
   return commentOn('TABLE', escapedName(schema, table), comment);
 }
 
-export function commentColumnQuery(schema: string, table: string, column: string, comment: string): string {
+export function commentColumnQuery(schema: string, table: string, column: string, comment: string): Query {
   return commentOn('COLUMN', escapedName(schema, table, column), comment);
 }
 
-export function commentOnFunction(schema: string, functionName: string, comment: string): string {
+export function commentOnFunction(schema: string, functionName: string, comment: string): Query {
   return commentOn('FUNCTION', escapedName(schema, functionName), comment);
 }
 
@@ -382,13 +395,13 @@ export function generateCreateTableQuery(
   model: ModelStatic<Model<any, any>>,
   schema: string,
   withoutForeignKey: boolean
-): string[] {
+): QueryString[] {
   const tableName = model.tableName;
 
   const attributes = model.getAttributes();
   const columnDefinitions: string[] = [];
   const primaryKeyColumns: string[] = [];
-  const comments: string[] = [];
+  const comments: Query[] = [];
 
   Object.keys(attributes).forEach((key) => {
     const attr = attributes[key];
@@ -582,7 +595,7 @@ export function generateForeignKeyQuery(attribute: ModelAttributeColumnOptions, 
 // indexes
 export const dropIndexQuery = (schema: string, hashedIndexName: string): string =>
   `DROP INDEX IF EXISTS "${schema}"."${hashedIndexName}";`;
-export const createIndexQuery = (indexOptions: IndexesOptions, tableName: string, schema: string) => {
+export const createIndexQuery = (indexOptions: IndexesOptions, tableName: string, schema: string): string => {
   if (!indexOptions.fields || indexOptions.fields.length === 0) {
     throw new Error("The 'fields' property is required and cannot be empty.");
   }
@@ -618,7 +631,7 @@ export const createTsVectorColumnQuery = (
   return createColumnQuery(schema, table, TS_VECTOR_COL, `tsvector ${generated}`);
 };
 
-export const createTsVectorCommentQuery = (schema: string, table: string): string =>
+export const createTsVectorCommentQuery = (schema: string, table: string): Query =>
   commentColumnQuery(schema, table, TS_VECTOR_COL, '@omit all');
 
 const tsVectorIndexName = (schema: string, table: string) => hashName(schema, 'fulltext_idx', table);
@@ -643,5 +656,5 @@ create or replace function ${escapedName(schema, functionName)}(search text)
   `;
 };
 
-export const commentSearchFunctionQuery = (schema: string, table: string): string =>
+export const commentSearchFunctionQuery = (schema: string, table: string): Query =>
   commentOnFunction(schema, searchFunctionName(schema, table), `@name search_${table}`);
