@@ -7,7 +7,6 @@ import {
   GraphQLEntityField,
   GraphQLEntityIndex,
   GraphQLEnumsType,
-  GraphQLFullTextType,
   GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
@@ -40,8 +39,8 @@ export class Migration {
   mainQueries are used for executions, that are not reliant on any prior db operations
   extraQueries are executions, that are reliant on certain db operations, e.g. comments on foreignKeys or comments on tables, should be executed only after the table has been created
    */
-  private mainQueries: string[] = [];
-  private extraQueries: string[] = [];
+  private mainQueries: syncHelper.QueryString[] = [];
+  private extraQueries: syncHelper.QueryString[] = [];
   private readonly historical: boolean;
   private readonly useSubscription: boolean;
   private foreignKeyMap: Map<string, Map<string, syncHelper.SmartTags>> = new Map<
@@ -112,11 +111,19 @@ export class Migration {
 
     try {
       for (const query of this.mainQueries) {
-        await this.sequelize.query(query, {transaction: effectiveTransaction});
+        if (syncHelper.isQuery(query)) {
+          await this.sequelize.query(query.sql, {replacements: query.replacements, transaction: effectiveTransaction});
+        } else {
+          await this.sequelize.query(query, {transaction: effectiveTransaction});
+        }
       }
 
       for (const query of uniq(this.extraQueries)) {
-        await this.sequelize.query(query, {transaction: effectiveTransaction});
+        if (syncHelper.isQuery(query)) {
+          await this.sequelize.query(query.sql, {replacements: query.replacements, transaction: effectiveTransaction});
+        } else {
+          await this.sequelize.query(query, {transaction: effectiveTransaction});
+        }
       }
 
       await effectiveTransaction.commit();
