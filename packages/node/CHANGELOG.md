@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.1] - 2024-03-14
+### Changed
+- Update `@subql/node-core` to 4.7.2 with graphql comments escaping fix
+
 ## [3.9.0] - 2024-03-06
 ### Changed
 - Update `@subql/node-core` to 7.4.0
@@ -59,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.3.1] - 2023-11-13
 ### Changed
-- Updates to match changes in '@subql/node-core' (#34) 
+- Updates to match changes in '@subql/node-core' (#34)
   - Dictionary service to use dictionary registry
   - Use yargs from node core
 
@@ -98,7 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.9.1...HEAD
+[3.9.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.9.0...node-stellar/3.9.1
 [3.9.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.8.1...node-stellar/3.9.0
 [3.8.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.8.0...node-stellar/3.8.1
 [3.8.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.6.1...node-stellar/3.8.0
