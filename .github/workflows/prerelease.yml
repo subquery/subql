@@ -7,13 +7,12 @@ on:
       - '.github/workflows/**'
 
 concurrency:
-  group: ${{ github.worflow }}
+  group: publish
   cancel-in-progress: false
 
 jobs:
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
-    needs: pre-ci
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
     runs-on: ubuntu-latest
     steps:

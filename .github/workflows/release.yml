@@ -13,9 +13,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+
+  # This gets the commit message because workflow dispatch doesnt set: github.event.head_commit.message
+  pre-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      commit-message: ${{ steps.step1.outputs.commit-message }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - id: step1
+        run: echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
+
   Build-Publish:
     name: Build-Publish
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
+    needs: pre-ci
+    if: "!startsWith(needs.pre-ci.outputs.commit-message, '[SKIP CI]') && startsWith(needs.pre-ci.outputs.commit-message, '[release]') && github.repository == 'subquery/subql'"
     runs-on: ubuntu-latest
     steps:
       #Check out
