@@ -1,7 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Flags} from "@oclif/core";
+import {FlagInput} from "@oclif/core/lib/interfaces/parser";
 import axios, {Axios} from 'axios';
+import chalk from "chalk";
+import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from "../constants";
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -9,6 +13,10 @@ import {
   V3DeploymentIndexerType,
   V3DeploymentInput,
   ValidateDataType,
+  ProjectDeploymentInterface,
+  GenerateDeploymentChainInterface,
+  DeploymentFlagsInterface,
+  MultichainDataFieldType
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
@@ -95,7 +103,7 @@ export async function deploymentStatus(
   url: string
 ): Promise<string> {
   try {
-    const res = await getAxiosInstance(url, authToken).get<{status: string}>(
+    const res = await getAxiosInstance(url, authToken).get<{ status: string }>(
       `subqueries/${buildProjectKey(org, projectName)}/deployments/${deployID}/status`
     );
     return `${res.data.status}`;
@@ -147,12 +155,13 @@ export async function updateDeployment(
     errorHandle(e, `Failed to redeploy project: ${e.message}`);
   }
 }
+
 export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<ValidateDataType> {
   try {
     const res = await getAxiosInstance(url, authToken).post<ValidateDataType>(`ipfs/deployment-id/${cid}/validate`);
 
     if (res.status === 500) {
-      throw new Error((res.data as unknown as {message: string}).message);
+      throw new Error((res.data as unknown as { message: string }).message);
     }
 
     return res.data;
@@ -185,11 +194,162 @@ export async function imageVersions(name: string, version: string, authToken: st
     errorHandle(e, 'Failed to get image:');
   }
 }
+
 export function splitEndpoints(endpointStr: string): string[] {
   return endpointStr.split(',').map((e) => e.trim());
 }
+
 export interface EndpointType {
   network: string;
   endpoint: string;
   chainId: string;
+}
+
+export function splitMultichainDataFields(fieldStr: string): MultichainDataFieldType {
+  const result: MultichainDataFieldType = {};
+
+  splitEndpoints(String(fieldStr)).forEach(unparsedRow => {
+    let regexpResult: string[] = unparsedRow.match(/(.*?):(.*)/);
+    if (regexpResult) {
+      regexpResult = Object.values(regexpResult);
+      if (regexpResult && regexpResult.length === 6 && ['http', 'https', 'ws', 'wss'].indexOf(regexpResult[1]) === -1) {
+        result[regexpResult[1]] = regexpResult[2];
+      }
+    }
+  });
+
+  return result;
+}
+
+export const DefaultDeployFlags: FlagInput<DeploymentFlagsInterface> =
+  {
+    org: Flags.string({description: 'Enter organization name'}),
+    projectName: Flags.string({description: 'Enter project name'}),
+    // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
+
+    type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+    indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
+    queryVersion: Flags.string({description: 'Enter query-version', required: false}),
+    dict: Flags.string({description: 'Enter dictionary', required: false}),
+    endpoint: Flags.string({description: 'Enter endpoint', required: false}),
+    //indexer set up flags
+    indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+    indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
+    indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
+    disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
+    indexerUnfinalized: Flags.boolean({
+      description: 'Index unfinalized blocks (requires Historical to be enabled)',
+      required: false,
+    }),
+    indexerStoreCacheThreshold: Flags.integer({
+      description: 'The number of items kept in the cache before flushing',
+      required: false,
+    }),
+    disableIndexerStoreCacheAsync: Flags.boolean({
+      description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
+      required: false,
+    }),
+    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
+
+    //query flags
+    queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+    querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
+    queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
+    queryMaxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
+    queryAggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
+
+    useDefaults: Flags.boolean({
+      char: 'd',
+      description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
+      required: false,
+    })
+  };
+
+
+export function generateDeploymentChain(row: GenerateDeploymentChainInterface) {
+  return {
+    cid: row.cid,
+    dictEndpoint: row.dictEndpoint,
+    endpoint: row.endpoint,
+    indexerImageVersion: row.indexerImageVersion,
+    indexerAdvancedSettings: {
+      indexer: {
+        unsafe: row.flags.indexerUnsafe,
+        batchSize: row.flags.indexerBatchSize,
+        subscription: row.flags.indexerSubscription,
+        historicalData: !row.flags.disableHistorical,
+        unfinalizedBlocks: row.flags.indexerUnfinalized,
+        storeCacheThreshold: row.flags.indexerStoreCacheThreshold,
+        disableStoreCacheAsync: row.flags.disableIndexerStoreCacheAsync,
+      },
+    },
+    extraParams: row.flags.indexerWorkers ?
+      {
+        workers: {
+          num: row.flags.indexerWorkers,
+        },
+      } :
+      {}
+  };
+}
+
+export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): QueryAdvancedOpts {
+  return {
+    unsafe: !!flags.queryUnsafe,
+    subscription: !!flags.querySubscription,
+    queryTimeout: Number(flags.queryTimeout),
+    // maxConnection: Number(flags.queryMaxConnection), // project version or plan does not support maxConnection
+    aggregate: !!flags.queryAggregate,
+  }
+}
+
+
+export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
+  let deploymentOutput: DeploymentDataType | void;
+
+  if (data.projectInfo !== undefined) {
+    await updateDeployment(
+      data.org,
+      data.projectName,
+      data.projectInfo.id,
+      data.authToken,
+      data.ipfsCID,
+      data.queryVersion,
+      generateAdvancedQueryOptions(data.flags),
+      data.chains,
+      ROOT_API_URL_PROD
+    );
+    data.log(`Project: ${data.projectName} has been re-deployed`);
+  } else {
+    deploymentOutput = await createDeployment(
+      data.org,
+      data.projectName,
+      data.authToken,
+      data.ipfsCID,
+      data.queryVersion,
+      data.flags.type,
+      generateAdvancedQueryOptions(data.flags),
+      data.chains,
+      ROOT_API_URL_PROD
+    ).catch((e) => {
+      throw e
+    });
+
+    if (deploymentOutput) {
+      data.log(`Project: ${deploymentOutput.projectKey}
+      \nStatus: ${chalk.blue(deploymentOutput.status)}
+      \nDeploymentID: ${deploymentOutput.id}
+      \nDeployment Type: ${deploymentOutput.type}
+      \nIndexer version: ${deploymentOutput.indexerImage}
+      \nQuery version: ${deploymentOutput.queryImage}
+      \nEndpoint: ${deploymentOutput.endpoint}
+      \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
+      \nQuery URL: ${deploymentOutput.queryUrl}
+      \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
+      \nAdvanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
+      \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
+      `);
+    }
+  }
+  return deploymentOutput;
 }

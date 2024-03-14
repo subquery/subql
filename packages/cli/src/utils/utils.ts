@@ -30,8 +30,9 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   }
 }
 
-export function addV(str: string | undefined): string {
-  if (str && !str.includes('v')) {
+export function addV(str: string | undefined):string {
+  // replaced includes to first byte.
+  if (str && str[0]!=='v') {
     return `v${str}`;
   }
   return str;
