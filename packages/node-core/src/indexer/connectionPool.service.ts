@@ -10,7 +10,7 @@ import {ApiConnectionError, ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
-import {delay, retryWithBackoff} from '../utils';
+import {backoffRetry, delay} from '../utils';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 const logger = getLogger('connection-pool');
@@ -34,7 +34,7 @@ type ResultCacheEntry<T> = {
 export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, any>> implements OnApplicationShutdown {
   private allApi: Record<string, T> = {};
   private cachedEndpoint: string | undefined;
-  private reconnectingEndpoints: Record<string, NodeJS.Timeout | undefined> = {};
+  private reconnectingEndpoints: Record<string, Promise<void> | undefined> = {};
   private resultCache: Array<ResultCacheEntry<number | ApiConnectionError['errorType']>> = [];
   private lastCacheFlushTime: number = Date.now();
   private cacheSizeThreshold = 10;
@@ -133,30 +133,24 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   async handleApiDisconnects(endpoint: string): Promise<void> {
     logger.warn(`disconnected from ${endpoint}`);
 
-    const maxAttempts = 5;
-
     const tryReconnect = async () => {
-      logger.info(`Attempting to reconnect to ${endpoint}`);
+      try {
+        logger.info(`Attempting to reconnect to ${endpoint}`);
 
-      await this.allApi[endpoint].apiConnect();
-      await this.poolStateManager.setFieldValue(endpoint, 'connected', true);
-      this.reconnectingEndpoints[endpoint] = undefined;
-      logger.info(`Reconnected to ${endpoint} successfully`);
+        await this.allApi[endpoint].apiConnect();
+        await this.poolStateManager.setFieldValue(endpoint, 'connected', true);
+        this.reconnectingEndpoints[endpoint] = undefined;
+        logger.info(`Reconnected to ${endpoint} successfully`);
+      } catch (e) {
+        logger.error(`Reconnection failed: ${e}`);
+        throw e;
+      }
     };
 
-    this.reconnectingEndpoints[endpoint] = retryWithBackoff(
-      tryReconnect,
-      (error) => {
-        logger.error(`Reconnection failed: ${error}`);
-      },
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      async () => {
-        logger.error(`Reached max reconnection attempts. Removing connection ${endpoint} from pool.`);
-        await this.poolStateManager.removeFromConnections(endpoint);
-      },
-      0,
-      maxAttempts
-    );
+    this.reconnectingEndpoints[endpoint] = backoffRetry(tryReconnect, 5).catch(async (e: any) => {
+      logger.error(`Reached max reconnection attempts. Removing connection ${endpoint} from pool.`);
+      await this.poolStateManager.removeFromConnections(endpoint);
+    });
 
     await this.handleConnectionStateChange();
     logger.info(`reconnected to ${endpoint}!`);
@@ -205,10 +199,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     await this.updateNextConnectedApiIndex();
     const disconnectedEndpoints = await this.poolStateManager.getDisconnectedEndpoints();
     disconnectedEndpoints.map((endpoint) => {
-      if (this.reconnectingEndpoints[endpoint]) {
+      if (this.reconnectingEndpoints[endpoint] !== undefined) {
         return;
       }
-      this.handleApiDisconnects(endpoint);
+      void this.handleApiDisconnects(endpoint);
     });
   }
 

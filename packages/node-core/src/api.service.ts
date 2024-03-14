@@ -8,7 +8,7 @@ import {ApiConnectionError, ApiErrorType} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
-import {raceFulfilled, retryWithBackoff} from './utils';
+import {backoffRetry, isBackoffError, raceFulfilled} from './utils';
 
 const logger = getLogger('api');
 
@@ -40,7 +40,7 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     return this._networkMeta;
   }
 
-  private timeouts: Record<string, NodeJS.Timeout | undefined> = {};
+  private connectionRetrys: Record<string, Promise<void> | undefined> = {};
 
   async fetchBlocks(heights: number[], numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B> {
     return this.retryFetch(async () => {
@@ -51,23 +51,15 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
   }
 
   protected async retryFetch(fn: () => Promise<B>, numAttempts = MAX_RECONNECT_ATTEMPTS): Promise<B> {
-    let reconnectAttempts = 0;
-    let lastError: Error | null = null;
-    while (reconnectAttempts < numAttempts) {
-      try {
-        return await fn();
-      } catch (e: any) {
-        lastError = e;
-        reconnectAttempts++;
+    try {
+      return await backoffRetry(fn, numAttempts);
+    } catch (e) {
+      if (isBackoffError(e)) {
+        logger.error(e.message);
+        throw e.lastError;
       }
+      throw e;
     }
-    if (lastError !== null) {
-      logger.error(
-        `Maximum number of retries (${numAttempts}) reached. See the following error for the underlying reason.`
-      );
-      throw lastError;
-    }
-    throw new Error(`Maximum number of retries (${numAttempts}) reached.`);
   }
 
   get api(): A {
@@ -117,7 +109,7 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
           throw this.metadataMismatchError('ChainId', network.chainId, chainId);
         }
 
-        this.connectionPoolService.addToConnections(connection, endpoint);
+        void this.connectionPoolService.addToConnections(connection, endpoint);
       } catch (e) {
         logger.error(`Failed to init ${endpoint}: ${e}`);
         endpointToApiIndex[endpoint] = null as unknown as IApiConnectionSpecific<A, SA, B>;
@@ -136,7 +128,7 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
       throw new Error('All endpoints failed to initialize. Please add healthier endpoints');
     }
 
-    Promise.allSettled(connectionPromises).then((res) => {
+    void Promise.allSettled(connectionPromises).then((res) => {
       // Retry failed connections in the background
       for (const [index, endpoint] of failedConnections) {
         this.retryConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
@@ -176,15 +168,16 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     endpoint: string,
     postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
   ): void {
-    this.timeouts[endpoint] = retryWithBackoff(
-      () => this.performConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook),
-      (error) => {
-        logger.error(`Initialization retry failed for ${endpoint}: ${error}`);
-      },
-      () => {
-        logger.error(`Initialization retry attempts exhausted for ${endpoint}`);
+    this.connectionRetrys[endpoint] = backoffRetry(async () => {
+      try {
+        await this.performConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
+      } catch (e) {
+        logger.error(`Initialization retry failed for ${endpoint}: ${e}`);
+        throw e;
       }
-    );
+    }, 5).catch((e) => {
+      logger.error(e, `Initialization retry attempts exhausted for ${endpoint}`);
+    });
   }
 
   protected metadataMismatchError(metadata: string, expected: string, actual: string): Error {
