@@ -11,6 +11,8 @@ jobs:
   pre-ci:
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    outputs:
+      commit-message: ${{ steps.step1.outputs.commit-message }}
     steps:
       - name: 'Block Concurrent Executions'
         uses: softprops/turnstyle@v1
@@ -19,10 +21,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
 
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - id: step1
+        run: echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
+
+      - run: echo "$(git log -1 --pretty=%B)"
+
+  info:
+    runs-on: ubuntu-latest
+    needs: pre-ci
+    env:
+      OUTPUT1: ${{needs.pre-ci.outputs.commit-message}}
+    steps:
+      - run: echo "$OUTPUT1"\
+
   Build-Publish:
     name: Build-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
+    if: "!startsWith(needs.pre-ci.outputs.commit-message, '[SKIP CI]') && startsWith(needs.pre-ci.outputs.commit-message, '[release]') && github.repository == 'subquery/subql'"
     runs-on: ubuntu-latest
     steps:
       #Check out

@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
+
+## [3.9.2] - 2024-03-14
+### Fixed
+- Escaping graphql comments (#2299)
 
 ## [3.9.1] - 2024-03-08
 ### Changed
@@ -1126,7 +1131,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.9.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.9.2...HEAD
+[3.9.2]: https://github.com/subquery/subql/compare/node/3.9.1...node/3.9.2
 [3.9.1]: https://github.com/subquery/subql/compare/node/3.9.0...node/3.9.1
 [3.9.0]: https://github.com/subquery/subql/compare/node/3.6.1...node/3.9.0
 [3.6.1]: https://github.com/subquery/subql/compare/node/3.6.0...node/3.6.1
