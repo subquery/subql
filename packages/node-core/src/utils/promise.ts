@@ -29,32 +29,33 @@ export async function timeout<T>(promise: Promise<T>, sec: number, errMsg = 'tim
   ]);
 }
 
-function backoff(attempt: number): number {
-  return Math.pow(2, attempt) * 1000; // Exponential backoff
+export class BackoffError extends Error {
+  readonly lastError: any;
+
+  constructor(lastError: any) {
+    super('Maximum number of retries reached');
+    this.lastError = lastError;
+  }
 }
 
-export function retryWithBackoff<T>(
-  tryFunction: () => Promise<T>,
-  onError: (error: any) => void,
-  onMaxAttempts: () => void,
-  attempt = 0,
-  maxAttempts = 5
-): NodeJS.Timeout | undefined {
-  if (attempt >= maxAttempts) {
-    onMaxAttempts();
-  } else {
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const timeout = setTimeout(async () => {
-      try {
-        await tryFunction();
-      } catch (error) {
-        onError(error);
-        retryWithBackoff(tryFunction, onError, onMaxAttempts, attempt + 1, maxAttempts);
-      }
-    }, backoff(attempt));
+export function isBackoffError(error: any): error is BackoffError {
+  return error instanceof BackoffError;
+}
 
-    return timeout;
+async function backoffRetryInternal<T>(fn: () => Promise<T>, maxAttempts: number, currentAttempt = 0): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (maxAttempts - 1 === currentAttempt) {
+      throw new BackoffError(e);
+    }
+    await delay(Math.pow(2, currentAttempt));
+    return backoffRetryInternal(fn, maxAttempts, currentAttempt + 1);
   }
+}
+
+export async function backoffRetry<T>(fn: () => Promise<T>, attempts = 5): Promise<T> {
+  return backoffRetryInternal(fn, attempts);
 }
 
 /* eslint-disable @typescript-eslint/no-misused-promises */

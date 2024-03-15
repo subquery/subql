@@ -149,19 +149,30 @@ describe('sync-helper', () => {
     console.log(getFkConstraint('many_to_many_test_entities', 'AccountId'));
     expect(getFkConstraint('ManyToManyTestEntities', 'AccountId')).toBe('many_to_many_test_entities_account_id_fkey');
   });
+
   it('Generate SQL statement for table creation with historical', () => {
     const statement = generateCreateTableQuery(mockModel, 'test', false);
     const expectedStatement = [
       'CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL,\n      "amount" numeric NOT NULL,\n      "date" timestamp NOT NULL,\n      "from_id" text NOT NULL,\n      "_id" UUID NOT NULL,\n      "_block_range" int8range NOT NULL,\n      "last_transfer_block" integer, PRIMARY KEY ("_id"));',
 
-      `COMMENT ON COLUMN "test"."test-table"."id" IS E'id field is always required and must look like this';`,
-      `COMMENT ON COLUMN "test"."test-table"."amount" IS E'Amount that is transferred';`,
-      `COMMENT ON COLUMN "test"."test-table"."date" IS E'The date of the transfer';`,
-      `COMMENT ON COLUMN "test"."test-table"."from_id" IS E'The account that transfers are made from';`,
-      `COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS E'The most recent block on which we see a transfer involving this account';`,
+      {
+        sql: `COMMENT ON COLUMN "test"."test-table"."id" IS ?;`,
+        replacements: [`id field is always required and must look like this`],
+      },
+      {sql: `COMMENT ON COLUMN "test"."test-table"."amount" IS ?;`, replacements: [`Amount that is transferred`]},
+      {sql: `COMMENT ON COLUMN "test"."test-table"."date" IS ?;`, replacements: [`The date of the transfer`]},
+      {
+        sql: `COMMENT ON COLUMN "test"."test-table"."from_id" IS ?;`,
+        replacements: [`The account that transfers are made from`],
+      },
+      {
+        sql: `COMMENT ON COLUMN "test"."test-table"."last_transfer_block" IS ?;`,
+        replacements: [`The most recent block on which we see a transfer involving this account`],
+      },
     ];
     expect(statement).toStrictEqual(expectedStatement);
   });
+
   it('Generate SQL statement for Indexes', () => {
     const statement = generateCreateIndexQuery(
       mockModel.options.indexes as any,
@@ -173,6 +184,7 @@ describe('sync-helper', () => {
       `CREATE  INDEX IF NOT EXISTS "0xb91efc8ed4021e6e" ON "test"."${mockModel.tableName}"  ("id");`,
     ]);
   });
+
   it('Generate table statement no historical, no multi primary keys', () => {
     jest.spyOn(mockModel, 'getAttributes').mockImplementationOnce(() => {
       return {
@@ -190,9 +202,13 @@ describe('sync-helper', () => {
     const statement = generateCreateTableQuery(mockModel, 'test', false);
     expect(statement).toStrictEqual([
       `CREATE TABLE IF NOT EXISTS "test"."test-table" ("id" text NOT NULL, PRIMARY KEY ("id"));`,
-      `COMMENT ON COLUMN "test"."test-table"."id" IS E'id field is always required and must look like this';`,
+      {
+        sql: `COMMENT ON COLUMN "test"."test-table"."id" IS ?;`,
+        replacements: ['id field is always required and must look like this'],
+      },
     ]);
   });
+
   it('Reference statement', () => {
     const attribute = {
       type: 'text',
@@ -219,6 +235,7 @@ describe('sync-helper', () => {
     const statement = formatReferences(attribute, 'test');
     expect(statement).toBe(`REFERENCES "test"."accounts" ("id") ON DELETE NO ACTION ON UPDATE CASCADE`);
   });
+
   it('Ensure correct foreignkey statement', () => {
     jest.spyOn(mockModel, 'getAttributes').mockImplementationOnce(() => {
       return {
@@ -324,6 +341,7 @@ describe('sync-helper', () => {
       },
     ]);
   });
+
   it('Ensure correct enumTypeMap', async () => {
     const sequelize = new Sequelize() as any;
     sequelize.query.mockResolvedValue([
@@ -353,6 +371,7 @@ describe('sync-helper', () => {
 
     expect(Array.from(v.entries())).toEqual(expectedMap);
   });
+
   it('sequelize to correct postgres type map', () => {
     // TODO this should be using {types: postgres: ['jsonb']} instead of its key
     const v = formatDataType({key: 'JSONB'} as any);
