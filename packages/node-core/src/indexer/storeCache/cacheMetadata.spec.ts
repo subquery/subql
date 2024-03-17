@@ -34,4 +34,37 @@ describe('CacheMetadata', () => {
 
     expect(Object.keys((cacheMetadata as any).setCache)).not.toContain('lastProcessedHeight');
   });
+
+  it('builds the correct dynamicDatasources query', () => {
+    const queryFn = jest.fn();
+
+    const cacheMetadata = new CacheMetadataModel({
+      getTableName: () => '"Schema"."_metadata"',
+      sequelize: {
+        query: queryFn,
+      },
+    } as any);
+
+    (cacheMetadata as any).appendJsonbArray('dynamicDatasources', [{foo: 'bar'}]);
+    expect(queryFn).toHaveBeenCalledWith(
+      `
+      UPDATE "Schema"."_metadata"
+      SET VALUE "value" = jsonb_set("value", array[(jsonb_array_length("value") + 1)::text], '{"foo":"bar"}'::jsonb}, true),
+        "updatedAt" = CURRENT_TIMESTAMP
+      WHERE "Schema"."_metadata".key = 'dynamicDatasources';
+    `,
+      undefined
+    );
+
+    (cacheMetadata as any).appendJsonbArray('dynamicDatasources', [{foo: 'bar'}, {baz: 'buzz'}]);
+    expect(queryFn).toHaveBeenCalledWith(
+      `
+      UPDATE "Schema"."_metadata"
+      SET VALUE "value" = jsonb_set(jsonb_set("value", array[(jsonb_array_length("value") + 1)::text], '{"foo":"bar"}'::jsonb}, true), array[(jsonb_array_length("value") + 1)::text], '{"baz":"buzz"}'::jsonb}, true),
+        "updatedAt" = CURRENT_TIMESTAMP
+      WHERE "Schema"."_metadata".key = 'dynamicDatasources';
+    `,
+      undefined
+    );
+  });
 });

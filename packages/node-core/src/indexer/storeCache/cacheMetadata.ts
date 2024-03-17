@@ -3,8 +3,8 @@
 
 import assert from 'assert';
 import {Transaction} from '@subql/x-sequelize';
-import {getLogger} from '../..//logger';
 import {hasValue} from '../../utils';
+import {DatasourceParams} from '../dynamic-ds.service';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
 import {Cacheable} from './cacheable';
 import {ICachedModelControl} from './types';
@@ -13,11 +13,16 @@ type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
 type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
 
+const specialKeys: MetadataKey[] = [...incrementKeys, 'dynamicDatasources'];
+
 export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
   private removeCache: string[] = [];
+
+  // This is used for a more efficient appending, as opposed to rewriting which is used through setCache
+  private datasourceUpdates: DatasourceParams[] = [];
 
   flushableRecordCounter = 0;
 
@@ -34,6 +39,14 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
       } else if (hasValue(fallback)) {
         this.getCache[key] = fallback;
       }
+    }
+
+    if (key === 'dynamicDatasources') {
+      // Include any unflushed datasource updates in this
+      return [
+        ...(this.getCache[key] as MetadataKeys['dynamicDatasources']),
+        ...this.datasourceUpdates,
+      ] as MetadataKeys[K];
     }
 
     return this.getCache[key] as MetadataKeys[K] | undefined;
@@ -72,6 +85,9 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     }
     this.setCache[key] = value;
     this.getCache[key] = value;
+    if (key === 'dynamicDatasources') {
+      this.datasourceUpdates = [];
+    }
   }
 
   setBulk(metadata: Metadata[]): void {
@@ -82,12 +98,14 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
+  setNewDynamicDatasource(item: DatasourceParams): void {
+    this.datasourceUpdates.push(item);
+  }
+
   private async incrementJsonbCount(key: IncrementalMetadataKey, amount = 1, tx?: Transaction): Promise<void> {
     const schemaTable = this.model.getTableName();
 
-    if (!this.model.sequelize) {
-      throw new Error(`Sequelize is not available on ${this.model.name}`);
-    }
+    assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
     await this.model.sequelize.query(
       `
@@ -101,14 +119,66 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     );
   }
 
+  private async appendDynamicDatasources(items: DatasourceParams[], tx?: Transaction): Promise<void> {
+    const schemaTable = this.model.getTableName();
+
+    assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
+
+    const makeSet = (item: DatasourceParams, value: string): string =>
+      `jsonb_set(${value}, array[(jsonb_array_length(${value}) + 1)::text], '${JSON.stringify(item)}'::jsonb, true)`;
+
+    await this.model.sequelize.query(
+      `
+      UPDATE ${schemaTable}
+      SET "value" = ${items.reduce((acc, item) => makeSet(item, acc), '"value"')},
+        "updatedAt" = CURRENT_TIMESTAMP
+      WHERE ${schemaTable}.key = 'dynamicDatasources';
+    `,
+      tx && {transaction: tx}
+    );
+  }
+
+  private async handleSpecialKeys(tx?: Transaction): Promise<void> {
+    await Promise.all(
+      specialKeys.map(async (key) => {
+        switch (key) {
+          case 'dynamicDatasources': {
+            /**
+             * DynamicDatasources can be rewriten through set, or appended through setNewDynamicDatasource.
+             * rewriting takes priority over appending
+             * rewritten is used when rewinds happen
+             **/
+            const val = this.setCache[key];
+            if (val !== undefined) {
+              await this.model.bulkCreate([{key, value: val}], {transaction: tx, updateOnDuplicate: ['key', 'value']});
+            } else if (this.datasourceUpdates.length) {
+              await this.appendDynamicDatasources(this.datasourceUpdates, tx);
+            }
+            break;
+          }
+          case 'processedBlockCount':
+          case 'schemaMigrationCount': {
+            const val = this.setCache[key];
+            if (val === undefined) break;
+            await this.incrementJsonbCount(key as IncrementalMetadataKey, this.setCache[key] as number, tx);
+            break;
+          }
+          default:
+            throw new Error(`No special case for ${key}`);
+        }
+      })
+    );
+  }
+
   get isFlushable(): boolean {
     return !!Object.keys(this.setCache).length;
   }
 
   async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
-      .filter(([key]) => !incrementKeys.includes(key as MetadataKey))
+      .filter(([key]) => !specialKeys.includes(key as MetadataKey))
       .map(([key, value]) => ({key, value} as Metadata));
+
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {
       const lastProcessedHeight = Number(ops[lastProcessedHeightIdx].value);
@@ -118,18 +188,13 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
       // Also, we can remove `lastCreatedPoiHeight` from metadata, as it will recreate again with indexing .
       assert(blockHeight === lastProcessedHeight, 'metadata was updated before getting flushed');
     }
+
     await Promise.all([
       this.model.bulkCreate(ops, {
         transaction: tx,
         updateOnDuplicate: ['key', 'value'],
       }),
-      ...incrementKeys
-        .map((key) =>
-          this.setCache[key] !== undefined
-            ? this.incrementJsonbCount(key as IncrementalMetadataKey, this.setCache[key] as number, tx)
-            : undefined
-        )
-        .filter(Boolean),
+      this.handleSpecialKeys(tx),
       this.model.destroy({where: {key: this.removeCache}}),
     ]);
   }
@@ -157,5 +222,6 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     }
     this.setCache = {...newSetCache};
     this.getCache = {...newSetCache};
+    this.datasourceUpdates = [];
   }
 }

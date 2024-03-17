@@ -3,6 +3,7 @@
 
 import {getMetadataTableName} from '@subql/utils';
 import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from '@subql/x-sequelize';
+import {DatasourceParams} from '../dynamic-ds.service';
 
 export interface MetadataKeys {
   chain: string;
@@ -22,7 +23,7 @@ export interface MetadataKeys {
   lastFinalizedVerifiedHeight: number;
   indexerHealthy: boolean;
   targetHeight: number;
-  dynamicDatasources: string;
+  dynamicDatasources: DatasourceParams[];
   unfinalizedBlocks: string;
   schemaMigrationCount: number;
   deployments: string;
