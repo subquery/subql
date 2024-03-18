@@ -76,12 +76,12 @@ describe('cacheMetadata integration', () => {
     it('Appends dynamicDatasources correctly', async () => {
       cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
       cacheMetadataModel.setNewDynamicDatasource({templateName: 'bar', startBlock: 2});
-      cacheMetadataModel.setNewDynamicDatasource({templateName: 'baz', startBlock: 2});
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'baz', startBlock: 3});
 
       const expected = [
         {templateName: 'foo', startBlock: 1},
         {templateName: 'bar', startBlock: 2},
-        {templateName: 'baz', startBlock: 2},
+        {templateName: 'baz', startBlock: 3},
       ];
 
       await flush();

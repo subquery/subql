@@ -45,22 +45,22 @@ describe('CacheMetadata', () => {
       },
     } as any);
 
-    (cacheMetadata as any).appendJsonbArray('dynamicDatasources', [{foo: 'bar'}]);
+    (cacheMetadata as any).appendDynamicDatasources([{foo: 'bar'}]);
     expect(queryFn).toHaveBeenCalledWith(
       `
       UPDATE "Schema"."_metadata"
-      SET VALUE "value" = jsonb_set("value", array[(jsonb_array_length("value") + 1)::text], '{"foo":"bar"}'::jsonb}, true),
+      SET "value" = jsonb_set("value", array[(jsonb_array_length("value") + 1)::text], '{"foo":"bar"}'::jsonb, true),
         "updatedAt" = CURRENT_TIMESTAMP
       WHERE "Schema"."_metadata".key = 'dynamicDatasources';
     `,
       undefined
     );
 
-    (cacheMetadata as any).appendJsonbArray('dynamicDatasources', [{foo: 'bar'}, {baz: 'buzz'}]);
+    (cacheMetadata as any).appendDynamicDatasources([{foo: 'bar'}, {baz: 'buzz'}]);
     expect(queryFn).toHaveBeenCalledWith(
       `
       UPDATE "Schema"."_metadata"
-      SET VALUE "value" = jsonb_set(jsonb_set("value", array[(jsonb_array_length("value") + 1)::text], '{"foo":"bar"}'::jsonb}, true), array[(jsonb_array_length("value") + 1)::text], '{"baz":"buzz"}'::jsonb}, true),
+      SET "value" = jsonb_set(jsonb_set("value", array[(jsonb_array_length("value") + 1)::text], '{"foo":"bar"}'::jsonb, true), array[(jsonb_array_length("value") + 2)::text], '{"baz":"buzz"}'::jsonb, true),
         "updatedAt" = CURRENT_TIMESTAMP
       WHERE "Schema"."_metadata".key = 'dynamicDatasources';
     `,

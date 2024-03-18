@@ -124,13 +124,17 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    const makeSet = (item: DatasourceParams, value: string): string =>
-      `jsonb_set(${value}, array[(jsonb_array_length(${value}) + 1)::text], '${JSON.stringify(item)}'::jsonb, true)`;
+    const VALUE = '"value"';
+
+    const makeSet = (item: DatasourceParams, value: string, index = 1): string =>
+      `jsonb_set(${value}, array[(jsonb_array_length(${VALUE}) + ${index})::text], '${JSON.stringify(
+        item
+      )}'::jsonb, true)`;
 
     await this.model.sequelize.query(
       `
       UPDATE ${schemaTable}
-      SET "value" = ${items.reduce((acc, item) => makeSet(item, acc), '"value"')},
+      SET ${VALUE} = ${items.reduce((acc, item, index) => makeSet(item, acc, index + 1), VALUE)},
         "updatedAt" = CURRENT_TIMESTAMP
       WHERE ${schemaTable}.key = 'dynamicDatasources';
     `,
