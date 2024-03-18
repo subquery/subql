@@ -43,7 +43,6 @@ describe('Dictionary service', function () {
       subqueryName: 'asdf',
       networkEndpoint: ['wss://eth.api.onfinality.io/public-ws'],
       dictionaryTimeout: 10,
-      dictionaryResolver: false,
       networkDictionary: [
         'https://gx.api.subquery.network/sq/subquery/eth-dictionary',
         'https://dict-tyk.subquery.network/query/eth-mainnet',

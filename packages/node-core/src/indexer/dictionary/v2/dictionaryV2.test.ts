@@ -51,7 +51,6 @@ const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
   dictionaryTimeout: 10,
-  dictionaryResolver: false,
 });
 
 describe('Individual dictionary V2 test', () => {

@@ -24,7 +24,6 @@ export interface IConfig {
   readonly networkEndpoint?: string[];
   readonly primaryNetworkEndpoint?: string;
   readonly networkDictionary?: string[];
-  readonly dictionaryResolver?: string | false;
   readonly dictionaryRegistry: string;
   readonly outputFmt?: 'json';
   readonly logLevel: LevelWithSilent;
@@ -172,13 +171,6 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get storeFlushInterval(): number {
     return this._config.storeFlushInterval;
-  }
-
-  get dictionaryResolver(): string | false {
-    if (this._config.dictionaryResolver === 'false') {
-      return false;
-    }
-    return this._config.dictionaryResolver ?? 'https://kepler-auth.subquery.network';
   }
 
   get dictionaryRegistry(): string {

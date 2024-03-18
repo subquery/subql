@@ -109,7 +109,6 @@ const nodeConfig = new NodeConfig({
   subqueryName: 'asdf',
   networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
-  // dictionaryResolver: 'https://kepler-auth.subquery.network'
 });
 // Need longer timeout
 jest.setTimeout(50000);
@@ -297,7 +296,6 @@ describe('Individual dictionary V1 test', () => {
       subqueryName: 'asdf',
       networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionaryTimeout: 10,
-      dictionaryResolver: false,
     });
 
     dictionary = await prepareDictionary(

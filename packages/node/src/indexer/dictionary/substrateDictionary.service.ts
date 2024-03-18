@@ -4,13 +4,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
-import { NodeConfig, DictionaryService } from '@subql/node-core';
+import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
 import { SpecVersion, SpecVersionDictionary } from './types';
-import { SubstrateDictionaryV1 } from './v1/substrateDictionaryV1';
+import { SubstrateDictionaryV1 } from './v1';
 import { SubstrateDictionaryV2 } from './v2';
+
+const logger = getLogger('SubstrateDictionary');
 
 @Injectable()
 export class SubstrateDictionaryService extends DictionaryService<
@@ -18,7 +20,7 @@ export class SubstrateDictionaryService extends DictionaryService<
   SubstrateBlock
 > {
   async initDictionaries() {
-    let dictionaryV1Endpoints: string[] = [];
+    const dictionariesV1: SubstrateDictionaryV1[] = [];
     const dictionariesV2: SubstrateDictionaryV2[] = [];
 
     if (!this.project) {
@@ -49,30 +51,25 @@ export class SubstrateDictionaryService extends DictionaryService<
         );
         dictionariesV2.push(dictionaryV2);
       } catch (e) {
-        dictionaryV1Endpoints.push(endpoint);
-      }
-    }
-
-    if (this.nodeConfig.dictionaryResolver) {
-      // Create a v1 dictionary with dictionary resolver
-      // future resolver should a URL, and fetched from registryDictionaries
-      dictionaryV1Endpoints = dictionaryV1Endpoints.concat([undefined]);
-    }
-    // v2 should be prioritised
-    this.init([
-      ...dictionariesV2,
-      ...(await Promise.all(
-        dictionaryV1Endpoints.map((endpoint) =>
-          SubstrateDictionaryV1.create(
+        try {
+          const dictionaryV1 = await SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
             this.eventEmitter,
             this.dsProcessorService.getDsProcessor.bind(this),
             endpoint,
-          ),
-        ),
-      )),
-    ]);
+          );
+          dictionariesV1.push(dictionaryV1);
+        } catch (e) {
+          logger.warn(
+            `Dictionary endpoint "${endpoint}" is not a valid dictionary`,
+          );
+        }
+      }
+    }
+
+    // v2 should be prioritised
+    this.init([...dictionariesV2, ...dictionariesV1]);
   }
 
   constructor(

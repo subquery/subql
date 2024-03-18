@@ -43,7 +43,6 @@ describe('Substrate Dictionary service', function () {
       subqueryName: 'asdf',
       networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionaryTimeout: 10,
-      dictionaryResolver: false,
       networkDictionary: ['http://mock-dictionary-v2'],
     });
     const project = testSubqueryProject(

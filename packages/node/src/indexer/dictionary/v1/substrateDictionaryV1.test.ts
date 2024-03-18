@@ -35,7 +35,6 @@ const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
   dictionaryTimeout: 10,
-  dictionaryResolver: 'https://kepler-auth.subquery.network',
 });
 
 describe('Substrate DictionaryService', () => {
