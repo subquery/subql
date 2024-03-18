@@ -18,13 +18,6 @@ import type {
 import { getLogger } from '@subql/node-core';
 import { context } from 'fetch-h2';
 
-const ctx = context({
-  http1: {
-    keepAlive: true,
-    maxSockets: 10,
-  },
-});
-
 const ERROR_SUBSCRIBE =
   'HTTP Provider does not have subscriptions, use WebSockets instead';
 
@@ -61,6 +54,8 @@ export class HttpProvider implements ProviderInterface {
 
   readonly #stats: ProviderStats;
 
+  readonly #ctx: ReturnType<typeof context>;
+
   /**
    * @param {string} endpoint The endpoint url starting with http://
    */
@@ -73,6 +68,13 @@ export class HttpProvider implements ProviderInterface {
         `Endpoint should start with 'http://' or 'https://', received '${endpoint}'`,
       );
     }
+
+    this.#ctx = context({
+      http1: {
+        keepAlive: true,
+        maxSockets: 10,
+      },
+    });
 
     this.#coder = new RpcCoder();
     this.#endpoint = endpoint;
@@ -117,6 +119,7 @@ export class HttpProvider implements ProviderInterface {
    */
   async disconnect(): Promise<void> {
     // noop
+    await this.#ctx.disconnectAll();
   }
 
   /**
@@ -190,7 +193,7 @@ export class HttpProvider implements ProviderInterface {
     this.#stats.total.bytesSent += body.length;
 
     try {
-      const response = await ctx.fetch(this.#endpoint, {
+      const response = await this.#ctx.fetch(this.#endpoint, {
         body,
         headers: {
           Accept: 'application/json',

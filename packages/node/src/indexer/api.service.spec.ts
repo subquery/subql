@@ -28,7 +28,7 @@ jest.mock('@polkadot/api', () => {
 });
 
 const testNetwork = {
-  endpoint: ['wss://kusama.api.onfinality.io/public-ws'],
+  endpoint: ['https://kusama.api.onfinality.io/public'],
   types: {
     TestType: 'u32',
   },
@@ -54,7 +54,7 @@ const testNetwork = {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
+  networkEndpoint: ['https://polkadot.api.onfinality.io/public'],
   dictionaryTimeout: 10,
 });
 
@@ -83,10 +83,20 @@ function testSubqueryProject(): SubqueryProject {
 }
 
 describe('ApiService', () => {
-  it('read custom types from project manifest', async () => {
-    const project = testSubqueryProject();
+  let project: SubqueryProject;
+  let apiService: ApiService;
 
-    const apiService = new ApiService(
+  beforeEach(() => {
+    project = testSubqueryProject();
+  });
+
+  afterEach(async () => {
+    // Disconnect apis
+    await apiService?.onApplicationShutdown();
+  });
+
+  it('read custom types from project manifest', async () => {
+    apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
@@ -109,8 +119,6 @@ describe('ApiService', () => {
   });
 
   it('throws if expected genesis hash doesnt match', async () => {
-    const project = testSubqueryProject();
-
     // Now after manifest 1.0.0, will use chainId instead of genesisHash
     (project.network as any).chainId = '0x';
 
@@ -119,7 +127,7 @@ describe('ApiService', () => {
       subquery: 'example',
     });
 
-    const apiService = new ApiService(
+    apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
