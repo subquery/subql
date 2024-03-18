@@ -44,7 +44,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     if (key === 'dynamicDatasources') {
       // Include any unflushed datasource updates in this
       return [
-        ...(this.getCache[key] as MetadataKeys['dynamicDatasources']),
+        ...((this.getCache[key] as MetadataKeys['dynamicDatasources']) ?? []),
         ...this.datasourceUpdates,
       ] as MetadataKeys[K];
     }

@@ -22,6 +22,7 @@ import {
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
+import {MetadataKeys} from './entities';
 import {PoiSyncService} from './poi';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
@@ -198,7 +199,7 @@ export abstract class BaseProjectService<
 
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.apiService.networkMeta);
 
-    const keys = [
+    const keys: (keyof MetadataKeys)[] = [
       'lastProcessedHeight',
       'blockOffset',
       'indexerNodeVersion',
@@ -209,7 +210,8 @@ export abstract class BaseProjectService<
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
-    ] as const;
+      'dynamicDatasources',
+    ];
 
     const existing = await metadata.findMany(keys);
 
@@ -255,6 +257,9 @@ export abstract class BaseProjectService<
     }
     if (!existing.startHeight) {
       metadata.set('startHeight', this.getStartBlockFromDataSources());
+    }
+    if (!existing.dynamicDatasources) {
+      metadata.set('dynamicDatasources', []);
     }
   }
 
