@@ -42,6 +42,10 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     }
 
     if (key === 'dynamicDatasources') {
+      // For migration purposes this used to be a string, we need to return that for project.service to migrate it correctly
+      if (typeof this.getCache[key] === 'string') {
+        return this.getCache[key] as MetadataKeys[K];
+      }
       // Include any unflushed datasource updates in this
       return [
         ...((this.getCache[key] as MetadataKeys['dynamicDatasources']) ?? []),

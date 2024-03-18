@@ -109,8 +109,9 @@ export abstract class BaseProjectService<
 
       // Init metadata before rest of schema so we can determine the correct project version to create the schema
       await this.storeService.initCoreTables(this._schema);
-      await this.dynamicDsService.init(this.storeService.storeCache.metadata);
       await this.ensureMetadata();
+      // DynamicDsService is dependent on metadata so we need to ensure it exists first
+      await this.dynamicDsService.init(this.storeService.storeCache.metadata);
 
       /**
        * WARNING: The order of the following steps is very important.
@@ -258,8 +259,13 @@ export abstract class BaseProjectService<
     if (!existing.startHeight) {
       metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
+
     if (!existing.dynamicDatasources) {
       metadata.set('dynamicDatasources', []);
+    } else if (typeof existing.dynamicDatasources === 'string') {
+      // Migration Step: In versions  < 4.7.2 dynamic datasources was stored as a string in a json field.
+      logger.info('Migrating dynamic datasources from string to object');
+      metadata.set('dynamicDatasources', JSON.parse(existing.dynamicDatasources));
     }
   }
 

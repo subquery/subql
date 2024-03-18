@@ -15,7 +15,7 @@ import {
 } from '../events';
 import {StoreCacheService} from '../indexer';
 
-let UPDATE_HEIGHT_INTERVAL: number;
+const UPDATE_HEIGHT_INTERVAL = 5000;
 
 export abstract class BaseMetaService {
   private currentProcessingHeight?: number;
@@ -29,8 +29,8 @@ export abstract class BaseMetaService {
   private lastProcessedTimestamp?: number;
   private processedBlockCount?: number;
 
-  constructor(private storeCacheService: StoreCacheService, private config: NodeConfig) {
-    UPDATE_HEIGHT_INTERVAL = config.storeFlushInterval * 1000;
+  constructor(private storeCacheService: StoreCacheService, config: NodeConfig) {
+    // TODO update UPDATE_HEIGHT_INTERVAL should be configureable based on config.storeFlushInterval * 1000 but need to use SchedulerRegistry for that
   }
 
   protected abstract packageVersion: string;
