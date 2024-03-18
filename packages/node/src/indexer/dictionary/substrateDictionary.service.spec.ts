@@ -75,6 +75,7 @@ describe('Substrate Dictionary service', function () {
         SubstrateDictionaryV1,
     ).toBeTruthy();
   });
+
   it('should use v2 if init passed', async () => {
     const spyDictionaryV1Create = jest.spyOn(SubstrateDictionaryV1, 'create');
     const mockedResponseData = {
