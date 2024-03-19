@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {numberToHex} from '@subql/utils';
 import axios, {AxiosInstance} from 'axios';
-import {utils} from 'ethers';
 import {FieldSelector} from '../';
 import {NodeConfig} from '../../../configure';
 import {getLogger} from '../../../logger';
@@ -120,15 +120,17 @@ export abstract class DictionaryV2<
       return undefined;
     }
 
+    numberToHex();
+
     const requestData = {
       jsonrpc: '2.0',
       method: BLOCKS_QUERY_METHOD,
       id: 1,
       params: [
         {
-          fromBlock: utils.hexValue(startBlock),
-          toBlock: utils.hexValue(queryEndBlock),
-          limit: utils.hexValue(limit),
+          fromBlock: numberToHex(startBlock),
+          toBlock: numberToHex(queryEndBlock),
+          limit: numberToHex(limit),
           blockFilter: conditions,
           fieldSelector,
         },

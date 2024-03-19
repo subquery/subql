@@ -58,10 +58,9 @@ export class SubstrateDictionaryService extends DictionaryService<
       // future resolver should a URL, and fetched from registryDictionaries
       dictionaryV1Endpoints = dictionaryV1Endpoints.concat([undefined]);
     }
-    // v2 should be prioritised
-    this.init([
-      ...dictionariesV2,
-      ...(await Promise.all(
+    // TODO, update this after https://github.com/subquery/subql/pull/2305 merged
+    const dictionariesV1 = (
+      await Promise.allSettled(
         dictionaryV1Endpoints.map((endpoint) =>
           SubstrateDictionaryV1.create(
             this.project,
@@ -71,8 +70,17 @@ export class SubstrateDictionaryService extends DictionaryService<
             endpoint,
           ),
         ),
-      )),
-    ]);
+      )
+    )
+      .map((r) => {
+        if (r.status === 'fulfilled') {
+          return r.value;
+        }
+      })
+      .filter((value) => value !== undefined);
+
+    // v2 should be prioritised
+    this.init([...dictionariesV2, ...dictionariesV1]);
   }
 
   constructor(

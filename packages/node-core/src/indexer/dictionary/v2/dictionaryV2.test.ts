@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {numberToU8a, numberToHex} from '@subql/utils';
 import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
 import {IBlock} from '../../types';
@@ -130,4 +131,15 @@ describe('determine dictionary V2 version', () => {
     );
     await expect((dictionaryV2 as any).init()).rejects.toThrow();
   });
+});
+
+it('in getData, should hex number correctly', () => {
+  const from = 10000;
+  const to = 9999999;
+  // Use ethers.utils should have same output
+  // expect(utils.hexValue(from)).toBe(numberToHex(from))
+  // expect(utils.hexValue(to)).toBe(numberToHex(to))
+  numberToU8a();
+  expect(numberToHex(from)).toBe('0x2710');
+  expect(numberToHex(to)).toBe('0x98967f');
 });
