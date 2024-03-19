@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
@@ -31,6 +32,8 @@ export class SubstrateDictionaryService extends DictionaryService<
       this.project.network.chainId,
       this.nodeConfig.dictionaryRegistry,
     );
+
+    logger.debug(`Dictionary registry endpoints: ${registryDictionaries}`);
 
     const dictionaryEndpoints: string[] = (
       !Array.isArray(this.project.network.dictionary)
@@ -82,27 +85,22 @@ export class SubstrateDictionaryService extends DictionaryService<
     super(chainId ?? project.network.chainId, nodeConfig, eventEmitter);
   }
 
-  async getSpecVersions(): Promise<SpecVersion[]> {
-    const currentDictionary = this._dictionaries[
+  private getV1Dictionary(): SubstrateDictionaryV1 | undefined {
+    // TODO this needs to be removed once Substrate supports V2 dictionaries
+    return this._dictionaries[
       this._currentDictionaryIndex
     ] as SubstrateDictionaryV1;
-    if (!currentDictionary) {
-      throw new Error(
-        `Runtime service getSpecVersions use current dictionary failed`,
-      );
-    }
-    return currentDictionary.getSpecVersions();
+  }
+
+  async getSpecVersions(): Promise<SpecVersion[]> {
+    const dict = this.getV1Dictionary();
+    assert(dict, `getSpecVersions failed: unable to get v1 dictionary`);
+    return dict.getSpecVersions();
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
-    const currentDictionary = this._dictionaries[
-      this._currentDictionaryIndex
-    ] as SubstrateDictionaryV1;
-    if (!currentDictionary) {
-      throw new Error(
-        `Runtime service parseSpecVersions use current dictionary failed`,
-      );
-    }
-    return currentDictionary.parseSpecVersions(raw);
+    const dict = this.getV1Dictionary();
+    assert(dict, `parseSpecVersions failed: unable to get v1 dictionary`);
+    return dict.parseSpecVersions(raw);
   }
 }

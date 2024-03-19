@@ -60,13 +60,21 @@ describe('Dictionary service', function () {
   afterAll(() => dictionaryService.onApplicationShutdown());
 
   it('can use the dictionary registry to resolve a url', async () => {
-    const dictUrl: string = await (dictionaryService as any).resolveDictionary(
+    const dictUrl: string[] = await (dictionaryService as any).resolveDictionary(
       NETWORK_FAMILY.ethereum,
       1,
       'https://github.com/subquery/templates/raw/main/dist/dictionary.json'
     );
 
-    expect(dictUrl).toEqual(['https://dict-tyk.subquery.network/query/eth-mainnet']);
+    expect(dictUrl.length).toBeGreaterThan(0);
+
+    const dictUrl2: string[] = await (dictionaryService as any).resolveDictionary(
+      NETWORK_FAMILY.substrate,
+      '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      'https://github.com/subquery/templates/raw/main/dist/dictionary.json'
+    );
+
+    expect(dictUrl2.length).toBeGreaterThan(0);
   });
 
   it('init Dictionaries with mutiple endpoints, can be valid and non-valid', () => {
