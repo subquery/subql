@@ -305,13 +305,6 @@ export function yargsBuilder<
           describe: 'Local path or IPFS cid of the subquery project',
           type: 'string',
         },
-        // this need to be in default option, it impacts on outcome of index/reindex/regen
-        'timestamp-field': {
-          demandOption: false,
-          describe: 'Enable/disable created_at and updated_at in schema',
-          type: 'boolean',
-          default: false,
-        },
       })
   );
 }

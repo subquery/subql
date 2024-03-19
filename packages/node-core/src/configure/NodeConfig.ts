@@ -29,7 +29,6 @@ export interface IConfig {
   readonly logLevel: LevelWithSilent;
   readonly queryLimit: number;
   readonly indexCountLimit: number;
-  readonly timestampField: boolean;
   readonly proofOfIndex: boolean;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
@@ -67,7 +66,6 @@ const DEFAULT_CONFIG = {
   debug: undefined,
   queryLimit: 100,
   indexCountLimit: 10,
-  timestampField: true,
   proofOfIndex: false,
   dictionaryTimeout: 30,
   dictionaryQuerySize: 10000,
@@ -211,10 +209,6 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get indexCountLimit(): number {
     return this._config.indexCountLimit;
-  }
-
-  get timestampField(): boolean {
-    return this._config.timestampField;
   }
 
   get proofOfIndex(): boolean {
