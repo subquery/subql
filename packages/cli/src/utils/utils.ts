@@ -30,9 +30,9 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   }
 }
 
-export function addV(str: string | undefined):string {
+export function addV(str: string | undefined): string {
   // replaced includes to first byte.
-  if (str && str[0]!=='v') {
+  if (str && str[0] !== 'v') {
     return `v${str}`;
   }
   return str;
@@ -68,6 +68,7 @@ export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promis
       if (!authToken) {
         return await cli.prompt('Token cannot be found, Enter token');
       }
+      return authToken;
     } catch (e) {
       return cli.prompt('Token cannot be found, Enter token');
     }
