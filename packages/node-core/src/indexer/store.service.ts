@@ -225,6 +225,7 @@ export class StoreService {
       underscored: true,
       comment: model.description,
       freezeTableName: false,
+      timestamps: false,
       schema,
       indexes,
     });
