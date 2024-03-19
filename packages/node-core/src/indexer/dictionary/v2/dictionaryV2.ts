@@ -152,6 +152,9 @@ export abstract class DictionaryV2<
         return undefined;
       }
       const result = this.convertResponseBlocks(response.data.result);
+      if (result && result?.lastBufferedHeight === undefined) {
+        result.lastBufferedHeight = Math.min(endBlock, queryEndBlock);
+      }
       this.metadata.end = response.data.result.BlockRange[1];
       return result;
     } catch (error: any) {

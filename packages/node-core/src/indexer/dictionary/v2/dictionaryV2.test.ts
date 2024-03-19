@@ -119,6 +119,36 @@ describe('Individual dictionary V2 test', () => {
     expect(dictionary.queryMapValidByHeight(105)).toBeTruthy();
     expect(dictionary.queryMapValidByHeight(1)).toBeFalsy();
   });
+
+  it('should able to handle convertResponseBlocks return empty array blocks and lastBufferedHeight is undefined', async () => {
+    await (dictionary as any).init();
+    dictionary.updateQueriesMap(mockedDsMap);
+    // mock api return
+    (dictionary as any).dictionaryApi = {
+      post: () => {
+        return {
+          status: 200,
+          data: {
+            result: {
+              blocks: [105, 205, 600, 705],
+              BlockRange: [1, 1000000],
+              GenesisHash: 'mockedGenesisHash',
+            },
+          },
+        };
+      },
+    };
+    // mock convertResponseBlocks
+    (dictionary as any).convertResponseBlocks = () => {
+      return {
+        batchBlocks: [],
+        lastBufferedHeight: undefined,
+      };
+    };
+    const data = await dictionary.getData(1001, 2001, 100, {event: {}, method: {}});
+    expect(data?.lastBufferedHeight).toBe(2001);
+    jest.clearAllMocks();
+  });
 });
 
 describe('determine dictionary V2 version', () => {
