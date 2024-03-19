@@ -5,7 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
 import {IBlock} from '../../types';
-import {dsMap as mockedDsMap} from '../v1/dictionaryV1.test';
+import {dsMap as mockedDsMap} from '../v1/dictionaryV1.spec';
 
 jest.setTimeout(50000);
 

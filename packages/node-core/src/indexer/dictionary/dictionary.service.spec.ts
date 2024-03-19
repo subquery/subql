@@ -5,8 +5,8 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {NodeConfig} from '../..';
 import {DictionaryService} from './dictionary.service';
-import {dsMap as mockedDsMap, TestDictionaryV1} from './v1/dictionaryV1.test';
-import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.test';
+import {dsMap as mockedDsMap, TestDictionaryV1} from './v1/dictionaryV1.spec';
+import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.spec';
 
 class TestDictionaryService extends DictionaryService<any, TestFB> {
   async initDictionaries(): Promise<void> {
