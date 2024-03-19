@@ -23,12 +23,13 @@ jest.mock('@polkadot/api', () => {
     genesisHash:
       '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     consts: jest.fn(),
+    disconnect: jest.fn(),
   }));
   return { ApiPromise, WsProvider: jest.fn() };
 });
 
 const testNetwork = {
-  endpoint: ['https://kusama.api.onfinality.io/public'],
+  endpoint: ['ws://kusama.api.onfinality.io/public-ws'],
   types: {
     TestType: 'u32',
   },
@@ -96,6 +97,7 @@ describe('ApiService', () => {
   });
 
   it('read custom types from project manifest', async () => {
+    const createSpy = jest.spyOn(ApiPromise, 'create');
     apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
@@ -110,7 +112,7 @@ describe('ApiService', () => {
     expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint[0], 2500, {
       'User-Agent': `SubQuery-Node ${version}`,
     });
-    expect(ApiPromise.create).toHaveBeenCalledWith({
+    expect(createSpy).toHaveBeenCalledWith({
       provider: expect.anything(),
       throwOnConnect: expect.anything(),
       noInitWarn: true,
