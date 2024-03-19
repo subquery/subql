@@ -85,11 +85,6 @@ export function yargsBuilder<
                 describe: 'Batch size of blocks to fetch in one round',
                 type: 'number',
               },
-              'dictionary-resolver': {
-                demandOption: false,
-                describe: 'Use SubQuery Network dictionary resolver',
-                type: 'string',
-              },
               'dictionary-timeout': {
                 demandOption: false,
                 describe: 'Max timeout for dictionary query',

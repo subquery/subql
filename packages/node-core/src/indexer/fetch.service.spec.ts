@@ -58,7 +58,6 @@ const nodeConfig = new NodeConfig({
   subquery: '',
   batchSize: 10,
   unfinalizedBlocks: false,
-  dictionaryResolver: '',
   networkDictionary: [''],
 });
 

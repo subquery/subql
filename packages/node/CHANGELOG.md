@@ -5,9 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Changed
 - Updated with node-core to support both versions of dictionaries. Now also support multiple dictionary endpoints, indexer will fetch and switch dictionaries base on available blocks (#2257)
+
+### Removed
+- Special case for dictionary resolver (#2305)
 
 ## [3.9.1] - 2024-03-08
 ### Changed

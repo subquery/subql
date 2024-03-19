@@ -70,7 +70,7 @@ const mockDS = [
   },
 ];
 
-const DICTIONARY_ENDPOINT = `https://api.subquery.network/sq/subquery/polkadot-dictionary`;
+const DICTIONARY_ENDPOINT = `https://gateway.subquery.network/query/QmUGBdhQKnzE8q6x6MPqP6LNZGa8gzXf5gkdmhzWjdFGfL`;
 const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3`;
 
 const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
@@ -109,7 +109,6 @@ const nodeConfig = new NodeConfig({
   subqueryName: 'asdf',
   networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
-  // dictionaryResolver: 'https://kepler-auth.subquery.network'
 });
 // Need longer timeout
 jest.setTimeout(50000);
@@ -297,7 +296,6 @@ describe('Individual dictionary V1 test', () => {
       subqueryName: 'asdf',
       networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionaryTimeout: 10,
-      dictionaryResolver: false,
     });
 
     dictionary = await prepareDictionary(
@@ -322,7 +320,7 @@ describe('Individual dictionary V1 test', () => {
 
     const getDictionaryQuerySpy = jest.spyOn(dictionary as any, 'dictionaryQuery');
 
-    const results = await dictionary.getData(200, 600, 10);
+    await dictionary.getData(200, 600, 10);
 
     expect(getDictionaryQuerySpy).toHaveBeenCalledWith(200, 499, 10, [
       {

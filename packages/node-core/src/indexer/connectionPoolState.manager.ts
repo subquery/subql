@@ -199,6 +199,8 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   async removeFromConnections(endpoint: string): Promise<void> {
     delete this.pool[endpoint];
     if (Object.keys(this.pool).length === 0) {
+      // Cannot throw here because it would be off stack
+      logger.error('No more connections available. Please add healthier endpoints');
       process.exit(1);
     }
   }
