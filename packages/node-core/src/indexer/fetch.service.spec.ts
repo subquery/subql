@@ -5,15 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
 import {range} from 'lodash';
-import {
-  BlockDispatcher,
-  delay,
-  DynamicDsService,
-  IBlockDispatcher,
-  IDictionary,
-  IProjectService,
-  NodeConfig,
-} from '../';
+import {BlockDispatcher, delay, DynamicDsService, IBlockDispatcher, IProjectService, NodeConfig} from '../';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {BaseFetchService} from './fetch.service';
@@ -85,11 +77,7 @@ const projectService = {
   getAllDataSources: jest.fn(() => [mockDs]),
 } as any as IProjectService<any>;
 
-const dynamicDsService = {
-  deleteTempDsRecords: (height: number) => {
-    /* Nothing */
-  },
-} as DynamicDsService<any>;
+const dynamicDsService = {} as DynamicDsService<any>;
 
 const getDictionaryService = () =>
   ({
