@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [7.4.3] - 2024-03-15
 ### Changed
 - Update connection retry logic and add backoff to fetch blocks retries (#2301)
+- Optimise metadata query when dealing with a large number of dynamic datasources that regularly increase (#2302)
 
 ## [7.4.2] - 2024-03-14
 ### Fixed

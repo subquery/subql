@@ -13,7 +13,7 @@ import {
   IBlockDispatcher,
   IProjectService,
   NodeConfig,
-} from '..';
+} from '../';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {BaseFetchService} from './fetch.service';
 
@@ -82,11 +82,7 @@ const mockDs: BaseDataSource = {
   },
 };
 
-const dynamicDsService = {
-  deleteTempDsRecords: (height: number) => {
-    /* Nothing */
-  },
-} as DynamicDsService<any>;
+const dynamicDsService = {} as DynamicDsService<any>;
 
 const getDictionaryService = () =>
   ({

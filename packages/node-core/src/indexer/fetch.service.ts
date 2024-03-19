@@ -392,7 +392,6 @@ export abstract class BaseFetchService<
   }
 
   resetForNewDs(blockHeight: number): void {
-    this.dynamicDsService.deleteTempDsRecords(blockHeight);
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
