@@ -25,8 +25,15 @@ jobs:
         with:
           fetch-depth: 100
 
+      # Get the commit message, workflow_dispatch doesn't contain it so we need to get it through git cli
       - id: step1
-        run: echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "${{ github.event.head_commit.message }}" ]
+          then
+            echo "commit-messagae=${{ github.event.head_commit.message }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
+          fi
 
   Build-Publish:
     name: Build-Publish
