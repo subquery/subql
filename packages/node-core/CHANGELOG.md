@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fields called `createdAt` or `updatedAt` having their type converted to timestamps
+
+### Removed
+- Unused `timestamps-field` flag (#2310)
+
 ## [7.4.3] - 2024-03-15
 ### Changed
 - Update connection retry logic and add backoff to fetch blocks retries (#2301)

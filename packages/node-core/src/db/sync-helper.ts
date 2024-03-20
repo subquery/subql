@@ -54,8 +54,6 @@ export interface NotifyTriggerPayload {
 
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
-const timestampKeys = ['created_at', 'updated_at'];
-
 const byTagOrder = (a: [keyof SmartTags, any], b: [keyof SmartTags, any]) => {
   return tagOrder[a[0]] - tagOrder[b[0]];
 };
@@ -407,10 +405,6 @@ export function generateCreateTableQuery(
     const attr = attributes[key];
 
     assert(attr.field, 'Expected field to be set on attribute');
-
-    if (timestampKeys.find((k) => k === attr.field)) {
-      attr.type = 'timestamp with time zone';
-    }
 
     const columnDefinition = `"${attr.field}" ${formatAttributes(attr, schema, withoutForeignKey)}`;
 

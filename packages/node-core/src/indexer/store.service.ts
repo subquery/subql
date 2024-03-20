@@ -225,8 +225,7 @@ export class StoreService {
       underscored: true,
       comment: model.description,
       freezeTableName: false,
-      createdAt: this.config.timestampField,
-      updatedAt: this.config.timestampField,
+      timestamps: false,
       schema,
       indexes,
     });
