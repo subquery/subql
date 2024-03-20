@@ -70,3 +70,9 @@ jobs:
               annotations: none
               coverage-file: report.json
               base-coverage-file: report.json
+
+        - name: Archive code coverage results
+          uses: actions/upload-artifact@v4
+          with:
+            name: code-coverage-report
+            path: report.json
