@@ -119,9 +119,6 @@ export abstract class DictionaryV2<
     if (!conditions) {
       return undefined;
     }
-
-    numberToHex();
-
     const requestData = {
       jsonrpc: '2.0',
       method: BLOCKS_QUERY_METHOD,
