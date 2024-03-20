@@ -4,8 +4,8 @@ on:
     paths-ignore:
       - '.github/workflows/**'
 jobs:
-  pr:
-    name: pr
+  code-style:
+    name: code-style
     runs-on: ubuntu-latest
     env:
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
@@ -24,6 +24,55 @@ jobs:
       run: yarn pretty-quick --check --pattern 'packages/*/src/**/*' --branch origin/main
     - name: lint
       run: yarn lint
-    - name: test
-      run: yarn test:docker
 
+  coverage:
+    name: Coverage report
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: localhost
+      DB_PORT: 5432
+    steps:
+        - uses: actions/checkout@v4
+
+        - name: Use Node 18
+          uses: actions/setup-node@v4
+          with:
+              node-version: 18
+
+        - name: install dependencies
+          run: yarn
+
+        - name: build
+          run: yarn build
+
+        - uses: artiomtr/jest-coverage-report-action@v2
+          with:
+              github-token: ${{ secrets.GITHUB_TOKEN }}
+              skip-step: install
+              package-manager: yarn
+              working-directory: .
+              test-script: yarn test:ci
+              annotations: none
+              # coverage-file: report.json
+              base-coverage-file: report-main.json
+
+        - name: Archive code coverage results
+          uses: actions/upload-artifact@v4
+          with:
+            name: code-coverage-report
+            path: report.json
