@@ -28,14 +28,14 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
   private useStartHeight = true;
 
   constructor(
-    readonly dictionaryEndpoint: string | undefined,
+    readonly dictionaryEndpoint: string,
     protected chainId: string,
     protected readonly nodeConfig: NodeConfig,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
     protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
   ) {
-    super(dictionaryEndpoint, chainId, nodeConfig, eventEmitter);
+    super(chainId, nodeConfig, eventEmitter);
 
     this._client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
@@ -75,7 +75,7 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
         await this.init();
       }
       logger.error(err, `Failed to get dictionary metadata`);
-      return;
+      throw err;
     }
   }
 

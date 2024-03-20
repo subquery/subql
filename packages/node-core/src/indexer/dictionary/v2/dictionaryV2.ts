@@ -88,7 +88,7 @@ export abstract class DictionaryV2<
     protected readonly nodeConfig: NodeConfig,
     protected readonly eventEmitter: EventEmitter2
   ) {
-    super(dictionaryEndpoint, chainId, nodeConfig, eventEmitter);
+    super(chainId, nodeConfig, eventEmitter);
     this.dictionaryApi = axios.create({
       baseURL: dictionaryEndpoint,
     });
