@@ -72,12 +72,11 @@ const mockDs: BaseDataSource = {
   },
 };
 
+const dynamicDsService = {} as DynamicDsService<any>;
 const projectService = {
   getStartBlockFromDataSources: jest.fn(() => mockDs.startBlock),
   getAllDataSources: jest.fn(() => [mockDs]),
 } as any as IProjectService<any>;
-
-const dynamicDsService = {} as DynamicDsService<any>;
 
 const getDictionaryService = () =>
   ({
