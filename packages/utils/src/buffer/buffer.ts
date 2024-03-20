@@ -6,6 +6,7 @@ export {
   hexToU8a,
   bufferToU8a,
   numberToU8a,
+  numberToHex,
   u8aToHex,
   u8aConcat,
   u8aToBuffer,

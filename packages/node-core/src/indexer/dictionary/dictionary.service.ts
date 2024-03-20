@@ -5,6 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
+import {IProjectNetworkConfig} from '@subql/types-core';
 import fetch from 'cross-fetch';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
@@ -154,5 +155,21 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       logger.error(error, 'An error occurred while fetching the dictionary:');
       return [];
     }
+  }
+
+  protected async getDictionaryEndpoints(
+    networkFamily: NETWORK_FAMILY,
+    network: IProjectNetworkConfig
+  ): Promise<string[]> {
+    const registryDictionaries = await this.resolveDictionary(
+      networkFamily,
+      network.chainId,
+      this.nodeConfig.dictionaryRegistry
+    );
+
+    const dictionaryEndpoints: string[] = (
+      !Array.isArray(network.dictionary) ? (!network.dictionary ? [] : [network.dictionary]) : network.dictionary
+    ).concat(registryDictionaries);
+    return dictionaryEndpoints;
   }
 }

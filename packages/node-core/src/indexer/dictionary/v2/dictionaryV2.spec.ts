@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {numberToU8a, numberToHex} from '@subql/utils';
 import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
 import {IBlock} from '../../types';
@@ -117,6 +118,36 @@ describe('Individual dictionary V2 test', () => {
     expect(dictionary.queryMapValidByHeight(105)).toBeTruthy();
     expect(dictionary.queryMapValidByHeight(1)).toBeFalsy();
   });
+
+  it('should able to handle convertResponseBlocks return empty array blocks and lastBufferedHeight is undefined', async () => {
+    await (dictionary as any).init();
+    dictionary.updateQueriesMap(mockedDsMap);
+    // mock api return
+    (dictionary as any).dictionaryApi = {
+      post: () => {
+        return {
+          status: 200,
+          data: {
+            result: {
+              blocks: [105, 205, 600, 705],
+              BlockRange: [1, 1000000],
+              GenesisHash: 'mockedGenesisHash',
+            },
+          },
+        };
+      },
+    };
+    // mock convertResponseBlocks
+    (dictionary as any).convertResponseBlocks = () => {
+      return {
+        batchBlocks: [],
+        lastBufferedHeight: undefined,
+      };
+    };
+    const data = await dictionary.getData(1001, 2001, 100, {event: {}, method: {}});
+    expect(data?.lastBufferedHeight).toBe(2001);
+    jest.clearAllMocks();
+  });
 });
 
 describe('determine dictionary V2 version', () => {
@@ -129,4 +160,15 @@ describe('determine dictionary V2 version', () => {
     );
     await expect((dictionaryV2 as any).init()).rejects.toThrow();
   });
+});
+
+it('in getData, should hex number correctly', () => {
+  const from = 10000;
+  const to = 9999999;
+  // Use ethers.utils should have same output
+  // expect(utils.hexValue(from)).toBe(numberToHex(from))
+  // expect(utils.hexValue(to)).toBe(numberToHex(to))
+  numberToU8a();
+  expect(numberToHex(from)).toBe('0x2710');
+  expect(numberToHex(to)).toBe('0x98967f');
 });
