@@ -68,7 +68,7 @@ jobs:
               working-directory: .
               test-script: yarn test:ci
               annotations: none
-              coverage-file: report.json
+              # coverage-file: report.json
               base-coverage-file: report-main.json
 
         - name: Archive code coverage results
