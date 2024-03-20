@@ -76,9 +76,9 @@ async function publishRelease(releaseInfo) {
         core.setFailed(err)
     })
 
-    console.log("Release Created...")  
+    console.log("Release Created...")
 }
- 
+
 checkForBetaVersion(version);
 
 const releaseInfo = gatherReleaseInfo(`${myArgs[0]}/CHANGELOG.md`);
