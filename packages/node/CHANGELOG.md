@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.10.0] - 2024-03-20
+### Changed
+- Update `@subql/node-core` with fixes and optimisations
+
 ## [3.9.3] - 2024-03-15
 ### Changed
 - Update `@subql/node-core` to 4.7.3 with retry changes
@@ -1134,7 +1138,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/3.9.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/3.10.0...HEAD
+[3.10.0]: https://github.com/subquery/subql/compare/node/3.9.3...node/3.10.0
 [3.9.3]: https://github.com/subquery/subql/compare/node/3.9.2...node/3.9.3
 [3.9.2]: https://github.com/subquery/subql/compare/node/3.9.1...node/3.9.2
 [3.9.1]: https://github.com/subquery/subql/compare/node/3.9.0...node/3.9.1

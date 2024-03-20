@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.5.0] - 2024-03-20
+### Changed
+- Optimise metadata query when dealing with a large number of dynamic datasources that regularly increase (#2302)
+
 ### Fixed
 - Fields called `createdAt` or `updatedAt` having their type converted to timestamps
 
@@ -15,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [7.4.3] - 2024-03-15
 ### Changed
 - Update connection retry logic and add backoff to fetch blocks retries (#2301)
-- Optimise metadata query when dealing with a large number of dynamic datasources that regularly increase (#2302)
 
 ## [7.4.2] - 2024-03-14
 ### Fixed
@@ -611,7 +614,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.4.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.5.0...HEAD
+[7.5.0]: https://github.com/subquery/subql/compare/node-core/7.4.3...node-core/7.5.0
 [7.4.3]: https://github.com/subquery/subql/compare/node-core/7.4.2...node-core/7.4.3
 [7.4.2]: https://github.com/subquery/subql/compare/node-core/7.4.1...node-core/7.4.2
 [7.4.1]: https://github.com/subquery/subql/compare/node-core/7.4.0...node-core/7.4.1
