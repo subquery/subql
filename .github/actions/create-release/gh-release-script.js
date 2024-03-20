@@ -70,14 +70,15 @@ async function publishRelease(releaseInfo) {
         name: `[${version}] ${repoName}`,
         repo: 'subql',
         tag_name: `${packageName[1]}/${version}`,
+        target_commitish: `${myArgs[1]}`,
         body: releaseInfo
     }).catch( err => {
         core.setFailed(err)
     })
 
-    console.log("Release Created...")  
+    console.log("Release Created...")
 }
- 
+
 checkForBetaVersion(version);
 
 const releaseInfo = gatherReleaseInfo(`${myArgs[0]}/CHANGELOG.md`);

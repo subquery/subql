@@ -7,36 +7,33 @@ on:
       - '.github/workflows/**'
   workflow_dispatch:
 
+concurrency:
+  # Same group as prerelease
+  group: publish
+  cancel-in-progress: false
+
 jobs:
+
+  # This gets the commit message because workflow dispatch doesnt set: github.event.head_commit.message
   pre-ci:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
       commit-message: ${{ steps.step1.outputs.commit-message }}
     steps:
-      - name: 'Block Concurrent Executions'
-        uses: softprops/turnstyle@v1
-        with:
-          poll-interval-seconds: 10
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 100
 
+      # Get the commit message, workflow_dispatch doesn't contain it so we need to get it through git cli
       - id: step1
-        run: echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
-
-      - run: echo "$(git log -1 --pretty=%B)"
-
-  info:
-    runs-on: ubuntu-latest
-    needs: pre-ci
-    env:
-      OUTPUT1: ${{needs.pre-ci.outputs.commit-message}}
-    steps:
-      - run: echo "$OUTPUT1"\
+        run: |
+          if [ -n "${{ github.event.head_commit.message }}" ]
+          then
+            echo "commit-messagae=${{ github.event.head_commit.message }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
+          fi
 
   Build-Publish:
     name: Build-Publish
