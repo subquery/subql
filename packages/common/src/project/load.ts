@@ -3,12 +3,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import {CommonProjectManifestV1_0_0Impl} from '@subql/common';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
+import {CommonProjectManifestV1_0_0Impl} from '../';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsYamlOrJSON} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
