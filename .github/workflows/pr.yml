@@ -68,5 +68,5 @@ jobs:
               working-directory: .
               test-script: yarn test:ci
               annotations: none
-              # TODO remvoe this after merging to main
-              base-coverage-file: ./report-main.json
+              coverage-file: report.json
+              base-coverage-file: report.json
