@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Graphql comments not being escaped (#2299)
+- Fields called `createdAt` or `updatedAt` having their type converted to timestamps (#2310)
 
 ### Changed
 - Update connection retry logic and add backoff to fetch blocks retries (#2301)
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - `@subql/apollo-links` for resolving dictionary endpoints and matching `dictionary-resolver` flag (#2305)
+- Unused `timestamps-field` flag (#2310)
 
 ## [7.4.1] - 2024-03-08
 ### Fixed
