@@ -17,7 +17,6 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   metadataValid: boolean | undefined;
 
   constructor(
-    readonly dictionaryEndpoint: string | undefined,
     protected chainId: string,
     protected readonly nodeConfig: NodeConfig,
     protected readonly eventEmitter: EventEmitter2
@@ -47,7 +46,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   }
 
   protected get useDictionary(): boolean {
-    return !!this.dictionaryEndpoint && !!this.metadataValid;
+    return !!this.metadataValid;
   }
 
   protected setDictionaryStartHeight(start: number | undefined): void {
