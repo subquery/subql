@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.11.0] - 2024-03-20
+### Changed
+- Update `@subql/node-core` with fixes and optimisations
+
 ## [3.10.1] - 2024-03-14
 ### Changed
 - Update `@subql/node-core` to 4.7.2 with graphql comments escaping fix
@@ -427,7 +431,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.11.0...HEAD
+[3.11.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.1...node-ethereum/3.11.0
 [3.10.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.0...node-ethereum/3.10.1
 [3.10.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.9.1...node-ethereum/3.10.0
 [3.9.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.9.0...node-ethereum/3.9.1
