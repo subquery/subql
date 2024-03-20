@@ -8,17 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add service to support for dictionary v2 (#2257)
 
-### Fixed
-- Graphql comments not being escaped (#2299)
-- Fields called `createdAt` or `updatedAt` having their type converted to timestamps (#2310)
-
-### Changed
-- Update connection retry logic and add backoff to fetch blocks retries (#2301)
-- Optimise metadata query when dealing with a large number of dynamic datasources that regularly increase (#2302)
-
 ### Removed
 - `@subql/apollo-links` for resolving dictionary endpoints and matching `dictionary-resolver` flag (#2305)
-- Unused `timestamps-field` flag (#2310)
 
 ## [7.5.0] - 2024-03-20
 ### Changed
