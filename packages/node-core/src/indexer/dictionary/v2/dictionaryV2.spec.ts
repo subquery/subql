@@ -6,7 +6,7 @@ import {numberToU8a, numberToHex} from '@subql/utils';
 import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
 import {IBlock} from '../../types';
-import {dsMap as mockedDsMap} from '../v1/dictionaryV1.test';
+import {dsMap as mockedDsMap} from '../v1/dictionaryV1.spec';
 
 jest.setTimeout(50000);
 
@@ -52,7 +52,6 @@ const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
   dictionaryTimeout: 10,
-  dictionaryResolver: false,
 });
 
 describe('Individual dictionary V2 test', () => {

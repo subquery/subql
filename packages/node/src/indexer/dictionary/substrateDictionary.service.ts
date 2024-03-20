@@ -1,16 +1,19 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
-import { NodeConfig, DictionaryService } from '@subql/node-core';
+import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
 import { SpecVersion, SpecVersionDictionary } from './types';
-import { SubstrateDictionaryV1 } from './v1/substrateDictionaryV1';
+import { SubstrateDictionaryV1 } from './v1';
 import { SubstrateDictionaryV2 } from './v2';
+
+const logger = getLogger('SubstrateDictionary');
 
 @Injectable()
 export class SubstrateDictionaryService extends DictionaryService<
@@ -18,7 +21,7 @@ export class SubstrateDictionaryService extends DictionaryService<
   SubstrateBlock
 > {
   async initDictionaries() {
-    let dictionaryV1Endpoints: string[] = [];
+    const dictionariesV1: SubstrateDictionaryV1[] = [];
     const dictionariesV2: SubstrateDictionaryV2[] = [];
 
     if (!this.project) {
@@ -29,6 +32,8 @@ export class SubstrateDictionaryService extends DictionaryService<
       this.project.network.chainId,
       this.nodeConfig.dictionaryRegistry,
     );
+
+    logger.debug(`Dictionary registry endpoints: ${registryDictionaries}`);
 
     const dictionaryEndpoints: string[] = (
       !Array.isArray(this.project.network.dictionary)
@@ -49,35 +54,22 @@ export class SubstrateDictionaryService extends DictionaryService<
         );
         dictionariesV2.push(dictionaryV2);
       } catch (e) {
-        dictionaryV1Endpoints.push(endpoint);
-      }
-    }
-
-    if (this.nodeConfig.dictionaryResolver) {
-      // Create a v1 dictionary with dictionary resolver
-      // future resolver should a URL, and fetched from registryDictionaries
-      dictionaryV1Endpoints = dictionaryV1Endpoints.concat([undefined]);
-    }
-    // TODO, update this after https://github.com/subquery/subql/pull/2305 merged
-    const dictionariesV1 = (
-      await Promise.allSettled(
-        dictionaryV1Endpoints.map((endpoint) =>
-          SubstrateDictionaryV1.create(
+        try {
+          const dictionaryV1 = await SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
             this.eventEmitter,
             this.dsProcessorService.getDsProcessor.bind(this),
             endpoint,
-          ),
-        ),
-      )
-    )
-      .map((r) => {
-        if (r.status === 'fulfilled') {
-          return r.value;
+          );
+          dictionariesV1.push(dictionaryV1);
+        } catch (e) {
+          logger.warn(
+            `Dictionary endpoint "${endpoint}" is not a valid dictionary`,
+          );
         }
-      })
-      .filter((value) => value !== undefined);
+      }
+    }
 
     // v2 should be prioritised
     this.init([...dictionariesV2, ...dictionariesV1]);
@@ -93,27 +85,22 @@ export class SubstrateDictionaryService extends DictionaryService<
     super(chainId ?? project.network.chainId, nodeConfig, eventEmitter);
   }
 
-  async getSpecVersions(): Promise<SpecVersion[]> {
-    const currentDictionary = this._dictionaries[
+  private getV1Dictionary(): SubstrateDictionaryV1 | undefined {
+    // TODO this needs to be removed once Substrate supports V2 dictionaries
+    return this._dictionaries[
       this._currentDictionaryIndex
     ] as SubstrateDictionaryV1;
-    if (!currentDictionary) {
-      throw new Error(
-        `Runtime service getSpecVersions use current dictionary failed`,
-      );
-    }
-    return currentDictionary.getSpecVersions();
+  }
+
+  async getSpecVersions(): Promise<SpecVersion[]> {
+    const dict = this.getV1Dictionary();
+    assert(dict, `getSpecVersions failed: unable to get v1 dictionary`);
+    return dict.getSpecVersions();
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
-    const currentDictionary = this._dictionaries[
-      this._currentDictionaryIndex
-    ] as SubstrateDictionaryV1;
-    if (!currentDictionary) {
-      throw new Error(
-        `Runtime service parseSpecVersions use current dictionary failed`,
-      );
-    }
-    return currentDictionary.parseSpecVersions(raw);
+    const dict = this.getV1Dictionary();
+    assert(dict, `parseSpecVersions failed: unable to get v1 dictionary`);
+    return dict.parseSpecVersions(raw);
   }
 }

@@ -47,7 +47,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   }
 
   protected get useDictionary(): boolean {
-    return (!!this.dictionaryEndpoint || !!this.nodeConfig.dictionaryResolver) && !!this.metadataValid;
+    return !!this.dictionaryEndpoint && !!this.metadataValid;
   }
 
   protected setDictionaryStartHeight(start: number | undefined): void {

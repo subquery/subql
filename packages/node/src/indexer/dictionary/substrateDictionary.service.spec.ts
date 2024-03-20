@@ -43,12 +43,12 @@ describe('Substrate Dictionary service', function () {
       subqueryName: 'asdf',
       networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionaryTimeout: 10,
-      dictionaryResolver: false,
       networkDictionary: ['http://mock-dictionary-v2'],
+      dictionaryRegistry: 'false',
     });
     const project = testSubqueryProject(
       ['wss://polkadot.api.onfinality.io/public-ws'],
-      'polkadot',
+      '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     );
     const dsProcessor = new DsProcessorService(project, nodeConfig);
 
@@ -72,10 +72,12 @@ describe('Substrate Dictionary service', function () {
     expect(spyDictionaryV2Create).toHaveBeenCalledTimes(1);
     expect(spyDictionaryV1Create).toHaveBeenCalledTimes(1);
     expect(
-      (dictionaryService as any)._dictionaries[0] instanceof
-        SubstrateDictionaryV1,
+      (dictionaryService as any)._dictionaries.every(
+        (d) => d instanceof SubstrateDictionaryV1,
+      ),
     ).toBeTruthy();
   });
+
   it('should use v2 if init passed', async () => {
     const spyDictionaryV1Create = jest.spyOn(SubstrateDictionaryV1, 'create');
     const mockedResponseData = {

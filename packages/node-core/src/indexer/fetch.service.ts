@@ -126,15 +126,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       setInterval(() => void this.getBestBlockHead(), interval)
     );
 
-    if (this.networkConfig.dictionary || this.nodeConfig.dictionaryResolver) {
-      //  We pass in genesis hash in order validate dictionary metadata, genesisHash should always exist in apiService.
-      //  Call metadata here, other network should align with this
-      //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
-      await this.dictionaryService.initDictionaries();
-      // Update all dictionaries execute before find one usable dictionary
-      this.updateDictionary();
-      // Find one usable dictionary at start
-    }
+    await this.dictionaryService.initDictionaries();
+    // Update all dictionaries execute before find one usable dictionary
+    this.updateDictionary();
+    // Find one usable dictionary at start
 
     await this.preLoopHook({startHeight});
     await this.initBlockDispatcher();
@@ -353,7 +348,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   }
 
   resetForNewDs(blockHeight: number): void {
-    this.dynamicDsService.deleteTempDsRecords(blockHeight);
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }

@@ -1,9 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ApolloClient, ApolloLink, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
+import {ApolloClient, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {dictHttpLink} from '@subql/apollo-links';
 import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData as DictionaryV1Metadata} from '@subql/utils';
 import fetch from 'cross-fetch';
@@ -37,24 +36,10 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
   ) {
     super(dictionaryEndpoint, chainId, nodeConfig, eventEmitter);
-    let link: ApolloLink;
-
-    if (this.nodeConfig.dictionaryResolver) {
-      const authHttpLink = dictHttpLink({
-        authUrl: this.nodeConfig.dictionaryResolver,
-        chainId,
-        logger,
-        httpOptions: {fetch},
-        fallbackServiceUrl: dictionaryEndpoint,
-      });
-      link = authHttpLink.link;
-    } else {
-      link = new HttpLink({uri: dictionaryEndpoint, fetch});
-    }
 
     this._client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
-      link,
+      link: new HttpLink({uri: dictionaryEndpoint, fetch}),
       defaultOptions: {
         watchQuery: {
           fetchPolicy: 'no-cache',

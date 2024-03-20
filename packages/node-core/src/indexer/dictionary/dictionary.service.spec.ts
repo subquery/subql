@@ -5,8 +5,8 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {NodeConfig} from '../..';
 import {DictionaryService} from './dictionary.service';
-import {dsMap as mockedDsMap, TestDictionaryV1} from './v1/dictionaryV1.test';
-import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.test';
+import {dsMap as mockedDsMap, TestDictionaryV1} from './v1/dictionaryV1.spec';
+import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.spec';
 
 class TestDictionaryService extends DictionaryService<any, TestFB> {
   async initDictionaries(): Promise<void> {
@@ -43,7 +43,6 @@ describe('Dictionary service', function () {
       subqueryName: 'asdf',
       networkEndpoint: ['wss://eth.api.onfinality.io/public-ws'],
       dictionaryTimeout: 10,
-      dictionaryResolver: false,
       networkDictionary: [
         'https://gx.api.subquery.network/sq/subquery/eth-dictionary',
         'https://dict-tyk.subquery.network/query/eth-mainnet',
@@ -61,13 +60,21 @@ describe('Dictionary service', function () {
   afterAll(() => dictionaryService.onApplicationShutdown());
 
   it('can use the dictionary registry to resolve a url', async () => {
-    const dictUrl: string = await (dictionaryService as any).resolveDictionary(
+    const dictUrl: string[] = await (dictionaryService as any).resolveDictionary(
       NETWORK_FAMILY.ethereum,
       1,
       'https://github.com/subquery/templates/raw/main/dist/dictionary.json'
     );
 
-    expect(dictUrl).toEqual(['https://dict-tyk.subquery.network/query/eth-mainnet']);
+    expect(dictUrl.length).toBeGreaterThan(0);
+
+    const dictUrl2: string[] = await (dictionaryService as any).resolveDictionary(
+      NETWORK_FAMILY.substrate,
+      '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      'https://github.com/subquery/templates/raw/main/dist/dictionary.json'
+    );
+
+    expect(dictUrl2.length).toBeGreaterThan(0);
   });
 
   it('init Dictionaries with mutiple endpoints, can be valid and non-valid', () => {

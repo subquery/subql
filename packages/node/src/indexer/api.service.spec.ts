@@ -23,12 +23,13 @@ jest.mock('@polkadot/api', () => {
     genesisHash:
       '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     consts: jest.fn(),
+    disconnect: jest.fn(),
   }));
   return { ApiPromise, WsProvider: jest.fn() };
 });
 
 const testNetwork = {
-  endpoint: ['wss://kusama.api.onfinality.io/public-ws'],
+  endpoint: ['ws://kusama.api.onfinality.io/public-ws'],
   types: {
     TestType: 'u32',
   },
@@ -54,7 +55,7 @@ const testNetwork = {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
+  networkEndpoint: ['https://polkadot.api.onfinality.io/public'],
   dictionaryTimeout: 10,
 });
 
@@ -83,10 +84,21 @@ function testSubqueryProject(): SubqueryProject {
 }
 
 describe('ApiService', () => {
-  it('read custom types from project manifest', async () => {
-    const project = testSubqueryProject();
+  let project: SubqueryProject;
+  let apiService: ApiService;
 
-    const apiService = new ApiService(
+  beforeEach(() => {
+    project = testSubqueryProject();
+  });
+
+  afterEach(async () => {
+    // Disconnect apis
+    await apiService?.onApplicationShutdown();
+  });
+
+  it('read custom types from project manifest', async () => {
+    const createSpy = jest.spyOn(ApiPromise, 'create');
+    apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
@@ -100,7 +112,7 @@ describe('ApiService', () => {
     expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint[0], 2500, {
       'User-Agent': `SubQuery-Node ${version}`,
     });
-    expect(ApiPromise.create).toHaveBeenCalledWith({
+    expect(createSpy).toHaveBeenCalledWith({
       provider: expect.anything(),
       throwOnConnect: expect.anything(),
       noInitWarn: true,
@@ -109,8 +121,6 @@ describe('ApiService', () => {
   });
 
   it('throws if expected genesis hash doesnt match', async () => {
-    const project = testSubqueryProject();
-
     // Now after manifest 1.0.0, will use chainId instead of genesisHash
     (project.network as any).chainId = '0x';
 
@@ -119,7 +129,7 @@ describe('ApiService', () => {
       subquery: 'example',
     });
 
-    const apiService = new ApiService(
+    apiService = new ApiService(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,

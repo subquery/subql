@@ -23,6 +23,10 @@ describe('ApiPromiseConnection', () => {
     jest.spyOn(httpProvider, 'send');
   });
 
+  afterEach(async () => {
+    await Promise.all([wsProvider?.disconnect(), httpProvider?.disconnect()]);
+  });
+
   it('should not make duplicate requests for state_getRuntimeVersion on wsProvider', async () => {
     const cachedProvider = createCachedProvider(wsProvider);
 

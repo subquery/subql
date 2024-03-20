@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Update connection retry logic and add backoff to fetch blocks retries (#2301)
+- Optimise metadata query when dealing with a large number of dynamic datasources that regularly increase (#2302)
+
+### Removed
+- `@subql/apollo-links` for resolving dictionary endpoints and matching `dictionary-resolver` flag (#2305)
 
 ## [7.4.1] - 2024-03-08
 ### Fixed
