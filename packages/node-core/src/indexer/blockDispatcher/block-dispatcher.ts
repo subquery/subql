@@ -160,7 +160,7 @@ export abstract class BlockDispatcher<B, DS>
                 // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
                 // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
                 const peeked = this.queue.peek();
-                if (bufferedHeight > this._latestBufferedHeight || (peeked && peeked < blockHeight)) {
+                if (bufferedHeight > this._latestBufferedHeight || (peeked && getBlockHeight(peeked) < blockHeight)) {
                   logger.info(`Queue was reset for new DS, discarding fetched blocks`);
                   return;
                 }

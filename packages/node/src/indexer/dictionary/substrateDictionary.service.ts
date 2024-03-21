@@ -48,7 +48,6 @@ export class SubstrateDictionaryService extends DictionaryService<
         const dictionaryV2 = await SubstrateDictionaryV2.create(
           endpoint,
           this.nodeConfig,
-          this.eventEmitter,
           this.project,
           this.project.network.chainId,
         );
@@ -58,7 +57,6 @@ export class SubstrateDictionaryService extends DictionaryService<
           const dictionaryV1 = await SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
-            this.eventEmitter,
             this.dsProcessorService.getDsProcessor.bind(this),
             endpoint,
           );

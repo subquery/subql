@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { gql } from '@apollo/client/core';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   isCustomDs,
   isRuntimeDs,
@@ -187,25 +186,18 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
   constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     protected getDsProcessor: (
       ds: SubstrateDatasource,
     ) => DsProcessor<SubstrateDatasource>,
     dictionaryUrl?: string,
     chainId?: string,
   ) {
-    super(
-      dictionaryUrl,
-      chainId ?? project.network.chainId,
-      nodeConfig,
-      eventEmitter,
-    );
+    super(dictionaryUrl, chainId ?? project.network.chainId, nodeConfig);
   }
 
   static async create(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     getDsProcessor: (
       ds: SubstrateDatasource,
     ) => DsProcessor<SubstrateDatasource>,
@@ -215,7 +207,6 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
     const dictionary = new SubstrateDictionaryV1(
       project,
       nodeConfig,
-      eventEmitter,
       getDsProcessor,
       dictionaryUrl,
       chainId,

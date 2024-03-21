@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubstrateDataSource } from '@subql/common-substrate';
 import {
   NodeConfig,
@@ -43,29 +42,21 @@ export class SubstrateDictionaryV2 extends DictionaryV2<
   constructor(
     endpoint: string,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     project: SubqueryProject,
     chainId?: string,
   ) {
-    super(
-      endpoint,
-      chainId ?? project.network.chainId,
-      nodeConfig,
-      eventEmitter,
-    );
+    super(endpoint, chainId ?? project.network.chainId, nodeConfig);
   }
 
   static async create(
     endpoint: string,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     project: SubqueryProject,
     chainId?: string,
   ): Promise<SubstrateDictionaryV2> {
     const dictionary = new SubstrateDictionaryV2(
       endpoint,
       nodeConfig,
-      eventEmitter,
       project,
       chainId,
     );
