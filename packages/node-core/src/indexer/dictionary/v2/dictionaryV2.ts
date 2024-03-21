@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {numberToHex} from '@subql/utils';
+import {hexStripZeros, numberToHex} from '@subql/utils';
 import axios, {AxiosInstance} from 'axios';
 import {FieldSelector} from '../';
 import {NodeConfig} from '../../../configure';
@@ -125,9 +125,9 @@ export abstract class DictionaryV2<
       id: 1,
       params: [
         {
-          fromBlock: numberToHex(startBlock),
-          toBlock: numberToHex(queryEndBlock),
-          limit: numberToHex(limit),
+          fromBlock: hexStripZeros(numberToHex(startBlock)),
+          toBlock: hexStripZeros(numberToHex(queryEndBlock)),
+          limit: hexStripZeros(numberToHex(limit)),
           blockFilter: conditions,
           fieldSelector,
         },
