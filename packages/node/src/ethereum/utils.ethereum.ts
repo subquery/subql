@@ -1,9 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { Block } from '@ethersproject/abstract-provider';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
+import { Header, IBlock } from '@subql/node-core';
 import {
   ApiWrapper,
   EthereumBlock,
@@ -11,8 +13,10 @@ import {
   EthereumReceipt,
   EthereumResult,
   EthereumTransaction,
+  LightEthereumBlock,
 } from '@subql/types-ethereum';
 import { omit } from 'lodash';
+import { BlockContent } from '../indexer/types';
 
 export function calcInterval(api: ApiWrapper): number {
   // TODO find a way to get this from the blockchain
@@ -26,7 +30,7 @@ function handleAddress(value: string): string | null {
   return getAddress(value);
 }
 
-function handleNumber(value: string | number): BigNumber {
+export function handleNumber(value: string | number): BigNumber {
   if (value === undefined) {
     return Zero;
   }
@@ -58,6 +62,16 @@ export function formatBlock(block: Record<string, any>): EthereumBlock {
     logs: [], // Filled in at AvalancheBlockWrapped constructor
   } as EthereumBlock;
 }
+
+export function formatBlockUtil<
+  B extends EthereumBlock | LightEthereumBlock = EthereumBlock,
+>(block: B): IBlock<B> {
+  return {
+    block,
+    getHeader: () => ethereumBlockToHeader(block),
+  };
+}
+
 export function formatLog(
   log: Omit<
     EthereumLog<EthereumResult> | EthereumLog,
@@ -138,4 +152,12 @@ export function formatReceipt<R extends EthereumReceipt = EthereumReceipt>(
       return JSON.stringify(omit(this, ['toJSON']));
     },
   } as unknown as R;
+}
+
+export function ethereumBlockToHeader(block: BlockContent | Block): Header {
+  return {
+    blockHeight: block.number,
+    blockHash: block.hash,
+    parentHash: block.parentHash,
+  };
 }

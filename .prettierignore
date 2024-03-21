@@ -9,3 +9,5 @@
 *.tgz
 *.cmd
 *.sh
+generate-project*.yaml
+*.proto

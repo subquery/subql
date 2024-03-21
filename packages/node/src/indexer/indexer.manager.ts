@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -20,7 +20,7 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
-  ApiService,
+  IBlock,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
@@ -33,7 +33,7 @@ import {
   LightEthereumLog,
 } from '@subql/types-ethereum';
 import { EthereumProjectDs } from '../configure/SubqueryProject';
-import { EthereumApi } from '../ethereum';
+import { EthereumApi, EthereumApiService } from '../ethereum';
 import {
   filterBlocksProcessor,
   filterLogsProcessor,
@@ -50,14 +50,12 @@ import { SandboxService } from './sandbox.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-const logger = getLogger('indexer');
-
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
   SafeEthProvider,
   EthereumApi,
   BlockContent,
-  ApiService,
+  EthereumApiService,
   SubqlEthereumDataSource,
   SubqlEthereumCustomDataSource,
   typeof FilterTypeMap,
@@ -69,7 +67,7 @@ export class IndexerManager extends BaseIndexerManager<
   protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
 
   constructor(
-    apiService: ApiService,
+    apiService: EthereumApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService,
     dsProcessorService: DsProcessorService,
@@ -90,11 +88,11 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: BlockContent,
+    block: IBlock<BlockContent>,
     dataSources: SubqlEthereumDataSource[],
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
-      this.getApi(block),
+      this.getApi(block.block),
     );
   }
 

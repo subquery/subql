@@ -11,14 +11,18 @@ import {
   RateLimitError,
   TimeoutError,
   IApiConnectionSpecific,
+  IBlock,
 } from '@subql/node-core';
 import { EthereumBlock, LightEthereumBlock } from '@subql/types-ethereum';
 import { EthereumApi } from './api.ethereum';
 import SafeEthProvider from './safe-api';
 
 export type FetchFunc =
-  | ((api: EthereumApi, batch: number[]) => Promise<EthereumBlock[]>)
-  | ((api: EthereumApi, batch: number[]) => Promise<LightEthereumBlock[]>);
+  | ((api: EthereumApi, batch: number[]) => Promise<IBlock<EthereumBlock>[]>)
+  | ((
+      api: EthereumApi,
+      batch: number[],
+    ) => Promise<IBlock<LightEthereumBlock>[]>);
 
 // We use a function to get the fetch function because it can change depending on the skipBlocks feature
 export type GetFetchFunc = () => FetchFunc;
@@ -28,7 +32,7 @@ export class EthereumApiConnection
     IApiConnectionSpecific<
       EthereumApi,
       SafeEthProvider,
-      EthereumBlock[] | LightEthereumBlock[]
+      IBlock<EthereumBlock>[] | IBlock<LightEthereumBlock>[]
     >
 {
   readonly networkMeta: NetworkMetadataPayload;
@@ -77,7 +81,7 @@ export class EthereumApiConnection
 
   async fetchBlocks(
     heights: number[],
-  ): Promise<EthereumBlock[] | LightEthereumBlock[]> {
+  ): Promise<IBlock<EthereumBlock>[] | IBlock<LightEthereumBlock>[]> {
     const blocks = await this.fetchBlocksBatches()(this.unsafeApi, heights);
     return blocks;
   }

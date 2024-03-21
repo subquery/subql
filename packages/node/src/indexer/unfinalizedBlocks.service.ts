@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Block } from '@ethersproject/abstract-provider';
 import { Injectable } from '@nestjs/common';
 import {
   ApiService,
@@ -14,23 +13,15 @@ import {
   profiler,
   POI_NOT_ENABLED_ERROR_MESSAGE,
 } from '@subql/node-core';
-import { EthereumBlock } from '@subql/types-ethereum';
 import { last } from 'lodash';
 import { EthereumNodeConfig } from '../configure/NodeConfig';
+import { ethereumBlockToHeader } from '../ethereum/utils.ethereum';
 import { BlockContent } from './types';
 
 const logger = getLogger('UnfinalizedBlocksService');
 
-export function blockToHeader(block: BlockContent | Block): Header {
-  return {
-    blockHeight: block.number,
-    blockHash: block.hash,
-    parentHash: block.parentHash,
-  };
-}
-
 @Injectable()
-export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<EthereumBlock> {
+export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockContent> {
   private supportsFinalization?: boolean;
   private startupCheck = true;
 
@@ -146,25 +137,20 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Ether
   }
 
   @mainThreadOnly()
-  protected blockToHeader(block: BlockContent): Header {
-    return blockToHeader(block);
-  }
-
-  @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
     const finalizedBlock = await this.apiService.api.getFinalizedBlock();
-    return blockToHeader(finalizedBlock);
+    return ethereumBlockToHeader(finalizedBlock);
   }
 
   @mainThreadOnly()
   protected async getHeaderForHash(hash: string): Promise<Header> {
     const block = await this.apiService.api.getBlockByHeightOrHash(hash);
-    return blockToHeader(block);
+    return ethereumBlockToHeader(block);
   }
 
   @mainThreadOnly()
   protected async getHeaderForHeight(height: number): Promise<Header> {
     const block = await this.apiService.api.getBlockByHeightOrHash(height);
-    return blockToHeader(block);
+    return ethereumBlockToHeader(block);
   }
 }

@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import {
   Header,
   HostUnfinalizedBlocks,
+  IBlock,
   IUnfinalizedBlocksService,
 } from '@subql/node-core';
 import { BlockContent } from '../types';
@@ -24,16 +25,10 @@ export class WorkerUnfinalizedBlocksService
     return this.host.unfinalizedBlocksProcess(header);
   }
 
-  async processUnfinalizedBlocks({
-    hash,
-    number,
-    parentHash,
-  }: BlockContent): Promise<number | null> {
-    return this.host.unfinalizedBlocksProcess({
-      blockHash: hash,
-      blockHeight: number,
-      parentHash,
-    });
+  async processUnfinalizedBlocks(
+    block: IBlock<BlockContent>,
+  ): Promise<number | null> {
+    return this.host.unfinalizedBlocksProcess(block.getHeader());
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async

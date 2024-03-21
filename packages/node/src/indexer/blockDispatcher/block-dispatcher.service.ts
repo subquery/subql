@@ -9,12 +9,12 @@ import {
   StoreCacheService,
   StoreService,
   IProjectService,
-  PoiService,
   BlockDispatcher,
   ProcessBlockResponse,
   ApiService,
   IProjectUpgradeService,
   PoiSyncService,
+  IBlock,
 } from '@subql/node-core';
 import {
   EthereumProjectDs,
@@ -63,16 +63,12 @@ export class BlockDispatcherService
     );
   }
 
-  protected getBlockHeight(block: BlockContent): number {
-    return block.number;
-  }
-
   protected async indexBlock(
-    block: BlockContent,
+    block: IBlock<BlockContent>,
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getDataSources(this.getBlockHeight(block)),
+      await this.projectService.getDataSources(block.getHeader().blockHeight),
     );
   }
 }

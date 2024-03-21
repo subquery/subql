@@ -14,6 +14,7 @@ import { EthereumApi } from './api.ethereum';
 import {
   filterLogsProcessor,
   filterTransactionsProcessor,
+  isFullBlock,
 } from './block.ethereum';
 
 // Add api key to work
@@ -49,7 +50,7 @@ describe('Api.ethereum', () => {
   const fetchBlock = async (height: number) => {
     const block = await ethApi.fetchBlock(height);
 
-    return block as EthereumBlock;
+    return block.block as EthereumBlock;
   };
 
   beforeEach(async () => {
@@ -355,5 +356,19 @@ describe('Api.ethereum', () => {
     await expect(ethApi.fetchBlock(mockBlockNumber)).rejects.toThrow(
       `Log BlockHash does not match block: ${mockBlockNumber}`,
     );
+  });
+
+  it('Should able to check is fullBlock', async () => {
+    // block with transactions
+    const lightBlock = (await (ethApi as any).fetchLightBlock(16258633)).block;
+    expect(isFullBlock(blockData)).toBeTruthy();
+    expect(isFullBlock(lightBlock)).toBeFalsy();
+
+    // block without transaction
+    const block10001 = (await (ethApi as any).fetchBlock(10001)).block;
+    const lightBlock10001 = (await (ethApi as any).fetchLightBlock(10001))
+      .block;
+    expect(isFullBlock(block10001)).toBeFalsy();
+    expect(isFullBlock(lightBlock10001)).toBeFalsy();
   });
 });

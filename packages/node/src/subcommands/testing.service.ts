@@ -9,6 +9,7 @@ import {
   TestingService as BaseTestingService,
   NestLogger,
   TestRunner,
+  IBlock,
 } from '@subql/node-core';
 import {
   EthereumProjectDs,
@@ -63,7 +64,7 @@ export class TestingService extends BaseTestingService<
   }
 
   async indexBlock(
-    block: BlockContent,
+    block: IBlock<BlockContent>,
     handler: string,
     indexerManager: IndexerManager,
   ): Promise<void> {

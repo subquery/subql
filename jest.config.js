@@ -81,7 +81,7 @@ module.exports = {
   // moduleNameMapper: {},
   moduleNameMapper: {
     '@subql/common-ethereum': '<rootDir>/packages/common-ethereum/src',
-    '@subql/types-ethereum': '<rootDir>/packages/types/src',
+    '@subql/types-ethereum': '<rootDir>/packages/types/src'
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

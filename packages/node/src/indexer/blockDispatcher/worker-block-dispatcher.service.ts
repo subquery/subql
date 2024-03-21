@@ -8,7 +8,6 @@ import {
   NodeConfig,
   SmartBatchService,
   StoreService,
-  PoiService,
   StoreCacheService,
   IProjectService,
   WorkerBlockDispatcher,
@@ -18,6 +17,7 @@ import {
   InMemoryCacheService,
   createIndexerWorker,
 } from '@subql/node-core';
+import { EthereumBlock } from '@subql/types-ethereum';
 import {
   EthereumProjectDs,
   SubqueryProject,
@@ -34,7 +34,7 @@ type IndexerWorker = IIndexerWorker & {
 
 @Injectable()
 export class WorkerBlockDispatcherService
-  extends WorkerBlockDispatcher<EthereumProjectDs, IndexerWorker>
+  extends WorkerBlockDispatcher<EthereumProjectDs, IndexerWorker, EthereumBlock>
   implements OnApplicationShutdown
 {
   constructor(
@@ -89,19 +89,6 @@ export class WorkerBlockDispatcherService
     worker: IndexerWorker,
     height: number,
   ): Promise<void> {
-    const start = new Date();
     await worker.fetchBlock(height, null);
-    const end = new Date();
-
-    // const waitTime = end.getTime() - start.getTime();
-    // if (waitTime > 1000) {
-    //   logger.info(
-    //     `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
-    //   );
-    // } else if (waitTime > 200) {
-    //   logger.info(
-    //     `Waiting to fetch block ${height}: ${chalk.yellow(`${waitTime}ms`)}`,
-    //   );
-    // }
   }
 }

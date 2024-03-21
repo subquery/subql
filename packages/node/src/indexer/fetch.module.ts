@@ -25,7 +25,7 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './blockDispatcher';
-import { DictionaryService } from './dictionary.service';
+import { EthDictionaryService } from './dictionary/ethDictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
@@ -39,6 +39,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     InMemoryCacheService,
     StoreService,
     StoreCacheService,
+    EthereumApiService,
     {
       provide: ApiService,
       useFactory: async (
@@ -152,13 +153,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     IndexingBenchmarkService,
     PoiBenchmarkService,
     {
-      provide: DictionaryService,
+      provide: EthDictionaryService,
       useFactory: async (
         project: SubqueryProject,
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
+        // eslint-disable-next-line @typescript-eslint/require-await
       ) => {
-        const dictionaryService = await DictionaryService.create(
+        const dictionaryService = new EthDictionaryService(
           project,
           nodeConfig,
           eventEmitter,

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { NodeConfig } from '@subql/node-core';
 import {
   EthereumDatasourceKind,
   EthereumHandlerKind,
@@ -10,8 +11,11 @@ import { GraphQLSchema } from 'graphql';
 import {
   EthereumProjectDsTemplate,
   SubqueryProject,
-} from '../configure/SubqueryProject';
-import { buildDictionaryQueryEntries, FetchService } from './fetch.service';
+} from '../../../configure/SubqueryProject';
+import {
+  buildDictionaryV1QueryEntries,
+  EthDictionaryV1,
+} from './ethDictionaryV1';
 
 // const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
 const HTTP_ENDPOINT = 'https://eth.llamarpc.com';
@@ -53,7 +57,6 @@ const mockTempDs: EthereumProjectDsTemplate[] = [
     },
   },
 ];
-
 function testSubqueryProject(
   endpoint: string,
   ds: any,
@@ -72,7 +75,26 @@ function testSubqueryProject(
   } as any;
 }
 
-describe('Dictionary queries', () => {
+describe('Eth Dictionary V1', () => {
+  it('Can resovle chain aliases', async () => {
+    (EthDictionaryV1.prototype as any).init = jest.fn();
+    const dictionary = await EthDictionaryV1.create(
+      {
+        network: { chainId: '336', dictionary: 'https://foo.bar' } as any,
+      } as any,
+      new NodeConfig({} as any, true),
+      null,
+    );
+
+    expect((dictionary as any).chainId).toBe(
+      '0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108',
+    );
+
+    jest.clearAllMocks();
+  });
+});
+
+describe('buildDictionaryV1QueryEntries', () => {
   describe('Log filters', () => {
     it('Build filter for !null', () => {
       const ds: SubqlRuntimeDatasource = {
@@ -101,7 +123,7 @@ describe('Dictionary queries', () => {
           ],
         },
       };
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
 
       expect(result).toEqual([
         {
@@ -149,7 +171,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
 
       expect(result).toEqual([
         {
@@ -182,7 +204,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -222,7 +244,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -261,7 +283,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -300,7 +322,7 @@ describe('Dictionary queries', () => {
         },
       };
 
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmTransactions',
@@ -337,7 +359,7 @@ describe('Dictionary queries', () => {
           ],
         },
       };
-      const result = buildDictionaryQueryEntries([ds]);
+      const result = buildDictionaryV1QueryEntries([ds]);
       expect(result).toEqual([
         {
           entity: 'evmLogs',
@@ -382,74 +404,67 @@ describe('Dictionary queries', () => {
 
       const dataSources = [ds, ...duplicateDataSources];
 
-      const project = testSubqueryProject(
-        HTTP_ENDPOINT,
-        dataSources,
-        mockTempDs,
-      );
-
-      const fetchService = new FetchService(
-        null,
-        null,
-        null,
-        project,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-      );
-
-      const queryEntry = (fetchService as any).buildDictionaryQueryEntries(
-        dataSources,
-      );
+      const queryEntry = buildDictionaryV1QueryEntries(dataSources);
 
       expect(queryEntry).toEqual([
         {
-          entity: 'evmLogs',
           conditions: [
             {
               field: 'topics0',
+              matcher: 'equalTo',
               value:
                 '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-              matcher: 'equalTo',
             },
           ],
+          entity: 'evmLogs',
         },
         {
-          entity: 'evmLogs',
           conditions: [
             {
               field: 'address',
-              // This is what we're looking to happen with multiple instances of template
-              value: ['address1', 'address2'],
-              matcher: 'in',
+              matcher: 'equalTo',
+              value: 'address1',
             },
             {
               field: 'topics0',
+              matcher: 'equalTo',
               value:
                 '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-              matcher: 'equalTo',
             },
           ],
+          entity: 'evmLogs',
         },
         {
-          entity: 'evmLogs',
           conditions: [
-            // This condition should not be grouped because there is a single instance of the tamplate
             {
               field: 'address',
-              value: 'address3',
               matcher: 'equalTo',
+              value: 'address2',
             },
             {
               field: 'topics0',
-              value:
-                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
               matcher: 'equalTo',
+              value:
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             },
           ],
+          entity: 'evmLogs',
+        },
+        {
+          conditions: [
+            {
+              field: 'address',
+              matcher: 'equalTo',
+              value: 'address3',
+            },
+            {
+              field: 'topics0',
+              matcher: 'equalTo',
+              value:
+                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+            },
+          ],
+          entity: 'evmLogs',
         },
       ]);
     });

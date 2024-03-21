@@ -9,6 +9,7 @@ import {
   getLogger,
   NodeConfig,
   profilerWrap,
+  IBlock,
 } from '@subql/node-core';
 import {
   EthereumBlock,
@@ -32,7 +33,7 @@ const logger = getLogger('api');
 export class EthereumApiService extends ApiService<
   EthereumApi,
   SafeEthProvider,
-  EthereumBlock[] | LightEthereumBlock[]
+  IBlock<EthereumBlock>[] | IBlock<LightEthereumBlock>[]
 > {
   private fetchBlocksFunction: FetchFunc;
   private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
@@ -159,14 +160,14 @@ export class EthereumApiService extends ApiService<
   private async fetchFullBlocksBatch(
     api: EthereumApi,
     batch: number[],
-  ): Promise<EthereumBlock[]> {
+  ): Promise<IBlock<EthereumBlock>[]> {
     return api.fetchBlocks(batch);
   }
 
   private async fetchLightBlocksBatch(
     api: EthereumApi,
     batch: number[],
-  ): Promise<LightEthereumBlock[]> {
+  ): Promise<IBlock<LightEthereumBlock>[]> {
     return api.fetchBlocksLight(batch);
   }
 

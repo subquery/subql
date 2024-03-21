@@ -14,7 +14,7 @@ import {
 } from '@ethersproject/abstract-provider';
 import { WebSocketProvider } from '@ethersproject/providers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getLogger, timeout } from '@subql/node-core';
+import { getLogger, IBlock, timeout } from '@subql/node-core';
 import {
   ApiWrapper,
   EthereumBlock,
@@ -40,6 +40,7 @@ import { ConnectionInfo } from './ethers/web';
 import SafeEthProvider from './safe-api';
 import {
   formatBlock,
+  formatBlockUtil,
   formatLog,
   formatReceipt,
   formatTransaction,
@@ -295,7 +296,6 @@ export class EthereumApi implements ApiWrapper {
 
     return block;
   }
-
   async getTransactionReceipt(
     transactionHash: string | Promise<string>,
   ): Promise<TransactionReceipt> {
@@ -304,10 +304,12 @@ export class EthereumApi implements ApiWrapper {
     );
   }
 
-  async fetchBlock(blockNumber: number): Promise<EthereumBlock> {
+  async fetchBlock(blockNumber: number): Promise<IBlock<EthereumBlock>> {
     try {
       const block = await this.getBlockPromise(blockNumber, true);
-      const logsRaw = await this.client.getLogs({ blockHash: block.hash });
+      const logsRaw = await this.client.getLogs({
+        blockHash: block.hash,
+      });
 
       // Certain RPC may not accommodate for blockHash, and would return wrong logs
       if (logsRaw.length) {
@@ -328,7 +330,7 @@ export class EthereumApi implements ApiWrapper {
       }));
 
       this.eventEmitter.emit('fetchBlock');
-      return block;
+      return formatBlockUtil(block);
     } catch (e) {
       throw this.handleError(e);
     }
@@ -336,23 +338,24 @@ export class EthereumApi implements ApiWrapper {
 
   private async fetchLightBlock(
     blockNumber: number,
-  ): Promise<LightEthereumBlock> {
+  ): Promise<IBlock<LightEthereumBlock>> {
     const block = await this.getBlockPromise(blockNumber, false);
     const logs = await this.client.getLogs({ blockHash: block.hash });
 
-    return {
+    const lightBlock: LightEthereumBlock = {
       ...block,
       logs: logs.map((l) => formatLog(l, block)),
     };
+    return formatBlockUtil<LightEthereumBlock>(lightBlock);
   }
 
-  async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlock[]> {
+  async fetchBlocks(bufferBlocks: number[]): Promise<IBlock<EthereumBlock>[]> {
     return Promise.all(bufferBlocks.map(async (num) => this.fetchBlock(num)));
   }
 
   async fetchBlocksLight(
     bufferBlocks: number[],
-  ): Promise<LightEthereumBlock[]> {
+  ): Promise<IBlock<LightEthereumBlock>[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => this.fetchLightBlock(num)),
     );
@@ -449,7 +452,6 @@ export class EthereumApi implements ApiWrapper {
         )) as Array<EthereumLog | EthereumLog<T>>);
 
       transaction.args = args;
-
       return transaction;
     } catch (e) {
       logger.warn(`Failed to parse transaction data: ${e.message}`);
