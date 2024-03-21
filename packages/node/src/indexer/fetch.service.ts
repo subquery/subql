@@ -14,7 +14,6 @@ import { calcInterval, substrateHeaderToHeader } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
@@ -36,7 +35,6 @@ export class FetchService extends BaseFetchService<
     @Inject('IBlockDispatcher')
     blockDispatcher: ISubstrateBlockDispatcher,
     dictionaryService: SubstrateDictionaryService,
-    dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
@@ -48,7 +46,6 @@ export class FetchService extends BaseFetchService<
       project.network,
       blockDispatcher,
       dictionaryService,
-      dynamicDsService,
       eventEmitter,
       schedulerRegistry,
     );

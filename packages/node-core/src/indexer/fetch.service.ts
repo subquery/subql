@@ -15,7 +15,6 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {getBlockHeight, mergeNumAndBlocks} from './dictionary/utils';
-import {DynamicDsService} from './dynamic-ds.service';
 import {IBlock, IProjectService} from './types';
 
 const logger = getLogger('FetchService');
@@ -51,7 +50,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     protected networkConfig: IProjectNetworkConfig,
     protected blockDispatcher: B,
     protected dictionaryService: DictionaryService<DS, FB>,
-    private dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry
   ) {}
@@ -212,7 +210,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = [...this.projectService.getAllDataSources().map((ds) => ds.mapping.handlers)];
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
@@ -277,9 +274,17 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       } else {
         const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
 
+        const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
+        assert(details, `Datasources not found for height ${startBlockHeight}`);
+        const {endHeight: rangeEndHeight, value: relevantDS} = details;
+        const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
+
         const enqueuingBlocks =
           handlers.length && this.getModulos().length === handlers.length
-            ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
+            ? this.getEnqueuedModuloBlocks(
+                startBlockHeight,
+                Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight)
+              )
             : range(startBlockHeight, endHeight + 1);
 
         await this.enqueueBlocks(enqueuingBlocks, latestHeight);
