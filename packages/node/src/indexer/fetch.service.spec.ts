@@ -66,7 +66,6 @@ describe('FetchSevice', () => {
       {} as any, // Project
       null, // BlockDispatcher,
       null, // DictionaryService
-      null, // DynamicDsService
       null, // UnfinalizedBlocks
       null, // EventEmitter
       null, // SchedulerRegistry

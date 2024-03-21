@@ -28,7 +28,6 @@ describe('FetchService', () => {
       {} as any, // Project
       null, // BlockDispatcher,
       null, // DictionaryService
-      null, // DynamicDsService
       {
         registerFinalizedBlock: () => {
           /* Nothing */
