@@ -12,7 +12,7 @@ it('in getData, should hex number correctly', () => {
   // Use ethers.utils should have same output
   // expect(utils.hexValue(from)).toBe(numberToHex(from))
   // expect(utils.hexValue(to54897704)).toBe(hexStripZeros(numberToHex(to54897704)))
-  expect(hexStripZeros(numberToHex(zero))).toBe('0x');
+  expect(hexStripZeros(numberToHex(zero))).toBe('0x0');
   expect(hexStripZeros(numberToHex(from))).toBe('0x2710');
   expect(hexStripZeros(numberToHex(to))).toBe('0x98967f');
   expect(hexStripZeros(numberToHex(to54897704))).toBe('0x345ac28');

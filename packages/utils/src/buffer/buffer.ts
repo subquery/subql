@@ -32,5 +32,9 @@ export function hexStripZeros(value: HexString): string {
   while (offset < str.length && str[offset] === '0') {
     offset++;
   }
-  return `0x${str.substring(offset)}`;
+  const trimmed = `0x${str.substring(offset)}`;
+  if (trimmed === '0x') {
+    return '0x0';
+  }
+  return trimmed;
 }
