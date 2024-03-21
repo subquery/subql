@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexStripZeros, numberToHex} from '@subql/utils';
 import axios, {AxiosInstance} from 'axios';
 import {FieldSelector} from '../';
@@ -82,13 +81,8 @@ export abstract class DictionaryV2<
 > extends CoreDictionary<DS, FB, DictionaryV2Metadata, QE> {
   protected dictionaryApi: AxiosInstance;
 
-  constructor(
-    readonly dictionaryEndpoint: string,
-    protected chainId: string,
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly eventEmitter: EventEmitter2
-  ) {
-    super(chainId, nodeConfig, eventEmitter);
+  constructor(readonly dictionaryEndpoint: string, chainId: string, nodeConfig: NodeConfig) {
+    super(chainId, nodeConfig);
     this.dictionaryApi = axios.create({
       baseURL: dictionaryEndpoint,
     });

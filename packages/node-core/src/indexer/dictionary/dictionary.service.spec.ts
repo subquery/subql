@@ -17,16 +17,9 @@ class TestDictionaryService extends DictionaryService<any, TestFB> {
     ];
 
     const dictionariesV1 = await Promise.all(
-      dictionaryV1Endpoints.map(
-        (endpoint) => new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, this.eventEmitter)
-      )
+      dictionaryV1Endpoints.map((endpoint) => new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig))
     );
-    const mockDictionaryV2 = new TestDictionaryV2(
-      'http://mock-dictionary-v2/rpc',
-      'mockChainId',
-      this.nodeConfig,
-      this.eventEmitter
-    );
+    const mockDictionaryV2 = new TestDictionaryV2('http://mock-dictionary-v2/rpc', 'mockChainId', this.nodeConfig);
 
     patchMockDictionary(mockDictionaryV2);
     const dictionariesV2 = [mockDictionaryV2];

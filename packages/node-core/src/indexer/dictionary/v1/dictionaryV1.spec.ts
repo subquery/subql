@@ -3,7 +3,6 @@
 
 import assert from 'assert';
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
@@ -155,7 +154,7 @@ async function prepareDictionary(
   nfg = nodeConfig,
   dsM = dsMap
 ): Promise<TestDictionaryV1> {
-  const dictionary = new TestDictionaryV1(endpoint, chainId, nfg, new EventEmitter2());
+  const dictionary = new TestDictionaryV1(endpoint, chainId, nfg);
   await (dictionary as any).init();
   dictionary.updateQueriesMap(dsM);
   return dictionary;
