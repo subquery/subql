@@ -11,8 +11,8 @@ export interface FieldSelector {
 
 export interface RawDictionaryResponseData<RFB> {
   blocks: RFB[]; //raw fat blocks
-  BlockRange: number[];
-  GenesisHash: string;
+  blockRange: number[];
+  genesisHash: string;
 }
 
 export interface DictionaryV2Metadata {
