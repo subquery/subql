@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
 import {IBlock} from '../../types';
@@ -54,7 +53,7 @@ const nodeConfig = new NodeConfig({
 });
 
 describe('Individual dictionary V2 test', () => {
-  const dictionary = new TestDictionaryV2('http://mock-dictionary-v2/rpc', '0x21121', nodeConfig, new EventEmitter2());
+  const dictionary = new TestDictionaryV2('http://mock-dictionary-v2/rpc', '0x21121', nodeConfig);
   patchMockDictionary(dictionary);
   it('can init metadata and set start height', async () => {
     await (dictionary as any).init();
@@ -154,8 +153,7 @@ describe('determine dictionary V2 version', () => {
     const dictionaryV2 = new TestDictionaryV2(
       'https://dict-tyk.subquery.network/query/eth-mainnet/rpc',
       '0x21121',
-      nodeConfig,
-      new EventEmitter2()
+      nodeConfig
     );
     await expect((dictionaryV2 as any).init()).rejects.toThrow();
   });

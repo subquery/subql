@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {NodeConfig} from '../../configure';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
 import {IBlock} from '../types';
@@ -16,11 +15,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   protected _metadata?: M;
   metadataValid: boolean | undefined;
 
-  constructor(
-    protected chainId: string,
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly eventEmitter: EventEmitter2
-  ) {}
+  constructor(protected chainId: string, protected readonly nodeConfig: NodeConfig) {}
 
   abstract getData(
     startBlock: number,

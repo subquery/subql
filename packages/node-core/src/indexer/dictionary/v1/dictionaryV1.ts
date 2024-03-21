@@ -29,13 +29,12 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
 
   constructor(
     readonly dictionaryEndpoint: string,
-    protected chainId: string,
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly eventEmitter: EventEmitter2,
+    chainId: string,
+    nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'], // Cosmos uses chain instead of genesisHash
     protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
   ) {
-    super(chainId, nodeConfig, eventEmitter);
+    super(chainId, nodeConfig);
 
     this._client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
@@ -192,10 +191,6 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     const valid = validate();
 
     this.metadataValid = valid;
-    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-      value: Number(this.useDictionary),
-    });
-    this.eventEmitter.emit(IndexerEvent.SkipDictionary);
 
     return valid;
   }

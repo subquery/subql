@@ -8,6 +8,7 @@ import {NETWORK_FAMILY} from '@subql/common';
 import {IProjectNetworkConfig} from '@subql/types-core';
 import fetch from 'cross-fetch';
 import {NodeConfig} from '../../configure';
+import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {BlockHeightMap} from '../../utils/blockHeightMap';
 import {IBlock} from '../types';
@@ -46,14 +47,18 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       !skipDictionaryIndex.has(this._currentDictionaryIndex) &&
       this._dictionaries[this._currentDictionaryIndex].heightValidation(height)
     ) {
+      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(true)});
       return this._dictionaries[this._currentDictionaryIndex];
     } else {
       this.findDictionary(height, skipDictionaryIndex);
       if (this._currentDictionaryIndex === undefined) {
+        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(false)});
+        this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         logger.warn(`No supported dictionary found`);
         return undefined;
       } else {
         logger.debug(`Updated : current dictionary Index is ${this._currentDictionaryIndex}`);
+        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(true)});
         return this._dictionaries[this._currentDictionaryIndex];
       }
     }
