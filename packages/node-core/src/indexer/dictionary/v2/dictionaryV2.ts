@@ -152,7 +152,7 @@ export abstract class DictionaryV2<
       if (result && result?.lastBufferedHeight === undefined) {
         result.lastBufferedHeight = Math.min(endBlock, queryEndBlock);
       }
-      this.metadata.end = response.data.result.BlockRange[1];
+      this.metadata.end = response.data.result.blockRange[1];
       return result;
     } catch (error: any) {
       logger.error(error, `Dictionary query failed. request: ${JSON.stringify(requestData, null, 2)}`);
