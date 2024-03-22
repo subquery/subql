@@ -152,23 +152,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     ConnectionPoolService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
-    {
-      provide: EthDictionaryService,
-      useFactory: async (
-        project: SubqueryProject,
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        // eslint-disable-next-line @typescript-eslint/require-await
-      ) => {
-        const dictionaryService = new EthDictionaryService(
-          project,
-          nodeConfig,
-          eventEmitter,
-        );
-        return dictionaryService;
-      },
-      inject: ['ISubqueryProject', NodeConfig, EventEmitter2],
-    },
+    EthDictionaryService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,

@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
   DictionaryV2,
@@ -24,6 +23,7 @@ import {
   EthereumProjectDsTemplate,
   SubqueryProject,
 } from '../../../configure/SubqueryProject';
+import { EthereumApi } from '../../../ethereum';
 import { eventToTopic, functionToSighash } from '../../../utils/string';
 import { yargsOptions } from '../../../yargs';
 import { ethFilterDs } from '../utils';
@@ -209,32 +209,19 @@ export class EthDictionaryV2 extends DictionaryV2<
   constructor(
     endpoint: string,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     project: SubqueryProject,
-    chainId?: string,
+    private api: EthereumApi,
   ) {
-    super(
-      endpoint,
-      chainId ?? project.network.chainId,
-      nodeConfig,
-      eventEmitter,
-    );
+    super(endpoint, project.network.chainId, nodeConfig);
   }
 
   static async create(
     endpoint: string,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     project: SubqueryProject,
-    chainId?: string,
+    api: EthereumApi,
   ): Promise<EthDictionaryV2> {
-    const dictionary = new EthDictionaryV2(
-      endpoint,
-      nodeConfig,
-      eventEmitter,
-      project,
-      chainId,
-    );
+    const dictionary = new EthDictionaryV2(endpoint, nodeConfig, project, api);
     await dictionary.init();
     return dictionary;
   }
@@ -265,7 +252,7 @@ export class EthDictionaryV2 extends DictionaryV2<
     try {
       const blocks: IBlock<EthereumBlock>[] = (
         (data.blocks as RawEthBlock[]) || []
-      ).map(rawBlockToEthBlock);
+      ).map((b) => rawBlockToEthBlock(b, this.api));
       return {
         batchBlocks: blocks,
         lastBufferedHeight: blocks.length

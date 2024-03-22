@@ -3,18 +3,24 @@
 
 import { Formatter } from '@ethersproject/providers';
 import { IBlock } from '@subql/node-core';
-import { EthereumBlock } from '@subql/types-ethereum';
+import { EthereumBlock, EthereumReceipt } from '@subql/types-ethereum';
+import { EthereumApi } from '../../../ethereum';
 import {
   formatBlock,
   formatBlockUtil,
   formatLog,
+  formatReceipt,
   formatTransaction,
 } from '../../../ethereum/utils.ethereum';
 import { RawEthBlock } from './types';
 
-export function rawBlockToEthBlock(block: RawEthBlock): IBlock<EthereumBlock> {
+export function rawBlockToEthBlock(
+  block: RawEthBlock,
+  api: EthereumApi,
+): IBlock<EthereumBlock> {
   try {
-    const formatter = new Formatter();
+    // Use the formatter from the api, it could have custom formats e.g l1Gas fields
+    const formatter = api?.api.formatter ?? new Formatter();
 
     const ethBlock = formatBlock({
       ...block.header,
@@ -28,7 +34,10 @@ export function rawBlockToEthBlock(block: RawEthBlock): IBlock<EthereumBlock> {
     ethBlock.transactions = (block.transactions ?? []).map((tx) => ({
       ...formatTransaction(tx, ethBlock),
       logs: ethBlock.logs.filter((l) => l.transactionHash === tx.hash),
-      // TODO add method for receipts
+      receipt: <R extends EthereumReceipt>(): Promise<R> =>
+        api
+          .getTransactionReceipt(tx.hash)
+          .then((r) => formatReceipt<R>(r, ethBlock)),
     }));
 
     return formatBlockUtil(ethBlock);

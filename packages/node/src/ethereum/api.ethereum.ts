@@ -12,7 +12,7 @@ import {
   Block,
   TransactionReceipt,
 } from '@ethersproject/abstract-provider';
-import { WebSocketProvider } from '@ethersproject/providers';
+import { WebSocketProvider, BaseProvider } from '@ethersproject/providers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getLogger, IBlock, timeout } from '@subql/node-core';
 import {
@@ -361,7 +361,7 @@ export class EthereumApi implements ApiWrapper {
     );
   }
 
-  get api(): Provider {
+  get api(): BaseProvider {
     return this.client;
   }
 

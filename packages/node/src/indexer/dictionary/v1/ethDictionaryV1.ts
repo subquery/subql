@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NodeConfig, DictionaryV1, getLogger } from '@subql/node-core';
 import {
   DictionaryQueryCondition,
@@ -218,22 +217,15 @@ export class EthDictionaryV1 extends DictionaryV1<GroupedEthereumProjectDs> {
   private constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     dictionaryUrl: string,
     chainId?: string,
   ) {
-    super(
-      dictionaryUrl,
-      chainId ?? project.network.chainId,
-      nodeConfig,
-      eventEmitter,
-    );
+    super(dictionaryUrl, chainId ?? project.network.chainId, nodeConfig);
   }
 
   static async create(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
-    eventEmitter: EventEmitter2,
     dictionaryUrl?: string,
   ): Promise<EthDictionaryV1> {
     /*Some dictionarys for EVM are built with other SDKs as they are chains with an EVM runtime
@@ -246,7 +238,6 @@ export class EthDictionaryV1 extends DictionaryV1<GroupedEthereumProjectDs> {
     const dictionary = new EthDictionaryV1(
       project,
       nodeConfig,
-      eventEmitter,
       dictionaryUrl,
       chainAlias,
     );

@@ -126,7 +126,7 @@ export function formatTransaction(
     maxPriorityFeePerGas: tx.maxPriorityFeePerGas
       ? handleNumber(tx.maxPriorityFeePerGas).toBigInt()
       : undefined,
-    receipt: undefined, // Filled in at AvalancheApi.fetchBlocks
+    receipt: undefined, // Filled in at Etheruem.fetchBlocks
     toJSON(): string {
       return JSON.stringify(omit(this, ['block', 'receipt', 'toJSON']));
     },

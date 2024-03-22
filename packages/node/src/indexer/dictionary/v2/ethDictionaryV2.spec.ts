@@ -14,10 +14,12 @@ import {
   SubqlDatasource,
   SubqlRuntimeDatasource,
 } from '@subql/types-ethereum';
+import EventEmitter2 from 'eventemitter2';
 import {
   EthereumProjectDs,
   SubqueryProject,
 } from '../../../configure/SubqueryProject';
+import { EthereumApi } from '../../../ethereum';
 import {
   buildDictionaryV2QueryEntry,
   EthDictionaryV2,
@@ -104,9 +106,8 @@ describe('eth dictionary v2', () => {
     ethDictionaryV2 = await EthDictionaryV2.create(
       DEFAULT_DICTIONARY,
       nodeConfig,
-      undefined,
       { network: { chainId: '10' } } as SubqueryProject,
-      '10',
+      new EthereumApi(HTTP_ENDPOINT, 1, new EventEmitter2()),
     );
 
     ethDictionaryV2.updateQueriesMap(dsMap);
@@ -171,31 +172,24 @@ describe('eth dictionary v2', () => {
     // https://polygonscan.com/tx/0xb1b5f7882fa8d62d3650948c08066e928b7b5c9d607d2fe8c7e6ce57caf06774#eventlog
     expect(ethBlocks.batchBlocks[1].block.logs[0].data).toBe(`0x`);
   }, 500000);
+
+  // TODO, check this
+  it.skip('able to get transaction with field to is null', async () => {
+    const dsMap = makeBlockHeightMap(mockDs2);
+    ethDictionaryV2.updateQueriesMap(dsMap);
+
+    const { conditions, queryEndBlock } = (
+      ethDictionaryV2 as any
+    ).getQueryConditions(3678215, (ethDictionaryV2 as any)._metadata.end);
+
+    expect(conditions).toBe({ transactions: [{ to: null }] });
+    const ethBlocks = (await ethDictionaryV2.getData(
+      3678215,
+      (ethDictionaryV2 as any)._metadata.end,
+      2,
+    )) as DictionaryResponse<IBlock<EthereumBlock>>;
+  });
 });
-
-// TODO, check this
-it.skip('able to get transaction with field to is null', async () => {
-  const dsMap = makeBlockHeightMap(mockDs2);
-  const ethDictionaryV2 = await EthDictionaryV2.create(
-    DEFAULT_DICTIONARY,
-    nodeConfig,
-    undefined,
-    { network: { chainId: '10' } } as SubqueryProject,
-    '10',
-  );
-  ethDictionaryV2.updateQueriesMap(dsMap);
-
-  const { conditions, queryEndBlock } = (
-    ethDictionaryV2 as any
-  ).getQueryConditions(3678215, (ethDictionaryV2 as any)._metadata.end);
-
-  expect(conditions).toBe({ transactions: [{ to: null }] });
-  const ethBlocks = (await ethDictionaryV2.getData(
-    3678215,
-    (ethDictionaryV2 as any)._metadata.end,
-    2,
-  )) as DictionaryResponse<IBlock<EthereumBlock>>;
-}, 50000);
 
 describe('buildDictionaryV2QueryEntry', () => {
   it('Build filter for !null', () => {

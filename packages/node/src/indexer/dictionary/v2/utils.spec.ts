@@ -54,20 +54,20 @@ async function fetchDictionaryBlock(): Promise<RawEthBlock> {
   return (await res.json()).result.blocks[0];
 }
 
-async function fetchRPCBlock(): Promise<IBlock<EthereumBlock>> {
-  const api = new EthereumApi(RPC_URL, 1, new EventEmitter2());
-
-  return api.fetchBlock(4085662);
-}
-
 describe('rawBlockToEthBlock', () => {
-  it('successfully convers a block', async () => {
-    const [raw, rpcBlock] = await Promise.all([
-      fetchDictionaryBlock(),
-      fetchRPCBlock(),
-    ]);
+  const api = new EthereumApi(RPC_URL, 1, new EventEmitter2());
+  let raw: RawEthBlock;
+  let rpcBlock: IBlock<EthereumBlock>;
 
-    const block = rawBlockToEthBlock(raw);
+  beforeAll(async () => {
+    [raw, rpcBlock] = await Promise.all([
+      fetchDictionaryBlock(),
+      api.fetchBlock(4085662),
+    ]);
+  });
+
+  it('successfully convers a block', () => {
+    const block = rawBlockToEthBlock(raw, api);
 
     expect(block.getHeader()).toEqual({
       blockHash:
@@ -105,4 +105,10 @@ describe('rawBlockToEthBlock', () => {
       expect(txRest).toEqual(rpcTxRest);
     }
   }, 15000);
+
+  it('can fetch receipts', async () => {
+    const block = rawBlockToEthBlock(raw, api);
+
+    await expect(block.block.transactions[0].receipt()).resolves.not.toThrow();
+  });
 });

@@ -21,7 +21,6 @@ import {
 } from '../ethereum/utils.ethereum';
 import { IEthereumBlockDispatcher } from './blockDispatcher';
 import { EthDictionaryService } from './dictionary/ethDictionary.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -43,7 +42,6 @@ export class FetchService extends BaseFetchService<
     @Inject('IBlockDispatcher')
     blockDispatcher: IEthereumBlockDispatcher,
     dictionaryService: EthDictionaryService,
-    dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
@@ -54,7 +52,6 @@ export class FetchService extends BaseFetchService<
       project.network,
       blockDispatcher,
       dictionaryService,
-      dynamicDsService,
       eventEmitter,
       schedulerRegistry,
     );
