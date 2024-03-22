@@ -11,7 +11,7 @@ export interface FieldSelector {
 
 export interface RawDictionaryResponseData<RFB> {
   blocks: RFB[]; //raw fat blocks
-  blockRange: number[];
+  blockRange: [string, string]; // Hex encoded numbers
   genesisHash: string;
 }
 

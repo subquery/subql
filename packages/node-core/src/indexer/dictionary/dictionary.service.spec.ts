@@ -4,9 +4,8 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {NodeConfig} from '../..';
+import {TestDictionaryV1, TestDictionaryV2, dsMap as mockedDsMap, TestFB} from './dictionary.fixtures';
 import {DictionaryService} from './dictionary.service';
-import {dsMap as mockedDsMap, TestDictionaryV1} from './v1/dictionaryV1.spec';
-import {TestDictionaryV2, TestFB, patchMockDictionary} from './v2/dictionaryV2.spec';
 
 class TestDictionaryService extends DictionaryService<any, TestFB> {
   async initDictionaries(): Promise<void> {
@@ -17,11 +16,16 @@ class TestDictionaryService extends DictionaryService<any, TestFB> {
     ];
 
     const dictionariesV1 = await Promise.all(
-      dictionaryV1Endpoints.map((endpoint) => new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig))
+      dictionaryV1Endpoints.map(
+        (endpoint) =>
+          new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, [
+            /* HAPPY_PATH_CONDICTIONS*/
+          ])
+      )
     );
     const mockDictionaryV2 = new TestDictionaryV2('http://mock-dictionary-v2/rpc', 'mockChainId', this.nodeConfig);
+    await mockDictionaryV2.mockInit();
 
-    patchMockDictionary(mockDictionaryV2);
     const dictionariesV2 = [mockDictionaryV2];
     this.init([...dictionariesV1, ...dictionariesV2]);
   }

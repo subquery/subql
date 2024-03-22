@@ -7,6 +7,7 @@ import {HexString} from '@polkadot/util/types';
 export {
   u8aEq,
   hexToU8a,
+  hexToNumber,
   bufferToU8a,
   numberToU8a,
   numberToHex,
