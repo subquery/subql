@@ -187,7 +187,9 @@ export function buildDictionaryV2QueryEntry(
   if (!dictionaryConditions.logs.length) {
     delete dictionaryConditions.logs;
   } else {
-    dictionaryConditions.logs = uniqBy(dictionaryConditions.logs, isEqual);
+    dictionaryConditions.logs = uniqBy(dictionaryConditions.logs, (log) =>
+      JSON.stringify(log),
+    );
   }
 
   if (!dictionaryConditions.transactions.length) {
@@ -195,7 +197,7 @@ export function buildDictionaryV2QueryEntry(
   } else {
     dictionaryConditions.transactions = uniqBy(
       dictionaryConditions.transactions,
-      isEqual,
+      (tx) => JSON.stringify(tx),
     );
   }
   return dictionaryConditions;

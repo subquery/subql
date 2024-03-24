@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  NodeConfig,
   BlockHeightMap,
-  IBlock,
   DictionaryResponse,
+  IBlock,
+  NodeConfig,
 } from '@subql/node-core';
 import {
   EthereumBlock,
@@ -232,6 +232,92 @@ describe('buildDictionaryV2QueryEntry', () => {
         },
       ],
     });
+  });
+
+  it('build query entries for multiple ds', () => {
+    const ds: SubqlRuntimeDatasource[] = [
+      {
+        kind: EthereumDatasourceKind.Runtime,
+        startBlock: 3327417,
+        options: {
+          abi: 'EnsRegistry',
+          address: '0x314159265dd8dbb310642f98f50c066173c1259b',
+        },
+        assets: new Map(),
+        mapping: {
+          file: './dist/index.js',
+          handlers: [
+            // one duplicate one
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleTransferOldRegistry',
+              filter: {
+                topics: ['Transfer(bytes32,address)'],
+              },
+            },
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleTransferOldRegistry',
+              filter: {
+                topics: ['Transfer(bytes32,address)'],
+              },
+            },
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleNewOwnerOldRegistry',
+              filter: {
+                topics: ['NewOwner(bytes32,bytes32,address)'],
+              },
+            },
+          ],
+        },
+      },
+      {
+        kind: EthereumDatasourceKind.Runtime,
+        startBlock: 3327417,
+        options: {
+          abi: 'Resolver',
+        },
+        assets: new Map(),
+        mapping: {
+          file: './dist/index.js',
+          handlers: [
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleABIChanged',
+              filter: {
+                topics: ['ABIChanged(bytes32,uint256)'],
+              },
+            },
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleAddrChanged',
+              filter: {
+                topics: ['AddrChanged(bytes32,address)'],
+              },
+            },
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleMulticoinAddrChanged',
+              filter: {
+                topics: ['AddressChanged(bytes32,uint256,bytes)'],
+              },
+            },
+            {
+              kind: EthereumHandlerKind.Event,
+              handler: 'handleAuthorisationChanged',
+              filter: {
+                topics: ['AuthorisationChanged(bytes32,address,address,bool)'],
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const queryEntry = buildDictionaryV2QueryEntry(ds);
+    // Total 7 handlers were given, 1 is duplicate
+    expect(queryEntry.logs.length).toBe(6);
   });
 
   it('should unique QueryEntry for duplicate dataSources', () => {
