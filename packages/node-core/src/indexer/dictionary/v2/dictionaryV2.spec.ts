@@ -1,50 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {DictionaryResponse, DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '../';
 import {NodeConfig} from '../../../configure';
-import {IBlock} from '../../types';
-import {dsMap as mockedDsMap} from '../v1/dictionaryV1.spec';
+import {TestDictionaryV2, dsMap as mockedDsMap} from '../dictionary.fixtures';
 
 jest.setTimeout(50000);
-
-// eslint-disable-next-line jest/no-export
-export interface TestFB {
-  gasLimit: bigint;
-  gasUsed: bigint;
-  hash: string;
-}
-
-// eslint-disable-next-line jest/no-export
-export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
-  buildDictionaryQueryEntries(dataSources: any[]): DictionaryV2QueryEntry {
-    return {};
-  }
-
-  convertResponseBlocks<RFB>(result: RawDictionaryResponseData<RFB>): DictionaryResponse<IBlock<TestFB>> | undefined {
-    return {
-      batchBlocks: result.blocks as IBlock<TestFB>[],
-      lastBufferedHeight: (result.blocks as number[])[result.blocks.length - 1],
-    };
-  }
-}
-// mock init and metadata
-// eslint-disable-next-line jest/no-export
-export function patchMockDictionary(dictionary: DictionaryV2<any, any>) {
-  (dictionary as any).init = () => {
-    ((dictionary as any)._metadata = {
-      start: 1,
-      end: 100000,
-      chainId: 'mockChainId',
-      genesisHash: '0x21121',
-      filters: {
-        complete: ['block', 'transaction'],
-      },
-      supported: ['complete'],
-    }),
-      (dictionary as any).setDictionaryStartHeight((dictionary as any)._metadata.start);
-  };
-}
 
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
@@ -54,7 +14,11 @@ const nodeConfig = new NodeConfig({
 
 describe('Individual dictionary V2 test', () => {
   const dictionary = new TestDictionaryV2('http://mock-dictionary-v2/rpc', '0x21121', nodeConfig);
-  patchMockDictionary(dictionary);
+
+  beforeAll(async () => {
+    await dictionary.mockInit();
+  });
+
   it('can init metadata and set start height', async () => {
     await (dictionary as any).init();
     expect((dictionary as any)._metadata).toBeDefined();
@@ -83,8 +47,8 @@ describe('Individual dictionary V2 test', () => {
           data: {
             result: {
               blocks: [105, 205, 600, 705],
-              BlockRange: [1, 1000000],
-              GenesisHash: 'mockedGenesisHash',
+              blockRange: ['0x1', '0xF4240'],
+              genesisHash: 'mockedGenesisHash',
             },
           },
         };
@@ -104,7 +68,7 @@ describe('Individual dictionary V2 test', () => {
       },
     };
     await expect(() => dictionary.getData(100, 1100, 100, {event: {}, method: {}})).rejects.toThrow(
-      'Dictionary get capability failed Error: Mock post error'
+      'Dictionary query failed Error: Mock post error'
     );
 
     jest.clearAllMocks();

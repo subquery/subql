@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {hexStripZeros, numberToHex} from '@subql/utils';
+import {hexStripZeros, hexToNumber, numberToHex} from '@subql/utils';
 import axios, {AxiosInstance} from 'axios';
 import {FieldSelector} from '../';
 import {NodeConfig} from '../../../configure';
@@ -146,12 +146,17 @@ export abstract class DictionaryV2<
       if (result && result?.lastBufferedHeight === undefined) {
         result.lastBufferedHeight = Math.min(endBlock, queryEndBlock);
       }
-      this.metadata.end = response.data.result.blockRange[1];
+      try {
+        this.metadata.end = hexToNumber(response.data.result.blockRange[1]);
+      } catch (e: any) {
+        logger.warn(e, 'Failed to update dictionary metadata from query');
+      }
+
       return result;
     } catch (error: any) {
       logger.error(error, `Dictionary query failed. request: ${JSON.stringify(requestData, null, 2)}`);
       // Handle the error as needed
-      throw new Error(`Dictionary get capability failed ${error}`);
+      throw new Error(`Dictionary query failed ${error}`);
     }
   }
 

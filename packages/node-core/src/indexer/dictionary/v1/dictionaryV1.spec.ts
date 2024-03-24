@@ -3,72 +3,12 @@
 
 import assert from 'assert';
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
-import {SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
 import {NodeConfig} from '../../../configure';
 import {BlockHeightMap} from '../../../utils/blockHeightMap';
-import {DictionaryV1} from './dictionaryV1';
+import {dsMap, mockDS, TestDictionaryV1} from '../dictionary.fixtures';
 import {getGqlType} from './utils';
-
-const mockDS = [
-  {
-    name: 'runtime',
-    kind: SubstrateDatasourceKind.Runtime,
-    startBlock: 100,
-    mapping: {
-      handlers: [
-        {
-          handler: 'handleTest',
-          kind: SubstrateHandlerKind.Event,
-          filter: {
-            module: 'balances',
-            method: 'Deposit',
-          },
-        },
-      ],
-      file: '',
-    },
-  },
-  {
-    name: 'runtime',
-    kind: SubstrateDatasourceKind.Runtime,
-    startBlock: 500,
-    mapping: {
-      handlers: [
-        {
-          handler: 'handleTest',
-          kind: SubstrateHandlerKind.Call,
-          filter: {
-            module: 'balances',
-            method: 'Deposit',
-            success: true,
-          },
-        },
-      ],
-      file: '',
-    },
-  },
-  {
-    name: 'runtime',
-    kind: SubstrateDatasourceKind.Runtime,
-    startBlock: 1000,
-    mapping: {
-      handlers: [
-        {
-          handler: 'handleTest',
-          kind: SubstrateHandlerKind.Call,
-          filter: {
-            module: 'balances',
-            method: 'Deposit',
-            success: true,
-          },
-        },
-      ],
-      file: '',
-    },
-  },
-];
 
 const DICTIONARY_ENDPOINT = `https://gateway.subquery.network/query/QmUGBdhQKnzE8q6x6MPqP6LNZGa8gzXf5gkdmhzWjdFGfL`;
 const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3`;
@@ -131,30 +71,13 @@ describe('GraphqlTypes', () => {
   });
 });
 
-// export use in dictionary service test
-// eslint-disable-next-line jest/no-export
-export class TestDictionaryV1 extends DictionaryV1<any> {
-  buildDictionaryQueryEntries(dataSources: any[]): DictionaryQueryEntry[] {
-    return HAPPY_PATH_CONDITIONS;
-  }
-}
-
-const m = new Map<number, any>();
-
-mockDS.forEach((ds, index, dataSources) => {
-  m.set(ds.startBlock, dataSources.slice(0, index + 1));
-});
-
-// eslint-disable-next-line jest/no-export
-export const dsMap = new BlockHeightMap(m);
-
 async function prepareDictionary(
   endpoint = DICTIONARY_ENDPOINT,
   chainId = DICTIONARY_CHAINID,
   nfg = nodeConfig,
   dsM = dsMap
 ): Promise<TestDictionaryV1> {
-  const dictionary = new TestDictionaryV1(endpoint, chainId, nfg);
+  const dictionary = new TestDictionaryV1(endpoint, chainId, nfg, HAPPY_PATH_CONDITIONS);
   await (dictionary as any).init();
   dictionary.updateQueriesMap(dsM);
   return dictionary;
