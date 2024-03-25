@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "7.5.1-6",
+  "version": "7.5.1-7",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -47,5 +47,5 @@
   "devDependencies": {
     "@types/async-lock": "^1"
   },
-  "stableVersion": "7.5.1-5"
+  "stableVersion": "7.5.1-6"
 }
