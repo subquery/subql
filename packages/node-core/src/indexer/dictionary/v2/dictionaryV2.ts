@@ -28,11 +28,9 @@ async function subqlFilterBlocksCapabilities(
   endpoint: string,
   axiosInstance?: AxiosInstance
 ): Promise<DictionaryV2Metadata> {
-  if (!axiosInstance) {
-    axiosInstance = axios.create({
-      baseURL: endpoint,
-    });
-  }
+  axiosInstance ??= axios.create({
+    baseURL: endpoint,
+  });
 
   const requestData = {
     jsonrpc: '2.0',
@@ -85,6 +83,11 @@ export abstract class DictionaryV2<
     super(chainId, nodeConfig);
     this.dictionaryApi = axios.create({
       baseURL: dictionaryEndpoint,
+      headers: {
+        Connection: 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate',
+      },
+      timeout: nodeConfig.dictionaryTimeout * 1000, // Seconds to ms
     });
   }
 
@@ -96,7 +99,7 @@ export abstract class DictionaryV2<
   }
 
   getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number {
-    return Math.min(targetBlockHeight, this.metadata.end);
+    return Math.min(targetBlockHeight, this.metadata.end, apiFinalizedHeight);
   }
 
   protected abstract convertResponseBlocks<RFB>(
