@@ -108,16 +108,23 @@ export class SetValueModel<T> {
     this.historicalValues[latestIndex].removed = true;
   }
 
-  isMatchData(field?: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
-    if (field === undefined || value === undefined) {
-      return true;
-    }
+  /**
+   * If value is an array then it will do an OR operation
+   * */
+  matchesField(field: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
     if (Array.isArray(value)) {
-      return value.findIndex((v) => this.isMatchData(field, v)) > -1;
+      return value.some((v) => this.matchesField(field, v));
     } else {
       if (this.getLatest()?.removed) return false;
       return isEqual(this.getLatest()?.data?.[field], value);
     }
+  }
+
+  /**
+   *  Runs an AND operation over all the matchers
+   * */
+  matchesFields(matchers: {field: keyof T; value?: T[keyof T] | T[keyof T][]}[]): boolean {
+    return matchers.every(({field, value}) => this.matchesField(field, value));
   }
 
   private create(data: T, blockHeight: number, operationIndex: number): void {

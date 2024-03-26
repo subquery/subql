@@ -427,6 +427,45 @@ describe('cacheModel', () => {
         // Expect only mocked
         expect(result3).toStrictEqual([]);
       });
+
+      //   it.only('correctly offsets when calling getByField', async () => {
+
+      //     let n = 0;
+      //     while(n < 10) {
+      //       testModel.set(
+      //         `entity1_id_0x${n}`,
+      //         {
+      //           id: `entity1_id_0x${n}`,
+      //           field1: 1,
+      //         },
+      //         1
+      //       );
+      //       n ++;
+      //     }
+
+      //     await flush();
+
+      //     // THis should get entities with id 0-19
+      //     const resultsBefore = await testModel.getByField('field1', 1, { offset: 0, limit: 10 });
+
+      //     let m = 5;
+      //     while(m < 6) {
+      //       testModel.set(
+      //         `entity1_id_0x${n}`,
+      //         {
+      //           id: `entity1_id_0x${n}`,
+      //           field1: n % 2,
+      //         },
+      //         1
+      //       );
+      //       m++;
+      //     }
+      //     const resultsAfter = await testModel.getByField('field1', 1, { offset: 0, limit: 10 });
+
+      //     console.log(resultsAfter);
+
+      //     expect(resultsAfter).toEqual(resultsBefore);
+      //   });
     });
 
     describe('getByFields', () => {
@@ -450,6 +489,9 @@ describe('cacheModel', () => {
           },
           2
         );
+
+        // Set this so that we are fetching data in the context of the next block
+        blockHeight = 3;
 
         await testModel.getByFields(
           [
