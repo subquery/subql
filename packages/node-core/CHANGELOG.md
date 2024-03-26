@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- Fix unable to find index in `modelIndexedFields` due to a special case entity name (2327)
 - Fix multi-chain has `block-range` issue due to migartion handle historical status incorrectly
 
 ## [7.5.0] - 2024-03-20
