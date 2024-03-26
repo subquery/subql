@@ -30,4 +30,23 @@ describe('Store Service', () => {
       allowNull: false,
     });
   });
+
+  it('could find indexed field', () => {
+    storeService = new StoreService(null as any, null as any, null as any, null as any);
+    (storeService as any).__modelIndexedFields = [
+      {
+        entityName: 'MinerIP', // no need camel case
+        fieldName: 'net_uid',
+        isUnique: false,
+        type: 'btree',
+      },
+      {
+        entityName: 'MinerColdkey',
+        fieldName: 'net_uid',
+        isUnique: false,
+        type: 'btree',
+      },
+    ];
+    expect(() => storeService.isIndexed('MinerIP', 'netUid')).toBeTruthy();
+  });
 });
