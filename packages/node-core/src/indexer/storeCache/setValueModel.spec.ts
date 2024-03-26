@@ -6,7 +6,7 @@ import {SetValueModel} from './setValueModel';
 describe('SetValueModel', () => {
   let model: SetValueModel<string>;
 
-  beforeAll(() => {
+  beforeEach(() => {
     model = new SetValueModel<string>();
 
     let n = 0;
@@ -30,5 +30,13 @@ describe('SetValueModel', () => {
     expect(model.fromAboveHeight(3).getValues()).toEqual([
       {data: '4', startHeight: 4, endHeight: null, operationIndex: 4, removed: false},
     ]);
+  });
+
+  it('ignores removed data in isMatchData', () => {
+    expect(model.isMatchData('length', 1)).toBeTruthy();
+
+    model.markAsRemoved(4);
+
+    expect(model.isMatchData('length', 1)).toBeFalsy();
   });
 });
