@@ -403,7 +403,8 @@ group by
     return (
       this.modelIndexedFields.findIndex(
         (indexField) =>
-          upperFirst(camelCase(indexField.entityName)) === entity && camelCase(indexField.fieldName) === field
+          (upperFirst(camelCase(indexField.entityName)) === entity || indexField.entityName === entity) &&
+          camelCase(indexField.fieldName) === field
       ) > -1
     );
   }
