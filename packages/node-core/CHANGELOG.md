@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix multi-chain has `block-range` issue due to migartion handle historical status incorrectly
+
 ## [7.5.0] - 2024-03-20
 ### Changed
 - Optimise metadata query when dealing with a large number of dynamic datasources that regularly increase (#2302)
