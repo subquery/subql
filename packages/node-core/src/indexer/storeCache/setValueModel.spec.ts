@@ -32,11 +32,38 @@ describe('SetValueModel', () => {
     ]);
   });
 
-  it('ignores removed data in isMatchData', () => {
-    expect(model.isMatchData('length', 1)).toBeTruthy();
+  it('ignores removed data in matchesField', () => {
+    expect(model.matchesField('length', 1)).toBeTruthy();
 
     model.markAsRemoved(4);
 
-    expect(model.isMatchData('length', 1)).toBeFalsy();
+    expect(model.matchesField('length', 1)).toBeFalsy();
+  });
+
+  it('matches with matchesField and arrays', () => {
+    expect(model.matchesField('length', [1, 2])).toBeTruthy();
+  });
+
+  it('matches with matchesField and undefined', () => {
+    expect(model.matchesField('length', undefined)).toBeFalsy();
+  });
+
+  it('matches with matchesFields', () => {
+    expect(model.matchesFields([{field: 'length', value: undefined}])).toBeFalsy();
+
+    const objectModel = new SetValueModel<{key: string; value: number}>();
+
+    let n = 0;
+    while (n < 5) {
+      objectModel.set({key: 'foo', value: n}, n, n);
+      n++;
+    }
+
+    expect(
+      objectModel.matchesFields([
+        {field: 'key', value: 'foo'},
+        {field: 'value', value: 4},
+      ])
+    ).toBeTruthy();
   });
 });

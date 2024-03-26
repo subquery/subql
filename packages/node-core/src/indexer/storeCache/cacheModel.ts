@@ -197,6 +197,8 @@ export class CachedModel<
     // Acquire a lock so the cache cant be updated in the mean time
     const release = await this.mutex.acquire();
 
+    assert(Object.keys(this.setCache).length === 0, `Set cache has outstanding data ${Object.keys(this.setCache)}`);
+
     try {
       const records = await this.model.findAll({
         where: {
@@ -444,12 +446,12 @@ export class CachedModel<
 
   // If field and value are passed, will getByField
   // If no input parameter, will getAll
-  private getFromCache(field?: keyof T, value?: T[keyof T] | T[keyof T][]): T[] {
+  private getFromCache(field: keyof T, value?: T[keyof T] | T[keyof T][]): T[] {
     const joinedData: T[] = [];
     const unifiedIds: string[] = [];
     Object.entries(this.setCache).map(([, model]) => {
-      if (model.isMatchData(field, value)) {
-        const latestData = model.getLatest()?.removed ? undefined : model.getLatest()?.data;
+      if (model.matchesField(field, value)) {
+        const latestData = model.getLatest()?.data;
         if (latestData) {
           unifiedIds.push(latestData.id);
           joinedData.push(latestData);
