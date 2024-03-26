@@ -35,7 +35,7 @@ describe('Store Service', () => {
     storeService = new StoreService(null as any, null as any, null as any, null as any);
     (storeService as any).__modelIndexedFields = [
       {
-        entityName: 'MinerIP', // no need camel case
+        entityName: 'MinerIP', // This is a special case that upperFirst and camelCase will fail
         fieldName: 'net_uid',
         isUnique: false,
         type: 'btree',
