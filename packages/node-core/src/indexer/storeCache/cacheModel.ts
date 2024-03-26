@@ -217,22 +217,8 @@ export class CachedModel<
     if (field === 'id') {
       return this.get(`${value}`);
     } else {
-      const oneFromCached = this.getFromCache(field, value, true)[0];
-      if (oneFromCached) {
-        return oneFromCached;
-      } else {
-        await this.mutex.waitForUnlock();
-        const record = (
-          await this.model.findOne({
-            where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
-          })
-        )?.toJSON<T>();
-
-        if (record) {
-          this.getCache.set(record.id, record);
-        }
-        return record;
-      }
+      const [result] = await this.getByField(field, value, {limit: 1, offset: 0});
+      return result;
     }
   }
 
@@ -458,7 +444,7 @@ export class CachedModel<
 
   // If field and value are passed, will getByField
   // If no input parameter, will getAll
-  private getFromCache(field?: keyof T, value?: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
+  private getFromCache(field?: keyof T, value?: T[keyof T] | T[keyof T][]): T[] {
     const joinedData: T[] = [];
     const unifiedIds: string[] = [];
     Object.entries(this.setCache).map(([, model]) => {
@@ -470,10 +456,6 @@ export class CachedModel<
         }
       }
     });
-    // No need search further
-    if (findOne && joinedData.length !== 0) {
-      return joinedData;
-    }
 
     this.getCache.forEach((getValue, key) => {
       if (
