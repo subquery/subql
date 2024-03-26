@@ -60,7 +60,9 @@ export class Migration {
     private initEnumTypeMap: Map<string, EnumType>,
     private existingIndexes: {indexname: string}[]
   ) {
-    this.historical = !config.disableHistorical;
+    // We can use store historical here, as long as
+    // store.initCoreTables checked historical status, then store.init called syncSchema then migration run
+    this.historical = storeService.historical;
     this.useSubscription = config.subscription;
 
     if (this.useSubscription && dbType === SUPPORT_DB.cockRoach) {
