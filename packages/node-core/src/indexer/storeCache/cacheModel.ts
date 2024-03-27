@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {FieldOperators, FieldsExpression} from '@subql/types-core';
+import {FieldOperators, FieldsExpression, GetOptions} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
 import {flatten, uniq, cloneDeep, orderBy, unionBy} from 'lodash';
@@ -19,7 +19,6 @@ import {
   FilteredHeightRecords,
   SetValue,
   Exporter,
-  Options,
 } from './types';
 
 const getCacheOptions = {
@@ -35,7 +34,7 @@ const operatorsMap: Record<FieldOperators, any> = {
   '!in': Op.notIn,
 };
 
-const defaultOptions: Required<Options<{id: string}>> = {
+const defaultOptions: Required<GetOptions<{id: string}>> = {
   offset: 0,
   limit: 100,
   orderBy: 'id',
@@ -139,7 +138,7 @@ export class CachedModel<
    * There is also no way to flush data here,
    * flushing will only flush data before the current block so its still required to consider the setCache
    * */
-  async getByFields(filters: FieldsExpression<T>[], options: Options<T> = defaultOptions): Promise<T[]> {
+  async getByFields(filters: FieldsExpression<T>[], options: GetOptions<T> = defaultOptions): Promise<T[]> {
     assert(filters.length, 'At least one filter must be provided');
 
     filters.forEach(([field, operator]) => {
@@ -155,7 +154,7 @@ export class CachedModel<
     // If projects use inefficient store methods, thats on them.
 
     // Ensure we have all the options
-    const fullOptions = {
+    const fullOptions: Required<GetOptions<T>> = {
       ...defaultOptions,
       ...options,
     };
@@ -212,7 +211,7 @@ export class CachedModel<
   async getByField(
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
-    options: Options<T> = defaultOptions
+    options: GetOptions<T> = defaultOptions
   ): Promise<T[]> {
     return this.getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
   }

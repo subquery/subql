@@ -1,23 +1,14 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Store, FieldsExpression} from '@subql/types-core';
+import {Store, FieldsExpression, GetOptions} from '@subql/types-core';
 import {unwrapProxyArgs} from './utils';
 
 export type HostStore = {
   // This matches the store interface
   storeGet: (entity: string, id: string) => Promise<any | null>;
-  storeGetByField: (
-    entity: string,
-    field: string,
-    value: any,
-    options?: {offset?: number; limit?: number}
-  ) => Promise<any[]>;
-  storeGetByFields: (
-    entity: string,
-    filter: FieldsExpression<any>[],
-    options?: {offset?: number; limit?: number}
-  ) => Promise<any[]>;
+  storeGetByField: (entity: string, field: string, value: any, options?: GetOptions<any>) => Promise<any[]>;
+  storeGetByFields: (entity: string, filter: FieldsExpression<any>[], options?: GetOptions<any>) => Promise<any[]>;
   storeGetOneByField: (entity: string, field: string, value: any) => Promise<any | null>;
   storeSet: (entity: string, id: string, data: any) => Promise<void>;
   storeBulkCreate: (entity: string, data: any[]) => Promise<void>;
