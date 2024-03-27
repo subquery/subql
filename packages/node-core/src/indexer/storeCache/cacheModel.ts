@@ -159,8 +159,6 @@ export class CachedModel<
    * flushing will only flush data before the current block so its still required to consider the setCache
    * */
   async getByFields(filters: FieldsExpression<T>[], options: GetOptions<T> = defaultOptions): Promise<T[]> {
-    assert(filters.length, 'At least one filter must be provided');
-
     filters.forEach(([field, operator]) => {
       assert(
         operatorsMap[operator],
