@@ -19,14 +19,17 @@ export interface Entity {
   save?: () => Promise<void>;
 }
 
+export type GetOptions<T> = {
+  offset?: number;
+  limit?: number;
+  orderBy?: keyof T;
+  orderDirection?: 'ASC' | 'DESC';
+};
+
 export interface Store {
   get(entity: string, id: string): Promise<Entity | undefined>;
-  getByFields<T extends Entity>(
-    entity: string,
-    filter: FieldsExpression<T>[],
-    options?: {offset?: number; limit?: number}
-  ): Promise<T[]>;
-  getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;
+  getByFields<T extends Entity>(entity: string, filter: FieldsExpression<T>[], options?: GetOptions<T>): Promise<T[]>;
+  getByField(entity: string, field: string, value: any, options?: GetOptions<Entity>): Promise<Entity[]>;
   getOneByField(entity: string, field: string, value: any): Promise<Entity | undefined>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;

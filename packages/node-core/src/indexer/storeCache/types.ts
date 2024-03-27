@@ -1,25 +1,18 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FieldsExpression} from '@subql/types-core';
+import {FieldsExpression, GetOptions} from '@subql/types-core';
 import {Transaction} from '@subql/x-sequelize';
 import {LRUCache} from 'lru-cache';
 import {SetValueModel} from './setValueModel';
 
 export type HistoricalModel = {__block_range: any};
 
-export type Options<T> = {
-  offset?: number;
-  limit?: number;
-  orderBy?: keyof T;
-  orderDirection?: 'ASC' | 'DESC';
-};
-
 export interface ICachedModel<T> {
   get: (id: string) => Promise<T | undefined>;
   // limit always defined from store
-  getByField: (field: keyof T, value: T[keyof T] | T[keyof T][], options: Options<T>) => Promise<T[]>;
-  getByFields: (filter: FieldsExpression<T>[], options: Options<T>) => Promise<T[]>;
+  getByField: (field: keyof T, value: T[keyof T] | T[keyof T][], options?: GetOptions<T>) => Promise<T[]>;
+  getByFields: (filter: FieldsExpression<T>[], options?: GetOptions<T>) => Promise<T[]>;
   getOneByField: (field: keyof T, value: T[keyof T]) => Promise<T | undefined>;
   set: (id: string, data: T, blockHeight: number) => void;
   bulkCreate: (data: T[], blockHeight: number) => void;
