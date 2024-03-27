@@ -83,20 +83,12 @@ export class FetchService extends BaseFetchService<
     return Math.min(BLOCK_TIME_VARIANCE, chainInterval);
   }
 
-  // This return modulos block (that provided in the handler filter) within a given block range
-  /**
-   *
-   * @param startHeight
-   * @param endHeight
-   * @protected
-   */
-  protected getModulos(startHeight: number, endHeight: number): number[] {
-    const modulos = getModulos(
+  protected getAllModuloNumbers(): number[] {
+    return getModulos(
       this.projectService.getAllDataSources(),
       isCustomDs,
       SubstrateHandlerKind.Block,
     );
-    return modulos.filter((n) => n >= startHeight && n <= endHeight);
   }
 
   protected async initBlockDispatcher(): Promise<void> {

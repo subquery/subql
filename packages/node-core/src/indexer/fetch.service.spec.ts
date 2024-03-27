@@ -35,8 +35,8 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   protected async getChainInterval(): Promise<number> {
     return Promise.resolve(CHAIN_INTERVAL);
   }
-  protected getModulos(startHeight: number, endHeight: number): number[] {
-    return this.modulos.filter((n) => n >= startHeight && n <= endHeight);
+  protected getAllModuloNumbers(): number[] {
+    return this.modulos;
   }
   protected async initBlockDispatcher(): Promise<void> {
     return Promise.resolve();
@@ -370,6 +370,23 @@ describe('Fetch Service', () => {
     // This should include dictionary results interleaved with modulo blocks
     // [2, 4, 6, 8, 10] + [3, 6, 9, 12, 15, 18]. 18 is included because there is a duplicate of 6
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
+  });
+
+  it('can exclude modulo number from a block range', () => {
+    fetchService.modulos = [150, 200];
+
+    //getModuloBlocks
+    // ds start with 1, end with 1500
+    const moduloNumbers1 = (fetchService as any).getModuloNumbers(1, 1500);
+    expect(moduloNumbers1).toEqual([150, 200]);
+    // now process start from 300 and end with 800
+    expect((fetchService as any).getModuloBlocks(300, 800, moduloNumbers1)).toEqual([300, 400, 450, 600, 750, 800]);
+
+    // ds start with 180, but not provide with ds end height, we can use process lastHeight 1000
+    const moduloNumbers2 = (fetchService as any).getModuloNumbers(180, 1000);
+    expect(moduloNumbers2).toEqual([200]);
+    // now process start from 300 and end with 800
+    expect((fetchService as any).getModuloBlocks(300, 1000, moduloNumbers2)).toEqual([400, 600, 800, 1000]);
   });
 
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {

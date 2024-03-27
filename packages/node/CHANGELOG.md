@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Fix unable to find index in `modelIndexedFields` due to a special case entity name (2327)
+- Fix modulo block didn't apply correctly with multiple dataSources (#2331)
 ### Changed
 - Updated with node-core to support both versions of dictionaries. Now also support multiple dictionary endpoints, indexer will fetch and switch dictionaries base on available blocks (#2257)
 
