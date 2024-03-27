@@ -4,12 +4,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
-import { NodeConfig, DictionaryService, ApiService } from '@subql/node-core';
+import {
+  NodeConfig,
+  DictionaryService,
+  ApiService,
+  getLogger,
+} from '@subql/node-core';
 import { EthereumBlock, SubqlDatasource } from '@subql/types-ethereum';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { EthereumApiService } from '../../ethereum';
 import { EthDictionaryV1 } from './v1';
 import { EthDictionaryV2 } from './v2';
+
+const logger = getLogger('eth-dictionary');
 
 @Injectable()
 export class EthDictionaryService extends DictionaryService<
@@ -48,12 +55,18 @@ export class EthDictionaryService extends DictionaryService<
         );
         dictionariesV2.push(dictionaryV2);
       } catch (e) {
-        const dictionaryV1 = await EthDictionaryV1.create(
-          this.project,
-          this.nodeConfig,
-          endpoint,
-        );
-        dictionariesV1.push(dictionaryV1);
+        try {
+          const dictionaryV1 = await EthDictionaryV1.create(
+            this.project,
+            this.nodeConfig,
+            endpoint,
+          );
+          dictionariesV1.push(dictionaryV1);
+        } catch (e) {
+          logger.warn(
+            `Dictionary endpoint "${endpoint}" is not a valid dictionary`,
+          );
+        }
       }
     }
     // v2 should be prioritised
