@@ -5,7 +5,7 @@ import assert from 'assert';
 import {FieldOperators, FieldsExpression, GetOptions} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
-import {flatten, uniq, cloneDeep, orderBy, unionBy} from 'lodash';
+import {flatten, uniq, cloneDeep, orderBy} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {Cacheable} from './cacheable';
 import {CsvStoreService} from './csvStore.service';
@@ -40,6 +40,26 @@ const defaultOptions: Required<GetOptions<{id: string}>> = {
   orderBy: 'id',
   orderDirection: 'ASC',
 };
+
+/**
+ * This differs from lodashs union by where it picks the item from the first array.
+ * We want the order of the first array but the preference from the second
+ * */
+function unionByX<T, K>(orderData: T[], preferredData: T[], iteratee: (value: T) => K): T[] {
+  const map = new Map<K, T>();
+
+  orderData.forEach((value) => {
+    const key = iteratee(value);
+    map.set(key, value);
+  });
+
+  preferredData.forEach((value) => {
+    const key = iteratee(value);
+    map.set(key, value);
+  });
+
+  return [...map.values()];
+}
 
 export class CachedModel<
     T extends {id: string; __block_range?: (number | null)[] | Fn} = {
@@ -161,14 +181,6 @@ export class CachedModel<
 
     await this.mutex.waitForUnlock();
 
-    /**
-     * THOUGHT: Is a better way to do this; to have a less strict DB query and mutate the result more.
-     * This would mean taking the db result,
-     *   - overwriting cache data where there are duplicates
-     *   - removing and removals (requires a larger limit to make up reduced result)
-     *   - insert any new created values (how do we insert in right position)
-     */
-
     // Query DB with all params
     const records = await this.model.findAll({
       where: {
@@ -200,7 +212,7 @@ export class CachedModel<
     // It needs to be reordered
     const combined = orderBy(
       // Merge cache and db data with preference for cache data
-      unionBy(cacheData, dbData, 'id'),
+      unionByX(dbData, cacheData, (v) => v.id),
       [fullOptions.orderBy],
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
     ).slice(0, options.limit); // Re-apply limit over combined data
