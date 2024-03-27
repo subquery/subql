@@ -5,7 +5,7 @@ import assert from 'assert';
 import {FieldOperators, FieldsExpression, GetOptions} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
-import {flatten, uniq, cloneDeep, orderBy} from 'lodash';
+import {flatten, uniq, cloneDeep, orderBy, difference} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {Cacheable} from './cacheable';
 import {CsvStoreService} from './csvStore.service';
@@ -179,22 +179,6 @@ export class CachedModel<
 
     await this.mutex.waitForUnlock();
 
-    // Query DB with all params
-    const records = await this.model.findAll({
-      where: {
-        // Explicit with AND here to remove any ambiguity
-        [Op.and]: [
-          ...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})),
-          {id: {[Op.notIn]: this.allCachedIds()}},
-        ] as any, // Types not working properly
-      },
-      limit: options?.limit,
-      offset: options?.offset,
-      order: [[fullOptions.orderBy as string, fullOptions.orderDirection]],
-    });
-
-    const dbData = records.map((r) => r.toJSON());
-
     // Query cache with all params
     // Apply the operations in the same order as the DB would, order -> filter -> offset
     const cacheData = orderBy(
@@ -202,9 +186,42 @@ export class CachedModel<
       [(value: SetValueModel<T>) => value.getLatest()?.data?.[fullOptions.orderBy]],
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
     )
-      .filter((value) => value.matchesFields(filters))
-      .map((value) => value.getLatest()?.data)
-      .slice(options.offset) as T[];
+      .filter((value) => value.matchesFields(filters)) // This filters out any removed/undefined
+      .map((value) => value.getLatest()?.data) as T[];
+
+    const cacheIds = cacheData.map((c) => c.id);
+
+    // Get the setCache data that doesn't match filters so we can exclude from DB results
+    const notMatches = difference(Object.keys(this.setCache), cacheIds);
+
+    // Query DB with all params
+    const records = await this.model.findAll({
+      where: filters.length
+        ? {
+            [Op.or]: [
+              // Explicit with AND here to remove any ambiguity
+              {
+                [Op.and]: [
+                  ...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})),
+                  {id: {[Op.notIn]: notMatches}},
+                ],
+              },
+              // Also get all values that match the cache in order to retain order
+              // This still has problems with offset
+              {id: {[Op.in]: cacheIds}},
+            ] as any, // Types not working properly
+          }
+        : undefined,
+      limit: fullOptions.limit /* + notMatches.length*/, // Over extend the limit by the number of items we know we will remove
+      offset: fullOptions.offset,
+      order: [[fullOptions.orderBy as string, fullOptions.orderDirection]],
+    });
+
+    const dbData = records.map((r) => r.toJSON());
+    // // OPTION: remove the NotIn filter and extend the limit then filter here. Need to determine what has better performance
+    // .filter((r => {
+    //   return !notMatches.includes(r.id)
+    // }));
 
     // Combine data from cache and db
     // It needs to be reordered
@@ -213,7 +230,7 @@ export class CachedModel<
       unionByX(dbData, cacheData, (v) => v.id),
       [fullOptions.orderBy],
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
-    ).slice(0, options.limit); // Re-apply limit over combined data
+    ).slice(0, fullOptions.limit); // Re-apply limit
 
     return combined;
   }
