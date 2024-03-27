@@ -36,7 +36,8 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   // The rough interval at which new blocks are produced
   protected abstract getChainInterval(): Promise<number>;
-  protected abstract getModulos(): number[];
+  // This return modulos block (that provided in the handler filter) within a given block range
+  protected abstract getModulos(startHeight: number, endHeight: number): number[];
 
   protected abstract initBlockDispatcher(): Promise<void>;
 
@@ -179,8 +180,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     await this.fillNextBlockBuffer(initBlockHeight);
   }
 
+  // get all modulo numbers with a specific block ranges
   getModuloBlocks(startHeight: number, endHeight: number): number[] {
-    const modulos = this.getModulos();
+    // valid modulo numbers from handler filters
+    const modulos = this.getModulos(startHeight, endHeight);
     const moduloBlocks: number[] = [];
     for (let i = startHeight; i < endHeight; i++) {
       if (modulos.find((m) => i % m === 0)) {
@@ -198,7 +201,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   getEnqueuedModuloBlocks(startBlockHeight: number, endBlockHeight: number): (IBlock<FB> | number)[] {
     return this.getModuloBlocks(
       startBlockHeight,
-      Math.min(this.nodeConfig.batchSize * Math.max(...this.getModulos()) + startBlockHeight, endBlockHeight)
+      Math.min(
+        this.nodeConfig.batchSize * Math.max(...this.getModulos(startBlockHeight, endBlockHeight)) + startBlockHeight,
+        endBlockHeight
+      )
     ).slice(0, this.nodeConfig.batchSize);
   }
 
@@ -273,19 +279,26 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
         }
       } else {
         const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
-
+        // Find current datasources to check if they are only modulo filters, this also limits the range to the current DS set.
         const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
         assert(details, `Datasources not found for height ${startBlockHeight}`);
         const {endHeight: rangeEndHeight, value: relevantDS} = details;
         const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
+        // Min of current ds endHeight
+        const minDsEndHeight = Math.min(...relevantDS.map((d) => d?.endBlock ?? Number.MAX_SAFE_INTEGER));
+        // Modulo end height should be min of current ds endHeight,
+        // if not defined, use rangeEndHeight (next ds startHeight -1), otherwise use latestHeight
+        // TODO, this is better handle from within blockHeight maps, use rangeEndHeight
+        const moduloEndHeight = Math.min(minDsEndHeight, rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight);
 
         const enqueuingBlocks =
-          handlers.length && this.getModulos().length === handlers.length
-            ? this.getEnqueuedModuloBlocks(
-                startBlockHeight,
-                Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight)
-              )
-            : range(startBlockHeight, endHeight + 1);
+          // This check whether within blockRange has only block modulos handler or with others
+          // If modulos hanlder only, we will enqueue only modulos number,
+          // If has other handlers, we will enqueue every block
+          handlers.length && this.getModulos(startBlockHeight, moduloEndHeight).length === handlers.length
+            ? this.getEnqueuedModuloBlocks(startBlockHeight, moduloEndHeight)
+            : // Should also min include dataSource endHeight and endHeight (calculated by batch size)
+              range(startBlockHeight, Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, endHeight) + 1);
 
         await this.enqueueBlocks(enqueuingBlocks, latestHeight);
       }

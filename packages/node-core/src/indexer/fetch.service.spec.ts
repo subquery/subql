@@ -35,8 +35,8 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   protected async getChainInterval(): Promise<number> {
     return Promise.resolve(CHAIN_INTERVAL);
   }
-  protected getModulos(): number[] {
-    return this.modulos;
+  protected getModulos(startHeight: number, endHeight: number): number[] {
+    return this.modulos.filter((n) => n >= startHeight && n <= endHeight);
   }
   protected async initBlockDispatcher(): Promise<void> {
     return Promise.resolve();
@@ -415,6 +415,47 @@ describe('Fetch Service', () => {
     await fetchService.init(2);
 
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 11);
+  });
+
+  it('when enqueueu ds endHeight less than modulo height, should not include any modulo', async () => {
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    fetchService.modulos = [150];
+    dataSources = [
+      {
+        kind: 'mock/DataSource',
+        startBlock: 1,
+        endBlock: 9,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              kind: 'mock/Handler',
+              handler: 'mockFunction',
+              filter: {},
+            },
+          ],
+        },
+      },
+      {
+        kind: 'mock/DataSource',
+        startBlock: 10,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              kind: 'mock/Handler',
+              handler: 'mockFunction',
+              filter: {
+                modulo: 150,
+              },
+            },
+          ],
+        },
+      },
+    ];
+    // // First ds not found modulo will enqueue block until next ds startHeight -1, so it is 9 here
+    await fetchService.init(2);
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([2, 3, 4, 5, 6, 7, 8, 9], 9);
   });
 
   it('enqueues modulo blocks with furture dataSources', async () => {
