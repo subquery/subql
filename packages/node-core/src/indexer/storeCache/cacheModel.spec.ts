@@ -426,14 +426,14 @@ describe('cacheModel', () => {
     });
 
     describe('getByFields', () => {
-      it('throws for empty filter', async () => {
+      it('allows empty filter', async () => {
         await expect(
           testModel.getByFields(
             // Any needed to get past type check
             [],
             {offset: 0, limit: 1}
           )
-        ).rejects.toThrow(`At least one filter must be provided`);
+        ).resolves.not.toThrow();
       });
 
       it('throws for unsupported operators', async () => {

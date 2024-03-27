@@ -14,7 +14,7 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-jest.setTimeout(100_000);
+jest.setTimeout(10_000);
 
 describe('cacheMetadata integration', () => {
   let sequelize: Sequelize;
@@ -167,6 +167,38 @@ describe('cacheMetadata integration', () => {
 
       expect(results.length).toEqual(10);
       expect(results.map((r) => r.field1)).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    });
+
+    it('gets correct results with no filter', async () => {
+      let n = 0;
+      const ids: string[] = [];
+      while (n < 50) {
+        ids.push(`entity1_id_0x${n}`);
+        n++;
+      }
+
+      const results = await cacheModel.getByFields([], {offset: 0, limit: 30});
+
+      expect(results.map((r) => r.id)).toEqual(ids.sort().slice(0, 30));
+    });
+
+    it('correctly offsets data', async () => {
+      const results0 = await cacheModel.getByFields([], {offset: 0, limit: 45});
+      const results1 = await cacheModel.getByFields([], {offset: 25, limit: 20});
+
+      // Take all results and manually page
+      const resultsWithPage = results0.slice(25).slice(0, 20);
+
+      console.log(
+        'RESULTS0',
+        resultsWithPage.map((r) => r.id)
+      );
+      console.log(
+        'RESULTS1',
+        results1.map((r) => r.id)
+      );
+
+      expect(results1).toEqual(resultsWithPage);
     });
   });
 });
