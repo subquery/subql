@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize, DataTypes} from '@subql/x-sequelize';
+import {padStart} from 'lodash';
 import {DbOption, NodeConfig} from '../../';
 import {CachedModel} from './cacheModel';
 
@@ -66,14 +67,16 @@ describe('cacheMetadata integration', () => {
   });
 
   describe('getByFields', () => {
+    const formatIdNumber = (n: number): string => padStart(`${n}`, 3, '0');
+
     beforeAll(async () => {
       // Pre-populate some data and flush it do the db
       let n = 0;
       while (n < 100) {
         cacheModel.set(
-          `entity1_id_0x${n}`,
+          `entity1_id_0x${formatIdNumber(n)}`,
           {
-            id: `entity1_id_0x${n}`,
+            id: `entity1_id_0x${formatIdNumber(n)}`,
             field1: 1,
           },
           1
@@ -83,33 +86,47 @@ describe('cacheMetadata integration', () => {
 
       await flush(2);
 
-      // Add some changes to the cache
+      // Updates to existing data
       let m = 20;
       while (m < 30) {
         cacheModel.set(
-          `entity1_id_0x${m}`,
+          `entity1_id_0x${formatIdNumber(m)}`,
           {
-            id: `entity1_id_0x${m}`,
+            id: `entity1_id_0x${formatIdNumber(m)}`,
             field1: m % 2,
           },
           3
         );
         m++;
       }
+
+      // New data
+      let o = 100;
+      while (o < 130) {
+        cacheModel.set(
+          `entity1_id_0x${formatIdNumber(o)}`,
+          {
+            id: `entity1_id_0x${formatIdNumber(o)}`,
+            field1: 2,
+          },
+          3
+        );
+        o++;
+      }
     });
 
     it('gets one item correctly', async () => {
       // Db value
-      const res0 = await cacheModel.getOneByField('id', 'entity1_id_0x1');
-      expect(res0).toEqual({id: 'entity1_id_0x1', field1: 1});
+      const res0 = await cacheModel.getOneByField('id', 'entity1_id_0x001');
+      expect(res0).toEqual({id: 'entity1_id_0x001', field1: 1});
 
       // Cache value
-      const res1 = await cacheModel.getOneByField('id', 'entity1_id_0x20');
-      expect(res1).toEqual({id: 'entity1_id_0x20', field1: 0});
+      const res1 = await cacheModel.getOneByField('id', 'entity1_id_0x020');
+      expect(res1).toEqual({id: 'entity1_id_0x020', field1: 0});
 
       // Cache value
-      const res2 = await cacheModel.getOneByField('id', 'entity1_id_0x21');
-      expect(res2).toEqual({id: 'entity1_id_0x21', field1: 1});
+      const res2 = await cacheModel.getOneByField('id', 'entity1_id_0x021');
+      expect(res2).toEqual({id: 'entity1_id_0x021', field1: 1});
     });
 
     it('corretly merges data from the setCache', async () => {
@@ -124,36 +141,36 @@ describe('cacheMetadata integration', () => {
       // This should exclude all the cache values where field1 = 0
       // The database would still have those values as 1
       expect(results.map((res) => res.id)).toEqual([
-        'entity1_id_0x0',
-        'entity1_id_0x1',
-        'entity1_id_0x10',
-        'entity1_id_0x11',
-        'entity1_id_0x12',
-        'entity1_id_0x13',
-        'entity1_id_0x14',
-        'entity1_id_0x15',
-        'entity1_id_0x16',
-        'entity1_id_0x17',
-        'entity1_id_0x18',
-        'entity1_id_0x19',
-        'entity1_id_0x2',
-        'entity1_id_0x21',
-        'entity1_id_0x23',
-        'entity1_id_0x25',
-        'entity1_id_0x27',
-        'entity1_id_0x29',
-        'entity1_id_0x3',
-        'entity1_id_0x30',
-        'entity1_id_0x31',
-        'entity1_id_0x32',
-        'entity1_id_0x33',
-        'entity1_id_0x34',
-        'entity1_id_0x35',
-        'entity1_id_0x36',
-        'entity1_id_0x37',
-        'entity1_id_0x38',
-        'entity1_id_0x39',
-        'entity1_id_0x4',
+        'entity1_id_0x000',
+        'entity1_id_0x001',
+        'entity1_id_0x002',
+        'entity1_id_0x003',
+        'entity1_id_0x004',
+        'entity1_id_0x005',
+        'entity1_id_0x006',
+        'entity1_id_0x007',
+        'entity1_id_0x008',
+        'entity1_id_0x009',
+        'entity1_id_0x010',
+        'entity1_id_0x011',
+        'entity1_id_0x012',
+        'entity1_id_0x013',
+        'entity1_id_0x014',
+        'entity1_id_0x015',
+        'entity1_id_0x016',
+        'entity1_id_0x017',
+        'entity1_id_0x018',
+        'entity1_id_0x019',
+        'entity1_id_0x021',
+        'entity1_id_0x023',
+        'entity1_id_0x025',
+        'entity1_id_0x027',
+        'entity1_id_0x029',
+        'entity1_id_0x030',
+        'entity1_id_0x031',
+        'entity1_id_0x032',
+        'entity1_id_0x033',
+        'entity1_id_0x034',
       ]);
     });
 
@@ -173,7 +190,7 @@ describe('cacheMetadata integration', () => {
       let n = 0;
       const ids: string[] = [];
       while (n < 50) {
-        ids.push(`entity1_id_0x${n}`);
+        ids.push(`entity1_id_0x${formatIdNumber(n)}`);
         n++;
       }
 
@@ -183,22 +200,32 @@ describe('cacheMetadata integration', () => {
     });
 
     it('correctly offsets data', async () => {
-      const results0 = await cacheModel.getByFields([], {offset: 0, limit: 45});
+      const fullResults = await cacheModel.getByFields([], {offset: 0, limit: 50});
       const results1 = await cacheModel.getByFields([], {offset: 25, limit: 20});
+      const results2 = await cacheModel.getByFields([], {offset: 15, limit: 20});
+      const results3 = await cacheModel.getByFields([], {offset: 5, limit: 15});
+      const results4 = await cacheModel.getByFields([], {offset: 30, limit: 20});
+      const results5 = await cacheModel.getByFields([], {offset: 20, limit: 5});
 
-      // Take all results and manually page
-      const resultsWithPage = results0.slice(25).slice(0, 20);
+      expect(results1).toEqual(fullResults.slice(25).slice(0, 20)); // Failing because we cant offset cache data correctly
+      expect(results2).toEqual(fullResults.slice(15).slice(0, 20));
+      expect(results3).toEqual(fullResults.slice(5).slice(0, 15));
+      expect(results4).toEqual(fullResults.slice(30).slice(0, 20));
+      expect(results5).toEqual(fullResults.slice(20).slice(0, 5));
+    });
+
+    it('correctly queries data not in the db, only in the cache', async () => {
+      const result1 = await cacheModel.getByFields([['field1', '=', 2]]);
+      expect(result1.length).toEqual(30);
+
+      const result2 = await cacheModel.getByFields([], {limit: 40, orderDirection: 'DESC'});
 
       console.log(
-        'RESULTS0',
-        resultsWithPage.map((r) => r.id)
+        'RESULT2',
+        result2.map((r) => r.id)
       );
-      console.log(
-        'RESULTS1',
-        results1.map((r) => r.id)
-      );
-
-      expect(results1).toEqual(resultsWithPage);
+      expect(result2[0].id).toEqual('entity1_id_0x129'); // Failing because we cant offset cache data correctly
+      expect(result2[result2.length - 1].id).toEqual('entity1_id_0x089');
     });
   });
 });
