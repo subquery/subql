@@ -102,7 +102,7 @@ describe('cacheModel', () => {
       blockHeight = undefined;
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(sequelize.model('entity1'), false, {} as NodeConfig, () => i++, flush);
+      testModel = new CachedModel(sequelize.model('entity1'), false, {} as NodeConfig, () => i++);
     });
 
     it('can avoid race conditions', async () => {
@@ -156,7 +156,7 @@ describe('cacheModel', () => {
       expect(finalEntity?.field1).toEqual(3);
     });
 
-    it('can call getByFields, whith entities updated in the same block', async () => {
+    it('can call getByFields, with entities updated in the same block', async () => {
       blockHeight = 1;
       testModel.set(
         'entity1_id_0x01',
@@ -178,8 +178,6 @@ describe('cacheModel', () => {
         blockHeight
       );
 
-      const flushSpy = jest.spyOn(testModel as any, 'flushAll');
-
       const result = await testModel.getByFields(
         [
           ['id', '=', 'entity1_id_0x01'],
@@ -187,8 +185,6 @@ describe('cacheModel', () => {
         ],
         {offset: 0, limit: 100}
       );
-
-      expect(flushSpy).toHaveBeenCalledTimes(1);
 
       expect(result).toEqual([
         {
@@ -204,7 +200,7 @@ describe('cacheModel', () => {
       jest.clearAllMocks();
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++, flush);
+      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++);
     });
 
     // it should keep same behavior as hook we used
@@ -427,81 +423,17 @@ describe('cacheModel', () => {
         // Expect only mocked
         expect(result3).toStrictEqual([]);
       });
-
-      //   it.only('correctly offsets when calling getByField', async () => {
-
-      //     let n = 0;
-      //     while(n < 10) {
-      //       testModel.set(
-      //         `entity1_id_0x${n}`,
-      //         {
-      //           id: `entity1_id_0x${n}`,
-      //           field1: 1,
-      //         },
-      //         1
-      //       );
-      //       n ++;
-      //     }
-
-      //     await flush();
-
-      //     // THis should get entities with id 0-19
-      //     const resultsBefore = await testModel.getByField('field1', 1, { offset: 0, limit: 10 });
-
-      //     let m = 5;
-      //     while(m < 6) {
-      //       testModel.set(
-      //         `entity1_id_0x${n}`,
-      //         {
-      //           id: `entity1_id_0x${n}`,
-      //           field1: n % 2,
-      //         },
-      //         1
-      //       );
-      //       m++;
-      //     }
-      //     const resultsAfter = await testModel.getByField('field1', 1, { offset: 0, limit: 10 });
-
-      //     console.log(resultsAfter);
-
-      //     expect(resultsAfter).toEqual(resultsBefore);
-      //   });
     });
 
     describe('getByFields', () => {
-      it('calls getByField if there is one filter', async () => {
-        const spy = jest.spyOn(testModel, 'getByField');
-
-        await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 1});
-
-        expect(spy).toHaveBeenCalledWith('field1', 1, {offset: 0, limit: 1});
-      });
-
-      it('flushes the cache first', async () => {
-        const spy = jest.spyOn(testModel, 'flush');
-
-        // Set data so there is something to be flushed
-        testModel.set(
-          'entity1_id_0x02',
-          {
-            id: 'entity1_id_0x02',
-            field1: 2,
-          },
-          2
-        );
-
-        // Set this so that we are fetching data in the context of the next block
-        blockHeight = 3;
-
-        await testModel.getByFields(
-          [
-            ['field1', '=', 1],
-            ['field1', 'in', [2]],
-          ],
-          {offset: 0, limit: 1}
-        );
-
-        expect(spy).toHaveBeenCalled();
+      it('throws for empty filter', async () => {
+        await expect(
+          testModel.getByFields(
+            // Any needed to get past type check
+            [],
+            {offset: 0, limit: 1}
+          )
+        ).rejects.toThrow(`At least one filter must be provided`);
       });
 
       it('throws for unsupported operators', async () => {
