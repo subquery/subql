@@ -5,7 +5,7 @@ import assert from 'assert';
 import {FieldOperators, FieldsExpression} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
-import {flatten, includes, isEqual, uniq, cloneDeep} from 'lodash';
+import {flatten, uniq, cloneDeep, orderBy, unionBy} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {Cacheable} from './cacheable';
 import {CsvStoreService} from './csvStore.service';
@@ -19,6 +19,7 @@ import {
   FilteredHeightRecords,
   SetValue,
   Exporter,
+  Options,
 } from './types';
 
 const getCacheOptions = {
@@ -32,6 +33,13 @@ const operatorsMap: Record<FieldOperators, any> = {
   '!=': Op.ne,
   in: Op.in,
   '!in': Op.notIn,
+};
+
+const defaultOptions: Required<Options<{id: string}>> = {
+  offset: 0,
+  limit: 100,
+  orderBy: 'id',
+  orderDirection: 'ASC',
 };
 
 export class CachedModel<
@@ -58,7 +66,6 @@ export class CachedModel<
     config: NodeConfig,
     private getNextStoreOperationIndex: () => number,
     // This is used by methods such as getByFields which don't support caches
-    private flushAll: () => Promise<void>,
     private readonly useCockroachDb = false
   ) {
     super();
@@ -75,7 +82,7 @@ export class CachedModel<
   allCachedIds(): string[] {
     // unified ids
     // We need to look from setCache too, as setCache is LFU cache, it might have more/fewer entities with setCache
-    return uniq(flatten([[...this.getCache.keys()], Object.keys(this.setCache), Object.keys(this.removeCache)]));
+    return uniq(flatten([Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
   async get(id: string): Promise<T | undefined> {
@@ -123,55 +130,19 @@ export class CachedModel<
     this.exporters.push(cacheState);
   }
 
-  async getByField(
-    field: keyof T,
-    value: T[keyof T] | T[keyof T][],
-    options: {
-      offset: number;
-      limit: number;
-    }
-  ): Promise<T[]> {
-    let cachedData = this.getFromCache(field, value);
-    if (cachedData.length <= options.offset) {
-      // example cache length 16, offset is 30
-      // it should skip cache value
-      cachedData = [];
-    } else if (cachedData.length >= options.offset + options.limit) {
-      // example cache length 166, offset is 30, limit is 50
-      // then return all from cache [30,80]
-      return cachedData.slice(options.offset, options.offset + options.limit);
-    } else if (cachedData.length < options.offset + options.limit) {
-      // example cache length 66, offset is 30, limit is 50
-      // then return [30,66] from cache, set new limit and join record from db
-      cachedData = cachedData.slice(options.offset, cachedData.length);
-      options.limit = options.limit - (cachedData.length - options.offset);
-    }
+  /**
+   * getByFields allows ordering and filtering of data from the setCache and DB.
+   *
+   * It does not use the get cache because there is no way to guarantee order,
+   * and we have no way to tell where setCache data fits in the order.
+   *
+   * There is also no way to flush data here,
+   * flushing will only flush data before the current block so its still required to consider the setCache
+   * */
+  async getByFields(filters: FieldsExpression<T>[], options: Options<T> = defaultOptions): Promise<T[]> {
+    assert(filters.length, 'At least one filter must be provided');
 
-    await this.mutex.waitForUnlock();
-    const records = await this.model.findAll({
-      where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
-      limit: options?.limit, //limit should pass from store
-      offset: options?.offset,
-    });
-
-    // Update getCache value here
-    records.map((record) => {
-      const data = record.toJSON<T>();
-      this.getCache.set(data.id, data);
-    });
-
-    return cachedData.concat(records.map((record) => record.toJSON() as T));
-  }
-
-  async getByFields(
-    filter: FieldsExpression<T>[],
-    options: {
-      offset: number;
-      limit: number;
-    }
-  ): Promise<T[]> {
-    // Validate filter
-    filter.forEach(([field, operator]) => {
+    filters.forEach(([field, operator]) => {
       assert(
         operatorsMap[operator],
         `Operator ('${operator}') for field ${String(field)} is not valid. Options are ${Object.keys(operatorsMap).join(
@@ -180,48 +151,79 @@ export class CachedModel<
       );
     });
 
-    // If there is a single field we can use `getByField`
-    if (filter.length === 1) {
-      const [field, operator, value] = filter[0];
-      if (operator === '=' || operator === 'in') {
-        return this.getByField(field, value, options);
-      }
-    }
+    // Dont do anything to return early like checking for a single ID filter.
+    // If projects use inefficient store methods, thats on them.
 
-    // This query doesn't support the cache, so we flush to ensure all data is in the db then query from the db
-    if (this.isFlushable) {
-      // This will flush all entities
-      await this.flushAll();
-    }
+    // Ensure we have all the options
+    const fullOptions = {
+      ...defaultOptions,
+      ...options,
+    };
 
-    // Acquire a lock so the cache cant be updated in the mean time
-    const release = await this.mutex.acquire();
+    await this.mutex.waitForUnlock();
 
-    assert(Object.keys(this.setCache).length === 0, `Set cache has outstanding data ${Object.keys(this.setCache)}`);
+    /**
+     * THOUGHT: Is a better way to do this; to have a less strict DB query and mutate the result more.
+     * This would mean taking the db result,
+     *   - overwriting cache data where there are duplicates
+     *   - removing and removals (requires a larger limit to make up reduced result)
+     *   - insert any new created values (how do we insert in right position)
+     */
 
-    try {
-      const records = await this.model.findAll({
-        where: {
-          // Explicit with AND here to remove any ambiguity
-          [Op.and]: filter.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})) as any, // Types not working properly
-        },
-        limit: options?.limit,
-        offset: options?.offset,
-      });
+    // Query DB with all params
+    const records = await this.model.findAll({
+      where: {
+        // Explicit with AND here to remove any ambiguity
+        [Op.and]: [
+          ...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})),
+          {id: {[Op.notIn]: this.allCachedIds()}},
+        ] as any, // Types not working properly
+      },
+      limit: options?.limit,
+      offset: options?.offset,
+      order: [[fullOptions.orderBy as string, fullOptions.orderDirection]],
+    });
 
-      return records.map((r) => r.toJSON());
-    } finally {
-      release();
-    }
+    const dbData = records.map((r) => r.toJSON());
+
+    // Query cache with all params
+    // Apply the operations in the same order as the DB would, order -> filter -> offset
+    const cacheData = orderBy(
+      Object.values(this.setCache),
+      [(value: SetValueModel<T>) => value.getLatest()?.data?.[fullOptions.orderBy]],
+      [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
+    )
+      .filter((value) => value.matchesFields(filters))
+      .map((value) => value.getLatest()?.data)
+      .slice(options.offset) as T[];
+
+    // Combine data from cache and db
+    // It needs to be reordered
+    const combined = orderBy(
+      // Merge cache and db data with preference for cache data
+      unionBy(cacheData, dbData, 'id'),
+      [fullOptions.orderBy],
+      [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
+    ).slice(0, options.limit); // Re-apply limit over combined data
+
+    return combined;
+  }
+
+  async getByField(
+    field: keyof T,
+    value: T[keyof T] | T[keyof T][],
+    options: Options<T> = defaultOptions
+  ): Promise<T[]> {
+    return this.getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
   }
 
   async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
-    if (field === 'id') {
-      return this.get(`${value}`);
-    } else {
-      const [result] = await this.getByField(field, value, {limit: 1, offset: 0});
-      return result;
-    }
+    const [res] = await this.getByFields([[field, '=', value]], {
+      ...defaultOptions,
+      limit: 1,
+    });
+
+    return res;
   }
 
   set(id: string, data: T, blockHeight: number): void {
@@ -442,36 +444,6 @@ export class CachedModel<
     }, {} as Record<string, RemoveValue>);
 
     this.flushableRecordCounter = newCounter;
-  }
-
-  // If field and value are passed, will getByField
-  // If no input parameter, will getAll
-  private getFromCache(field: keyof T, value?: T[keyof T] | T[keyof T][]): T[] {
-    const joinedData: T[] = [];
-    const unifiedIds: string[] = [];
-    Object.entries(this.setCache).map(([, model]) => {
-      if (model.matchesField(field, value)) {
-        const latestData = model.getLatest()?.data;
-        if (latestData) {
-          unifiedIds.push(latestData.id);
-          joinedData.push(latestData);
-        }
-      }
-    });
-
-    this.getCache.forEach((getValue, key) => {
-      if (
-        getValue &&
-        !unifiedIds.includes(key) &&
-        (field === undefined ||
-          value === undefined ||
-          (Array.isArray(value) && includes(value, getValue[field])) ||
-          isEqual(getValue[field], value))
-      ) {
-        joinedData.push(getValue);
-      }
-    });
-    return joinedData;
   }
 
   // Different with markAsDeleted, we only mark/close all the records less than current block height
