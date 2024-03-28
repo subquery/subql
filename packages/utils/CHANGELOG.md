@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2024-03-28
+### Fixed
+- Fix dictionary tests importing from one another, fix not handling v2 block range type (#2322)
+
 ### Added
 - Export 'numberToHex' (#2307)
 
@@ -125,7 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.9.0...HEAD
+[2.9.0]: https://github.com/subquery/subql/compare/utils/2.8.0...utils/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/utils/2.7.1...utils/2.8.0
 [2.7.1]: https://github.com/subquery/subql/compare/utils/2.7.0...utils/2.7.1
 [2.7.0]: https://github.com/subquery/subql/compare/utils/2.6.2...utils/2.7.0
