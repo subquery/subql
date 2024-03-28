@@ -199,33 +199,61 @@ describe('cacheMetadata integration', () => {
       expect(results.map((r) => r.id)).toEqual(ids.sort().slice(0, 30));
     });
 
-    it('correctly offsets data', async () => {
-      const fullResults = await cacheModel.getByFields([], {offset: 0, limit: 50});
-      const results1 = await cacheModel.getByFields([], {offset: 25, limit: 20});
-      const results2 = await cacheModel.getByFields([], {offset: 15, limit: 20});
-      const results3 = await cacheModel.getByFields([], {offset: 5, limit: 15});
-      const results4 = await cacheModel.getByFields([], {offset: 30, limit: 20});
-      const results5 = await cacheModel.getByFields([], {offset: 20, limit: 5});
+    describe('offsets with cache data', () => {
+      let fullResults: {id: string; field1: number}[];
 
-      expect(results1).toEqual(fullResults.slice(25).slice(0, 20)); // Failing because we cant offset cache data correctly
-      expect(results2).toEqual(fullResults.slice(15).slice(0, 20));
-      expect(results3).toEqual(fullResults.slice(5).slice(0, 15));
-      expect(results4).toEqual(fullResults.slice(30).slice(0, 20));
-      expect(results5).toEqual(fullResults.slice(20).slice(0, 5));
+      beforeAll(async () => {
+        fullResults = await cacheModel.getByFields([], {offset: 0, limit: 50});
+      });
+
+      it('gets data before cache', async () => {
+        const results = await cacheModel.getByFields([], {offset: 5, limit: 15});
+
+        expect(results).toEqual(fullResults.slice(5).slice(0, 15));
+      });
+
+      it('gets data before and in cache', async () => {
+        const results = await cacheModel.getByFields([], {offset: 15, limit: 20});
+
+        expect(results).toEqual(fullResults.slice(15).slice(0, 20));
+      });
+
+      it('gets data within cache', async () => {
+        const results = await cacheModel.getByFields([], {offset: 20, limit: 5});
+
+        expect(results).toEqual(fullResults.slice(20).slice(0, 5));
+      });
+
+      it('gets data after cache', async () => {
+        const results = await cacheModel.getByFields([], {offset: 30, limit: 20});
+
+        console.log(
+          'Expected',
+          fullResults
+            .map((r) => r.id)
+            .slice(30)
+            .slice(0, 20)
+        );
+        console.log(
+          'Received',
+          results.map((r) => r.id)
+        );
+
+        expect(results).toEqual(fullResults.slice(30).slice(0, 20));
+      });
     });
 
-    it('correctly queries data not in the db, only in the cache', async () => {
-      const result1 = await cacheModel.getByFields([['field1', '=', 2]]);
-      expect(result1.length).toEqual(30);
+    describe('data only in cache', () => {
+      it('selects data in the cache', async () => {
+        const result1 = await cacheModel.getByFields([['field1', '=', 2]]);
+        expect(result1.length).toEqual(30);
+      });
 
-      const result2 = await cacheModel.getByFields([], {limit: 40, orderDirection: 'DESC'});
-
-      console.log(
-        'RESULT2',
-        result2.map((r) => r.id)
-      );
-      expect(result2[0].id).toEqual('entity1_id_0x129'); // Failing because we cant offset cache data correctly
-      expect(result2[result2.length - 1].id).toEqual('entity1_id_0x089');
+      it('selects data from the cache and db in the right order', async () => {
+        const result2 = await cacheModel.getByFields([], {limit: 40, orderDirection: 'DESC'});
+        expect(result2[0].id).toEqual('entity1_id_0x129'); // Failing because we cant offset cache data correctly
+        expect(result2[result2.length - 1].id).toEqual('entity1_id_0x090');
+      });
     });
   });
 });

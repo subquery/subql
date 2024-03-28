@@ -219,14 +219,45 @@ export class CachedModel<
 
     const dbData = records.map((r) => r.toJSON());
     // // OPTION: remove the NotIn filter and extend the limit then filter here. Need to determine what has better performance
-    // .filter((r => {
-    //   return !notMatches.includes(r.id)
-    // }));
+    // .filter((r => !notMatches.includes(r.id)))
+    console.log('CACHE', cacheIds);
+    console.log(
+      'DB',
+      dbData.map((db) => db.id)
+    );
+
+    // Reverse the data so we combine in the right order, it gets reordered anyway
+    // This is needed when a lot of values are the same. E.g boolean
+    if (fullOptions.orderDirection === 'DESC') {
+      cacheData.reverse();
+      dbData.reverse();
+    }
+
+    // Cant tell from DB if cacheData should be excluded because of
+    // - Offset
+    // - Only in cache
+    // - notMatches (when doing with DB)
+
+    // // Apply the offset to the cache data
+    // const dbIds = dbData.map(c => c.id);
+    // const index = cacheIds.findIndex(id => dbIds.includes(id));
+    // const indexR = cacheIds.reverse().findIndex(id => dbIds.includes(id));
+
+    // console.log('index', index, indexR)
+    // // // // Cache data could be before
+    // if (index < 0) {
+    //   // No cache data in result, return raw DB result
+    //   console.log('NO OVERLAP')
+    //   // TODO reverse back
+    //   return dbData;
+    // } else {
+    //   cacheData = cacheData.slice(index);
+    // }
 
     // Combine data from cache and db
     // It needs to be reordered
     const combined = orderBy(
-      // Merge cache and db data with preference for cache data
+      // Merge cache and db data with preference for cache data, DESC means data needs to be reversed to get correct order
       unionByX(dbData, cacheData, (v) => v.id),
       [fullOptions.orderBy],
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
