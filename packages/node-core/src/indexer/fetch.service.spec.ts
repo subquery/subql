@@ -504,4 +504,17 @@ describe('Fetch Service', () => {
       `The startBlock of dataSources in your project manifest (1001) is higher than the current chain height (1000). Please adjust your startBlock to be less that the current chain height.`
     );
   });
+
+  it('should use enqueueSequential if use dictionary fetch failed', async () => {
+    enableDictionary();
+    (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
+      throw new Error('Mock dictionary fetch failed');
+    };
+    const spyOnEnqueueSequential = jest.spyOn(fetchService as any, 'enqueueSequential');
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(10);
+    expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
+
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 19);
+  });
 });
