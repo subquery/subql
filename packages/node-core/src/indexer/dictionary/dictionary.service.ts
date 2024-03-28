@@ -117,7 +117,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
         startBlockHeight + this.nodeConfig.dictionaryQuerySize,
         latestFinalizedHeight
       );
-      return dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
+      return await dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
     } catch (error: any) {
       // Handle errors by skipping the current dictionary
       assert(
