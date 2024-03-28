@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ApolloClient, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData as DictionaryV1Metadata} from '@subql/utils';
 import fetch from 'cross-fetch';
 import {NodeConfig} from '../../../configure';
-import {IndexerEvent} from '../../../events';
 import {getLogger} from '../../../logger';
 import {profiler} from '../../../profiler';
 import {timeout} from '../../../utils';
@@ -165,7 +163,8 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
   queryMapValidByHeight(height: number): boolean {
     try {
       return !!this.queriesMap?.get(height)?.length;
-    } catch (e) {
+    } catch (e: any) {
+      logger.warn(e, `Unable to get query map by height ${height}`);
       return false;
     }
   }

@@ -21,6 +21,37 @@ export class TestDictionaryV1 extends DictionaryV1<any> {
   }
 }
 
+export const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
+  {
+    entity: 'events',
+    conditions: [
+      {field: 'module', value: 'staking'},
+      {field: 'event', value: 'Bonded'},
+    ],
+  },
+  {
+    entity: 'events',
+    conditions: [
+      {field: 'module', value: 'balances'},
+      {field: 'event', value: 'Reward'},
+    ],
+  },
+  {
+    entity: 'events',
+    conditions: [
+      {field: 'module', value: 'balances'},
+      {field: 'event', value: 'Slash'},
+    ],
+  },
+  {
+    entity: 'extrinsics',
+    conditions: [
+      {field: 'module', value: 'staking'},
+      {field: 'call', value: 'bond'},
+    ],
+  },
+];
+
 export const mockDS = [
   {
     name: 'runtime',
