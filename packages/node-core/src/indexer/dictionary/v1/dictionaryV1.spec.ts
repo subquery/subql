@@ -3,46 +3,14 @@
 
 import assert from 'assert';
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
-import {DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
 import {NodeConfig} from '../../../configure';
 import {BlockHeightMap} from '../../../utils/blockHeightMap';
-import {dsMap, mockDS, TestDictionaryV1} from '../dictionary.fixtures';
+import {dsMap, mockDS, TestDictionaryV1, HAPPY_PATH_CONDITIONS} from '../dictionary.fixtures';
 import {getGqlType} from './utils';
 
 const DICTIONARY_ENDPOINT = `https://gateway.subquery.network/query/QmUGBdhQKnzE8q6x6MPqP6LNZGa8gzXf5gkdmhzWjdFGfL`;
 const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3`;
-
-const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
-  {
-    entity: 'events',
-    conditions: [
-      {field: 'module', value: 'staking'},
-      {field: 'event', value: 'Bonded'},
-    ],
-  },
-  {
-    entity: 'events',
-    conditions: [
-      {field: 'module', value: 'balances'},
-      {field: 'event', value: 'Reward'},
-    ],
-  },
-  {
-    entity: 'events',
-    conditions: [
-      {field: 'module', value: 'balances'},
-      {field: 'event', value: 'Slash'},
-    ],
-  },
-  {
-    entity: 'extrinsics',
-    conditions: [
-      {field: 'module', value: 'staking'},
-      {field: 'call', value: 'bond'},
-    ],
-  },
-];
 
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
