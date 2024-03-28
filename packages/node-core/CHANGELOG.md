@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix unable to find index in `modelIndexedFields` due to a special case entity name (2327)
 - Fix multi-chain has `block-range` issue due to migartion handle historical status incorrectly
+- Fix in fetch service when dictionary scopedDictionaryEntries failed keeps retrying with infinite loop
 - Fix modulo block didn't apply correctly with multiple dataSources (#2331)
 
 ## [Unreleased]

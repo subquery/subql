@@ -300,24 +300,42 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
         } catch (e: any) {
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+          await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
         }
       } else {
-        const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
-
-        const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
-
-        const enqueuingBlocks =
-          // This check whether within blockRange has only block modulos handler or with others
-          // If are modulos hanlders only, then number of moduloNumbers should be match number of with handlers, we will enqueue only modulos,
-          // If have other handlers, we will enqueue every block
-          handlers.length && moduloNumbers.length === handlers.length
-            ? this.getEnqueuedModuloBlocks(startBlockHeight, moduloEndHeight, moduloNumbers)
-            : // EndHeight should also consider dataSource endHeight and estimated endHeight (calculated by batch size)
-              range(startBlockHeight, Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, endHeight) + 1);
-
-        await this.enqueueBlocks(enqueuingBlocks, latestHeight);
+        await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
       }
     }
+  }
+
+  // Enqueue block sequentially
+  private async enqueueSequential(
+    startBlockHeight: number,
+    scaledBatchSize: number,
+    latestHeight: number
+  ): Promise<void> {
+    const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
+    assert(details, `Datasources not found for height ${startBlockHeight}`);
+    const {endHeight: rangeEndHeight, value: relevantDS} = details;
+    const minDsEndHeight = Math.min(...relevantDS.map((d) => d?.endBlock ?? Number.MAX_SAFE_INTEGER));
+    const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
+    const moduloEndHeight = Math.min(minDsEndHeight, rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight);
+
+    const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
+    const moduloNumbers = this.getModuloNumbers(
+      Math.min(...relevantDS.map((d) => d?.startBlock ?? startBlockHeight)),
+      moduloEndHeight
+    );
+    const enqueuingBlocks =
+      // This check whether within blockRange has only block modulos handler or with others
+      // If are modulos hanlders only, then number of moduloNumbers should be match number of with handlers, we will enqueue only modulos,
+      // If have other handlers, we will enqueue every block
+      handlers.length && moduloNumbers.length === handlers.length
+        ? this.getEnqueuedModuloBlocks(startBlockHeight, moduloEndHeight, moduloNumbers)
+        : // EndHeight should also consider dataSource endHeight and estimated endHeight (calculated by batch size)
+          range(startBlockHeight, Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, endHeight) + 1);
+
+    await this.enqueueBlocks(enqueuingBlocks, latestHeight);
   }
 
   private async enqueueBlocks(enqueuingBlocks: (IBlock<FB> | number)[], latestHeight: number): Promise<void> {
