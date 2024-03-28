@@ -17,7 +17,8 @@ import {
   SubqlDatasource,
   SubqlEthereumProcessorOptions,
 } from '@subql/types-ethereum';
-import { isEqual, uniqBy } from 'lodash';
+import { uniqBy } from 'lodash';
+import { EthereumNodeConfig } from '../../../configure/NodeConfig';
 import {
   EthereumProjectDs,
   EthereumProjectDsTemplate,
@@ -208,6 +209,8 @@ export class EthDictionaryV2 extends DictionaryV2<
   SubqlDatasource,
   EthDictionaryV2QueryEntry
 > {
+  #skipTransactions: boolean;
+
   constructor(
     endpoint: string,
     nodeConfig: NodeConfig,
@@ -215,6 +218,8 @@ export class EthDictionaryV2 extends DictionaryV2<
     private api: EthereumApi,
   ) {
     super(endpoint, project.network.chainId, nodeConfig);
+    this.#skipTransactions = !!new EthereumNodeConfig(nodeConfig)
+      .skipTransactions;
   }
 
   static async create(
@@ -243,7 +248,7 @@ export class EthDictionaryV2 extends DictionaryV2<
   ): Promise<DictionaryResponse<IBlock<EthereumBlock> | number> | undefined> {
     return super.getData(startBlock, endBlock, limit, {
       blockHeader: true,
-      logs: { transaction: true },
+      logs: { transaction: !this.#skipTransactions },
       transactions: { log: true },
     });
   }
