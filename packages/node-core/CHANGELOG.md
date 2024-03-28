@@ -4,11 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### Fixed
-- Fix unable to find index in `modelIndexedFields` due to a special case entity name (2327)
-- Fix multi-chain has `block-range` issue due to migartion handle historical status incorrectly
-
 ## [Unreleased]
+
+## [8.0.0] - 2024-03-28
 ### Added
 - Add service to support for dictionary v2 (#2257)
 
@@ -623,7 +621,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/8.0.0...HEAD
+[8.0.0]: https://github.com/subquery/subql/compare/node-core/7.5.0...node-core/8.0.0
 [7.5.0]: https://github.com/subquery/subql/compare/node-core/7.4.3...node-core/7.5.0
 [7.4.3]: https://github.com/subquery/subql/compare/node-core/7.4.2...node-core/7.4.3
 [7.4.2]: https://github.com/subquery/subql/compare/node-core/7.4.1...node-core/7.4.2
