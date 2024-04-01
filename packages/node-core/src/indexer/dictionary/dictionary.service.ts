@@ -16,7 +16,6 @@ import {DictionaryResponse, IDictionary, IDictionaryCtrl} from './types';
 const logger = getLogger('DictionaryService');
 export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, FB>, OnApplicationShutdown {
   protected _dictionaries: IDictionary<DS, FB>[] = [];
-  #disableDictionaryOnce = false;
 
   protected _currentDictionaryIndex: number | undefined;
   constructor(
@@ -76,12 +75,6 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
   }
 
   useDictionary(height: number): boolean {
-    // If all dictionaries fail then we disable for next request.
-    // TODO fix fetch service not handling dictionary query failure and instead constantly retrying
-    if (this.#disableDictionaryOnce) {
-      this.#disableDictionaryOnce = false;
-      return false;
-    }
     return !!this.getDictionary(height);
   }
 
@@ -127,7 +120,6 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     } catch (error: any) {
       // Handle errors by skipping the current dictionary
       if (this._currentDictionaryIndex === undefined) {
-        this.#disableDictionaryOnce = true;
         throw new Error(`try get next dictionary but _currentDictionaryIndex is undefined`);
       }
       skipDictionaryIndex.add(this._currentDictionaryIndex);
