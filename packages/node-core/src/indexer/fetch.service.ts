@@ -270,26 +270,35 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
         } catch (e: any) {
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+          await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
         }
       } else {
-        const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
-
-        const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
-        assert(details, `Datasources not found for height ${startBlockHeight}`);
-        const {endHeight: rangeEndHeight, value: relevantDS} = details;
-        const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
-
-        const enqueuingBlocks =
-          handlers.length && this.getModulos().length === handlers.length
-            ? this.getEnqueuedModuloBlocks(
-                startBlockHeight,
-                Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight)
-              )
-            : range(startBlockHeight, endHeight + 1);
-
-        await this.enqueueBlocks(enqueuingBlocks, latestHeight);
+        await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
       }
     }
+  }
+
+  // Enqueue block sequentially
+  private async enqueueSequential(
+    startBlockHeight: number,
+    scaledBatchSize: number,
+    latestHeight: number
+  ): Promise<void> {
+    const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
+    const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
+    assert(details, `Datasources not found for height ${startBlockHeight}`);
+    const {endHeight: rangeEndHeight, value: relevantDS} = details;
+    const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
+
+    const enqueuingBlocks =
+      handlers.length && this.getModulos().length === handlers.length
+        ? this.getEnqueuedModuloBlocks(
+            startBlockHeight,
+            Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, latestHeight)
+          )
+        : range(startBlockHeight, endHeight + 1);
+
+    await this.enqueueBlocks(enqueuingBlocks, latestHeight);
   }
 
   private async enqueueBlocks(enqueuingBlocks: (IBlock<FB> | number)[], latestHeight: number): Promise<void> {
