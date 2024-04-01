@@ -28,8 +28,19 @@ export type GetOptions<T> = {
 
 export interface Store {
   get(entity: string, id: string): Promise<Entity | undefined>;
+  /**
+   * Gets entities matching the specified filters and options.
+   *
+   * ⚠️ This function will first search cache data followed by DB data. Please consider this when using order and offset options.⚠️
+   * */
   getByFields<T extends Entity>(entity: string, filter: FieldsExpression<T>[], options?: GetOptions<T>): Promise<T[]>;
+  /**
+   * This is an alias for getByFields with a single filter
+   * */
   getByField(entity: string, field: string, value: any, options?: GetOptions<Entity>): Promise<Entity[]>;
+  /**
+   * This is an alias for getByField with limit set to 1
+   * */
   getOneByField(entity: string, field: string, value: any): Promise<Entity | undefined>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;

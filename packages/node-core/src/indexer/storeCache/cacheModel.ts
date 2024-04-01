@@ -5,7 +5,7 @@ import assert from 'assert';
 import {FieldOperators, FieldsExpression, GetOptions} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
-import {flatten, uniq, cloneDeep, orderBy, difference} from 'lodash';
+import {flatten, uniq, cloneDeep, orderBy, unionBy} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {Cacheable} from './cacheable';
 import {CsvStoreService} from './csvStore.service';
@@ -40,26 +40,6 @@ const defaultOptions: Required<GetOptions<{id: string}>> = {
   orderBy: 'id',
   orderDirection: 'ASC',
 };
-
-/**
- * This differs from lodashs union by where it picks the item from the first array.
- * We want the order of the first array but the preference from the second
- * */
-function unionByX<T, K>(orderData: T[], preferredData: T[], iteratee: (value: T) => K): T[] {
-  const map = new Map<K, T>();
-
-  orderData.forEach((value) => {
-    const key = iteratee(value);
-    map.set(key, value);
-  });
-
-  preferredData.forEach((value) => {
-    const key = iteratee(value);
-    map.set(key, value);
-  });
-
-  return [...map.values()];
-}
 
 export class CachedModel<
     T extends {id: string; __block_range?: (number | null)[] | Fn} = {
@@ -152,6 +132,8 @@ export class CachedModel<
   /**
    * getByFields allows ordering and filtering of data from the setCache and DB.
    *
+   * When ordering, cache data is provided first followed by DB data, this is to ensure offsets work
+   *
    * It does not use the get cache because there is no way to guarantee order,
    * and we have no way to tell where setCache data fits in the order.
    *
@@ -189,79 +171,30 @@ export class CachedModel<
       .filter((value) => value.matchesFields(filters)) // This filters out any removed/undefined
       .map((value) => value.getLatest()?.data) as T[];
 
-    const cacheIds = cacheData.map((c) => c.id);
+    const offsetCacheData = cacheData.slice(options.offset);
 
-    // Get the setCache data that doesn't match filters so we can exclude from DB results
-    const notMatches = difference(Object.keys(this.setCache), cacheIds);
+    // Return early if cache covers all the data
+    if (offsetCacheData.length > fullOptions.limit) {
+      return offsetCacheData.slice(0, fullOptions.limit);
+    }
 
     // Query DB with all params
     const records = await this.model.findAll({
-      where: filters.length
-        ? {
-            [Op.or]: [
-              // Explicit with AND here to remove any ambiguity
-              {
-                [Op.and]: [
-                  ...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})),
-                  {id: {[Op.notIn]: notMatches}},
-                ],
-              },
-              // Also get all values that match the cache in order to retain order
-              // This still has problems with offset
-              {id: {[Op.in]: cacheIds}},
-            ] as any, // Types not working properly
-          }
-        : undefined,
-      limit: fullOptions.limit /* + notMatches.length*/, // Over extend the limit by the number of items we know we will remove
-      offset: fullOptions.offset,
+      where: {
+        [Op.and]: [
+          ...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})),
+          {id: {[Op.notIn]: this.allCachedIds()}},
+        ] as any, // Types not working properly
+      },
+      limit: fullOptions.limit - offsetCacheData.length, // Only get enough to fill the limit
+      offset: fullOptions.offset - (cacheData.length - offsetCacheData.length), // Remove the offset items from the cache
       order: [[fullOptions.orderBy as string, fullOptions.orderDirection]],
     });
 
     const dbData = records.map((r) => r.toJSON());
-    // // OPTION: remove the NotIn filter and extend the limit then filter here. Need to determine what has better performance
-    // .filter((r => !notMatches.includes(r.id)))
-    console.log('CACHE', cacheIds);
-    console.log(
-      'DB',
-      dbData.map((db) => db.id)
-    );
-
-    // Reverse the data so we combine in the right order, it gets reordered anyway
-    // This is needed when a lot of values are the same. E.g boolean
-    if (fullOptions.orderDirection === 'DESC') {
-      cacheData.reverse();
-      dbData.reverse();
-    }
-
-    // Cant tell from DB if cacheData should be excluded because of
-    // - Offset
-    // - Only in cache
-    // - notMatches (when doing with DB)
-
-    // // Apply the offset to the cache data
-    // const dbIds = dbData.map(c => c.id);
-    // const index = cacheIds.findIndex(id => dbIds.includes(id));
-    // const indexR = cacheIds.reverse().findIndex(id => dbIds.includes(id));
-
-    // console.log('index', index, indexR)
-    // // // // Cache data could be before
-    // if (index < 0) {
-    //   // No cache data in result, return raw DB result
-    //   console.log('NO OVERLAP')
-    //   // TODO reverse back
-    //   return dbData;
-    // } else {
-    //   cacheData = cacheData.slice(index);
-    // }
 
     // Combine data from cache and db
-    // It needs to be reordered
-    const combined = orderBy(
-      // Merge cache and db data with preference for cache data, DESC means data needs to be reversed to get correct order
-      unionByX(dbData, cacheData, (v) => v.id),
-      [fullOptions.orderBy],
-      [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
-    ).slice(0, fullOptions.limit); // Re-apply limit
+    const combined = unionBy(offsetCacheData, dbData, (v) => v.id).slice(0, fullOptions.limit); // Re-apply limit
 
     return combined;
   }
@@ -275,7 +208,7 @@ export class CachedModel<
   }
 
   async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
-    const [res] = await this.getByFields([[field, '=', value]], {
+    const [res] = await this.getByField(field, value, {
       ...defaultOptions,
       limit: 1,
     });
