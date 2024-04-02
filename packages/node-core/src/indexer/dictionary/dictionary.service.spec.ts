@@ -23,14 +23,20 @@ const dictionaryV2Endpoints = ['http://mock-dictionary-v2/rpc'];
 class TestDictionaryService extends DictionaryService<any, TestFB> {
   async initDictionaries(): Promise<void> {
     // Mock version inspection completed
+    const dictionariesV1: TestDictionaryV1[] = [];
+    for (const endpoint of dictionaryV1Endpoints) {
+      try {
+        const dictionary = new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, HAPPY_PATH_CONDITIONS);
+        await (dictionary as any).init();
+        dictionariesV1.push(dictionary);
+      } catch (e) {
+        // ignore the dictionary
+      }
+    }
 
-    const dictionariesV1 = await Promise.all(
-      dictionaryV1Endpoints.map(
-        (endpoint) => new TestDictionaryV1(endpoint, 'mockChainId', this.nodeConfig, HAPPY_PATH_CONDITIONS)
-      )
-    );
     const mockDictionaryV2 = new TestDictionaryV2(dictionaryV2Endpoints[0], 'mockChainId', this.nodeConfig);
     await mockDictionaryV2.mockInit();
+    await (mockDictionaryV2 as any).init();
 
     const dictionariesV2 = [mockDictionaryV2];
     this.init([...dictionariesV1, ...dictionariesV2]);
@@ -45,6 +51,25 @@ class TestDictionaryService extends DictionaryService<any, TestFB> {
   }
 }
 
+// Due to only valid dictionary will be added to dictionary service, therefore we need to add a mocked invalid dictionary to the service manually
+function addInvalidDictionary(dictionaryService: TestDictionaryService, index: number): void {
+  const dictionary = new TestDictionaryV1(
+    'https://gx.api.subquery.network/sq/subquery/eth-dictionary',
+    'mockChainId',
+    (TestDictionaryService as any).nodeConfig,
+    HAPPY_PATH_CONDITIONS
+  );
+  (dictionary as any)._metadata = {
+    lastProcessedHeight: 1,
+    targetHeight: 100000,
+    chain: 'mockChainIdWrong',
+    specName: 'mock',
+    genesisHash: 'mock',
+    startHeight: 1,
+  };
+  (dictionaryService as any)._dictionaries.splice(index, 0, dictionary);
+  dictionaryService.buildDictionaryEntryMap(mockedDsMap);
+}
 describe('Dictionary service', function () {
   let dictionaryService: TestDictionaryService;
 
@@ -60,7 +85,7 @@ describe('Dictionary service', function () {
     dictionaryService = new TestDictionaryService('0xchainId', nodeConfig, new EventEmitter2());
     await dictionaryService.initDictionaries();
 
-    await Promise.all((dictionaryService as any)._dictionaries.map((d: any) => d.init()));
+    // await Promise.all((dictionaryService as any)._dictionaries.map((d: any) => d.init()));
     dictionaryService.buildDictionaryEntryMap(mockedDsMap);
   });
 
@@ -84,8 +109,8 @@ describe('Dictionary service', function () {
     expect(dictUrl2.length).toBeGreaterThan(0);
   });
 
-  it('init Dictionaries with mutiple endpoints, can be valid and non-valid', () => {
-    expect((dictionaryService as any)._dictionaries.length).toBe(3);
+  it('init Dictionaries with mutiple endpoints, only valid dictionary will be added', () => {
+    expect((dictionaryService as any)._dictionaries.length).toBe(2);
   });
 
   it('can find valid dictionary with height', () => {
@@ -93,7 +118,7 @@ describe('Dictionary service', function () {
     expect(dictionaryService.currentDictionaryIndex).toBeUndefined();
 
     (dictionaryService as any).findDictionary(100, new Set<number>());
-    expect(dictionaryService.currentDictionaryIndex).toBe(1);
+    expect(dictionaryService.currentDictionaryIndex).toBe(0);
 
     expect((dictionaryService as any).getDictionary(100)).toBeTruthy();
     // Current only valid endpoint been provided
@@ -115,10 +140,12 @@ describe('Dictionary service', function () {
 
   it('scopedDictionaryEntries, if query failed/timeout, should try next valid dictionary for query', async () => {
     // mock current dictionary,  it is an invalid dictionary, should allow scopedDictionaryEntries to find next dictionary
+
+    addInvalidDictionary(dictionaryService, 0);
     dictionaryService.currentDictionaryIndex = 0;
     const failedDictionary = (dictionaryService as any)._dictionaries[0];
     // mock this dictionary can pass validation
-    failedDictionary._metadata = {lastProcessedHeight: 10000};
+    failedDictionary._metadata = {startBlock: 1, lastProcessedHeight: 10000};
     // (dictionaryService as any)._dictionaries[0].heightValidation= (height:number) => true;
     const getDataError = jest.fn(() => {
       return Promise.reject(new Error('Dictionary index 0 mock fetch failed'));
@@ -141,6 +168,7 @@ describe('Dictionary service', function () {
 
   it('tried all dictionaries but all failed will return undefined', async () => {
     // remove the valid dictionary
+    addInvalidDictionary(dictionaryService, 0);
     dictionaryService.currentDictionaryIndex = 0;
     // mock this dictionary can pass validation
     for (const dictionary of (dictionaryService as any)._dictionaries) {

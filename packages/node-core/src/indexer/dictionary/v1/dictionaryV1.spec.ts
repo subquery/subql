@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
+import fetch from 'cross-fetch';
 import {range} from 'lodash';
 import {NodeConfig} from '../../../configure';
 import {BlockHeightMap} from '../../../utils/blockHeightMap';
