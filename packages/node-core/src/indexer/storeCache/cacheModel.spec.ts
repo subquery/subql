@@ -97,26 +97,27 @@ describe('cacheModel', () => {
   };
 
   describe('without historical', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       jest.clearAllMocks();
       blockHeight = undefined;
       let i = 0;
       sequelize = new Sequelize();
       testModel = new CachedModel(sequelize.model('entity1'), false, {} as NodeConfig, () => i++);
-    });
 
-    it('can avoid race conditions', async () => {
-      // Set the initial model, so we have data in the DB
+      // Set an initial model and flush it
+      blockHeight = 1;
       testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
           field1: 1,
         },
-        1
+        blockHeight
       );
       await flush();
+    });
 
+    it('can avoid race conditions', async () => {
       // Get the entity and update again so we can have a difference between db and cache
       const entity1 = await testModel.get('entity1_id_0x01');
       if (!entity1) {
@@ -157,17 +158,6 @@ describe('cacheModel', () => {
     });
 
     it('can call getByFields, with entities updated in the same block', async () => {
-      blockHeight = 1;
-      testModel.set(
-        'entity1_id_0x01',
-        {
-          id: 'entity1_id_0x01',
-          field1: 1,
-        },
-        blockHeight
-      );
-      await flush();
-
       blockHeight = 2;
       testModel.set(
         'entity1_id_0x01',
@@ -192,6 +182,40 @@ describe('cacheModel', () => {
           field1: 2,
         },
       ]);
+    });
+
+    it('cannot mutate data in the cache without calling methods', async () => {
+      testModel.set(
+        'entity1_id_0x01',
+        {
+          id: 'entity1_id_0x01',
+          field1: 2,
+        },
+        2
+      );
+
+      /* get usese the get cache */
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const entity = (await testModel.get('entity1_id_0x01'))!;
+
+      expect(entity).toBeDefined();
+
+      // Mutate field directly
+      entity.field1 = -1;
+
+      const entity2 = await testModel.get('entity1_id_0x01');
+      expect(entity2?.field1).toEqual(2);
+
+      /* getBy methods use set cache */
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const entity3 = (await testModel.getOneByField('field1', 2))!;
+      expect(entity3?.field1).toEqual(2);
+
+      // Mutate field directly
+      entity3.field1 = -2;
+
+      const entity4 = await testModel.getOneByField('field1', 2);
+      expect(entity4?.field1).toEqual(2);
     });
   });
 

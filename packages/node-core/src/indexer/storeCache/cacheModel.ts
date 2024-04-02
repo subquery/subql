@@ -122,7 +122,7 @@ export class CachedModel<
       return record;
     }
 
-    return this.getCache.get(id);
+    return cloneDeep(this.getCache.get(id));
   }
 
   addExporterStore(cacheState: CsvStoreService): void {
@@ -169,7 +169,8 @@ export class CachedModel<
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
     )
       .filter((value) => value.matchesFields(filters)) // This filters out any removed/undefined
-      .map((value) => value.getLatest()?.data) as T[];
+      .map((value) => value.getLatest()?.data)
+      .map((value) => cloneDeep(value)) as T[];
 
     const offsetCacheData = cacheData.slice(options.offset);
 
@@ -256,7 +257,7 @@ export class CachedModel<
       operationIndex: this.getNextStoreOperationIndex(),
     };
     this.flushableRecordCounter += 1;
-    if (this.getCache.get(id)) {
+    if (this.getCache.has(id)) {
       this.getCache.delete(id);
       // Also when .get, check removeCache first, should return undefined if removed
     }

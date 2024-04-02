@@ -7,14 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Add service to support for dictionary v2 (#2257)
-- Support for ordering with getByFields (#2325)
+- Support for ordering with store `getBy*` methods (#2325)
 
 ### Removed
 - `@subql/apollo-links` for resolving dictionary endpoints and matching `dictionary-resolver` flag (#2305)
 
 ### Fixed
-- Various issues with store cache when using store getByFields, getByField and getOnByField (#2325)
-- Fix in fetch service when dictionary scopedDictionaryEntries failed keeps retrying with infinite loop
+- Fix in fetch service when dictionary `scopedDictionaryEntries` failed keeps retrying with infinite loop
+- Various issues with store cache (#2325)
+    - `getByFields` ignoring mutations from the current block
+    - Order and offset issues when using store `getByFields`, `getByField` and `getOnByField`
+    - Being able to mutate data in the store cache without calling methods
+    - Matching cache data with `getByFields`, `getByField` and `getOneByField`
 
 ## [7.5.1] - 2024-03-26
 ### Fixed
