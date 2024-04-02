@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Auth token being undefined when loading from file (#2309)
 
+### Changed
+- Update codegen to use options type and add comment to generated code (#2325)
+
 ## [4.4.1] - 2024-03-08
 ### Fixed
 - Access token paths on Windows for commands other than publish (#2291)

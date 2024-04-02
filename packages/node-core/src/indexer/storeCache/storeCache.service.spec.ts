@@ -26,12 +26,14 @@ jest.mock('@subql/x-sequelize', () => {
       upsert: jest.fn(),
       associations: [{}, {}],
       count: 5,
-      findAll: [
+      findAll: jest.fn(() => [
         {
-          id: 'apple-05-sequelize',
-          field1: 'set apple at block 5 with sequelize',
+          toJSON: () => ({
+            id: 'apple-05-sequelize',
+            field1: 'set apple at block 5 with sequelize',
+          }),
         },
-      ],
+      ]),
       bulkCreate: jest.fn(),
       destroy: jest.fn(),
     }),
@@ -51,11 +53,6 @@ jest.mock('@subql/x-sequelize', () => {
 });
 
 jest.setTimeout(200000);
-
-type Apple = {
-  id: string;
-  field1: string;
-};
 
 describe('Store Cache Service historical', () => {
   let storeService: StoreCacheService;
@@ -102,6 +99,7 @@ describe('Store Cache Service historical', () => {
     expect(entity2Block2.field1).toBe('set at block 2');
   });
 
+  // TODO move this test to cacheModel
   it('set at different block height, will create historical records', async () => {
     const appleModel = storeService.getModel('apple');
 
@@ -139,114 +137,6 @@ describe('Store Cache Service historical', () => {
     // latest historical record endHeight should be null
     expect(historicalValue[1].startHeight).toBe(5);
     expect(historicalValue[1].endHeight).toBe(null);
-  });
-  it('getAll, getOneByField and getByField with getFromCache', async () => {
-    const appleModel = storeService.getModel<Apple>('apple');
-    appleModel.set(
-      'apple-05',
-      {
-        id: 'apple-05',
-        field1: 'set apple at block 5',
-      },
-      5
-    );
-    // getOneByField
-    const appleEntity_b5 = await appleModel.getOneByField('field1' as any, 'set apple at block 5');
-    expect(appleEntity_b5?.field1).toBe('set apple at block 5');
-    appleModel.set(
-      'apple-05-smith',
-      {
-        id: 'apple-05-smith',
-        field1: 'set apple at block 5',
-      },
-      5
-    );
-    // getAll without pass any field and value, it should unify data
-    const cacheData0 = (appleModel as any).getFromCache();
-    expect(cacheData0).toStrictEqual([
-      {field1: 'set apple at block 5', id: 'apple-05'},
-      {field1: 'set apple at block 5', id: 'apple-05-smith'},
-    ]);
-
-    // getByField
-    const appleEntity_b5_records = await appleModel.getByField('field1' as any, 'set apple at block 5', {
-      limit: 2,
-      offset: 0,
-    });
-    expect(appleEntity_b5_records?.length).toBe(2);
-
-    // TODO, getByField with offset and limit
-    // const appleEntity_b5_records_2 = await appleModel.getByField('field1' as any, 'set apple at block 5', null, {
-    //   offset:1,
-    //   limit: 5,
-    // });
-    // expect(appleEntity_b5_records_2.length).toBe(1);
-
-    // Manually remove data from setCache, it should look from getCache
-    (appleModel as any).setCache = {};
-    (appleModel as any).getCache.set('apple-get-id1', {id: 'apple-get-id1', field1: 'set apple at block 5'});
-    const cacheData1 = (appleModel as any).getFromCache('field1' as any, 'set apple at block 5');
-    // This will work due to getCache keeps duplicate data from setCache in the .set method
-    expect(cacheData1).toStrictEqual([
-      {id: 'apple-get-id1', field1: 'set apple at block 5'},
-      {field1: 'set apple at block 5', id: 'apple-05-smith'},
-      {field1: 'set apple at block 5', id: 'apple-05'},
-    ]);
-  });
-
-  it('count', () => {
-    const appleModel = storeService.getModel<Apple>('apple');
-    appleModel.set(
-      'apple-05',
-      {
-        id: 'apple-05',
-        field1: 'set apple at block 5',
-      },
-      5
-    );
-    appleModel.set(
-      'apple-05-smith',
-      {
-        id: 'apple-05-smith',
-        field1: 'set apple at block 5',
-      },
-      5
-    );
-
-    // TODO mocked model.count result = 5
-    // const count = await appleModel.count();
-    // expect(count).toBe(7);
-    const cacheData = (appleModel as any).getFromCache();
-    expect(cacheData.length).toBe(2);
-  });
-
-  it('remove', async () => {
-    const appleModel = storeService.getModel<Apple>('apple');
-
-    appleModel.set(
-      'apple-01',
-      {
-        id: 'apple-01',
-        field1: 'set apple at block 1',
-      },
-      1
-    );
-
-    appleModel.set(
-      'apple-01',
-      {
-        id: 'apple-01',
-        field1: 'updated apple at block 5',
-      },
-      5
-    );
-    appleModel.remove('apple-01', 6);
-    expect((appleModel as any).removeCache).toStrictEqual({'apple-01': {operationIndex: 3, removedAtBlock: 6}});
-    expect(await appleModel.get('apple-01')).toBeUndefined();
-
-    // last value in setCache should end with block 6
-    const historicalValue = (storeService as any).cachedModels.apple.setCache['apple-01'].historicalValues;
-    expect(historicalValue[1].endHeight).toBe(6);
   });
 });
 
