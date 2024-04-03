@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2024-04-03
+### Changed
+- version updated with @subql/types-core, also update api interface (#225)
+
 ## [3.4.0] - 2024-03-13
 ### Changed
 - Make receipt method on transaction type generic for OP L1 fields support (#258)
@@ -102,7 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.4.0...types-ethereum/3.5.0
 [3.4.0]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.3.1...types-ethereum/3.4.0
 [3.3.1]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.3.0...types-ethereum/3.3.1
 [3.3.0]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.2.1...types-ethereum/3.3.0

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-04-03
+### Added
+- Add support for eth dictionary v2 (#225)
+
 ### Fixed
 - Improve log hash assertion message (#269)
 
@@ -434,7 +438,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.11.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.0.0...HEAD
+[4.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.11.0...node-ethereum/4.0.0
 [3.11.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.1...node-ethereum/3.11.0
 [3.10.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.0...node-ethereum/3.10.1
 [3.10.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.9.1...node-ethereum/3.10.0
