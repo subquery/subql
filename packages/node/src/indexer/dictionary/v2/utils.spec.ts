@@ -9,7 +9,7 @@ import { EthereumApi } from '../../../ethereum';
 import { RawEthBlock } from './types';
 import { rawBlockToEthBlock } from './utils';
 
-const DICTIONARY_URL = 'http://localhost:3000/rpc/eth-mainnet';
+const DICTIONARY_URL = 'https://ethereum.node.subquery.network/public';
 const RPC_URL = 'https://eth.llamarpc.com';
 
 async function fetchDictionaryBlock(): Promise<RawEthBlock> {
