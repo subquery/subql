@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ## [4.0.0] - 2024-03-28
 ### Fixed
 - Fix unable to find index in `modelIndexedFields` due to a special case entity name (2327)
