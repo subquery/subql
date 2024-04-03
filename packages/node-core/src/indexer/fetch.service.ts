@@ -36,7 +36,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   // The rough interval at which new blocks are produced
   protected abstract getChainInterval(): Promise<number>;
-  // This return modulo numbers with given dataSources
+  // This return modulo numbers with given dataSources (number in the filters)
   protected abstract getModulos(dataSources: DS[]): number[];
 
   protected abstract initBlockDispatcher(): Promise<void>;
@@ -260,21 +260,14 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   // get all modulo numbers with a specific block ranges
   private getModuloBlocks(startHeight: number, endHeight: number): number[] {
-    // no modulos in the filters been found
-    if (this.getModulos(this.projectService.getAllDataSources()).length < 0) return [];
     // Find relevant ds
     const {endHeight: rangeEndHeight, value: relevantDS} = this.getRelevantDsDetails(startHeight);
     // Min of current ds endHeight
-    const minDsEndHeight = Math.min(...relevantDS.map((d) => d?.endBlock ?? Number.MAX_SAFE_INTEGER));
     const moduloNumbers = this.getModulos(relevantDS);
+    // no modulos in the filters been found in current ds
     if (!moduloNumbers.length) return [];
     const maxModulosBlockHeight = this.nodeConfig.batchSize * Math.max(...moduloNumbers) + startHeight;
-    const moduloEndHeight = Math.min(
-      minDsEndHeight,
-      rangeEndHeight ?? Number.MAX_SAFE_INTEGER,
-      maxModulosBlockHeight,
-      endHeight
-    );
+    const moduloEndHeight = Math.min(rangeEndHeight ?? Number.MAX_SAFE_INTEGER, maxModulosBlockHeight, endHeight);
     const moduloBlocks: number[] = [];
     for (let i = startHeight; i <= moduloEndHeight; i++) {
       if (moduloNumbers.find((m) => i % m === 0)) {
