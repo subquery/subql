@@ -303,7 +303,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   private getRelevantDsDetails(startBlockHeight: number): {endHeight: number | undefined; value: DS[]} {
     const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
     assert(details, `Datasources not found for height ${startBlockHeight}`);
-    return {endHeight: details?.endHeight, value: details?.value};
+    return {endHeight: details.endHeight, value: details.value};
   }
 
   // Enqueue block sequentially
