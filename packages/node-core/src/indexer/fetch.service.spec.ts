@@ -439,7 +439,7 @@ describe('Fetch Service', () => {
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 11);
   });
 
-  it('when enqueueu ds endHeight less than modulo height, should not include any modulo', async () => {
+  it('when enqueue ds endHeight less than modulo height, should not include any modulo', async () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     fetchService.modulos = [150];
     dataSources = [
