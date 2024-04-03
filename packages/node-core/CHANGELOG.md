@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@subql/apollo-links` for resolving dictionary endpoints and matching `dictionary-resolver` flag (#2305)
 
 ### Fixed
-- Fix in fetch service when dictionary `scopedDictionaryEntries` failed keeps retrying with infinite loop
 - Various issues with store cache (#2325)
     - `getByFields` ignoring mutations from the current block
     - Order and offset issues when using store `getByFields`, `getByField` and `getOnByField`

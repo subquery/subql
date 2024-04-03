@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [2.9.0] - 2024-03-28
-### Fixed
-- Fix dictionary tests importing from one another, fix not handling v2 block range type (#2322)
 
 ### Added
 - Export 'numberToHex' (#2307)
+- Add method `hexStripZeros` to handle hex string in order to align with ethers (#2319)
 
 ## [2.8.0] - 2024-03-05
 ### Added
