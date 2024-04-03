@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Updated with node-core to support both versions of dictionaries. Now also support multiple dictionary endpoints, indexer will fetch and switch dictionaries base on available blocks (#2257)
+- Update Polkadot/api to 10.12.4
 
 ### Removed
 - Special case for dictionary resolver (#2305)

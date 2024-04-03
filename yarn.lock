@@ -6373,7 +6373,7 @@ __metadata:
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
-    "@polkadot/api": 10.10.1
+    "@polkadot/api": 10.12.4
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/node-core": "workspace:*"
@@ -6582,10 +6582,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
-    "@polkadot/api": ^10
+    "@polkadot/api": 10.12.4
     "@subql/types-core": "workspace:*"
   peerDependencies:
-    "@polkadot/api": ^10
+    "@polkadot/api": 10.12.4
   languageName: unknown
   linkType: soft
 
