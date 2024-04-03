@@ -56,10 +56,10 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   //eslint-disable-next-line @typescript-eslint/require-await
   async addToConnections(endpoint: string, primary: boolean): Promise<void> {
     const poolItem: ConnectionPoolItem<T> = {
-      primary: primary,
+      primary,
       performanceScore: 100,
       failureCount: 0,
-      endpoint: endpoint,
+      endpoint,
       backoffDelay: 0,
       rateLimited: false,
       failed: false,
@@ -74,8 +74,20 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   }
 
   @Interval(15000)
-  logConnectionStatus() {
-    logger.debug(JSON.stringify(this.pool, null, 2));
+  logConnectionStatus(): void {
+    logger.debug(
+      JSON.stringify(
+        this.pool,
+        (key, value) => {
+          // Cannot stringify NodeJs timeouts
+          if (key === 'timeoutId') {
+            return undefined;
+          }
+          return value;
+        },
+        2
+      )
+    );
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
