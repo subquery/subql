@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [8.0.0] - 2024-03-28
 ### Added
 - Add service to support for dictionary v2 (#2257)
 - Support for ordering with store `getBy*` methods (#2325)
@@ -13,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@subql/apollo-links` for resolving dictionary endpoints and matching `dictionary-resolver` flag (#2305)
 
 ### Fixed
-- Fix in fetch service when dictionary `scopedDictionaryEntries` failed keeps retrying with infinite loop
 - Various issues with store cache (#2325)
     - `getByFields` ignoring mutations from the current block
     - Order and offset issues when using store `getByFields`, `getByField` and `getOnByField`
@@ -633,7 +634,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/7.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/8.0.0...HEAD
+[8.0.0]: https://github.com/subquery/subql/compare/node-core/7.5.1...node-core/8.0.0
 [7.5.1]: https://github.com/subquery/subql/compare/node-core/7.5.0...node-core/7.5.1
 [7.5.0]: https://github.com/subquery/subql/compare/node-core/7.4.3...node-core/7.5.0
 [7.4.3]: https://github.com/subquery/subql/compare/node-core/7.4.2...node-core/7.4.3

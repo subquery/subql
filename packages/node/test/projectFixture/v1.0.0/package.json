@@ -19,7 +19,7 @@
   "author": "Ian He & Jay Ji",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@polkadot/api": "^10",
+    "@polkadot/api": "10.12.4",
     "@subql/types": "dev",
     "typescript": "^4.9.5",
     "@subql/cli": "dev"

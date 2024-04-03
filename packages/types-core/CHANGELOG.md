@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - GetOptions type with support for ordering store methods (#2325)
 
+## [0.6.0] - 2024-03-28
+### Changed
+- Dictionary type changed (#2257)
+
 ## [0.5.0] - 2024-02-07
 ### Added
 - Update `ParentProject` to use `untilBlock` as and alias for `block` (#2235)
@@ -35,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.6.0...HEAD
+[0.6.0]: https://github.com/subquery/subql/compare/types-core/0.5.0...types-core/0.6.0
 [0.5.0]: https://github.com/subquery/subql/compare/types-core/0.4.0...types-core/0.5.0
 [0.4.0]: https://github.com/subquery/subql/compare/types-core/0.3.0...types-core/0.4.0
 [0.3.0]: https://github.com/subquery/subql/compare/types-core/0.2.0...types-core/0.3.0
