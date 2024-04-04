@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Now when `workers` set to 0, it will use block dispatcher instead of throw and exit 
 
 ## [4.0.0] - 2024-03-28
 ### Fixed
