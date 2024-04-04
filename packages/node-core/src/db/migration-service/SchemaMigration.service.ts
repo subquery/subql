@@ -84,7 +84,7 @@ export class SchemaMigrationService {
   async run(
     currentSchema: GraphQLSchema | null,
     nextSchema: GraphQLSchema,
-    transaction: Transaction | undefined
+    transaction?: Transaction
   ): Promise<ModelStatic<any>[] | void> {
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
     const {
