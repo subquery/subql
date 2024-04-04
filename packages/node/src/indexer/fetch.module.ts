@@ -100,7 +100,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
       ) =>
-        nodeConfig.workers !== undefined
+        nodeConfig.workers
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
