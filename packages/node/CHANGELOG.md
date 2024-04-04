@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Now when `workers` set to 0, it will use block dispatcher instead of throw and exit
+- Fixed workers failed to start due to missing apiService, also fix `fetchChainBlock`
 
 ## [4.0.0] - 2024-04-03
 ### Added
