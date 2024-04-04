@@ -262,7 +262,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   private getModuloBlocks(startHeight: number, endHeight: number): number[] {
     // Find relevant ds
     const {endHeight: rangeEndHeight, value: relevantDS} = this.getRelevantDsDetails(startHeight);
-    // Min of current ds endHeight
     const moduloNumbers = this.getModulos(relevantDS);
     // no modulos in the filters been found in current ds
     if (!moduloNumbers.length) return [];
@@ -305,11 +304,11 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     scaledBatchSize: number,
     latestHeight: number
   ): Promise<void> {
-    const endHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
-    const relevantDs = this.getRelevantDsDetails(startBlockHeight).value;
+    const estRangeEndHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
+    const {endHeight, value: relevantDs} = this.getRelevantDsDetails(startBlockHeight);
     const enqueuingBlocks = this.useModuloHandlersOnly(relevantDs)
       ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
-      : range(startBlockHeight, endHeight + 1);
+      : range(startBlockHeight, Math.min(endHeight ?? Number.MAX_SAFE_INTEGER, estRangeEndHeight) + 1);
 
     await this.enqueueBlocks(enqueuingBlocks, latestHeight);
   }
