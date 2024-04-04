@@ -10,13 +10,18 @@ jest.mock('@subql/x-sequelize', () => {
   let data: Record<string, any> = {};
 
   let pendingData: typeof data = {};
+  let pendingDeletes: (keyof typeof data)[] = [];
   let afterCommitHooks: Array<() => void> = [];
 
   const transaction = () => ({
     commit: jest.fn(async () => {
       await delay(1);
       data = {...data, ...pendingData};
+      for (const pendingDelete of pendingDeletes) {
+        delete data[pendingDelete as string];
+      }
       pendingData = {};
+      pendingDeletes = [];
       afterCommitHooks.map((fn) => fn());
       afterCommitHooks = [];
     }), // Delay of 1s is used to test whether we wait for cache to flush
@@ -47,21 +52,14 @@ jest.mock('@subql/x-sequelize', () => {
       upsert: jest.fn(),
       associations: [{}, {}],
       count: 5,
-      findAll: jest.fn(() => [
-        {
-          toJSON: () => ({
-            id: 'apple-05-sequelize',
-            field1: 'set apple at block 5 with sequelize',
-          }),
-        },
-      ]),
+      findAll: jest.fn(() => Object.values(data).map(({__block_range, ...d}) => ({toJSON: () => d}))),
       findOne: jest.fn(({transaction, where: {id}}) => ({
         toJSON: () => (transaction ? pendingData[id] ?? data[id] : data[id]),
       })),
       bulkCreate: jest.fn((records: {id: string}[]) => {
         records.map((r) => (pendingData[r.id] = r));
       }),
-      destroy: jest.fn(),
+      destroy: jest.fn(({where: {id}}) => pendingDeletes.push(id)),
     }),
     sync: jest.fn(),
     transaction,
@@ -70,51 +68,56 @@ jest.mock('@subql/x-sequelize', () => {
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
   return {
     ...actualSequelize,
-    Sequelize: jest.fn(() => mSequelize),
+    Sequelize: jest.fn(() => {
+      // Reset all the data when creating new instances
+      data = {};
+      pendingData = {};
+      pendingDeletes = [];
+      afterCommitHooks = [];
+
+      return mSequelize;
+    }),
   };
 });
 
 describe('cacheModel', () => {
+  let testModel: CachedModel<{id: string; field1: number}>;
+  let sequelize: Sequelize;
+  let blockHeight: number | undefined;
+
+  const flush = async (height?: number) => {
+    const tx = await sequelize.transaction();
+
+    await testModel.flush(
+      tx,
+      height ?? (blockHeight === undefined ? undefined : blockHeight - 1) // Equivalent of last processed height
+    );
+
+    return tx.commit();
+  };
+
   describe('without historical', () => {
-    let testModel: CachedModel<{id: string; field1: number}>;
-    let sequelize: Sequelize;
-
-    const flush = async () => {
-      const tx = await sequelize.transaction();
-
-      await testModel.flush(tx);
-
-      return tx.commit();
-    };
-
-    beforeEach(() => {
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      blockHeight = undefined;
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(
-        sequelize.model('entity1'),
-        false,
-        {} as NodeConfig,
-        () => i++,
-        async () => {
-          const tx = await sequelize.transaction();
-          await testModel.flush(tx);
-          await tx.commit();
-        }
-      );
-    });
+      testModel = new CachedModel(sequelize.model('entity1'), false, {} as NodeConfig, () => i++);
 
-    it('can avoid race conditions', async () => {
-      // Set the initial model, so we have data in the DB
+      // Set an initial model and flush it
+      blockHeight = 1;
       testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
           field1: 1,
         },
-        1
+        blockHeight
       );
       await flush();
+    });
 
+    it('can avoid race conditions', async () => {
       // Get the entity and update again so we can have a difference between db and cache
       const entity1 = await testModel.get('entity1_id_0x01');
       if (!entity1) {
@@ -153,34 +156,75 @@ describe('cacheModel', () => {
       const finalEntity = await testModel.get('entity1_id_0x01');
       expect(finalEntity?.field1).toEqual(3);
     });
+
+    it('can call getByFields, with entities updated in the same block', async () => {
+      blockHeight = 2;
+      testModel.set(
+        'entity1_id_0x01',
+        {
+          id: 'entity1_id_0x01',
+          field1: 2,
+        },
+        blockHeight
+      );
+
+      const result = await testModel.getByFields(
+        [
+          ['id', '=', 'entity1_id_0x01'],
+          ['field1', '=', 2],
+        ],
+        {offset: 0, limit: 100}
+      );
+
+      expect(result).toEqual([
+        {
+          id: 'entity1_id_0x01',
+          field1: 2,
+        },
+      ]);
+    });
+
+    it('cannot mutate data in the cache without calling methods', async () => {
+      testModel.set(
+        'entity1_id_0x01',
+        {
+          id: 'entity1_id_0x01',
+          field1: 2,
+        },
+        2
+      );
+
+      /* get usese the get cache */
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const entity = (await testModel.get('entity1_id_0x01'))!;
+
+      expect(entity).toBeDefined();
+
+      // Mutate field directly
+      entity.field1 = -1;
+
+      const entity2 = await testModel.get('entity1_id_0x01');
+      expect(entity2?.field1).toEqual(2);
+
+      /* getBy methods use set cache */
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const entity3 = (await testModel.getOneByField('field1', 2))!;
+      expect(entity3?.field1).toEqual(2);
+
+      // Mutate field directly
+      entity3.field1 = -2;
+
+      const entity4 = await testModel.getOneByField('field1', 2);
+      expect(entity4?.field1).toEqual(2);
+    });
   });
 
   describe('historical', () => {
-    let testModel: CachedModel<{id: string; field1: number}>;
-    let sequelize: Sequelize;
-
-    const flush = async (height?: number) => {
-      const tx = await sequelize.transaction();
-
-      await testModel.flush(tx, height);
-
-      return tx.commit();
-    };
-
     beforeEach(() => {
+      jest.clearAllMocks();
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(
-        sequelize.model('entity1'),
-        true,
-        {} as NodeConfig,
-        () => i++,
-        async () => {
-          const tx = await sequelize.transaction();
-          await testModel.flush(tx);
-          await tx.commit();
-        }
-      );
+      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++);
     });
 
     // it should keep same behavior as hook we used
@@ -372,10 +416,6 @@ describe('cacheModel', () => {
 
         expect(result).toStrictEqual([
           {id: 'entity1_id_0x02', field1: 1}, //Filtered out removed record
-          {
-            id: 'apple-05-sequelize',
-            field1: 'set apple at block 5 with sequelize', // And mocked record
-          },
         ]);
       });
 
@@ -400,57 +440,24 @@ describe('cacheModel', () => {
         const spyFindAll = jest.spyOn(testModel.model, 'findAll');
         const result = await testModel.getByField('field1', 1, {offset: 0, limit: 50});
         expect(spyFindAll).toHaveBeenCalledTimes(1);
-        expect(result).toStrictEqual([
-          {id: 'entity1_id_0x01', field1: 1},
-          {
-            id: 'apple-05-sequelize',
-            field1: 'set apple at block 5 with sequelize', // And mocked record
-          },
-        ]);
+        expect(result).toStrictEqual([{id: 'entity1_id_0x01', field1: 1}]);
 
         // Should not include any previous recorded value
         const result3 = await testModel.getByField('field1', 3, {offset: 0, limit: 50});
         // Expect only mocked
-        expect(result3).toStrictEqual([
-          {
-            id: 'apple-05-sequelize',
-            field1: 'set apple at block 5 with sequelize',
-          },
-        ]);
+        expect(result3).toStrictEqual([]);
       });
     });
 
     describe('getByFields', () => {
-      it('calls getByField if there is one filter', async () => {
-        const spy = jest.spyOn(testModel, 'getByField');
-
-        await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 1});
-
-        expect(spy).toHaveBeenCalledWith('field1', 1, {offset: 0, limit: 1});
-      });
-
-      it('flushes the cache first', async () => {
-        const spy = jest.spyOn(testModel, 'flush');
-
-        // Set data so there is something to be flushed
-        testModel.set(
-          'entity1_id_0x02',
-          {
-            id: 'entity1_id_0x02',
-            field1: 2,
-          },
-          2
-        );
-
-        await testModel.getByFields(
-          [
-            ['field1', '=', 1],
-            ['field1', 'in', [2]],
-          ],
-          {offset: 0, limit: 1}
-        );
-
-        expect(spy).toHaveBeenCalled();
+      it('allows empty filter', async () => {
+        await expect(
+          testModel.getByFields(
+            // Any needed to get past type check
+            [],
+            {offset: 0, limit: 1}
+          )
+        ).resolves.not.toThrow();
       });
 
       it('throws for unsupported operators', async () => {

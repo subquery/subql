@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
@@ -120,10 +119,9 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       return await dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
     } catch (error: any) {
       // Handle errors by skipping the current dictionary
-      assert(
-        this._currentDictionaryIndex !== undefined,
-        new Error(`try get next dictionary but _currentDictionaryIndex is undefined`)
-      );
+      if (this._currentDictionaryIndex === undefined) {
+        throw new Error(`try get next dictionary but _currentDictionaryIndex is undefined`);
+      }
       skipDictionaryIndex.add(this._currentDictionaryIndex);
       return this._scopedDictionaryEntries(
         startBlockHeight,

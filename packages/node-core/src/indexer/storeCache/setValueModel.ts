@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {FieldsExpression} from '@subql/types-core';
 import {isEqual} from 'lodash';
 import {SetValue} from './types';
 
@@ -108,16 +109,32 @@ export class SetValueModel<T> {
     this.historicalValues[latestIndex].removed = true;
   }
 
-  isMatchData(field?: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
-    if (field === undefined || value === undefined) {
-      return true;
+  /**
+   * If value is an array then it will do an OR operation
+   * */
+  matchesField([field, matcher, value]: FieldsExpression<T>): boolean {
+    if (this.getLatest()?.removed) return false;
+    const latestValue = this.getLatest()?.data?.[field];
+
+    switch (matcher) {
+      case '=':
+        return isEqual(latestValue, value);
+      case '!=':
+        return !isEqual(latestValue, value);
+      case 'in':
+        return latestValue !== undefined && value.includes(latestValue);
+      case '!in':
+        return latestValue !== undefined && !value.includes(latestValue);
+      default:
+        throw new Error(`Unsupported matcher "${matcher}"`);
     }
-    if (Array.isArray(value)) {
-      return value.findIndex((v) => this.isMatchData(field, v)) > -1;
-    } else {
-      if (this.getLatest()?.removed) return false;
-      return isEqual(this.getLatest()?.data?.[field], value);
-    }
+  }
+
+  /**
+   *  Runs an AND operation over all the matchers
+   * */
+  matchesFields(filters: FieldsExpression<T>[]): boolean {
+    return filters.every((filter) => this.matchesField(filter));
   }
 
   private create(data: T, blockHeight: number, operationIndex: number): void {

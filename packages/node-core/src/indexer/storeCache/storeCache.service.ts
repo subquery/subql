@@ -79,7 +79,6 @@ export class StoreCacheService extends BaseCacheService {
       this._historical,
       this.config,
       this.getNextStoreOperationIndex.bind(this),
-      () => this.flushCache(true),
       this._useCockroachDb
     );
     if (this.config.csvOutDir) {
