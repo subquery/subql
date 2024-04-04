@@ -364,8 +364,6 @@ WHERE
   });
 
   it('drop relational with no historical', async () => {
-    // This test has no parent
-    const cid = 'Qmd3UxXvkUu9L5xAwaaJJ3pu5U52MMa5fLZxYYmgcs2EMn';
     schemaName = 'test-migrations-14';
 
     const initialSchema = loadGqlSchema('test_14_1.graphql');
@@ -376,9 +374,7 @@ WHERE
       new NodeConfig({disableHistorical: true} as any)
     );
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_14_2000.graphql'));
-
-    await migrationService.run(initialSchema, loadGqlSchema('test_14_4000.graphql'));
+    await migrationService.run(initialSchema, loadGqlSchema('test_14_1000.graphql'));
 
     const [result] = await sequelize.query(`
     SELECT
@@ -398,7 +394,7 @@ WHERE
     tc.constraint_type = 'FOREIGN KEY'
   AND tc.table_schema = '${schemaName}';`);
 
-    expect(result.length).toBe(3);
+    expect(result.length).toBe(0);
   });
 
   it('Able to drop table and column with relations', async () => {
