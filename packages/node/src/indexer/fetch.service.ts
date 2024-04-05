@@ -85,12 +85,8 @@ export class FetchService extends BaseFetchService<
     return Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
   }
 
-  protected getModulos(): number[] {
-    return getModulos(
-      this.projectService.getAllDataSources(),
-      isCustomDs,
-      EthereumHandlerKind.Block,
-    );
+  protected getModulos(dataSources: SubqlDatasource[]): number[] {
+    return getModulos(dataSources, isCustomDs, EthereumHandlerKind.Block);
   }
 
   protected async initBlockDispatcher(): Promise<void> {

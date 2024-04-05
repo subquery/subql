@@ -6,9 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-04-05
+### Changed
+- update modulos to match changes with node core (#276)
+
 ### Fixed
-- Now when `workers` set to 0, it will use block dispatcher instead of throw and exit
-- Fixed workers failed to start due to missing apiService, also fix `fetchChainBlock`
+- Now when `workers` set to 0, it will use block dispatcher instead of throw and exit (#273)
+- Fixed workers failed to start due to missing apiService, also fix `fetchChainBlock` (#275)
 
 ## [4.0.0] - 2024-04-03
 ### Added
@@ -442,7 +446,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.0.0...node-ethereum/4.1.0
 [4.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.11.0...node-ethereum/4.0.0
 [3.11.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.1...node-ethereum/3.11.0
 [3.10.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/3.10.0...node-ethereum/3.10.1
