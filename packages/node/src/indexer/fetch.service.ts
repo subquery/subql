@@ -83,12 +83,8 @@ export class FetchService extends BaseFetchService<
     return Math.min(BLOCK_TIME_VARIANCE, chainInterval);
   }
 
-  protected getModulos(): number[] {
-    return getModulos(
-      this.projectService.getAllDataSources(),
-      isCustomDs,
-      SubstrateHandlerKind.Block,
-    );
+  protected getModulos(dataSources: SubstrateDatasource[]): number[] {
+    return getModulos(dataSources, isCustomDs, SubstrateHandlerKind.Block);
   }
 
   protected async initBlockDispatcher(): Promise<void> {

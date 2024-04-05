@@ -16,7 +16,6 @@ const genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a7
 class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher<any>, any> {
   finalizedHeight = 1000;
   bestHeight = 20;
-  modulos: number[] = [];
 
   protected buildDictionaryQueryEntries(
     dataSources: BaseDataSource<BaseHandler<any>, BaseMapping<BaseHandler<any>>>[]
@@ -35,14 +34,35 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   protected async getChainInterval(): Promise<number> {
     return Promise.resolve(CHAIN_INTERVAL);
   }
-  protected getModulos(): number[] {
-    return this.modulos;
-  }
+
   protected async initBlockDispatcher(): Promise<void> {
     return Promise.resolve();
   }
   async preLoopHook(data: {startHeight: number}): Promise<void> {
     return Promise.resolve();
+  }
+
+  protected getModulos(dataSources: BaseDataSource[]): number[] {
+    // This is mocks get modulos, checkes every handler
+    const modulos: number[] = [];
+    for (const ds of dataSources) {
+      for (const handler of ds.mapping.handlers) {
+        if (handler.filter && handler.filter.modulo) {
+          modulos.push(handler.filter.modulo);
+        }
+      }
+    }
+
+    return modulos;
+  }
+
+  // Only used in the test to mock `getModulos` outputs
+  mockGetModulos(numbers: number[]): void {
+    this.getModulos = () => numbers;
+  }
+
+  mockDsMap(blockHeightMap: BlockHeightMap<any>): void {
+    this.projectService.getDataSourcesMap = jest.fn(() => blockHeightMap);
   }
 }
 
@@ -71,6 +91,24 @@ const mockDs: BaseDataSource = {
     ],
   },
 };
+
+function mockModuloDs(startBlock: number, endBlock: number, modulo: number): BaseDataSource {
+  return {
+    kind: 'mock/DataSource',
+    startBlock: startBlock,
+    endBlock: endBlock,
+    mapping: {
+      file: '',
+      handlers: [
+        {
+          kind: 'mock/Handler',
+          handler: 'mockFunction',
+          filter: {modulo: modulo},
+        },
+      ],
+    },
+  };
+}
 
 const getDictionaryService = () =>
   ({
@@ -174,15 +212,37 @@ describe('Fetch Service', () => {
         queryEndBlock: end,
         _metadata: {
           lastProcessedHeight: 1000,
-        } as any,
+        },
 
         lastBufferedHeight: 1000,
       });
     };
   };
 
+  const moduloBlockHeightMap = new BlockHeightMap(
+    new Map([
+      [1, [{...mockModuloDs(1, 100, 20), startBlock: 1, endBlock: 100}]],
+      [
+        101, // empty gap for discontinuous block
+        [],
+      ],
+      [201, [{...mockModuloDs(201, 500, 30), startBlock: 201, endBlock: 500}]],
+      // to infinite
+      [500, [{...mockModuloDs(500, Number.MAX_SAFE_INTEGER, 99), startBlock: 500}]],
+      // multiple ds
+      [
+        600,
+        [
+          {...mockModuloDs(500, 800, 99), startBlock: 600, endBlock: 800},
+          {...mockModuloDs(700, Number.MAX_SAFE_INTEGER, 101), startBlock: 700},
+        ],
+      ],
+    ])
+  );
+
   afterEach(() => {
     fetchService.onApplicationShutdown();
+    jest.clearAllMocks();
   });
 
   it('calls the preHookLoop when init is called', async () => {
@@ -194,52 +254,51 @@ describe('Fetch Service', () => {
   });
 
   it('adds bypassBlocks for empty datasources', async () => {
-    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
-      () =>
-        new BlockHeightMap(
-          new Map([
+    fetchService.mockDsMap(
+      new BlockHeightMap(
+        new Map([
+          [
+            1,
             [
-              1,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
             ],
+          ],
+          [
+            10,
             [
-              10,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-                {...mockDs, startBlock: 10, endBlock: 20},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
+              {...mockDs, startBlock: 10, endBlock: 20},
             ],
+          ],
+          [
+            21,
             [
-              21,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
             ],
+          ],
+          [
+            50,
             [
-              50,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-                {...mockDs, startBlock: 50, endBlock: 200},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
+              {...mockDs, startBlock: 50, endBlock: 200},
             ],
+          ],
+          [
+            101,
             [
-              101,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 50, endBlock: 200},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 50, endBlock: 200},
             ],
-            [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
-            [301, []],
-            [500, [{...mockDs, startBlock: 500}]],
-          ])
-        )
+          ],
+          [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
+          [301, []],
+          [500, [{...mockDs, startBlock: 500}]],
+        ])
+      )
     );
 
     await fetchService.init(1);
@@ -349,7 +408,7 @@ describe('Fetch Service', () => {
 
   it('enqueues modulo blocks WITHOUT dictionary', async () => {
     // Set modulos to every 3rd block. We only have 1 data source
-    fetchService.modulos = [3];
+    fetchService.mockGetModulos([3]);
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
@@ -359,7 +418,7 @@ describe('Fetch Service', () => {
   });
 
   it('enqueues modulo blocks WITH dictionary', async () => {
-    fetchService.modulos = [3];
+    fetchService.mockGetModulos([3]);
     enableDictionary();
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -372,8 +431,81 @@ describe('Fetch Service', () => {
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
   });
 
+  it('if useModuloHandlersOnly is false, will enqueue sequentially', async () => {
+    // 2 handlers, modulo filter is mixed with other handler
+    const moduloBlockHeightMap2 = new BlockHeightMap(
+      new Map([
+        [
+          600,
+          [
+            {
+              kind: 'mock/DataSource',
+              startBlock: 600,
+              mapping: {
+                file: '',
+                handlers: [
+                  {
+                    kind: 'mock/BlockHandler',
+                    handler: 'mockFunction',
+                    filter: {modulo: 3},
+                  },
+                  {
+                    kind: 'mock/CallHandler',
+                    handler: 'mockFunction',
+                  },
+                ],
+              },
+            },
+          ],
+        ],
+      ])
+    );
+    fetchService.mockDsMap(moduloBlockHeightMap2);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(600);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([600, 601, 602, 603, 604, 605, 606, 607, 608, 609], 609);
+  });
+
+  // get modulo blocks with multiple dataSource block heights
+
+  it('enqueue modulo blocks with match height', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(1);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([20, 40, 60, 80, 100], 100);
+  });
+
+  it('skip modulo blocks if in that ranges has no data source, it should enqueue nothing', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(105);
+    // Empty blocks with range end height , 105 + 10 -1
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 114);
+  });
+
+  it('enqueue modulo blocks until next block map start', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(250);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([270, 300, 330, 360, 390, 420, 450, 480], 480);
+  });
+
+  it('enqueue modulo blocks when ds has no endHeight, end before next blockHeight key', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(500);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([594], 594);
+  });
+
+  it('enqueue modulo blocks with mutiple ds modulo filters', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(600);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([606, 693, 707, 792, 808, 891, 909, 990], 990);
+  });
+
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {
-    fetchService.modulos = [20];
+    fetchService.mockGetModulos([20]);
     fetchService.finalizedHeight = 55;
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -386,8 +518,7 @@ describe('Fetch Service', () => {
 
   it('enqueues modulo blocks correctly', async () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-    fetchService.modulos = [150];
-
+    fetchService.mockGetModulos([150]);
     dataSources = [
       {
         kind: 'mock/DataSource',
@@ -417,8 +548,48 @@ describe('Fetch Service', () => {
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 11);
   });
 
+  it('when enqueue ds endHeight less than modulo height, should not include any modulo', async () => {
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    dataSources = [
+      {
+        kind: 'mock/DataSource',
+        startBlock: 1,
+        endBlock: 9,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              kind: 'mock/Handler',
+              handler: 'mockFunction',
+              filter: {},
+            },
+          ],
+        },
+      },
+      {
+        kind: 'mock/DataSource',
+        startBlock: 10,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              kind: 'mock/Handler',
+              handler: 'mockFunction',
+              filter: {
+                modulo: 150,
+              },
+            },
+          ],
+        },
+      },
+    ];
+    // First ds not found modulo will enqueue block until next ds startHeight -1, so it is 9 here
+    await fetchService.init(2);
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([2, 3, 4, 5, 6, 7, 8, 9], 9);
+  });
+
   it('enqueues modulo blocks with furture dataSources', async () => {
-    fetchService.modulos = [3];
+    fetchService.mockGetModulos([3]);
     dataSources.push({...mockDs, startBlock: 20});
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -459,7 +630,7 @@ describe('Fetch Service', () => {
   });
 
   it('dictionary page limited result and modulo block enqueues correct blocks', async () => {
-    fetchService.modulos = [50];
+    fetchService.mockGetModulos([50]);
     enableDictionary();
     // Increase free size to be greater than batch size
     blockDispatcher.freeSize = 20;
