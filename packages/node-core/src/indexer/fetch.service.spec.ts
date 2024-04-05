@@ -55,6 +55,15 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
 
     return modulos;
   }
+
+  // Only used in the test to mock `getModulos` outputs
+  mockGetModulos(numbers: number[]): void {
+    this.getModulos = () => numbers;
+  }
+
+  mockDsMap(blockHeightMap: BlockHeightMap<any>): void {
+    this.projectService.getDataSourcesMap = jest.fn(() => blockHeightMap);
+  }
 }
 
 const nodeConfig = new NodeConfig({
@@ -203,15 +212,37 @@ describe('Fetch Service', () => {
         queryEndBlock: end,
         _metadata: {
           lastProcessedHeight: 1000,
-        } as any,
+        },
 
         lastBufferedHeight: 1000,
       });
     };
   };
 
+  const moduloBlockHeightMap = new BlockHeightMap(
+    new Map([
+      [1, [{...mockModuloDs(1, 100, 20), startBlock: 1, endBlock: 100}]],
+      [
+        101, // empty gap for discontinuous block
+        [],
+      ],
+      [201, [{...mockModuloDs(201, 500, 30), startBlock: 201, endBlock: 500}]],
+      // to infinite
+      [500, [{...mockModuloDs(500, Number.MAX_SAFE_INTEGER, 99), startBlock: 500}]],
+      // multiple ds
+      [
+        600,
+        [
+          {...mockModuloDs(500, 800, 99), startBlock: 600, endBlock: 800},
+          {...mockModuloDs(700, Number.MAX_SAFE_INTEGER, 101), startBlock: 700},
+        ],
+      ],
+    ])
+  );
+
   afterEach(() => {
     fetchService.onApplicationShutdown();
+    jest.clearAllMocks();
   });
 
   it('calls the preHookLoop when init is called', async () => {
@@ -223,52 +254,51 @@ describe('Fetch Service', () => {
   });
 
   it('adds bypassBlocks for empty datasources', async () => {
-    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
-      () =>
-        new BlockHeightMap(
-          new Map([
+    fetchService.mockDsMap(
+      new BlockHeightMap(
+        new Map([
+          [
+            1,
             [
-              1,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
             ],
+          ],
+          [
+            10,
             [
-              10,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-                {...mockDs, startBlock: 10, endBlock: 20},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
+              {...mockDs, startBlock: 10, endBlock: 20},
             ],
+          ],
+          [
+            21,
             [
-              21,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
             ],
+          ],
+          [
+            50,
             [
-              50,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 1, endBlock: 100},
-                {...mockDs, startBlock: 50, endBlock: 200},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
+              {...mockDs, startBlock: 50, endBlock: 200},
             ],
+          ],
+          [
+            101,
             [
-              101,
-              [
-                {...mockDs, startBlock: 1, endBlock: 300},
-                {...mockDs, startBlock: 50, endBlock: 200},
-              ],
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 50, endBlock: 200},
             ],
-            [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
-            [301, []],
-            [500, [{...mockDs, startBlock: 500}]],
-          ])
-        )
+          ],
+          [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
+          [301, []],
+          [500, [{...mockDs, startBlock: 500}]],
+        ])
+      )
     );
 
     await fetchService.init(1);
@@ -378,7 +408,7 @@ describe('Fetch Service', () => {
 
   it('enqueues modulo blocks WITHOUT dictionary', async () => {
     // Set modulos to every 3rd block. We only have 1 data source
-    (fetchService as any).getModulos = () => [3];
+    fetchService.mockGetModulos([3]);
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
@@ -388,7 +418,7 @@ describe('Fetch Service', () => {
   });
 
   it('enqueues modulo blocks WITH dictionary', async () => {
-    (fetchService as any).getModulos = () => [3];
+    fetchService.mockGetModulos([3]);
     enableDictionary();
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -401,81 +431,81 @@ describe('Fetch Service', () => {
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
   });
 
-  it('can check should useModuloHandlersOnly', () => {
-    dataSources = [
-      {
-        kind: 'mock/DataSource',
-        startBlock: 1,
-        mapping: {
-          file: '',
-          handlers: [
+  it('if useModuloHandlersOnly is false, will enqueue sequentially', async () => {
+    // 2 handlers, modulo filter is mixed with other handler
+    const moduloBlockHeightMap2 = new BlockHeightMap(
+      new Map([
+        [
+          600,
+          [
             {
-              kind: 'mock/Handler',
-              handler: 'mockFunction',
-              filter: {
-                modulo: 150,
+              kind: 'mock/DataSource',
+              startBlock: 600,
+              mapping: {
+                file: '',
+                handlers: [
+                  {
+                    kind: 'mock/BlockHandler',
+                    handler: 'mockFunction',
+                    filter: {modulo: 3},
+                  },
+                  {
+                    kind: 'mock/CallHandler',
+                    handler: 'mockFunction',
+                  },
+                ],
               },
             },
           ],
-        },
-      },
-    ];
-    // 1 modulo handler only
-    expect((fetchService as any).useModuloHandlersOnly(dataSources)).toBeTruthy();
-    dataSources[0].mapping.handlers.push({
-      kind: 'mock/Handler',
-      handler: 'mockFunction',
-      filter: {},
-    });
-    // 2 handlers, only 1 has modulo filter
-    expect((fetchService as any).useModuloHandlersOnly(dataSources)).toBeFalsy();
+        ],
+      ])
+    );
+    fetchService.mockDsMap(moduloBlockHeightMap2);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(600);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([600, 601, 602, 603, 604, 605, 606, 607, 608, 609], 609);
   });
 
-  it('can exclude modulo blocks', () => {
-    (fetchService as any).projectService.getDataSourcesMap = jest.fn(
-      () =>
-        new BlockHeightMap(
-          new Map([
-            [1, [{...mockModuloDs(1, 100, 20), startBlock: 1, endBlock: 100}]],
-            [
-              101, // empty gap for discontinuous block
-              [],
-            ],
-            [201, [{...mockModuloDs(201, 500, 30), startBlock: 201, endBlock: 500}]],
-            // to infinite
-            [500, [{...mockModuloDs(500, Number.MAX_SAFE_INTEGER, 99), startBlock: 500}]],
-            // multiple ds
-            [
-              600,
-              [
-                {...mockModuloDs(500, 800, 99), startBlock: 600, endBlock: 800},
-                {...mockModuloDs(700, Number.MAX_SAFE_INTEGER, 101), startBlock: 700},
-              ],
-            ],
-          ])
-        )
-    );
+  // get modulo blocks with multiple dataSource block heights
 
-    const numbers = (fetchService as any).getModuloBlocks(1, 300);
-    expect(numbers).toEqual([20, 40, 60, 80, 100]);
+  it('enqueue modulo blocks with match height', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(1);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([20, 40, 60, 80, 100], 100);
+  });
 
-    const numbers2 = (fetchService as any).getModuloBlocks(105, 10000);
-    expect(numbers2).toEqual([]);
+  it('skip modulo blocks if in that ranges has no data source, it should enqueue nothing', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(105);
+    // Empty blocks with range end height , 105 + 10 -1
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 114);
+  });
 
-    const numbers3 = (fetchService as any).getModuloBlocks(250, 10000);
-    expect(numbers3).toEqual([270, 300, 330, 360, 390, 420, 450, 480]);
+  it('enqueue modulo blocks until next block map start', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(250);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([270, 300, 330, 360, 390, 420, 450, 480], 480);
+  });
 
-    // ds with no endHeight, end before next blockHeight key
-    const numbers4 = (fetchService as any).getModuloBlocks(500, 10000);
-    expect(numbers4).toEqual([594]);
+  it('enqueue modulo blocks when ds has no endHeight, end before next blockHeight key', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(500);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([594], 594);
+  });
 
-    //handle multiple ds modulo
-    const numbers5 = (fetchService as any).getModuloBlocks(600, 1000);
-    expect(numbers5).toEqual([606, 693, 707, 792, 808, 891, 909, 990]);
+  it('enqueue modulo blocks with mutiple ds modulo filters', async () => {
+    fetchService.mockDsMap(moduloBlockHeightMap);
+    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    await fetchService.init(600);
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([606, 693, 707, 792, 808, 891, 909, 990], 990);
   });
 
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {
-    (fetchService as any).getModulos = () => [20];
+    fetchService.mockGetModulos([20]);
     fetchService.finalizedHeight = 55;
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -488,8 +518,7 @@ describe('Fetch Service', () => {
 
   it('enqueues modulo blocks correctly', async () => {
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-    (fetchService as any).getModulos = () => [150];
-
+    fetchService.mockGetModulos([150]);
     dataSources = [
       {
         kind: 'mock/DataSource',
@@ -560,7 +589,7 @@ describe('Fetch Service', () => {
   });
 
   it('enqueues modulo blocks with furture dataSources', async () => {
-    (fetchService as any).getModulos = () => [3];
+    fetchService.mockGetModulos([3]);
     dataSources.push({...mockDs, startBlock: 20});
 
     const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
@@ -601,7 +630,7 @@ describe('Fetch Service', () => {
   });
 
   it('dictionary page limited result and modulo block enqueues correct blocks', async () => {
-    (fetchService as any).getModulos = () => [50];
+    fetchService.mockGetModulos([50]);
     enableDictionary();
     // Increase free size to be greater than batch size
     blockDispatcher.freeSize = 20;

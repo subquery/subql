@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Fix modulo block didn't apply correctly with multiple dataSources (#2331)
+### Changed: 
+- update modulos to match changes with node core
 
 ## [8.0.0] - 2024-03-28
 ### Added
