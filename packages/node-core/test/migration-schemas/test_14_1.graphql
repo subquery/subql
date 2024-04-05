@@ -1,0 +1,17 @@
+type Transfer @entity {
+  id: ID!
+  amount: BigInt!
+  blockNumber: Int!
+  date: Date!
+  from: Account!
+  to: Account!
+}
+
+type Account @entity {
+  id: ID!
+  publicKey: String!
+  firstTransferBlock: Int
+  lastTransferBlock: Int
+  sentTransfers: [Transfer] @derivedFrom(field: "from") # These are virtual properties to help us navigate to the correct foreign key of Transfer
+  recievedTransfers: [Transfer] @derivedFrom(field: "to") # These are virtual properties to help us navigate to the correct foreign key of Transfer
+}

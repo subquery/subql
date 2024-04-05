@@ -1,0 +1,52 @@
+type Transfer @entity {
+  """
+  id field is always required and must look like this
+  """
+  id: ID!
+  """
+  Amount that is transferred
+  """
+  amount: BigInt!
+  """
+  The block height of the transfer
+  """
+  blockNumber: BigInt! ## this should throw lmao
+  """
+  The date of the transfer
+  """
+  date: Date!
+  """
+  The account that transfers are made from
+  """
+  from: Account!
+  """
+  The account that transfers are made to
+  """
+  to: Account!
+}
+
+type Account @entity {
+  """
+  id field is always required and must look like this
+  """
+  id: ID!
+  """
+  The public key of this account (same across all Polkadot parachains)
+  """
+  publicKey: String!
+  """
+  The first block on which we see a transfer involving this account
+  """
+  firstTransferBlock: Int!
+  """
+  The most recent block on which we see a transfer involving this account
+  """
+  lastTransferBlock: Int
+  sentTransfers: [Transfer] @derivedFrom(field: "from") # These are virtual properties to help us navigate to the correct foreign key of Transfer
+  recievedTransfers: [Transfer] @derivedFrom(field: "to") # These are virtual properties to help us navigate to the correct foreign key of Transfer
+}
+
+type TestEntity @entity {
+  id: ID!
+  exampleField: String
+}

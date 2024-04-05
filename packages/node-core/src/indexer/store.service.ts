@@ -190,7 +190,6 @@ export class StoreService {
         throw new Error('Btree_gist extension is required to enable historical data, contact DB admin for support');
       }
     }
-
     /*
     On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
     every start up is a migration
