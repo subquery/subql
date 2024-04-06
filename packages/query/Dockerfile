@@ -34,5 +34,5 @@ RUN apk add --no-cache tini curl git && \
 USER 1000
 
 # Set Entry point and command
-ENTRYPOINT ["/sbin/tini", "--", "bin/run"]
+ENTRYPOINT ["/sbin/tini", "--", "/bin/run"]
 CMD ["-f","/app"]
