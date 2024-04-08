@@ -24,6 +24,11 @@ export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MULTICHAIN_TS_MANIFEST = 'subquery-multichain.ts';
 export const DEFAULT_MANIFEST = 'project.yaml';
 export const DEFAULT_TS_MANIFEST = 'project.ts';
+export const DEFAULT_ENV = '.env';
+export const DEFAULT_ENV_DEVELOP = '.env.develop';
+export const DEFAULT_ENV_LOCAL = '.env.local';
+export const DEFAULT_ENV_DEVELOP_LOCAL = '.env.develop.local';
+export const DEFAULT_GIT_IGNORE = '.gitignore';
 
 export function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
