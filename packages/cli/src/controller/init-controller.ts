@@ -248,22 +248,21 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
 }
 
 export function addDotEnvConfigCode(manifestData: string): string {
-  // Find the first empty line
-  let insertionPoint = -1;
-  const lines = manifestData.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim() === '') {
-      insertionPoint = i + 1; // Insert after the empty line
+  // add dotenv config after imports in project.ts file
+  let snippetCodeIndex = -1;
+  const manifestSections = manifestData.split('\n');
+  for (let i = 0; i < manifestSections.length; i++) {
+    if (manifestSections[i].trim() === '') {
+      snippetCodeIndex = i + 1;
       break;
     }
   }
 
-  // Handle no empty line found scenario
-  if (insertionPoint === -1) {
-    insertionPoint = 0;
+  if (snippetCodeIndex === -1) {
+    snippetCodeIndex = 0;
   }
 
-  const envConfigurationCode = `
+  const envConfigCodeSnippet = `
 import * as dotenv from 'dotenv';
 import path from 'path';
 
@@ -275,9 +274,9 @@ dotenv.config({ path: dotenvPath });
 `;
 
   // Inserting the env configuration code in project.ts
-  const updatedTsProject = `${lines.slice(0, insertionPoint).join('\n') + envConfigurationCode}\n${lines
-    .slice(insertionPoint)
-    .join('\n')}`;
+  const updatedTsProject = `${
+    manifestSections.slice(0, snippetCodeIndex).join('\n') + envConfigCodeSnippet
+  }\n${manifestSections.slice(snippetCodeIndex).join('\n')}`;
   return updatedTsProject;
 }
 
@@ -301,6 +300,7 @@ export async function prepareEnv(projectPath: string, project: ProjectSpecBase):
     }
   }
 
+  //adding env configs
   const envData = `ENDPOINT=${project.endpoint}\nCHAIN_ID=${chainId}`;
   await fs.promises.writeFile(envPath, envData, 'utf8');
   await fs.promises.writeFile(envDevelopPath, envData, 'utf8');
