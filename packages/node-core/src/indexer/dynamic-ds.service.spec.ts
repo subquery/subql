@@ -3,10 +3,18 @@
 
 import {DatasourceParams, DynamicDsService} from './dynamic-ds.service';
 import {CacheMetadataModel} from './storeCache';
+import {ISubqueryProject} from './types';
 
-class TestDynamicDsService extends DynamicDsService<DatasourceParams> {
+class TestDynamicDsService extends DynamicDsService<ISubqueryProject, DatasourceParams> {
   protected async getDatasource(params: DatasourceParams): Promise<DatasourceParams> {
     return Promise.resolve(params);
+  }
+
+  getTemplate<T extends Omit<NonNullable<ISubqueryProject['templates']>[number], 'name'> & {startBlock?: number}>(
+    templateName: string,
+    startBlock?: number | undefined
+  ): T {
+    return super.getTemplate(templateName, startBlock);
   }
 }
 
@@ -29,9 +37,12 @@ const mockMetadata = (initData: DatasourceParams[] = []) => {
 
 describe('DynamicDsService', () => {
   let service: TestDynamicDsService;
+  const project = {
+    templates: [{name: 'TestTemplate'}],
+  } as any as ISubqueryProject;
 
   beforeEach(() => {
-    service = new TestDynamicDsService();
+    service = new TestDynamicDsService(project);
   });
 
   it('loads all datasources and params when init', async () => {
@@ -78,5 +89,19 @@ describe('DynamicDsService', () => {
       testParam4,
     ]);
     await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2, testParam3, testParam4]);
+  });
+
+  it('can find a template and cannot mutate the template', () => {
+    const template1 = service.getTemplate('TestTemplate', 1);
+    const template2 = service.getTemplate('TestTemplate', 2);
+
+    expect(template1.startBlock).toEqual(1);
+    expect((template1 as any).name).toBeUndefined();
+
+    expect(template2.startBlock).toEqual(2);
+    expect((template2 as any).name).toBeUndefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(project.templates![0]).toEqual({name: 'TestTemplate'});
   });
 });
