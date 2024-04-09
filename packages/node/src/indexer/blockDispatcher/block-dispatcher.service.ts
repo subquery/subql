@@ -14,7 +14,6 @@ import {
   IProjectUpgradeService,
   PoiSyncService,
   IBlock,
-  getBlockHeight,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -94,7 +93,7 @@ export class BlockDispatcherService
       : await this.runtimeService.getRuntimeVersion(block.block.block);
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getDataSources(getBlockHeight(block)),
+      await this.projectService.getDataSources(block.getHeader().blockHeight),
       runtimeVersion,
     );
   }
