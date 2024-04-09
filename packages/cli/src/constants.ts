@@ -18,6 +18,8 @@ export const ENDPOINT_REG = /endpoint:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
 export const ADDRESS_REG = /address\s*:\s*['"]([^'"]+)['"]/;
 export const TOPICS_REG = /topics:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
 export const FUNCTION_REG = /function\s*:\s*['"]([^'"]+)['"]/;
+export const CHAIN_ID_REG = /chainId:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
+export const CAPTURE_CHAIN_ID_REG = /chainId:\s*("([^"]*)"|(?<!")(\d+))/;
 
 export const ACCESS_TOKEN_PATH = path.resolve(
   process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'],
