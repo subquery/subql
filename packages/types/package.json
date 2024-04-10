@@ -17,7 +17,7 @@
     "/dist"
   ],
   "dependencies": {
-    "@subql/types-core": "^0.5.0",
+    "@subql/types-core": "^0.6.0",
     "stellar-sdk": "^11.2.2"
   },
   "stableVersion": "3.2.2-0"

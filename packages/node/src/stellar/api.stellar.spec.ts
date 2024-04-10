@@ -45,7 +45,7 @@ describe('StellarApi', () => {
   it('should fetch block', async () => {
     const latestHeight = await stellarApi.getFinalizedBlockHeight();
     const block = (await stellarApi.fetchBlocks([latestHeight]))[0];
-    expect(block.block.sequence).toEqual(latestHeight);
+    expect(block.getHeader().blockHeight).toEqual(latestHeight);
   });
 
   it('should throw on calling connect', async () => {

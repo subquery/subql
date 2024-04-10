@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- version bump with `@subql/common`
+
 ## [3.3.2] - 2024-02-23
 ### Changed
 - version bump with `@subql/common`

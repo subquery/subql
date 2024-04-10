@@ -24,7 +24,7 @@ export interface BlockWrapper<
   events?: E[];
 }
 
-export interface ApiWrapper<BW extends BlockWrapper = StellarBlockWrapper> {
+export interface ApiWrapper {
   init: () => Promise<void>;
   getGenesisHash: () => string;
   getRuntimeChain: () => string;
@@ -33,7 +33,6 @@ export interface ApiWrapper<BW extends BlockWrapper = StellarBlockWrapper> {
   getFinalizedBlockHeight: () => Promise<number>;
   getBestBlockHeight: () => Promise<number>;
   //getBlockByHeightOrHash: (hashOrHeight: number | string) => Promise<Block>;
-  fetchBlocks: (bufferBlocks: number[]) => Promise<BW[]>;
 }
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;

@@ -6,9 +6,10 @@ import {
   Header,
   HostUnfinalizedBlocks,
   IUnfinalizedBlocksService,
+  IBlock,
 } from '@subql/node-core';
 import { BlockWrapper } from '@subql/types-stellar';
-import { blockToHeader } from '../unfinalizedBlocks.service';
+import { blockToHeader } from '../../stellar/utils.stellar';
 
 @Injectable()
 export class WorkerUnfinalizedBlocksService
@@ -22,8 +23,10 @@ export class WorkerUnfinalizedBlocksService
 
   async processUnfinalizedBlocks({
     block,
-  }: BlockWrapper): Promise<number | null> {
-    return this.host.unfinalizedBlocksProcess(blockToHeader(block.sequence));
+  }: IBlock<BlockWrapper>): Promise<number | null> {
+    return this.host.unfinalizedBlocksProcess(
+      blockToHeader(block.block.sequence),
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async

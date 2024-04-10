@@ -164,7 +164,7 @@ describe.skip('testnet StellarApiService', () => {
     expect(blocks).toBeDefined();
 
     const block228236 = blocks[0];
-    const transferEvent = block228236.events.find(
+    const transferEvent = block228236.block.events.find(
       (e) => e.id === '0000980266155778048-0000000001',
     );
 

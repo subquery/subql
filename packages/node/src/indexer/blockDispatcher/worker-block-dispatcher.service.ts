@@ -18,6 +18,7 @@ import {
   createIndexerWorker,
   InMemoryCacheService,
 } from '@subql/node-core';
+import { StellarBlockWrapper } from '@subql/types-stellar';
 import {
   StellarProjectDs,
   SubqueryProject,
@@ -36,7 +37,11 @@ type IndexerWorker = IIndexerWorker & {
 
 @Injectable()
 export class WorkerBlockDispatcherService
-  extends WorkerBlockDispatcher<StellarProjectDs, IndexerWorker>
+  extends WorkerBlockDispatcher<
+    StellarProjectDs,
+    IndexerWorker,
+    StellarBlockWrapper
+  >
   implements OnApplicationShutdown
 {
   constructor(

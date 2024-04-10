@@ -26,7 +26,7 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './blockDispatcher';
-import { DictionaryService } from './dictionary.service';
+import { StellarDictionaryService } from './dictionary';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
@@ -93,7 +93,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
       ) =>
-        nodeConfig.workers !== undefined
+        nodeConfig.workers
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
@@ -144,22 +144,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     FetchService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
-    {
-      provide: DictionaryService,
-      useFactory: async (
-        project: SubqueryProject,
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-      ) => {
-        const dictionaryService = await DictionaryService.create(
-          project,
-          nodeConfig,
-          eventEmitter,
-        );
-        return dictionaryService;
-      },
-      inject: ['ISubqueryProject', NodeConfig, EventEmitter2],
-    },
+    StellarDictionaryService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
