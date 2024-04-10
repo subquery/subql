@@ -22,7 +22,9 @@ export interface IDynamicDsService<DS> {
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
 }
 
-export abstract class DynamicDsService<P extends ISubqueryProject, DS> implements IDynamicDsService<DS> {
+export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubqueryProject>
+  implements IDynamicDsService<DS>
+{
   private _metadata?: CacheMetadataModel;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];

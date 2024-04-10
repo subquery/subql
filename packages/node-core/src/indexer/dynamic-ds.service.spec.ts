@@ -5,7 +5,7 @@ import {DatasourceParams, DynamicDsService} from './dynamic-ds.service';
 import {CacheMetadataModel} from './storeCache';
 import {ISubqueryProject} from './types';
 
-class TestDynamicDsService extends DynamicDsService<ISubqueryProject, DatasourceParams> {
+class TestDynamicDsService extends DynamicDsService<DatasourceParams, ISubqueryProject> {
   protected async getDatasource(params: DatasourceParams): Promise<DatasourceParams> {
     return Promise.resolve(params);
   }

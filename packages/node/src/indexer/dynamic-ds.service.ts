@@ -15,8 +15,8 @@ import { DsProcessorService } from './ds-processor.service';
 
 @Injectable()
 export class DynamicDsService extends BaseDynamicDsService<
-  SubqueryProject,
-  SubstrateProjectDs
+  SubstrateProjectDs,
+  SubqueryProject
 > {
   constructor(
     private readonly dsProcessorService: DsProcessorService,
