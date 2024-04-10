@@ -87,9 +87,7 @@ describe('StellarApiService', () => {
       range(latestHeight - 1, latestHeight),
     );
     expect(blocks).toBeDefined();
-    expect(blocks).toEqual(
-      expect.arrayContaining([expect.any(StellarBlockWrapped)]),
-    );
+    expect(blocks[0].block.block.sequence).toEqual(latestHeight - 1);
   });
 
   it('should throw error when chainId does not match', async () => {
@@ -164,7 +162,7 @@ describe.skip('testnet StellarApiService', () => {
     expect(blocks).toBeDefined();
 
     const block228236 = blocks[0];
-    const transferEvent = block228236.events.find(
+    const transferEvent = block228236.block.events.find(
       (e) => e.id === '0000980266155778048-0000000001',
     );
 

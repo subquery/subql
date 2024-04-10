@@ -12,16 +12,9 @@ import {
   mainThreadOnly,
 } from '@subql/node-core';
 import { BlockWrapper } from '@subql/types-stellar';
+import { blockToHeader } from '../stellar/utils.stellar';
 
 const logger = getLogger('unfinalized');
-
-export function blockToHeader(blockHeight: number): Header {
-  return {
-    blockHeight: blockHeight,
-    blockHash: blockHeight.toString(),
-    parentHash: (blockHeight - 1).toString(),
-  };
-}
 
 @Injectable()
 export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockWrapper> {
@@ -31,11 +24,6 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
     storeCache: StoreCacheService,
   ) {
     super(nodeConfig, storeCache);
-  }
-
-  @mainThreadOnly()
-  protected blockToHeader(block: BlockWrapper): Header {
-    return blockToHeader(block.block.sequence);
   }
 
   @mainThreadOnly()

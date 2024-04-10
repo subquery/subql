@@ -10,10 +10,9 @@ import {
 import {
   ApiService,
   ConnectionPoolService,
-  NetworkMetadataPayload,
   getLogger,
-  IndexerEvent,
   ProjectUpgradeService,
+  IBlock,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import {
@@ -28,13 +27,11 @@ import { SorobanServer } from './soroban.server';
 
 const logger = getLogger('api');
 
-const MAX_RECONNECT_ATTEMPTS = 5;
-
 @Injectable()
 export class StellarApiService extends ApiService<
   StellarApi,
   SafeStellarProvider,
-  StellarBlockWrapper[]
+  IBlock<StellarBlockWrapper>[]
 > {
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
@@ -147,7 +144,7 @@ export class StellarApiService extends ApiService<
   private async fetchBlockBatches(
     api: StellarApi,
     batch: number[],
-  ): Promise<StellarBlockWrapper[]> {
+  ): Promise<IBlock<StellarBlockWrapper>[]> {
     return api.fetchBlocks(batch);
   }
 }

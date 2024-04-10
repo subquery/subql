@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getLogger } from '@subql/node-core';
+import { getLogger, IBlock } from '@subql/node-core';
 import {
   ApiWrapper,
   SorobanEvent,
@@ -18,13 +18,14 @@ import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
 import { StellarServer } from './stellar.server';
+import { formatBlockUtil } from './utils.stellar';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
 const logger = getLogger('api.Stellar');
 
-export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
+export class StellarApi implements ApiWrapper {
   //private client: Server;
   private stellarClient: StellarServer;
 
@@ -273,7 +274,7 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
 
   private async fetchAndWrapLedger(
     sequence: number,
-  ): Promise<StellarBlockWrapper> {
+  ): Promise<IBlock<StellarBlockWrapper>> {
     const [ledger, transactions, operations, effects] = await Promise.all([
       this.api.ledgers().ledger(sequence).call(),
       this.fetchTransactionsForLedger(sequence),
@@ -362,10 +363,12 @@ export class StellarApi implements ApiWrapper<StellarBlockWrapper> {
       wrappedLedger.events,
     );
 
-    return wrappedLedgerInstance;
+    return formatBlockUtil(wrappedLedgerInstance);
   }
 
-  async fetchBlocks(bufferBlocks: number[]): Promise<StellarBlockWrapper[]> {
+  async fetchBlocks(
+    bufferBlocks: number[],
+  ): Promise<IBlock<StellarBlockWrapper>[]> {
     const ledgers = await Promise.all(
       bufferBlocks.map((sequence) => this.fetchAndWrapLedger(sequence)),
     );

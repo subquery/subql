@@ -24,6 +24,7 @@ import {
   ProcessBlockResponse,
   BaseIndexerManager,
   ApiService,
+  IBlock,
 } from '@subql/node-core';
 import {
   StellarBlockWrapper,
@@ -98,11 +99,11 @@ export class IndexerManager extends BaseIndexerManager<
 
   @profiler()
   async indexBlock(
-    block: StellarBlockWrapper,
+    block: IBlock<StellarBlockWrapper>,
     dataSources: SubqlStellarDataSource[],
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
-      this.getApi(block),
+      this.getApi(block.block),
     );
   }
 

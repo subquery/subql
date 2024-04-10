@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/common": "^3.4.1",
+    "@subql/common": "^3.5.0",
     "@subql/types-stellar": "workspace:*",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",

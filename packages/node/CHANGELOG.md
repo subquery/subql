@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### Changed
+- Updated with node-core. Now dictionary supports multiple endpoints, indexer will fetch and switch dictionaries based on available blocks
+### Fixed
+- Updated with node-core ,also fixed:
+  - Fix modulo block didn't apply correctly with multiple dataSources
+  - Now when `workers` set to 0, it will use block dispatcher instead of throw and exit
+
+
 ## [3.9.1] - 2024-03-14
 ### Changed
 - Update `@subql/node-core` to 4.7.2 with graphql comments escaping fix

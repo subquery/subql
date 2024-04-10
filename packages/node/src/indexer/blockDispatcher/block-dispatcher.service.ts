@@ -14,6 +14,7 @@ import {
   ApiService,
   IProjectUpgradeService,
   PoiSyncService,
+  IBlock,
 } from '@subql/node-core';
 import { StellarBlockWrapper } from '@subql/types-stellar';
 import {
@@ -67,11 +68,11 @@ export class BlockDispatcherService
   }
 
   protected async indexBlock(
-    block: StellarBlockWrapper,
+    block: IBlock<StellarBlockWrapper>,
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getDataSources(this.getBlockHeight(block)),
+      await this.projectService.getDataSources(block.getHeader().blockHeight),
     );
   }
 }

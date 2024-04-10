@@ -12,6 +12,7 @@ import {
   ApiService,
   BaseWorkerService,
   IProjectUpgradeService,
+  IBlock,
 } from '@subql/node-core';
 import { BlockWrapper } from '@subql/types-stellar';
 import { StellarProjectDs } from '../../configure/SubqueryProject';
@@ -49,7 +50,7 @@ export class WorkerService extends BaseWorkerService<
   protected async fetchChainBlock(
     heights: number,
     extra: {},
-  ): Promise<BlockWrapper> {
+  ): Promise<IBlock<BlockWrapper>> {
     const [block] = await this.apiService.fetchBlocks([heights]);
     return block;
   }
@@ -61,7 +62,7 @@ export class WorkerService extends BaseWorkerService<
   }
 
   protected async processFetchedBlock(
-    block: BlockWrapper,
+    block: IBlock<BlockWrapper>,
     dataSources: SubqlStellarDataSource[],
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(block, dataSources);
