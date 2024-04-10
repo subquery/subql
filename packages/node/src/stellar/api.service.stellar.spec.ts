@@ -87,7 +87,7 @@ describe('StellarApiService', () => {
       range(latestHeight - 1, latestHeight),
     );
     expect(blocks).toBeDefined();
-    expect(blocks[1].block.block.sequence).toEqual(latestHeight);
+    expect(blocks[0].block.block.sequence).toEqual(latestHeight);
   });
 
   it('should throw error when chainId does not match', async () => {
