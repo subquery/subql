@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.5.1] - 2024-04-11
+### Fixed
+- Upgrade common dependencies in cli in order to fix build missing `GetOptions` issue
 
 ## [4.5.0] - 2024-03-28
 ### Added
@@ -553,7 +556,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.5.1...HEAD
+[4.5.1]: https://github.com/subquery/subql/compare/cli/4.5.0...cli/4.5.1
 [4.5.0]: https://github.com/subquery/subql/compare/cli/4.4.1...cli/4.5.0
 [4.4.1]: https://github.com/subquery/subql/compare/cli/4.4.0...cli/4.4.1
 [4.4.0]: https://github.com/subquery/subql/compare/cli/4.3.0...cli/4.4.0
