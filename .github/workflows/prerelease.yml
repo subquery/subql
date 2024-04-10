@@ -6,6 +6,10 @@ on:
     paths-ignore:
       - '.github/workflows/**'
 
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
   pre-ci:
     runs-on: ubuntu-latest
