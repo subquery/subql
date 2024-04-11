@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- Cli deployments failing with `this.jsonEnabled is not a function` (#2351)
+- Deployments failing with `this.jsonEnabled is not a function` (#2351)
 
 ## [4.5.1] - 2024-04-11
 ### Fixed
