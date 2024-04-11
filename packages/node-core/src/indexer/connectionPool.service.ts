@@ -62,6 +62,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     }
   }
 
+  get allApiConnections(): Record<string, T> {
+    return this.allApi;
+  }
+
   async updateConnection(api: T, endpoint: string): Promise<void> {
     if (this.allApi[endpoint] === undefined) {
       throw new Error(`Attempting to update connection that does not exist: ${endpoint}`);
