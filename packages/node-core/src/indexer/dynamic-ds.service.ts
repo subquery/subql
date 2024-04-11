@@ -1,8 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {cloneDeep} from 'lodash';
 import {getLogger} from '../logger';
 import {CacheMetadataModel} from './storeCache/cacheMetadata';
+import {ISubqueryProject} from './types';
 
 const logger = getLogger('dynamic-ds');
 
@@ -20,12 +22,16 @@ export interface IDynamicDsService<DS> {
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
 }
 
-export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
+export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubqueryProject>
+  implements IDynamicDsService<DS>
+{
   private _metadata?: CacheMetadataModel;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];
 
   protected abstract getDatasource(params: DatasourceParams): Promise<DS>;
+
+  constructor(protected readonly project: P) {}
 
   async init(metadata: CacheMetadataModel): Promise<void> {
     this._metadata = metadata;
@@ -98,5 +104,24 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     logger.info(`Loaded ${dataSources.length} dynamic datasources`);
     this._datasourceParams = params;
     this._datasources = dataSources;
+  }
+
+  /**
+   * Finds the template based on name and gives a cloned version that can be used to construct a datasource.
+   *
+   * This will throw if the template cannot be found by name.
+   *
+   * Inserts the startBlock into the template.
+   * */
+  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & {startBlock?: number}>(
+    templateName: string,
+    startBlock?: number
+  ): T {
+    const t = (this.project.templates ?? []).find((t) => t.name === templateName);
+    if (!t) {
+      throw new Error(`Unable to find matching template in project for name: "${templateName}"`);
+    }
+    const {name, ...template} = cloneDeep(t);
+    return {...template, startBlock} as T;
   }
 }
