@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused `@subql/testing` dependency (#2346)
 - `WorkerUnfinalizedBlocksService` and use version from node-core (#2346)
 
+### Changed
+- Update ApiService to match changes with `@subql/node-core` (#2350)
+
 ## [4.0.1] - 2024-04-05
 ### Fixed
 - Fix modulo block didn't apply correctly with multiple dataSources (#2331)

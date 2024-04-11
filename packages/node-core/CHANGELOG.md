@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `WorkerUnfinalizedBlocksService` class from node that is now chain agnostic (#2346)
 
+### Fixed
+- Issue with using metadata if incorrect network endpoint was provided (#2350)
+
+### Changed
+- Simplify ApiService and remove need for getChainId function (#2450)
+
 ## [8.0.1] - 2024-04-05
 ### Fixed
 - Fix modulo filter not applying correctly with multiple dataSources (#2331)
