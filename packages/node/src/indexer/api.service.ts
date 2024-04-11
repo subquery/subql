@@ -15,6 +15,7 @@ import {
   ConnectionPoolService,
   ApiService as BaseApiService,
   IBlock,
+  MetadataMismatchError,
 } from '@subql/node-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -94,12 +95,6 @@ export class ApiService
         ApiPromiseConnection.create(endpoint, this.fetchBlocksBatches, {
           chainTypes,
         }),
-      //getChainId
-      //eslint-disable-next-line @typescript-eslint/require-await
-      async (connection: ApiPromiseConnection) => {
-        const api = connection.unsafeApi;
-        return api.genesisHash.toString();
-      },
       //postConnectedHook
       (connection: ApiPromiseConnection, endpoint: string, index: number) => {
         const api = connection.unsafeApi;
@@ -275,5 +270,19 @@ export class ApiService
       const apiInstance = this.connectionPoolService.api;
       return apiInstance.fetchBlocks(heights, overallSpecVer);
     }, numAttempts);
+  }
+
+  // Polkadot uses genesis hash instead of chainId
+  protected assertChainId(
+    network: { chainId: string },
+    connection: ApiPromiseConnection,
+  ): void {
+    if (network.chainId !== connection.networkMeta.genesisHash) {
+      throw new MetadataMismatchError(
+        'ChainId',
+        network.chainId,
+        connection.networkMeta.genesisHash,
+      );
+    }
   }
 }

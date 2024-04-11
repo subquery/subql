@@ -3,8 +3,8 @@
 
 import { WsProvider } from '@polkadot/rpc-provider';
 import { delay } from '@subql/common';
-import { createCachedProvider } from './x-provider/cachedProvider';
-import { HttpProvider } from './x-provider/http';
+import { createCachedProvider } from './cachedProvider';
+import { HttpProvider } from './http';
 
 const TEST_BLOCKHASH =
   '0x3b712c10ba98c5421a468d1411c94479381be307b7ecb5b2602cf0d395eb4292';

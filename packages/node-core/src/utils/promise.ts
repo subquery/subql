@@ -57,29 +57,3 @@ async function backoffRetryInternal<T>(fn: () => Promise<T>, maxAttempts: number
 export async function backoffRetry<T>(fn: () => Promise<T>, attempts = 5): Promise<T> {
   return backoffRetryInternal(fn, attempts);
 }
-
-/* eslint-disable @typescript-eslint/no-misused-promises */
-export async function raceFulfilled<T = any>(promises: Promise<T>[]): Promise<{result: T; fulfilledIndex: number}> {
-  //eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve, reject) => {
-    let hasFulfilled = false;
-
-    promises.forEach(async (promise, index) => {
-      try {
-        const result = await promise;
-        if (!hasFulfilled) {
-          hasFulfilled = true;
-          resolve({result, fulfilledIndex: index});
-        }
-      } catch (error) {
-        // Ignore rejections
-      }
-    });
-
-    // Check if all promises were rejected
-    const results = await Promise.allSettled(promises);
-    if (!hasFulfilled && results.every((result) => result.status === 'rejected')) {
-      reject(new Error('All promises were rejected'));
-    }
-  });
-}
