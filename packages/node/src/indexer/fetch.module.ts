@@ -68,7 +68,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
       ) =>
-        !!nodeConfig.workers
+        nodeConfig.workers
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
