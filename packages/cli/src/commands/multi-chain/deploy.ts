@@ -1,14 +1,14 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from "fs";
+import fs from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getMultichainManifestPath, getProjectRootAndManifest} from "@subql/common";
+import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
-import YAML from 'yaml'
+import YAML from 'yaml';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {
   DefaultDeployFlags,
@@ -21,7 +21,7 @@ import {
   projectsInfo,
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
-import {uploadToIpfs} from "../../controller/publish-controller";
+import {uploadToIpfs} from '../../controller/publish-controller';
 import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
 
@@ -47,13 +47,15 @@ export default class MultiChainDeploy extends Command {
 
     let multichainManifestPath = getMultichainManifestPath(location);
     if (!multichainManifestPath) {
-      throw new Error(chalk.bgRedBright('Selected project is not multi-chain. Please set correct file.\n\n https://academy.subquery.network/build/multi-chain.html'));
+      throw new Error(
+        chalk.bgRedBright(
+          'Selected project is not multi-chain. Please set correct file.\n\n https://academy.subquery.network/build/multi-chain.html'
+        )
+      );
     }
 
     multichainManifestPath = path.join(project.root, multichainManifestPath);
-    const multichainManifestObject = YAML.parse(
-      fs.readFileSync(multichainManifestPath, 'utf8')
-    )
+    const multichainManifestObject = YAML.parse(fs.readFileSync(multichainManifestPath, 'utf8'));
 
     const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
       (e) => this.error(e)
@@ -81,7 +83,13 @@ export default class MultiChainDeploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          flags.queryVersion = await promptWithDefaultValues(inquirer, `Enter query version`, null, queryAvailableVersions, true);
+          flags.queryVersion = await promptWithDefaultValues(
+            inquirer,
+            `Enter query version`,
+            null,
+            queryAvailableVersions,
+            true
+          );
         } else {
           flags.queryVersion = queryAvailableVersions[0];
         }
@@ -126,25 +134,38 @@ export default class MultiChainDeploy extends Command {
 
       indexerVersions[validator.chainId] = addV(indexerVersions[validator.chainId]);
 
-
       if (!endpoints[validator.chainId]) {
         if (flags.useDefaults) {
-          throw new Error(chalk.red('Please ensure a endpoint valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'));
+          throw new Error(
+            chalk.red(
+              'Please ensure a endpoint valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'
+            )
+          );
         }
 
-        endpoints[validator.chainId] = await promptWithDefaultValues(cli, `Enter endpoint for ${multichainProjectPath}`, undefined, null, true);
+        endpoints[validator.chainId] = await promptWithDefaultValues(
+          cli,
+          `Enter endpoint for ${multichainProjectPath}`,
+          undefined,
+          null,
+          true
+        );
       }
-
 
       if (!dictionaries[validator.chainId]) {
         const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
         if (!flags.useDefaults && !validateDictEndpoint) {
-          dictionaries[validator.chainId] = await promptWithDefaultValues(cli, `Enter dictionary for ${multichainProjectPath}`, validateDictEndpoint, null, false);
+          dictionaries[validator.chainId] = await promptWithDefaultValues(
+            cli,
+            `Enter dictionary for ${multichainProjectPath}`,
+            validateDictEndpoint,
+            null,
+            false
+          );
         } else {
           dictionaries[validator.chainId] = validateDictEndpoint;
         }
       }
-
 
       chains.push(
         generateDeploymentChain({
@@ -152,7 +173,7 @@ export default class MultiChainDeploy extends Command {
           dictEndpoint: dictionaries[validator.chainId],
           endpoint: [endpoints[validator.chainId]],
           flags: flags,
-          indexerImageVersion: indexerVersions[validator.chainId]
+          indexerImageVersion: indexerVersions[validator.chainId],
         })
       );
     }
@@ -160,7 +181,7 @@ export default class MultiChainDeploy extends Command {
     this.log('Deploying SubQuery multi-chain project to Hosted Service');
 
     await executeProjectDeployment({
-      log: this.log,
+      log: this.log.bind(this),
       authToken: authToken,
       chains: chains,
       flags: flags,
@@ -168,8 +189,7 @@ export default class MultiChainDeploy extends Command {
       org: flags.org,
       projectInfo: projectInfo,
       projectName: flags.projectName,
-      queryVersion: flags.queryVersion
+      queryVersion: flags.queryVersion,
     });
-
   }
 }
