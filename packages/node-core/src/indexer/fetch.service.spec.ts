@@ -582,6 +582,16 @@ describe('Fetch Service', () => {
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([3, 6, 9, 12, 15, 18], 18);
   });
 
+  it('at the end of modulo block filter, enqueue END should be min of data source range end height and api last height', async () => {
+    // So this will skip next data source
+    fetchService.mockGetModulos([10]);
+    dataSources.push({...mockDs, startBlock: 200});
+    await fetchService.init(191);
+
+    expect((fetchService as any).useDictionary).toBeFalsy();
+    expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 199);
+  });
+
   it('skips bypassBlocks', async () => {
     (fetchService as any).networkConfig.bypassBlocks = [3];
 

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Issue with using metadata if incorrect network endpoint was provided (#2350)
 - Undefined dictionary response resulting in infinite loop (#2353)
+- Fix at end of modulo block filter it could skip other dataSources, and jump to the latest height
 
 ### Changed
 - Simplify ApiService and remove need for getChainId function (#2450)
