@@ -75,9 +75,7 @@ describe('FetchSevice', () => {
 
   it('can extract modulo numbers from all datasources', () => {
     expect(
-      (fetchService as any).getModuloNumbers(
-        projectService.getAllDataSources(),
-      ),
+      (fetchService as any).getModulos(projectService.getAllDataSources()),
     ).toEqual([5, 2]);
   });
 });

@@ -295,13 +295,19 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     scaledBatchSize: number,
     latestHeight: number
   ): Promise<void> {
-    const estRangeEndHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
+    // End height from current dataSource
     const {endHeight, value: relevantDs} = this.getRelevantDsDetails(startBlockHeight);
+    // Estimated range end height
+    const estRangeEndHeight = Math.min(
+      endHeight ?? Number.MAX_SAFE_INTEGER,
+      this.nextEndBlockHeight(startBlockHeight, scaledBatchSize),
+      latestHeight
+    );
     const enqueuingBlocks = this.useModuloHandlersOnly(relevantDs)
       ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
-      : range(startBlockHeight, Math.min(endHeight ?? Number.MAX_SAFE_INTEGER, estRangeEndHeight) + 1);
+      : range(startBlockHeight, estRangeEndHeight + 1);
 
-    await this.enqueueBlocks(enqueuingBlocks, latestHeight);
+    await this.enqueueBlocks(enqueuingBlocks, estRangeEndHeight);
   }
 
   private async enqueueBlocks(enqueuingBlocks: (IBlock<FB> | number)[], latestHeight: number): Promise<void> {
