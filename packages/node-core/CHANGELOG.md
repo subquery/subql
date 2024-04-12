@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Issue with using metadata if incorrect network endpoint was provided (#2350)
+- Undefined dictionary response resulting in infinite loop (#2353)
 
 ### Changed
 - Simplify ApiService and remove need for getChainId function (#2450)
+- Logging for dictionary and simplify code (#2353)
 
 ## [8.0.1] - 2024-04-05
 ### Fixed

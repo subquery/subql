@@ -14,8 +14,6 @@ const logger = getLogger('RuntimeService');
 
 @Injectable()
 export class RuntimeService extends BaseRuntimeService {
-  // protected useDictionary: boolean;
-
   constructor(
     protected apiService: ApiService,
     protected dictionaryService?: SubstrateDictionaryService,
@@ -30,6 +28,8 @@ export class RuntimeService extends BaseRuntimeService {
       const response = await this.dictionaryService.getSpecVersions();
       if (response !== undefined) {
         this.specVersionMap = response;
+      } else if (this.specVersionMap === undefined) {
+        this.specVersionMap = [];
       }
     } catch (e) {
       logger.error(e, 'Failed to get spec versions');
