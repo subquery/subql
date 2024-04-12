@@ -36,8 +36,35 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
   }
 
   private getDictionary(height: number, skipDictionaryIndex: Set<number> = new Set()): IDictionary<DS, FB> | undefined {
+    const previousIndex = this._currentDictionaryIndex;
+    const dict = this._getDictionary(height, skipDictionaryIndex);
+
+    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(!!dict)});
+    if (!dict) {
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+    }
+
+    // Only log on change of dictionary
+    if (previousIndex !== this._currentDictionaryIndex) {
+      if (this._currentDictionaryIndex === undefined) {
+        if (this._dictionaries.length) {
+          logger.warn(`No supported dictionary found`);
+        } else {
+          logger.debug(`No dictionaries available to use`);
+        }
+      } else {
+        logger.debug(`Updated: current dictionary Index is ${this._currentDictionaryIndex}`);
+      }
+    }
+
+    return dict;
+  }
+
+  private _getDictionary(
+    height: number,
+    skipDictionaryIndex: Set<number> = new Set()
+  ): IDictionary<DS, FB> | undefined {
     if (this._dictionaries.length === 0) {
-      logger.debug(`No dictionaries available to use`);
       return undefined;
     }
     // If current dictionary is valid, use current one instead of find a dictionary
@@ -46,18 +73,12 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       !skipDictionaryIndex.has(this._currentDictionaryIndex) &&
       this._dictionaries[this._currentDictionaryIndex].heightValidation(height)
     ) {
-      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(true)});
       return this._dictionaries[this._currentDictionaryIndex];
     } else {
       this.findDictionary(height, skipDictionaryIndex);
       if (this._currentDictionaryIndex === undefined) {
-        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(false)});
-        this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-        logger.warn(`No supported dictionary found`);
         return undefined;
       } else {
-        logger.debug(`Updated : current dictionary Index is ${this._currentDictionaryIndex}`);
-        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {value: Number(true)});
         return this._dictionaries[this._currentDictionaryIndex];
       }
     }
@@ -74,15 +95,10 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     this._currentDictionaryIndex = index < 0 ? undefined : index;
   }
 
-  useDictionary(height: number): boolean {
-    return !!this.getDictionary(height);
-  }
-
   /**
    *
    * @param dataSources
    */
-
   buildDictionaryEntryMap(dataSources: BlockHeightMap<DS[]>): void {
     for (const dict of this._dictionaries) {
       dict.updateQueriesMap(dataSources);
@@ -98,6 +114,9 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     return this._scopedDictionaryEntries(startBlockHeight, scaledBatchSize, latestFinalizedHeight, skipDictionaryIndex);
   }
 
+  /**
+   * Returns undefined if there is no valid dictionary or dictionary fails
+   * */
   private async _scopedDictionaryEntries(
     startBlockHeight: number,
     scaledBatchSize: number,
