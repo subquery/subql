@@ -5,7 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
 import {range} from 'lodash';
-import {BlockDispatcher, delay, IBlockDispatcher, IProjectService, NodeConfig} from '../';
+import {BlockDispatcher, delay, IBlock, IBlockDispatcher, IProjectService, NodeConfig} from '../';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {BaseFetchService} from './fetch.service';
@@ -157,6 +157,15 @@ describe('Fetch Service', () => {
   let networkConfig: IProjectNetworkConfig;
   let dataSources: BaseDataSource[];
 
+  let spyOnEnqueueSequential: jest.SpyInstance<
+    void | Promise<void>,
+    [startBlockHeight: number, scaledBatchSize: number, latestHeight: number]
+  >;
+  let enqueueBlocksSpy: jest.SpyInstance<
+    void | Promise<void>,
+    [heights: (number | IBlock<any>)[], lastBufferedHeight: number]
+  >;
+
   beforeEach(() => {
     dataSources = [mockDs];
 
@@ -192,6 +201,9 @@ describe('Fetch Service', () => {
       eventEmitter,
       schedulerRegistry
     );
+
+    spyOnEnqueueSequential = jest.spyOn(fetchService as any, 'enqueueSequential') as any;
+    enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
   });
 
   const enableDictionary = () => {
@@ -324,37 +336,20 @@ describe('Fetch Service', () => {
   });
 
   it('enqueues blocks WITHOUT dictionary', async () => {
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
 
-    expect((fetchService as any).useDictionary).toBeFalsy();
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10);
-    expect(dictionarySpy).not.toHaveBeenCalled();
+    expect(dictionarySpy).toHaveReturnedWith(undefined); // Dictionary not used
   });
 
   it('enqueues blocks WITH valid dictionary results', async () => {
     enableDictionary();
-    expect((fetchService as any).useDictionary).toBeTruthy();
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
     await fetchService.init(1);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 4, 6, 8, 10], 10);
     expect(dictionarySpy).toHaveBeenCalled();
-  });
-
-  it('skips the dictionary', async () => {
-    enableDictionary();
-    (dictionaryService as any).useDictionary = jest.fn(() => false);
-
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-    const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
-
-    await fetchService.init(1);
-
-    expect(enqueueBlocksSpy).toHaveBeenCalledWith([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10);
-    expect(dictionarySpy).not.toHaveBeenCalled();
   });
 
   it('updates the last processed height if the dictionary result is empty', async () => {
@@ -370,11 +365,9 @@ describe('Fetch Service', () => {
       });
     };
 
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
-    expect((fetchService as any).useDictionary).toBeTruthy();
 
     // Update the last processed height but not enqueue blocks
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 1000);
@@ -385,8 +378,6 @@ describe('Fetch Service', () => {
   });
 
   it('waits for blockDispatcher to have capacity', async () => {
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-
     blockDispatcher.freeSize = 0;
 
     await fetchService.init(1);
@@ -410,25 +401,26 @@ describe('Fetch Service', () => {
     // Set modulos to every 3rd block. We only have 1 data source
     fetchService.mockGetModulos([3]);
 
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
-    expect((fetchService as any).useDictionary).toBeFalsy();
+    // expect((fetchService as any).useDictionary).toBeFalsy();
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([3, 6, 9, 12, 15, 18, 21, 24, 27, 30], 30);
+    expect(dictionarySpy).toHaveReturnedWith(undefined); // Dictionary not used
   });
 
   it('enqueues modulo blocks WITH dictionary', async () => {
     fetchService.mockGetModulos([3]);
     enableDictionary();
 
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
+    const dictionarySpy = jest.spyOn(dictionaryService, 'scopedDictionaryEntries');
 
     await fetchService.init(1);
 
-    expect((fetchService as any).useDictionary).toBeTruthy();
     // This should include dictionary results interleaved with modulo blocks
     // [2, 4, 6, 8, 10] + [3, 6, 9, 12, 15, 18]. 18 is included because there is a duplicate of 6
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([2, 3, 4, 6, 8, 9, 10, 12, 15, 18], 18);
+    expect(dictionarySpy).not.toHaveReturnedWith(undefined); // Dictionary used
   });
 
   it('if useModuloHandlersOnly is false, will enqueue sequentially', async () => {
@@ -461,7 +453,6 @@ describe('Fetch Service', () => {
       ])
     );
     fetchService.mockDsMap(moduloBlockHeightMap2);
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(600);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([600, 601, 602, 603, 604, 605, 606, 607, 608, 609], 609);
   });
@@ -470,14 +461,12 @@ describe('Fetch Service', () => {
 
   it('enqueue modulo blocks with match height', async () => {
     fetchService.mockDsMap(moduloBlockHeightMap);
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(1);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([20, 40, 60, 80, 100], 100);
   });
 
   it('skip modulo blocks if in that ranges has no data source, it should enqueue nothing', async () => {
     fetchService.mockDsMap(moduloBlockHeightMap);
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(105);
     // Empty blocks with range end height , 105 + 10 -1
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([], 114);
@@ -485,21 +474,18 @@ describe('Fetch Service', () => {
 
   it('enqueue modulo blocks until next block map start', async () => {
     fetchService.mockDsMap(moduloBlockHeightMap);
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(250);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([270, 300, 330, 360, 390, 420, 450, 480], 480);
   });
 
   it('enqueue modulo blocks when ds has no endHeight, end before next blockHeight key', async () => {
     fetchService.mockDsMap(moduloBlockHeightMap);
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(500);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([594], 594);
   });
 
   it('enqueue modulo blocks with mutiple ds modulo filters', async () => {
     fetchService.mockDsMap(moduloBlockHeightMap);
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(600);
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([606, 693, 707, 792, 808, 891, 909, 990], 990);
   });
@@ -508,8 +494,6 @@ describe('Fetch Service', () => {
     fetchService.mockGetModulos([20]);
     fetchService.finalizedHeight = 55;
 
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-
     // simulate we have synced to block 50, and modulo is 20, next block to handle suppose be 60,80,100...
     // we will still enqueue 55 to update LatestBufferHeight
     await fetchService.init(50);
@@ -517,7 +501,6 @@ describe('Fetch Service', () => {
   });
 
   it('enqueues modulo blocks correctly', async () => {
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     fetchService.mockGetModulos([150]);
     dataSources = [
       {
@@ -549,7 +532,6 @@ describe('Fetch Service', () => {
   });
 
   it('when enqueue ds endHeight less than modulo height, should not include any modulo', async () => {
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     dataSources = [
       {
         kind: 'mock/DataSource',
@@ -592,8 +574,6 @@ describe('Fetch Service', () => {
     fetchService.mockGetModulos([3]);
     dataSources.push({...mockDs, startBlock: 20});
 
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-
     await fetchService.init(1);
 
     expect((fetchService as any).useDictionary).toBeFalsy();
@@ -605,8 +585,6 @@ describe('Fetch Service', () => {
   it('skips bypassBlocks', async () => {
     (fetchService as any).networkConfig.bypassBlocks = [3];
 
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
-
     await fetchService.init(1);
 
     expect((fetchService as any).useDictionary).toBeFalsy();
@@ -617,8 +595,6 @@ describe('Fetch Service', () => {
   it('transforms bypassBlocks', async () => {
     // Set a range so on init its transformed
     (fetchService as any).networkConfig.bypassBlocks = ['2-5'];
-
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
 
@@ -643,8 +619,6 @@ describe('Fetch Service', () => {
         lastBufferedHeight: blocks[blocks.length - 1],
       });
     };
-
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
 
     await fetchService.init(1);
 
@@ -681,9 +655,20 @@ describe('Fetch Service', () => {
     (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
       throw new Error('Mock dictionary fetch failed');
     };
-    const spyOnEnqueueSequential = jest.spyOn(fetchService as any, 'enqueueSequential');
-    const enqueueBlocksSpy = jest.spyOn(blockDispatcher, 'enqueueBlocks');
     await fetchService.init(10);
+    expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
+
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 19);
+  });
+
+  it(`falls back to sequential blocks if dictionary returns undefined`, async () => {
+    enableDictionary();
+    (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
+      return undefined;
+    };
+    const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
+    await fetchService.init(10);
+    expect(dictionarySpy).toHaveBeenCalledTimes(1);
     expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
 
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 19);
