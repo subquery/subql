@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-04-12
+### Removed
+- Unused `@subql/testing` dependency (#2346)
+- `WorkerUnfinalizedBlocksService` and use version from node-core (#2346)
+
+### Changed
+- Update ApiService to match changes with `@subql/node-core` (#2350)
+- Simplify specVersions code (#2353)
+
 ## [4.0.1] - 2024-04-05
 ### Fixed
 - Fix modulo block didn't apply correctly with multiple dataSources (#2331)
@@ -1151,7 +1160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql/compare/node/4.0.1...node/4.1.0
 [4.0.1]: https://github.com/subquery/subql/compare/node/4.0.0...node/4.0.1
 [4.0.0]: https://github.com/subquery/subql/compare/node/3.10.0...node/4.0.0
 [3.10.0]: https://github.com/subquery/subql/compare/node/3.9.3...node/3.10.0

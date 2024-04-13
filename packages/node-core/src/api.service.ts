@@ -4,11 +4,11 @@
 import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {ProjectNetworkConfig} from '@subql/types-core';
-import {ApiConnectionError, ApiErrorType} from './api.connection.error';
+import {ApiConnectionError, ApiErrorType, MetadataMismatchError} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
 import {getLogger} from './logger';
-import {backoffRetry, isBackoffError, raceFulfilled} from './utils';
+import {backoffRetry, isBackoffError} from './utils';
 
 const logger = getLogger('api');
 
@@ -27,16 +27,22 @@ export interface IApiConnectionSpecific<A = any, SA = any, B extends Array<any> 
   apiDisconnect(): Promise<void>;
 }
 
-export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]> implements IApi<A, SA, B> {
+export abstract class ApiService<
+  A = any,
+  SA = any,
+  B extends Array<any> = any[],
+  Connection extends IApiConnectionSpecific<A, SA, B> = IApiConnectionSpecific<A, SA, B>
+> implements IApi<A, SA, B>
+{
   constructor(
-    protected connectionPoolService: ConnectionPoolService<IApiConnectionSpecific<A, SA, B>>,
+    protected connectionPoolService: ConnectionPoolService<Connection>,
     protected eventEmitter: EventEmitter2
   ) {}
 
   private _networkMeta?: NetworkMetadataPayload;
 
   get networkMeta(): NetworkMetadataPayload {
-    assert(this._networkMeta, 'ApiService has not been init');
+    assert(!!this._networkMeta, 'ApiService has not been init');
     return this._networkMeta;
   }
 
@@ -78,52 +84,34 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
 
   async createConnections(
     network: ProjectNetworkConfig & {chainId: string},
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
-    getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
-    postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
+    createConnection: (endpoint: string) => Promise<Connection>,
+    /* Used to monitor the state of the connection */
+    postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
   ): Promise<void> {
-    const endpointToApiIndex: Record<string, IApiConnectionSpecific<A, SA, B>> = {};
+    const endpointToApiIndex: Record<string, Connection> = {};
 
     const failedConnections: Map<number, string> = new Map();
 
     const connectionPromises = (network.endpoint as string[]).map(async (endpoint, i) => {
       try {
-        const connection = await createConnection(endpoint);
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 1,
-          apiIndex: i,
-          endpoint: endpoint,
-        });
-
-        if (postConnectedHook) {
-          postConnectedHook(connection, endpoint, i);
-        }
-
-        if (!this._networkMeta) {
-          this._networkMeta = connection.networkMeta;
-        }
-
-        const chainId = await getChainId(connection);
-
-        if (network.chainId !== chainId) {
-          throw this.metadataMismatchError('ChainId', network.chainId, chainId);
-        }
+        const connection = await this.performConnection(createConnection, network, i, endpoint, postConnectedHook);
 
         void this.connectionPoolService.addToConnections(connection, endpoint);
       } catch (e) {
         logger.error(`Failed to init ${endpoint}: ${e}`);
-        endpointToApiIndex[endpoint] = null as unknown as IApiConnectionSpecific<A, SA, B>;
-        failedConnections.set(i, endpoint);
+        endpointToApiIndex[endpoint] = null as unknown as Connection;
+
+        // Don't reconnect if connection is for wrong network
+        if (!(e instanceof MetadataMismatchError)) {
+          failedConnections.set(i, endpoint);
+        }
+
         throw e;
       }
     });
 
     try {
-      const {fulfilledIndex, result} = (await raceFulfilled(connectionPromises)) as {
-        result: void;
-        fulfilledIndex: number;
-      };
-      connectionPromises.splice(fulfilledIndex, 1);
+      await Promise.any(connectionPromises);
     } catch (e) {
       throw new Error('All endpoints failed to initialize. Please add healthier endpoints');
     }
@@ -131,46 +119,52 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     void Promise.allSettled(connectionPromises).then((res) => {
       // Retry failed connections in the background
       for (const [index, endpoint] of failedConnections) {
-        this.retryConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
+        this.retryConnection(createConnection, network, index, endpoint, postConnectedHook);
       }
     });
   }
 
-  async performConnection(
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
-    getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
+  private async performConnection(
+    createConnection: (endpoint: string) => Promise<Connection>,
     network: ProjectNetworkConfig & {chainId: string},
     index: number,
     endpoint: string,
-    postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
-  ): Promise<void> {
+    postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
+  ): Promise<Connection> {
     const connection = await createConnection(endpoint);
-    const chainId = await getChainId(connection);
+
+    this.assertChainId(network, connection);
+    if (!this._networkMeta) {
+      this._networkMeta = connection.networkMeta;
+    }
+
+    this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+      value: 1,
+      apiIndex: index,
+      endpoint: endpoint,
+    });
 
     if (postConnectedHook) {
       postConnectedHook(connection, endpoint, index);
     }
 
-    if (network.chainId === chainId) {
-      // Replace null connection with the new connection
-      await this.connectionPoolService.updateConnection(connection, endpoint);
-      logger.info(`Updated connection for ${endpoint}`);
-    } else {
-      throw this.metadataMismatchError('ChainId', network.chainId, chainId);
-    }
+    return connection;
   }
 
   retryConnection(
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific<A, SA, B>>,
-    getChainId: (connection: IApiConnectionSpecific) => Promise<string>,
+    createConnection: (endpoint: string) => Promise<Connection>,
     network: ProjectNetworkConfig & {chainId: string},
     index: number,
     endpoint: string,
-    postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
+    postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
   ): void {
     this.connectionRetrys[endpoint] = backoffRetry(async () => {
       try {
-        await this.performConnection(createConnection, getChainId, network, index, endpoint, postConnectedHook);
+        const connection = await this.performConnection(createConnection, network, index, endpoint, postConnectedHook);
+
+        // Replace null connection with the new connection
+        await this.connectionPoolService.updateConnection(connection, endpoint);
+        logger.info(`Updated connection for ${endpoint}`);
       } catch (e) {
         logger.error(`Initialization retry failed for ${endpoint}: ${e}`);
         throw e;
@@ -180,15 +174,16 @@ export abstract class ApiService<A = any, SA = any, B extends Array<any> = any[]
     });
   }
 
-  protected metadataMismatchError(metadata: string, expected: string, actual: string): Error {
-    return Error(
-      `Value of ${metadata} does not match across all endpoints\n
-       Expected: ${expected}
-       Actual: ${actual}`
-    );
-  }
-
   handleError(error: Error): ApiConnectionError {
     return new ApiConnectionError(error.name, error.message, ApiErrorType.Default);
+  }
+
+  /**
+   * Override this if the network uses another value like genesisHash
+   * */
+  protected assertChainId(network: ProjectNetworkConfig & {chainId: string}, connection: IApiConnectionSpecific): void {
+    if (network.chainId !== connection.networkMeta.chain) {
+      throw new MetadataMismatchError('ChainId', network.chainId, connection.networkMeta.chain);
+    }
   }
 }

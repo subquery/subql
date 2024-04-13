@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "4.0.2-0",
+  "version": "4.1.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -28,7 +28,6 @@
     "@subql/common": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/node-core": "workspace:*",
-    "@subql/testing": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
     "cron-converter": "^1.0.2",
@@ -59,6 +58,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "4.0.1"
+  ]
 }

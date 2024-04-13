@@ -125,8 +125,6 @@ describe('Dictionary service', function () {
     expect((dictionaryService as any).getDictionary(100).dictionaryEndpoint).toBe(
       'https://dict-tyk.subquery.network/query/eth-mainnet'
     );
-
-    expect(dictionaryService.useDictionary(100)).toBeTruthy();
   });
 
   it('scopedDictionaryEntries, dictionary get data should be called', async () => {

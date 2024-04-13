@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import util from 'util';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
@@ -73,12 +74,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       //ignore if interval not exist
     }
     this.isShutdown = true;
-  }
-
-  private get useDictionary(): boolean {
-    return this.dictionaryService.useDictionary(
-      this.blockDispatcher.latestBufferedHeight || this.projectService.getStartBlockFromDataSources()
-    );
   }
 
   private updateBypassBlocksFromDatasources(): void {
@@ -212,12 +207,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
         continue;
       }
 
-      if (
-        this.useDictionary &&
-        // TODO, do we still need to check useDictionary method here, this will
-        this.dictionaryService.useDictionary(startBlockHeight) &&
-        startBlockHeight < this.latestFinalizedHeight
-      ) {
+      if (startBlockHeight < this.latestFinalizedHeight) {
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
@@ -245,8 +235,9 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
               await this.enqueueBlocks(enqueueBlocks, latestHeight);
             }
             continue; // skip nextBlockRange() way
+          } else {
+            await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
           }
-          // else use this.nextBlockRange()
         } catch (e: any) {
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
@@ -304,13 +295,19 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     scaledBatchSize: number,
     latestHeight: number
   ): Promise<void> {
-    const estRangeEndHeight = this.nextEndBlockHeight(startBlockHeight, scaledBatchSize);
+    // End height from current dataSource
     const {endHeight, value: relevantDs} = this.getRelevantDsDetails(startBlockHeight);
+    // Estimated range end height
+    const estRangeEndHeight = Math.min(
+      endHeight ?? Number.MAX_SAFE_INTEGER,
+      this.nextEndBlockHeight(startBlockHeight, scaledBatchSize),
+      latestHeight
+    );
     const enqueuingBlocks = this.useModuloHandlersOnly(relevantDs)
       ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
-      : range(startBlockHeight, Math.min(endHeight ?? Number.MAX_SAFE_INTEGER, estRangeEndHeight) + 1);
+      : range(startBlockHeight, estRangeEndHeight + 1);
 
-    await this.enqueueBlocks(enqueuingBlocks, latestHeight);
+    await this.enqueueBlocks(enqueuingBlocks, estRangeEndHeight);
   }
 
   private async enqueueBlocks(enqueuingBlocks: (IBlock<FB> | number)[], latestHeight: number): Promise<void> {
@@ -352,7 +349,8 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       (b) => b < Math.max(...currentBatchBlocks.map((b) => getBlockHeight(b)))
     );
     if (pollutedBlocks.length) {
-      logger.info(`Bypassing blocks: ${pollutedBlocks}`);
+      // inspect limits the number of logged blocks to 100
+      logger.info(`Bypassing blocks: ${util.inspect(pollutedBlocks, {maxArrayLength: 100})}`);
     }
     this.bypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
     return cleanedBatch;

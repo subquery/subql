@@ -43,3 +43,13 @@ export class LargeResponseError extends ApiConnectionError {
     super('RpcInternalError', newMessage, ApiErrorType.Default);
   }
 }
+
+export class MetadataMismatchError extends Error {
+  constructor(metadata: string, expected: string, actual: string) {
+    super(
+      `Value of ${metadata} does not match across all endpoints\n
+       Expected: ${expected}
+       Actual: ${actual}`
+    );
+  }
+}

@@ -277,6 +277,7 @@ export function yargsBuilder<
         },
         'proof-of-index': {
           demandOption: false,
+          alias: 'poi',
           describe: 'Enable/disable proof of index',
           type: 'boolean',
           default: false,

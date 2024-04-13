@@ -92,14 +92,6 @@ export class IndexerManager extends BaseIndexerManager<
     );
   }
 
-  getBlockHeight(block: LightBlockContent | BlockContent): number {
-    return block.block.block.header.number.toNumber();
-  }
-
-  getBlockHash(block: LightBlockContent | BlockContent): string {
-    return block.block.block.header.hash.toHex();
-  }
-
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(
     block: LightBlockContent | BlockContent,

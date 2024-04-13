@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.1] - 2024-04-12
+### Changed
+- Update tar dependency
 
 ## [2.9.0] - 2024-03-28
-
 ### Added
 - Export 'numberToHex' (#2307)
 - Add method `hexStripZeros` to handle hex string in order to align with ethers (#2319)
@@ -129,7 +131,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.9.1...HEAD
+[2.9.1]: https://github.com/subquery/subql/compare/utils/2.9.0...utils/2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/utils/2.8.0...utils/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/utils/2.7.1...utils/2.8.0
 [2.7.1]: https://github.com/subquery/subql/compare/utils/2.7.0...utils/2.7.1

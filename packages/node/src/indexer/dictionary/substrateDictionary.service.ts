@@ -9,7 +9,7 @@ import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
-import { SpecVersion, SpecVersionDictionary } from './types';
+import { SpecVersion } from './types';
 import { SubstrateDictionaryV1 } from './v1';
 import { SubstrateDictionaryV2 } from './v2';
 
@@ -20,7 +20,7 @@ export class SubstrateDictionaryService extends DictionaryService<
   SubstrateDatasource,
   SubstrateBlock
 > {
-  async initDictionaries() {
+  async initDictionaries(): Promise<void> {
     const dictionariesV1: SubstrateDictionaryV1[] = [];
     const dictionariesV2: SubstrateDictionaryV2[] = [];
 
@@ -78,27 +78,24 @@ export class SubstrateDictionaryService extends DictionaryService<
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     protected dsProcessorService: DsProcessorService,
-    chainId?: string,
   ) {
-    super(chainId ?? project.network.chainId, nodeConfig, eventEmitter);
+    super(project.network.chainId, nodeConfig, eventEmitter);
   }
 
   private getV1Dictionary(): SubstrateDictionaryV1 | undefined {
     // TODO this needs to be removed once Substrate supports V2 dictionaries
-    return this._dictionaries[
-      this._currentDictionaryIndex
-    ] as SubstrateDictionaryV1;
+    const dict = this._dictionaries[this._currentDictionaryIndex];
+    if (!dict) return undefined;
+    assert(
+      dict instanceof SubstrateDictionaryV1,
+      `Getting v1 dict returned a dictinoary that wasn't v1`,
+    );
+    return dict;
   }
 
-  async getSpecVersions(): Promise<SpecVersion[]> {
+  async getSpecVersions(): Promise<SpecVersion[] | undefined> {
     const dict = this.getV1Dictionary();
-    assert(dict, `getSpecVersions failed: unable to get v1 dictionary`);
+    if (!dict) return undefined;
     return dict.getSpecVersions();
-  }
-
-  parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
-    const dict = this.getV1Dictionary();
-    assert(dict, `parseSpecVersions failed: unable to get v1 dictionary`);
-    return dict.parseSpecVersions(raw);
   }
 }

@@ -85,10 +85,6 @@ export class BlockDispatcherService
     this.runtimeService = runtimeService;
   }
 
-  protected getBlockHeight(block: BlockContent | LightBlockContent): number {
-    return block.block.block.header.number.toNumber();
-  }
-
   protected async indexBlock(
     block: IBlock<BlockContent> | IBlock<LightBlockContent>,
   ): Promise<ProcessBlockResponse> {
@@ -97,9 +93,7 @@ export class BlockDispatcherService
       : await this.runtimeService.getRuntimeVersion(block.block.block);
     return this.indexerManager.indexBlock(
       block,
-      await this.projectService.getDataSources(
-        this.getBlockHeight(block.block),
-      ),
+      await this.projectService.getDataSources(block.getHeader().blockHeight),
       runtimeVersion,
     );
   }
