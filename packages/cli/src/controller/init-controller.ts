@@ -165,7 +165,7 @@ export async function prepare(projectPath: string, project: ProjectSpecBase): Pr
   try {
     await prepareEnv(projectPath, project);
   } catch (e) {
-    throw new Error('Failed to prepare read or wrte .env file hile preparing the project');
+    throw new Error('Failed to prepare read or write .env file while preparing the project');
   }
   try {
     await prepareManifest(projectPath, project);
