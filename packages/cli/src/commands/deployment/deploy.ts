@@ -15,7 +15,7 @@ import {
   ipfsCID_validate,
   processEndpoints,
   projectsInfo,
-  splitEndpoints
+  splitEndpoints,
 } from '../../controller/deploy-controller';
 import {V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
@@ -111,15 +111,14 @@ export default class Deploy extends Command {
         dictEndpoint: flags.dict,
         endpoint: splitEndpoints(flags.endpoint),
         flags: flags,
-        indexerImageVersion: flags.indexerVersion
+        indexerImageVersion: flags.indexerVersion,
       })
     );
-
 
     this.log('Deploying SubQuery project to Hosted Service');
 
     await executeProjectDeployment({
-      log: this.log,
+      log: this.log.bind(this),
       authToken: authToken,
       chains: chains,
       flags: flags,
@@ -127,13 +126,7 @@ export default class Deploy extends Command {
       org: flags.org,
       projectInfo: flags.projectInfo,
       projectName: flags.projectName,
-      queryVersion: flags.queryVersion
+      queryVersion: flags.queryVersion,
     });
-
-
-
-
-
-
   }
 }

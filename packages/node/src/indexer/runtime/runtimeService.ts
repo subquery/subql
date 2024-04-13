@@ -2,21 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Injectable } from '@nestjs/common';
-import { profiler } from '@subql/node-core';
+import { getLogger, profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
-import {
-  SpecVersionDictionary,
-  SubstrateDictionaryService,
-} from '../dictionary';
+import { SubstrateDictionaryService } from '../dictionary';
 import {
   BaseRuntimeService,
   SPEC_VERSION_BLOCK_GAP,
 } from './base-runtime.service';
 
+const logger = getLogger('RuntimeService');
+
 @Injectable()
 export class RuntimeService extends BaseRuntimeService {
-  protected useDictionary: boolean;
-
   constructor(
     protected apiService: ApiService,
     protected dictionaryService?: SubstrateDictionaryService,
@@ -26,20 +23,16 @@ export class RuntimeService extends BaseRuntimeService {
 
   // get latest specVersions from dictionary
   async syncDictionarySpecVersions(height: number): Promise<void> {
-    // must check useDictionary before get SpecVersion, this will give the right dictionary to fetch SpecVersions
-    const response = this.dictionaryService.useDictionary(height)
-      ? await this.dictionaryService.getSpecVersions()
-      : undefined;
-    if (response !== undefined) {
-      this.specVersionMap = response;
-    }
-  }
-
-  setSpecVersionMap(raw: SpecVersionDictionary | undefined): void {
-    if (raw === undefined) {
-      this.specVersionMap = [];
-    } else {
-      this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
+    try {
+      // must check useDictionary before get SpecVersion, this will give the right dictionary to fetch SpecVersions
+      const response = await this.dictionaryService.getSpecVersions();
+      if (response !== undefined) {
+        this.specVersionMap = response;
+      } else if (this.specVersionMap === undefined) {
+        this.specVersionMap = [];
+      }
+    } catch (e) {
+      logger.error(e, 'Failed to get spec versions');
     }
   }
 

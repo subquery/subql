@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2024-04-12
+### Added
+- `WorkerUnfinalizedBlocksService` class from node that is now chain agnostic (#2346)
+
+### Fixed
+- Issue with using metadata if incorrect network endpoint was provided (#2350)
+- Undefined dictionary response resulting in infinite loop (#2353)
+- Fix at end of modulo block filter it could skip other dataSources, and jump to the latest height
+
+### Changed
+- Simplify ApiService and remove need for getChainId function (#2450)
+- Logging for dictionary and simplify code (#2353)
+
 ## [8.0.1] - 2024-04-05
 ### Fixed
 - Fix modulo filter not applying correctly with multiple dataSources (#2331)
@@ -638,7 +651,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/8.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/9.0.0...HEAD
+[9.0.0]: https://github.com/subquery/subql/compare/node-core/8.0.1...node-core/9.0.0
 [8.0.1]: https://github.com/subquery/subql/compare/node-core/8.0.0...node-core/8.0.1
 [8.0.0]: https://github.com/subquery/subql/compare/node-core/7.5.1...node-core/8.0.0
 [7.5.1]: https://github.com/subquery/subql/compare/node-core/7.5.0...node-core/7.5.1

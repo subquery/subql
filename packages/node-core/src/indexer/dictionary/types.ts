@@ -26,7 +26,6 @@ export interface IDictionary<DS, FB> {
 
 export interface IDictionaryCtrl<DS, FB> {
   initDictionaries(): void;
-  useDictionary(height: number): boolean;
   buildDictionaryEntryMap(dataSources: BlockHeightMap<DS[]>): void;
   scopedDictionaryEntries(
     startBlockHeight: number,

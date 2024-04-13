@@ -1,6 +1,6 @@
 {
   "name": "@subql/utils",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "description": "",
   "packageManager": "yarn@3.1.1",
   "scripts": {
@@ -26,7 +26,7 @@
     "pino": "^6.13.3",
     "rotating-file-stream": "^3.0.2",
     "semver": "^7.5.2",
-    "tar": "^6.1.11"
+    "tar": "^6.2.1"
   },
   "devDependencies": {
     "@types/semver": "^7"

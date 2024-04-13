@@ -43,8 +43,6 @@ export abstract class BaseIndexerManager<
 > implements IIndexerManager<B, DS>
 {
   abstract indexBlock(block: IBlock<B>, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;
-  abstract getBlockHeight(block: B): number;
-  abstract getBlockHash(block: B): string;
 
   protected abstract isRuntimeDs(ds: DS): ds is DS;
   protected abstract isCustomDs(ds: DS): ds is CDS;

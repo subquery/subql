@@ -68,7 +68,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
       ) =>
-        !!nodeConfig.workers
+        nodeConfig.workers
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
@@ -120,29 +120,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     ConnectionPoolService,
     IndexingBenchmarkService,
     PoiBenchmarkService,
-    {
-      provide: SubstrateDictionaryService,
-      useFactory: async (
-        project: SubqueryProject,
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        dsProcessorService: DsProcessorService,
-      ) => {
-        const dictionaryService = new SubstrateDictionaryService(
-          project,
-          nodeConfig,
-          eventEmitter,
-          dsProcessorService,
-        );
-        return dictionaryService;
-      },
-      inject: [
-        'ISubqueryProject',
-        NodeConfig,
-        EventEmitter2,
-        DsProcessorService,
-      ],
-    },
+    SubstrateDictionaryService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,

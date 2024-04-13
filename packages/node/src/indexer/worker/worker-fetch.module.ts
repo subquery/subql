@@ -11,6 +11,7 @@ import {
   NodeConfig,
   InMemoryCacheService,
   WorkerInMemoryCacheService,
+  WorkerUnfinalizedBlocksService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -23,7 +24,6 @@ import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { SandboxService } from '../sandbox.service';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { WorkerService } from './worker.service';
-import { WorkerUnfinalizedBlocksService } from './worker.unfinalizedBlocks.service';
 
 /**
  * The alternative version of FetchModule for worker

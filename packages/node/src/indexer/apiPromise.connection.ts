@@ -43,10 +43,8 @@ export class ApiPromiseConnection
 {
   readonly networkMeta: NetworkMetadataPayload;
 
-  constructor(
+  private constructor(
     public unsafeApi: ApiPromise,
-    private apiOptions: ApiOptions,
-    private endpoint: string,
     private fetchBlocksBatches: GetFetchFunc,
   ) {
     this.networkMeta = {
@@ -84,12 +82,7 @@ export class ApiPromiseConnection
       ...args.chainTypes,
     };
     const api = await ApiPromise.create(apiOption);
-    return new ApiPromiseConnection(
-      api,
-      apiOption,
-      endpoint,
-      fetchBlocksBatches,
-    );
+    return new ApiPromiseConnection(api, fetchBlocksBatches);
   }
 
   safeApi(height: number): ApiAt {
