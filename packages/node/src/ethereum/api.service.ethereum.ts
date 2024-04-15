@@ -68,21 +68,14 @@ export class EthereumApiService extends ApiService<
       endpoints.push(this.nodeConfig.primaryNetworkEndpoint);
     }
 
-    await this.createConnections(
-      network,
-      (endpoint) =>
-        EthereumApiConnection.create(
-          endpoint,
-          this.nodeConfig.blockConfirmations,
-          this.fetchBlocksBatches,
-          this.eventEmitter,
-          this.nodeConfig.unfinalizedBlocks,
-        ),
-      //eslint-disable-next-line @typescript-eslint/require-await
-      async (connection: EthereumApiConnection) => {
-        const api = connection.unsafeApi;
-        return api.getChainId().toString();
-      },
+    await this.createConnections(network, (endpoint) =>
+      EthereumApiConnection.create(
+        endpoint,
+        this.nodeConfig.blockConfirmations,
+        this.fetchBlocksBatches,
+        this.eventEmitter,
+        this.nodeConfig.unfinalizedBlocks,
+      ),
     );
 
     return this;

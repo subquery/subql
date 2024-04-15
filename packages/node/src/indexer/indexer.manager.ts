@@ -96,17 +96,9 @@ export class IndexerManager extends BaseIndexerManager<
     );
   }
 
-  getBlockHeight(block: BlockContent): number {
-    return block.number;
-  }
-
-  getBlockHash(block: BlockContent): string {
-    return block.hash;
-  }
-
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(block: BlockContent): Promise<SafeEthProvider> {
-    return this.apiService.safeApi(this.getBlockHeight(block));
+    return this.apiService.safeApi(block.number);
   }
 
   protected async indexBlockData(

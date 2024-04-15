@@ -12,6 +12,7 @@ import {
   NodeConfig,
   InMemoryCacheService,
   WorkerInMemoryCacheService,
+  WorkerUnfinalizedBlocksService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
@@ -23,7 +24,6 @@ import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
-import { WorkerUnfinalizedBlocksService } from './worker/worker.unfinalizedBlocks.service';
 
 @Module({
   providers: [

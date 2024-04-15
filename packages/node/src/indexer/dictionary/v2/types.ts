@@ -80,5 +80,5 @@ export interface EthDictionaryLogConditions {
 export interface EthDictionaryTxConditions {
   to?: string[];
   from?: string[];
-  function?: string[];
+  data?: string[];
 }

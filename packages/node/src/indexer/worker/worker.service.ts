@@ -12,7 +12,6 @@ import {
   IProjectUpgradeService,
   IBlock,
 } from '@subql/node-core';
-import { EthereumBlock, LightEthereumBlock } from '@subql/types-ethereum';
 import { EthereumProjectDs } from '../../configure/SubqueryProject';
 import { EthereumApi } from '../../ethereum';
 import SafeEthProvider from '../../ethereum/safe-api';

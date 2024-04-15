@@ -37,7 +37,7 @@ export class EthereumApiConnection
 {
   readonly networkMeta: NetworkMetadataPayload;
 
-  constructor(
+  private constructor(
     public unsafeApi: EthereumApi,
     private fetchBlocksBatches: GetFetchFunc,
   ) {

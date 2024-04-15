@@ -27,7 +27,7 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^3.5.0",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "^8.0.1",
+    "@subql/node-core": "^9.0.0",
     "@subql/testing": "^2.1.1-0",
     "@subql/types-ethereum": "workspace:*",
     "cacheable-lookup": "6",

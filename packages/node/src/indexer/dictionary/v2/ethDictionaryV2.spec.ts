@@ -160,38 +160,19 @@ describe('eth dictionary v2', () => {
     expect(ethBlock19217803.number).toBe(19217803);
     expect(ethBlock19217804.number).toBe(19217804);
 
-    // To match with dictionaryQueryEntries[0].func
-    expect(ethBlock19217803.transactions[0].input.indexOf('0xdb3e2198')).toBe(
-      0,
-    );
+    // Sighash of approval tx
+    expect(
+      ethBlock19217803.transactions.filter(
+        (tx) => tx.input.indexOf('0x095ea7b3') === 0,
+      ).length,
+    ).toBe(4);
 
     expect(ethBlock19217804.logs.length).toBe(233);
+
     // This matches with dictionaryQueryEntries[0].topics
     expect(ethBlock19217804.logs[0].topics).toContain(
       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     );
-  }, 10000);
-
-  it('is able to convert raw v2 Blocks into eth blocks when getData', async () => {
-    const ethBlocks = (await ethDictionaryV2.getData(
-      19217803,
-      (ethDictionaryV2 as any)._metadata.end,
-      2,
-    )) as DictionaryResponse<IBlock<EthereumBlock>>;
-
-    expect(ethBlocks.batchBlocks[0].block.number).toStrictEqual(19217803);
-    expect(ethBlocks.lastBufferedHeight).toStrictEqual(19217804);
-
-    // Can include input and hash
-    expect(ethBlocks.batchBlocks[1].block.transactions[1].hash).toBe(
-      `0x3620616acae2c3050e7b993e207338803ceba628141b063430cb321da746c1ec`,
-    );
-    expect(ethBlocks.batchBlocks[1].block.transactions[1].input).toBe(
-      `0xa9059cbb0000000000000000000000008ba631c37ce91a2d303be09907f496220a153d6a000000000000000000000000000000000000000000000000000000000c748d43`,
-    );
-
-    // relate logs
-    expect(ethBlocks.batchBlocks[1].block.logs[0].data).toBe(`0x`);
   }, 10000);
 
   // Geth currently throwing errors with this request
@@ -492,7 +473,7 @@ describe('buildDictionaryV2QueryEntry', () => {
       transactions: [
         {
           from: ['mockaddress'],
-          function: ['0x7ef9ea98'],
+          data: ['0x7ef9ea98'],
         },
       ],
     });

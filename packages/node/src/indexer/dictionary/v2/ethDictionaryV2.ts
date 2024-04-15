@@ -101,7 +101,7 @@ function callFilterToDictionaryCondition(
   }
 
   if (funcArray.length !== 0) {
-    txConditions.function = funcArray;
+    txConditions.data = funcArray;
   }
 
   return txConditions;

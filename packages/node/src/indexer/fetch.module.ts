@@ -39,7 +39,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     InMemoryCacheService,
     StoreService,
     StoreCacheService,
-    EthereumApiService,
     {
       provide: ApiService,
       useFactory: async (

@@ -3122,9 +3122,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^8.0.1":
-  version: 8.0.1
-  resolution: "@subql/node-core@npm:8.0.1"
+"@subql/node-core@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "@subql/node-core@npm:9.0.0"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
@@ -3133,7 +3133,7 @@ __metadata:
     "@subql/common": 3.5.0
     "@subql/testing": 2.1.1-0
     "@subql/types": 3.4.0
-    "@subql/utils": 2.9.0
+    "@subql/utils": 2.9.1
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
@@ -3145,11 +3145,11 @@ __metadata:
     merkle-tools: ^1.4.1
     prom-client: ^14.0.1
     source-map: ^0.7.4
-    tar: ^6.1.11
+    tar: ^6.2.1
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: ead9feeef201b2ed9db1726e70d375d6a3ca5d44f7576dd14aa2949308d11a6a34abcc1013cd4d84eb8e57fd236609cdb93e359c0b85ff5b225257c99261635d
+  checksum: 31132a0b0c3defabf9885e1d7a7290619993562957aae3c40137a40733035b97bc3d4b9fd2febce9e408aad1611eede3946a4aab1af6b0b002fa501c4595832e
   languageName: node
   linkType: hard
 
@@ -3167,7 +3167,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.5.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^8.0.1
+    "@subql/node-core": ^9.0.0
     "@subql/testing": ^2.1.1-0
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -3245,9 +3245,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.9.0":
-  version: 2.9.0
-  resolution: "@subql/utils@npm:2.9.0"
+"@subql/utils@npm:2.9.1":
+  version: 2.9.1
+  resolution: "@subql/utils@npm:2.9.1"
   dependencies:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
@@ -3262,8 +3262,8 @@ __metadata:
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
-    tar: ^6.1.11
-  checksum: 2536add6833f9a1487ea17eccf0288e48f7a89bb67dfedbc46034902e350d4474be7f38cef06e938ee49ba25274c2271e2b5b6b46e04c965cdba5105f9af4599
+    tar: ^6.2.1
+  checksum: 555c215f44ac6f6828ade30c3643e260bf99ef3c14381d14a9e9ba3c9fa5cfd0a4e938b3a2fbd907379ad2b832bb79a5071f96966b32d751824affb9cea266c8
   languageName: node
   linkType: hard
 
@@ -12183,7 +12183,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^6.1.11, tar@npm:^6.1.2":
+"tar@npm:^6.1.11, tar@npm:^6.1.2, tar@npm:^6.2.1":
   version: 6.2.1
   resolution: "tar@npm:6.2.1"
   dependencies:
