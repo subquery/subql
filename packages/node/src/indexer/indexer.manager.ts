@@ -18,6 +18,7 @@ import {
   NodeConfig,
   getLogger,
   profiler,
+  SandboxService,
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
@@ -39,7 +40,6 @@ import {
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -47,8 +47,8 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  ApiAt,
   ApiPromise,
+  ApiAt,
   BlockContent | LightBlockContent,
   SubstrateApiService,
   SubstrateDatasource,
@@ -64,7 +64,7 @@ export class IndexerManager extends BaseIndexerManager<
   constructor(
     apiService: SubstrateApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService<ApiAt>,
+    sandboxService: SandboxService<ApiAt, ApiPromise>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,

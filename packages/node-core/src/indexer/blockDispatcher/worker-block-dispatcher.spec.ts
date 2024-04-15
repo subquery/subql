@@ -3,9 +3,7 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
-import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiSyncService} from '../poi';
-import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
@@ -14,6 +12,10 @@ import {WorkerBlockDispatcher} from './worker-block-dispatcher';
 class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any, any> {
   async fetchBlock(worker: any, height: number): Promise<void> {
     return Promise.resolve();
+  }
+
+  get minimumHeapLimit(): number {
+    return 150;
   }
 }
 describe('WorkerBlockDispatcher', () => {
@@ -32,12 +34,10 @@ describe('WorkerBlockDispatcher', () => {
       null as unknown as EventEmitter2,
       null as unknown as IProjectService<any>,
       null as unknown as IProjectUpgradeService,
-      {minimumHeapRequired: 150} as unknown as SmartBatchService,
       null as unknown as StoreService,
       null as unknown as StoreCacheService,
       null as unknown as PoiSyncService,
       null as unknown as ISubqueryProject,
-      null as unknown as DynamicDsService<any>,
       null as unknown as () => Promise<any>
     );
     (dispatcher as any).workers = mockWorkers;

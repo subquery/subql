@@ -31,8 +31,8 @@ export interface CustomHandler<K extends string = string, F = Record<string, unk
 }
 
 export abstract class BaseIndexerManager<
-  SA, // Api Type
-  A, // SafeApi Type
+  A, // Api Type
+  SA, // SafeApi Type
   B, // Block Type
   API extends IApi<A, SA, IBlock<B>[]>,
   DS extends BaseDataSource,
@@ -62,7 +62,7 @@ export abstract class BaseIndexerManager<
   constructor(
     protected readonly apiService: API,
     protected readonly nodeConfig: NodeConfig,
-    private sandboxService: {getDsProcessor: (ds: DS, api: SA) => IndexerSandbox},
+    private sandboxService: {getDsProcessor: (ds: DS, api: SA, unsafeApi: A) => IndexerSandbox},
     private dsProcessorService: BaseDsProcessorService<DS, CDS>,
     private dynamicDsService: DynamicDsService<DS>,
     private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
@@ -93,7 +93,7 @@ export abstract class BaseIndexerManager<
         // Injected runtimeVersion from fetch service might be outdated
         apiAt = apiAt ?? (await getApi());
 
-        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+        const vm = this.sandboxService.getDsProcessor(ds, apiAt, this.apiService.unsafeApi);
 
         // Inject function to create ds into vm
         vm.freeze(async (templateName: string, args?: Record<string, unknown>) => {

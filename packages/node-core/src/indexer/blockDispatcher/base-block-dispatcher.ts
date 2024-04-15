@@ -9,7 +9,6 @@ import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {IndexerEvent, PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';
-import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
@@ -51,6 +50,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   protected currentProcessingHeight = 0;
   private _onDynamicDsCreated?: (height: number) => Promise<void>;
 
+  protected smartBatchService: SmartBatchService;
+
   constructor(
     protected nodeConfig: NodeConfig,
     protected eventEmitter: EventEmitter2,
@@ -58,12 +59,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     protected projectService: IProjectService<DS>,
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
-    protected smartBatchService: SmartBatchService,
     protected storeService: StoreService,
     private storeCacheService: StoreCacheService,
-    private poiSyncService: PoiSyncService,
-    protected dynamicDsService: DynamicDsService<any>
-  ) {}
+    private poiSyncService: PoiSyncService
+  ) {
+    this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
+  }
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
 
@@ -230,6 +231,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     if (isNullMerkelRoot(operationHash)) {
       return;
     }
+
     const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
     // This is the first creation of POI
     this.poi.bulkUpsert([poiBlock]);

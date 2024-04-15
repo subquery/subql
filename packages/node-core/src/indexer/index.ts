@@ -14,7 +14,7 @@ export * from './storeCache';
 export * from './worker';
 export * from './dictionary';
 export * from './sandbox';
-export * from './smartBatch.service';
+export * from './sandbox.service';
 export * from './blockDispatcher';
 export * from './dynamic-ds.service';
 export * from './testing.service';
