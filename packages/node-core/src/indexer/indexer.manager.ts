@@ -8,7 +8,7 @@ import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
 import {ProcessBlockResponse} from './blockDispatcher';
-import {BaseDsProcessorService} from './ds-processor.service';
+import {asSecondLayerHandlerProcessor_1_0_0, BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
 import {IBlock, IIndexerManager} from './types';
@@ -46,9 +46,6 @@ export abstract class BaseIndexerManager<
 
   protected abstract isRuntimeDs(ds: DS): ds is DS;
   protected abstract isCustomDs(ds: DS): ds is CDS;
-
-  // Uses asSecondLayerHandlerProcessor_1_0_0 in substrate to transfrom from v0.0.0 -> v1.0.0
-  protected abstract updateCustomProcessor: (processor: any) => any;
 
   protected abstract indexBlockData(
     block: B,
@@ -221,7 +218,7 @@ export abstract class BaseIndexerManager<
         return false;
       })
       .filter((handler) => {
-        const processor = this.updateCustomProcessor(plugin.handlerProcessors[handler.kind]);
+        const processor = asSecondLayerHandlerProcessor_1_0_0(plugin.handlerProcessors[handler.kind]);
 
         try {
           return processor.filterProcessor({
@@ -245,7 +242,7 @@ export abstract class BaseIndexerManager<
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
 
-    const processor = this.updateCustomProcessor(plugin.handlerProcessors[handler.kind]);
+    const processor = asSecondLayerHandlerProcessor_1_0_0(plugin.handlerProcessors[handler.kind]);
 
     const transformedData = await processor
       .transformer({
