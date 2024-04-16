@@ -24,7 +24,12 @@ export class SandboxService<Api, UnsafeApi> {
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject
   ) {}
 
-  getDsProcessor(ds: BaseDataSource, api: Api, unsafeApi: UnsafeApi): IndexerSandbox {
+  getDsProcessor(
+    ds: BaseDataSource,
+    api: Api,
+    unsafeApi: UnsafeApi,
+    extraInjections: Record<string, any> = {}
+  ): IndexerSandbox {
     const store: Store = isMainThread ? this.storeService.getStore() : hostStoreToStore((global as any).host); // Provided in worker.ts
 
     const cache = this.cacheService.getCache();
@@ -42,6 +47,10 @@ export class SandboxService<Api, UnsafeApi> {
         this.nodeConfig
       );
       this.processorCache[entry] = processor;
+    }
+    // Run this before injecting other values so they cannot be overwritten
+    for (const [key, value] of Object.entries(extraInjections)) {
+      processor.freeze(value, key);
     }
     processor.freeze(api, 'api');
     if (this.nodeConfig.unsafe) {
