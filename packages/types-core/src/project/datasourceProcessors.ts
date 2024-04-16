@@ -34,57 +34,6 @@ export interface HandlerInputTransformer_1_0_0<
   (params: {input: IM[K]; ds: DS; api: API; filter?: F; assets?: Record<string, string>}): Promise<E[]>;
 }
 
-// export interface HandlerInputTransformer_0_0_0<
-//   T extends SubstrateHandlerKind,
-//   E,
-//   IT extends AnyTuple,
-//   DS extends BaseCustomDataSource = SubstrateCustomDatasource
-// > {
-//   (input: RuntimeHandlerInputMap<IT>[T], ds: DS, api: ApiPromise, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
-// }
-
-// export interface HandlerInputTransformer_1_0_0<
-//   T extends SubstrateHandlerKind,
-//   F extends Record<string, unknown>,
-//   E,
-//   IT extends AnyTuple,
-//   DS extends BaseCustomDataSource = SubstrateCustomDatasource
-// > {
-//   (params: {
-//     input: RuntimeHandlerInputMap<IT>[T];
-//     ds: DS;
-//     filter?: F;
-//     api: ApiPromise;
-//     assets?: Record<string, string>;
-//   }): Promise<E[]>;
-// }
-
-// type SecondLayerHandlerProcessorArray<
-//   K extends string,
-//   F extends Record<string, unknown>,
-//   T,
-//   IT extends AnyTuple = AnyTuple,
-//   DS extends BaseCustomDataSource<K> = SubstrateCustomDatasource<K>
-// > =
-//   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, IT, DS>
-//   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, IT, DS>
-//   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, IT, DS>;
-
-// export interface SubstrateDatasourceProcessor<
-//   K extends string,
-//   F extends Record<string, unknown>,
-//   DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>,
-//   P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, any, DS>> = Record<
-//     string,
-//     SecondLayerHandlerProcessorArray<K, F, any, any, DS>
-//   >
-// > {
-//   kind: K;
-//   validate(ds: DS, assets: Record<string, string>): void;
-//   dsFilterProcessor(ds: DS, api: ApiPromise): boolean;
-//   handlerProcessors: P;
-// }
-
 interface SecondLayerHandlerProcessorBase<
   IM extends HandlerInputMap,
   K extends keyof IM,
