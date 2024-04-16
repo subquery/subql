@@ -66,12 +66,21 @@ describe('SchemaMigration integration tests', () => {
   let schemaName: string;
 
   beforeEach(async () => {
-    // Need to create a new instance for each test because sequelize keeps reference to modle instances
-    sequelize = new Sequelize(
-      `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
-      option
-    );
-    await sequelize.authenticate();
+    try {
+      // Need to create a new instance for each test because sequelize keeps reference to modle instances
+      sequelize = new Sequelize(
+        `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
+        option
+      );
+      await sequelize.authenticate();
+    } catch (e) {
+      console.log(
+        'Failed to postgres connect',
+        `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
+        e
+      );
+      throw e;
+    }
   });
 
   afterEach(async () => {
