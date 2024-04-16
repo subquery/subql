@@ -23,3 +23,8 @@ export const ACCESS_TOKEN_PATH = path.resolve(
   process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'],
   '.subql/SUBQL_ACCESS_TOKEN'
 );
+
+export const DEFAULT_SUBGRAPH_MANIFEST = 'subgraph.yaml';
+export const DEFAULT_SUBGRAPH_SCHEMA = 'schema.graphql';
+export const DEFAULT_SUBQL_MANIFEST = 'project.ts';
+export const DEFAULT_SUBQL_SCHEMA = 'schema.graphql';

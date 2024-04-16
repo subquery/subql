@@ -1,0 +1,21 @@
+// Auto-generated , please modify to ensure project is correct
+
+<%
+const {
+    network,
+    projectClass,
+    projectDatasourceKind,
+    projectHandlerKind,
+} = props.importTypes;
+%>
+
+import {
+<%= projectClass %>,
+<%= projectDatasourceKind %>,
+<%= projectHandlerKind %>,
+} from "@subql/types-<%= network %>";
+
+const project: <%= props.importTypes.projectClass %> = <%= props.projectJson %>
+
+// Must set default to the project instance
+export default project;
