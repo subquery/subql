@@ -82,7 +82,7 @@ describe('SchemaMigration integration tests', () => {
     await sequelize?.close();
   });
 
-  it('Schema to new schema', async () => {
+  it('Migrate to new schema', async () => {
     schemaName = 'test-migrations-1';
     const initialSchema = loadGqlSchema('test_1_1.graphql');
 
