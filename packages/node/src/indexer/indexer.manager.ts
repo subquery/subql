@@ -35,10 +35,7 @@ import {
 import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService as SubstrateApiService } from './api.service';
-import {
-  // asSecondLayerHandlerProcessor_1_0_0,
-  DsProcessorService,
-} from './ds-processor.service';
+import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
