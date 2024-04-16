@@ -37,7 +37,7 @@ export default class Migrate extends Command {
 
     const subqlManifestPath = path.join(subqlDir, DEFAULT_SUBQL_MANIFEST);
     const subqlSchemaPath = path.join(subqlDir, DEFAULT_SUBQL_SCHEMA);
-    cli.action.start('Preparing migrate project');
+    cli.action.start('Preparing to migrate project');
     try {
       await prepareProject(networkFamily, subqlDir);
       await migrateManifest(networkFamily, subgraphManifestPath, subqlManifestPath);
