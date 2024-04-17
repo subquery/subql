@@ -3,4 +3,6 @@
 
 export * from './forceClean.service';
 export * from './forceClean.module';
+export * from './foreceClean.init';
+export * from './reindex.init';
 export * from './reindex.service';

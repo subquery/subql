@@ -49,6 +49,9 @@ jobs:
     steps:
         - uses: actions/checkout@v4
 
+        - name: Enable btree btree_gist
+          run: psql "postgresql://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_DATABASE" -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
+
         - name: Use Node 18
           uses: actions/setup-node@v4
           with:

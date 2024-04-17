@@ -5,7 +5,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  SmartBatchService,
   StoreCacheService,
   StoreService,
   IProjectService,
@@ -18,7 +17,6 @@ import {
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent, isFullBlock, LightBlockContent } from '../types';
@@ -42,24 +40,20 @@ export class BlockDispatcherService
     projectService: IProjectService<SubstrateDatasource>,
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
-    smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    dynamicDsService: DynamicDsService,
   ) {
     super(
       nodeConfig,
       eventEmitter,
       projectService,
       projectUpgradeService,
-      smartBatchService,
       storeService,
       storeCacheService,
       poiSyncService,
       project,
-      dynamicDsService,
       async (
         blockNums: number[],
       ): Promise<IBlock<BlockContent>[] | IBlock<LightBlockContent>[]> => {

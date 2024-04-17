@@ -107,11 +107,11 @@ export interface IProjectNetworkConfig extends ProjectNetworkConfig {
   chainId: string;
 }
 
-export type DsProcessor<DS> = {
+export type DsProcessor<DS, P extends Record<string, any> = Record<string, any>, API = any> = {
   kind: string;
   validate: (ds: DS, assets: Record<string, string>) => void;
-  dsFilterProcessor: (ds: DS, api: any) => boolean;
-  handlerProcessors: Record<string, any>;
+  dsFilterProcessor: (ds: DS, api: API) => boolean;
+  handlerProcessors: P;
 };
 
 export interface ProjectRootAndManifest {

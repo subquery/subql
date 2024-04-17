@@ -18,6 +18,7 @@ import {
   NodeConfig,
   getLogger,
   profiler,
+  SandboxService,
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
@@ -34,12 +35,8 @@ import {
 import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService as SubstrateApiService } from './api.service';
-import {
-  asSecondLayerHandlerProcessor_1_0_0,
-  DsProcessorService,
-} from './ds-processor.service';
+import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -47,8 +44,8 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  ApiAt,
   ApiPromise,
+  ApiAt,
   BlockContent | LightBlockContent,
   SubstrateApiService,
   SubstrateDatasource,
@@ -59,12 +56,11 @@ export class IndexerManager extends BaseIndexerManager<
 > {
   protected isRuntimeDs = isRuntimeDs;
   protected isCustomDs = isCustomDs;
-  protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
 
   constructor(
     apiService: SubstrateApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService<ApiAt>,
+    sandboxService: SandboxService<ApiAt, ApiPromise>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,

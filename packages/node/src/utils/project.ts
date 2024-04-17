@@ -19,7 +19,6 @@ import { Reader } from '@subql/types-core';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
 import {
-  SubqlProjectDsTemplate,
   SubqueryProject,
   SubstrateProjectDs,
 } from '../configure/SubqueryProject';

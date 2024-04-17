@@ -7,7 +7,6 @@ import {
   BaseTemplateDataSource,
   IProjectNetworkConfig,
   CommonSubqueryProject,
-  DictionaryQueryEntry,
   FileReference,
   Processor,
   ProjectManifestV1_0_0,
@@ -16,6 +15,12 @@ import {
   BaseHandler,
   BaseMapping,
   BaseCustomDataSource,
+  HandlerInputTransformer_0_0_0 as BaseHandlerInputTransformer_0_0_0,
+  HandlerInputTransformer_1_0_0 as BaseHandlerInputTransformer_1_0_0,
+  SecondLayerHandlerProcessor_0_0_0 as BaseSecondLayerHandlerProcessor_0_0_0,
+  SecondLayerHandlerProcessor_1_0_0 as BaseSecondLayerHandlerProcessor_1_0_0,
+  SecondLayerHandlerProcessor as BaseSecondLayerHandlerProcessor,
+  DsProcessor,
 } from '@subql/types-core';
 import {LightSubstrateEvent, SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
@@ -281,30 +286,28 @@ export interface SubstrateCustomDatasource<
   processor: Processor<O>;
 }
 
-export interface HandlerInputTransformer_0_0_0<
+/**
+ * @deprecated use types core version. datasource processors need updating before this can be removed
+ * */
+export type HandlerInputTransformer_0_0_0<
+  IT extends AnyTuple,
+  IM extends RuntimeHandlerInputMap<IT>,
   T extends SubstrateHandlerKind,
   E,
-  IT extends AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> {
-  (input: RuntimeHandlerInputMap<IT>[T], ds: DS, api: ApiPromise, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
-}
+> = BaseHandlerInputTransformer_0_0_0<IM, T, DS, ApiPromise, E>;
 
-export interface HandlerInputTransformer_1_0_0<
+/**
+ * @deprecated use types core version. datasource processors need updating before this can be removed
+ * */
+export type HandlerInputTransformer_1_0_0<
+  IT extends AnyTuple,
+  IM extends RuntimeHandlerInputMap<IT>,
   T extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
-  IT extends AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> {
-  (params: {
-    input: RuntimeHandlerInputMap<IT>[T];
-    ds: DS;
-    filter?: F;
-    api: ApiPromise;
-    assets?: Record<string, string>;
-  }): Promise<E[]>;
-}
+> = BaseHandlerInputTransformer_1_0_0<IM, T, DS, ApiPromise, F, E>;
 
 type SecondLayerHandlerProcessorArray<
   K extends string,
@@ -317,7 +320,10 @@ type SecondLayerHandlerProcessorArray<
   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, IT, DS>
   | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, IT, DS>;
 
-export interface SubstrateDatasourceProcessor<
+/**
+ * @deprecated use types core version. datasource processors need updating before this can be removed
+ * */
+export type SubstrateDatasourceProcessor<
   K extends string,
   F extends Record<string, unknown>,
   DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>,
@@ -325,56 +331,40 @@ export interface SubstrateDatasourceProcessor<
     string,
     SecondLayerHandlerProcessorArray<K, F, any, any, DS>
   >
-> {
-  kind: K;
-  validate(ds: DS, assets: Record<string, string>): void;
-  dsFilterProcessor(ds: DS, api: ApiPromise): boolean;
-  handlerProcessors: P;
-}
+> = DsProcessor<DS, P, ApiPromise>;
 
-interface SecondLayerHandlerProcessorBase<
-  K extends SubstrateHandlerKind,
-  F extends Record<string, unknown>,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> {
-  baseHandlerKind: K;
-  baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
-  filterValidator: (filter?: F) => void;
-  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
-}
-
-// only allow one custom handler for each baseHandler kind
-export interface SecondLayerHandlerProcessor_0_0_0<
+/**
+ * @deprecated use types core version. datasource processors need updating before this can be removed
+ * */
+export type SecondLayerHandlerProcessor_0_0_0<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> extends SecondLayerHandlerProcessorBase<K, F, DS> {
-  specVersion: undefined;
-  transformer: HandlerInputTransformer_0_0_0<K, E, IT, DS>;
-  filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap<IT>[K], ds: DS) => boolean;
-}
+> = BaseSecondLayerHandlerProcessor_0_0_0<RuntimeHandlerInputMap<IT>, K, F, E, DS, ApiPromise>;
 
-export interface SecondLayerHandlerProcessor_1_0_0<
+/**
+ * @deprecated use types core version. datasource processors need updating before this can be removed
+ * */
+export type SecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> extends SecondLayerHandlerProcessorBase<K, F, DS> {
-  specVersion: '1.0.0';
-  transformer: HandlerInputTransformer_1_0_0<K, F, E, IT, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: RuntimeHandlerInputMap<IT>[K]; ds: DS}) => boolean;
-}
+> = BaseSecondLayerHandlerProcessor_1_0_0<RuntimeHandlerInputMap<IT>, K, F, E, DS, ApiPromise>;
 
+/**
+ * @deprecated use types core version. datasource processors need updating before this can be removed
+ * */
 export type SecondLayerHandlerProcessor<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
   IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> = SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>;
+> = BaseSecondLayerHandlerProcessor<RuntimeHandlerInputMap<IT>, K, F, E, DS, ApiPromise>;
 
 /**
  * Represents a Substrate subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.

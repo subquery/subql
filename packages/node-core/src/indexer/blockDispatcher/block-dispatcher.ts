@@ -12,8 +12,6 @@ import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
-import {DynamicDsService} from '../dynamic-ds.service';
-import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
@@ -45,12 +43,10 @@ export abstract class BlockDispatcher<B, DS>
     eventEmitter: EventEmitter2,
     projectService: IProjectService<DS>,
     projectUpgradeService: IProjectUpgradeService,
-    smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    dynamicDsService: DynamicDsService<DS>,
     fetchBlocksBatches: BatchBlockFetcher<B>
   ) {
     super(
@@ -60,11 +56,9 @@ export abstract class BlockDispatcher<B, DS>
       projectService,
       projectUpgradeService,
       new Queue(nodeConfig.batchSize * 3),
-      smartBatchService,
       storeService,
       storeCacheService,
-      poiSyncService,
-      dynamicDsService
+      poiSyncService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch');

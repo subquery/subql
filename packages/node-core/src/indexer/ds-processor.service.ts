@@ -4,7 +4,15 @@
 import fs from 'fs';
 import path from 'path';
 import {Inject} from '@nestjs/common';
-import {BaseCustomDataSource, BaseDataSource, DsProcessor, IProjectNetworkConfig} from '@subql/types-core';
+import {
+  HandlerInputMap,
+  BaseCustomDataSource,
+  SecondLayerHandlerProcessor_0_0_0,
+  SecondLayerHandlerProcessor_1_0_0,
+  BaseDataSource,
+  DsProcessor,
+  IProjectNetworkConfig,
+} from '@subql/types-core';
 import {VMScript} from 'vm2';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
@@ -12,6 +20,66 @@ import {Sandbox, SandboxOption} from './sandbox';
 import {ISubqueryProject} from './types';
 
 const logger = getLogger('ds-sandbox');
+
+function isSecondLayerHandlerProcessor_0_0_0<
+  IM extends HandlerInputMap,
+  K extends keyof IM,
+  F extends Record<string, unknown>,
+  E,
+  API,
+  DS extends BaseCustomDataSource = BaseCustomDataSource
+>(
+  processor:
+    | SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API>
+    | SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API>
+): processor is SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API> {
+  // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
+  return processor.specVersion === undefined;
+}
+
+function isSecondLayerHandlerProcessor_1_0_0<
+  IM extends HandlerInputMap,
+  K extends keyof IM,
+  F extends Record<string, unknown>,
+  E,
+  API,
+  DS extends BaseCustomDataSource = BaseCustomDataSource
+>(
+  processor:
+    | SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API>
+    | SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API>
+): processor is SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API> {
+  return processor.specVersion === '1.0.0';
+}
+
+export function asSecondLayerHandlerProcessor_1_0_0<
+  IM extends HandlerInputMap,
+  K extends keyof IM,
+  F extends Record<string, unknown>,
+  E,
+  API,
+  DS extends BaseCustomDataSource = BaseCustomDataSource
+>(
+  processor:
+    | SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API>
+    | SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API>
+): SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API> {
+  if (isSecondLayerHandlerProcessor_1_0_0(processor)) {
+    return processor;
+  }
+
+  if (!isSecondLayerHandlerProcessor_0_0_0(processor)) {
+    throw new Error('Unsupported ds processor version');
+  }
+
+  return {
+    ...processor,
+    specVersion: '1.0.0',
+    filterProcessor: (params) => processor.filterProcessor(params.filter, params.input, params.ds),
+    transformer: (params) =>
+      processor.transformer(params.input, params.ds, params.api, params.assets).then((res) => [res]),
+  };
+}
 
 class DsPluginSandbox<P> extends Sandbox {
   constructor(option: Omit<SandboxOption, 'store'>, nodeConfig: NodeConfig) {
