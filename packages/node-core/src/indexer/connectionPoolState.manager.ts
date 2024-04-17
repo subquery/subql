@@ -53,6 +53,15 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
 {
   private pool: Record<string, ConnectionPoolItem<T>> = {};
 
+  /**
+   * @param onAllConnectionsRemoved - allows overwritting the behaviour when all connections are removed
+   * */
+  constructor(
+    private onAllConnectionsRemoved: () => void = () => {
+      process.exit(1);
+    }
+  ) {}
+
   //eslint-disable-next-line @typescript-eslint/require-await
   async addToConnections(endpoint: string, primary: boolean): Promise<void> {
     const poolItem: ConnectionPoolItem<T> = {
@@ -213,7 +222,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
     if (Object.keys(this.pool).length === 0) {
       // Cannot throw here because it would be off stack
       logger.error('No more connections available. Please add healthier endpoints');
-      process.exit(1);
+      this.onAllConnectionsRemoved();
     }
   }
 
@@ -234,32 +243,37 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
     this.pool[endpoint].performanceScore += adjustment;
     this.pool[endpoint].failureCount++;
 
-    if (errorType === ApiErrorType.Connection) {
-      if (this.pool[endpoint].connected) {
-        //handleApiDisconnects was already called if this is false
-        //this.handleApiDisconnects(endpoint);
-        this.pool[endpoint].connected = false;
+    switch (errorType) {
+      case ApiErrorType.Connection: {
+        if (this.pool[endpoint].connected) {
+          //handleApiDisconnects was already called if this is false
+          //this.handleApiDisconnects(endpoint);
+          this.pool[endpoint].connected = false;
+        }
+        return;
       }
-      return;
-    }
+      case ApiErrorType.Default: {
+        const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[endpoint].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
+        this.pool[endpoint].backoffDelay = nextDelay;
 
-    if (errorType !== ApiErrorType.Default) {
-      const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[endpoint].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
-      this.pool[endpoint].backoffDelay = nextDelay;
+        if (ApiErrorType.Timeout || ApiErrorType.RateLimit) {
+          this.pool[endpoint].rateLimited = true;
+        } else {
+          this.pool[endpoint].failed = true;
+        }
 
-      if (ApiErrorType.Timeout || ApiErrorType.RateLimit) {
-        this.pool[endpoint].rateLimited = true;
-      } else {
-        this.pool[endpoint].failed = true;
+        await this.setTimeout(endpoint, nextDelay);
+
+        logger.warn(
+          `Endpoint ${this.pool[endpoint].endpoint} experienced an error (${errorType}). Suspending for ${
+            nextDelay / 1000
+          }s.`
+        );
+        return;
       }
-
-      await this.setTimeout(endpoint, nextDelay);
-
-      logger.warn(
-        `Endpoint ${this.pool[endpoint].endpoint} experienced an error (${errorType}). Suspending for ${
-          nextDelay / 1000
-        }s.`
-      );
+      default: {
+        throw new Error(`Unknown error type ${errorType}`);
+      }
     }
   }
 

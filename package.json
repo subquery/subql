@@ -41,7 +41,7 @@
     "node-fetch": "2.6.7"
   },
   "scripts": {
-    "build": "yarn workspaces foreach -ptA run build",
+    "build": "yarn workspaces foreach -tA run build",
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
     "test:ci": "jest --testRegex='.*\\.(spec|test)\\.ts$'",

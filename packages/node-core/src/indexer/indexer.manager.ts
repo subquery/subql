@@ -8,7 +8,7 @@ import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
 import {ProcessBlockResponse} from './blockDispatcher';
-import {BaseDsProcessorService} from './ds-processor.service';
+import {asSecondLayerHandlerProcessor_1_0_0, BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
 import {IBlock, IIndexerManager} from './types';
@@ -31,8 +31,8 @@ export interface CustomHandler<K extends string = string, F = Record<string, unk
 }
 
 export abstract class BaseIndexerManager<
-  SA, // Api Type
-  A, // SafeApi Type
+  A, // Api Type
+  SA, // SafeApi Type
   B, // Block Type
   API extends IApi<A, SA, IBlock<B>[]>,
   DS extends BaseDataSource,
@@ -47,9 +47,6 @@ export abstract class BaseIndexerManager<
   protected abstract isRuntimeDs(ds: DS): ds is DS;
   protected abstract isCustomDs(ds: DS): ds is CDS;
 
-  // Uses asSecondLayerHandlerProcessor_1_0_0 in substrate to transfrom from v0.0.0 -> v1.0.0
-  protected abstract updateCustomProcessor: (processor: any) => any;
-
   protected abstract indexBlockData(
     block: B,
     dataSources: DS[],
@@ -62,7 +59,7 @@ export abstract class BaseIndexerManager<
   constructor(
     protected readonly apiService: API,
     protected readonly nodeConfig: NodeConfig,
-    private sandboxService: {getDsProcessor: (ds: DS, api: SA) => IndexerSandbox},
+    private sandboxService: {getDsProcessor: (ds: DS, api: SA, unsafeApi: A) => IndexerSandbox},
     private dsProcessorService: BaseDsProcessorService<DS, CDS>,
     private dynamicDsService: DynamicDsService<DS>,
     private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
@@ -93,7 +90,7 @@ export abstract class BaseIndexerManager<
         // Injected runtimeVersion from fetch service might be outdated
         apiAt = apiAt ?? (await getApi());
 
-        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+        const vm = this.sandboxService.getDsProcessor(ds, apiAt, this.apiService.unsafeApi);
 
         // Inject function to create ds into vm
         vm.freeze(async (templateName: string, args?: Record<string, unknown>) => {
@@ -221,7 +218,7 @@ export abstract class BaseIndexerManager<
         return false;
       })
       .filter((handler) => {
-        const processor = this.updateCustomProcessor(plugin.handlerProcessors[handler.kind]);
+        const processor = asSecondLayerHandlerProcessor_1_0_0(plugin.handlerProcessors[handler.kind]);
 
         try {
           return processor.filterProcessor({
@@ -245,7 +242,7 @@ export abstract class BaseIndexerManager<
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
 
-    const processor = this.updateCustomProcessor(plugin.handlerProcessors[handler.kind]);
+    const processor = asSecondLayerHandlerProcessor_1_0_0(plugin.handlerProcessors[handler.kind]);
 
     const transformedData = await processor
       .transformer({

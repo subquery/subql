@@ -1,12 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
 import {IProjectUpgradeService} from '../configure';
 import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
-import {ForceCleanService} from '../subcommands';
+import {ForceCleanService} from '../subcommands/forceClean.service';
 
 const logger = getLogger('Reindex');
 

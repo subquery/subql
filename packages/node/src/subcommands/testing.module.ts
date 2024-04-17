@@ -9,12 +9,12 @@ import {
   ConnectionPoolStateManager,
   DbModule,
   InMemoryCacheService,
-  NodeConfig,
   PoiService,
   PoiSyncService,
   StoreCacheService,
   StoreService,
   TestRunner,
+  SandboxService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
@@ -22,7 +22,6 @@ import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { ProjectService } from '../indexer/project.service';
-import { SandboxService } from '../indexer/sandbox.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({

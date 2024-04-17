@@ -9,7 +9,6 @@ import {
   TestingService as BaseTestingService,
   NestLogger,
   TestRunner,
-  SubqlProjectDs,
   IBlock,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
