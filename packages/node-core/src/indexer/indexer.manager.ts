@@ -69,6 +69,14 @@ export abstract class BaseIndexerManager<
     logger.info('indexer manager start');
   }
 
+  /**
+   * This function can be overwritten to provide extra values to the sandbox
+   * E.g Cosmos injecting the registry
+   * */
+  protected getDsProcessor(ds: DS, safeApi: SA): IndexerSandbox {
+    return this.sandboxService.getDsProcessor(ds, safeApi, this.apiService.unsafeApi);
+  }
+
   protected async internalIndexBlock(
     block: IBlock<B>,
     dataSources: DS[],
@@ -88,9 +96,9 @@ export abstract class BaseIndexerManager<
     if (!reindexBlockHeight) {
       await this.indexBlockData(block.block, filteredDataSources, async (ds: DS) => {
         // Injected runtimeVersion from fetch service might be outdated
-        apiAt = apiAt ?? (await getApi());
+        apiAt ??= await getApi();
 
-        const vm = this.sandboxService.getDsProcessor(ds, apiAt, this.apiService.unsafeApi);
+        const vm = this.getDsProcessor(ds, apiAt);
 
         // Inject function to create ds into vm
         vm.freeze(async (templateName: string, args?: Record<string, unknown>) => {
