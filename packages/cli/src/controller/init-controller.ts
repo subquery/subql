@@ -222,7 +222,7 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
   if (isTs) {
     const tsManifest = (await fs.promises.readFile(tsPath, 'utf8')).toString();
     //adding env config for endpoint.
-    const formattedEndpoint = `process.env.ENDPOINT!.split(',') as string[] | string`;
+    const formattedEndpoint = `process.env.ENDPOINT!?.split(',') as string[] | string`;
     const endpointUpdatedManifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint}`);
     const chainIdUpdatedManifestData = findReplace(
       endpointUpdatedManifestData,
