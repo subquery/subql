@@ -39,7 +39,7 @@ import { rawBlockToEthBlock } from './utils';
 
 const MIN_FETCH_LIMIT = 200;
 
-const logger = getLogger('eth-dictionary-v2');
+const logger = getLogger('dictionary-v2');
 
 function extractOptionAddresses(
   dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
@@ -77,18 +77,27 @@ function callFilterToDictionaryCondition(
   if (filter.from) {
     fromArray.push(filter.from.toLowerCase());
   }
+
+  const assignTo = (value: string | null | undefined) => {
+    if (value === null) {
+      toArray.push(null);
+    } else if (value !== undefined) {
+      toArray.push(value.toLowerCase());
+    }
+  };
+
   const optionsAddresses = extractOptionAddresses(dsOptions);
   if (!optionsAddresses.length) {
-    if (filter.to) {
-      toArray.push(filter.to.toLowerCase());
-    } else if (filter.to === null) {
-      toArray.push(null); //TODO, is this correct?
+    assignTo(filter.to);
+  } else {
+    if (filter.to || filter.to === null) {
+      logger.warn(
+        `TransactionFilter 'to' conflicts with 'address' in data source options, using data source option`,
+      );
     }
-  } else if (!!optionsAddresses.length && (filter.to || filter.to === null)) {
-    logger.warn(
-      `TransactionFilter 'to' conflict with 'address' in data source options`,
-    );
+    optionsAddresses.forEach(assignTo);
   }
+
   if (filter.function) {
     funcArray.push(functionToSighash(filter.function));
   }

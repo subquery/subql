@@ -16,7 +16,7 @@ import { EthereumApiService } from '../../ethereum';
 import { EthDictionaryV1 } from './v1';
 import { EthDictionaryV2 } from './v2';
 
-const logger = getLogger('eth-dictionary');
+const logger = getLogger('dictionary');
 
 @Injectable()
 export class EthDictionaryService extends DictionaryService<
@@ -69,6 +69,9 @@ export class EthDictionaryService extends DictionaryService<
         }
       }
     }
+    logger.debug(
+      `Dictionary versions, v1: ${dictionariesV1.length}, v2: ${dictionariesV2.length}`,
+    );
     // v2 should be prioritised
     this.init([...dictionariesV2, ...dictionariesV1]);
   }

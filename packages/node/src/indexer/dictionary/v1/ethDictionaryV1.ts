@@ -28,7 +28,7 @@ import { ethFilterDs } from '../utils';
 const CHAIN_ALIASES_URL =
   'https://raw.githubusercontent.com/subquery/templates/main/chainAliases.json5';
 
-const logger = getLogger('eth-dictionary v1');
+const logger = getLogger('dictionary-v1');
 
 export function appendDsOptions(
   dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
