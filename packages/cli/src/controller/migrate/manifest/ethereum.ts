@@ -25,14 +25,12 @@ function baseDsConversion(ds: SubgraphDataSource | SubgraphTemplate): EthereumDs
     mapping: {
       file: DEFAULT_HANDLER_BUILD_PATH,
       handlers: [
-        ...((ds.mapping.blockHandlers
-          ? ds.mapping.blockHandlers.map((h) => {
+        ...(ds.mapping.blockHandlers ?? []).map((h) => {
               return {
                 kind: EthereumHandlerKind.Block,
                 handler: h.handler,
               };
-            })
-          : []) as EthereumBlockHandler[]),
+            })) as EthereumBlockHandler[]),
         ...((ds.mapping.eventHandlers
           ? ds.mapping.eventHandlers.map((h) => {
               return {
