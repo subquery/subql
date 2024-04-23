@@ -115,7 +115,7 @@ export function subgraphDsToSubqlDs(
 ): MigrateDatasourceKind[] {
   const convertFunction = networkDsConverters[network];
   if (!convertFunction) {
-    throw new Error(`When migration, unable find convert dataSource method for ${network} `);
+    throw new Error(`${network} is not supported with migrations`);
   }
   return subgraphDs.map((ds) => convertFunction(ds));
 }
