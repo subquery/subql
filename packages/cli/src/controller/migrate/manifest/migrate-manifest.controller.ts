@@ -58,7 +58,7 @@ export async function renderManifest(projectPath: string, project: CommonSubquer
       },
     });
   } catch (e) {
-    throw new Error(`When render project manifest having problems.`);
+    throw new Error(`Failed to create project manifest.`);
   }
 }
 
