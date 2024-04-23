@@ -53,8 +53,7 @@ export const subqlNetworkTemplateNetwork: Record<NETWORK_FAMILY, NetworkExampleP
   },
 };
 
-// @ts-ignore
-export const graphNetworkNameChainId: Record<NETWORK_FAMILY, Record<string, string>> = {
+export const graphNetworkNameChainId: Partial<Record<NETWORK_FAMILY, Record<string, string>>> = {
   [NETWORK_FAMILY.ethereum]: {mainnet: '1'},
   // [NETWORK_FAMILY.substrate]: {},
   // [NETWORK_FAMILY.cosmos]: {},
