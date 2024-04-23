@@ -10,7 +10,7 @@ import {SubgraphDataSource, SubgraphProject} from '../types';
 function extractAllAbiFiles(dataSources: SubgraphDataSource[]): string[] {
   return uniqWith(
     dataSources.flatMap((dataSource) =>
-      dataSource.mapping.abis.map((abi) => abi.file).filter((file) => file !== null && file !== undefined)
+      dataSource.mapping.abis.map((abi) => abi.file).filter(Boolean)
     )
   );
 }
