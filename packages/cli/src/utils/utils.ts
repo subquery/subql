@@ -5,7 +5,15 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST} from '@subql/common';
+import {
+  DEFAULT_ENV,
+  DEFAULT_ENV_DEVELOP,
+  DEFAULT_ENV_DEVELOP_LOCAL,
+  DEFAULT_ENV_LOCAL,
+  DEFAULT_GIT_IGNORE,
+  DEFAULT_MANIFEST,
+  DEFAULT_TS_MANIFEST,
+} from '@subql/common';
 import {SubqlRuntimeHandler} from '@subql/common-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
@@ -256,4 +264,24 @@ export function defaultYamlManifestPath(projectPath: string): string {
 
 export function defaultTSManifestPath(projectPath: string): string {
   return path.join(projectPath, DEFAULT_TS_MANIFEST);
+}
+
+export function defaultEnvPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_ENV);
+}
+
+export function defaultEnvDevelopPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_ENV_DEVELOP);
+}
+
+export function defaultEnvLocalPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_ENV_LOCAL);
+}
+
+export function defaultEnvDevelopLocalPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_ENV_DEVELOP_LOCAL);
+}
+
+export function defaultGitIgnorePath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_GIT_IGNORE);
 }

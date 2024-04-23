@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.5.3] - 2024-04-13
+### Added
+- support env & env commands (#2345)
+
 ## [4.5.2] - 2024-04-12
 ### Fixed
 - Deployments failing with `this.jsonEnabled is not a function` (#2351)
@@ -560,7 +564,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.5.2...HEAD
+[Unreleased]: https://github.com/dapplooker/subql/compare/v4.5.3...HEAD
+[4.5.3]: https://github.com/dapplooker/subql/compare/v4.5.2...v4.5.3
 [4.5.2]: https://github.com/subquery/subql/compare/cli/4.5.1...cli/4.5.2
 [4.5.1]: https://github.com/subquery/subql/compare/cli/4.5.0...cli/4.5.1
 [4.5.0]: https://github.com/subquery/subql/compare/cli/4.4.1...cli/4.5.0
