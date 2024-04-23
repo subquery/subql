@@ -104,7 +104,7 @@ export function subgraphTemplateToSubqlTemplate(
 ): TemplateKind[] {
   const convertFunction = networkTemplateConverters[network as NETWORK_FAMILY];
   if (!convertFunction) {
-    throw new Error(`When migration, unable find convert template method for ${network} `);
+    throw new Error(`${network} does not support migration of templates.`);
   }
   return subgraphTemplates.map((t) => convertFunction(t));
 }
