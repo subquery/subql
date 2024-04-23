@@ -10,8 +10,8 @@ import {
   SubqlEventHandler as EthereumEventHandler,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum/dist/project';
-import {SubgraphDataSource, SubgraphTemplate} from '../../../types';
 import {DEFAULT_HANDLER_BUILD_PATH} from '../../generate-controller';
+import {MigrateDatasourceKind, MigrateMappingType, SubgraphDataSource, SubgraphTemplate} from '../types';
 
 function baseDsConversion(ds: SubgraphDataSource | SubgraphTemplate): EthereumDs | EthTemplate {
   const assets: Map<string, FileReference> = new Map();
@@ -28,6 +28,7 @@ function baseDsConversion(ds: SubgraphDataSource | SubgraphTemplate): EthereumDs
         ...((ds.mapping.blockHandlers
           ? ds.mapping.blockHandlers.map((h) => {
               return {
+                kind: EthereumHandlerKind.Block,
                 handler: h.handler,
               };
             })
@@ -60,15 +61,36 @@ function baseDsConversion(ds: SubgraphDataSource | SubgraphTemplate): EthereumDs
   return subqlDs;
 }
 
-export function convertEthereumDs(ds: SubgraphDataSource): EthereumDs {
-  const subqlDs = baseDsConversion(ds) as EthereumDs;
+function attachMigrateKind(ds: MigrateDatasourceKind<EthereumDs | EthTemplate>): void {
+  ds.migrateDatasourceType = 'EthereumDatasourceKind.Runtime';
+  (ds.mapping as MigrateMappingType).handlers.forEach((h) => {
+    switch (h.kind) {
+      case EthereumHandlerKind.Block:
+        h.migrateHandlerType = 'EthereumHandlerKind.Block';
+        break;
+      case EthereumHandlerKind.Event:
+        h.migrateHandlerType = 'EthereumHandlerKind.Event';
+        break;
+      case EthereumHandlerKind.Call:
+        h.migrateHandlerType = 'EthereumHandlerKind.Call';
+        break;
+      default:
+        break;
+    }
+  });
+}
+
+export function convertEthereumDs(ds: SubgraphDataSource): MigrateDatasourceKind<EthereumDs> {
+  const subqlDs = baseDsConversion(ds) as MigrateDatasourceKind<EthereumDs>;
   subqlDs.startBlock = ds.source.startBlock;
   subqlDs.options = {abi: ds.source.abi, address: ds.source.address};
+  attachMigrateKind(subqlDs);
   return subqlDs;
 }
 
-export function convertEthereumTemplate(ds: SubgraphTemplate): EthTemplate {
-  const subqlTemplate = baseDsConversion(ds) as EthTemplate;
+export function convertEthereumTemplate(ds: SubgraphTemplate): MigrateDatasourceKind<EthTemplate> {
+  const subqlTemplate = baseDsConversion(ds) as MigrateDatasourceKind<EthTemplate>;
   subqlTemplate.options = {abi: ds.source.abi};
+  attachMigrateKind(subqlTemplate);
   return subqlTemplate;
 }

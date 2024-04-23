@@ -43,7 +43,7 @@ interface AbiPropType {
 const SCAFFOLD_HANDLER_TEMPLATE_PATH = path.resolve(__dirname, '../template/scaffold-handlers.ts.ejs');
 const ROOT_MAPPING_DIR = 'src/mappings';
 export const DEFAULT_HANDLER_BUILD_PATH = './dist/index.js';
-const DEFAULT_ABI_DIR = '/abis';
+export const DEFAULT_ABI_DIR = '/abis';
 
 export function removeKeyword(inputString: string): string {
   return inputString.replace(/^(event|function) /, '');

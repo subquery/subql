@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Migrate a subgraph project to subquery project
+  - enble migrate its `subgraph.yaml` to `project.ts`
+
 ## [4.5.2] - 2024-04-12
 ### Fixed
 - Deployments failing with `this.jsonEnabled is not a function` (#2351)
