@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Executable path in docker (#2344)
 
 ## [2.10.0] - 2024-03-05
 ### Added
@@ -258,9 +260,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
--  annotation is now supported in 
-  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+- annotation is now supported in
+- We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+- Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.4.0] - 2021-03-25
 ### Added
