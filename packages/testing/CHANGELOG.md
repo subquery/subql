@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2024-04-24
+### Changed
+- Update headers to 2024 (#2237)
+
 ## [2.1.0] - 2023-10-17
 ### Changed
 - Update with Typescript manifest (#2011)
@@ -22,7 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Major release 2.0.0, align with other package versions
 
-[Unreleased]: https://github.com/subquery/subql/compare/testing/2.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/testing/2.1.1...HEAD
+[2.1.1]: https://github.com/subquery/subql/compare/testing/2.1.0...testing/2.1.1
 [2.1.0]: https://github.com/subquery/subql/compare/testing/2.0.2...testing/2.1.0
 [2.0.2]: https://github.com/subquery/subql/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/subquery/subql/compare/testing/2.0.0...testing/2.0.1

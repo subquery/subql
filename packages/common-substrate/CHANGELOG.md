@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2024-04-24
+### Changed
+- Update dependencies
 
 ## [3.4.0] - 2024-03-28
 ### Changed
@@ -137,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql/compare/common-substrate/3.4.0...common-substrate/3.5.0
 [3.4.0]: https://github.com/subquery/subql/compare/common-substrate/3.3.2...common-substrate/3.4.0
 [3.3.2]: https://github.com/subquery/subql/compare/common-substrate/3.3.1...common-substrate/3.3.2
 [3.3.1]: https://github.com/subquery/subql/compare/common-substrate/3.2.1...common-substrate/3.3.1
