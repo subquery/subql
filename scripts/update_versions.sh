@@ -65,6 +65,9 @@ prepare_package_release() {
   cd -
 }
 
+## Warning this will not automatically update packages that just have dependency changes
+## E.g. when @subql/common is updated, @subql/common-substrate should also be updated
+## It also doesn't do things in order of dependencies
 for dir in packages/*; do
   # Check the path is a directory and is tracked by git
   if [ -d "$dir" ] && [[ $(git ls-files "$dir") ]]; then

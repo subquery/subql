@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.6.0] - 2024-04-24
 ### Added
 - support env & env commands (#2345)
 
@@ -562,7 +564,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/dapplooker/subql/compare/v4.5.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.6.0...HEAD
+[4.6.0]: https://github.com/subquery/subql/compare/cli/4.5.2...cli/4.6.0
 [4.5.2]: https://github.com/subquery/subql/compare/cli/4.5.1...cli/4.5.2
 [4.5.1]: https://github.com/subquery/subql/compare/cli/4.5.0...cli/4.5.1
 [4.5.0]: https://github.com/subquery/subql/compare/cli/4.4.1...cli/4.5.0

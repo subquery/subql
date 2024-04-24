@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.1] - 2024-04-24
 ### Changed
 - Executable path in docker (#2344)
 
@@ -289,7 +291,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.1...HEAD
+[2.10.1]: https://github.com/subquery/subql/compare/query/2.10.0...query/2.10.1
 [2.10.0]: https://github.com/subquery/subql/compare/query/2.9.1...query/2.10.0
 [2.9.1]: https://github.com/subquery/subql/compare/query/2.9.0...query/2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/query/2.8.0...query/2.9.0
