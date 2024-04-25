@@ -12,11 +12,11 @@ import {
   NodeConfig,
   ConnectionPoolService,
   ConnectionPoolStateManager,
-  SmartBatchService,
   StoreCacheService,
   IProjectUpgradeService,
   PoiSyncService,
   InMemoryCacheService,
+  SandboxService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from '../ethereum/api.connection';
@@ -31,7 +31,6 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
-import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
@@ -67,20 +66,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     ConnectionPoolStateManager,
     ConnectionPoolService,
     {
-      provide: SmartBatchService,
-      useFactory: (nodeConfig: NodeConfig) => {
-        return new SmartBatchService(nodeConfig.batchSize);
-      },
-      inject: [NodeConfig],
-    },
-    {
-      provide: SmartBatchService,
-      useFactory: (nodeConfig: NodeConfig) => {
-        return new SmartBatchService(nodeConfig.batchSize);
-      },
-      inject: [NodeConfig],
-    },
-    {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,
@@ -89,7 +74,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         projectUpgradeService: IProjectUpgradeService,
         apiService: EthereumApiService,
         indexerManager: IndexerManager,
-        smartBatchService: SmartBatchService,
         cacheService: InMemoryCacheService,
         storeService: StoreService,
         storeCacheService: StoreCacheService,
@@ -105,7 +89,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               eventEmitter,
               projectService,
               projectUpgradeService,
-              smartBatchService,
               cacheService,
               storeService,
               storeCacheService,
@@ -122,12 +105,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               eventEmitter,
               projectService,
               projectUpgradeService,
-              smartBatchService,
               storeService,
               storeCacheService,
               poiSyncService,
               project,
-              dynamicDsService,
             ),
       inject: [
         NodeConfig,
@@ -136,7 +117,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         'IProjectUpgradeService',
         ApiService,
         IndexerManager,
-        SmartBatchService,
         InMemoryCacheService,
         StoreService,
         StoreCacheService,

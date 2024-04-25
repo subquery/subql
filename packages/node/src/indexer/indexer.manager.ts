@@ -21,6 +21,7 @@ import {
   ProcessBlockResponse,
   BaseIndexerManager,
   IBlock,
+  SandboxService,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
@@ -41,19 +42,15 @@ import {
   isFullBlock,
 } from '../ethereum/block.ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
-import {
-  asSecondLayerHandlerProcessor_1_0_0,
-  DsProcessorService,
-} from './ds-processor.service';
+import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { SandboxService } from './sandbox.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  SafeEthProvider,
   EthereumApi,
+  SafeEthProvider,
   BlockContent,
   ApiService,
   SubqlEthereumDataSource,
@@ -64,12 +61,11 @@ export class IndexerManager extends BaseIndexerManager<
 > {
   protected isRuntimeDs = isRuntimeDs;
   protected isCustomDs = isCustomDs;
-  protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
 
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService,
+    sandboxService: SandboxService<SafeEthProvider, EthereumApi>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
@@ -162,12 +158,6 @@ export class IndexerManager extends BaseIndexerManager<
     return DataAbiParser[kind](this.apiService.api)(data, ds);
   }
 }
-
-type ProcessorTypeMap = {
-  [EthereumHandlerKind.Block]: typeof isBlockHandlerProcessor;
-  [EthereumHandlerKind.Event]: typeof isEventHandlerProcessor;
-  [EthereumHandlerKind.Call]: typeof isCallHandlerProcessor;
-};
 
 const ProcessorTypeMap = {
   [EthereumHandlerKind.Block]: isBlockHandlerProcessor,

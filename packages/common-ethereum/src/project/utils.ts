@@ -12,21 +12,23 @@ import {
 import {fromBech32Address} from '@zilliqa-js/crypto';
 import {buildMessage, isEthereumAddress, ValidateBy, ValidationOptions} from 'class-validator';
 
+type DefaultFilter = Record<string, unknown>;
+
 export function isBlockHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Block, unknown, E> {
+  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, DefaultFilter, unknown>
+): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Block, DefaultFilter, E> {
   return hp.baseHandlerKind === EthereumHandlerKind.Block;
 }
 
 export function isEventHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Event, unknown, E> {
+  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, DefaultFilter, unknown>
+): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Event, DefaultFilter, E> {
   return hp.baseHandlerKind === EthereumHandlerKind.Event;
 }
 
 export function isCallHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
-): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Call, unknown, E> {
+  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, DefaultFilter, unknown>
+): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Call, DefaultFilter, E> {
   return hp.baseHandlerKind === EthereumHandlerKind.Call;
 }
 

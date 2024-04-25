@@ -61,10 +61,6 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
-  protected getGenesisHash(): string {
-    return this.apiService.networkMeta.genesisHash;
-  }
-
   protected async getFinalizedHeight(): Promise<number> {
     const block = await this.api.getFinalizedBlock();
 

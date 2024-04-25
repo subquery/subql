@@ -1,9 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
-import { LocalReader } from '@subql/common';
 import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,

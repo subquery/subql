@@ -5,7 +5,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  SmartBatchService,
   StoreCacheService,
   StoreService,
   IProjectService,
@@ -20,7 +19,6 @@ import {
   EthereumProjectDs,
   SubqueryProject,
 } from '../../configure/SubqueryProject';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { BlockContent } from '../types';
 
@@ -41,24 +39,20 @@ export class BlockDispatcherService
     projectService: IProjectService<EthereumProjectDs>,
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
-    smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    dynamicDsService: DynamicDsService,
   ) {
     super(
       nodeConfig,
       eventEmitter,
       projectService,
       projectUpgradeService,
-      smartBatchService,
       storeService,
       storeCacheService,
       poiSyncService,
       project,
-      dynamicDsService,
       apiService.fetchBlocks.bind(apiService),
     );
   }

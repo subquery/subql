@@ -5,11 +5,13 @@ import {
   BaseTemplateDataSource,
   IProjectNetworkConfig,
   CommonSubqueryProject,
-  DictionaryQueryEntry,
   FileReference,
   Processor,
   ProjectManifestV1_0_0,
   BaseDataSource,
+  SecondLayerHandlerProcessor_0_0_0,
+  SecondLayerHandlerProcessor_1_0_0,
+  DsProcessor,
 } from '@subql/types-core';
 import {
   EthereumBlock,
@@ -247,32 +249,18 @@ export interface SubqlCustomDatasource<
   processor: Processor<O>;
 }
 
-export interface HandlerInputTransformer_0_0_0<
-  T extends EthereumHandlerKind,
+export type SecondLayerHandlerProcessor<
+  K extends EthereumHandlerKind,
+  F extends Record<string, unknown>, // EthereumRuntimeFilterMap?
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> {
-  (input: EthereumRuntimeHandlerInputMap[T], ds: DS, api: ApiWrapper, assets?: Record<string, string>): Promise<E>; //  | EthereumBuiltinDataSource
-}
+> =
+  | SecondLayerHandlerProcessor_0_0_0<EthereumRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>
+  | SecondLayerHandlerProcessor_1_0_0<EthereumRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>;
 
-export interface HandlerInputTransformer_1_0_0<
-  T extends EthereumHandlerKind,
-  F,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> {
-  (params: {
-    input: EthereumRuntimeHandlerInputMap[T];
-    ds: DS;
-    filter?: F;
-    api: ApiWrapper;
-    assets?: Record<string, string>;
-  }): Promise<E[]>; //  | EthereumBuiltinDataSource
-}
-
-export type SecondLayerHandlerProcessorArray<
+type SecondLayerHandlerProcessorArray<
   K extends string,
-  F,
+  F extends Record<string, unknown>,
   T,
   DS extends SubqlCustomDatasource<K> = SubqlCustomDatasource<K>
 > =
@@ -280,60 +268,15 @@ export type SecondLayerHandlerProcessorArray<
   | SecondLayerHandlerProcessor<EthereumHandlerKind.Call, F, T, DS>
   | SecondLayerHandlerProcessor<EthereumHandlerKind.Event, F, T, DS>;
 
-export interface SubqlDatasourceProcessor<
+export type SubqlDatasourceProcessor<
   K extends string,
-  F,
+  F extends Record<string, unknown>,
   DS extends SubqlCustomDatasource<K> = SubqlCustomDatasource<K>,
   P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>> = Record<
     string,
     SecondLayerHandlerProcessorArray<K, F, any, DS>
   >
-> {
-  kind: K;
-  validate(ds: DS, assets: Record<string, string>): void;
-  dsFilterProcessor(ds: DS, api: ApiWrapper): boolean;
-  handlerProcessors: P;
-}
-
-interface SecondLayerHandlerProcessorBase<
-  K extends EthereumHandlerKind,
-  F,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> {
-  baseHandlerKind: K;
-  baseFilter: EthereumRuntimeFilterMap[K] | EthereumRuntimeFilterMap[K][];
-  filterValidator: (filter?: F) => void;
-  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
-}
-
-export interface SecondLayerHandlerProcessor_0_0_0<
-  K extends EthereumHandlerKind,
-  F,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> extends SecondLayerHandlerProcessorBase<K, F, DS> {
-  specVersion: undefined;
-  transformer: HandlerInputTransformer_0_0_0<K, E, DS>;
-  filterProcessor: (filter: F | undefined, input: EthereumRuntimeHandlerInputMap[K], ds: DS) => boolean;
-}
-
-export interface SecondLayerHandlerProcessor_1_0_0<
-  K extends EthereumHandlerKind,
-  F,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> extends SecondLayerHandlerProcessorBase<K, F, DS> {
-  specVersion: '1.0.0';
-  transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: EthereumRuntimeHandlerInputMap[K]; ds: DS}) => boolean;
-}
-
-export type SecondLayerHandlerProcessor<
-  K extends EthereumHandlerKind,
-  F,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> = SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>;
+> = DsProcessor<DS, P, ApiWrapper>;
 
 /**
  * Represents a Ethereum subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.

@@ -6,7 +6,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  SmartBatchService,
   StoreService,
   StoreCacheService,
   IProjectService,
@@ -44,7 +43,6 @@ export class WorkerBlockDispatcherService
     projectService: IProjectService<EthereumProjectDs>,
     @Inject('IProjectUpgradeService')
     projectUpgadeService: IProjectUpgradeService,
-    smartBatchService: SmartBatchService,
     cacheService: InMemoryCacheService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
@@ -59,12 +57,10 @@ export class WorkerBlockDispatcherService
       eventEmitter,
       projectService,
       projectUpgadeService,
-      smartBatchService,
       storeService,
       storeCacheService,
       poiSyncService,
       project,
-      dynamicDsService,
       () =>
         createIndexerWorker<
           IIndexerWorker,
