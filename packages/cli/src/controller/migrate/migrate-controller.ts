@@ -5,8 +5,35 @@ import fs from 'fs';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
 import {cloneProjectTemplate, fetchExampleProjects} from '../init-controller';
-import {graphNetworkNameChainId, subqlNetworkTemplateNetwork} from './constants';
+import {graphNetworkNameChainId, networkConverters} from './constants';
 import {ChainInfo, SubgraphProject} from './types';
+
+/**
+ *
+ * @param input is github link or ssh, or bitbucket link
+ * return undefined if link not match any
+ */
+const githubSshRegex = /^git@github\.com:(?<domain>[^/]+)\/(?<repository>[^/]+)\.git$/;
+const githubLinkRegex = /^https:\/\/github\.com\/(?<domain>[^/]+)\/(?<repository>[^/]+)(?:\/tree\/(?<branch>[^/]+))?/;
+const bitbucketSshRegex = /^git@bitbucket\.org:(?<domain>[^/]+)\/(?<repository>[^/]+)\.git$/;
+const bitbucketLinkRegex =
+  /^https:\/\/(?:[^/]+@)?bitbucket\.org\/(?<domain>[^/]+)\/(?<repository>[^/]+)(?:\/src\/(?<branch>[^/]+))?/;
+
+export function extractGitInfo(input: string): {link: string; branch?: string} | undefined {
+  const gitLinkMatch = input.match(githubLinkRegex);
+  const bitBucketLinkMatch = input.match(bitbucketLinkRegex);
+  const sshMatch = input.match(githubSshRegex) || input.match(bitbucketSshRegex);
+  if (!gitLinkMatch && !sshMatch && !bitBucketLinkMatch) {
+    return undefined;
+  }
+  const {branch, domain, repository} = gitLinkMatch?.groups || bitBucketLinkMatch?.groups || {};
+  const link = sshMatch
+    ? input
+    : `https:${
+        gitLinkMatch ? `//github.com` : bitBucketLinkMatch ? `//bitbucket.org` : undefined
+      }/${domain}/${repository}`;
+  return {link, branch};
+}
 
 // improve project info from the graph package json
 export function improveProjectInfo(subgraphDir: string, subgraphManifest: SubgraphProject): void {

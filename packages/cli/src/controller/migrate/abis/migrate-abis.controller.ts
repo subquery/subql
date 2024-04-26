@@ -8,20 +8,18 @@ import {DEFAULT_ABI_DIR} from '../../generate-controller';
 import {SubgraphDataSource, SubgraphProject} from '../types';
 
 function extractAllAbiFiles(dataSources: SubgraphDataSource[]): string[] {
-  return uniqWith(
-    dataSources.flatMap((dataSource) =>
-      dataSource.mapping.abis.map((abi) => abi.file).filter(Boolean)
-    )
-  );
+  return uniqWith(dataSources.flatMap((dataSource) => dataSource.mapping.abis.map((abi) => abi.file).filter(Boolean)));
 }
 
 async function copyAbiFilesToTargetPathAsync(abiFiles: string[], targetPath: string): Promise<void> {
   try {
-    for (const file of abiFiles) {
-      const fileName = path.basename(file);
-      const targetFilePath = path.join(targetPath, fileName);
-      await fs.promises.copyFile(file, targetFilePath);
-    }
+    await Promise.all(
+      abiFiles.map((file) => {
+        const fileName = path.basename(file);
+        const targetFilePath = path.join(targetPath, fileName);
+        fs.promises.copyFile(file, targetFilePath);
+      })
+    );
     console.log('ABI files copied successfully.');
   } catch (error) {
     console.error('Error copying ABI files:', error);

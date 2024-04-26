@@ -5,6 +5,11 @@ import {NETWORK_FAMILY} from '@subql/common';
 import {DatasourceKind, TemplateKind} from '../codegen-controller';
 import {ExampleProjectInterface} from '../init-controller';
 
+export interface NetworkUtils {
+  dsConverter: DsConvertFunction;
+  templateConverter: TemplateConvertFunction;
+}
+
 export interface NetworkExampleProject {
   [key: string]: ExampleProjectInterface;
 }
@@ -23,7 +28,7 @@ export interface SubgraphSource extends SubgraphTemplateSource {
   startBlock: number;
 }
 
-interface SubgraphDataSourceBase {
+export interface SubgraphDataSourceBase {
   kind: string;
   name: string;
   network: string;
@@ -44,14 +49,14 @@ interface SubgraphMapping {
   language: string;
   entities: string[];
   abis: {name: string; file: string}[];
-  eventHandlers: {event: string; handler: string}[];
-  callHandlers: {function: string; handler: string}[];
-  blockHandlers: {filter?: {kind: string}; handler: string}[]; //TODO, subql support this filter
+  eventHandlers?: {event: string; handler: string}[];
+  callHandlers?: {function: string; handler: string}[];
+  blockHandlers?: {filter?: {kind: string}; handler: string}[]; //TODO, subql support this filter
   file: string;
 }
 
 export interface SubgraphProject {
-  name: string;
+  name?: string;
   author?: string;
   specVersion: string;
   description: string;
@@ -63,12 +68,12 @@ export interface SubgraphProject {
   templates?: SubgraphTemplate[];
 }
 
-export type MigrateMappingType<T extends DatasourceKind | TemplateKind = DatasourceKind> = {
+type MigrateMappingType<T extends DatasourceKind | TemplateKind> = {
   handlers: (T['mapping']['handlers'][number] & {migrateHandlerType: string})[];
 };
 export type MigrateDatasourceKind<T extends DatasourceKind | TemplateKind = DatasourceKind> = T & {
   migrateDatasourceType: string;
-  mapping: T['mapping'] & MigrateMappingType;
+  mapping: T['mapping'] & MigrateMappingType<T>;
 };
 
 // TODO, currently use DatasourceKind, which migrate network supported,should be a new type include all network dataSources

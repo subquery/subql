@@ -3,30 +3,10 @@
 
 import {NETWORK_FAMILY} from '@subql/common';
 import {convertEthereumDs, convertEthereumTemplate} from './manifest/ethereum';
-import {DsConvertFunction, TemplateConvertFunction, NetworkExampleProject} from './types';
+import {NetworkExampleProject, NetworkUtils} from './types';
 
-// @ts-ignore
-export const networkDsConverters: Record<NETWORK_FAMILY, DsConvertFunction> = {
-  [NETWORK_FAMILY.ethereum]: convertEthereumDs,
-  // [NETWORK_FAMILY.substrate]: convertSubstrateDs,
-  // [NETWORK_FAMILY.cosmos]: convertCosmosDs,
-  // [NETWORK_FAMILY.algorand]: convertAlgorandDs,
-  // [NETWORK_FAMILY.flare]: convertFlareDs,
-  // [NETWORK_FAMILY.near]: convertNearDs,
-  // [NETWORK_FAMILY.stellar]: convertStellarDs,
-  // [NETWORK_FAMILY.concordium]: convertConcordiumDs,
-};
-
-// @ts-ignore
-export const networkTemplateConverters: Record<NETWORK_FAMILY, TemplateConvertFunction> = {
-  [NETWORK_FAMILY.ethereum]: convertEthereumTemplate,
-  // [NETWORK_FAMILY.substrate]: convertSubstrateDs,
-  // [NETWORK_FAMILY.cosmos]: convertCosmosDs,
-  // [NETWORK_FAMILY.algorand]: convertAlgorandDs,
-  // [NETWORK_FAMILY.flare]: convertFlareDs,
-  // [NETWORK_FAMILY.near]: convertNearDs,
-  // [NETWORK_FAMILY.stellar]: convertStellarDs,
-  // [NETWORK_FAMILY.concordium]: convertConcordiumDs,
+export const networkConverters: Partial<Record<NETWORK_FAMILY, NetworkUtils>> = {
+  [NETWORK_FAMILY.ethereum]: {dsConverter: convertEthereumDs, templateConverter: convertEthereumTemplate},
 };
 
 export const graphToSubqlNetworkFamily: Record<string, NETWORK_FAMILY> = {
@@ -55,11 +35,4 @@ export const subqlNetworkTemplateNetwork: Record<NETWORK_FAMILY, NetworkExampleP
 
 export const graphNetworkNameChainId: Partial<Record<NETWORK_FAMILY, Record<string, string>>> = {
   [NETWORK_FAMILY.ethereum]: {mainnet: '1'},
-  // [NETWORK_FAMILY.substrate]: {},
-  // [NETWORK_FAMILY.cosmos]: {},
-  // [NETWORK_FAMILY.algorand]: {},
-  // [NETWORK_FAMILY.flare]: {},
-  // [NETWORK_FAMILY.near]: {},
-  // [NETWORK_FAMILY.stellar]: {},
-  // [NETWORK_FAMILY.concordium]: {},
 };

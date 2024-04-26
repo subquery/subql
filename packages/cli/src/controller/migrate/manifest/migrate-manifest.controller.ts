@@ -9,31 +9,39 @@ import {upperFirst} from 'lodash';
 import YAML from 'yaml';
 import {findRunnerByNetworkFamily, prepareDirPath, renderTemplate} from '../../../utils';
 import {TemplateKind} from '../../codegen-controller';
-import {graphToSubqlNetworkFamily, networkDsConverters, networkTemplateConverters} from '../constants';
+import {graphToSubqlNetworkFamily, networkConverters} from '../constants';
 import {getChainIdByNetworkName} from '../migrate-controller';
 import {MigrateDatasourceKind, SubgraphDataSource, SubgraphProject, SubgraphTemplate, ChainInfo} from '../types';
 
 const PROJECT_TEMPLATE_PATH = path.resolve(__dirname, '../../../template/project.ts.ejs');
 
 export function readSubgraphManifest(inputPath: string): SubgraphProject {
-  if (!fs.existsSync(inputPath)) {
-    throw new Error(`Subgraph manifest ${inputPath} is not exist`);
+  try {
+    const subgraphManifest: SubgraphProject = YAML.parse(fs.readFileSync(inputPath, 'utf8'));
+    return subgraphManifest;
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      throw new Error(`Unable to find subgraph manifest at: ${inputPath}`);
+    }
   }
-  const subgraphManifest: SubgraphProject = YAML.parse(fs.readFileSync(inputPath, 'utf8'));
-  return subgraphManifest;
 }
 
 export function extractNetworkFromManifest(subgraphProject: SubgraphProject): ChainInfo {
-  const firstDsKind = subgraphProject.dataSources[0].kind;
-  const firstDsNetwork = subgraphProject.dataSources[0].network;
-  if (!firstDsKind || !firstDsNetwork) {
+  const subgraphDsKinds = subgraphProject.dataSources.map((d) => d.kind).filter((k) => k !== undefined);
+  const subgraphDsNetworks = subgraphProject.dataSources.map((d) => d.network).filter((n) => n !== undefined);
+  if (!subgraphDsKinds.length || !subgraphDsNetworks.length) {
     throw new Error(`Subgraph dataSource kind or network not been found`);
   }
+  if (!subgraphDsNetworks.every((network) => network === subgraphDsNetworks[0])) {
+    throw new Error(`All network values in subgraph Networks should be the same. Got ${subgraphDsNetworks}`);
+  }
+  const firstDsKind = subgraphDsKinds[0];
+  const firstDsNetwork = subgraphDsNetworks[0];
   const networkFamily = graphToSubqlNetworkFamily[firstDsKind];
   if (!networkFamily) {
     throw new Error(`Corresponding subquery network is not find with subgraph data source kind ${firstDsKind}`);
   }
-  return {networkFamily, chainId: getChainIdByNetworkName(networkFamily, subgraphProject.dataSources[0].network)};
+  return {networkFamily, chainId: getChainIdByNetworkName(networkFamily, firstDsNetwork)};
 }
 
 /**
@@ -58,7 +66,7 @@ export async function renderManifest(projectPath: string, project: CommonSubquer
       },
     });
   } catch (e) {
-    throw new Error(`Failed to create project manifest.`);
+    throw new Error(`Failed to create project manifest, ${e}`);
   }
 }
 
@@ -91,7 +99,7 @@ function graphManifestToSubqlManifest(chainInfo: ChainInfo, subgraphManifest: Su
     dataSources: subgraphDsToSubqlDs(chainInfo.networkFamily, subgraphManifest.dataSources),
     description: subgraphManifest.description,
     schema: subgraphManifest.schema,
-    repository: subgraphManifest.repository,
+    repository: '',
     templates: subgraphManifest.templates
       ? subgraphTemplateToSubqlTemplate(chainInfo.networkFamily, subgraphManifest.templates)
       : undefined,
@@ -102,7 +110,7 @@ export function subgraphTemplateToSubqlTemplate(
   network: NETWORK_FAMILY,
   subgraphTemplates: SubgraphTemplate[]
 ): TemplateKind[] {
-  const convertFunction = networkTemplateConverters[network as NETWORK_FAMILY];
+  const convertFunction = networkConverters[network as NETWORK_FAMILY].templateConverter;
   if (!convertFunction) {
     throw new Error(`${network} does not support migration of templates.`);
   }
@@ -113,7 +121,7 @@ export function subgraphDsToSubqlDs(
   network: NETWORK_FAMILY,
   subgraphDs: SubgraphDataSource[]
 ): MigrateDatasourceKind[] {
-  const convertFunction = networkDsConverters[network];
+  const convertFunction = networkConverters[network].dsConverter;
   if (!convertFunction) {
     throw new Error(`${network} is not supported with migrations`);
   }
