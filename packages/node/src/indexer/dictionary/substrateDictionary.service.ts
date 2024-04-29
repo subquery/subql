@@ -57,7 +57,9 @@ export class SubstrateDictionaryService extends DictionaryService<
           const dictionaryV1 = await SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
-            this.dsProcessorService.getDsProcessor.bind(this),
+            this.dsProcessorService.getDsProcessor.bind(
+              this.dsProcessorService,
+            ),
             endpoint,
           );
           dictionariesV1.push(dictionaryV1);
