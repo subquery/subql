@@ -17,7 +17,7 @@ const PROJECT_TEMPLATE_PATH = path.resolve(__dirname, '../../../template/project
 
 function unsupportedError(name: string) {
   throw new Error(
-    `Unfortunately migration not support ${name} from subgraph, please remove or find alternative solutions`
+    `Unfortunately migration does not support option "${name}" from subgraph, please remove or find alternative solutions`
   );
 }
 
