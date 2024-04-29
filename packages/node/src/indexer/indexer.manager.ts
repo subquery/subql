@@ -25,6 +25,7 @@ import {
   BaseIndexerManager,
   ApiService,
   IBlock,
+  SandboxService,
 } from '@subql/node-core';
 import {
   StellarBlockWrapper,
@@ -44,21 +45,17 @@ import { StellarProjectDs } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from '../stellar/safe-api';
-import {
-  asSecondLayerHandlerProcessor_1_0_0,
-  DsProcessorService,
-} from './ds-processor.service';
+import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
-import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
-  SafeStellarProvider,
   StellarApi,
+  SafeStellarProvider,
   StellarBlockWrapper,
   ApiService,
   SubqlStellarDataSource,
@@ -69,12 +66,11 @@ export class IndexerManager extends BaseIndexerManager<
 > {
   protected isRuntimeDs = isRuntimeDs;
   protected isCustomDs = isCustomDs;
-  protected updateCustomProcessor = asSecondLayerHandlerProcessor_1_0_0;
 
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService,
+    sandboxService: SandboxService<SafeStellarProvider, StellarApi>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
@@ -107,19 +103,11 @@ export class IndexerManager extends BaseIndexerManager<
     );
   }
 
-  getBlockHeight(block: StellarBlockWrapper): number {
-    return block.block.sequence;
-  }
-
-  getBlockHash(block: StellarBlockWrapper): string {
-    return block.block.hash;
-  }
-
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(
     block: StellarBlockWrapper,
   ): Promise<SafeStellarProvider> {
-    // return this.apiService.safeApi(this.getBlockHeight(block));
+    // return this.apiService.safeApi(block.block.sequence);
     return null;
   }
 

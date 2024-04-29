@@ -13,7 +13,6 @@ import {
 } from '@subql/node-core';
 import { plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { cloneDeep } from 'lodash';
 import {
   StellarProjectDs,
   SubqueryProject,
@@ -21,31 +20,25 @@ import {
 import { DsProcessorService } from './ds-processor.service';
 
 @Injectable()
-export class DynamicDsService extends BaseDynamicDsService<StellarProjectDs> {
+export class DynamicDsService extends BaseDynamicDsService<
+  StellarProjectDs,
+  SubqueryProject
+> {
   constructor(
     private readonly dsProcessorService: DsProcessorService,
-    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') project: SubqueryProject,
   ) {
-    super();
+    super(project);
   }
 
   protected async getDatasource(
     params: DatasourceParams,
   ): Promise<StellarProjectDs> {
-    const t = this.project.templates.find(
-      (t) => t.name === params.templateName,
+    const dsObj = this.getTemplate<StellarProjectDs>(
+      params.templateName,
+      params.startBlock,
     );
-    if (!t) {
-      throw new Error(
-        `Unable to find matching template in project for name: "${params.templateName}"`,
-      );
-    }
-    const { name, ...template } = cloneDeep(t);
 
-    const dsObj = {
-      ...template,
-      startBlock: params.startBlock,
-    } as StellarProjectDs;
     try {
       if (isCustomDs(dsObj)) {
         dsObj.processor.options = {

@@ -5,13 +5,15 @@ import {
   BaseTemplateDataSource,
   IProjectNetworkConfig,
   CommonSubqueryProject,
-  DictionaryQueryEntry,
   FileReference,
   Processor,
   ProjectManifestV1_0_0,
   BaseHandler,
   BaseMapping,
   BaseDataSource,
+  SecondLayerHandlerProcessor_0_0_0,
+  SecondLayerHandlerProcessor_1_0_0,
+  DsProcessor,
 } from '@subql/types-core';
 import {ApiWrapper} from './interfaces';
 import {
@@ -81,15 +83,6 @@ export type StellarRuntimeHandlerInputMap = {
   [StellarHandlerKind.Operation]: StellarOperation;
   [StellarHandlerKind.Effects]: StellarEffect;
   [StellarHandlerKind.Event]: SorobanEvent;
-};
-
-type StellarRuntimeFilterMap = {
-  [StellarHandlerKind.Block]: StellarBlockFilter;
-  [StellarHandlerKind.Transaction]: StellarTransactionFilter;
-  [StellarHandlerKind.SorobanTransaction]: StellarTransactionFilter;
-  [StellarHandlerKind.Operation]: StellarOperationFilter;
-  [StellarHandlerKind.Effects]: StellarEffectFilter;
-  [StellarHandlerKind.Event]: SorobanEventFilter;
 };
 
 /**
@@ -281,28 +274,14 @@ export interface SubqlCustomDatasource<
   processor: Processor<O>;
 }
 
-export interface HandlerInputTransformer_0_0_0<
-  T extends StellarHandlerKind,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> {
-  (input: StellarRuntimeHandlerInputMap[T], ds: DS, api: ApiWrapper, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
-}
-
-export interface HandlerInputTransformer_1_0_0<
-  T extends StellarHandlerKind,
+export type SecondLayerHandlerProcessor<
+  K extends StellarHandlerKind,
   F extends Record<string, unknown>,
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> {
-  (params: {
-    input: StellarRuntimeHandlerInputMap[T];
-    ds: DS;
-    filter?: F;
-    api: ApiWrapper;
-    assets?: Record<string, string>;
-  }): Promise<F[]>; //  | SubstrateBuiltinDataSource
-}
+> =
+  | SecondLayerHandlerProcessor_0_0_0<StellarRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>
+  | SecondLayerHandlerProcessor_1_0_0<StellarRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>;
 
 export type SecondLayerHandlerProcessorArray<
   K extends string,
@@ -316,7 +295,7 @@ export type SecondLayerHandlerProcessorArray<
   | SecondLayerHandlerProcessor<StellarHandlerKind.Operation, F, T, DS>
   | SecondLayerHandlerProcessor<StellarHandlerKind.Effects, F, T, DS>;
 
-export interface SubqlDatasourceProcessor<
+export type SubqlDatasourceProcessor<
   K extends string,
   F extends Record<string, unknown>,
   DS extends SubqlCustomDatasource<K> = SubqlCustomDatasource<K>,
@@ -324,52 +303,7 @@ export interface SubqlDatasourceProcessor<
     string,
     SecondLayerHandlerProcessorArray<K, F, any, DS>
   >
-> {
-  kind: K;
-  validate(ds: DS, assets: Record<string, string>): void;
-  dsFilterProcessor(ds: DS, api: ApiWrapper): boolean;
-  handlerProcessors: P;
-}
-
-interface SecondLayerHandlerProcessorBase<
-  K extends StellarHandlerKind,
-  F extends Record<string, unknown>,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> {
-  baseHandlerKind: K;
-  baseFilter: StellarRuntimeFilterMap[K] | StellarRuntimeFilterMap[K][];
-  filterValidator: (filter?: F) => void;
-  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
-}
-
-export interface SecondLayerHandlerProcessor_0_0_0<
-  K extends StellarHandlerKind,
-  F extends Record<string, unknown>,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> extends SecondLayerHandlerProcessorBase<K, F, DS> {
-  specVersion: undefined;
-  transformer: HandlerInputTransformer_0_0_0<K, F, DS>;
-  filterProcessor: (filter: F | undefined, input: StellarRuntimeHandlerInputMap[K], ds: DS) => boolean;
-}
-
-export interface SecondLayerHandlerProcessor_1_0_0<
-  K extends StellarHandlerKind,
-  F extends Record<string, unknown>,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> extends SecondLayerHandlerProcessorBase<K, F, DS> {
-  specVersion: '1.0.0';
-  transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: StellarRuntimeHandlerInputMap[K]; ds: DS}) => boolean;
-}
-
-export type SecondLayerHandlerProcessor<
-  K extends StellarHandlerKind,
-  F extends Record<string, unknown>,
-  E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
-> = SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>;
+> = DsProcessor<DS, P, ApiWrapper>;
 
 /**
  * Represents a Stellar subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.

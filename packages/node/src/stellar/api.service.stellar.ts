@@ -80,20 +80,13 @@ export class StellarApiService extends ApiService<
       ? new SorobanServer(sorobanEndpoint)
       : undefined;
 
-    await this.createConnections(
-      network,
-      (endpoint) =>
-        StellarApiConnection.create(
-          endpoint,
-          this.fetchBlockBatches,
-          this.eventEmitter,
-          sorobanClient,
-        ),
-      //eslint-disable-next-line @typescript-eslint/require-await
-      async (connection: StellarApiConnection) => {
-        const api = connection.unsafeApi;
-        return api.getChainId();
-      },
+    await this.createConnections(network, (endpoint) =>
+      StellarApiConnection.create(
+        endpoint,
+        this.fetchBlockBatches,
+        this.eventEmitter,
+        sorobanClient,
+      ),
     );
 
     return this;

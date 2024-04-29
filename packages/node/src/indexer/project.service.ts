@@ -47,7 +47,7 @@ export class ProjectService extends BaseProjectService<
     @Inject(isMainThread ? Sequelize : 'Null') sequelize: Sequelize,
     @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IProjectUpgradeService')
-    protected readonly projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
+    projectUpgradeService: IProjectUpgradeService<SubqueryProject>,
     @Inject(isMainThread ? StoreService : 'Null') storeService: StoreService,
     nodeConfig: NodeConfig,
     dynamicDsService: DynamicDsService,

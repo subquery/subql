@@ -30,7 +30,6 @@ export class StellarApi implements ApiWrapper {
   private stellarClient: StellarServer;
 
   private chainId: string;
-  private genesisHash: string;
   private name: string;
 
   constructor(
