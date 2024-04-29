@@ -77,6 +77,6 @@ export function convertEthereumDs(ds: SubgraphDataSource): MigrateDatasourceKind
 export function convertEthereumTemplate(ds: SubgraphTemplate): MigrateDatasourceKind<EthTemplate> {
   const subqlTemplate = baseDsConversion<EthTemplate>(ds);
   subqlTemplate.options = {abi: ds.source.abi};
-  subqlTemplate.name = 'eth-template-name';
+  subqlTemplate.name = ds.name;
   return subqlTemplate;
 }

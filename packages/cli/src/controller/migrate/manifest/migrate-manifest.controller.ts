@@ -3,7 +3,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import {NETWORK_FAMILY} from '@subql/common';
 import {CommonSubqueryProject} from '@subql/types-core';
 import {upperFirst} from 'lodash';
 import YAML from 'yaml';
@@ -11,7 +10,15 @@ import {findRunnerByNetworkFamily, prepareDirPath, renderTemplate} from '../../.
 import {TemplateKind} from '../../codegen-controller';
 import {graphToSubqlNetworkFamily, networkConverters} from '../constants';
 import {getChainIdByNetworkName} from '../migrate-controller';
-import {MigrateDatasourceKind, SubgraphDataSource, SubgraphProject, SubgraphTemplate, ChainInfo} from '../types';
+import {
+  MigrateDatasourceKind,
+  SubgraphDataSource,
+  SubgraphProject,
+  SubgraphTemplate,
+  ChainInfo,
+  DsConvertFunction,
+  TemplateConvertFunction,
+} from '../types';
 
 const PROJECT_TEMPLATE_PATH = path.resolve(__dirname, '../../../template/project.ts.ejs');
 
@@ -102,6 +109,12 @@ export async function migrateManifest(chainInfo: ChainInfo, subgraphManifest: Su
  * @param subgraphManifest
  */
 function graphManifestToSubqlManifest(chainInfo: ChainInfo, subgraphManifest: SubgraphProject): CommonSubqueryProject {
+  const networkConverter = networkConverters[chainInfo.networkFamily];
+
+  if (!networkConverter || !networkConverter.templateConverter || !networkConverter.dsConverter) {
+    throw new Error(`${chainInfo.networkFamily} is missing datasource/template convert methods for migration.`);
+  }
+
   return {
     network: {chainId: chainInfo.chainId, endpoint: ''},
     name: subgraphManifest.name,
@@ -111,34 +124,26 @@ function graphManifestToSubqlManifest(chainInfo: ChainInfo, subgraphManifest: Su
       query: {version: '^', name: '@subql/query'},
     },
     version: subgraphManifest.specVersion,
-    dataSources: subgraphDsToSubqlDs(chainInfo.networkFamily, subgraphManifest.dataSources),
+    dataSources: subgraphDsToSubqlDs(networkConverter.dsConverter, subgraphManifest.dataSources),
     description: subgraphManifest.description,
     schema: subgraphManifest.schema,
     repository: '',
     templates: subgraphManifest.templates
-      ? subgraphTemplateToSubqlTemplate(chainInfo.networkFamily, subgraphManifest.templates)
+      ? subgraphTemplateToSubqlTemplate(networkConverter.templateConverter, subgraphManifest.templates)
       : undefined,
   };
 }
 
 export function subgraphTemplateToSubqlTemplate(
-  network: NETWORK_FAMILY,
+  convertFunction: TemplateConvertFunction,
   subgraphTemplates: SubgraphTemplate[]
 ): TemplateKind[] {
-  const convertFunction = networkConverters[network as NETWORK_FAMILY]?.templateConverter;
-  if (!convertFunction) {
-    throw new Error(`${network} does not support migration of templates.`);
-  }
   return subgraphTemplates.map((t) => convertFunction(t));
 }
 
 export function subgraphDsToSubqlDs(
-  network: NETWORK_FAMILY,
+  convertFunction: DsConvertFunction,
   subgraphDs: SubgraphDataSource[]
 ): MigrateDatasourceKind[] {
-  const convertFunction = networkConverters[network]?.dsConverter;
-  if (!convertFunction) {
-    throw new Error(`${network} is not supported with migrations`);
-  }
   return subgraphDs.map((ds) => convertFunction(ds));
 }

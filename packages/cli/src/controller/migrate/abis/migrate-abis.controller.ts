@@ -20,7 +20,9 @@ async function copyAbiFilesToTargetPathAsync(abiFiles: string[], targetPath: str
         fs.promises.copyFile(file, targetFilePath);
       })
     );
-    console.log('ABI files copied successfully.');
+    console.log(
+      `ABI files used in project manifest copied successfully, please copy other required ABI files to ${targetPath}`
+    );
   } catch (error) {
     console.error('Error copying ABI files:', error);
   }

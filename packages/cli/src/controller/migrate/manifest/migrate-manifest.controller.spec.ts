@@ -4,6 +4,7 @@
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
 import {EthereumDatasourceKind} from '@subql/types-ethereum';
+import {networkConverters} from '../constants';
 import {SubgraphProject} from '../types';
 import {
   extractNetworkFromManifest,
@@ -26,21 +27,22 @@ describe('migrate controller', () => {
   });
 
   it(`subgraphDsToSubqlDs`, () => {
-    expect(subgraphDsToSubqlDs(NETWORK_FAMILY.ethereum, subgraph.dataSources)[0].startBlock).toBe(7844214);
-    expect(subgraphDsToSubqlDs(NETWORK_FAMILY.ethereum, subgraph.dataSources)[0].kind).toBe(
+    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
+    expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].startBlock).toBe(7844214);
+    expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].kind).toBe(
       EthereumDatasourceKind.Runtime
     );
-    expect(subgraphDsToSubqlDs(NETWORK_FAMILY.ethereum, subgraph.dataSources)[0].endBlock).toBeUndefined();
-
-    expect(() => subgraphDsToSubqlDs(NETWORK_FAMILY.algorand, subgraph.dataSources)[0].kind).toThrow();
+    expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].endBlock).toBeUndefined();
   });
 
   it(`subgraphTemplateToSubqlTemplate`, () => {
+    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
+
     const testTemplateDataSource = subgraph.dataSources;
     delete testTemplateDataSource[0].source.address;
     delete testTemplateDataSource[0].source.startBlock;
-    expect(subgraphTemplateToSubqlTemplate(NETWORK_FAMILY.ethereum, testTemplateDataSource)[0].name).toBe(
-      'eth-template-name'
+    expect(subgraphTemplateToSubqlTemplate(networkConverter.templateConverter, testTemplateDataSource)[0].name).toBe(
+      'Poap'
     );
   });
 

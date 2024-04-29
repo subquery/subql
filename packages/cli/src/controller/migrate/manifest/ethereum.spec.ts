@@ -15,7 +15,7 @@ describe('migrate eth manifest', () => {
     expect(subqlDs[0].options).toStrictEqual({abi: 'Poap', address: '0x22C1f6050E56d2876009903609a2cC3fEf83B415'});
     expect(subqlDs[0].mapping.handlers[0].migrateHandlerType).toStrictEqual('EthereumHandlerKind.Event');
     expect(subqlDs[0].mapping.handlers[0].handler).toStrictEqual('handleEventToken');
-    expect(subqlDs[0].mapping.handlers[1].filter).toStrictEqual({topics: ['EventToken(uint256,uint256)']});
+    expect(subqlDs[0].mapping.handlers[0].filter).toStrictEqual({topics: ['EventToken(uint256,uint256)']});
     // converted handler should in same order
     expect(subqlDs[0].mapping.handlers[1].handler).toStrictEqual('handleTransfer');
   });
