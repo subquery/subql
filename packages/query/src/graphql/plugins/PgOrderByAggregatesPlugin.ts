@@ -9,6 +9,7 @@
 import {AggregateSpec} from '@graphile/pg-aggregates/dist/interfaces';
 import type {SQL, QueryBuilder, PgClass, PgEntity} from '@subql/x-graphile-build-pg';
 import type {Plugin} from 'graphile-build';
+import {hasBlockRange, makeRangeQuery} from './historical/utils';
 
 type OrderBySpecIdentity = string | SQL | ((options: {queryBuilder: QueryBuilder}) => SQL);
 
@@ -79,21 +80,32 @@ const OrderByAggregatesPlugin: Plugin = (builder) => {
 
       const tableAlias = sql.identifier(Symbol(`${foreignTable.namespaceName}.${foreignTable.name}`));
 
+      const supportsHistorical = hasBlockRange(pgIntrospection);
+      const buildConditions = (queryBuilder: QueryBuilder): SQL[] => {
+        const foreignTableAlias = queryBuilder.getTableAlias();
+        const conditions: SQL[] = [];
+        keys.forEach((key, i) => {
+          conditions.push(
+            sql.fragment`${tableAlias}.${sql.identifier(key.name)} = ${foreignTableAlias}.${sql.identifier(
+              foreignKeys[i].name
+            )}`
+          );
+        });
+
+        if (queryBuilder.context.args?.blockHeight && supportsHistorical) {
+          conditions.push(makeRangeQuery(tableAlias, queryBuilder.context.args.blockHeight, sql));
+        }
+
+        return conditions;
+      };
+
       // Add count
       memo = build.extend(
         memo,
         orderByAscDesc(
           inflection.orderByCountOfManyRelationByKeys(keys, table, foreignTable, constraint),
           ({queryBuilder}) => {
-            const foreignTableAlias = queryBuilder.getTableAlias();
-            const conditions: SQL[] = [];
-            keys.forEach((key, i) => {
-              conditions.push(
-                sql.fragment`${tableAlias}.${sql.identifier(key.name)} = ${foreignTableAlias}.${sql.identifier(
-                  foreignKeys[i].name
-                )}`
-              );
-            });
+            const conditions = buildConditions(queryBuilder);
             return sql.fragment`(select count(*) from ${sql.identifier(
               table.namespaceName,
               table.name
@@ -115,15 +127,8 @@ const OrderByAggregatesPlugin: Plugin = (builder) => {
             orderByAscDesc(
               inflection.orderByColumnAggregateOfManyRelationByKeys(keys, table, foreignTable, constraint, spec, attr),
               ({queryBuilder}) => {
-                const foreignTableAlias = queryBuilder.getTableAlias();
-                const conditions: SQL[] = [];
-                keys.forEach((key, i) => {
-                  conditions.push(
-                    sql.fragment`${tableAlias}.${sql.identifier(key.name)} = ${foreignTableAlias}.${sql.identifier(
-                      foreignKeys[i].name
-                    )}`
-                  );
-                });
+                const conditions = buildConditions(queryBuilder);
+
                 return sql.fragment`(select ${spec.sqlAggregateWrap(
                   sql.fragment`${tableAlias}.${sql.identifier(attr.name)}`
                 )} from ${sql.identifier(table.namespaceName, table.name)} ${tableAlias} where (${sql.join(
