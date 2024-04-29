@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
 
+## [0.7.0] - 2024-04-24
 ### Added
 - GetOptions type with support for ordering store methods (#2325)
+- Generic ds processor types from types (#2357)
 
 ## [0.6.0] - 2024-03-28
 ### Changed
@@ -40,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.7.0...HEAD
+[0.7.0]: https://github.com/subquery/subql/compare/types-core/0.6.0...types-core/0.7.0
 [0.6.0]: https://github.com/subquery/subql/compare/types-core/0.5.0...types-core/0.6.0
 [0.5.0]: https://github.com/subquery/subql/compare/types-core/0.4.0...types-core/0.5.0
 [0.4.0]: https://github.com/subquery/subql/compare/types-core/0.3.0...types-core/0.4.0

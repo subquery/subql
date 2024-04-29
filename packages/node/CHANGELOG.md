@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.1] - 2024-04-29
+### Fixed
+- Startup error with DS processors (`this.isCustomDs is not a function`) (#2369)
+
+## [4.2.0] - 2024-04-24
+### Changed
+- Use code that has been moved to node core, tidy up dependencies (#2357)
+
 ## [4.1.0] - 2024-04-12
 ### Removed
 - Unused `@subql/testing` dependency (#2346)
@@ -1160,7 +1168,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/4.2.1...HEAD
+[4.2.1]: https://github.com/subquery/subql/compare/node/4.2.0...node/4.2.1
+[4.2.0]: https://github.com/subquery/subql/compare/node/4.1.0...node/4.2.0
 [4.1.0]: https://github.com/subquery/subql/compare/node/4.0.1...node/4.1.0
 [4.0.1]: https://github.com/subquery/subql/compare/node/4.0.0...node/4.0.1
 [4.0.0]: https://github.com/subquery/subql/compare/node/3.10.0...node/4.0.0

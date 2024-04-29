@@ -32,9 +32,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   protected abstract getFinalizedHeight(): Promise<number>;
   protected abstract getBestHeight(): Promise<number>;
 
-  // Genesis hash is required for dictionary validation
-  protected abstract getGenesisHash(): string;
-
   // The rough interval at which new blocks are produced
   protected abstract getChainInterval(): Promise<number>;
   // This return modulo numbers with given dataSources (number in the filters)

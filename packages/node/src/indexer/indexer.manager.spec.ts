@@ -15,6 +15,7 @@ import {
   StoreCacheService,
   IProjectUpgradeService,
   InMemoryCacheService,
+  SandboxService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -25,7 +26,6 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
-import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 jest.mock('@subql/x-sequelize', () => {
@@ -182,7 +182,6 @@ function createIndexerManager(
     storeCache,
   );
   const sandboxService = new SandboxService(
-    apiService,
     storeService,
     cacheService,
     nodeConfig,

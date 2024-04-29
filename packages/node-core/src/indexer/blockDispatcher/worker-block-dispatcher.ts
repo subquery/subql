@@ -12,8 +12,6 @@ import {IndexerEvent} from '../../events';
 import {IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
-import {DynamicDsService} from '../dynamic-ds.service';
-import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {ISubqueryProject, IProjectService} from '../types';
@@ -57,12 +55,10 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     eventEmitter: EventEmitter2,
     projectService: IProjectService<DS>,
     projectUpgradeService: IProjectUpgradeService,
-    smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    dynamicDsService: DynamicDsService<DS>,
     private createIndexerWorker: () => Promise<W>
   ) {
     super(
@@ -72,11 +68,9 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       projectService,
       projectUpgradeService,
       initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
-      smartBatchService,
       storeService,
       storeCacheService,
-      poiSyncService,
-      dynamicDsService
+      poiSyncService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

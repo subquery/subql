@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.3] - 2024-04-29
+### Fixed
+- Aggregate queries with historical not filtering by block height (#2367)
+
+## [2.10.1] - 2024-04-24
+### Changed
+- Executable path in docker (#2344)
+
 ## [2.10.0] - 2024-03-05
 ### Added
 - Fulltext search plugin to sanitise search input (#2280)
@@ -258,9 +266,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
--  annotation is now supported in 
-  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
-  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
+- annotation is now supported in
+- We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+- Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.4.0] - 2021-03-25
 ### Added
@@ -287,7 +295,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.3...HEAD
+[2.10.3]: https://github.com/subquery/subql/compare/query/2.10.1...query/2.10.3
+[2.10.1]: https://github.com/subquery/subql/compare/query/2.10.0...query/2.10.1
 [2.10.0]: https://github.com/subquery/subql/compare/query/2.9.1...query/2.10.0
 [2.9.1]: https://github.com/subquery/subql/compare/query/2.9.0...query/2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/query/2.8.0...query/2.9.0
