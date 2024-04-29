@@ -1,55 +1,47 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
+import {EthereumDatasourceKind} from '@subql/types-ethereum';
 import {SubgraphProject} from '../types';
-import {extractNetworkFromManifest} from './migrate-manifest.controller';
+import {
+  extractNetworkFromManifest,
+  readSubgraphManifest,
+  subgraphDsToSubqlDs,
+  subgraphTemplateToSubqlTemplate,
+} from './migrate-manifest.controller';
+
+const testProjectPath = '../../../../test/migrate/testProject';
 
 describe('migrate controller', () => {
   let subgraph: SubgraphProject;
 
   beforeEach(() => {
-    subgraph = {
-      specVersion: '0.0.4',
-      description: 'POAP',
-      repository: 'https://github.com/poap-xyz/poap-mainnet-subgraph',
-      schema: {
-        file: './schema.graphql',
-      },
-      dataSources: [
-        {
-          kind: 'ethereum/contract',
-          name: 'Poap',
-          network: 'mainnet',
-          source: {
-            address: '0x22C1f6050E56d2876009903609a2cC3fEf83B415',
-            abi: 'Poap',
-            startBlock: 7844214,
-          },
-
-          mapping: {
-            kind: 'ethereum/events',
-            apiVersion: '0.0.6',
-            language: 'wasm/assemblyscript',
-            entities: ['EventToken', 'Transfer'],
-            abis: [{name: 'Poap', file: './abis/Poap.json'}],
-            eventHandlers: [
-              {event: 'EventToken(uint256,uint256)', handler: 'handleEventToken'},
-              {event: 'Transfer(indexed address,indexed address,indexed uint256)', handler: 'handleTransfer'},
-            ],
-            file: './src/mapping.ts',
-          },
-        },
-      ],
-    };
+    subgraph = readSubgraphManifest(path.join(__dirname, testProjectPath, 'subgraph.yaml'));
   });
 
-  it(`subgraphTemplateToSubqlTemplate`, () => {
-    //TODO
+  it(`readSubgraphManifest from a given subgraph.yaml`, () => {
+    expect(subgraph.schema).toStrictEqual({file: './schema.graphql'});
   });
 
   it(`subgraphDsToSubqlDs`, () => {
-    //TODO
+    expect(subgraphDsToSubqlDs(NETWORK_FAMILY.ethereum, subgraph.dataSources)[0].startBlock).toBe(7844214);
+    expect(subgraphDsToSubqlDs(NETWORK_FAMILY.ethereum, subgraph.dataSources)[0].kind).toBe(
+      EthereumDatasourceKind.Runtime
+    );
+    expect(subgraphDsToSubqlDs(NETWORK_FAMILY.ethereum, subgraph.dataSources)[0].endBlock).toBeUndefined();
+
+    expect(() => subgraphDsToSubqlDs(NETWORK_FAMILY.algorand, subgraph.dataSources)[0].kind).toThrow();
+  });
+
+  it(`subgraphTemplateToSubqlTemplate`, () => {
+    const testTemplateDataSource = subgraph.dataSources;
+    delete testTemplateDataSource[0].source.address;
+    delete testTemplateDataSource[0].source.startBlock;
+    expect(subgraphTemplateToSubqlTemplate(NETWORK_FAMILY.ethereum, testTemplateDataSource)[0].name).toBe(
+      'eth-template-name'
+    );
   });
 
   it(`extractNetworkFromManifest, should extract network info, throw if network not same`, () => {

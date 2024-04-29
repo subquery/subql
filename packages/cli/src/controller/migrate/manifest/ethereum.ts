@@ -69,6 +69,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
 export function convertEthereumDs(ds: SubgraphDataSource): MigrateDatasourceKind<EthereumDs> {
   const subqlDs = baseDsConversion<EthereumDs>(ds);
   subqlDs.startBlock = ds.source.startBlock;
+  subqlDs.endBlock = ds.source.endBlock;
   subqlDs.options = {abi: ds.source.abi, address: ds.source.address};
   return subqlDs;
 }
@@ -76,5 +77,6 @@ export function convertEthereumDs(ds: SubgraphDataSource): MigrateDatasourceKind
 export function convertEthereumTemplate(ds: SubgraphTemplate): MigrateDatasourceKind<EthTemplate> {
   const subqlTemplate = baseDsConversion<EthTemplate>(ds);
   subqlTemplate.options = {abi: ds.source.abi};
+  subqlTemplate.name = 'eth-template-name';
   return subqlTemplate;
 }

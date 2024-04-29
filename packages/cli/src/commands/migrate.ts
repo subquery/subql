@@ -23,6 +23,7 @@ import {
   migrateSchema,
   prepareProject,
   readSubgraphManifest,
+  subgraphValidation,
 } from '../controller/migrate';
 
 export default class Migrate extends Command {
@@ -53,8 +54,6 @@ export default class Migrate extends Command {
       const {branch, link} = gitMatch;
       subgraphDir = tempSubgraphDir;
       console.log(`Pull subgraph project from git: ${link}, branch: ${branch ?? 'default branch'}`);
-      // TODO remove
-      console.log(subgraphDir);
       await git().clone(link, subgraphDir, branch ? ['-b', branch, '--single-branch'] : ['--single-branch']);
     } else if (direMatch) {
       subgraphDir = subgraphPath;
@@ -70,6 +69,7 @@ export default class Migrate extends Command {
     try {
       const subgraphManifest = readSubgraphManifest(subgraphManifestPath);
       improveProjectInfo(subgraphDir, subgraphManifest);
+      subgraphValidation(subgraphManifest);
       const chainInfo = extractNetworkFromManifest(subgraphManifest);
       await prepareProject(chainInfo, subqlDir);
       await migrateAbis(subgraphManifest, subgraphDir, subqlDir);

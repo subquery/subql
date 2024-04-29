@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
 import {cloneProjectTemplate, fetchExampleProjects} from '../init-controller';
-import {graphNetworkNameChainId, networkConverters} from './constants';
+import {graphNetworkNameChainId} from './constants';
 import {ChainInfo, SubgraphProject} from './types';
 
 /**
@@ -42,6 +42,7 @@ export function improveProjectInfo(subgraphDir: string, subgraphManifest: Subgra
   subgraphManifest.name = thegraphPackage.name.replace('subgraph', 'subquery');
   subgraphManifest.author = thegraphPackage.author;
   subgraphManifest.description = subgraphManifest.description ?? thegraphPackage.description;
+  subgraphManifest.repository = '';
 }
 
 // Pull a network starter, as base project. Then mapping, manifest, schema can be overridden, copy over abi files

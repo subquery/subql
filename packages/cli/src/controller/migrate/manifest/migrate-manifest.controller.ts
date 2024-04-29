@@ -15,6 +15,21 @@ import {MigrateDatasourceKind, SubgraphDataSource, SubgraphProject, SubgraphTemp
 
 const PROJECT_TEMPLATE_PATH = path.resolve(__dirname, '../../../template/project.ts.ejs');
 
+function unsupportedError(name: string) {
+  throw new Error(
+    `Unfortunately migration not support ${name} from subgraph, please remove or find alternative solutions`
+  );
+}
+
+// validate supported subgraph features
+export function subgraphValidation(subgraphProject: SubgraphProject): void {
+  if (subgraphProject.features) unsupportedError(`features`);
+  if (subgraphProject.graft) unsupportedError(`graft`);
+  if (subgraphProject.dataSources.find((ds) => ds.context)) {
+    unsupportedError(`features`);
+  }
+}
+
 export function readSubgraphManifest(inputPath: string): SubgraphProject {
   try {
     const subgraphManifest: SubgraphProject = YAML.parse(fs.readFileSync(inputPath, 'utf8'));
@@ -110,7 +125,7 @@ export function subgraphTemplateToSubqlTemplate(
   network: NETWORK_FAMILY,
   subgraphTemplates: SubgraphTemplate[]
 ): TemplateKind[] {
-  const convertFunction = networkConverters[network as NETWORK_FAMILY].templateConverter;
+  const convertFunction = networkConverters[network as NETWORK_FAMILY]?.templateConverter;
   if (!convertFunction) {
     throw new Error(`${network} does not support migration of templates.`);
   }
@@ -121,7 +136,7 @@ export function subgraphDsToSubqlDs(
   network: NETWORK_FAMILY,
   subgraphDs: SubgraphDataSource[]
 ): MigrateDatasourceKind[] {
-  const convertFunction = networkConverters[network].dsConverter;
+  const convertFunction = networkConverters[network]?.dsConverter;
   if (!convertFunction) {
     throw new Error(`${network} is not supported with migrations`);
   }

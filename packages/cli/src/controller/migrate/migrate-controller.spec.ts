@@ -1,8 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {NETWORK_FAMILY} from '@subql/common';
-import {extractGitInfo, getChainIdByNetworkName} from './migrate-controller';
+import fs from 'fs';
+import path from 'path';
+import {makeTempDir, NETWORK_FAMILY} from '@subql/common';
+import {extractGitInfo, getChainIdByNetworkName, improveProjectInfo, prepareProject} from './migrate-controller';
+import {TestSubgraph} from './migrate.fixtures';
+
+const testProjectPath = '../../../test/migrate/testProject';
 
 describe('Migrate controller', () => {
   it('should able to extract git info from given link', () => {
@@ -44,16 +49,27 @@ describe('Migrate controller', () => {
 
   it('should get chain id, getChainIdByNetworkName', () => {
     expect(getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'mainnet')).toBe('1');
-    expect(getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'newnetwork')).toThrow();
+    expect(() => getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'newnetwork')).toThrow();
     // not support yet
-    expect(getChainIdByNetworkName(NETWORK_FAMILY.algorand, 'algorand')).toThrow();
+    expect(() => getChainIdByNetworkName(NETWORK_FAMILY.algorand, 'algorand')).toThrow();
   });
 
-  it('prepareProject', () => {
-    //TODO
-  });
+  it('prepareProject', async () => {
+    const subqlDir = await makeTempDir();
+    await prepareProject({chainId: '1', networkFamily: NETWORK_FAMILY.ethereum}, subqlDir);
+    expect(fs.existsSync(path.join(subqlDir, 'project.ts'))).toBeTruthy();
+    fs.rmSync(subqlDir, {recursive: true, force: true});
+
+    const subqlDir2 = await makeTempDir();
+    await expect(prepareProject({chainId: '2', networkFamily: NETWORK_FAMILY.ethereum}, subqlDir2)).rejects.toThrow();
+    fs.rmSync(subqlDir2, {recursive: true, force: true});
+  }, 100000);
 
   it('improveProjectInfo', () => {
-    //TODO
+    const testSubgraph = TestSubgraph;
+    expect(TestSubgraph.name).toBeUndefined();
+    improveProjectInfo(path.join(__dirname, testProjectPath), testSubgraph);
+    expect(TestSubgraph.name).toBe('poap-mainnet-subquery');
+    expect(TestSubgraph.repository).toBe('');
   });
 });

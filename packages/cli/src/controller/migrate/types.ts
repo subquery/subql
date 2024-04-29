@@ -26,6 +26,7 @@ export interface SubgraphTemplateSource {
 export interface SubgraphSource extends SubgraphTemplateSource {
   address: string;
   startBlock: number;
+  endBlock?: number;
 }
 
 export interface SubgraphDataSourceBase {
@@ -33,6 +34,7 @@ export interface SubgraphDataSourceBase {
   name: string;
   network: string;
   mapping: SubgraphMapping;
+  context?: Record<string, {type: string; data: boolean | string}>;
 }
 
 export interface SubgraphDataSource extends SubgraphDataSourceBase {
@@ -56,6 +58,8 @@ interface SubgraphMapping {
 }
 
 export interface SubgraphProject {
+  features?: string[];
+  graft?: {base: string; block: number};
   name?: string;
   author?: string;
   specVersion: string;
