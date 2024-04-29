@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Dictionary v2 transactions query not including address (#281)
 
+### Changed
+- Improved error message if genesis block is null (#282)
+
 ## [4.1.1] - 2024-04-16
 ### Fixed
 - Dictionary v2 query filter with transactions (#278)

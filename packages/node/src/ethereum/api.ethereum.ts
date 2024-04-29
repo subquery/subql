@@ -194,7 +194,7 @@ export class EthereumApi implements ApiWrapper {
     try {
       // We set the timeout here because there is a bug in ethers where it will never resolve
       // It was happening with arbitrum on a syncing node
-      const result = await timeout(this.client.getBlock(tag), 2);
+      await timeout(this.client.getBlock(tag), 2);
 
       return true;
     } catch (e) {
@@ -224,7 +224,11 @@ export class EthereumApi implements ApiWrapper {
       }
     };
 
-    return this.client.getBlock(tag());
+    const block = await this.client.getBlock(tag());
+    if (block === null) {
+      throw new Error(`Getting genesis block returned null from tag: ${tag()}`);
+    }
+    return block;
   }
 
   async getFinalizedBlock(): Promise<Block> {
