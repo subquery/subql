@@ -151,6 +151,12 @@ export function getYargsOption() {
         type: 'boolean',
         default: false,
       },
+      compression: {
+        demandOption: false,
+        describe: 'Enable gzip compression on responses',
+        type: 'boolean',
+        default: true,
+      },
     });
 }
 

@@ -190,7 +190,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
     app.use(ExpressPinoLogger(PinoConfig));
     app.use(limitBatchedQueries);
-    app.use(compression());
+    if (argv.compression) {
+      app.use(compression());
+    }
 
     await server.start();
     server.applyMiddleware({
