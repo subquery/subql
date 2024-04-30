@@ -7,6 +7,7 @@ import {
   DictionaryQueryEntry as DictionaryV1QueryEntry,
 } from '@subql/types-core';
 import {
+  EthereumBlockFilter,
   EthereumHandlerKind,
   EthereumLogFilter,
   EthereumTransactionFilter,
@@ -172,7 +173,10 @@ export function buildDictionaryV1QueryEntries(
 
       switch (handler.kind) {
         case EthereumHandlerKind.Block:
-          return [];
+          if (handler.filter.modulo === undefined) {
+            return [];
+          }
+          break;
         case EthereumHandlerKind.Call: {
           const filter = handler.filter as EthereumTransactionFilter;
           if (

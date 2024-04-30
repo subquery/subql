@@ -143,6 +143,29 @@ function eventFilterToDictionaryCondition(
   return logConditions;
 }
 
+function sanitiseDictionaryConditions(
+  dictionaryConditions: EthDictionaryV2QueryEntry,
+): EthDictionaryV2QueryEntry {
+  if (!dictionaryConditions.logs.length) {
+    delete dictionaryConditions.logs;
+  } else {
+    dictionaryConditions.logs = uniqBy(dictionaryConditions.logs, (log) =>
+      JSON.stringify(log),
+    );
+  }
+
+  if (!dictionaryConditions.transactions.length) {
+    delete dictionaryConditions.transactions;
+  } else {
+    dictionaryConditions.transactions = uniqBy(
+      dictionaryConditions.transactions,
+      (tx) => JSON.stringify(tx),
+    );
+  }
+
+  return dictionaryConditions;
+}
+
 export function buildDictionaryV2QueryEntry(
   dataSources: GroupedEthereumProjectDs[],
 ): EthDictionaryV2QueryEntry {
@@ -154,11 +177,14 @@ export function buildDictionaryV2QueryEntry(
   for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
       // No filters, cant use dictionary
-      if (!handler.filter) return dictionaryConditions;
+      if (!handler.filter) return {};
 
       switch (handler.kind) {
         case EthereumHandlerKind.Block:
-          return dictionaryConditions;
+          if (handler.filter.modulo === undefined) {
+            return {};
+          }
+          break;
         case EthereumHandlerKind.Call: {
           const filter = handler.filter as EthereumTransactionFilter;
           if (
@@ -194,23 +220,7 @@ export function buildDictionaryV2QueryEntry(
     }
   }
 
-  if (!dictionaryConditions.logs.length) {
-    delete dictionaryConditions.logs;
-  } else {
-    dictionaryConditions.logs = uniqBy(dictionaryConditions.logs, (log) =>
-      JSON.stringify(log),
-    );
-  }
-
-  if (!dictionaryConditions.transactions.length) {
-    delete dictionaryConditions.transactions;
-  } else {
-    dictionaryConditions.transactions = uniqBy(
-      dictionaryConditions.transactions,
-      (tx) => JSON.stringify(tx),
-    );
-  }
-  return dictionaryConditions;
+  return sanitiseDictionaryConditions(dictionaryConditions);
 }
 
 export class EthDictionaryV2 extends DictionaryV2<

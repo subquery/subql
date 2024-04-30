@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Dictionary v2 transactions query not including address (#281)
+- Dictionary v1 and v2 queries with modulo filters (#283)
 
 ### Changed
 - Improved error message if genesis block is null (#282)

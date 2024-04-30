@@ -66,8 +66,8 @@ export interface RawEthLog {
  * Eth dictionary RPC request filter conditions
  */
 export interface EthDictionaryV2QueryEntry extends DictionaryV2QueryEntry {
-  logs: EthDictionaryLogConditions[];
-  transactions: EthDictionaryTxConditions[];
+  logs?: EthDictionaryLogConditions[];
+  transactions?: EthDictionaryTxConditions[];
 }
 
 export interface EthDictionaryLogConditions {

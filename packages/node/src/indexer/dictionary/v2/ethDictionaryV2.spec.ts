@@ -570,4 +570,45 @@ describe('buildDictionaryV2QueryEntry', () => {
       ],
     });
   });
+
+  it('builds a filter when theres a block handler with modulo filter', () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      assets: new Map(),
+      options: {
+        abi: 'erc20',
+        address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+      },
+      startBlock: 1,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleBlock',
+            kind: EthereumHandlerKind.Block,
+            filter: {
+              modulo: 100,
+            },
+          },
+          {
+            handler: 'handleTx',
+            kind: EthereumHandlerKind.Call,
+            filter: {
+              function: 'setminimumStakingAmount(uint256 amount)',
+            },
+          },
+        ],
+      },
+    };
+    const result = buildDictionaryV2QueryEntry([ds]);
+
+    expect(result).toEqual({
+      transactions: [
+        {
+          to: ['0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'],
+          data: ['0x7ef9ea98'],
+        },
+      ],
+    });
+  });
 });

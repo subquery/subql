@@ -337,7 +337,54 @@ describe('buildDictionaryV1QueryEntries', () => {
         },
       ]);
     });
+
+    it('builds a filter when theres a block handler with modulo filter', () => {
+      const ds: SubqlRuntimeDatasource = {
+        kind: EthereumDatasourceKind.Runtime,
+        assets: new Map(),
+        options: {
+          abi: 'erc20',
+        },
+        startBlock: 1,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              handler: 'handleTransfer',
+              kind: EthereumHandlerKind.Call,
+              filter: {
+                to: '0xabcde',
+                function: 'approve(address spender, uint256 rawAmount)',
+              },
+            },
+            {
+              handler: 'handleBlock',
+              kind: EthereumHandlerKind.Block,
+              filter: {
+                modulo: 200,
+              },
+            },
+          ],
+        },
+      };
+
+      const result = buildDictionaryV1QueryEntries([ds]);
+      expect(result).toEqual([
+        {
+          entity: 'evmTransactions',
+          conditions: [
+            {
+              field: 'to',
+              matcher: 'equalTo',
+              value: '0xabcde',
+            },
+            { field: 'func', matcher: 'equalTo', value: '0x095ea7b3' },
+          ],
+        },
+      ]);
+    });
   });
+
   describe('Correct dictionary query with dynamic ds', () => {
     it('Build correct erc1155 transfer single query', () => {
       const ds: SubqlRuntimeDatasource = {
