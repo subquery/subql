@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Expose option to add workerData to workers (#2372)
 
+### Changed
+- Simplify logger function (#2374)
+
 ## [10.0.0] - 2024-04-24
 ### Added
 - Various pieces of code from node and generalised them (#2357)
