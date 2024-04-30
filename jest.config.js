@@ -25,9 +25,14 @@ module.exports = {
     'packages/common/src/**/*.ts',
     'packages/common-substrate/src/**/*.ts',
     'packages/node-core/src/**/*.ts',
-    'packages/types-core/src/**/*.ts',
     'packages/node/src/**/*.ts',
     'packages/utils/src/**/*.ts',
+    '!**/*.d.ts', // Exclude TypeScript definition files
+    '!**/node_modules/**', // Exclude files in node_modules
+    '!**/interfaces/**', // Exclude interfaces directory
+    '!**/types/**', // Exclude types directory
+    '!**/types.ts', // Exclude types.ts
+    '!**/interface.ts', // Exclude interface.ts
   ],
 
   // The directory where Jest should output its coverage files
