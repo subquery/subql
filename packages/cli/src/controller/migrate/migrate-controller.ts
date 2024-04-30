@@ -51,8 +51,6 @@ export async function prepareProject(chainInfo: ChainInfo, subqlDir: string): Pr
     chainInfo.chainId
   );
   const templateProject = exampleProjects.find((p) => p.name.includes('-starter'));
-  // Alternative approach: We can either do this, but require maintenance another template
-  // const templateProject = subqlNetworkTemplateNetwork[chainInfo.networkFamily][chainInfo.chainId]
   if (!templateProject) {
     throw new Error(
       `Could not find subquery template for network ${chainInfo.networkFamily} chain ${chainInfo.chainId}`
