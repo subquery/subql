@@ -72,7 +72,7 @@ export default class Migrate extends Command {
       );
     } else if (direMatch) {
       if (gitSubDirectory) {
-        this.error(`Git sub directory is only work with git path, not local directory `);
+        this.error(`Git sub directory only works with git path, not local directories.`);
       }
       subgraphDir = subgraphPath;
     } else {
