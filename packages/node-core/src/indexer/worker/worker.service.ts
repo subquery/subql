@@ -1,14 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {threadId} from 'node:worker_threads';
 import {BaseDataSource} from '@subql/types-core';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {IBlock, IProjectService} from '../types';
-import {BlockUnavailableError, isBlockUnavailableError} from './utils';
+import {isBlockUnavailableError} from './utils';
 
 export type FetchBlockResponse = {specVersion: number; parentHash: string} | undefined;
 
@@ -19,7 +18,7 @@ export type WorkerStatusResponse = {
   toFetchBlocks: number;
 };
 
-const logger = getLogger(`Worker Service #${threadId}`);
+const logger = getLogger(`WorkerService`);
 
 export abstract class BaseWorkerService<
   B /* BlockContent */,
