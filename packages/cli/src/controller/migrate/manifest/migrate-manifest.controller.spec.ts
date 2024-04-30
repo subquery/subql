@@ -15,7 +15,7 @@ import {
 
 const testProjectPath = '../../../../test/migrate/testProject';
 
-describe('migrate controller', () => {
+describe('migrate manifest controller', () => {
   let subgraph: SubgraphProject;
 
   beforeEach(() => {
