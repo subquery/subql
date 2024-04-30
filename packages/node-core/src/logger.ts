@@ -42,7 +42,7 @@ export function setDebugFilter(debug: string | undefined): void {
 }
 
 export class NestLogger implements LoggerService {
-  private logger = logger.getLogger(`nestjs${isMainThread ? '' : `-#${threadId}`}`);
+  private logger = getLogger(`nestjs`);
 
   constructor(private readonly debugLevel = false) {}
 

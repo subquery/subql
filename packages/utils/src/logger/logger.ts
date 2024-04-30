@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
+import {isMainThread, threadId} from 'worker_threads';
 import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
 import {createStream} from 'rotating-file-stream';
@@ -132,12 +133,14 @@ export class Logger {
   private applyChildDebug(category: string) {
     if (!this.childLoggers[category].level) return;
 
-    if (this.debugFilter.includes(`-${category}`)) {
+    const checkCategory = isMainThread ? category : category.replace(`-#${threadId}`, '');
+
+    if (this.debugFilter.includes(`-${checkCategory}`)) {
       this.pino.info(`Debug logging is disabled for ${category}`);
       // Set the log level to the global log level or INFO if its debug
       const newLevel = Math.max(LEVELS_MAP[<LevelWithSilent>this.pino.level], LEVELS_MAP.info);
       this.childLoggers[category].level = LEVELS[newLevel as keyof typeof LEVELS].toLowerCase();
-    } else if (this.debugFilter.includes(category)) {
+    } else if (this.debugFilter.includes(checkCategory)) {
       this.pino.info(`Debug logging is enabled for ${category}`);
       this.childLoggers[category].level = 'debug';
     } else if (this.debugFilter.includes('*')) {
