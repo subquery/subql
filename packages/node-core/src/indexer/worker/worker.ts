@@ -183,7 +183,8 @@ export async function createIndexerWorker<
   unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
   connectionPoolState: ConnectionPoolStateManager<ApiConnection>,
   root: string,
-  startHeight: number
+  startHeight: number,
+  workerData?: any
 ): Promise<T & {terminate: () => Promise<number>}> {
   const indexerWorker = Worker.create<
     T & {initWorker: (startHeight: number) => Promise<void>},
@@ -198,7 +199,9 @@ export async function createIndexerWorker<
       unfinalizedBlocksProcess: unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(unfinalizedBlocksService),
       ...connectionPoolStateHostFunctions(connectionPoolState),
     },
-    root
+    root,
+    true,
+    workerData
   );
 
   await indexerWorker.initWorker(startHeight);
