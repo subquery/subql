@@ -36,8 +36,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
             filter: undefined,
           };
         }),
-        ...(ds.mapping.eventHandlers
-          ? ds.mapping.eventHandlers.map((h) => {
+        ...(ds.mapping.eventHandlers ?? []).map((h) => {
               return {
                 kind: EthereumHandlerKind.Event,
                 migrateHandlerType: 'EthereumHandlerKind.Event',
@@ -46,10 +45,8 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
                   topics: [h.event],
                 },
               };
-            })
-          : []),
-        ...(ds.mapping.callHandlers
-          ? ds.mapping.callHandlers.map((h) => {
+            }),
+        ...(ds.mapping.callHandlers ?? []).map((h) => {
               return {
                 kind: EthereumHandlerKind.Call,
                 migrateHandlerType: 'EthereumHandlerKind.Call',
@@ -58,8 +55,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
                   f: h.function,
                 },
               };
-            })
-          : []),
+            }),
       ],
     },
   } as unknown as MigrateDatasourceKind<D>;
