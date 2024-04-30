@@ -160,6 +160,10 @@ export class WorkerHost<T extends AsyncMethods> extends WorkerIO {
   protected getReqId(): number {
     return this._reqCounter--;
   }
+
+  getWorkerData(): any | undefined {
+    return workers.workerData;
+  }
 }
 
 /* Host side, used to initialise and interact with worker */
@@ -196,11 +200,13 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     workerFns: (keyof T)[],
     hostFns: H,
     root: string,
-    exitMain = true
+    exitMain = true,
+    workerData?: any
   ): Worker<T> & T {
     const worker = new Worker(
       new workers.Worker(path, {
         argv: [...process.argv, '--root', root],
+        workerData,
       }),
       workerFns,
       hostFns,
