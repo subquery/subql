@@ -28,7 +28,7 @@ describe('Intergration test - Migrate', () => {
 
   it('could migrate a subgraph project from remote source', async () => {
     const graphProjectGit = 'https://github.com/graphprotocol/graph-tooling/tree/main/';
-    const graphProjectSubDir = '/examples/ethereum-gravatar';
+    const graphProjectSubDir = 'examples/ethereum-gravatar';
     await Migrate.run(['-f', graphProjectGit, '-d', graphProjectSubDir, '-o', projectDir]);
     const subqlManifest = await fs.promises.readFile(path.join(projectDir, DEFAULT_SUBQL_MANIFEST), 'utf8');
     expect(subqlManifest).toContain(`const project: EthereumProject`);
