@@ -25,18 +25,21 @@ import {
   readSubgraphManifest,
   subgraphValidation,
 } from '../controller/migrate';
+import {migrateMapping} from '../controller/migrate/mapping/migrate-mapping.controller';
 
 export default class Migrate extends Command {
   static description = 'Schema subgraph project to subquery project';
 
   static flags = {
-    file: Flags.string({char: 'f', description: 'specify subgraph file/directory path'}),
+    gitSubDirectory: Flags.string({char: 'd', description: 'specify git subdirectory path'}),
+    file: Flags.string({char: 'f', description: 'specify subgraph git/directory path'}),
     output: Flags.string({char: 'o', description: 'Output subquery project path', required: false}),
   };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Migrate);
-    const {file, output} = flags;
+    const {file, gitSubDirectory, output} = flags;
+
     const subgraphPath = file ?? (await cli.prompt('Subgraph project path, local or git', {required: true}));
     const subqlPath = output ?? (await cli.prompt('SubQuery project path, local or git', {required: true}));
 
@@ -52,10 +55,25 @@ export default class Migrate extends Command {
     if (gitMatch) {
       tempSubgraphDir = await makeTempDir();
       const {branch, link} = gitMatch;
-      subgraphDir = tempSubgraphDir;
-      console.log(`Pull subgraph project from git: ${link}, branch: ${branch ?? 'default branch'}`);
-      await git().clone(link, subgraphDir, branch ? ['-b', branch, '--single-branch'] : ['--single-branch']);
+      // clone the subdirectory project
+      if (gitSubDirectory) {
+        subgraphDir = path.join(tempSubgraphDir, gitSubDirectory);
+        await git(tempSubgraphDir).init().addRemote('origin', link);
+        await git(tempSubgraphDir).raw('sparse-checkout', 'set', `${gitSubDirectory}`);
+        await git(tempSubgraphDir).raw('pull', 'origin', branch);
+      } else {
+        subgraphDir = tempSubgraphDir;
+        await git().clone(link, subgraphDir, branch ? ['-b', branch, '--single-branch'] : ['--single-branch']);
+      }
+      console.log(
+        `* Pull subgraph project from git: ${link}, branch: ${branch ?? 'default branch'}${
+          gitSubDirectory ? `, subdirectory:${gitSubDirectory}` : '.'
+        }`
+      );
     } else if (direMatch) {
+      if (gitSubDirectory) {
+        this.error(`Git sub directory is only work with git path, not local directory `);
+      }
       subgraphDir = subgraphPath;
     } else {
       this.error(`Subgraph project should be a git ssh/link or file directory`);
@@ -67,7 +85,7 @@ export default class Migrate extends Command {
     const subqlSchemaPath = path.join(subqlDir, DEFAULT_SUBQL_SCHEMA);
 
     try {
-      const subgraphManifest = readSubgraphManifest(subgraphManifestPath);
+      const subgraphManifest = readSubgraphManifest(subgraphManifestPath, subgraphPath);
       improveProjectInfo(subgraphDir, subgraphManifest);
       subgraphValidation(subgraphManifest);
       const chainInfo = extractNetworkFromManifest(subgraphManifest);
@@ -82,9 +100,8 @@ export default class Migrate extends Command {
         endpoint: [],
       });
       await migrateSchema(subqlSchemaPath, subgraphSchemaPath);
-      // TODO , await migrateMapping(theGraphChainInfo.networkFamily, subgraphManifestPath,subqlManifestPath)
-      // Will be nice we can lint the output project
-      this.log(`Output migrated SubQuery project to ${subqlDir}`);
+      await migrateMapping(subgraphDir, subqlDir);
+      this.log(`* Output migrated SubQuery project to ${subqlDir}`);
     } catch (e) {
       // Clean project folder, only remove temp dir project, if user provide local project DO NOT REMOVE
       if (tempSubgraphDir !== undefined) {

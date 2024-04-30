@@ -43,6 +43,14 @@ describe('Migrate controller', () => {
       branch: 'test-branch',
     });
 
+    // should return result if user provide is a git subdirectory
+    expect(extractGitInfo('https://github.com/gprotocol/g-tooling/tree/main/examples/ethereum-gravatar')).toStrictEqual(
+      {
+        link: 'https://github.com/gprotocol/g-tooling',
+        branch: 'main',
+      }
+    );
+
     // IF not valid, should return undefined
     expect(extractGitInfo('https://google.com')).toBe(undefined);
   });

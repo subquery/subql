@@ -19,7 +19,7 @@ describe('migrate controller', () => {
   let subgraph: SubgraphProject;
 
   beforeEach(() => {
-    subgraph = readSubgraphManifest(path.join(__dirname, testProjectPath, 'subgraph.yaml'));
+    subgraph = readSubgraphManifest(path.join(__dirname, testProjectPath, 'subgraph.yaml'), 'mockSubgraphPath');
   });
 
   it(`readSubgraphManifest from a given subgraph.yaml`, () => {

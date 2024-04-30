@@ -37,14 +37,15 @@ export function subgraphValidation(subgraphProject: SubgraphProject): void {
   }
 }
 
-export function readSubgraphManifest(inputPath: string): SubgraphProject {
+export function readSubgraphManifest(inputPath: string, subgraphPath: string): SubgraphProject {
   try {
     const subgraphManifest: SubgraphProject = YAML.parse(fs.readFileSync(inputPath, 'utf8'));
     return subgraphManifest;
   } catch (e) {
     if (e.code === 'ENOENT') {
-      throw new Error(`Unable to find subgraph manifest at: ${inputPath}`);
+      throw new Error(`Unable to find subgraph manifest under: ${subgraphPath}`);
     }
+    throw e;
   }
 }
 
