@@ -62,7 +62,7 @@ export function extractNetworkFromManifest(subgraphProject: SubgraphProject): Ch
   const firstDsNetwork = subgraphDsNetworks[0];
   const networkFamily = graphToSubqlNetworkFamily[firstDsKind];
   if (!networkFamily) {
-    throw new Error(`Corresponding subquery network is not find with subgraph data source kind ${firstDsKind}`);
+    throw new Error(`Corresponding SubQuery network is not found with subgraph data source kind ${firstDsKind}`);
   }
   return {networkFamily, chainId: getChainIdByNetworkName(networkFamily, firstDsNetwork)};
 }
