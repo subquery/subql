@@ -31,13 +31,10 @@
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
     "cron-converter": "^1.0.2",
-    "eventemitter2": "^6.4.5",
     "fetch-h2": "3.0.2",
     "lodash": "^4.17.21",
-    "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.2",
     "yargs": "^16.2.0"
   },
   "peerDependencies": {

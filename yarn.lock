@@ -6416,14 +6416,11 @@ __metadata:
     "@types/yargs": ^16.0.4
     cron-converter: ^1.0.2
     dotenv: ^15.0.1
-    eventemitter2: ^6.4.5
     fetch-h2: 3.0.2
     lodash: ^4.17.21
     nodemon: ^2.0.15
-    pg: ^8.7.1
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
-    rxjs: ^7.5.2
     yargs: ^16.2.0
   peerDependencies:
     "@apollo/client": ^3.7.16
@@ -11949,13 +11946,6 @@ __metadata:
   version: 6.4.9
   resolution: "eventemitter2@npm:6.4.9"
   checksum: be59577c1e1c35509c7ba0e2624335c35bbcfd9485b8a977384c6cc6759341ea1a98d3cb9dbaa5cea4fff9b687e504504e3f9c2cc1674cf3bd8a43a7c74ea3eb
-  languageName: node
-  linkType: hard
-
-"eventemitter2@npm:^6.4.5":
-  version: 6.4.5
-  resolution: "eventemitter2@npm:6.4.5"
-  checksum: 84504f9cf0cc30205cdd46783fe9df3733435e5097f13070b678023110b5ef07847651808ae280cd94c42cd5976880211c7a40321a8ff8fa56f7c5f9c5c11960
   languageName: node
   linkType: hard
 
