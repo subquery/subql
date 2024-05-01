@@ -144,8 +144,9 @@ export function filterBlock(
       block.timestamp.getTime(),
       filter as SubqlProjectBlockFilter,
     )
-  )
+  ) {
     return;
+  }
   return filter.specVersion === undefined ||
     block.specVersion === undefined ||
     checkSpecRange(filter.specVersion, block.specVersion)
