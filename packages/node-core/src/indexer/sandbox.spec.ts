@@ -77,4 +77,33 @@ describe('sandbox for subql-node', () => {
     expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt1?.getTime() ?? 0);
     expect(sandboxFuncionEndAt2).toBeDefined();
   });
+
+  it('inject atob into sandbox', async () => {
+    // src code in the function, this should be resolved
+    const base64String = 'SGVsbG8sIFdvcmxkIQ==';
+    expect(atob(base64String)).toBe('Hello, World!');
+
+    const root = path.resolve(__dirname, '../../test/sandbox');
+    const entry = './atob-test.js';
+    vm = new IndexerSandbox(
+      {
+        store: undefined,
+        root,
+        entry,
+        chainId: '1',
+      },
+      new NodeConfig({subquery: ' ', subqueryName: ' '})
+    );
+    let sandboxFuncionEndAt: Date | undefined;
+
+    vm.on('console.log', (line) => {
+      if (line === 'Hello, World!') {
+        sandboxFuncionEndAt = new Date();
+      }
+    });
+    await vm.securedExec('testSandbox', []);
+    const secureExecEndAt = new Date();
+    expect(sandboxFuncionEndAt).toBeDefined();
+    expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt?.getTime() ?? 0);
+  });
 });
