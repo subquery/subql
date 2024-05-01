@@ -25,7 +25,7 @@ const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
   return {
     console: 'redirect',
     wasm: unsafe,
-    sandbox: {},
+    sandbox: {Uint8Array},
     require: {
       builtin: unsafe ? ['*'] : ['assert', 'buffer', 'crypto', 'util', 'path', 'url'],
       external: true,
