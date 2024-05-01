@@ -8,7 +8,7 @@ import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} 
 import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
-import Cron from 'cron-converter';
+import {stringToArray, getSchedule} from 'cron-converter';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
 import {ISubqueryProject, StoreService} from '../indexer';
@@ -240,8 +240,6 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
   isRuntimeDs: IsRuntimeDs,
   blockHandlerKind: string
 ): Promise<DS[]> {
-  const cron = new Cron();
-
   dataSources = await Promise.all(
     dataSources.map(async (ds) => {
       if (isRuntimeDs(ds)) {
@@ -255,13 +253,14 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
                 if (!timestampReference) {
                   timestampReference = await getBlockTimestamp(startBlock);
                 }
+                let cronArr: number[][];
                 try {
-                  cron.fromString(handler.filter.timestamp);
+                  cronArr = stringToArray(handler.filter.timestamp);
                 } catch (e) {
                   throw new Error(`Invalid Cron string: ${handler.filter.timestamp}`);
                 }
 
-                const schedule = cron.schedule(timestampReference);
+                const schedule = getSchedule(cronArr, timestampReference);
                 handler.filter.cronSchedule = {
                   schedule: schedule,
                   get next() {

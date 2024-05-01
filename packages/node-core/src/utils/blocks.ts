@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import Cron from 'cron-converter';
+import {Schedule} from 'cron-converter';
 import {chunk, flatten, isNumber, range, uniq, without} from 'lodash';
 import {getBlockHeight} from '../indexer/dictionary';
 import {IBlock} from '../indexer/types';
@@ -42,7 +42,7 @@ const logger = getLogger('timestamp-filter');
 
 export type CronFilter = {
   cronSchedule?: {
-    schedule: Cron.Seeker;
+    schedule: Schedule;
     next: number;
   };
 };
