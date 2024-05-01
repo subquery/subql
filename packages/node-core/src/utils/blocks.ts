@@ -1,9 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Schedule} from 'cron-converter';
 import {chunk, flatten, isNumber, range, uniq, without} from 'lodash';
 import {getBlockHeight} from '../indexer/dictionary';
 import {IBlock} from '../indexer/types';
+import {getLogger} from '../logger';
 
 export function cleanedBatchBlocks<FB>(
   bypassBlocks: number[],
@@ -34,4 +36,28 @@ export function transformBypassBlocks(bypassBlocks: (number | string)[]): number
       })
     )
   );
+}
+
+const logger = getLogger('timestamp-filter');
+
+export type CronFilter = {
+  cronSchedule?: {
+    schedule: Schedule;
+    next: number;
+  };
+};
+
+export function filterBlockTimestamp(blockTimestamp: number, filter: CronFilter): boolean {
+  if (!filter.cronSchedule) {
+    return true;
+  }
+  if (blockTimestamp > filter.cronSchedule.next) {
+    logger.info(`Block with timestamp ${new Date(blockTimestamp).toString()} is about to be indexed`);
+    logger.info(`Next block will be indexed at ${new Date(filter.cronSchedule.next).toString()}`);
+    filter.cronSchedule.schedule.prev();
+    return true;
+  } else {
+    filter.cronSchedule.schedule.prev();
+    return false;
+  }
 }

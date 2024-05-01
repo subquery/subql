@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import Cron from 'cron-converter';
+import { stringToArray } from 'cron-converter';
 import {
   fetchBlocksArray,
   fetchBlocksBatches,
@@ -25,10 +25,9 @@ describe('substrate utils', () => {
 
   it('invalid timestamp throws error on cron creation', () => {
     const cronString = 'invalid cron';
-    const cron = new Cron();
     expect(() => {
       try {
-        cron.fromString(cronString);
+        stringToArray(cronString);
       } catch (e) {
         throw new Error(`invalid cron expression: ${cronString}`);
       }

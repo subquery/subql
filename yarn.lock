@@ -6376,6 +6376,7 @@ __metadata:
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
+    cron-converter: ^2.0.1
     cross-fetch: ^3.1.6
     csv-stringify: ^6.4.5
     dayjs: ^1.10.7
@@ -6414,16 +6415,12 @@ __metadata:
     "@types/pino": ^6.3.12
     "@types/tar": ^6.1.1
     "@types/yargs": ^16.0.4
-    cron-converter: ^1.0.2
     dotenv: ^15.0.1
-    eventemitter2: ^6.4.5
     fetch-h2: 3.0.2
     lodash: ^4.17.21
     nodemon: ^2.0.15
-    pg: ^8.7.1
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
-    rxjs: ^7.5.2
     yargs: ^16.2.0
   peerDependencies:
     "@apollo/client": ^3.7.16
@@ -10622,13 +10619,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cron-converter@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "cron-converter@npm:1.0.2"
+"cron-converter@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "cron-converter@npm:2.0.1"
   dependencies:
-    moment-timezone: ~0.5
-    sprintf-js: ~1
-  checksum: 7bbd01f29a6fc5a8a8c8dabda3a6468b7040acd374beadbf103d6c86f9e85c961a0937cfa2a997e4bfcdcd6bd07cde658a3009b899130e69e6c9ceb5f0a82ac3
+    luxon: ^3.1.0
+  checksum: 74ef69ec7e9020183cfa8f117fe687c654ba32f863ae8cf86a834b5baafd1321ee0d9caa62cc8e6e4cfe02b255f237ed0a0f91f0da78d01eb49317d06bf76f3d
   languageName: node
   linkType: hard
 
@@ -11949,13 +11945,6 @@ __metadata:
   version: 6.4.9
   resolution: "eventemitter2@npm:6.4.9"
   checksum: be59577c1e1c35509c7ba0e2624335c35bbcfd9485b8a977384c6cc6759341ea1a98d3cb9dbaa5cea4fff9b687e504504e3f9c2cc1674cf3bd8a43a7c74ea3eb
-  languageName: node
-  linkType: hard
-
-"eventemitter2@npm:^6.4.5":
-  version: 6.4.5
-  resolution: "eventemitter2@npm:6.4.5"
-  checksum: 84504f9cf0cc30205cdd46783fe9df3733435e5097f13070b678023110b5ef07847651808ae280cd94c42cd5976880211c7a40321a8ff8fa56f7c5f9c5c11960
   languageName: node
   linkType: hard
 
@@ -16029,6 +16018,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"luxon@npm:^3.1.0":
+  version: 3.4.4
+  resolution: "luxon@npm:3.4.4"
+  checksum: 36c1f99c4796ee4bfddf7dc94fa87815add43ebc44c8934c924946260a58512f0fd2743a629302885df7f35ccbd2d13f178c15df046d0e3b6eb71db178f1c60c
+  languageName: node
+  linkType: hard
+
 "luxon@npm:^3.2.1":
   version: 3.3.0
   resolution: "luxon@npm:3.3.0"
@@ -16649,16 +16645,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment-timezone@npm:~0.5":
-  version: 0.5.37
-  resolution: "moment-timezone@npm:0.5.37"
-  dependencies:
-    moment: ">= 2.9.0"
-  checksum: b3fc24848a396ee3801331a4b5511591df0e22241e59f55200a475603f23a8429f01887294c7a0c005dae25b8e4bef20472fbc875ff20080f26fded066559f1a
-  languageName: node
-  linkType: hard
-
-"moment@npm:>= 2.9.0, moment@npm:>=2.14.0, moment@npm:^2.29.1, moment@npm:^2.29.4":
+"moment@npm:>=2.14.0, moment@npm:^2.29.1, moment@npm:^2.29.4":
   version: 2.29.4
   resolution: "moment@npm:2.29.4"
   checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e
@@ -20048,13 +20035,6 @@ __metadata:
   version: 4.1.0
   resolution: "split2@npm:4.1.0"
   checksum: ec581597cb74c13cdfb5e2047543dd40cb1e8e9803c7b1e0c29ede05f2b4f049b2d6e7f2788a225d544549375719658b8f38e9366364dec35dc7a12edfda5ee5
-  languageName: node
-  linkType: hard
-
-"sprintf-js@npm:~1":
-  version: 1.1.2
-  resolution: "sprintf-js@npm:1.1.2"
-  checksum: d4bb46464632b335e5faed381bd331157e0af64915a98ede833452663bc672823db49d7531c32d58798e85236581fb7342fd0270531ffc8f914e186187bf1c90
   languageName: node
   linkType: hard
 

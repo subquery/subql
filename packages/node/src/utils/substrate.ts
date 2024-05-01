@@ -12,7 +12,12 @@ import {
   Header as SubstrateHeader,
 } from '@polkadot/types/interfaces';
 import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
-import { getLogger, IBlock, Header } from '@subql/node-core';
+import {
+  getLogger,
+  IBlock,
+  Header,
+  filterBlockTimestamp,
+} from '@subql/node-core';
 import {
   SpecVersionRange,
   SubstrateBlockFilter,
@@ -23,7 +28,7 @@ import {
   SubstrateExtrinsic,
   BlockHeader,
 } from '@subql/types';
-import { last, merge, range } from 'lodash';
+import { merge, range } from 'lodash';
 import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../indexer/apiPromise.connection';
 import { BlockContent, LightBlockContent } from '../indexer/types';
@@ -134,10 +139,13 @@ export function filterBlock(
 ): SubstrateBlock | undefined {
   if (!filter) return block;
   if (!filterBlockModulo(block, filter)) return;
-  if (filter.timestamp) {
-    if (!filterBlockTimestamp(block, filter as SubqlProjectBlockFilter)) {
-      return;
-    }
+  if (
+    !filterBlockTimestamp(
+      block.timestamp.getTime(),
+      filter as SubqlProjectBlockFilter,
+    )
+  ) {
+    return;
   }
   return filter.specVersion === undefined ||
     block.specVersion === undefined ||
@@ -153,30 +161,6 @@ export function filterBlockModulo(
   const { modulo } = filter;
   if (!modulo) return true;
   return block.block.header.number.toNumber() % modulo === 0;
-}
-
-export function filterBlockTimestamp(
-  block: SubstrateBlock,
-  filter: SubqlProjectBlockFilter,
-): boolean {
-  const unixTimestamp = block.timestamp.getTime();
-  if (unixTimestamp > filter.cronSchedule.next) {
-    logger.info(
-      `Block with timestamp ${new Date(
-        unixTimestamp,
-      ).toString()} is about to be indexed`,
-    );
-    logger.info(
-      `Next block will be indexed at ${new Date(
-        filter.cronSchedule.next,
-      ).toString()}`,
-    );
-    filter.cronSchedule.schedule.prev();
-    return true;
-  } else {
-    filter.cronSchedule.schedule.prev();
-    return false;
-  }
 }
 
 export function filterExtrinsic(

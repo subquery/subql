@@ -18,6 +18,7 @@ import {
   loadProjectTemplates,
   updateDataSourcesV1_0_0,
   ISubqueryProject,
+  CronFilter,
 } from '@subql/node-core';
 import {
   SubstrateDatasource,
@@ -27,8 +28,6 @@ import {
 } from '@subql/types';
 import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import { buildSchemaFromString } from '@subql/utils';
-
-import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { getChainTypes } from '../utils/project';
 
@@ -39,12 +38,7 @@ export type SubqlProjectDsTemplate =
   | RuntimeDatasourceTemplate
   | CustomDatasourceTemplate;
 
-export type SubqlProjectBlockFilter = SubstrateBlockFilter & {
-  cronSchedule?: {
-    schedule: Cron.Seeker;
-    next: number;
-  };
-};
+export type SubqlProjectBlockFilter = SubstrateBlockFilter & CronFilter;
 
 const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);
