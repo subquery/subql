@@ -6155,7 +6155,7 @@ __metadata:
     algosdk: ^1.19.0
     boxen: 5.1.2
     cli-ux: ^6.0.9
-    ejs: ^3.1.6
+    ejs: ^3.1.10
     eslint: ^8.8.0
     eslint-config-oclif: ^4.0.0
     eslint-config-oclif-typescript: ^1.0.2
@@ -11112,6 +11112,17 @@ __metadata:
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1"
   checksum: 1b4cac778d64ce3b582a7e26b218afe07e207a0f9bfe13cc7395a6d307849cfe361e65033c3251e00c27dd060cab43014c2d6b2647676135e18b77d2d05b3f4f
+  languageName: node
+  linkType: hard
+
+"ejs@npm:^3.1.10":
+  version: 3.1.10
+  resolution: "ejs@npm:3.1.10"
+  dependencies:
+    jake: ^10.8.5
+  bin:
+    ejs: bin/cli.js
+  checksum: ce90637e9c7538663ae023b8a7a380b2ef7cc4096de70be85abf5a3b9641912dde65353211d05e24d56b1f242d71185c6d00e02cb8860701d571786d92c71f05
   languageName: node
   linkType: hard
 
