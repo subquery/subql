@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.4] - 2024-05-02
+### Changed
+- Update `@subql/utils`
+
 ## [2.10.3] - 2024-04-29
 ### Fixed
 - Aggregate queries with historical not filtering by block height (#2367)
@@ -295,7 +299,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.4...HEAD
+[2.10.4]: https://github.com/subquery/subql/compare/query/2.10.3...query/2.10.4
 [2.10.3]: https://github.com/subquery/subql/compare/query/2.10.1...query/2.10.3
 [2.10.1]: https://github.com/subquery/subql/compare/query/2.10.0...query/2.10.1
 [2.10.0]: https://github.com/subquery/subql/compare/query/2.9.1...query/2.10.0
