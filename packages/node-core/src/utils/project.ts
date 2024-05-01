@@ -9,7 +9,6 @@ import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, Temp
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import Cron from 'cron-converter';
-import {isNumber, range, uniq, without, flatten, chunk} from 'lodash';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
 import {ISubqueryProject, StoreService} from '../indexer';

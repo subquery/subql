@@ -31,6 +31,7 @@
     "@willsoto/nestjs-prometheus": "^5.4.0",
     "async-lock": "^1.4.0",
     "async-mutex": "^0.4.0",
+    "cron-converter": "^2.0.1",
     "cross-fetch": "^3.1.6",
     "csv-stringify": "^6.4.5",
     "dayjs": "^1.10.7",
