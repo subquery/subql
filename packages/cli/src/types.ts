@@ -146,22 +146,20 @@ export interface V3DeploymentIndexerType {
   };
 }
 
-
 export interface MultichainDataFieldType {
-  [key: string]: string
+  [key: string]: string;
 }
-
 
 export interface ProjectDeploymentInterface {
   org: string;
   projectName: string;
   chains: V3DeploymentIndexerType[];
-  projectInfo: ProjectDataType,
-  flags: DeploymentFlagsInterface,
-  ipfsCID: string,
-  queryVersion: string,
-  authToken: string
-  log: any
+  projectInfo: ProjectDataType;
+  flags: DeploymentFlagsInterface;
+  ipfsCID: string;
+  queryVersion: string;
+  authToken: string;
+  log: any;
 }
 
 export interface DeploymentFlagsInterface {
@@ -198,4 +196,3 @@ export interface GenerateDeploymentChainInterface {
   indexerImageVersion: string;
   flags: DeploymentFlagsInterface;
 }
-

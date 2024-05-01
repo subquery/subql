@@ -23,7 +23,7 @@ import {
   ExampleProjectInterface,
 } from '../controller/init-controller';
 import {ProjectSpecBase} from '../types';
-import {resolveToAbsolutePath, buildManifestFromLocation} from '../utils';
+import {resolveToAbsolutePath} from '../utils';
 import Generate from './codegen/generate';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 

@@ -62,7 +62,7 @@ import {
 import {upperFirst, uniq, uniqBy} from 'lodash';
 import {renderTemplate, prepareDirPath} from '../utils';
 
-type TemplateKind =
+export type TemplateKind =
   | SubstrateDsTemplate
   | SubstrateCustomDsTemplate
   | CosmosDsTemplate

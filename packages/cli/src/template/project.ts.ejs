@@ -1,0 +1,85 @@
+// Auto-generated , please modify to ensure correctness
+<% const {network, projectClass, projectDatasourceKind, projectHandlerKind} = props.importTypes; %>
+import {
+    <%= projectClass %>,
+    <%= projectDatasourceKind %>,
+    <%= projectHandlerKind %>,
+} from "@subql/types-<%= network %>";
+
+// Can expand the Datasource processor types via the generic param
+const project: <%= projectClass %>= {
+    specVersion: "1.0.0",
+    version: "<%= props.projectJson.version %>",
+    name: "<%= props.projectJson.name %>",
+    description: "<%= props.projectJson.description%>",
+    runner: {
+        node: {
+            name: "<%= props.projectJson.runner.node.name%>",
+            version: "<%= props.projectJson.runner.node.version%>",
+        },
+        query: {
+            name: "@subql/query",
+            version: "*",
+        },
+    },
+    schema: {
+        file: "./schema.graphql",
+    },
+    network: {
+        chainId: "<%= props.projectJson.network.chainId%>",
+        /**
+        * These endpoint(s) should be public non-pruned archive node
+        * We recommend providing more than one endpoint for improved reliability, performance, and uptime
+        * Public nodes may be rate limited, which can affect indexing speed
+        * When developing your project we suggest getting a private API key
+        * If you use a rate limited endpoint, adjust the --batch-size and --workers parameters
+        * These settings can be found in your docker-compose.yaml, they will slow indexing but prevent your project being rate limited
+        */
+        endpoint: ["https://example-rpc/public"],
+    },
+    dataSources: [<% props.projectJson.dataSources.forEach(function(dataSource){ %>
+        {
+            kind: <%= dataSource.migrateDatasourceType %>,<%if (dataSource.startBlock!==undefined) { %>
+            startBlock: <%= dataSource.startBlock %>,<% } %><%if (dataSource.options) { %>
+            options: {
+                abi : "<%= dataSource.options.abi %>",
+                address : "<%= dataSource.options.address %>"
+            },<% } %>
+            assets: new Map(<%- JSON.stringify(Array.from(dataSource.assets)) %>),
+            mapping:{
+                file: "./dist/index.js",
+                handlers:[<% dataSource.mapping.handlers.forEach(function(handler){ %>
+                    {
+                        kind: <%= handler.migrateHandlerType %>,
+                        handler: "<%= handler.handler %>",<%if (handler.filter) { %>
+                        filter: <%- JSON.stringify(handler.filter) %>,<% } %>
+                    },<% }); %>
+                ]
+            }
+        },<% }); %>
+    ],<%if (props.projectJson.templates && props.projectJson.templates.length!==0) { %>
+    templates: [<% props.projectJson.templates.forEach(function(template){ %>
+        {
+            kind: <%= template.migrateDatasourceType %>,<%if (template.options) { %>
+            options: {
+            abi : "<%= template.options.abi %>",
+            },
+            <% } %>
+            assets: new Map(<%- JSON.stringify(Array.from(template.assets)) %>),
+            mapping:{
+                file: "./dist/index.js",
+                handlers:[<% template.mapping.handlers.forEach(function(handler){ %>
+                    {
+                    kind: <%= handler.migrateHandlerType %>,
+                    handler: "<%= handler.handler %>",<%if (handler.filter) { %>
+                        filter: <%- JSON.stringify(handler.filter) %>,<% } %>
+                    },<% }); %>
+                ]
+            }
+        },<% }); %>
+    ],<% } %>
+    repository: "<%= props.projectJson.repository%>",
+};
+
+// Must set default to the project instance
+export default project;
