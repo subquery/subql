@@ -84,35 +84,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:3.5.8":
-  version: 3.5.8
-  resolution: "@apollo/client@npm:3.5.8"
-  dependencies:
-    "@graphql-typed-document-node/core": ^3.0.0
-    "@wry/context": ^0.6.0
-    "@wry/equality": ^0.5.0
-    "@wry/trie": ^0.3.0
-    graphql-tag: ^2.12.3
-    hoist-non-react-statics: ^3.3.2
-    optimism: ^0.16.1
-    prop-types: ^15.7.2
-    symbol-observable: ^4.0.0
-    ts-invariant: ^0.9.4
-    tslib: ^2.3.0
-    zen-observable-ts: ^1.2.0
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
-    react: ^16.8.0 || ^17.0.0
-    subscriptions-transport-ws: ^0.9.0 || ^0.11.0
-  peerDependenciesMeta:
-    react:
-      optional: true
-    subscriptions-transport-ws:
-      optional: true
-  checksum: c896153784ae7b3adbf378e087c2a3150966fd5f5ea029907965dc5987f4751f2058c55142fe0a8e53f6c38124421b0e7f955f7fa5a4c28840be23c53b3a7e64
-  languageName: node
-  linkType: hard
-
 "@apollo/client@npm:^3.8.8":
   version: 3.8.10
   resolution: "@apollo/client@npm:3.8.10"
@@ -1672,7 +1643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-typed-document-node/core@npm:^3.0.0, @graphql-typed-document-node/core@npm:^3.1.1":
+"@graphql-typed-document-node/core@npm:^3.1.1":
   version: 3.2.0
   resolution: "@graphql-typed-document-node/core@npm:3.2.0"
   peerDependencies:
@@ -2826,7 +2797,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node-stellar@workspace:packages/node"
   dependencies:
-    "@apollo/client": 3.5.8
     "@nestjs/common": ^9.4.0
     "@nestjs/core": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
@@ -2846,17 +2816,12 @@ __metadata:
     "@types/pino": ^6.3.12
     "@types/tar": ^6.1.1
     "@types/yargs": ^16.0.4
-    cacheable-lookup: 6
     cron-converter: ^1.0.2
     dotenv: ^15.0.1
-    eventemitter2: ^6.4.5
-    json5: ^2.2.3
     lodash: ^4.17.21
     nodemon: ^2.0.15
-    pg: ^8.7.1
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
-    rxjs: ^7.5.2
     stellar-sdk: ^11.2.2
     yargs: ^16.2.0
   peerDependencies:
@@ -3592,15 +3557,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/context@npm:^0.6.0":
-  version: 0.6.1
-  resolution: "@wry/context@npm:0.6.1"
-  dependencies:
-    tslib: ^2.3.0
-  checksum: 4187863175061a8f54659f124e3e5c202e010b2b65bf886b4de9777ce8a45cf183b6f6d88f1f537002cbcbea52103a2eadc337d494106490def10acaf9522c5d
-  languageName: node
-  linkType: hard
-
 "@wry/context@npm:^0.7.0":
   version: 0.7.3
   resolution: "@wry/context@npm:0.7.3"
@@ -3610,21 +3566,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/equality@npm:^0.5.0, @wry/equality@npm:^0.5.6":
+"@wry/equality@npm:^0.5.6":
   version: 0.5.6
   resolution: "@wry/equality@npm:0.5.6"
   dependencies:
     tslib: ^2.3.0
   checksum: 9addf8891bdff5e23eecff03641846e7a56c1de3c9362c25e69c0b2ee3303e74b22e9a0376920283cd9d3bdd1bada12df54be5eaa29c2d801d33d94992672e14
-  languageName: node
-  linkType: hard
-
-"@wry/trie@npm:^0.3.0":
-  version: 0.3.2
-  resolution: "@wry/trie@npm:0.3.2"
-  dependencies:
-    tslib: ^2.3.0
-  checksum: 151d06b519e1ff1c3acf6ee6846161b1d7d50bbecd4c48e5cd1b05f9e37c30602aff02e88f20105f6e6c54ae4123f9c4eb7715044d7fd927d4ba4ec3e755cd36
   languageName: node
   linkType: hard
 
@@ -4443,13 +4390,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer-writer@npm:2.0.0":
-  version: 2.0.0
-  resolution: "buffer-writer@npm:2.0.0"
-  checksum: 11736b48bb75106c52ca8ec9f025e7c1b3b25ce31875f469d7210eabd5c576c329e34f6b805d4a8d605ff3f0db1e16342328802c4c963e9c826b0e43a4e631c2
-  languageName: node
-  linkType: hard
-
 "buffer@npm:^5.5.0":
   version: 5.7.1
   resolution: "buffer@npm:5.7.1"
@@ -4503,13 +4443,6 @@ __metadata:
     tar: ^6.1.11
     unique-filename: ^3.0.0
   checksum: b7751df756656954a51201335addced8f63fc53266fa56392c9f5ae83c8d27debffb4458ac2d168a744a4517ec3f2163af05c20097f93d17bdc2dc8a385e14a6
-  languageName: node
-  linkType: hard
-
-"cacheable-lookup@npm:6":
-  version: 6.1.0
-  resolution: "cacheable-lookup@npm:6.1.0"
-  checksum: 4e37afe897219b1035335b0765106a2c970ffa930497b43cac5000b860f3b17f48d004187279fae97e2e4cbf6a3693709b6d64af65279c7d6c8453321d36d118
   languageName: node
   linkType: hard
 
@@ -5820,7 +5753,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventemitter2@npm:6.4.9, eventemitter2@npm:^6.4.5":
+"eventemitter2@npm:6.4.9":
   version: 6.4.9
   resolution: "eventemitter2@npm:6.4.9"
   checksum: be59577c1e1c35509c7ba0e2624335c35bbcfd9485b8a977384c6cc6759341ea1a98d3cb9dbaa5cea4fff9b687e504504e3f9c2cc1674cf3bd8a43a7c74ea3eb
@@ -6526,7 +6459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.12.3, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -9246,16 +9179,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"optimism@npm:^0.16.1":
-  version: 0.16.2
-  resolution: "optimism@npm:0.16.2"
-  dependencies:
-    "@wry/context": ^0.7.0
-    "@wry/trie": ^0.3.0
-  checksum: a98ed9a0b8ee2b031010222099b60860d52860bf8182889f2695a7cf2185f21aca59020f78e2b47c0ae7697843caa576798d792967314ff59f6aa7c5d9de7f3a
-  languageName: node
-  linkType: hard
-
 "optimism@npm:^0.18.0":
   version: 0.18.0
   resolution: "optimism@npm:0.18.0"
@@ -9419,13 +9342,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"packet-reader@npm:1.0.0":
-  version: 1.0.0
-  resolution: "packet-reader@npm:1.0.0"
-  checksum: 0b7516f0cbf3e322aad591bed29ba544220088c53943145c0d9121a6f59182ad811f7fd6785a8979a34356aca69d97653689029964c5998dc02645633d88ffd7
-  languageName: node
-  linkType: hard
-
 "parent-module@npm:^1.0.0":
   version: 1.0.1
   resolution: "parent-module@npm:1.0.1"
@@ -9575,86 +9491,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-cloudflare@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "pg-cloudflare@npm:1.1.1"
-  checksum: 32aac06b5dc4588bbf78801b6267781bc7e13be672009df949d08e9627ba9fdc26924916665d4de99d47f9b0495301930547488dad889d826856976c7b3f3731
-  languageName: node
-  linkType: hard
-
-"pg-connection-string@npm:^2.5.0, pg-connection-string@npm:^2.6.2":
+"pg-connection-string@npm:^2.5.0":
   version: 2.6.2
   resolution: "pg-connection-string@npm:2.6.2"
   checksum: 22265882c3b6f2320785378d0760b051294a684989163d5a1cde4009e64e84448d7bf67d9a7b9e7f69440c3ee9e2212f9aa10dd17ad6773f6143c6020cebbcb5
-  languageName: node
-  linkType: hard
-
-"pg-int8@npm:1.0.1":
-  version: 1.0.1
-  resolution: "pg-int8@npm:1.0.1"
-  checksum: a1e3a05a69005ddb73e5f324b6b4e689868a447c5fa280b44cd4d04e6916a344ac289e0b8d2695d66e8e89a7fba023affb9e0e94778770ada5df43f003d664c9
-  languageName: node
-  linkType: hard
-
-"pg-pool@npm:^3.6.1":
-  version: 3.6.1
-  resolution: "pg-pool@npm:3.6.1"
-  peerDependencies:
-    pg: ">=8.0"
-  checksum: 8a6513e6f74a794708c9dd16d2ccda0debadc56435ec2582de2b2e35b01315550c5dab8a0a9a2a16f4adce45523228f5739940fb7687ec7e9c300f284eb08fd1
-  languageName: node
-  linkType: hard
-
-"pg-protocol@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "pg-protocol@npm:1.6.0"
-  checksum: e12662d2de2011e0c3a03f6a09f435beb1025acdc860f181f18a600a5495dc38a69d753bbde1ace279c8c442536af9c1a7c11e1d0fe3fad3aa1348b28d9d2683
-  languageName: node
-  linkType: hard
-
-"pg-types@npm:^2.1.0":
-  version: 2.2.0
-  resolution: "pg-types@npm:2.2.0"
-  dependencies:
-    pg-int8: 1.0.1
-    postgres-array: ~2.0.0
-    postgres-bytea: ~1.0.0
-    postgres-date: ~1.0.4
-    postgres-interval: ^1.1.0
-  checksum: bf4ec3f594743442857fb3a8dfe5d2478a04c98f96a0a47365014557cbc0b4b0cee01462c79adca863b93befbf88f876299b75b72c665b5fb84a2c94fbd10316
-  languageName: node
-  linkType: hard
-
-"pg@npm:^8.7.1":
-  version: 8.11.3
-  resolution: "pg@npm:8.11.3"
-  dependencies:
-    buffer-writer: 2.0.0
-    packet-reader: 1.0.0
-    pg-cloudflare: ^1.1.1
-    pg-connection-string: ^2.6.2
-    pg-pool: ^3.6.1
-    pg-protocol: ^1.6.0
-    pg-types: ^2.1.0
-    pgpass: 1.x
-  peerDependencies:
-    pg-native: ">=3.0.1"
-  dependenciesMeta:
-    pg-cloudflare:
-      optional: true
-  peerDependenciesMeta:
-    pg-native:
-      optional: true
-  checksum: 8af9468b8969fa0d73a6b349216c8cbc953d938fcae5594f2d24043060e9226a072c8085fc4230172b5576fcab4c39c8563c655f271dc2a9209b6ad5370cafe5
-  languageName: node
-  linkType: hard
-
-"pgpass@npm:1.x":
-  version: 1.0.5
-  resolution: "pgpass@npm:1.0.5"
-  dependencies:
-    split2: ^4.1.0
-  checksum: 947ac096c031eebdf08d989de2e9f6f156b8133d6858c7c2c06c041e1e71dda6f5f3bad3c0ec1e96a09497bbc6ef89e762eefe703b5ef9cb2804392ec52ec400
   languageName: node
   linkType: hard
 
@@ -9742,36 +9582,6 @@ __metadata:
   version: 8.0.0
   resolution: "pluralize@npm:8.0.0"
   checksum: 08931d4a6a4a5561a7f94f67a31c17e6632cb21e459ab3ff4f6f629d9a822984cf8afef2311d2005fbea5d7ef26016ebb090db008e2d8bce39d0a9a9d218736e
-  languageName: node
-  linkType: hard
-
-"postgres-array@npm:~2.0.0":
-  version: 2.0.0
-  resolution: "postgres-array@npm:2.0.0"
-  checksum: 0e1e659888147c5de579d229a2d95c0d83ebdbffc2b9396d890a123557708c3b758a0a97ed305ce7f58edfa961fa9f0bbcd1ea9f08b6e5df73322e683883c464
-  languageName: node
-  linkType: hard
-
-"postgres-bytea@npm:~1.0.0":
-  version: 1.0.0
-  resolution: "postgres-bytea@npm:1.0.0"
-  checksum: d844ae4ca7a941b70e45cac1261a73ee8ed39d72d3d74ab1d645248185a1b7f0ac91a3c63d6159441020f4e1f7fe64689ac56536a307b31cef361e5187335090
-  languageName: node
-  linkType: hard
-
-"postgres-date@npm:~1.0.4":
-  version: 1.0.7
-  resolution: "postgres-date@npm:1.0.7"
-  checksum: 5745001d47e51cd767e46bcb1710649cd705d91a24d42fa661c454b6dcbb7353c066a5047983c90a626cd3bbfea9e626cc6fa84a35ec57e5bbb28b49f78e13ed
-  languageName: node
-  linkType: hard
-
-"postgres-interval@npm:^1.1.0":
-  version: 1.2.0
-  resolution: "postgres-interval@npm:1.2.0"
-  dependencies:
-    xtend: ^4.0.0
-  checksum: 746b71f93805ae33b03528e429dc624706d1f9b20ee81bf743263efb6a0cd79ae02a642a8a480dbc0f09547b4315ab7df6ce5ec0be77ed700bac42730f5c76b2
   languageName: node
   linkType: hard
 
@@ -10451,7 +10261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:7.8.1, rxjs@npm:^7.5.2, rxjs@npm:^7.5.5":
+"rxjs@npm:7.8.1, rxjs@npm:^7.5.5":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -10819,13 +10629,6 @@ __metadata:
   version: 1.1.0
   resolution: "split-on-first@npm:1.1.0"
   checksum: 16ff85b54ddcf17f9147210a4022529b343edbcbea4ce977c8f30e38408b8d6e0f25f92cd35b86a524d4797f455e29ab89eb8db787f3c10708e0b47ebf528d30
-  languageName: node
-  linkType: hard
-
-"split2@npm:^4.1.0":
-  version: 4.2.0
-  resolution: "split2@npm:4.2.0"
-  checksum: 05d54102546549fe4d2455900699056580cca006c0275c334611420f854da30ac999230857a85fdd9914dc2109ae50f80fda43d2a445f2aa86eccdc1dfce779d
   languageName: node
   linkType: hard
 
@@ -11322,15 +11125,6 @@ __metadata:
   dependencies:
     tslib: ^2.1.0
   checksum: bb07d56fe4aae69d8860e0301dfdee2d375281159054bc24bf1e49e513fb0835bf7f70a11351344d213a79199c5e695f37ebbf5a447188a377ce0cd81d91ddb5
-  languageName: node
-  linkType: hard
-
-"ts-invariant@npm:^0.9.4":
-  version: 0.9.4
-  resolution: "ts-invariant@npm:0.9.4"
-  dependencies:
-    tslib: ^2.1.0
-  checksum: c9e5726361fa266916966b2070605f8664b6dd1d8b0ef7565dbf056abb6a87be26195985ef62dd97aeb0894cf2f4ad5b7f0d89dadadc197eaa38e99222afa29c
   languageName: node
   linkType: hard
 
@@ -12298,7 +12092,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zen-observable-ts@npm:^1.2.0, zen-observable-ts@npm:^1.2.5":
+"zen-observable-ts@npm:^1.2.5":
   version: 1.2.5
   resolution: "zen-observable-ts@npm:1.2.5"
   dependencies:

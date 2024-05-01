@@ -15,11 +15,8 @@ import {
   PoiSyncService,
   IBlock,
 } from '@subql/node-core';
-import { StellarBlockWrapper } from '@subql/types-stellar';
-import {
-  StellarProjectDs,
-  SubqueryProject,
-} from '../../configure/SubqueryProject';
+import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
+import { SubqueryProject } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
 
 /**
@@ -27,7 +24,7 @@ import { IndexerManager } from '../indexer.manager';
  */
 @Injectable()
 export class BlockDispatcherService
-  extends BlockDispatcher<StellarBlockWrapper, StellarProjectDs>
+  extends BlockDispatcher<StellarBlockWrapper, SubqlDatasource>
   implements OnApplicationShutdown
 {
   constructor(
@@ -36,7 +33,7 @@ export class BlockDispatcherService
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
     @Inject('IProjectService')
-    projectService: IProjectService<StellarProjectDs>,
+    projectService: IProjectService<SubqlDatasource>,
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,

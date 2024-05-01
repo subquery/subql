@@ -19,7 +19,6 @@
     "subql-node-stellar": "./bin/run"
   },
   "dependencies": {
-    "@apollo/client": "3.5.8",
     "@nestjs/common": "^9.4.0",
     "@nestjs/core": "^9.4.0",
     "@nestjs/event-emitter": "^2.0.0",
@@ -31,15 +30,10 @@
     "@subql/testing": "^2.0.0",
     "@subql/types": "^2.2.1-1",
     "@subql/types-stellar": "workspace:*",
-    "cacheable-lookup": "6",
     "cron-converter": "^1.0.2",
-    "eventemitter2": "^6.4.5",
-    "json5": "^2.2.3",
     "lodash": "^4.17.21",
-    "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.2",
     "stellar-sdk": "^11.2.2",
     "yargs": "^16.2.0"
   },

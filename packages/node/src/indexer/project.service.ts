@@ -14,14 +14,10 @@ import {
   IProjectUpgradeService,
   profiler,
 } from '@subql/node-core';
-import { StellarBlockWrapper } from '@subql/types-stellar';
+import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { Sequelize } from '@subql/x-sequelize';
 import { ServerApi } from 'stellar-sdk/lib/horizon';
-import {
-  //  generateTimestampReferenceForBlockFilters,
-  StellarProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
 import SafeStellarProvider from '../stellar/safe-api';
 import { DsProcessorService } from './ds-processor.service';
@@ -34,7 +30,7 @@ const { version: packageVersion } = require('../../package.json');
 @Injectable()
 export class ProjectService extends BaseProjectService<
   ApiService<StellarApi, SafeStellarProvider, StellarBlockWrapper[]>,
-  StellarProjectDs
+  SubqlDatasource
 > {
   protected packageVersion = packageVersion;
 

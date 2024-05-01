@@ -14,8 +14,7 @@ import {
   IProjectUpgradeService,
   IBlock,
 } from '@subql/node-core';
-import { BlockWrapper } from '@subql/types-stellar';
-import { StellarProjectDs } from '../../configure/SubqueryProject';
+import { BlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { IndexerManager } from '../indexer.manager';
 
 export type FetchBlockResponse = { parentHash: string } | undefined;
@@ -40,7 +39,7 @@ export class WorkerService extends BaseWorkerService<
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     @Inject('IProjectService')
-    projectService: IProjectService<StellarProjectDs>,
+    projectService: IProjectService<SubqlDatasource>,
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     nodeConfig: NodeConfig,

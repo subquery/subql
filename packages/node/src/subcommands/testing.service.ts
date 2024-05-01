@@ -9,13 +9,14 @@ import {
   TestRunner,
   NestLogger,
 } from '@subql/node-core';
-import { BlockWrapper, StellarBlockWrapper } from '@subql/types-stellar';
 import {
-  StellarProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+  BlockWrapper,
+  StellarBlockWrapper,
+  SubqlDatasource,
+} from '@subql/types-stellar';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ProjectService } from '../indexer/project.service';
-import { StellarApi, StellarApiService } from '../stellar';
+import { StellarApi } from '../stellar';
 import SafeStellarProvider from '../stellar/safe-api';
 import { TestingModule } from './testing.module';
 @Injectable()
@@ -23,7 +24,7 @@ export class TestingService extends BaseTestingService<
   StellarApi,
   SafeStellarProvider,
   StellarBlockWrapper,
-  StellarProjectDs
+  SubqlDatasource
 > {
   constructor(
     nodeConfig: NodeConfig,
@@ -39,7 +40,7 @@ export class TestingService extends BaseTestingService<
         StellarApi,
         SafeStellarProvider,
         BlockWrapper,
-        StellarProjectDs
+        SubqlDatasource
       >,
     ]
   > {

@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from 'eventemitter2';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StellarApi } from './api.stellar';
 import { SorobanServer } from './soroban.server';
 

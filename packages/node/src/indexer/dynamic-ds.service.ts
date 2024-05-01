@@ -11,17 +11,15 @@ import {
   DatasourceParams,
   DynamicDsService as BaseDynamicDsService,
 } from '@subql/node-core';
+import { SubqlDatasource } from '@subql/types-stellar';
 import { plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import {
-  StellarProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 
 @Injectable()
 export class DynamicDsService extends BaseDynamicDsService<
-  StellarProjectDs,
+  SubqlDatasource,
   SubqueryProject
 > {
   constructor(
@@ -33,8 +31,8 @@ export class DynamicDsService extends BaseDynamicDsService<
 
   protected async getDatasource(
     params: DatasourceParams,
-  ): Promise<StellarProjectDs> {
-    const dsObj = this.getTemplate<StellarProjectDs>(
+  ): Promise<SubqlDatasource> {
+    const dsObj = this.getTemplate<SubqlDatasource>(
       params.templateName,
       params.startBlock,
     );

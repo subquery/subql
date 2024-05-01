@@ -14,9 +14,8 @@ import {
   ProjectUpgradeService,
   IBlock,
 } from '@subql/node-core';
-import { StellarBlockWrapper } from '@subql/types-stellar';
+import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import {
-  StellarProjectDs,
   SubqueryProject,
   dsHasSorobanEventHandler,
 } from '../configure/SubqueryProject';
@@ -67,7 +66,7 @@ export class StellarApiService extends ApiService<
     if (
       dsHasSorobanEventHandler([
         ...this.project.dataSources,
-        ...(this.project.templates as StellarProjectDs[]),
+        ...(this.project.templates as SubqlDatasource[]),
       ]) &&
       !sorobanEndpoint
     ) {

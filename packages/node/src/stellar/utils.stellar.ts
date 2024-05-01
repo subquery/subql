@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Header, IBlock } from '@subql/node-core';
-import {
-  ApiWrapper,
-  StellarBlock,
-  StellarBlockWrapper,
-} from '@subql/types-stellar';
+import { ApiWrapper, StellarBlockWrapper } from '@subql/types-stellar';
 
 export function blockToHeader(blockHeight: number): Header {
   return {

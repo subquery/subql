@@ -7,7 +7,6 @@ import { validateSemver } from '@subql/common';
 import {
   StellarProjectNetworkConfig,
   parseStellarProjectManifest,
-  SubqlStellarDataSource,
   ProjectManifestV1_0_0Impl,
   isCustomDs,
   StellarHandlerKind,
@@ -17,11 +16,11 @@ import {
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
-  SubqlProjectDs,
   updateDataSourcesV1_0_0,
 } from '@subql/node-core';
 import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import {
+  SubqlDatasource,
   CustomDatasourceTemplate,
   RuntimeDatasourceTemplate,
 } from '@subql/types-stellar';
@@ -30,11 +29,9 @@ import { GraphQLSchema } from 'graphql';
 
 const { version: packageVersion } = require('../../package.json');
 
-export type StellarProjectDs = SubqlProjectDs<SubqlStellarDataSource>;
-
 export type StellarProjectDsTemplate =
-  | SubqlProjectDs<RuntimeDatasourceTemplate>
-  | SubqlProjectDs<CustomDatasourceTemplate>;
+  | RuntimeDatasourceTemplate
+  | CustomDatasourceTemplate;
 
 const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);
@@ -45,13 +42,13 @@ type NetworkConfig = StellarProjectNetworkConfig & { chainId: string };
 
 @Injectable()
 export class SubqueryProject implements ISubqueryProject {
-  #dataSources: StellarProjectDs[];
+  #dataSources: SubqlDatasource[];
 
   constructor(
     readonly id: string,
     readonly root: string,
     readonly network: NetworkConfig,
-    dataSources: StellarProjectDs[],
+    dataSources: SubqlDatasource[],
     readonly schema: GraphQLSchema,
     readonly templates: StellarProjectDsTemplate[],
     readonly runner?: RunnerSpecs,
@@ -60,7 +57,7 @@ export class SubqueryProject implements ISubqueryProject {
     this.#dataSources = dataSources;
   }
 
-  get dataSources(): StellarProjectDs[] {
+  get dataSources(): SubqlDatasource[] {
     return this.#dataSources;
   }
 
@@ -186,7 +183,7 @@ async function loadProjectFromManifestBase(
 }
 
 export function dsHasSorobanEventHandler(
-  dataSources: StellarProjectDs[],
+  dataSources: SubqlDatasource[],
 ): boolean {
   return (
     dataSources.findIndex(function (ds) {

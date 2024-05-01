@@ -17,11 +17,8 @@ import {
   createIndexerWorker,
   InMemoryCacheService,
 } from '@subql/node-core';
-import { StellarBlockWrapper } from '@subql/types-stellar';
-import {
-  StellarProjectDs,
-  SubqueryProject,
-} from '../../configure/SubqueryProject';
+import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
+import { SubqueryProject } from '../../configure/SubqueryProject';
 import { StellarApiConnection } from '../../stellar/api.connection';
 import { StellarBlockWrapped } from '../../stellar/block.stellar';
 import { DynamicDsService } from '../dynamic-ds.service';
@@ -37,7 +34,7 @@ type IndexerWorker = IIndexerWorker & {
 @Injectable()
 export class WorkerBlockDispatcherService
   extends WorkerBlockDispatcher<
-    StellarProjectDs,
+    SubqlDatasource,
     IndexerWorker,
     StellarBlockWrapper
   >
@@ -47,7 +44,7 @@ export class WorkerBlockDispatcherService
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     @Inject('IProjectService')
-    projectService: IProjectService<StellarProjectDs>,
+    projectService: IProjectService<SubqlDatasource>,
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     cacheService: InMemoryCacheService,
@@ -73,7 +70,7 @@ export class WorkerBlockDispatcherService
           IIndexerWorker,
           StellarApiConnection,
           StellarBlockWrapped,
-          StellarProjectDs
+          SubqlDatasource
         >(
           path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
           [],

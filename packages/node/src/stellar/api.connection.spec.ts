@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ApiConnectionError,
   ApiErrorType,
@@ -10,10 +11,8 @@ import {
   TimeoutError,
 } from '@subql/node-core';
 import { StellarBlock, StellarBlockWrapper } from '@subql/types-stellar';
-import EventEmitter2 from 'eventemitter2';
 import { StellarApiConnection } from './api.connection';
 import { StellarApi } from './api.stellar';
-import SafeStellarProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
 
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
