@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.9.2] - 2024-05-02
 ### Fixed
 - Debug flag not working with worker loggers (#2374)
 
@@ -133,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.9.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.9.2...HEAD
+[2.9.2]: https://github.com/subquery/subql/compare/utils/2.9.1...utils/2.9.2
 [2.9.1]: https://github.com/subquery/subql/compare/utils/2.9.0...utils/2.9.1
 [2.9.0]: https://github.com/subquery/subql/compare/utils/2.8.0...utils/2.9.0
 [2.8.0]: https://github.com/subquery/subql/compare/utils/2.7.1...utils/2.8.0
