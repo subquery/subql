@@ -99,7 +99,7 @@ export default class Migrate extends Command {
         author: subgraphManifest.author,
         endpoint: [],
       });
-      await migrateSchema(subqlSchemaPath, subgraphSchemaPath);
+      await migrateSchema(subgraphSchemaPath, subqlSchemaPath);
       await migrateMapping(subgraphDir, subqlDir);
       this.log(`* Output migrated SubQuery project to ${subqlDir}`);
     } catch (e) {
