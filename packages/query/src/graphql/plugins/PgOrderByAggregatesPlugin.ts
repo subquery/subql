@@ -92,7 +92,6 @@ const OrderByAggregatesPlugin: Plugin = (builder) => {
           );
         });
 
-        console.log('XXXX', queryBuilder.context.args?.blockHeight, supportsHistorical);
         if (queryBuilder.context.args?.blockHeight && supportsHistorical) {
           conditions.push(makeRangeQuery(tableAlias, queryBuilder.context.args.blockHeight, sql));
         }
