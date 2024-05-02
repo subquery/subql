@@ -54,10 +54,6 @@ export class BlockDispatcherService
     );
   }
 
-  protected getBlockHeight(block: StellarBlockWrapper): number {
-    return block.block.sequence;
-  }
-
   protected async indexBlock(
     block: IBlock<StellarBlockWrapper>,
   ): Promise<ProcessBlockResponse> {

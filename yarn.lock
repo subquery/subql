@@ -2762,9 +2762,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^10.1.1":
-  version: 10.1.1
-  resolution: "@subql/node-core@npm:10.1.1"
+"@subql/node-core@npm:^10.1.2":
+  version: 10.1.2
+  resolution: "@subql/node-core@npm:10.1.2"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
@@ -2791,7 +2791,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: dea91df0b7e18094689f4a8862b76a1de8957fb6e188250ea5337a93b268c477d32bbaf431daf4594b2752bcd5665b317fd4699834db69bfa681e32ce5be225f
+  checksum: 30c76d1f416cff13c602643f42d9a1f8bfd73ddc83c25911e0ea222c23c85cf7fb7a00ef31c367e6e9b97972fffd85eb7d00b2745e2d238de7bf6e13c13dc4a8
   languageName: node
   linkType: hard
 
@@ -2808,9 +2808,8 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.5.1
     "@subql/common-stellar": "workspace:*"
-    "@subql/node-core": ^10.1.1
+    "@subql/node-core": ^10.1.2
     "@subql/testing": ^2.0.0
-    "@subql/types": ^2.2.1-1
     "@subql/types-stellar": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -2885,15 +2884,6 @@ __metadata:
   peerDependencies:
     "@polkadot/api": ^10
   checksum: 1dd38caed6697182862792401b8edf3dec04ddaa8caf1b6255363c5a53ddad98a22a24a3eab92b7c8b0ee0d19e09c9b20b44bd0c988f416d6b72ac5a016e5d6d
-  languageName: node
-  linkType: hard
-
-"@subql/types@npm:^2.2.1-1":
-  version: 2.2.1-1-ts-manifest
-  resolution: "@subql/types@npm:2.2.1-1-ts-manifest"
-  peerDependencies:
-    "@polkadot/api": ^10
-  checksum: 1ec799db1bacc3111f280348c0aaa1003fed4c588e85ce36afb2407db1e28bc22f59444efa166f3ad1dabd36814196c99b92ce81e15d76d6fa05515907905bb5
   languageName: node
   linkType: hard
 
