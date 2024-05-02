@@ -70,6 +70,7 @@ async function publishRelease(releaseInfo) {
         name: `[${version}] ${repoName}`,
         repo: 'subql-ethereum',
         tag_name: `${packageName[1]}/${version}`,
+        target_commitish: `${myArgs[1]}`,
         body: releaseInfo
     }).catch( err => {
         core.setFailed(err)
