@@ -48,7 +48,7 @@ export type CronFilter = {
 };
 
 export function filterBlockTimestamp(blockTimestamp: number, filter: CronFilter): boolean {
-  if (!filter.cronSchedule) {
+  if (!filter?.cronSchedule) {
     return true;
   }
   if (blockTimestamp > filter.cronSchedule.next) {
