@@ -31,7 +31,7 @@ jobs:
           then
             echo "commit-message=${{ github.event.head_commit.message }}" >> "$GITHUB_OUTPUT"
           else
-            echo "commit-message=$(git log -1 --pretty=%B)" >> "$GITHUB_OUTPUT"
+            echo "commit-message=\"$(git log -1 --pretty=%B | head -n 1)\"" >> "$GITHUB_OUTPUT"
           fi
 
   Build-Publish:

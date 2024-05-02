@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.5.0] - 2024-05-02
 ### Changed
 - Update dependencies and apply changes to match (#62)
 
@@ -52,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.4.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.4.1...common-stellar/3.5.0
 [3.4.1]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.4.0...common-stellar/3.4.1
 [3.4.0]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.3.2...common-stellar/3.4.0
 [3.3.2]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.3.1...common-stellar/3.3.2
