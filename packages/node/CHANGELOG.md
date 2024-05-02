@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.11.1] - 2024-05-02
+### Fixed
+- Sandbox Uint8Array and missing pg dep issue
+
 ## [3.11.0] - 2024-05-02
 ### Changed
 - Update dependencies and apply changes to match (#62)
@@ -125,7 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.1...HEAD
+[3.11.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.0...node-stellar/3.11.1
 [3.11.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.10.1...node-stellar/3.11.0
 [3.10.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.10.0...node-stellar/3.10.1
 [3.10.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.9.1...node-stellar/3.10.0
