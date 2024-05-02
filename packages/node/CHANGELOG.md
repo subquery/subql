@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Unused deps and deprecated type (#63)
 
+### Fixed
+- Block timestamp filter not working (#64)
+
 ## [3.10.1] - 2024-04-11
 ### Fixed
 - Fixed failed previous release

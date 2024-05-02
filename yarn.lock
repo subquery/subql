@@ -2762,9 +2762,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "@subql/node-core@npm:10.0.0"
+"@subql/node-core@npm:^10.1.0":
+  version: 10.1.0
+  resolution: "@subql/node-core@npm:10.1.0"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
@@ -2773,10 +2773,11 @@ __metadata:
     "@subql/common": 3.5.1
     "@subql/testing": 2.1.1
     "@subql/types": 3.5.0
-    "@subql/utils": 2.9.1
+    "@subql/utils": 2.9.2
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-lock: ^1.4.0
     async-mutex: ^0.4.0
+    cron-converter: ^2.0.1
     cross-fetch: ^3.1.6
     csv-stringify: ^6.4.5
     dayjs: ^1.10.7
@@ -2789,7 +2790,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: c52c304ea23c10a171ef411b877032c88733eb6a2262b4a167de9484f7e1fed567bdc36ad1bcb7f9a610d1774a348bd203dc82dd1f7c52f693ff7756c4097d4f
+  checksum: b7df8c672e93bc6339d47c4a8c806dd8fca7c1a24e0ce0ac065925928151bc476b8cf9f6149e85c472085f81800d601a79ea6fd8e1e0ca09636b09fdc3371dd0
   languageName: node
   linkType: hard
 
@@ -2806,7 +2807,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.5.1
     "@subql/common-stellar": "workspace:*"
-    "@subql/node-core": ^10.0.0
+    "@subql/node-core": ^10.1.0
     "@subql/testing": ^2.0.0
     "@subql/types": ^2.2.1-1
     "@subql/types-stellar": "workspace:*"
@@ -2896,9 +2897,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.9.1":
-  version: 2.9.1
-  resolution: "@subql/utils@npm:2.9.1"
+"@subql/utils@npm:2.9.2":
+  version: 2.9.2
+  resolution: "@subql/utils@npm:2.9.2"
   dependencies:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
@@ -2914,7 +2915,7 @@ __metadata:
     rotating-file-stream: ^3.0.2
     semver: ^7.5.2
     tar: ^6.2.1
-  checksum: 555c215f44ac6f6828ade30c3643e260bf99ef3c14381d14a9e9ba3c9fa5cfd0a4e938b3a2fbd907379ad2b832bb79a5071f96966b32d751824affb9cea266c8
+  checksum: fd2f32136d0324e3b19e826e4760e90db36e66b580ee244e77fa96124389d3253923c74ab98a07799803ba2421c285b68bc42b295e8a3b48376db34405adb872
   languageName: node
   linkType: hard
 
@@ -4929,6 +4930,15 @@ __metadata:
     moment-timezone: ~0.5
     sprintf-js: ~1
   checksum: 7bbd01f29a6fc5a8a8c8dabda3a6468b7040acd374beadbf103d6c86f9e85c961a0937cfa2a997e4bfcdcd6bd07cde658a3009b899130e69e6c9ceb5f0a82ac3
+  languageName: node
+  linkType: hard
+
+"cron-converter@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "cron-converter@npm:2.0.1"
+  dependencies:
+    luxon: ^3.1.0
+  checksum: 74ef69ec7e9020183cfa8f117fe687c654ba32f863ae8cf86a834b5baafd1321ee0d9caa62cc8e6e4cfe02b255f237ed0a0f91f0da78d01eb49317d06bf76f3d
   languageName: node
   linkType: hard
 
@@ -8413,6 +8423,13 @@ __metadata:
   version: 10.0.1
   resolution: "lru-cache@npm:10.0.1"
   checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.1.0":
+  version: 3.4.4
+  resolution: "luxon@npm:3.4.4"
+  checksum: 36c1f99c4796ee4bfddf7dc94fa87815add43ebc44c8934c924946260a58512f0fd2743a629302885df7f35ccbd2d13f178c15df046d0e3b6eb71db178f1c60c
   languageName: node
   linkType: hard
 

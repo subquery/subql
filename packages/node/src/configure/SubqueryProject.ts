@@ -13,6 +13,7 @@ import {
   isRuntimeDs,
 } from '@subql/common-stellar';
 import {
+  CronFilter,
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
@@ -23,6 +24,7 @@ import {
   SubqlDatasource,
   CustomDatasourceTemplate,
   RuntimeDatasourceTemplate,
+  StellarBlockFilter,
 } from '@subql/types-stellar';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
@@ -32,6 +34,8 @@ const { version: packageVersion } = require('../../package.json');
 export type StellarProjectDsTemplate =
   | RuntimeDatasourceTemplate
   | CustomDatasourceTemplate;
+
+export type SubqlProjectBlockFilter = StellarBlockFilter & CronFilter;
 
 const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);

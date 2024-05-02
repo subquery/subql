@@ -1,14 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  StellarBlock,
-  StellarBlockWrapper,
-  StellarEffect,
-  SorobanEvent,
-  StellarOperation,
-  StellarTransaction,
-} from './stellar';
+import {StellarBlock, StellarEffect, SorobanEvent, StellarOperation, StellarTransaction} from './stellar';
 
 export interface BlockWrapper<
   B extends StellarBlock = StellarBlock,

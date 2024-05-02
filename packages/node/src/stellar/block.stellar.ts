@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { filterBlockTimestamp } from '@subql/node-core';
 import {
   StellarBlock,
   StellarBlockFilter,
@@ -14,7 +15,8 @@ import {
   StellarTransaction,
   StellarTransactionFilter,
 } from '@subql/types-stellar';
-import { Address, scValToNative, xdr } from 'stellar-sdk';
+import { scValToNative } from 'stellar-sdk';
+import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { stringNormalizedEq } from '../utils/string';
 
 export class StellarBlockWrapped implements StellarBlockWrapper {
@@ -52,6 +54,14 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     address?: string,
   ): boolean {
     if (filter?.modulo && block.sequence % filter.modulo !== 0) {
+      return false;
+    }
+    if (
+      !filterBlockTimestamp(
+        new Date(block.closed_at).getTime(),
+        filter as SubqlProjectBlockFilter,
+      )
+    ) {
       return false;
     }
     return true;
