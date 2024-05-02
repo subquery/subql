@@ -2,10 +2,34 @@
 
 /* INFO: This file has been modified from https://github.com/graphile-contrib/postgraphile-plugin-connection-filter to support historical queries */
 
+import {PgEntity, SQL} from '@subql/x-graphile-build-pg';
 import type {Plugin} from 'graphile-build';
-import type {PgAttribute, PgClass, PgConstraint} from 'graphile-build-pg';
+import type {QueryBuilder} from 'graphile-build-pg';
+import type {PgAttribute, PgClass, PgConstraint} from '@subql/x-graphile-build-pg';
 import {ConnectionFilterResolver} from 'postgraphile-plugin-connection-filter/dist/PgConnectionArgFilterPlugin';
-import {makeRangeQuery, hasBlockRange} from './utils';
+import {buildWhereConditionBackward} from './PgConnectionArgFilterBackwardRelationsPlugin';
+
+/* This is a modification from the original function where a block range condition is added */
+function buildWhereConditionForward(
+  table: PgEntity,
+  foreignTableAlias: SQL,
+  sourceAlias: SQL,
+  foreignKeyAttributes: PgAttribute[],
+  keyAttributes: PgAttribute[],
+  queryBuilder: QueryBuilder,
+  sql: any
+): SQL {
+  // Swaps the arguments for source and foreign
+  return buildWhereConditionBackward(
+    table,
+    sourceAlias,
+    foreignTableAlias,
+    keyAttributes,
+    foreignKeyAttributes,
+    queryBuilder,
+    sql
+  );
+}
 
 const PgConnectionArgFilterForwardRelationsPlugin: Plugin = (builder) => {
   builder.hook('inflection', (inflection) => ({
@@ -137,17 +161,15 @@ const PgConnectionArgFilterForwardRelationsPlugin: Plugin = (builder) => {
        * HISTORICAL CHANGES BEGIN
        *******************************/
 
-      const keyMatches = keyAttributes.map((key, i) => {
-        return sql.fragment`${sourceAlias}.${sql.identifier(key.name)} = ${foreignTableAlias}.${sql.identifier(
-          foreignKeyAttributes[i].name
-        )}`;
-      });
-
-      if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
-        keyMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
-      }
-
-      const sqlKeysMatch = sql.query`(${sql.join(keyMatches, ') and (')})`;
+      const sqlKeysMatch = buildWhereConditionForward(
+        table,
+        foreignTableAlias,
+        sourceAlias,
+        foreignKeyAttributes,
+        keyAttributes,
+        queryBuilder,
+        sql
+      );
 
       /******************************
        * HISTORICAL CHANGES END
@@ -186,17 +208,15 @@ const PgConnectionArgFilterForwardRelationsPlugin: Plugin = (builder) => {
        * HISTORICAL CHANGES BEGIN
        *******************************/
 
-      const keyMatches = keyAttributes.map((key, i) => {
-        return sql.fragment`${sourceAlias}.${sql.identifier(key.name)} = ${foreignTableAlias}.${sql.identifier(
-          foreignKeyAttributes[i].name
-        )}`;
-      });
-
-      if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
-        keyMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
-      }
-
-      const sqlKeysMatch = sql.query`(${sql.join(keyMatches, ') and (')})`;
+      const sqlKeysMatch = buildWhereConditionForward(
+        table,
+        foreignTableAlias,
+        sourceAlias,
+        foreignKeyAttributes,
+        keyAttributes,
+        queryBuilder,
+        sql
+      );
 
       /******************************
        * HISTORICAL CHANGES END

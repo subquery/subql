@@ -1,10 +1,35 @@
 /* eslint-disable */
 
 /* INFO: This file has been modified from https://github.com/graphile-contrib/postgraphile-plugin-connection-filter to support historical queries */
+import {SQL} from '@subql/x-graphile-build-pg';
+import type {PgEntity, PgAttribute, PgClass, PgConstraint} from '@subql/x-graphile-build-pg';
+import type {QueryBuilder} from 'graphile-build-pg';
 import type {Plugin} from 'graphile-build';
-import type {PgAttribute, PgClass, PgConstraint} from 'graphile-build-pg';
 import {ConnectionFilterResolver} from 'postgraphile-plugin-connection-filter/dist/PgConnectionArgFilterPlugin';
 import {makeRangeQuery, hasBlockRange} from './utils';
+
+/* This is a modification from the original function where a block range condition is added */
+export function buildWhereConditionBackward(
+  table: PgEntity,
+  foreignTableAlias: SQL,
+  sourceAlias: SQL,
+  foreignKeyAttributes: PgAttribute[],
+  keyAttributes: PgAttribute[],
+  queryBuilder: QueryBuilder,
+  sql: any
+): SQL {
+  const fkMatches = foreignKeyAttributes.map((attr, i) => {
+    return sql.fragment`${foreignTableAlias}.${sql.identifier(attr.name)} = ${sourceAlias}.${sql.identifier(
+      keyAttributes[i].name
+    )}`;
+  });
+
+  if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
+    fkMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
+  }
+
+  return sql.query`(${sql.join(fkMatches, ') and (')})`;
+}
 
 const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
   builder,
@@ -170,17 +195,15 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
        * HISTORICAL CHANGES BEGIN
        *******************************/
 
-      const fkMatches = foreignKeyAttributes.map((attr, i) => {
-        return sql.fragment`${foreignTableAlias}.${sql.identifier(attr.name)} = ${sourceAlias}.${sql.identifier(
-          keyAttributes[i].name
-        )}`;
-      });
-
-      if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
-        fkMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
-      }
-
-      const sqlKeysMatch = sql.query`(${sql.join(fkMatches, ') and (')})`;
+      const sqlKeysMatch = buildWhereConditionBackward(
+        table,
+        foreignTableAlias,
+        sourceAlias,
+        foreignKeyAttributes,
+        keyAttributes,
+        queryBuilder,
+        sql
+      );
 
       /******************************
        * HISTORICAL CHANGES END
@@ -209,17 +232,15 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
        * HISTORICAL CHANGES BEGIN
        *******************************/
 
-      const fkMatches = foreignKeyAttributes.map((attr, i) => {
-        return sql.fragment`${foreignTableAlias}.${sql.identifier(attr.name)} = ${sourceAlias}.${sql.identifier(
-          keyAttributes[i].name
-        )}`;
-      });
-
-      if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
-        fkMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
-      }
-
-      const sqlKeysMatch = sql.query`(${sql.join(fkMatches, ') and (')})`;
+      const sqlKeysMatch = buildWhereConditionBackward(
+        table,
+        foreignTableAlias,
+        sourceAlias,
+        foreignKeyAttributes,
+        keyAttributes,
+        queryBuilder,
+        sql
+      );
 
       /******************************
        * HISTORICAL CHANGES END
@@ -418,14 +439,25 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
 
       const foreignTableAlias = sql.identifier(Symbol());
       const sqlIdentifier = sql.identifier(foreignTable.namespace.name, foreignTable.name);
-      const sqlKeysMatch = sql.query`(${sql.join(
-        foreignKeyAttributes.map((attr, i) => {
-          return sql.fragment`${foreignTableAlias}.${sql.identifier(attr.name)} = ${sourceAlias}.${sql.identifier(
-            keyAttributes[i].name
-          )}`;
-        }),
-        ') and ('
-      )})`;
+
+      /******************************
+       * HISTORICAL CHANGES BEGIN
+       *******************************/
+
+      const sqlKeysMatch = buildWhereConditionBackward(
+        foreignTable,
+        foreignTableAlias,
+        sourceAlias,
+        foreignKeyAttributes,
+        keyAttributes,
+        queryBuilder,
+        sql
+      );
+
+      /******************************
+       * HISTORICAL CHANGES END
+       *******************************/
+
       const sqlSelectWhereKeysMatch = sql.query`select 1 from ${sqlIdentifier} as ${foreignTableAlias} where ${sqlKeysMatch}`;
 
       const sqlFragment = connectionFilterResolve(
