@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.1.1] - 2024-05-02
+### Fixed
+- Add back missing dependencies `pg`, also rollback `Uint8Array` change for sandbox as it could break other sdk.
+
 ## [10.1.0] - 2024-05-02
 ### Fixed
 - Fixed issue Buffer within sandbox could not concat Buffer and Uint8Array, also injected `atob`
@@ -668,7 +672,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.1.1...HEAD
+[10.1.1]: https://github.com/subquery/subql/compare/node-core/10.1.0...node-core/10.1.1
 [10.1.0]: https://github.com/subquery/subql/compare/node-core/10.0.0...node-core/10.1.0
 [10.0.0]: https://github.com/subquery/subql/compare/node-core/9.0.0...node-core/10.0.0
 [9.0.0]: https://github.com/subquery/subql/compare/node-core/8.0.1...node-core/9.0.0
