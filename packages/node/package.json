@@ -19,7 +19,6 @@
     "subql-node-ethereum": "./bin/run"
   },
   "dependencies": {
-    "@apollo/client": "3.5.8",
     "@nestjs/common": "^9.4.0",
     "@nestjs/core": "^9.4.0",
     "@nestjs/event-emitter": "^2.0.0",
@@ -27,21 +26,16 @@
     "@nestjs/schedule": "^3.0.1",
     "@subql/common": "^3.5.1",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "^10.0.0",
+    "@subql/node-core": "^10.1.0",
     "@subql/testing": "^2.1.1",
     "@subql/types-ethereum": "workspace:*",
     "cacheable-lookup": "6",
-    "cron-converter": "^1.0.2",
     "ethers": "^5.7.0",
     "eventemitter2": "^6.4.5",
     "json5": "^2.2.3",
     "lodash": "^4.17.21",
-    "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.2",
-    "web3-providers-http": "^1.8.0",
-    "web3-providers-ws": "^1.8.0",
     "yargs": "^16.2.0"
   },
   "peerDependencies": {

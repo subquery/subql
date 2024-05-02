@@ -13,6 +13,7 @@ import {
   isCustomDs,
 } from '@subql/common-ethereum';
 import {
+  CronFilter,
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
@@ -25,7 +26,6 @@ import {
   EthereumBlockFilter,
 } from '@subql/types-ethereum';
 import { buildSchemaFromString } from '@subql/utils';
-import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import { updateDatasourcesFlare } from '../utils/project';
 
@@ -37,12 +37,7 @@ export type EthereumProjectDsTemplate =
   | RuntimeDatasourceTemplate
   | CustomDatasourceTemplate;
 
-export type SubqlProjectBlockFilter = EthereumBlockFilter & {
-  cronSchedule?: {
-    schedule: Cron.Seeker;
-    next: number;
-  };
-};
+export type SubqlProjectBlockFilter = EthereumBlockFilter & CronFilter;
 
 const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name} is not supported`);
