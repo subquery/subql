@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.3.1] - 2024-05-02
+### Fixed
+- Sandbox Uint8Array and missing pg dep issue
+
 ## [4.3.0] - 2024-05-02
 ### Changed
 - Update node-core with bug fixes (#285)
@@ -462,7 +466,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.1...HEAD
+[4.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.0...node-ethereum/4.3.1
 [4.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.2.0...node-ethereum/4.3.0
 [4.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.1.1...node-ethereum/4.2.0
 [4.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.1.0...node-ethereum/4.1.1
