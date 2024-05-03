@@ -15,14 +15,11 @@ export abstract class Cacheable {
 
     try {
       tx.afterCommit(() => {
+        this.clear(blockHeight);
         release();
       });
 
       const pendingFlush = this.runFlush(tx, blockHeight);
-
-      // Don't await DB operations to complete before clearing.
-      // This allows new data to be cached while flushing
-      this.clear(blockHeight);
       await pendingFlush;
     } catch (e) {
       release();
