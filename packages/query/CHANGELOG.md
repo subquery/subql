@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.5] - 2024-05-03
 ### Fixed
 - Block height missing from certain historical queries (#2384)
 
@@ -301,7 +303,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.5...HEAD
+[2.10.5]: https://github.com/subquery/subql/compare/query/2.10.4...query/2.10.5
 [2.10.4]: https://github.com/subquery/subql/compare/query/2.10.3...query/2.10.4
 [2.10.3]: https://github.com/subquery/subql/compare/query/2.10.1...query/2.10.3
 [2.10.1]: https://github.com/subquery/subql/compare/query/2.10.0...query/2.10.1
