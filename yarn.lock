@@ -2762,9 +2762,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^10.1.2":
-  version: 10.1.2
-  resolution: "@subql/node-core@npm:10.1.2"
+"@subql/node-core@npm:10.1.0":
+  version: 10.1.0
+  resolution: "@subql/node-core@npm:10.1.0"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
@@ -2784,14 +2784,13 @@ __metadata:
     lodash: ^4.17.21
     lru-cache: 10.1.0
     merkle-tools: ^1.4.1
-    pg: ^8.11.5
     prom-client: ^14.0.1
     source-map: ^0.7.4
     tar: ^6.2.1
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 30c76d1f416cff13c602643f42d9a1f8bfd73ddc83c25911e0ea222c23c85cf7fb7a00ef31c367e6e9b97972fffd85eb7d00b2745e2d238de7bf6e13c13dc4a8
+  checksum: b7df8c672e93bc6339d47c4a8c806dd8fca7c1a24e0ce0ac065925928151bc476b8cf9f6149e85c472085f81800d601a79ea6fd8e1e0ca09636b09fdc3371dd0
   languageName: node
   linkType: hard
 
@@ -2808,7 +2807,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.5.1
     "@subql/common-stellar": "workspace:*"
-    "@subql/node-core": ^10.1.2
+    "@subql/node-core": 10.1.0
     "@subql/testing": ^2.0.0
     "@subql/types-stellar": "workspace:*"
     "@types/express": ^4.17.13
@@ -2820,6 +2819,7 @@ __metadata:
     dotenv: ^15.0.1
     lodash: ^4.17.21
     nodemon: ^2.0.15
+    pg: ^8.11.5
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     stellar-sdk: ^11.2.2

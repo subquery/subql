@@ -53,6 +53,7 @@ export class StellarBlockWrapped implements StellarBlockWrapper {
     filter: StellarBlockFilter,
     address?: string,
   ): boolean {
+    if (!filter) return true;
     if (filter?.modulo && block.sequence % filter.modulo !== 0) {
       return false;
     }

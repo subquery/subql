@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.11.2] - 2024-05-03
+### Fixed
+- temp fixed version for node-core, to fix stellar-sdk `Uinit8Array` in sandbox issue.
 
 ## [3.11.1] - 2024-05-02
 ### Fixed
@@ -130,7 +133,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.2...HEAD
+[3.11.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.1...node-stellar/3.11.2
 [3.11.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.0...node-stellar/3.11.1
 [3.11.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.10.1...node-stellar/3.11.0
 [3.10.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.10.0...node-stellar/3.10.1
