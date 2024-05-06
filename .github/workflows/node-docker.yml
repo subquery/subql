@@ -24,17 +24,16 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]
           then
-            COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
-            if [[ $COMMIT_MESSAGE == "[release]"* ]] && git diff --name-only HEAD~1 HEAD -- './packages/node/package.json'
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            if [[ $TAG_NAME == "node-stellar/"* ]]
             then
-              echo "::set-output name=changes_found::true" >> "$GITHUB_OUTPUT"
+              echo "::set-output name=changes_found::true"
             else
-              echo "::set-output name=changes_found::false" >> "$GITHUB_OUTPUT"
+              echo "::set-output name=changes_found::false"
             fi
           else
-            echo "::set-output name=changes_found::true" >> "$GITHUB_OUTPUT"
+            echo "::set-output name=changes_found::true"
           fi
-
   node-build-push-docker:
     needs: check
     if: needs.check.outputs.changes_found == 'true'
