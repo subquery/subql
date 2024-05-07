@@ -36,8 +36,8 @@
     "typescript": "^4.9.5"
   },
   "resolutions": {
-    "@polkadot/api": "10.10.1",
-    "@polkadot/util": "12.5.1",
+    "@polkadot/api": "11.0.2",
+    "@polkadot/util": "12.6.2",
     "node-fetch": "2.6.7"
   },
   "scripts": {

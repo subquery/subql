@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump with @subql/utils, update polkadot dependencies to v11
+
 ## [2.10.5] - 2024-05-03
 ### Fixed
 - Block height missing from certain historical queries (#2384)

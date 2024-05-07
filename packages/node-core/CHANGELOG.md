@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump with @subql/utils, update polkadot dependencies to v11
+
 ### Fixed
 - Fix `reindex` command failed due to `projectUpgradeService` not been initialized 
 - Fix project upgrade to an earlier height, deployments in metadata not been updated, and app restart will lead to reindex.
