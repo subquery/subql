@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix `reindex` command failed due to `projectUpgradeService` not been initialized 
+- Fix project upgrade to an earlier height, deployments in metadata not been updated, and app restart will lead to reindex.
 
 ## [10.1.2] - 2024-05-03
 ### Fixed
