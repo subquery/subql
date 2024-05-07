@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2024-05-08
 ### Changed
 - Bump with @subql/utils, update polkadot dependencies to v11
 
@@ -306,7 +307,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.10.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.11.0...HEAD
+[2.11.0]: https://github.com/subquery/subql/compare/query/2.10.5...query/2.11.0
 [2.10.5]: https://github.com/subquery/subql/compare/query/2.10.4...query/2.10.5
 [2.10.4]: https://github.com/subquery/subql/compare/query/2.10.3...query/2.10.4
 [2.10.3]: https://github.com/subquery/subql/compare/query/2.10.1...query/2.10.3
