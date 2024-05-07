@@ -17,6 +17,7 @@ const logger = getLogger('Reindex');
 @Injectable()
 export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSource, B> {
   private _metadataRepo?: CacheMetadataModel;
+  private _lastProcessedHeight?: number;
 
   constructor(
     private readonly sequelize: Sequelize,
@@ -52,6 +53,16 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     this._metadataRepo = this.storeService.storeCache.metadata;
 
     await this.dynamicDsService.init(this.metadataRepo);
+
+    this._lastProcessedHeight = await this.getLastProcessedHeight();
+
+    await this.projectUpgradeService.init(
+      this.storeService,
+      this.lastProcessedHeight,
+      this.nodeConfig,
+      this.sequelize,
+      schema
+    );
   }
 
   async getTargetHeightWithUnfinalizedBlocks(inputHeight: number): Promise<number> {
@@ -66,6 +77,11 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
   private async getExistingProjectSchema(): Promise<string | undefined> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
+  }
+
+  get lastProcessedHeight(): number {
+    assert(this._lastProcessedHeight !== undefined, 'Cannot reindex without lastProcessedHeight been initialized');
+    return this._lastProcessedHeight;
   }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {
@@ -89,17 +105,12 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {
-    const [startHeight, lastProcessedHeight] = await Promise.all([
-      this.getStartBlockFromDataSources(),
-      this.getLastProcessedHeight(),
-    ]);
-
-    assert(lastProcessedHeight !== undefined, 'Cannot reindex without being able to get the lastProcessedHeight');
+    const startHeight = this.getStartBlockFromDataSources();
 
     await reindex(
       startHeight,
       targetBlockHeight,
-      lastProcessedHeight,
+      this.lastProcessedHeight,
       this.storeService,
       this.unfinalizedBlocksService,
       this.dynamicDsService,
