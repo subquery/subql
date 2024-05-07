@@ -6,11 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.2.0] - 2024-05-08
 ### Changed
 - Bump with @subql/utils, update polkadot dependencies to v11
 
 ### Fixed
-- Fix `reindex` command failed due to `projectUpgradeService` not been initialized 
+- Fix `reindex` command failed due to `projectUpgradeService` not been initialized
 - Fix project upgrade to an earlier height, deployments in metadata not been updated, and app restart will lead to reindex.
 
 ## [10.1.2] - 2024-05-03
@@ -683,7 +684,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.1.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.2.0...HEAD
+[10.2.0]: https://github.com/subquery/subql/compare/node-core/10.1.2...node-core/10.2.0
 [10.1.2]: https://github.com/subquery/subql/compare/node-core/10.1.1...node-core/10.1.2
 [10.1.1]: https://github.com/subquery/subql/compare/node-core/10.1.0...node-core/10.1.1
 [10.1.0]: https://github.com/subquery/subql/compare/node-core/10.0.0...node-core/10.1.0

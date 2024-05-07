@@ -6673,7 +6673,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/utils@workspace:packages/utils"
   dependencies:
-    "@polkadot/util": ^11.0.2
+    "@polkadot/util": ^12.6.2
     "@polkadot/util-crypto": ^12.6.2
     "@subql/x-sequelize": 6.32.0-0.0.4
     "@types/semver": ^7

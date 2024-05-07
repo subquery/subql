@@ -1,6 +1,6 @@
 {
   "name": "@subql/utils",
-  "version": "2.9.3-0",
+  "version": "2.10.0",
   "description": "",
   "packageManager": "yarn@3.1.1",
   "scripts": {
@@ -13,7 +13,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@polkadot/util": "^11.0.2",
+    "@polkadot/util": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.2",
     "@subql/x-sequelize": "6.32.0-0.0.4",
     "ansi-styles": "^6.1.0",
@@ -30,6 +30,5 @@
   },
   "devDependencies": {
     "@types/semver": "^7"
-  },
-  "stableVersion": "2.9.2"
+  }
 }
