@@ -221,9 +221,10 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       }
 
       currentId = nextId;
-      this.#currentProject = nextProject as P;
       nextId = iterator.next();
     }
+    // this remove any deployments in metadata beyond target height
+    await this.removeIndexedDeployments(targetBlockHeight);
   }
 
   private async migrate(
@@ -435,6 +436,23 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     });
 
     deployments[blockHeight] = id;
+
+    this.#storeCache?.metadata.set('deployments', JSON.stringify(deployments));
+  }
+
+  // Remove metadata deployments beyond this blockHeight
+  async removeIndexedDeployments(blockHeight: number): Promise<void> {
+    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
+    const deployments = await this.getDeploymentsMetadata();
+
+    // remove all future block heights
+    Object.keys(deployments).forEach((key) => {
+      const keyNum = parseInt(key, 10);
+      // NOTE, this is different with `updateIndexedDeployments`, deployment > will be deleted
+      if (keyNum > blockHeight) {
+        delete deployments[keyNum];
+      }
+    });
 
     this.#storeCache?.metadata.set('deployments', JSON.stringify(deployments));
   }
