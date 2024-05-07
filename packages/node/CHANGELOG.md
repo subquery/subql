@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Update polkadot dependencies to v11
+
 ## [4.3.2] - 2024-05-03
 ### Fixed
 - Bump dependency with node-core, fix block timestamp filter could be undefined

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Update polkadot dependencies to v11
+
 ## [2.9.2] - 2024-05-02
 ### Fixed
 - Debug flag not working with worker loggers (#2374)

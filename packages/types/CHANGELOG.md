@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Update polkadot dependencies to v11
+
 ## [3.5.0] - 2024-04-24
 ### Changed
 - Use ds processor types from `@subql/types-core` (#2357)

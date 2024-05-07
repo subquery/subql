@@ -195,13 +195,15 @@ describe('ApiService', () => {
     );
   });
 
+  // const change in new metadata, need to find another test example
   it.skip('api consts is swapped to the specified block', async () => {
     const apiService = await prepareApiService();
     const api = apiService.api;
     // upgrade at 4401242 that maxNominatorRewardedPerValidator changed from 256 to 128
     let blockhash: BlockHash;
-    const currentMaxNRPV =
-      api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
+    const currentMaxNRPV = Number(
+      api.consts.staking.maxNominatorRewardedPerValidator,
+    );
     if (currentMaxNRPV === 128) {
       blockhash = await api.rpc.chain.getBlockHash(4401242);
     } else {
@@ -216,7 +218,7 @@ describe('ApiService', () => {
       runtimeVersion,
     );
     expect(
-      patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
+      Number(patchedApi.consts.staking.maxNominatorRewardedPerValidator),
     ).not.toEqual(currentMaxNRPV);
   });
 

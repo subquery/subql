@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump with @subql/util, update polkadot dependencies to v11
+
 ## [4.7.0] - 2024-05-02
 ### Added
 - Migrate a subgraph project to subquery project
