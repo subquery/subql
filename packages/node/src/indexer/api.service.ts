@@ -34,9 +34,25 @@ const NOT_SUPPORT = (name: string) => () => {
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
 const MAX_RECONNECT_ATTEMPTS = 5;
-const TIMEOUT = 90 * 1000;
 
 const logger = getLogger('api');
+
+// This is a temp fix for https://github.com/polkadot-js/api/issues/5871
+function overrideConsoleWarn(): void {
+  (console as any).oldWarn = console.warn;
+  console.warn = function () {
+    // eslint-disable-next-line prefer-rest-params
+    const args = Array.from(arguments);
+
+    if (
+      args.length > 0 &&
+      args[0].includes('Unable to map [u8; 32] to a lookup index')
+    ) {
+      return;
+    }
+    (console as any).oldWarn.apply(console, args);
+  };
+}
 
 @Injectable()
 export class ApiService
@@ -71,6 +87,7 @@ export class ApiService
   }
 
   async init(): Promise<ApiService> {
+    overrideConsoleWarn();
     let chainTypes, network;
     try {
       chainTypes = this.project.chainTypes;
