@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Temp disable console warn for `Unable to map [u8; 32] to a lookup index` ,until [this issue](https://github.com/polkadot-js/api/issues/5871) fixed
+
 ## [4.4.0] - 2024-05-08
 ### Changed
 - Update polkadot dependencies to v11
