@@ -23,28 +23,13 @@ exports[`GraphqlHistorical to filter historical nested (backward) 1`] = `
 __local_1__.*
 from "subquery_2"."items" as __local_1__
 
-where (__local_1__._block_range @> $1::bigint) and (((exists(select 1 from "subquery_2"."listings" as __local_2__ where (__local_2__."item_id" = __local_1__."id") and (__local_2__._block_range @> $1::bigint) and (((__local_2__."price_token" = $2))))))) and (TRUE) and (TRUE)
+where (__local_1__._block_range @> $1::bigint) and (((exists(select 1 from "subquery_2"."listings" as __local_2__ where (__local_2__."item_id" = __local_1__."id") and (__local_2__._block_range @> $1::bigint) and (((__local_2__."price_token" = $2))) and (__local_2__._block_range @> $1::bigint))))) and (TRUE) and (TRUE)
 order by __local_1__."_id" ASC
 
 ) __local_1__), __local_3__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_3__.data from __local_3__), '[]'::json) as "data" "
 `;
 
 exports[`GraphqlHistorical to filter historical nested (forward) 1`] = `
-"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id")))) as "@nodes" from (select 
-__local_1__.*
-from "subquery_2"."listings" as __local_1__
-
-where (__local_1__._block_range @> $1::bigint) and ((      exists(
-        select 1 from "subquery_2"."items" as __local_2__
-        where (__local_1__."item_id" = __local_2__."id") and (__local_1__._block_range @> $1::bigint) and
-          (((__local_2__."approved" = $2))) and (__local_2__._block_range @> $1::bigint)
-      ))) and (TRUE) and (TRUE)
-order by __local_1__."_id" ASC
-
-) __local_1__), __local_3__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_3__.data from __local_3__), '[]'::json) as "data" "
-`;
-
-exports[`GraphqlHistorical to filter historical nested 1`] = `
 "with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id")))) as "@nodes" from (select 
 __local_1__.*
 from "subquery_2"."listings" as __local_1__
