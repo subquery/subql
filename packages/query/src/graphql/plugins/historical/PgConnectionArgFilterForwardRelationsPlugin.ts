@@ -7,7 +7,10 @@ import type {Plugin} from 'graphile-build';
 import type {QueryBuilder} from 'graphile-build-pg';
 import type {PgAttribute, PgClass, PgConstraint} from '@subql/x-graphile-build-pg';
 import {ConnectionFilterResolver} from 'postgraphile-plugin-connection-filter/dist/PgConnectionArgFilterPlugin';
-import {buildWhereConditionBackward} from './PgConnectionArgFilterBackwardRelationsPlugin';
+import {
+  buildWhereConditionBackward,
+  connectionFilterResolveBlockHeight,
+} from './PgConnectionArgFilterBackwardRelationsPlugin';
 
 /* This is a modification from the original function where a block range condition is added */
 function buildWhereConditionForward(
@@ -171,19 +174,22 @@ const PgConnectionArgFilterForwardRelationsPlugin: Plugin = (builder) => {
         sql
       );
 
-      /******************************
-       * HISTORICAL CHANGES END
-       *******************************/
-
       const foreignTableTypeName = inflection.tableType(foreignTable);
       const foreignTableFilterTypeName = inflection.filterType(foreignTableTypeName);
 
-      const sqlFragment = connectionFilterResolve(
+      const sqlFragment = connectionFilterResolveBlockHeight(
         fieldValue,
         foreignTableAlias,
         foreignTableFilterTypeName,
-        queryBuilder
+        queryBuilder,
+        connectionFilterResolve,
+        foreignTable,
+        sql
       );
+
+      /******************************
+       * HISTORICAL CHANGES END
+       *******************************/
 
       return sqlFragment == null
         ? null
