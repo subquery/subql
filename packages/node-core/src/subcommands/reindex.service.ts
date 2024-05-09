@@ -120,6 +120,6 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.forceCleanService
     );
 
-    await this.storeService.storeCache.flushCache(true, true);
+    await this.storeService.storeCache.flushCache(true);
   }
 }
