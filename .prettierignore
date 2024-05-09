@@ -11,3 +11,4 @@
 *.sh
 generate-project*.yaml
 *.proto
+*.ts.snap
