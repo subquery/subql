@@ -13,12 +13,12 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   private queuedFlush?: Promise<void>;
   protected logger: Pino.Logger;
 
-  protected constructor(private loggerName: string) {
+  protected constructor(loggerName: string) {
     this.logger = getLogger(loggerName);
   }
 
   @profiler()
-  async flushCache(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
+  async flushCache(forceFlush?: boolean): Promise<void> {
     const flushCacheGuarded = async (forceFlush?: boolean): Promise<void> => {
       // When we force flush, this will ensure not interrupt current block flushing,
       // Force flush will continue after last block flush tx committed.
@@ -26,7 +26,7 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
         await this.pendingFlush;
       }
       if ((this.isFlushable() || forceFlush) && this.flushableRecords > 0) {
-        this.pendingFlush = this._flushCache(flushAll);
+        this.pendingFlush = this._flushCache();
         // Remove reference to pending flush once it completes
         this.pendingFlush.finally(() => (this.pendingFlush = undefined));
         await this.pendingFlush;
@@ -45,7 +45,7 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   async resetCache(): Promise<void> {
     await this._resetCache();
   }
-  abstract _flushCache(flushAll?: boolean): Promise<void>;
+  abstract _flushCache(): Promise<void>;
   abstract _resetCache(): Promise<void> | void;
   abstract isFlushable(): boolean;
   abstract get flushableRecords(): number;

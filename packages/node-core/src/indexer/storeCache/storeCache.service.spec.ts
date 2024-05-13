@@ -243,7 +243,7 @@ describe('Store cache upper threshold', () => {
 
   beforeEach(() => {
     storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-    storeService.init(false, false, {} as any, undefined);
+    storeService.init(false, false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {
@@ -261,7 +261,7 @@ describe('Store cache upper threshold', () => {
     }
 
     const start = new Date().getTime();
-    await storeService.flushAndWaitForCapacity(true, true);
+    await storeService.flushAndWaitForCapacity(true);
     const end = new Date().getTime();
 
     // Should be less than 1s, we're not waiting
@@ -283,7 +283,7 @@ describe('Store cache upper threshold', () => {
     }
 
     const start = new Date().getTime();
-    await storeService.flushAndWaitForCapacity(true, true);
+    await storeService.flushAndWaitForCapacity(true);
     const end = new Date().getTime();
 
     // Should be more than 1s, we set the db tx.commit to take 1s

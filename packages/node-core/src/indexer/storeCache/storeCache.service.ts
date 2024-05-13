@@ -78,8 +78,7 @@ export class StoreCacheService extends BaseCacheService {
       model,
       this._historical,
       this.config,
-      this.getNextStoreOperationIndex.bind(this),
-      this._useCockroachDb
+      this.getNextStoreOperationIndex.bind(this)
     );
     if (this.config.csvOutDir) {
       const exporterStore = new CsvStoreService(entityName, this.config.csvOutDir);
@@ -140,7 +139,7 @@ export class StoreCacheService extends BaseCacheService {
   }
 
   @profiler()
-  async _flushCache(flushAll?: boolean): Promise<void> {
+  async _flushCache(): Promise<void> {
     this.logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
@@ -148,7 +147,7 @@ export class StoreCacheService extends BaseCacheService {
     });
     try {
       // Get the block height of all data we want to flush up to
-      const blockHeight = flushAll ? undefined : await this.metadata.find('lastProcessedHeight');
+      const blockHeight = await this.metadata.find('lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
       if (this._useCockroachDb) {
@@ -179,10 +178,10 @@ export class StoreCacheService extends BaseCacheService {
     }
   }
 
-  async flushAndWaitForCapacity(forceFlush?: boolean, flushAll?: boolean): Promise<void> {
+  async flushAndWaitForCapacity(forceFlush?: boolean): Promise<void> {
     const flushableRecords = this.flushableRecords;
 
-    const pendingFlush = this.flushCache(forceFlush, flushAll);
+    const pendingFlush = this.flushCache(forceFlush);
 
     if (flushableRecords >= this.cacheUpperLimit) {
       await pendingFlush;
