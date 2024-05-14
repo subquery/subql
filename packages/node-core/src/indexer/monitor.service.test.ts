@@ -116,13 +116,13 @@ describe('Monitor service', () => {
     // getBlockIndexRecords
     expect(monitorService2.getBlockIndexRecords(2)).toBeUndefined();
     expect(monitorService2.getBlockIndexRecords(55)).toStrictEqual([
-      'processing block 35',
-      'block handler 35',
-      'event handler 35, data :{entity: starter,{}}',
-      'post process',
-      '----- end block 35',
       '+++++ Start block 55',
       'fetch block 55',
+      'processing block 55',
+      'block handler 55',
+      'event handler 55, data :{entity: starter,{}}',
+      'post process',
+      '----- end block 55',
     ]);
   });
 

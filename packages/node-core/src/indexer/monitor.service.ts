@@ -199,7 +199,7 @@ export class MonitorService {
     for (const indexEntry of indexEntries) {
       const filePath = this.getFilePath(indexEntry.file);
       const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const a = fileContent.split('\n').slice(Math.min(0, indexEntry.startLine - 1), indexEntry.endLine);
+      const a = fileContent.split('\n').slice(Math.max(0, indexEntry.startLine - 1), indexEntry.endLine);
       records.push(...a);
     }
     return records;
