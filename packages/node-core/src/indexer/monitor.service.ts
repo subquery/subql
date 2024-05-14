@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import path from 'path';
 import {getLogger, NodeConfig} from '@subql/node-core';
 
-const DEFAULT_MONITOR_STORE_PATH = './monitor'; // Provide a default path if needed
+const DEFAULT_MONITOR_STORE_PATH = './.monitor'; // Provide a default path if needed
 const FILE_LIMIT_SIZE = 50 * 1024 * 1024; // 50 MB in bytes
 
 const logger = getLogger('Monitor');
@@ -47,6 +47,9 @@ export class MonitorService {
   }
 
   // maybe a good idea to expose this, if error didn't be caught api could still use reset
+  /**
+   * Reset all files and memory values
+   */
   resetAll(): void {
     fs.mkdirSync(this.outputPath, {recursive: true});
     this.createOrResetFile(this.getFilePath('A'));
@@ -57,22 +60,19 @@ export class MonitorService {
     this.currentFileSize = 0;
   }
 
-  init() {
+  /**
+   * Init service, also validate
+   */
+  init(): void {
     if (!fs.existsSync(this.outputPath) || !fs.existsSync(this.indexPath)) {
       this.resetAll();
     } else {
-      if (!fs.existsSync(this.getFilePath('A'))) {
-        this.resetFile('A');
-      }
-      if (!fs.existsSync(this.getFilePath('B'))) {
-        this.resetFile('B');
-      }
       try {
         const lastIndexEntry = this.readLastIndexEntry();
         // No index info been found, then reset
         if (lastIndexEntry === undefined) {
           this.resetAll();
-          logger.warn(`Reset as last index entry is not found`);
+          logger.warn(`Reset as last index entry is not found or incomplete`);
         } else {
           const blockRecords = this.getBlockIndexRecords(lastIndexEntry.blockHeight);
           if (blockRecords === undefined) {
@@ -83,6 +83,7 @@ export class MonitorService {
           // Set current file and last line to current file's end line
           this._currentFile = this.getFilePath(lastIndexEntry.file);
           this._lastLine = lastIndexEntry.endLine;
+          // We could still compare lastLine record is matching with last value in blockRecords
           this.currentFileSize = this.getFileSize(lastIndexEntry.file);
         }
       } catch (e) {
@@ -92,6 +93,9 @@ export class MonitorService {
     }
   }
 
+  /**
+   * Return last line in current file, if not found in memory, will find in the last index pointed file
+   */
   get lastLine(): number {
     if (this._lastLine === undefined) {
       const lastIndexInfo = this.readLastIndexEntry();
@@ -103,7 +107,7 @@ export class MonitorService {
     return this._lastLine;
   }
 
-  // To human-readable block history，still in experimental, we need this more friendly
+  // To human-readable block history，still experimental, this can be more friendly
   getBlockIndexHistory(): (number | string)[] {
     const mixedArray: (number | string)[] = [];
     const indexEntries = this.getAllIndexEntries();
@@ -118,20 +122,30 @@ export class MonitorService {
         mixedArray.push(entry.blockHeight);
       }
     });
-
     return mixedArray;
   }
 
+  /**
+   * Get all forked heights and records
+   */
   getForkedRecords(): string[] | undefined {
     const forkedEntries = this.getForkedEntries();
     return this.getRecordsWithEntries(forkedEntries);
   }
 
+  /**
+   *  Get block height index records
+   * @param blockHeight
+   */
   getBlockIndexRecords(blockHeight: number): string[] | undefined {
     const indexEntries = this.getBlockIndexEntries(blockHeight);
     return this.getRecordsWithEntries(indexEntries);
   }
 
+  /**
+   * create a record for fork
+   * @param blockHeight
+   */
   createBlockFolk(blockHeight: number): void {
     this.currentIndexHeight = blockHeight;
     this.write(`***** Forked at block ${blockHeight}`);
@@ -143,6 +157,10 @@ export class MonitorService {
     });
   }
 
+  /**
+   * create a record for block start
+   * @param blockHeight
+   */
   createBlockStart(blockHeight: number): void {
     this.currentIndexHeight = blockHeight;
     this.write(`+++++ Start block ${blockHeight}`);
@@ -154,6 +172,10 @@ export class MonitorService {
     });
   }
 
+  /**
+   * Write block record data to file
+   * @param blockData
+   */
   write(blockData: string): void {
     this.checkAndSwitchFile();
     fs.appendFileSync(this.currentFile, `${blockData}\n`);
@@ -164,6 +186,11 @@ export class MonitorService {
     this._lastLine += 1;
   }
 
+  /**
+   * By given a list of index entry (from index file), found corresponding block index records
+   * @param indexEntries
+   * @private
+   */
   private getRecordsWithEntries(indexEntries: IndexBlockEntry[]): string[] | undefined {
     const records: string[] = [];
     if (!indexEntries.length) {
@@ -178,6 +205,10 @@ export class MonitorService {
     return records;
   }
 
+  /**
+   * Get all index entries
+   * @private
+   */
   private getAllIndexEntries(): IndexEntry[] {
     const indexData = fs.readFileSync(this.indexPath, 'utf-8');
     const data = indexData.trim().split('\n');
@@ -210,7 +241,7 @@ export class MonitorService {
           if (indexBlockEntry.file === nextIndexBlockEntry.file) {
             endLine = nextIndexBlockEntry.blockHeight - 1;
           }
-          // File location has changed
+          // not same means, file location has changed
           else {
             endLine = this.getLastLineOfFile(indexBlockEntry.file);
           }
@@ -238,10 +269,15 @@ export class MonitorService {
       const lastRow = rows[rows.length - 1];
       const indexEntry = this.decodeIndexRow(lastRow);
       const endLine = this.getLastLineOfFile(indexEntry.file);
+      if (endLine < indexEntry.startLine) {
+        throw new Error(
+          `Expect last entry record block ${indexEntry.blockHeight}, in file ${indexEntry.file} start from line ${indexEntry.startLine}, but last line in file is ${endLine} `
+        );
+      }
       return {...indexEntry, endLine};
     } catch (error) {
       // Error will be handled in higher level with undefined result
-      logger.error('Error read last index entry :', error);
+      logger.error(`Error read last index entry : ${error}`);
     }
     return undefined;
   }

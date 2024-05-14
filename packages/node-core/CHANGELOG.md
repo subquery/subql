@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add monitor service to record block indexing actions in order to improve POI accuracy, and provide debug info for Admin api
+
 ## [10.2.0] - 2024-05-08
 ### Changed
 - Bump with @subql/utils, update polkadot dependencies to v11

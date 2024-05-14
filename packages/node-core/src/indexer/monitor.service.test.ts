@@ -14,6 +14,23 @@ class testMonitorService extends MonitorService {
   testResetFile(file: 'A' | 'B') {
     return (this as any).resetFile(file);
   }
+
+  testRemoveIndexFile() {
+    fs.rmSync((this as any).indexPath);
+  }
+}
+
+function removeLinesFromFile(filePath: string, startLine: number, endLine: number): void {
+  try {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const lines = fileContent.split('\n');
+    lines.splice(startLine - 1, endLine - startLine + 1);
+    const updatedContent = lines.join('\n');
+    fs.writeFileSync(filePath, updatedContent, 'utf-8');
+    console.log(`Lines ${startLine}-${endLine} removed successfully from ${filePath}`);
+  } catch (error) {
+    console.error(`Error removing lines from file: ${error}`);
+  }
 }
 
 describe('Monitor service', () => {
@@ -131,5 +148,45 @@ describe('Monitor service', () => {
       // block 300 continued to file B, but we only keep one record here
       [100, 105, 300, 'Forked 102', 103, 105, 109, 300, 'Forked 200']
     );
+  });
+
+  it('init validation failed it could reset by itself', () => {
+    const monitorService2 = new testMonitorService(nodeConfig);
+    monitorService2.init();
+    const beforeForkBlocks = [100, 105, 300];
+    for (const height of beforeForkBlocks) {
+      mockWriteBlockData(height, monitorService2);
+    }
+    const spyRestAll = jest.spyOn(monitorService2, 'resetAll');
+    // Case 1 .Mock index file is lost
+    monitorService2.testRemoveIndexFile();
+    monitorService2.init();
+    expect(spyRestAll).toHaveBeenCalledTimes(1);
+    jest.clearAllMocks();
+    // Case 2 .Mock last index record block file is lost
+    // Rewrite some data first
+    for (const height of beforeForkBlocks) {
+      mockWriteBlockData(height, monitorService2);
+    }
+    const lastIndexEntries = monitorService2.testGetBlockIndexEntries(300);
+    // Mock file lost
+    fs.rmSync((monitorService2 as any).getFilePath(lastIndexEntries[lastIndexEntries.length - 1].file));
+    monitorService2.init();
+    expect(spyRestAll).toHaveBeenCalledTimes(1);
+    jest.clearAllMocks();
+    // Case 3 .Mock last index entry and corresponding file is found , but file is broken/missing records
+    // Rewrite some data first
+    for (const height of beforeForkBlocks) {
+      mockWriteBlockData(height, monitorService2);
+    }
+    const block300Entry = monitorService2.testGetBlockIndexEntries(300)[0];
+    // Mock lost block 300 record
+    removeLinesFromFile(
+      (monitorService2 as any).getFilePath(block300Entry.file),
+      block300Entry.startLine,
+      block300Entry.endLine
+    );
+    monitorService2.init();
+    expect(spyRestAll).toHaveBeenCalledTimes(1);
   });
 });
