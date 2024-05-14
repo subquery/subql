@@ -53,6 +53,8 @@ export interface IConfig {
   readonly root?: string;
   readonly allowSchemaMigration: boolean;
   readonly csvOutDir?: string;
+  readonly monitorOutDir?: string;
+  readonly monitorFileSize?: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -307,6 +309,14 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get csvOutDir(): string | undefined {
     return this._config.csvOutDir;
+  }
+
+  get monitorOutDir(): string | undefined {
+    return this._config.monitorOutDir;
+  }
+
+  get monitorFileSize(): number | undefined {
+    return this._config.monitorFileSize;
   }
 
   merge(config: Partial<IConfig>): this {
