@@ -27,12 +27,12 @@ jobs:
             TAG_NAME=${GITHUB_REF#refs/tags/}
             if [[ $TAG_NAME == "node-stellar/"* ]]
             then
-              echo "::set-output name=changes_found::true"
+              echo "changes_found=true" >> "$GITHUB_OUTPUT"
             else
-              echo "::set-output name=changes_found::false"
+              echo "changes_found=false" >> "$GITHUB_OUTPUT"
             fi
           else
-            echo "::set-output name=changes_found::true"
+            echo "changes_found=true" >> "$GITHUB_OUTPUT"
           fi
   node-build-push-docker:
     needs: check
