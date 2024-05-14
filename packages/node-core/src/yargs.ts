@@ -233,6 +233,15 @@ export function yargsBuilder<
                   'Path to a directory for CSV output.  If this is not provided then data will not be output to CSV',
                 type: 'string',
               },
+              'monitor-out-dir': {
+                describe:
+                  'Path to a directory for monitor service output.  If this is not provided then data will store to default folder',
+                type: 'string',
+              },
+              'monitor-file-size': {
+                describe: 'monitor file size limit in MB ',
+                type: 'number',
+              },
             })
             .hide('root'), // root is hidden because its for internal use
         handler: () => {

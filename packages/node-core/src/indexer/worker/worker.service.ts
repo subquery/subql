@@ -4,6 +4,7 @@
 import {BaseDataSource} from '@subql/types-core';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
+import {monitorWrite} from '../../process';
 import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {IBlock, IProjectService} from '../types';
@@ -90,6 +91,7 @@ export abstract class BaseWorkerService<
     } catch (e: any) {
       if (!isBlockUnavailableError(e)) {
         logger.error(e, `Failed to index block ${height}: ${e.stack}`);
+        monitorWrite(`Failed to index block ${height}: ${e.stack}`);
       }
       throw e;
     } finally {

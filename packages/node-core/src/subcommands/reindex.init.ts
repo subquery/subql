@@ -3,6 +3,7 @@
 
 import {NestFactory} from '@nestjs/core';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {ReindexService} from './reindex.service';
 
 const logger = getLogger('CLI-Reindex');
@@ -22,8 +23,7 @@ export async function reindexInit(reindexModule: any, targetHeight: number): Pro
     }
     await reindexService.reindex(actualReindexHeight);
   } catch (e: any) {
-    logger.error(e, 'Reindex failed to execute');
-    process.exit(1);
+    exitWithError(new Error(`Reindex failed to execute`, {cause: e}), logger);
   }
   process.exit(0);
 }

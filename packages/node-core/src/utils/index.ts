@@ -14,3 +14,4 @@ export * from './reindex';
 export * from './decorators';
 export * from './blocks';
 export * from './blockHeightMap';
+export * from './string';

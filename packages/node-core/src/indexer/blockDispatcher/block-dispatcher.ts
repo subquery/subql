@@ -10,6 +10,7 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
+import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {StoreService} from '../store.service';
@@ -161,10 +162,10 @@ export abstract class BlockDispatcher<B, DS>
 
                 try {
                   await this.preProcessBlock(blockHeight);
+                  monitorWrite(`Processing from main thread`);
                   // Inject runtimeVersion here to enhance api.at preparation
                   const processBlockResponse = await this.indexBlock(block);
                   await this.postProcessBlock(blockHeight, processBlockResponse);
-
                   //set block to null for garbage collection
                   (block as any) = null;
                 } catch (e: any) {
@@ -196,8 +197,7 @@ export abstract class BlockDispatcher<B, DS>
               // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
               return;
             }
-            logger.error(e, 'Failed to enqueue fetched block to process');
-            process.exit(1);
+            exitWithError(new Error(`Failed to enqueue fetched block to process`, {cause: e}), logger);
           });
 
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
@@ -205,9 +205,8 @@ export abstract class BlockDispatcher<B, DS>
         });
       }
     } catch (e: any) {
-      logger.error(e, 'Failed to process blocks from queue');
       if (!this.isShutdown) {
-        process.exit(1);
+        exitWithError(new Error(`Failed to process blocks from queue`, {cause: e}), logger);
       }
     } finally {
       this.fetching = false;

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {HexString} from '@polkadot/util/types';
 import {BuildOptions, DataTypes, Model, Op, Sequelize} from '@subql/x-sequelize';
 
 export interface ProofOfIndex {
@@ -15,6 +16,14 @@ export interface ProofOfIndex {
 export interface SyncedProofOfIndex extends ProofOfIndex {
   hash: Uint8Array;
   parentHash: Uint8Array;
+}
+
+export interface ProofOfIndexHuman
+  extends Omit<ProofOfIndex, 'chainBlockHash' | 'hash' | 'parentHash' | 'operationHashRoot'> {
+  chainBlockHash: HexString | undefined;
+  hash: HexString | undefined;
+  parentHash: HexString | undefined;
+  operationHashRoot: HexString | undefined;
 }
 
 export interface PoiModel extends Model<ProofOfIndex>, ProofOfIndex {}

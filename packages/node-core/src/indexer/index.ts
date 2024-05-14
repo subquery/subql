@@ -24,3 +24,4 @@ export * from './fetch.service';
 export * from './indexer.manager';
 export * from './ds-processor.service';
 export * from './unfinalizedBlocks.service';
+export * from './monitor.service';

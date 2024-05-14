@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Entity} from '@subql/types-core';
-import {getTypeByScalarName, GraphQLModelsType, u8aConcat, u8aToBuffer, isString} from '@subql/utils';
+import {getTypeByScalarName, GraphQLModelsType, u8aConcat, u8aToBuffer, isString, u8aToHex} from '@subql/utils';
 import MerkleTools from 'merkle-tools';
+import {monitorWrite} from '../process';
 import {OperationEntity, OperationType} from './types';
 
 export class StoreOperations {
@@ -52,6 +53,12 @@ export class StoreOperations {
       entityType: entity,
       data: data,
     };
+    // skip full data, should write in higher level
+    monitorWrite(
+      `-- [POI][StoreOperations][put] ${operation} entity ${entity}, data/id: ${
+        typeof data === 'string' ? data : data.id
+      }`
+    );
     this.merkleTools.addLeaf(u8aToBuffer(this.operationEntityToUint8Array(operationEntity)), true);
   }
 
