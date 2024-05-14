@@ -73,6 +73,8 @@ for dir in packages/*; do
   if [ -d "$dir" ] && [[ $(git ls-files "$dir") ]]; then
     prepare_package_release "$dir"
   fi
+
+  git add .yarn/versions
 done
 
 # prepare_package_release "$1"
