@@ -146,7 +146,7 @@ export class MonitorService {
    * create a record for fork
    * @param blockHeight
    */
-  createBlockFolk(blockHeight: number): void {
+  createBlockFork(blockHeight: number): void {
     this.currentIndexHeight = blockHeight;
     this.write(`***** Forked at block ${blockHeight}`);
     this.updateIndex({
