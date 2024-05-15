@@ -189,7 +189,7 @@ export class MonitorService {
     this.checkAndSwitchFile();
     const escapedBlockData = blockData.replace(/\n/g, '\\n');
     fs.appendFileSync(this.getFilePath(this.currentFile), `${escapedBlockData}\n`);
-    this.currentFileSize += Buffer.byteLength(blockData) + 1;
+    this.currentFileSize += Buffer.byteLength(blockData) + 1; // + 1 for the new line
     this.currentFileLastLine += 1;
   }
 
@@ -212,38 +212,42 @@ export class MonitorService {
    * @private
    */
   private async getRecordsWithEntries(indexEntries: IndexBlockEntry[]): Promise<string[] | undefined> {
-    const records: string[] = [];
     if (!indexEntries.length) {
       return undefined;
     }
-
+    const records: string[] = [];
     for (const indexEntry of indexEntries) {
       const filePath = this.getFilePath(indexEntry.file);
 
-      const fileStream = fs.createReadStream(filePath);
-      const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity,
-      });
+      try {
+        const fileStream = fs.createReadStream(filePath);
+        const rl = readline.createInterface({
+          input: fileStream,
+          crlfDelay: Infinity,
+        });
 
-      let currentLine = 0;
+        let currentLine = 0;
 
-      rl.on('line', (line) => {
-        if (indexEntry.endLine === undefined) {
-          throw new Error(`end line in indexEntry is expect to be defined`);
-        }
-        currentLine++;
-        if (currentLine >= indexEntry.startLine && currentLine <= indexEntry.endLine) {
-          records.push(line);
-        }
-        if (currentLine > indexEntry.endLine) {
-          rl.close(); // Stop reading the file further
-        }
-      });
+        rl.on('line', (line) => {
+          currentLine++;
+          if (currentLine >= indexEntry.startLine && currentLine <= indexEntry.endLine) {
+            records.push(line);
+          }
+          if (currentLine > indexEntry.endLine) {
+            rl.close(); // Stop reading the file further
+          }
+        });
 
-      await new Promise((resolve) => rl.on('close', resolve)); // Wait until reading is done
+        await new Promise<void>((resolve, reject) => {
+          rl.on('close', resolve);
+          rl.on('error', reject);
+          fileStream.on('error', reject);
+        });
+      } catch (error) {
+        logger.error(`Error get block records in file ${filePath}:`, error);
+        return undefined; // Or handle the error as needed
+      }
     }
-
     return records;
   }
 
