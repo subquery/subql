@@ -18,6 +18,16 @@ class testMonitorService extends MonitorService {
   testRemoveIndexFile() {
     fs.rmSync((this as any).indexPath);
   }
+
+  testInit() {
+    (this as any).init();
+  }
+
+  resetService() {
+    (this as any)._cachedFileStats = undefined;
+    (this as any)._currentFile = undefined;
+    (this as any).currentIndexHeight = undefined;
+  }
 }
 
 function removeLinesFromFile(filePath: string, startLine: number, endLine: number): void {
@@ -41,7 +51,6 @@ describe('Monitor service', () => {
     monitorDir = await makeTempDir();
     nodeConfig = {monitorOutDir: monitorDir, monitorFileSize: 1024} as NodeConfig;
     monitorService1 = new testMonitorService(nodeConfig);
-    await monitorService1.init();
     monitorService1.resetAll();
   });
   afterEach(() => {
@@ -60,6 +69,7 @@ describe('Monitor service', () => {
 
   it('monitor could write data', async () => {
     mockWriteBlockData(55);
+    await expect(monitorService1.getBlockIndexRecords(55)).resolves.toContain('+++++ Start block 55');
     await expect(monitorService1.getBlockIndexRecords(55)).resolves.toContain('fetch block 55');
     await expect(monitorService1.getBlockIndexRecords(55)).resolves.toContain('----- end block 55');
   });
@@ -76,12 +86,16 @@ describe('Monitor service', () => {
     // set to small size, so it could rotate
     (monitorService2 as any).monitorFileSize = 150;
     const spySwitchFile = jest.spyOn(monitorService2 as any, 'switchToFile');
+
+    const spyInitCacheFileStats = jest.spyOn(monitorService2 as any, 'initCacheFileStats');
     monitorService2.resetAll();
     const writeBlocks = [2, 5, 15, 25, 35, 55];
     for (const height of writeBlocks) {
       mockWriteBlockData(height, monitorService2);
     }
     expect(spySwitchFile).toHaveBeenCalledTimes(5);
+    // rotate file many times, but FileStats should on been fetched once at init
+    expect(spyInitCacheFileStats).toHaveBeenCalledTimes(1);
 
     // getBlockIndexEntries
     expect(monitorService2.testGetBlockIndexEntries(25)).toStrictEqual([]);
@@ -152,16 +166,15 @@ describe('Monitor service', () => {
 
   it('init validation failed it could reset by itself', () => {
     const monitorService2 = new testMonitorService(nodeConfig);
-    monitorService2.init();
     const beforeForkBlocks = [100, 105, 300];
     for (const height of beforeForkBlocks) {
       mockWriteBlockData(height, monitorService2);
     }
-    const spyRestAll = jest.spyOn(monitorService2, 'resetAll');
+    const spyResetAll = jest.spyOn(monitorService2, 'resetAll');
     // Case 1 .Mock index file is lost
     monitorService2.testRemoveIndexFile();
-    monitorService2.init();
-    expect(spyRestAll).toHaveBeenCalledTimes(1);
+    monitorService2.testInit();
+    expect(spyResetAll).toHaveBeenCalledTimes(1);
     jest.clearAllMocks();
     // Case 2 .Mock last index record block file is lost
     // Rewrite some data first
@@ -171,8 +184,8 @@ describe('Monitor service', () => {
     const lastIndexEntries = monitorService2.testGetBlockIndexEntries(300);
     // Mock file lost
     fs.rmSync((monitorService2 as any).getFilePath(lastIndexEntries[lastIndexEntries.length - 1].file));
-    monitorService2.init();
-    expect(spyRestAll).toHaveBeenCalledTimes(1);
+    monitorService2.testInit();
+    expect(spyResetAll).toHaveBeenCalledTimes(1);
     jest.clearAllMocks();
     // Case 3 .Mock last index entry and corresponding file is found , but file is broken/missing records
     // Rewrite some data first
@@ -180,13 +193,15 @@ describe('Monitor service', () => {
       mockWriteBlockData(height, monitorService2);
     }
     const block300Entry = monitorService2.testGetBlockIndexEntries(300)[0];
-    // Mock lost block 300 record
+    // Mock lost block 300 record before init (We are not expect to loss any data during indexing, we can not handle this as file stats are cached)
     removeLinesFromFile(
       (monitorService2 as any).getFilePath(block300Entry.file),
       block300Entry.startLine,
       block300Entry.endLine
     );
-    monitorService2.init();
-    expect(spyRestAll).toHaveBeenCalledTimes(1);
+    // Mock indexing stopped and cache cleared
+    monitorService2.resetService();
+    monitorService2.testInit();
+    expect(spyResetAll).toHaveBeenCalledTimes(1);
   });
 });

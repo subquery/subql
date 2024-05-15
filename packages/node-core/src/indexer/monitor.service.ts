@@ -28,24 +28,24 @@ interface IndexBlockEntry extends IndexEntry {
   endLine?: number;
 }
 
+interface FileStat {
+  fileSize: number;
+  fileEndLine: number;
+}
+
 export class MonitorService {
   private readonly outputPath: string;
   private readonly monitorFileSize: number;
   private readonly indexPath: string;
-  private _currentFile: string | undefined;
-  private _lastLine: number | undefined;
-  private currentFileSize = 0;
+  private _currentFile: keyof typeof FileLocation | undefined;
   private currentIndexHeight: number | undefined; // We need to keep this to update index when switch file, so we know current processing height
+  private _cachedFileStats: Record<keyof typeof FileLocation, FileStat> | undefined;
 
   constructor(nodeConfig: NodeConfig) {
     this.outputPath = nodeConfig.monitorOutDir ?? DEFAULT_MONITOR_STORE_PATH;
     this.monitorFileSize = nodeConfig.monitorFileSize ? nodeConfig.monitorFileSize * UNIT_MB : FILE_LIMIT_SIZE;
     this.indexPath = path.join(this.outputPath, `index.csv`);
-  }
-
-  get currentFile(): string {
-    if (!this._currentFile) throw new Error(`Current write file is not defined`);
-    return this._currentFile;
+    this.init();
   }
 
   // maybe a good idea to expose this, if error didn't be caught api could still use reset
@@ -57,56 +57,63 @@ export class MonitorService {
     this.createOrResetFile(this.getFilePath('A'));
     this.createOrResetFile(this.getFilePath('B'));
     this.createOrResetFile(this.indexPath);
-    this._currentFile = this.getFilePath('A');
-    this._lastLine = 0;
-    this.currentFileSize = 0;
+    this._cachedFileStats = this.initCacheFileStats();
+    this._currentFile = 'A';
+  }
+
+  get currentFile(): keyof typeof FileLocation {
+    if (!this._currentFile) throw new Error(`Current write file is not defined`);
+    return this._currentFile;
+  }
+
+  get cachedFileStats(): Record<keyof typeof FileLocation, FileStat> {
+    if (this._cachedFileStats === undefined) {
+      this._cachedFileStats = this.initCacheFileStats();
+    }
+    return this._cachedFileStats;
+  }
+
+  get currentFileSize(): number {
+    return this.cachedFileStats[this.currentFile].fileSize;
+  }
+
+  set currentFileSize(number) {
+    this.cachedFileStats[this.currentFile].fileSize = number;
+  }
+
+  get currentFileLastLine(): number {
+    return this.cachedFileStats[this.currentFile].fileEndLine;
+  }
+
+  set currentFileLastLine(number) {
+    this.cachedFileStats[this.currentFile].fileEndLine = number;
   }
 
   /**
    * Init service, also validate
    */
-  async init(): Promise<void> {
+  private init(): void {
     if (!fs.existsSync(this.outputPath) || !fs.existsSync(this.indexPath)) {
       this.resetAll();
     } else {
       try {
+        // `readLastIndexEntry` also include assertion to make sure endline should valid
         const lastIndexEntry = this.readLastIndexEntry();
         // No index info been found, then reset
         if (lastIndexEntry === undefined) {
-          this.resetAll();
-          logger.warn(`Reset as last index entry is not found or incomplete`);
+          throw new Error(`Last index entry is not found or incomplete`);
+        } else if (!fs.existsSync(this.getFilePath(lastIndexEntry.file))) {
+          throw new Error(
+            `Last index entry point to file ${lastIndexEntry.file}, but not found under dir ${this.outputPath}`
+          );
         } else {
-          const blockRecords = await this.getBlockIndexRecords(lastIndexEntry.blockHeight);
-          if (blockRecords === undefined) {
-            throw new Error(
-              `Last index point to block ${lastIndexEntry.blockHeight}, but didn't find in corresponding file ${lastIndexEntry.file}`
-            );
-          }
-          // Set current file and last line to current file's end line
-          this._currentFile = this.getFilePath(lastIndexEntry.file);
-          this._lastLine = lastIndexEntry.endLine;
-          // We could still compare lastLine record is matching with last value in blockRecords
-          this.currentFileSize = this.getFileSize(lastIndexEntry.file);
+          this._currentFile = lastIndexEntry.file;
         }
       } catch (e) {
         logger.error(`${e}, will try to reset monitor files`);
         this.resetAll();
       }
     }
-  }
-
-  /**
-   * Return last line in current file, if not found in memory, will find in the last index pointed file
-   */
-  get lastLine(): number {
-    if (this._lastLine === undefined) {
-      const lastIndexInfo = this.readLastIndexEntry();
-      if (lastIndexInfo?.endLine === undefined) {
-        throw new Error(`Expect could read last line from index and current file`);
-      }
-      this._lastLine = lastIndexInfo.endLine;
-    }
-    return this._lastLine;
   }
 
   // To human-readable block history，still experimental, this can be more friendly
@@ -153,8 +160,8 @@ export class MonitorService {
     this.write(`***** Forked at block ${blockHeight}`);
     this.updateIndex({
       blockHeight,
-      startLine: this.lastLine,
-      file: this.currentFile === this.getFilePath('A') ? 'A' : 'B',
+      startLine: this.currentFileLastLine,
+      file: this.currentFile,
       forked: true,
     });
   }
@@ -168,8 +175,8 @@ export class MonitorService {
     this.write(`+++++ Start block ${blockHeight}`);
     this.updateIndex({
       blockHeight,
-      startLine: this.lastLine,
-      file: this.currentFile === this.getFilePath('A') ? 'A' : 'B',
+      startLine: this.currentFileLastLine,
+      file: this.currentFile,
       forked: false,
     });
   }
@@ -181,12 +188,22 @@ export class MonitorService {
   write(blockData: string): void {
     this.checkAndSwitchFile();
     const escapedBlockData = blockData.replace(/\n/g, '\\n');
-    fs.appendFileSync(this.currentFile, `${escapedBlockData}\n`);
+    fs.appendFileSync(this.getFilePath(this.currentFile), `${escapedBlockData}\n`);
     this.currentFileSize += Buffer.byteLength(blockData) + 1;
-    if (this._lastLine === undefined) {
-      this._lastLine = this.lastLine;
-    }
-    this._lastLine += 1;
+    this.currentFileLastLine += 1;
+  }
+
+  private initCacheFileStats(): Record<keyof typeof FileLocation, FileStat> {
+    return {
+      A: {
+        fileSize: this.getFileSize('A'),
+        fileEndLine: this.getGetNumberOfLines('A'),
+      },
+      B: {
+        fileSize: this.getFileSize('B'),
+        fileEndLine: this.getGetNumberOfLines('B'),
+      },
+    };
   }
 
   /**
@@ -268,11 +285,11 @@ export class MonitorService {
           }
           // not same, means file location has changed
           else {
-            endLine = this.getGetNumberOfLines(indexBlockEntry.file);
+            endLine = this.cachedFileStats[indexBlockEntry.file].fileEndLine;
           }
         } else {
-          // This is indexBlockEntry is the last record
-          endLine = this.getGetNumberOfLines(indexBlockEntry.file);
+          // Last index record in index file
+          endLine = this.cachedFileStats[indexBlockEntry.file].fileEndLine;
         }
         results?.push({...indexBlockEntry, endLine});
       }
@@ -293,7 +310,7 @@ export class MonitorService {
       }
       const lastRow = rows[rows.length - 1];
       const indexEntry = this.decodeIndexRow(lastRow);
-      const endLine = this.getGetNumberOfLines(indexEntry.file);
+      const endLine = this.cachedFileStats[indexEntry.file].fileEndLine;
       if (endLine < indexEntry.startLine) {
         throw new Error(
           `Expect last entry record block ${indexEntry.blockHeight}, in file ${indexEntry.file} start from line ${indexEntry.startLine}, but last line in file is ${endLine} `
@@ -372,6 +389,10 @@ export class MonitorService {
     try {
       const filePath = this.getFilePath(file);
       const fileData = fs.readFileSync(filePath, 'utf-8');
+      // return 0 for new file
+      if (fileData === '') {
+        return 0;
+      }
       const lines = fileData.trim().split('\n');
       return lines.length;
     } catch (e) {
@@ -381,7 +402,7 @@ export class MonitorService {
 
   private checkAndSwitchFile(): void {
     if (this.currentFileSize >= this.monitorFileSize) {
-      if (this.currentFile === this.getFilePath('A')) {
+      if (this.currentFile === 'A') {
         this.switchToFile('B');
       } else {
         this.switchToFile('A');
@@ -395,10 +416,10 @@ export class MonitorService {
       throw new Error(`Switch to new file but current index height is not defined`);
     }
     this.resetFile(file);
-    this._currentFile = this.getFilePath(file);
+    this._currentFile = file;
     this.currentFileSize = 0;
-    this._lastLine = 0;
-    this.updateIndex({blockHeight: this.currentIndexHeight, startLine: this.lastLine, file});
+    this.currentFileLastLine = 0;
+    this.updateIndex({blockHeight: this.currentIndexHeight, startLine: this.currentFileLastLine, file});
   }
 
   private createOrResetFile(filePath: string): void {
