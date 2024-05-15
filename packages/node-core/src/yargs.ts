@@ -239,7 +239,7 @@ export function yargsBuilder<
                 type: 'string',
               },
               'monitor-file-size': {
-                describe: 'monitor file size limit ',
+                describe: 'monitor file size limit in MB ',
                 type: 'number',
               },
             })

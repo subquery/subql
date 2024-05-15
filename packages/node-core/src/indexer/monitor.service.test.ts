@@ -37,14 +37,14 @@ describe('Monitor service', () => {
   let monitorDir: string;
   let monitorService1: testMonitorService;
   let nodeConfig: NodeConfig;
-  beforeAll(async () => {
+  beforeEach(async () => {
     monitorDir = await makeTempDir();
     nodeConfig = {monitorOutDir: monitorDir, monitorFileSize: 1024} as NodeConfig;
     monitorService1 = new testMonitorService(nodeConfig);
-    monitorService1.init();
+    await monitorService1.init();
     monitorService1.resetAll();
   });
-  afterAll(() => {
+  afterEach(() => {
     fs.rmSync(monitorDir, {recursive: true, force: true});
   });
 
@@ -58,10 +58,10 @@ describe('Monitor service', () => {
     monitorService.write(`----- end block ${blockHeight}`);
   }
 
-  it('monitor could write data', () => {
+  it('monitor could write data', async () => {
     mockWriteBlockData(55);
-    expect(monitorService1.getBlockIndexRecords(55)).toContain('fetch block 55');
-    expect(monitorService1.getBlockIndexRecords(55)).toContain('----- end block 55');
+    await expect(monitorService1.getBlockIndexRecords(55)).resolves.toContain('fetch block 55');
+    await expect(monitorService1.getBlockIndexRecords(55)).resolves.toContain('----- end block 55');
   });
 
   it('reset file', () => {
@@ -71,10 +71,10 @@ describe('Monitor service', () => {
     expect(monitorService1.testGetBlockIndexEntries(55)).toStrictEqual([]);
   });
 
-  it('when write one file is full, it could rotate to next file, and could getBlockIndexEntries, getBlockIndexRecords', () => {
-    // set to small size, so it could rotate
-    const nodeConfig = {monitorOutDir: undefined, monitorFileSize: 150} as NodeConfig;
+  it('when write one file is full, it could rotate to next file, and could getBlockIndexEntries, getBlockIndexRecords', async () => {
     const monitorService2 = new testMonitorService(nodeConfig);
+    // set to small size, so it could rotate
+    (monitorService2 as any).monitorFileSize = 150;
     const spySwitchFile = jest.spyOn(monitorService2 as any, 'switchToFile');
     monitorService2.resetAll();
     const writeBlocks = [2, 5, 15, 25, 35, 55];
@@ -114,8 +114,8 @@ describe('Monitor service', () => {
       ]
     );
     // getBlockIndexRecords
-    expect(monitorService2.getBlockIndexRecords(2)).toBeUndefined();
-    expect(monitorService2.getBlockIndexRecords(55)).toStrictEqual([
+    await expect(monitorService2.getBlockIndexRecords(2)).resolves.toBeUndefined();
+    await expect(monitorService2.getBlockIndexRecords(55)).resolves.toStrictEqual([
       '+++++ Start block 55',
       'fetch block 55',
       'processing block 55',
@@ -126,7 +126,7 @@ describe('Monitor service', () => {
     ]);
   });
 
-  it('handle block forks happens', () => {
+  it('handle block forks happens', async () => {
     // set to small size, so it could rotate
     const monitorService2 = new testMonitorService(nodeConfig);
     monitorService2.resetAll();
@@ -134,13 +134,13 @@ describe('Monitor service', () => {
     for (const height of beforeForkBlocks) {
       mockWriteBlockData(height, monitorService2);
     }
-    monitorService2.createBlockFolk(102);
+    monitorService2.createBlockFork(102);
     const afterForkBlocks = [103, 105, 109, 300];
     for (const height of afterForkBlocks) {
       mockWriteBlockData(height, monitorService2);
     }
-    monitorService2.createBlockFolk(200);
-    expect(monitorService2.getForkedRecords()).toStrictEqual([
+    monitorService2.createBlockFork(200);
+    await expect(monitorService2.getForkedRecords()).resolves.toStrictEqual([
       '***** Forked at block 102',
       '***** Forked at block 200',
     ]);
