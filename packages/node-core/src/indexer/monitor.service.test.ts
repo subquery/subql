@@ -23,6 +23,10 @@ class testMonitorService extends MonitorService {
     (this as any).init();
   }
 
+  testWrite(blockData: string) {
+    (this as any).write(blockData);
+  }
+
   resetService() {
     (this as any)._cachedFileStats = undefined;
     (this as any)._currentFile = undefined;
@@ -57,14 +61,14 @@ describe('Monitor service', () => {
     fs.rmSync(monitorDir, {recursive: true, force: true});
   });
 
-  function mockWriteBlockData(blockHeight: number, monitorService: MonitorService = monitorService1) {
+  function mockWriteBlockData(blockHeight: number, monitorService: testMonitorService = monitorService1) {
     monitorService.createBlockStart(blockHeight);
-    monitorService.write(`fetch block ${blockHeight}`);
-    monitorService.write(`processing block ${blockHeight}`);
-    monitorService.write(`block handler ${blockHeight}`);
-    monitorService.write(`event handler ${blockHeight}, data :{entity: starter,{}}`);
-    monitorService.write('post process');
-    monitorService.write(`----- end block ${blockHeight}`);
+    monitorService.testWrite(`fetch block ${blockHeight}`);
+    monitorService.testWrite(`processing block ${blockHeight}`);
+    monitorService.testWrite(`block handler ${blockHeight}`);
+    monitorService.testWrite(`event handler ${blockHeight}, data :{entity: starter,{}}`);
+    monitorService.testWrite('post process');
+    monitorService.testWrite(`----- end block ${blockHeight}`);
   }
 
   it('monitor could write data', async () => {

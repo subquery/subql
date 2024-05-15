@@ -25,7 +25,7 @@ interface IndexEntry {
 }
 
 interface IndexBlockEntry extends IndexEntry {
-  endLine?: number;
+  endLine: number;
 }
 
 interface FileStat {
@@ -97,7 +97,7 @@ export class MonitorService {
       this.resetAll();
     } else {
       try {
-        // `readLastIndexEntry` also include assertion to make sure endline should valid
+        // `readLastIndexEntry` also include assertion to make sure endLine is valid
         const lastIndexEntry = this.readLastIndexEntry();
         // No index info been found, then reset
         if (lastIndexEntry === undefined) {
@@ -185,7 +185,7 @@ export class MonitorService {
    * Write block record data to file
    * @param blockData
    */
-  write(blockData: string): void {
+  private write(blockData: string): void {
     this.checkAndSwitchFile();
     const escapedBlockData = blockData.replace(/\n/g, '\\n');
     fs.appendFileSync(this.getFilePath(this.currentFile), `${escapedBlockData}\n`);
