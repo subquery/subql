@@ -1,10 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {NodeConfig} from '@subql/node-core/configure';
-import {BlockHeightMap} from '@subql/node-core/utils';
 import {SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {DictionaryQueryEntry} from '@subql/types-core';
+import {NodeConfig} from '../../configure';
+import {BlockHeightMap} from '../../utils';
 import {IBlock} from '../types';
 import {DictionaryResponse} from './types';
 import {DictionaryV1} from './v1';

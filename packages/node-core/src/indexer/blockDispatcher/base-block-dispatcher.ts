@@ -140,7 +140,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
       await this.projectService.reindex(lastCorrectHeight);
       this.setLatestProcessedHeight(lastCorrectHeight);
-      this.monitorService.createBlockFork(lastCorrectHeight);
       logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
     }
     this.flushQueue(lastCorrectHeight);
@@ -178,10 +177,9 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         this.poiSyncService.clear();
         this.monitorService.write(`poiSyncService stopped, cache cleared`);
       }
-      this.monitorService.write(`Rewind to block ${reindexBlockHeight}`);
+      this.monitorService.createBlockFork(reindexBlockHeight);
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
-      this.monitorService.write(`Rewind successful`);
       // Bring poi sync service back to sync again.
       if (this.nodeConfig.proofOfIndex) {
         void this.poiSyncService.syncPoi();

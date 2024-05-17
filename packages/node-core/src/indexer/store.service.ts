@@ -23,7 +23,7 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
-import {MonitorService} from '../indexer/monitor.service';
+import {MonitorService, MonitorServiceInterface} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
 import {camelCaseObjectKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
@@ -68,7 +68,7 @@ export class StoreService {
     private config: NodeConfig,
     readonly storeCache: StoreCacheService,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>,
-    private monitorService: MonitorService
+    private monitorService: MonitorServiceInterface
   ) {}
 
   private get modelIndexedFields(): IndexField[] {
@@ -315,7 +315,7 @@ export class StoreService {
   setBlockHeight(blockHeight: number): void {
     this._blockHeight = blockHeight;
     if (this.config.proofOfIndex) {
-      this.operationStack = new StoreOperations(this.modelsRelations.models);
+      this.operationStack = new StoreOperations(this.modelsRelations.models, this.monitorService);
     }
   }
 

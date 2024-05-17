@@ -8,7 +8,7 @@ import {buildSchemaFromString} from '@subql/utils';
 import {IndexesOptions, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {NodeConfig} from '../../configure';
-import {ISubqueryProject, StoreCacheService, StoreService} from '../../indexer';
+import {ISubqueryProject, MonitorServiceInterface, StoreCacheService, StoreService} from '../../indexer';
 import {initDbSchema} from '../../utils/project';
 import {DbOption} from '../db.module';
 import {generateHashedIndexName} from '../sync-helper';
@@ -38,7 +38,13 @@ async function setup(
 
   const storeCache = new StoreCacheService(sequelize, config, new EventEmitter2());
 
-  const storeService = new StoreService(sequelize, config, storeCache, project);
+  const monitorService: MonitorServiceInterface = {
+    write: jest.fn(),
+    createBlockFork: jest.fn(),
+    createBlockStart: jest.fn(),
+  };
+
+  const storeService = new StoreService(sequelize, config, storeCache, project, monitorService);
 
   await sequelize.createSchema(`"${schemaName}"`, {});
 

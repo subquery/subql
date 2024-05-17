@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {CacheMetadataModel, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
+import {
+  CacheMetadataModel,
+  ISubqueryProject,
+  MonitorServiceInterface,
+  StoreCacheService,
+  StoreService,
+} from '../indexer';
 import {NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
@@ -300,7 +306,13 @@ describe('Project Upgrades', () => {
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
         1
       );
-      const storeService = new StoreService({} as any, {} as any, storeCache, project);
+      const monitorService: MonitorServiceInterface = {
+        write: jest.fn(),
+        createBlockFork: jest.fn(),
+        createBlockStart: jest.fn(),
+      };
+
+      const storeService = new StoreService({} as any, {} as any, storeCache, project, monitorService);
 
       await upgradeService.init(storeService, 1, {} as NodeConfig, {} as Sequelize, '');
 

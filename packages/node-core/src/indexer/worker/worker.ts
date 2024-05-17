@@ -5,7 +5,6 @@ import assert from 'node:assert';
 import {getHeapStatistics} from 'node:v8';
 import {threadId} from 'node:worker_threads';
 import {INestApplication} from '@nestjs/common';
-import {hostMonitorKeys, monitorHostFunctions} from '@subql/node-core/indexer/worker/worker.monitor.service';
 import {BaseDataSource, Store, Cache} from '@subql/types-core';
 import {IApiConnectionSpecific} from '../../api.service';
 import {getLogger} from '../../logger';
@@ -15,6 +14,7 @@ import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {IDynamicDsService} from '../dynamic-ds.service';
 import {MonitorServiceInterface} from '../monitor.service';
 import {IUnfinalizedBlocksService} from '../unfinalizedBlocks.service';
+import {hostMonitorKeys, monitorHostFunctions} from '../worker';
 import {WorkerHost, Worker, AsyncMethods} from './worker.builder';
 import {cacheHostFunctions, HostCache, hostCacheKeys} from './worker.cache.service';
 import {

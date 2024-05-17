@@ -8,6 +8,7 @@ import {NodeConfig} from '../configure';
 import {MonitorServiceInterface} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
+import {handledStringify} from './../utils';
 import {ProcessBlockResponse} from './blockDispatcher';
 import {asSecondLayerHandlerProcessor_1_0_0, BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
@@ -188,7 +189,7 @@ export abstract class BaseIndexerManager<
 
         const parsedData = await this.prepareFilteredData(kind, data, ds);
 
-        this.monitorService.write(`Handler: ${handler.handler}, args:${JSON.stringify(data)}`);
+        this.monitorService.write(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         this.nodeConfig.profiler
           ? await profilerWrap(
               vm.securedExec.bind(vm),
@@ -207,7 +208,7 @@ export abstract class BaseIndexerManager<
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vm = vm! ?? (await getVM(ds));
-        this.monitorService.write(`Handler: ${handler.handler}, args:${JSON.stringify(data)}`);
+        this.monitorService.write(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }
     }

@@ -5,9 +5,10 @@ import * as fs from 'fs';
 import path from 'path';
 import * as readline from 'readline';
 import {Injectable} from '@nestjs/common';
-import {getLogger, NodeConfig} from '@subql/node-core';
+import {NodeConfig} from '../configure';
+import {getLogger} from '../logger';
 
-const DEFAULT_MONITOR_STORE_PATH = './.monitor'; // Provide a default path if needed
+export const DEFAULT_MONITOR_STORE_PATH = './.monitor'; // Provide a default path if needed
 const UNIT_MB = 1024 * 1024;
 const FILE_LIMIT_SIZE = 50 * UNIT_MB; // 50 MB in bytes
 
@@ -194,6 +195,9 @@ export class MonitorService implements MonitorServiceInterface {
    * @param blockData
    */
   write(blockData: string): void {
+    if (this.monitorFileSize <= 0) {
+      return;
+    }
     this.checkAndSwitchFile();
     const escapedBlockData = blockData.replace(/\n/g, '\\n');
     fs.appendFileSync(this.getFilePath(this.currentFile), `${escapedBlockData}\n`);

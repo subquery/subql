@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {GraphQLJsonFieldType, u8aToHex} from '@subql/utils';
+import {MonitorServiceInterface} from '../indexer/monitor.service';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
 
@@ -232,9 +233,15 @@ const models = [
   },
 ];
 
+const monitorService: MonitorServiceInterface = {
+  write: jest.fn(),
+  createBlockFork: jest.fn(),
+  createBlockStart: jest.fn(),
+};
+
 describe('StoreOperations', () => {
   it('single leaf, expect merkleRoot to be hashed', () => {
-    const operationStack = new StoreOperations(models);
+    const operationStack = new StoreOperations(models, monitorService);
     for (const o of testOperations2) {
       operationStack.put(o.operation, o.entityType, o.data);
     }
@@ -250,7 +257,7 @@ describe('StoreOperations', () => {
   });
 
   it('put operation into the merkel leaf, and generate Merkle Root, also able to reset', () => {
-    const operationStack = new StoreOperations(models);
+    const operationStack = new StoreOperations(models, monitorService);
     for (const o of testOperations) {
       operationStack.put(o.operation, o.entityType, o.data);
     }
@@ -264,7 +271,7 @@ describe('StoreOperations', () => {
   });
 
   it('throw error when remove data is not string type', () => {
-    const operationStack = new StoreOperations(models);
+    const operationStack = new StoreOperations(models, monitorService);
 
     expect(() => operationStack.put(falseOperation.operation, falseOperation.entityType, falseOperation.data)).toThrow(
       `Remove operation only accept data in string type`
@@ -272,7 +279,7 @@ describe('StoreOperations', () => {
   });
 
   it('could generate operation hash with negative value', () => {
-    const operationStack = new StoreOperations(models);
+    const operationStack = new StoreOperations(models, monitorService);
     for (const o of testOperations3) {
       operationStack.put(o.operation, o.entityType, o.data);
     }

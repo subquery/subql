@@ -1,11 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import fs from 'fs';
 import {Inject, Injectable} from '@nestjs/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
 import {enumNameToHash} from '../db';
+import {DEFAULT_MONITOR_STORE_PATH} from '../indexer';
 import {ISubqueryProject} from '../indexer/types';
 import {getLogger} from '../logger';
 import {getEnumDeprecated, getExistingProjectSchema} from '../utils';
@@ -66,8 +68,12 @@ export class ForceCleanService {
           }
         );
       }
-
       logger.info('force cleaned schema and tables');
+      const monitorDir = this.nodeConfig.monitorOutDir ?? DEFAULT_MONITOR_STORE_PATH;
+      if (fs.existsSync(monitorDir)) {
+        fs.rmSync(monitorDir, {recursive: true, force: true});
+        logger.info('force cleaned monitor service files');
+      }
     } catch (err: any) {
       logger.error(err, 'failed to force clean');
       throw err;

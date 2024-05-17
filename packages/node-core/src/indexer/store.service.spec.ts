@@ -3,13 +3,19 @@
 
 import {DataTypes, Model, ModelAttributes} from '@subql/x-sequelize';
 import {addIdAndBlockRangeAttributes} from '../db';
+import {MonitorServiceInterface} from '../indexer';
 import {StoreService} from './store.service';
 
 describe('Store Service', () => {
   let storeService: StoreService;
+  const monitorService: MonitorServiceInterface = {
+    write: jest.fn(),
+    createBlockFork: jest.fn(),
+    createBlockStart: jest.fn(),
+  };
 
   it('addIdAndBlockRangeAttributes', () => {
-    storeService = new StoreService(null as any, null as any, null as any, null as any);
+    storeService = new StoreService(null as any, null as any, null as any, null as any, monitorService);
     const attributes = {
       id: {
         type: DataTypes.STRING,
@@ -32,7 +38,7 @@ describe('Store Service', () => {
   });
 
   it('could find indexed field', () => {
-    storeService = new StoreService(null as any, null as any, null as any, null as any);
+    storeService = new StoreService(null as any, null as any, null as any, null as any, null as any);
     (storeService as any).__modelIndexedFields = [
       {
         entityName: 'MinerIP', // This is a special case that upperFirst and camelCase will fail

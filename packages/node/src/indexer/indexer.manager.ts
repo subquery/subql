@@ -23,6 +23,7 @@ import {
   ProcessBlockResponse,
   BaseIndexerManager,
   IBlock,
+  MonitorServiceInterface,
 } from '@subql/node-core';
 import { MonitorService } from '@subql/node-core/indexer/monitor.service';
 import {
@@ -65,7 +66,7 @@ export class IndexerManager extends BaseIndexerManager<
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
-    monitorService: MonitorService,
+    monitorService: MonitorServiceInterface,
   ) {
     super(
       apiService,
