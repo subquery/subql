@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import path from 'path';
 import * as readline from 'readline';
+import {Injectable} from '@nestjs/common';
 import {getLogger, NodeConfig} from '@subql/node-core';
 
 const DEFAULT_MONITOR_STORE_PATH = './.monitor'; // Provide a default path if needed
@@ -33,7 +34,14 @@ interface FileStat {
   fileEndLine: number;
 }
 
-export class MonitorService {
+export interface MonitorServiceInterface {
+  write(blockData: string): void;
+  createBlockFork(blockHeight: number): void;
+  createBlockStart(blockHeight: number): void;
+}
+
+@Injectable()
+export class MonitorService implements MonitorServiceInterface {
   private readonly outputPath: string;
   private readonly monitorFileSize: number;
   private readonly indexPath: string;
@@ -41,9 +49,9 @@ export class MonitorService {
   private currentIndexHeight: number | undefined; // We need to keep this to update index when switch file, so we know current processing height
   private _cachedFileStats: Record<keyof typeof FileLocation, FileStat> | undefined;
 
-  constructor(nodeConfig: NodeConfig) {
-    this.outputPath = nodeConfig.monitorOutDir ?? DEFAULT_MONITOR_STORE_PATH;
-    this.monitorFileSize = nodeConfig.monitorFileSize ? nodeConfig.monitorFileSize * UNIT_MB : FILE_LIMIT_SIZE;
+  constructor(protected config: NodeConfig) {
+    this.outputPath = config.monitorOutDir ?? DEFAULT_MONITOR_STORE_PATH;
+    this.monitorFileSize = config.monitorFileSize ? config.monitorFileSize * UNIT_MB : FILE_LIMIT_SIZE;
     this.indexPath = path.join(this.outputPath, `index.csv`);
     this.init();
   }
@@ -77,7 +85,7 @@ export class MonitorService {
     return this.cachedFileStats[this.currentFile].fileSize;
   }
 
-  set currentFileSize(number) {
+  set currentFileSize(number: number) {
     this.cachedFileStats[this.currentFile].fileSize = number;
   }
 
@@ -85,7 +93,7 @@ export class MonitorService {
     return this.cachedFileStats[this.currentFile].fileEndLine;
   }
 
-  set currentFileLastLine(number) {
+  set currentFileLastLine(number: number) {
     this.cachedFileStats[this.currentFile].fileEndLine = number;
   }
 
@@ -185,7 +193,7 @@ export class MonitorService {
    * Write block record data to file
    * @param blockData
    */
-  private write(blockData: string): void {
+  write(blockData: string): void {
     this.checkAndSwitchFile();
     const escapedBlockData = blockData.replace(/\n/g, '\\n');
     fs.appendFileSync(this.getFilePath(this.currentFile), `${escapedBlockData}\n`);

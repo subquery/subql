@@ -12,6 +12,7 @@ import {IndexerEvent} from '../../events';
 import {IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
+import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {ISubqueryProject, IProjectService} from '../types';
@@ -59,6 +60,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
+    monitorService: MonitorServiceInterface,
     private createIndexerWorker: () => Promise<W>
   ) {
     super(
@@ -70,7 +72,8 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
       storeService,
       storeCacheService,
-      poiSyncService
+      poiSyncService,
+      monitorService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -156,6 +159,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
         await this.preProcessBlock(height);
 
+        this.monitorService.write(`Processing from worker #${workerIdx}`);
         const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
 
         await this.postProcessBlock(height, {

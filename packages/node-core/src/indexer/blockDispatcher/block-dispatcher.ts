@@ -12,6 +12,7 @@ import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
+import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
@@ -47,7 +48,8 @@ export abstract class BlockDispatcher<B, DS>
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    fetchBlocksBatches: BatchBlockFetcher<B>
+    fetchBlocksBatches: BatchBlockFetcher<B>,
+    monitorService: MonitorServiceInterface
   ) {
     super(
       nodeConfig,
@@ -58,7 +60,8 @@ export abstract class BlockDispatcher<B, DS>
       new Queue(nodeConfig.batchSize * 3),
       storeService,
       storeCacheService,
-      poiSyncService
+      poiSyncService,
+      monitorService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch');
@@ -161,10 +164,10 @@ export abstract class BlockDispatcher<B, DS>
 
                 try {
                   await this.preProcessBlock(blockHeight);
+                  this.monitorService.write(`Processing from main treat`);
                   // Inject runtimeVersion here to enhance api.at preparation
                   const processBlockResponse = await this.indexBlock(block);
                   await this.postProcessBlock(blockHeight, processBlockResponse);
-
                   //set block to null for garbage collection
                   (block as any) = null;
                 } catch (e: any) {

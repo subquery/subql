@@ -5,6 +5,7 @@ import assert from 'node:assert';
 import {getHeapStatistics} from 'node:v8';
 import {threadId} from 'node:worker_threads';
 import {INestApplication} from '@nestjs/common';
+import {hostMonitorKeys, monitorHostFunctions} from '@subql/node-core/indexer/worker/worker.monitor.service';
 import {BaseDataSource, Store, Cache} from '@subql/types-core';
 import {IApiConnectionSpecific} from '../../api.service';
 import {getLogger} from '../../logger';
@@ -12,6 +13,7 @@ import {waitForBatchSize} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {IDynamicDsService} from '../dynamic-ds.service';
+import {MonitorServiceInterface} from '../monitor.service';
 import {IUnfinalizedBlocksService} from '../unfinalizedBlocks.service';
 import {WorkerHost, Worker, AsyncMethods} from './worker.builder';
 import {cacheHostFunctions, HostCache, hostCacheKeys} from './worker.cache.service';
@@ -151,6 +153,7 @@ export function createWorkerHost<
       ...hostCacheKeys,
       ...hostDynamicDsKeys,
       ...hostUnfinalizedBlocksKeys,
+      ...hostMonitorKeys,
       ...hostConnectionPoolStateKeys,
     ],
     {
@@ -184,6 +187,7 @@ export async function createIndexerWorker<
   connectionPoolState: ConnectionPoolStateManager<ApiConnection>,
   root: string,
   startHeight: number,
+  monitorService: MonitorServiceInterface,
   workerData?: any
 ): Promise<T & {terminate: () => Promise<number>}> {
   const indexerWorker = Worker.create<
@@ -195,6 +199,7 @@ export async function createIndexerWorker<
     {
       ...cacheHostFunctions(cache),
       ...storeHostFunctions(store),
+      ...monitorHostFunctions(monitorService),
       ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess: unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(unfinalizedBlocksService),
       ...connectionPoolStateHostFunctions(connectionPoolState),

@@ -23,6 +23,7 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
+import {MonitorService} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
 import {camelCaseObjectKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
@@ -66,7 +67,8 @@ export class StoreService {
     private sequelize: Sequelize,
     private config: NodeConfig,
     readonly storeCache: StoreCacheService,
-    @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
+    @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>,
+    private monitorService: MonitorService
   ) {}
 
   private get modelIndexedFields(): IndexField[] {
@@ -423,7 +425,7 @@ group by
   }
 
   getStore(): Store {
-    return new Store(this.config, this.storeCache, this);
+    return new Store(this.config, this.storeCache, this, this.monitorService);
   }
 }
 

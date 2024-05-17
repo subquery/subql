@@ -16,6 +16,7 @@ import {
   InMemoryCacheService,
   createIndexerWorker as createIndexerWorkerCore,
 } from '@subql/node-core';
+import { MonitorServiceInterface } from '@subql/node-core/indexer/monitor.service';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';
@@ -55,6 +56,7 @@ export class WorkerBlockDispatcherService
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
     connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
+    monitorService: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,
@@ -65,6 +67,7 @@ export class WorkerBlockDispatcherService
       storeCacheService,
       poiSyncService,
       project,
+      monitorService,
       () =>
         createIndexerWorkerCore<
           IIndexerWorker,
@@ -81,6 +84,7 @@ export class WorkerBlockDispatcherService
           connectionPoolState,
           project.root,
           projectService.startHeight,
+          monitorService,
         ),
     );
   }

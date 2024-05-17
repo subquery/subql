@@ -5,6 +5,7 @@ import assert from 'assert';
 import {Store as IStore, Entity, FieldsExpression, GetOptions} from '@subql/types-core';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
+import {MonitorService} from '../monitor.service';
 import {StoreCacheService} from '../storeCache';
 import {StoreOperations} from '../StoreOperations';
 import {OperationType} from '../types';
@@ -25,11 +26,13 @@ export class Store implements IStore {
   #config: NodeConfig;
   #storeCache: StoreCacheService;
   #context: Context;
+  #monitorService: MonitorService;
 
-  constructor(config: NodeConfig, storeCache: StoreCacheService, context: Context) {
+  constructor(config: NodeConfig, storeCache: StoreCacheService, context: Context, monitorService: MonitorService) {
     this.#config = config;
     this.#storeCache = storeCache;
     this.#context = context;
+    this.#monitorService = monitorService;
   }
 
   #queryLimitCheck(storeMethod: string, entity: string, options?: GetOptions<any>) {
@@ -49,6 +52,7 @@ export class Store implements IStore {
   async get<T extends Entity>(entity: string, id: string): Promise<T | undefined> {
     try {
       const raw = await this.#storeCache.getModel<T>(entity).get(id);
+      this.#monitorService.write(`[Store][get] Entity ${entity} ID ${id}, data: ${JSON.stringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
       throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
@@ -68,7 +72,7 @@ export class Store implements IStore {
       this.#queryLimitCheck('getByField', entity, options);
 
       const raw = await this.#storeCache.getModel<T>(entity).getByField(field, value, options);
-
+      this.#monitorService.write(`[Store][getByField] Entity ${entity}, data: ${JSON.stringify(raw)}`);
       return raw.map((v) => EntityClass.create<T>(entity, v, this)) as T[];
     } catch (e) {
       throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
@@ -92,7 +96,7 @@ export class Store implements IStore {
       this.#queryLimitCheck('getByFields', entity, options);
 
       const raw = await this.#storeCache.getModel<T>(entity).getByFields(filter, options);
-
+      this.#monitorService.write(`[Store][getByFields] Entity ${entity}, data: ${JSON.stringify(raw)}`);
       return raw.map((v) => EntityClass.create<T>(entity, v, this)) as T[];
     } catch (e) {
       throw new Error(`Failed to getByFields Entity ${entity}: ${e}`);
@@ -104,7 +108,7 @@ export class Store implements IStore {
       const indexed = this.#context.isIndexedHistorical(entity, field as string);
       assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
       const raw = await this.#storeCache.getModel<T>(entity).getOneByField(field, value);
-
+      this.#monitorService.write(`[Store][getOneByField] Entity ${entity}, data: ${JSON.stringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
       throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
@@ -115,8 +119,10 @@ export class Store implements IStore {
   async set(entity: string, _id: string, data: Entity): Promise<void> {
     try {
       this.#storeCache.getModel(entity).set(_id, data, this.#context.blockHeight);
-
       this.#context.operationStack?.put(OperationType.Set, entity, data);
+      this.#monitorService.write(
+        `[Store][set] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${JSON.stringify(data)}`
+      );
     } catch (e) {
       throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
     }
@@ -125,10 +131,12 @@ export class Store implements IStore {
   async bulkCreate(entity: string, data: Entity[]): Promise<void> {
     try {
       this.#storeCache.getModel(entity).bulkCreate(data, this.#context.blockHeight);
-
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
+      this.#monitorService.write(
+        `[Store][bulkCreate] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${JSON.stringify(data)}`
+      );
     } catch (e) {
       throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
     }
@@ -141,6 +149,9 @@ export class Store implements IStore {
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
+      this.#monitorService.write(
+        `[Store][bulkUpdate] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${JSON.stringify(data)}`
+      );
     } catch (e) {
       throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
     }
@@ -149,8 +160,8 @@ export class Store implements IStore {
   async remove(entity: string, id: string): Promise<void> {
     try {
       this.#storeCache.getModel(entity).remove(id, this.#context.blockHeight);
-
       this.#context.operationStack?.put(OperationType.Remove, entity, id);
+      this.#monitorService.write(`[Store][remove] Entity ${entity}, height: ${this.#context.blockHeight}, id: ${id}`);
     } catch (e) {
       throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
     }
@@ -163,6 +174,9 @@ export class Store implements IStore {
       for (const id of ids) {
         this.#context.operationStack?.put(OperationType.Remove, entity, id);
       }
+      this.#monitorService.write(
+        `[Store][remove] Entity ${entity}, height: ${this.#context.blockHeight}, ids: ${JSON.stringify(ids)}`
+      );
     } catch (e) {
       throw new Error(`Failed to bulkRemove Entity ${entity}: ${e}`);
     }

@@ -14,6 +14,7 @@ import {
   PoiSyncService,
   IBlock,
 } from '@subql/node-core';
+import { MonitorServiceInterface } from '@subql/node-core/indexer/monitor.service';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -44,6 +45,7 @@ export class BlockDispatcherService
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
+    monitorService: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,
@@ -68,6 +70,7 @@ export class BlockDispatcherService
           specChanged ? undefined : this.runtimeService.parentSpecVersion,
         );
       },
+      monitorService,
     );
   }
 

@@ -5,6 +5,7 @@ import assert from 'assert';
 import {BaseCustomDataSource, BaseDataSource} from '@subql/types-core';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
+import {MonitorServiceInterface} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
 import {profilerWrap} from '../profiler';
 import {ProcessBlockResponse} from './blockDispatcher';
@@ -64,7 +65,8 @@ export abstract class BaseIndexerManager<
     private dynamicDsService: DynamicDsService<DS>,
     private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
     private filterMap: FilterMap,
-    private processorMap: ProcessorMap
+    private processorMap: ProcessorMap,
+    private monitorService: MonitorServiceInterface
   ) {
     logger.info('indexer manager start');
   }
@@ -186,6 +188,7 @@ export abstract class BaseIndexerManager<
 
         const parsedData = await this.prepareFilteredData(kind, data, ds);
 
+        this.monitorService.write(`Handler: ${handler.handler}, args:${JSON.stringify(data)}`);
         this.nodeConfig.profiler
           ? await profilerWrap(
               vm.securedExec.bind(vm),
@@ -204,6 +207,7 @@ export abstract class BaseIndexerManager<
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vm = vm! ?? (await getVM(ds));
+        this.monitorService.write(`Handler: ${handler.handler}, args:${JSON.stringify(data)}`);
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }
     }
