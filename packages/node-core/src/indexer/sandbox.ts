@@ -13,6 +13,8 @@ import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {timeout} from '../utils';
 
+export const SANDBOX_DEFAULT_BUILTINS = ['assert', 'buffer', 'crypto', 'util', 'path', 'url', 'stream'];
+
 export interface SandboxOption {
   cache?: Cache;
   store?: Store;
@@ -27,7 +29,7 @@ const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
     wasm: unsafe,
     sandbox: {atob},
     require: {
-      builtin: unsafe ? ['*'] : ['assert', 'buffer', 'crypto', 'util', 'path', 'url'],
+      builtin: unsafe ? ['*'] : SANDBOX_DEFAULT_BUILTINS,
       external: true,
       context: 'sandbox',
     },

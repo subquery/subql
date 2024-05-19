@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update cache to always flush with a block height and clear after transaction commit (#2386)
+- Export `SANDBOX_DEFAULT_BUILTINS` to share with other sandboxes (#2404)
 
 ## [10.2.0] - 2024-05-08
 ### Changed

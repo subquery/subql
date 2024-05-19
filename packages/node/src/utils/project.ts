@@ -14,7 +14,7 @@ import {
   isRuntimeDs,
   isCustomDs,
 } from '@subql/common-substrate';
-import { saveFile } from '@subql/node-core';
+import { SANDBOX_DEFAULT_BUILTINS, saveFile } from '@subql/node-core';
 import { Reader } from '@subql/types-core';
 import yaml from 'js-yaml';
 import { NodeVM, VMScript } from 'vm2';
@@ -92,7 +92,7 @@ export function loadChainTypesFromJs(
     require: {
       context: 'sandbox',
       external: true,
-      builtin: ['assert', 'buffer', 'crypto', 'util', 'path', 'url', 'stream'],
+      builtin: SANDBOX_DEFAULT_BUILTINS,
       root: root,
       resolve: (moduleName: string) => {
         return require.resolve(moduleName, { paths: [root] });

@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Fix load chain types missing some build-in modules
+- Fix load chain types missing some builtins modules
 
 ## [4.4.1] - 2024-05-08
 ### Fixed
