@@ -92,7 +92,7 @@ export function loadChainTypesFromJs(
     require: {
       context: 'sandbox',
       external: true,
-      builtin: ['path'],
+      builtin: ['assert', 'buffer', 'crypto', 'util', 'path', 'url', 'stream'],
       root: root,
       resolve: (moduleName: string) => {
         return require.resolve(moduleName, { paths: [root] });
