@@ -125,10 +125,10 @@ export class Store implements IStore {
   async set(entity: string, _id: string, data: Entity): Promise<void> {
     try {
       this.#storeCache.getModel(entity).set(_id, data, this.#context.blockHeight);
-      this.#context.operationStack?.put(OperationType.Set, entity, data);
       this.#monitorService.write(
         `-- [Store][set] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${handledStringify(data)}`
       );
+      this.#context.operationStack?.put(OperationType.Set, entity, data);
     } catch (e) {
       throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
     }

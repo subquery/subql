@@ -23,7 +23,7 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
-import {MonitorService, MonitorServiceInterface} from '../indexer/monitor.service';
+import {MonitorService} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
 import {camelCaseObjectKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
@@ -68,7 +68,7 @@ export class StoreService {
     private config: NodeConfig,
     readonly storeCache: StoreCacheService,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>,
-    private monitorService: MonitorServiceInterface
+    private monitorService: MonitorService
   ) {}
 
   private get modelIndexedFields(): IndexField[] {

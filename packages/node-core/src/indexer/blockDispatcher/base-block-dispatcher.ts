@@ -170,7 +170,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   @mainThreadOnly()
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
-    this.monitorService.write(`Finished processed block ${height}`);
+    this.monitorService.write(`Finished block ${height}`);
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       if (this.nodeConfig.proofOfIndex) {
         await this.poiSyncService.stopSync();

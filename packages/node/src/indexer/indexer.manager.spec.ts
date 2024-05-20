@@ -16,7 +16,7 @@ import {
   IProjectUpgradeService,
   InMemoryCacheService,
   SandboxService,
-  MonitorServiceInterface,
+  MonitorService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';
@@ -167,11 +167,12 @@ function createIndexerManager(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-  const monitorService: MonitorServiceInterface = {
+  const monitorService = {
     write: jest.fn(),
     createBlockFork: jest.fn(),
     createBlockStart: jest.fn(),
-  };
+  } as unknown as MonitorService;
+
   const storeService = new StoreService(
     sequelize,
     nodeConfig,
