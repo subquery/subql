@@ -124,6 +124,8 @@ describe('cacheModel', () => {
         throw new Error('Entity should exist');
       }
 
+      // updated height to 2
+      blockHeight = 2;
       testModel.set(
         'entity1_id_0x01',
         {

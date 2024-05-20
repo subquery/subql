@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GraphqlHistorical to filter historical items when ordering 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), '@listings'::text, (with __local_2__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_3__."_id"), 'priceAmount'::text, ((__local_3__."price_amount"))::text))) as "@nodes" from (select 
+__local_3__.*
+from "subquery_2"."listings" as __local_3__
+
+where (__local_3__."item_id" = __local_1__."id") and (__local_3__._block_range @> $1::bigint) and (__local_3__._block_range @> $1::bigint) and (TRUE) and (TRUE)
+order by __local_3__."_id" ASC
+
+) __local_3__), __local_4__ as (select json_agg(to_json(__local_2__)) as data from __local_2__) select json_build_object('data'::text, coalesce((select __local_4__.data from __local_4__), '[]'::json)) )))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_2"."items" as __local_1__
+
+where (__local_1__._block_range @> $1::bigint) and (TRUE) and (TRUE)
+order by __local_1__."last_traded_price_amount" ASC,__local_1__."_id" ASC
+
+) __local_1__), __local_5__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_5__.data from __local_5__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlHistorical to filter historical nested (backward) 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id")))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_2"."items" as __local_1__
+
+where (__local_1__._block_range @> $1::bigint) and (((exists(select 1 from "subquery_2"."listings" as __local_2__ where (__local_2__."item_id" = __local_1__."id") and (__local_2__._block_range @> $1::bigint) and (((__local_2__."price_token" = $2))) and (__local_2__._block_range @> $1::bigint))))) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_3__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_3__.data from __local_3__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlHistorical to filter historical nested (forward) 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id")))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_2"."listings" as __local_1__
+
+where (__local_1__._block_range @> $1::bigint) and ((      exists(
+        select 1 from "subquery_2"."items" as __local_2__
+        where (__local_1__."item_id" = __local_2__."id") and (__local_1__._block_range @> $1::bigint) and
+          (((__local_2__."approved" = $2))) and (__local_2__._block_range @> $1::bigint)
+      ))) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_3__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_3__.data from __local_3__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlHistorical to filter historical top level 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), '@listings'::text, (with __local_2__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_3__."_id"), 'id'::text, (__local_3__."id")))) as "@nodes" from (select 
+__local_3__.*
+from "subquery_2"."listings" as __local_3__
+
+where (__local_3__."item_id" = __local_1__."id") and (__local_3__._block_range @> $1::bigint) and (__local_3__._block_range @> $1::bigint) and (TRUE) and (TRUE)
+order by __local_3__."_id" ASC
+
+) __local_3__), __local_4__ as (select json_agg(to_json(__local_2__)) as data from __local_2__) select json_build_object('data'::text, coalesce((select __local_4__.data from __local_4__), '[]'::json)) )))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_2"."items" as __local_1__
+
+where (__local_1__._block_range @> $1::bigint) and ((exists(select 1 from "subquery_2"."listings" as __local_5__ where (__local_5__."item_id" = __local_1__."id") and (__local_5__._block_range @> $1::bigint)))) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_6__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_6__.data from __local_6__), '[]'::json) as "data", (
+  select json_build_object('totalCount'::text, count(1))
+  from "subquery_2"."items" as __local_1__
+  where (__local_1__._block_range @> $1::bigint) and ((exists(select 1 from "subquery_2"."listings" as __local_5__ where (__local_5__."item_id" = __local_1__."id") and (__local_5__._block_range @> $1::bigint))))
+) as "aggregates" "
+`;

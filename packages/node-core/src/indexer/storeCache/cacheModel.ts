@@ -63,9 +63,7 @@ export class CachedModel<
     readonly model: ModelStatic<Model<T, T>>,
     private readonly historical = true,
     config: NodeConfig,
-    private getNextStoreOperationIndex: () => number,
-    // This is used by methods such as getByFields which don't support caches
-    private readonly useCockroachDb = false
+    private getNextStoreOperationIndex: () => number
   ) {
     super();
     // In case, this might be want to be 0
@@ -275,11 +273,9 @@ export class CachedModel<
     return !!Object.keys(this.setCache).length || !!Object.keys(this.removeCache).length;
   }
 
-  async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
+  async runFlush(tx: Transaction, blockHeight: number): Promise<void> {
     // Get records relevant to the block height
-    const {removeRecords, setRecords} = blockHeight
-      ? this.filterRecordsWithHeight(blockHeight)
-      : {removeRecords: this.removeCache, setRecords: this.setCache};
+    const {removeRecords, setRecords} = this.filterRecordsWithHeight(blockHeight);
     // Filter non-historical could return undefined due to it been removed
     let records = this.applyBlockRange(setRecords).filter((r) => !!r);
     let dbOperation: Promise<unknown>;

@@ -152,7 +152,7 @@ export abstract class BaseProjectService<
       }
 
       // Flush any pending operations to set up DB
-      await this.storeService.storeCache.flushCache(true, true);
+      await this.storeService.storeCache.flushCache(true);
     } else {
       assert(startHeight, 'ProjectService must be initalized with a start height in workers');
       this.projectUpgradeService.initWorker(startHeight, this.handleProjectChange.bind(this));

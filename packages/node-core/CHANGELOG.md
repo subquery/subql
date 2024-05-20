@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update cache to always flush with a block height and clear after transaction commit (#2386)
+- Export `SANDBOX_DEFAULT_BUILTINS` to share with other sandboxes (#2404)
 
 ### Added
 - Add monitor service to record block indexing actions in order to improve POI accuracy, and provide debug info for Admin api

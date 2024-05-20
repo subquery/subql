@@ -31,6 +31,37 @@ export function buildWhereConditionBackward(
   return sql.query`(${sql.join(fkMatches, ') and (')})`;
 }
 
+export function connectionFilterResolveBlockHeight(
+  fieldValue: unknown,
+  foreignTableAlias: SQL,
+  foreignTableFilterTypeName: string,
+  queryBuilder: QueryBuilder,
+  connectionFilterResolve: (
+    fieldValue: unknown,
+    foreignTableAlias: SQL,
+    foreignTableFilterTypeName: string,
+    queryBuilder: QueryBuilder
+    // There are more args but they don't seem to be used
+  ) => SQL | null,
+  foreignTable: PgEntity,
+  sql: any
+): SQL | null {
+  const sqlFragment = connectionFilterResolve(fieldValue, foreignTableAlias, foreignTableFilterTypeName, queryBuilder);
+
+  if (sqlFragment === null) {
+    return null;
+  }
+
+  if (queryBuilder.context.args?.blockHeight === undefined || !hasBlockRange(foreignTable)) {
+    return sqlFragment;
+  }
+
+  return sql.join(
+    [sqlFragment, makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql)],
+    ') and ('
+  );
+}
+
 const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
   builder,
   {pgSimpleCollections, pgOmitListSuffix, connectionFilterUseListInflectors}
@@ -205,17 +236,21 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
         sql
       );
 
+      const sqlSelectWhereKeysMatch = sql.query`select 1 from ${sqlIdentifier} as ${foreignTableAlias} where ${sqlKeysMatch}`;
+      const sqlFragment = connectionFilterResolveBlockHeight(
+        fieldValue,
+        foreignTableAlias,
+        foreignTableFilterTypeName,
+        queryBuilder,
+        connectionFilterResolve,
+        foreignTable,
+        sql
+      );
+
       /******************************
        * HISTORICAL CHANGES END
        *******************************/
 
-      const sqlSelectWhereKeysMatch = sql.query`select 1 from ${sqlIdentifier} as ${foreignTableAlias} where ${sqlKeysMatch}`;
-      const sqlFragment = connectionFilterResolve(
-        fieldValue,
-        foreignTableAlias,
-        foreignTableFilterTypeName,
-        queryBuilder
-      );
       return sqlFragment == null ? null : sql.query`exists(${sqlSelectWhereKeysMatch} and (${sqlFragment}))`;
     };
 
@@ -231,7 +266,6 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
       /******************************
        * HISTORICAL CHANGES BEGIN
        *******************************/
-
       const sqlKeysMatch = buildWhereConditionBackward(
         table,
         foreignTableAlias,
@@ -443,7 +477,6 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
       /******************************
        * HISTORICAL CHANGES BEGIN
        *******************************/
-
       const sqlKeysMatch = buildWhereConditionBackward(
         foreignTable,
         foreignTableAlias,
@@ -460,12 +493,16 @@ const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (
 
       const sqlSelectWhereKeysMatch = sql.query`select 1 from ${sqlIdentifier} as ${foreignTableAlias} where ${sqlKeysMatch}`;
 
-      const sqlFragment = connectionFilterResolve(
+      const sqlFragment = connectionFilterResolveBlockHeight(
         fieldValue,
         foreignTableAlias,
         foreignTableFilterTypeName,
-        queryBuilder
+        queryBuilder,
+        connectionFilterResolve,
+        foreignTable,
+        sql
       );
+
       if (sqlFragment == null) {
         return null;
       } else if (fieldName === 'every') {

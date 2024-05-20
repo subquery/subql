@@ -205,18 +205,18 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
     if (this.nodeConfig.storeCacheAsync) {
       // Flush all completed block data and don't wait
-      await this.storeCacheService.flushAndWaitForCapacity(false, false)?.catch((e) => {
+      await this.storeCacheService.flushAndWaitForCapacity(false)?.catch((e) => {
         logger.error(e, 'Flushing cache failed');
         process.exit(1);
       });
     } else {
       // Flush all data from cache and wait
-      await this.storeCacheService.flushCache(false, true);
+      await this.storeCacheService.flushCache(false);
     }
 
     if (!this.projectService.hasDataSourcesAfterHeight(height)) {
       logger.info(`All data sources have been processed up to block number ${height}. Exiting gracefully...`);
-      await this.storeCacheService.flushCache(false, true);
+      await this.storeCacheService.flushCache(false);
       process.exit(0);
     }
   }

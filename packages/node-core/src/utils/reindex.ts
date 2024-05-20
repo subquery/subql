@@ -60,7 +60,7 @@ export async function reindex(
     await forceCleanService.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
-    await storeService.storeCache.flushCache(true, false);
+    await storeService.storeCache.flushCache(true);
     await storeService.storeCache.resetCache();
     const transaction = await sequelize.transaction();
     try {
