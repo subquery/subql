@@ -297,7 +297,7 @@ export class MonitorService implements MonitorServiceInterface {
           const nextIndexBlockEntry = this.decodeIndexRow(data[nextIndex]);
           // If next entry are in same file, then we can calculate current index endline
           if (indexBlockEntry.file === nextIndexBlockEntry.file) {
-            endLine = nextIndexBlockEntry.blockHeight - 1;
+            endLine = nextIndexBlockEntry.startLine - 1;
           }
           // not same, means file location has changed
           else {

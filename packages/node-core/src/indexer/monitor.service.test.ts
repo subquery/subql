@@ -106,7 +106,7 @@ describe('Monitor service', () => {
     expect(monitorService2.testGetBlockIndexEntries(35)).toStrictEqual([
       {
         blockHeight: 35,
-        endLine: 54,
+        endLine: 5,
         file: 'A',
         forked: false,
         startLine: 0,
