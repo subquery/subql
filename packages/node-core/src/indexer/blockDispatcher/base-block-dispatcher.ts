@@ -63,7 +63,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     protected storeService: StoreService,
     private storeCacheService: StoreCacheService,
     private poiSyncService: PoiSyncService,
-    protected monitorService: MonitorServiceInterface
+    protected monitorService?: MonitorServiceInterface
   ) {
     this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
   }
@@ -154,7 +154,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   // Is called directly before a block is processed
   @mainThreadOnly()
   protected async preProcessBlock(height: number): Promise<void> {
-    this.monitorService.createBlockStart(height);
+    this.monitorService?.createBlockStart(height);
     this.storeService.setBlockHeight(height);
 
     await this.projectUpgradeService.setCurrentHeight(height);
@@ -170,14 +170,14 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   @mainThreadOnly()
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
-    this.monitorService.write(`Finished block ${height}`);
+    this.monitorService?.write(`Finished block ${height}`);
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       if (this.nodeConfig.proofOfIndex) {
         await this.poiSyncService.stopSync();
         this.poiSyncService.clear();
-        this.monitorService.write(`poiSyncService stopped, cache cleared`);
+        this.monitorService?.write(`poiSyncService stopped, cache cleared`);
       }
-      this.monitorService.createBlockFork(reindexBlockHeight);
+      this.monitorService?.createBlockFork(reindexBlockHeight);
       await this.rewind(reindexBlockHeight);
       this.setLatestProcessedHeight(reindexBlockHeight);
       // Bring poi sync service back to sync again.

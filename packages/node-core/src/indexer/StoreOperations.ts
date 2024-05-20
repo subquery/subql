@@ -10,7 +10,7 @@ import {OperationEntity, OperationType} from './types';
 export class StoreOperations {
   private merkleTools: MerkleTools;
 
-  constructor(private models: GraphQLModelsType[], private monitorService: MonitorServiceInterface) {
+  constructor(private models: GraphQLModelsType[], private monitorService?: MonitorServiceInterface) {
     this.merkleTools = new MerkleTools({
       hashType: 'sha256',
     });
@@ -54,7 +54,7 @@ export class StoreOperations {
       data: data,
     };
     // skip full data, should write in higher level
-    this.monitorService.write(
+    this.monitorService?.write(
       `-- [POI][StoreOperations][put] ${operation} entity ${entity}, data/id: ${
         typeof data === 'string' ? data : data.id
       }, add leaf ${u8aToHex(this.operationEntityToUint8Array(operationEntity))} `

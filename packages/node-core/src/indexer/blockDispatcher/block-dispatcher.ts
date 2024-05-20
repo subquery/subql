@@ -164,7 +164,7 @@ export abstract class BlockDispatcher<B, DS>
 
                 try {
                   await this.preProcessBlock(blockHeight);
-                  this.monitorService.write(`Processing from main treat`);
+                  this.monitorService?.write(`Processing from main treat`);
                   // Inject runtimeVersion here to enhance api.at preparation
                   const processBlockResponse = await this.indexBlock(block);
                   await this.postProcessBlock(blockHeight, processBlockResponse);

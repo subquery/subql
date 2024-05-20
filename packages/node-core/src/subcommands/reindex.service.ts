@@ -36,7 +36,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
     @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>,
-    private readonly monitorService: MonitorServiceInterface
+    private readonly monitorService?: MonitorServiceInterface
   ) {}
 
   private get metadataRepo(): CacheMetadataModel {
@@ -114,7 +114,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
   async reindex(targetBlockHeight: number): Promise<void> {
     const startHeight = this.getStartBlockFromDataSources();
-    this.monitorService.write(
+    this.monitorService?.write(
       `- Reindex when last processed is ${this.lastProcessedHeight}, to block ${targetBlockHeight}`
     );
 
@@ -130,7 +130,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.nodeConfig.proofOfIndex ? this.poiService : undefined,
       this.forceCleanService
     );
-    await this.storeService.storeCache.flushCache(true, true);
-    this.monitorService.write(`- Reindex completed`);
+    await this.storeService.storeCache.flushCache(true);
+    this.monitorService?.write(`- Reindex completed`);
   }
 }

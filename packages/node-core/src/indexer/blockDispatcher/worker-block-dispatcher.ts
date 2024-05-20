@@ -159,7 +159,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
         await this.preProcessBlock(height);
 
-        this.monitorService.write(`Processing from worker #${workerIdx}`);
+        this.monitorService?.write(`Processing from worker #${workerIdx}`);
         const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
 
         await this.postProcessBlock(height, {
