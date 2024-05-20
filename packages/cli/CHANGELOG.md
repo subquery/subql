@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.9.0] - 2024-05-20
+### Changed
+- Bump common dependencies to latest version
+
 ## [4.8.0] - 2024-05-08
 ### Changed
 - Bump with @subql/util, update polkadot dependencies to v11
@@ -573,7 +577,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.9.0...HEAD
+[4.9.0]: https://github.com/subquery/subql/compare/cli/4.8.0...cli/4.9.0
 [4.8.0]: https://github.com/subquery/subql/compare/cli/4.7.0...cli/4.8.0
 [4.7.0]: https://github.com/subquery/subql/compare/cli/4.6.0...cli/4.7.0
 [4.6.0]: https://github.com/subquery/subql/compare/cli/4.5.2...cli/4.6.0
