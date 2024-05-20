@@ -41,8 +41,6 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-const logger = getLogger('indexer');
-
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
   ApiPromise,
@@ -65,7 +63,7 @@ export class IndexerManager extends BaseIndexerManager<
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
-    monitorService: MonitorService,
+    monitorService?: MonitorService,
   ) {
     super(
       apiService,

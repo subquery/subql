@@ -3,19 +3,13 @@
 
 import {DataTypes, Model, ModelAttributes} from '@subql/x-sequelize';
 import {addIdAndBlockRangeAttributes} from '../db';
-import {MonitorService} from '../indexer';
 import {StoreService} from './store.service';
 
 describe('Store Service', () => {
   let storeService: StoreService;
-  const monitorService = {
-    write: jest.fn(),
-    createBlockFork: jest.fn(),
-    createBlockStart: jest.fn(),
-  } as unknown as MonitorService;
 
   it('addIdAndBlockRangeAttributes', () => {
-    storeService = new StoreService(null as any, null as any, null as any, null as any, monitorService);
+    storeService = new StoreService(null as any, null as any, null as any, null as any);
     const attributes = {
       id: {
         type: DataTypes.STRING,

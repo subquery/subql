@@ -68,7 +68,7 @@ export class StoreService {
     private config: NodeConfig,
     readonly storeCache: StoreCacheService,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>,
-    private monitorService: MonitorService
+    private monitorService?: MonitorService
   ) {}
 
   private get modelIndexedFields(): IndexField[] {

@@ -49,7 +49,7 @@ export abstract class BlockDispatcher<B, DS>
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     fetchBlocksBatches: BatchBlockFetcher<B>,
-    monitorService: MonitorServiceInterface
+    monitorService?: MonitorServiceInterface
   ) {
     super(
       nodeConfig,

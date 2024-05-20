@@ -187,7 +187,7 @@ export async function createIndexerWorker<
   connectionPoolState: ConnectionPoolStateManager<ApiConnection>,
   root: string,
   startHeight: number,
-  monitorService: MonitorServiceInterface,
+  monitorService?: MonitorServiceInterface,
   workerData?: any
 ): Promise<T & {terminate: () => Promise<number>}> {
   const indexerWorker = Worker.create<
@@ -199,7 +199,7 @@ export async function createIndexerWorker<
     {
       ...cacheHostFunctions(cache),
       ...storeHostFunctions(store),
-      ...monitorHostFunctions(monitorService),
+      ...(monitorService ? monitorHostFunctions(monitorService) : {}),
       ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess: unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(unfinalizedBlocksService),
       ...connectionPoolStateHostFunctions(connectionPoolState),

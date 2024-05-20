@@ -60,8 +60,8 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    monitorService: MonitorServiceInterface,
-    private createIndexerWorker: () => Promise<W>
+    private createIndexerWorker: () => Promise<W>,
+    monitorService?: MonitorServiceInterface
   ) {
     super(
       nodeConfig,

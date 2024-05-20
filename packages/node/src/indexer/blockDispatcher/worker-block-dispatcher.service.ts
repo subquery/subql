@@ -56,7 +56,7 @@ export class WorkerBlockDispatcherService
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
     connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
-    monitorService: MonitorServiceInterface,
+    monitorService?: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,
@@ -67,7 +67,6 @@ export class WorkerBlockDispatcherService
       storeCacheService,
       poiSyncService,
       project,
-      monitorService,
       () =>
         createIndexerWorkerCore<
           IIndexerWorker,
@@ -86,6 +85,7 @@ export class WorkerBlockDispatcherService
           projectService.startHeight,
           monitorService,
         ),
+      monitorService,
     );
   }
 

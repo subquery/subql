@@ -59,7 +59,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         dynamicDsService: DynamicDsService,
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
-        monitorService: MonitorService,
+        monitorService?: MonitorService,
       ) =>
         nodeConfig.workers
           ? new WorkerBlockDispatcherService(

@@ -45,7 +45,7 @@ export class BlockDispatcherService
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    monitorService: MonitorServiceInterface,
+    monitorService?: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,

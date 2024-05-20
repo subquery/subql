@@ -3,7 +3,6 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
-import {MonitorService} from '../monitor.service';
 import {PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
@@ -39,7 +38,6 @@ describe('WorkerBlockDispatcher', () => {
       null as unknown as StoreCacheService,
       null as unknown as PoiSyncService,
       null as unknown as ISubqueryProject,
-      null as unknown as MonitorService,
       null as unknown as () => Promise<any>
     );
     (dispatcher as any).workers = mockWorkers;
