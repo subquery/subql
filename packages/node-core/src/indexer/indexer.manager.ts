@@ -87,6 +87,7 @@ export abstract class BaseIndexerManager<
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
     const blockHeight = block.getHeader().blockHeight;
+    this.monitorService?.write(`- BlockHash: ${block.getHeader().blockHash}`);
 
     const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 

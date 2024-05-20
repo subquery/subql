@@ -26,6 +26,6 @@ export class WorkerMonitorService {
   }
 
   write(blockData: string): void {
-    return this.host.hostMonitorServiceWrite(blockData);
+    return this.host?.hostMonitorServiceWrite ? this.host.hostMonitorServiceWrite(blockData) : undefined;
   }
 }

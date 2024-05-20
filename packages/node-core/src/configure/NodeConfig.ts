@@ -53,8 +53,8 @@ export interface IConfig {
   readonly root?: string;
   readonly allowSchemaMigration: boolean;
   readonly csvOutDir?: string;
-  readonly monitorOutDir?: string;
-  readonly monitorFileSize?: number;
+  readonly monitorOutDir: string;
+  readonly monitorFileSize: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -82,6 +82,8 @@ const DEFAULT_CONFIG = {
   storeCacheAsync: true,
   storeFlushInterval: 5,
   allowSchemaMigration: false,
+  monitorOutDir: './.monitor',
+  monitorFileSize: 50,
 };
 
 export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
@@ -311,11 +313,11 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.csvOutDir;
   }
 
-  get monitorOutDir(): string | undefined {
+  get monitorOutDir(): string {
     return this._config.monitorOutDir;
   }
 
-  get monitorFileSize(): number | undefined {
+  get monitorFileSize(): number {
     return this._config.monitorFileSize;
   }
 

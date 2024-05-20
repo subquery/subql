@@ -38,13 +38,7 @@ async function setup(
 
   const storeCache = new StoreCacheService(sequelize, config, new EventEmitter2());
 
-  const monitorService = {
-    write: jest.fn(),
-    createBlockFork: jest.fn(),
-    createBlockStart: jest.fn(),
-  } as unknown as MonitorService;
-
-  const storeService = new StoreService(sequelize, config, storeCache, project, monitorService);
+  const storeService = new StoreService(sequelize, config, storeCache, project);
 
   await sequelize.createSchema(`"${schemaName}"`, {});
 

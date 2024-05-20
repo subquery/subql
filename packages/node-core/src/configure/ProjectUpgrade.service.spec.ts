@@ -300,13 +300,7 @@ describe('Project Upgrades', () => {
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
         1
       );
-      const monitorService = {
-        write: jest.fn(),
-        createBlockFork: jest.fn(),
-        createBlockStart: jest.fn(),
-      } as unknown as MonitorService;
-
-      const storeService = new StoreService({} as any, {} as any, storeCache, project, monitorService);
+      const storeService = new StoreService({} as any, {} as any, storeCache, project);
 
       await upgradeService.init(storeService, 1, {} as NodeConfig, {} as Sequelize, '');
 

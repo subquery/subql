@@ -167,18 +167,12 @@ function createIndexerManager(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-  const monitorService = {
-    write: jest.fn(),
-    createBlockFork: jest.fn(),
-    createBlockStart: jest.fn(),
-  } as unknown as MonitorService;
 
   const storeService = new StoreService(
     sequelize,
     nodeConfig,
     storeCache,
     project,
-    monitorService,
   );
   const cacheService = new InMemoryCacheService();
   const poiService = new PoiService(nodeConfig, storeCache);
@@ -219,7 +213,6 @@ function createIndexerManager(
     dsProcessorService,
     dynamicDsService,
     unfinalizedBlocksService,
-    monitorService,
   );
 }
 

@@ -8,9 +8,7 @@ import {Injectable} from '@nestjs/common';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 
-export const DEFAULT_MONITOR_STORE_PATH = './.monitor'; // Provide a default path if needed
 const UNIT_MB = 1024 * 1024;
-const FILE_LIMIT_SIZE = 50 * UNIT_MB; // 50 MB in bytes
 
 const logger = getLogger('Monitor');
 
@@ -51,10 +49,17 @@ export class MonitorService implements MonitorServiceInterface {
   private _cachedFileStats: Record<keyof typeof FileLocation, FileStat> | undefined;
 
   constructor(protected config: NodeConfig) {
-    this.outputPath = config.monitorOutDir ?? DEFAULT_MONITOR_STORE_PATH;
-    this.monitorFileSize = config.monitorFileSize ? config.monitorFileSize * UNIT_MB : FILE_LIMIT_SIZE;
+    this.outputPath = config.monitorOutDir;
+    this.monitorFileSize = config.monitorFileSize * UNIT_MB;
     this.indexPath = path.join(this.outputPath, `index.csv`);
     this.init();
+  }
+
+  static forceClean(monitorDir: string): void {
+    if (fs.existsSync(monitorDir)) {
+      fs.rmSync(monitorDir, {recursive: true, force: true});
+      logger.info('force cleaned monitor service files');
+    }
   }
 
   // maybe a good idea to expose this, if error didn't be caught api could still use reset
