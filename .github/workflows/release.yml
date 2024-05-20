@@ -30,10 +30,15 @@ jobs:
         run: |
           if [ -n "${{ github.event.head_commit.message }}" ]
           then
-            echo "commit-message=\"${{ github.event.head_commit.message }}\"" >> "$GITHUB_OUTPUT"
+            echo "commit-message=${{ github.event.head_commit.message }} >> "$GITHUB_OUTPUT"
           else
-            echo "commit-message=\"$(git log -1 --pretty=%B | head -n 1)\"" >> "$GITHUB_OUTPUT"
+            commit_message=$(git log -1 --pretty=%B | head -n 1)
+            echo "commit-message=$commit_message" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Debug commit message
+        run: |
+          echo "Commit message: ${{ steps.step1.outputs.commit-message }}"
 
   Build-Publish:
     name: Build-Publish
