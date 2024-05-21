@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {QueryTypes, Sequelize} from '@subql/x-sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {MetadataFactory, MetadataKeys, MetadataRepo} from '../';
 import {DbOption} from '../../';
 import {CacheMetadataModel} from './cacheMetadata';
@@ -44,7 +44,7 @@ describe('cacheMetadata integration', () => {
 
   const flush = async () => {
     const tx = await sequelize.transaction();
-    await cacheMetadataModel.flush(tx);
+    await cacheMetadataModel.flush(tx, 1 /* Metadata doesn't use historical */);
     await tx.commit();
   };
 

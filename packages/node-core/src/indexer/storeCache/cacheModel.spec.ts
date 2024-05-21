@@ -83,14 +83,14 @@ jest.mock('@subql/x-sequelize', () => {
 describe('cacheModel', () => {
   let testModel: CachedModel<{id: string; field1: number}>;
   let sequelize: Sequelize;
-  let blockHeight: number | undefined;
+  let blockHeight: number;
 
   const flush = async (height?: number) => {
     const tx = await sequelize.transaction();
 
     await testModel.flush(
       tx,
-      height ?? (blockHeight === undefined ? undefined : blockHeight - 1) // Equivalent of last processed height
+      height ?? blockHeight - 1 // Equivalent of last processed height
     );
 
     return tx.commit();
@@ -99,7 +99,7 @@ describe('cacheModel', () => {
   describe('without historical', () => {
     beforeEach(async () => {
       jest.clearAllMocks();
-      blockHeight = undefined;
+      blockHeight = 0;
       let i = 0;
       sequelize = new Sequelize();
       testModel = new CachedModel(sequelize.model('entity1'), false, {} as NodeConfig, () => i++);
