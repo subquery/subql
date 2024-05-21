@@ -23,8 +23,6 @@ const HTTP_ENDPOINT = 'https://kusama.api.onfinality.io/public';
 const TEST_BLOCKHASH =
   '0x70070f6c1ad5b9ce3d0a09e94086e22b8d4f08a18491183de96614706bf59600'; // kusama #6721189
 
-const TEST_BLOCKNUMBER = 6721189; // kusama
-
 function testSubqueryProject(
   endpoint: string[],
   chainId: string,
@@ -434,6 +432,73 @@ describe('ApiService', () => {
       ),
     ).rejects.toThrow(
       'input block 1645235 ahead of current block 1545235 is not supported',
+    );
+  });
+});
+
+describe('Load chain type hasher', () => {
+  let app: INestApplication;
+
+  afterEach(async () => {
+    return app?.close();
+  });
+
+  const prepareApiService = async (
+    endpoint = ['wss://hyperbridge-paseo-rpc.blockops.network'],
+    chainId = '0x5388faf792c5232566d21493929b32c1f20a9c2b03e95615eefec2aa26d64b73',
+  ): Promise<ApiService> => {
+    const module = await Test.createTestingModule({
+      providers: [
+        ConnectionPoolStateManager,
+        ConnectionPoolService,
+        {
+          provide: 'ISubqueryProject',
+          useFactory: () =>
+            new SubqueryProject(
+              'test',
+              './',
+              {
+                endpoint,
+                chainId: chainId,
+              },
+              [],
+              new GraphQLSchema({}),
+              [],
+              {
+                typesBundle: {
+                  spec: {
+                    gargantua: {
+                      // @ts-ignore, we allow it to be string here
+                      hasher: 'keccakAsU8a',
+                      types: [{ minmax: [0, undefined], types: {} }],
+                    },
+                  },
+                },
+              },
+            ),
+        },
+        {
+          provide: NodeConfig,
+          useFactory: () => ({}),
+        },
+        EventEmitter2,
+        ApiService,
+      ],
+      imports: [EventEmitterModule.forRoot()],
+    }).compile();
+
+    app = module.createNestApplication();
+    await app.init();
+    const apiService = app.get(ApiService);
+    await apiService.init();
+    return apiService;
+  };
+
+  it('should use new hasher function, types hasher string should be replaced with function', async () => {
+    const apiService = await prepareApiService();
+    const api = apiService.api;
+    expect(typeof (api as any)._options.typesBundle.spec.gargantua.hasher).toBe(
+      'function',
     );
   });
 });
