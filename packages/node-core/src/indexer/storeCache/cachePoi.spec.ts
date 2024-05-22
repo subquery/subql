@@ -136,7 +136,7 @@ describe('CachePoi', () => {
         ] as any);
 
         const tx = await sequelize.transaction();
-        await cachePoi.flush(tx, 1 /* Poi Doesn't use historical */);
+        await cachePoi.flush(tx, Number.MAX_SAFE_INTEGER /* Poi Doesn't use historical */);
         await tx.commit();
 
         // Cache data
