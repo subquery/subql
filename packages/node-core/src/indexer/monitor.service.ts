@@ -107,6 +107,9 @@ export class MonitorService implements MonitorServiceInterface {
    * Init service, also validate
    */
   private init(): void {
+    if (this.monitorFileSize <= 0) {
+      return;
+    }
     if (!fs.existsSync(this.outputPath) || !fs.existsSync(this.indexPath)) {
       this.resetAll();
     } else {
@@ -170,6 +173,9 @@ export class MonitorService implements MonitorServiceInterface {
    * @param blockHeight
    */
   createBlockFork(blockHeight: number): void {
+    if (this.monitorFileSize <= 0) {
+      return;
+    }
     this.currentIndexHeight = blockHeight;
     this.write(`***** Forked at block ${blockHeight}`);
     this.updateIndex({
@@ -185,6 +191,9 @@ export class MonitorService implements MonitorServiceInterface {
    * @param blockHeight
    */
   createBlockStart(blockHeight: number): void {
+    if (this.monitorFileSize <= 0) {
+      return;
+    }
     this.currentIndexHeight = blockHeight;
     this.write(`+++++ Start block ${blockHeight}`);
     this.updateIndex({
