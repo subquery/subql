@@ -6,7 +6,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { RpcMethodResult } from '@polkadot/api/types';
 import { RuntimeVersion, Header } from '@polkadot/types/interfaces';
-import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
+import {
+  AnyFunction,
+  DefinitionRpcExt,
+  RegisteredTypes,
+} from '@polkadot/types/types';
+import { OverrideBundleDefinition } from '@polkadot/types/types/registry';
 import {
   IndexerEvent,
   getLogger,
@@ -54,6 +59,42 @@ function overrideConsoleWarn(): void {
   };
 }
 
+async function dynamicImportHasher(
+  methodName: string,
+): Promise<(data: Uint8Array) => Uint8Array> {
+  const module = await import('@polkadot/util-crypto');
+  if (module[methodName]) {
+    return module[methodName];
+  } else {
+    throw new Error(
+      `Hasher Method ${methodName} not found in @polkadot/util-crypto`,
+    );
+  }
+}
+
+async function updateChainTypesHasher(
+  chainTypes: any,
+): Promise<RegisteredTypes | undefined> {
+  if (!chainTypes) {
+    return undefined;
+  }
+  if (chainTypes.hasher && typeof chainTypes.hasher === 'string') {
+    logger.info(`Set overall spec hasher to ${chainTypes.hasher}`);
+    chainTypes.hasher = await dynamicImportHasher(chainTypes.hasher);
+  }
+  const typesBundleSpecs: Record<string, OverrideBundleDefinition> =
+    chainTypes.typesBundle.spec;
+  if (typesBundleSpecs) {
+    for (const [key, spec] of Object.entries(typesBundleSpecs)) {
+      if (spec.hasher && typeof spec.hasher === 'string') {
+        logger.info(`Set spec ${key} hasher to ${spec.hasher}`);
+        spec.hasher = await dynamicImportHasher(spec.hasher);
+      }
+    }
+  }
+  return chainTypes;
+}
+
 @Injectable()
 export class ApiService
   extends BaseApiService<
@@ -90,7 +131,7 @@ export class ApiService
     overrideConsoleWarn();
     let chainTypes, network;
     try {
-      chainTypes = this.project.chainTypes;
+      chainTypes = await updateChainTypesHasher(this.project.chainTypes);
       network = this.project.network;
 
       if (this.nodeConfig.primaryNetworkEndpoint) {
