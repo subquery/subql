@@ -82,8 +82,8 @@ async function updateChainTypesHasher(
     logger.info(`Set overall spec hasher to ${chainTypes.hasher}`);
     chainTypes.hasher = await dynamicImportHasher(chainTypes.hasher);
   }
-  const typesBundleSpecs: Record<string, OverrideBundleDefinition> =
-    chainTypes.typesBundle.spec;
+  const typesBundleSpecs: Record<string, OverrideBundleDefinition> | undefined =
+    chainTypes.typesBundle?.spec;
   if (typesBundleSpecs) {
     for (const [key, spec] of Object.entries(typesBundleSpecs)) {
       if (spec.hasher && typeof spec.hasher === 'string') {
