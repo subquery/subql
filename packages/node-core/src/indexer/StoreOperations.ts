@@ -57,7 +57,7 @@ export class StoreOperations {
     this.monitorService?.write(
       `-- [POI][StoreOperations][put] ${operation} entity ${entity}, data/id: ${
         typeof data === 'string' ? data : data.id
-      }, add leaf ${u8aToHex(this.operationEntityToUint8Array(operationEntity))} `
+      }`
     );
     this.merkleTools.addLeaf(u8aToBuffer(this.operationEntityToUint8Array(operationEntity)), true);
   }
