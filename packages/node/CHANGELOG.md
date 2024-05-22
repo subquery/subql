@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.5.0] - 2024-05-22
 ### Added
 - Add support to chainTypes, allow user use hasher name string in chainTypes
+
+### Fixed
+- Bump version with node-core, fix CacheModel.clear behaviour if height was 0
 
 ## [4.4.2] - 2024-05-20
 ### Fixed
@@ -1196,7 +1200,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.4.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/4.5.0...HEAD
+[4.5.0]: https://github.com/subquery/subql/compare/node/4.4.2...node/4.5.0
 [4.4.2]: https://github.com/subquery/subql/compare/node/4.4.1...node/4.4.2
 [4.4.1]: https://github.com/subquery/subql/compare/node/4.4.0...node/4.4.1
 [4.4.0]: https://github.com/subquery/subql/compare/node/4.3.2...node/4.4.0
