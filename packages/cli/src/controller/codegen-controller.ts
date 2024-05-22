@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {DEFAULT_MANIFEST, extensionIsTs, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {isCustomDs as isCustomConcordiumDs, isRuntimeDs as isRuntimeConcordiumDs} from '@subql/common-concordium';
 import {
   isCustomCosmosDs,
