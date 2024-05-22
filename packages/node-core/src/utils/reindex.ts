@@ -80,7 +80,7 @@ export async function reindex(
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all
-      await storeService.storeCache.metadata.flush(transaction);
+      await storeService.storeCache.metadata.flush(transaction, targetBlockHeight);
 
       await transaction.commit();
       logger.info('Reindex Success');

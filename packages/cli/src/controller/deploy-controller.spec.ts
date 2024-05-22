@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ROOT_API_URL_DEV} from '../constants';
-import {DeploymentDataType, DeploymentSpec, V3DeploymentIndexerType, ValidateDataType} from '../types';
+import {DeploymentDataType, DeploymentSpec, ValidateDataType} from '../types';
 import {delay} from '../utils';
 import {
   createDeployment,
@@ -67,10 +67,6 @@ async function deployTestProject(
 
   return createDeployment(org, project_name, testAuth, ipfs, queryV[0], projectSpec.type, {}, [project], url);
 }
-
-const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
-  // eslint-disable-next-line jest/valid-describe-callback, jest/valid-title, jest/no-disabled-tests
-  condition ? describe(...args) : describe.skip(...args);
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;

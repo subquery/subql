@@ -400,7 +400,7 @@ export class CachedModel<
   }
 
   clear(blockHeight?: number): void {
-    if (!blockHeight) {
+    if (blockHeight === undefined) {
       this.setCache = {};
       // avoid fetch old data after rewind/reindex
       this.getCache = new GetData<T>(getCacheOptions);

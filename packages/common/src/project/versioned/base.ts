@@ -45,9 +45,8 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   validate(): void {
     const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
     if (errors?.length) {
-      // TODO: print error details
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
+      throw new Error(`Failed to parse project. Please see below for more information.\n${errorMsgs}`);
     }
   }
 

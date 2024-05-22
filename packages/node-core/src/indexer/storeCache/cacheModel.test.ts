@@ -23,7 +23,7 @@ describe('cacheMetadata integration', () => {
   let model: any;
   let cacheModel: CachedModel<{id: string; field1: number}>;
 
-  const flush = async (blockHeight?: number) => {
+  const flush = async (blockHeight: number) => {
     const tx = await sequelize.transaction();
     await cacheModel.flush(tx, blockHeight);
     await tx.commit();
