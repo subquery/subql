@@ -67,6 +67,7 @@ export class ForceCleanService {
           }
         );
       }
+      logger.info('force cleaned schema and tables');
       MonitorService.forceClean(this.nodeConfig.monitorOutDir);
     } catch (err: any) {
       logger.error(err, 'failed to force clean');

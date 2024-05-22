@@ -8,7 +8,7 @@ import {buildSchemaFromString} from '@subql/utils';
 import {IndexesOptions, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {NodeConfig} from '../../configure';
-import {ISubqueryProject, MonitorService, StoreCacheService, StoreService} from '../../indexer';
+import {ISubqueryProject, StoreCacheService, StoreService} from '../../indexer';
 import {initDbSchema} from '../../utils/project';
 import {DbOption} from '../db.module';
 import {generateHashedIndexName} from '../sync-helper';

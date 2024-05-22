@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {CacheMetadataModel, ISubqueryProject, MonitorService, StoreCacheService, StoreService} from '../indexer';
+import {CacheMetadataModel, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
