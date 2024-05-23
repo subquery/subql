@@ -3,10 +3,10 @@
 
 import { Module } from '@nestjs/common';
 import { MonitorService } from '@subql/node-core';
-import { adminControllers } from '@subql/node-core/admin';
+import { adminControllers, adminServices } from '@subql/node-core/admin';
 
 @Module({
   controllers: [...adminControllers],
-  providers: [MonitorService],
+  providers: [MonitorService, ...adminServices],
 })
 export class AdminModule {}

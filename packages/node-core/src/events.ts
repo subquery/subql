@@ -15,11 +15,24 @@ export enum IndexerEvent {
   StoreCacheThreshold = 'store_cache_threshold',
   StoreCacheRecordsSize = 'store_cache_records_size',
   Ready = 'ready',
+  RewindSuccess = 'rewind_success',
+  RewindFailure = 'rewind_failure',
+}
+
+export enum AdminEvent {
+  rewindTarget = 'rewind_target',
+  RewindTargetResponse = 'rewind_target_response',
 }
 
 export enum PoiEvent {
   LatestSyncedPoi = 'poi_synced',
   PoiTarget = 'poi_target',
+}
+
+export interface RewindPayload {
+  success: boolean;
+  height: number;
+  message?: string;
 }
 
 export interface ProcessBlockPayload {

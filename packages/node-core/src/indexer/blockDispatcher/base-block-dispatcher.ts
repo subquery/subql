@@ -3,10 +3,10 @@
 
 import assert from 'assert';
 
-import {EventEmitter2} from '@nestjs/event-emitter';
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
-import {IndexerEvent, PoiEvent} from '../../events';
+import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
 import {getLogger} from '../../logger';
 import {IQueue, mainThreadOnly} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
@@ -50,6 +50,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   protected _latestProcessedHeight = 0;
   protected currentProcessingHeight = 0;
   private _onDynamicDsCreated?: (height: number) => Promise<void>;
+  private _pendingRewindHeight?: number;
 
   protected smartBatchService: SmartBatchService;
 
@@ -169,22 +170,31 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   // Is called directly after a block is processed
   @mainThreadOnly()
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
-    const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
+    const {blockHash, dynamicDsCreated, reindexBlockHeight: processReindexBlockHeight} = processBlockResponse;
+    // Rewind height received from admin api have higher priority than processed reindexBlockHeight
+    const reindexBlockHeight = this._pendingRewindHeight ?? processReindexBlockHeight;
     this.monitorService?.write(`Finished block ${height}`);
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
-      if (this.nodeConfig.proofOfIndex) {
-        await this.poiSyncService.stopSync();
-        this.poiSyncService.clear();
-        this.monitorService?.write(`poiSyncService stopped, cache cleared`);
+      try {
+        if (this.nodeConfig.proofOfIndex) {
+          await this.poiSyncService.stopSync();
+          this.poiSyncService.clear();
+          this.monitorService?.write(`poiSyncService stopped, cache cleared`);
+        }
+        this.monitorService?.createBlockFork(reindexBlockHeight);
+        this.resetPendingRewindHeight();
+        await this.rewind(reindexBlockHeight);
+        this.setLatestProcessedHeight(reindexBlockHeight);
+        // Bring poi sync service back to sync again.
+        if (this.nodeConfig.proofOfIndex) {
+          void this.poiSyncService.syncPoi();
+        }
+        this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeight});
+        return;
+      } catch (e) {
+        this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e});
+        throw e;
       }
-      this.monitorService?.createBlockFork(reindexBlockHeight);
-      await this.rewind(reindexBlockHeight);
-      this.setLatestProcessedHeight(reindexBlockHeight);
-      // Bring poi sync service back to sync again.
-      if (this.nodeConfig.proofOfIndex) {
-        void this.poiSyncService.syncPoi();
-      }
-      return;
     } else {
       this.updateStoreMetadata(height);
 
@@ -219,6 +229,24 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       await this.storeCacheService.flushCache(false);
       process.exit(0);
     }
+  }
+
+  @OnEvent(AdminEvent.rewindTarget)
+  handleAdminRewind(blockPayload: TargetBlockPayload): void {
+    if (this.currentProcessingHeight < blockPayload.height) {
+      // this will throw back to admin controller, will NOT lead current indexing exit
+      throw new Error(
+        `Current processing block ${this.currentProcessingHeight}, can not rewind to future block ${blockPayload.height}`
+      );
+    }
+    this._pendingRewindHeight = blockPayload.height;
+    const message = `Received admin command to rewind to block ${blockPayload.height}`;
+    this.monitorService?.write(`***** [ADMIN] ${message}`);
+    logger.warn(message);
+  }
+
+  private resetPendingRewindHeight(): void {
+    this._pendingRewindHeight = undefined;
   }
 
   /**
