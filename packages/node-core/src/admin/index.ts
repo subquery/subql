@@ -6,3 +6,4 @@ import {AdminController, AdminListener} from './admin.controller';
 export const adminControllers = [AdminController];
 // include for other service
 export const adminServices = [AdminListener];
+export * from './blockRange';

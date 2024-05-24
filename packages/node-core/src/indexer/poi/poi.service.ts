@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {HexString} from '@polkadot/util/types';
+import {PlainPoiModel, ProofOfIndex, ProofOfIndexHuman, SyncedProofOfIndex} from '@subql/node-core/indexer';
+import {u8aToHex} from '@subql/utils';
 import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {sqlIterator} from '../../db';
@@ -28,11 +31,25 @@ export class PoiService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
+  static PoiToHuman(proofOfIndex: ProofOfIndex | SyncedProofOfIndex): ProofOfIndexHuman {
+    return {
+      ...proofOfIndex,
+      parentHash: proofOfIndex.parentHash ? u8aToHex(proofOfIndex.parentHash) : undefined,
+      hash: proofOfIndex.hash ? u8aToHex(proofOfIndex.hash) : undefined,
+      chainBlockHash: proofOfIndex.chainBlockHash ? u8aToHex(proofOfIndex.chainBlockHash) : undefined,
+      operationHashRoot: proofOfIndex.operationHashRoot ? u8aToHex(proofOfIndex.operationHashRoot) : undefined,
+    };
+  }
+
   get poiRepo(): CachePoiModel {
     if (!this._poiRepo) {
       throw new Error(`No poi repo inited`);
     }
     return this._poiRepo;
+  }
+
+  get plainPoiRepo(): PlainPoiModel {
+    return this.poiRepo.plainPoiModel;
   }
 
   /**
