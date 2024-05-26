@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.1] - 2024-05-27
+### Changed
+- Update ejs dependency (#287)
+
 ## [3.6.0] - 2024-04-30
 ### Changed
 - Update dependencies and apply changes to match
@@ -147,7 +151,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.6.1...HEAD
+[3.6.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.6.0...common-ethereum/3.6.1
 [3.6.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.5.0...common-ethereum/3.6.0
 [3.5.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.4.1...common-ethereum/3.5.0
 [3.4.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.4.0...common-ethereum/3.4.1

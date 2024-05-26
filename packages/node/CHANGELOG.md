@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.3.2] - 2024-05-27
 ### Fixed
 - Wrong value being injected for unsafeApi into sandbox (#291)
 
@@ -468,7 +470,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.2...HEAD
+[4.3.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.1...node-ethereum/4.3.2
 [4.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.0...node-ethereum/4.3.1
 [4.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.2.0...node-ethereum/4.3.0
 [4.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.1.1...node-ethereum/4.2.0
