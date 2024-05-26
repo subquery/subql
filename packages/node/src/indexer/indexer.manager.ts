@@ -34,7 +34,7 @@ import {
   LightEthereumLog,
 } from '@subql/types-ethereum';
 import { EthereumProjectDs } from '../configure/SubqueryProject';
-import { EthereumApi } from '../ethereum';
+import { EthereumApi, EthereumApiService } from '../ethereum';
 import {
   filterBlocksProcessor,
   filterLogsProcessor,
@@ -95,6 +95,17 @@ export class IndexerManager extends BaseIndexerManager<
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(block: BlockContent): Promise<SafeEthProvider> {
     return this.apiService.safeApi(block.number);
+  }
+
+  protected getDsProcessor(
+    ds: SubqlEthereumDataSource,
+    safeApi: SafeEthProvider,
+  ): IndexerSandbox {
+    return this.sandboxService.getDsProcessor(
+      ds,
+      safeApi,
+      this.apiService.unsafeApi.api,
+    );
   }
 
   protected async indexBlockData(

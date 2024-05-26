@@ -66,7 +66,7 @@ describe('rawBlockToEthBlock', () => {
     ]);
   });
 
-  it('successfully convers a block', () => {
+  it('successfully converts a block', () => {
     const block = rawBlockToEthBlock(raw, api);
 
     expect(block.getHeader()).toEqual({
