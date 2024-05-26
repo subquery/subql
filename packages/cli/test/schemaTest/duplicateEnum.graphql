@@ -1,0 +1,10 @@
+enum Bar {
+  FOO
+  BAR
+}
+
+type Foo @entity {
+  id: ID!
+  a: Bar!
+  b: Bar!
+}
