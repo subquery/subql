@@ -33,7 +33,7 @@
     "@types/lodash": "^4",
     "@types/pino": "^6.3.12",
     "@types/rimraf": "3.0.2",
-    "ejs": "3.1.7",
+    "ejs": "3.1.10",
     "lodash": "4.17.21"
   }
 }
