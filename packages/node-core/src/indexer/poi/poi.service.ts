@@ -1,15 +1,15 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {HexString} from '@polkadot/util/types';
-import {PlainPoiModel, ProofOfIndex, ProofOfIndexHuman, SyncedProofOfIndex} from '@subql/node-core/indexer';
+import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {u8aToHex} from '@subql/utils';
 import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {sqlIterator} from '../../db';
 import {getLogger} from '../../logger';
 import {PoiRepo} from '../entities';
+import {ProofOfIndex, ProofOfIndexHuman, SyncedProofOfIndex} from '../entities/Poi.entity';
+import {PlainPoiModel} from '../poi';
 import {StoreCacheService} from '../storeCache';
 import {CachePoiModel} from '../storeCache/cachePoi';
 

@@ -14,23 +14,17 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
-import {
-  AdminEvent,
-  IndexerEvent,
-  MonitorService,
-  PoiService,
-  RewindPayload,
-  TargetBlockPayload,
-} from '@subql/node-core';
+import {TargetBlockPayload, RewindPayload, AdminEvent, IndexerEvent} from '../events';
+import {MonitorService, PoiService} from '../indexer';
 import {getLogger} from '../logger';
 import {BlockRangeDto, BlockRangeDtoInterface} from './blockRange';
 
 const logger = getLogger('admin-api');
 const REWIND_RESPONSE_TIMEOUT = 120; //seconds
 
-function handleServiceCall<T>(serviceCall: () => T): T {
+async function handleServiceCall<T>(serviceCall: () => Promise<T>): Promise<T> {
   try {
-    return serviceCall();
+    return await serviceCall();
   } catch (e: any) {
     logger.error(e);
     throw new HttpException(
@@ -53,7 +47,18 @@ export class AdminController {
 
   @Get('index_history/range')
   getIndexBlocks(): (string | number)[] {
-    return handleServiceCall(() => this.monitorService.getBlockIndexHistory());
+    try {
+      return this.monitorService.getBlockIndexHistory();
+    } catch (e: any) {
+      logger.error(e);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: e.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Get('index_history/forks')
@@ -116,7 +121,7 @@ export class AdminController {
                   )
                 ),
               REWIND_RESPONSE_TIMEOUT * 1000
-            ) // 60秒超时
+            ) // 120 Seconds time out
         ),
       ]);
       return result;
