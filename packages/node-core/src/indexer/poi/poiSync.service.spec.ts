@@ -4,8 +4,9 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {delay} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
+import {range} from 'lodash';
 import {NodeConfig} from '../../configure';
-import {MetadataFactory, PlainPoiModel, PoiFactory} from '../../indexer';
+import {MetadataFactory, PlainPoiModel, PoiFactory, PoiService, ProofOfIndex} from '../../indexer';
 import {Queue} from '../../utils';
 import {ISubqueryProject} from '../types';
 import {PoiSyncService} from './poiSync.service';
@@ -346,4 +347,74 @@ describe('Poi Service sync', () => {
     await expect((poiSyncService as any).syncLatestSyncedPoiFromDb()).rejects.toThrow();
     poiSyncService.poiRepo.bulkUpsert = jest.fn();
   });
+});
+
+describe('Independent Poi Service sync', () => {
+  let poiSyncService: PoiSyncService;
+
+  beforeEach(async () => {
+    poiSyncService = await createPoiSyncService();
+  });
+
+  afterAll(() => {
+    poiSyncService.stopSync();
+    poiSyncService.onApplicationShutdown();
+  });
+
+  function mockProofOfIndexes(start: number, end: number): ProofOfIndex[] {
+    return range(start, end + 1).map((i) => ({
+      id: i,
+      chainBlockHash: new Uint8Array(),
+      operationHashRoot: new Uint8Array(),
+      hash: new Uint8Array(),
+      parentHash: new Uint8Array(),
+    }));
+  }
+
+  it('should stop sync as soon when stopSync is called', async () => {
+    const poiBlocks: ProofOfIndex[] = mockProofOfIndexes(4, 100);
+
+    poiSyncService.poiRepo.getPoiBlocksByRange = jest.fn(async () => {
+      return Promise.resolve(poiBlocks);
+    });
+
+    (poiSyncService as any).ensureGenesisPoi = jest.fn(async () => {
+      return Promise.resolve(1);
+    });
+
+    // mock last synced poi is 2
+    (poiSyncService as any)._latestSyncedPoi = mockProofOfIndexes(2, 2)[0];
+
+    // this is important, we mock in syncPoiJob this stepes take longer to resolve
+    // then we can shut down during for loop waiting time
+    (poiSyncService as any).syncedPoiQueueAppend = jest.fn(async () => {
+      await delay(2);
+      return 1;
+    });
+
+    const syncPoiJobSpy = jest.spyOn(poiSyncService as any, 'syncPoiJob');
+
+    // before start sync, latestSyncedPoi is 2
+    expect(poiSyncService.latestSyncedPoi.id).toBe(2);
+
+    // Start sync in a separate promise to simulate async behavior
+    const syncPromise = poiSyncService.syncPoi();
+
+    // We simulate let sync job keep going for a while
+    await delay(6);
+    // Call stopSync to stop the loop
+    await poiSyncService.stopSync();
+
+    // Wait for the syncPoi method to complete
+    await syncPromise;
+
+    // Verify that the loop was stopped
+    expect((poiSyncService as any).isShutdown).toBe(true);
+    expect(syncPoiJobSpy).toHaveBeenCalled();
+
+    // stopped sync, latestSyncedPoi should be changed, like 10
+    expect(poiSyncService.latestSyncedPoi.id).toBeGreaterThan(2);
+    // And it also should never sync to the end
+    expect(poiSyncService.latestSyncedPoi.id).not.toBe(100);
+  }, 500000);
 });
