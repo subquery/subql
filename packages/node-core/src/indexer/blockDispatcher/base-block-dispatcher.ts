@@ -192,7 +192,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeight});
         return;
       } catch (e) {
-        this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e});
+        this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
         throw e;
       }
     } else {
