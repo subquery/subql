@@ -8,6 +8,7 @@ import {hexToU8a, u8aEq} from '@subql/utils';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
 import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
 import {IQueue, mainThreadOnly} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
@@ -191,7 +192,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         }
         this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeight});
         return;
-      } catch (e) {
+      } catch (e: any) {
         this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
         throw e;
       }
@@ -216,8 +217,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     if (this.nodeConfig.storeCacheAsync) {
       // Flush all completed block data and don't wait
       await this.storeCacheService.flushAndWaitForCapacity(false)?.catch((e) => {
-        logger.error(e, 'Flushing cache failed');
-        process.exit(1);
+        exitWithError(`Flushing cache failed,${e}`, logger);
       });
     } else {
       // Flush all data from cache and wait
@@ -225,9 +225,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     }
 
     if (!this.projectService.hasDataSourcesAfterHeight(height)) {
-      logger.info(`All data sources have been processed up to block number ${height}. Exiting gracefully...`);
+      const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
+      logger.info(msg);
       await this.storeCacheService.flushCache(false);
-      process.exit(0);
+      exitWithError(msg, undefined, 0);
     }
   }
 

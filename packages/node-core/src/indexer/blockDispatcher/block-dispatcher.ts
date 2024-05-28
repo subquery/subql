@@ -10,6 +10,7 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
@@ -199,8 +200,7 @@ export abstract class BlockDispatcher<B, DS>
               // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
               return;
             }
-            logger.error(e, 'Failed to enqueue fetched block to process');
-            process.exit(1);
+            exitWithError(`Failed to enqueue fetched block to process,${e}`, logger);
           });
 
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
@@ -208,9 +208,8 @@ export abstract class BlockDispatcher<B, DS>
         });
       }
     } catch (e: any) {
-      logger.error(e, 'Failed to process blocks from queue');
       if (!this.isShutdown) {
-        process.exit(1);
+        exitWithError(`Failed to process blocks from queue,${e}`, logger);
       }
     } finally {
       this.fetching = false;

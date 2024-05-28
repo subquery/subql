@@ -25,6 +25,8 @@ import {
   initWorkerServices,
   getWorkerService,
   IBaseIndexerWorker,
+  setMonitorService,
+  MonitorService,
 } from '@subql/node-core';
 import { SpecVersion } from '../dictionary';
 import { ProjectService } from '../project.service';
@@ -44,6 +46,8 @@ async function initWorker(startHeight: number): Promise<void> {
     const projectService: ProjectService = app.get('IProjectService');
     // Initialise async services, we do this here rather than in factories so we can capture one off events
     await projectService.init(startHeight);
+    const monitorService = app.get(MonitorService);
+    setMonitorService(monitorService);
 
     const workerService = app.get(WorkerService);
 

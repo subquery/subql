@@ -16,6 +16,7 @@ import {
   ApiService as BaseApiService,
   IBlock,
   MetadataMismatchError,
+  exitWithError,
 } from '@subql/node-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -97,8 +98,7 @@ export class ApiService
         network.endpoint.push(this.nodeConfig.primaryNetworkEndpoint);
       }
     } catch (e) {
-      logger.error(e);
-      process.exit(1);
+      exitWithError(e, logger);
     }
 
     if (chainTypes) {

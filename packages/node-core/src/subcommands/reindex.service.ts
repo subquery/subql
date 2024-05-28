@@ -16,6 +16,7 @@ import {
 } from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
 import {ForceCleanService} from './forceClean.service';
 
@@ -100,13 +101,15 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     return this.metadataRepo.find('latestSyncedPoiHeight');
   }
 
-  private getStartBlockFromDataSources() {
+  private getStartBlockFromDataSources(): number {
     const datasources = this.project.dataSources;
 
     const startBlocksList = datasources.map((item) => item.startBlock ?? 1);
     if (startBlocksList.length === 0) {
-      logger.error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
-      process.exit(1);
+      exitWithError(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+        logger
+      );
     } else {
       return Math.min(...startBlocksList);
     }

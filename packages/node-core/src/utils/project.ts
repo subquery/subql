@@ -13,6 +13,7 @@ import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
 import {ISubqueryProject, StoreService} from '../indexer';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 
 const logger = getLogger('Project-Utils');
 
@@ -24,12 +25,10 @@ export async function getValidPort(argvPort: number): Promise<number> {
 
   const port = validate(argvPort) ?? (await findAvailablePort(DEFAULT_PORT));
   if (!port) {
-    logger.error(
-      `Unable to find available port (tried ports in range (${port}..${
-        port + 10
-      })). Try setting a free port manually by setting the --port flag`
-    );
-    process.exit(1);
+    const errMsg = `Unable to find available port (tried ports in range (${port}..${
+      port + 10
+    })). Try setting a free port manually by setting the --port flag`;
+    logger.error(errMsg);
   }
   return port;
 }
@@ -62,9 +61,9 @@ export async function getExistingProjectSchema(
     });
     schemas = result.map((x: any) => x.schema_name);
   } catch (err) {
-    logger.error(`Unable to fetch all schemas: ${err}`);
-    process.exit(1);
+    exitWithError(`Unable to fetch all schemas: ${err}`, logger);
   }
+  // @ts-ignore
   if (!schemas.includes(schema)) {
     return undefined;
   }

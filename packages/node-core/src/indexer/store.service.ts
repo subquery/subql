@@ -25,6 +25,7 @@ import {
 } from '../db';
 import {MonitorService} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {camelCaseObjectKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
@@ -153,8 +154,7 @@ export class StoreService {
     try {
       await this.syncSchema(schema);
     } catch (e: any) {
-      logger.error(e, `Having a problem when syncing schema`);
-      process.exit(1);
+      exitWithError(`Having a problem when syncing schema, ${e}`, logger);
     }
     await this.updateModels(schema, modelsRelations);
   }
@@ -211,8 +211,7 @@ export class StoreService {
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
-      logger.error(e, `Having a problem when get indexed fields`);
-      process.exit(1);
+      exitWithError(`Having a problem when get indexed fields, ${e}`, logger);
     }
   }
 
@@ -274,10 +273,10 @@ export class StoreService {
       );
 
       if (metadataTableNames.length > 1 && !multiChain) {
-        logger.error(
-          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multi-chain'
+        exitWithError(
+          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multi-chain',
+          logger
         );
-        process.exit(1);
       }
 
       if (metadataTableNames.length === 1) {

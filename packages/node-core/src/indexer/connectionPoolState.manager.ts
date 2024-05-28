@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import {ApiErrorType} from '../api.connection.error';
 import {IApiConnectionSpecific} from '../api.service';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {errorTypeToScoreAdjustment} from './connectionPool.service';
 
 const RETRY_DELAY = 60 * 1000;
@@ -58,7 +59,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
    * */
   constructor(
     private onAllConnectionsRemoved: () => void = () => {
-      process.exit(1);
+      exitWithError(`All api connection removed`);
     }
   ) {}
 

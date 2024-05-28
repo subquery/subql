@@ -3,6 +3,7 @@
 
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
+import {exitWithError} from '@subql/node-core';
 import {codegen} from '../../controller/codegen-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
@@ -56,7 +57,7 @@ export default class Codegen extends Command {
       await codegen(root, manifests);
     } catch (err) {
       console.error(err.message);
-      process.exit(1);
+      exitWithError(err.message, 1);
     }
   }
 }

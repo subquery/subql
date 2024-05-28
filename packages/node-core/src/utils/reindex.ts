@@ -5,6 +5,7 @@ import {Sequelize} from '@subql/x-sequelize';
 import {IProjectUpgradeService} from '../configure';
 import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {ForceCleanService} from '../subcommands/forceClean.service';
 
 const logger = getLogger('Reindex');
@@ -53,11 +54,10 @@ export async function reindex(
       `targetHeight: ${targetBlockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
     if (!forceCleanService) {
-      logger.error('ForceCleanService not provided, cannot force clean');
-      process.exit(1);
+      exitWithError(`ForceCleanService not provided, cannot force clean`, logger);
     }
     await storeService.storeCache.resetCache();
-    await forceCleanService.forceClean();
+    await forceCleanService?.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
     await storeService.storeCache.flushCache(true);

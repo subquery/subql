@@ -10,6 +10,7 @@ import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db';
 import {PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
 import {hasValue, Queue} from '../../utils';
 import {Metadata, MetadataFactory, MetadataRepo} from '../entities';
 import {PoiFactory, ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
@@ -156,7 +157,7 @@ export class PoiSyncService implements OnApplicationShutdown {
     } catch (e) {
       throw new Error(`Failed to sync poi: ${e}`);
       this.isSyncing = false;
-      process.exit(1);
+      exitWithError(`Failed to sync poi: ${e}`);
     }
   }
 

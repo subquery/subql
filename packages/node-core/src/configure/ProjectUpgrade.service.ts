@@ -10,6 +10,7 @@ import {findLast, last, parseInt} from 'lodash';
 import {SchemaMigrationService} from '../db';
 import {ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {NodeConfig} from './NodeConfig';
@@ -277,8 +278,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
           await this.migrate(project, newProject, undefined);
         }
       } catch (e: any) {
-        logger.error(e, `Failed to complete upgrading project`);
-        process.exit(1);
+        exitWithError(`Failed to complete upgrading project, ${e}`, logger, 1);
       }
 
       logger.info(`Project upgraded to ${newProject.id} at height ${height}`);

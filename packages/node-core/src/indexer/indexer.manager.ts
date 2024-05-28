@@ -7,6 +7,7 @@ import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {MonitorServiceInterface} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {profilerWrap} from '../profiler';
 import {handledStringify} from './../utils';
 import {ProcessBlockResponse} from './blockDispatcher';
@@ -157,16 +158,16 @@ export abstract class BaseIndexerManager<
 
   private assertDataSources(ds: DS[], blockHeight: number) {
     if (!ds.length) {
-      logger.error(
+      exitWithError(
         `Issue detected with data sources: \n
         Either all data sources have a 'startBlock' greater than the current indexed block height (${blockHeight}),
         or they have an 'endBlock' less than the current block. \n
         Solution options: \n
         1. Adjust 'startBlock' in project.yaml to be less than or equal to ${blockHeight},
            and 'endBlock' to be greater than or equal to ${blockHeight}. \n
-        2. Delete your database and start again with the currently specified 'startBlock' and 'endBlock'.`
+        2. Delete your database and start again with the currently specified 'startBlock' and 'endBlock'.`,
+        logger
       );
-      process.exit(1);
     }
   }
 

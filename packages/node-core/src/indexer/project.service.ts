@@ -10,6 +10,7 @@ import {IApi} from '../api.service';
 import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {
   getExistingProjectSchema,
   getStartHeight,
@@ -282,12 +283,12 @@ export abstract class BaseProjectService<
     return undefined;
   }
 
+  // @ts-ignore
   getStartBlockFromDataSources(): number {
     try {
       return getStartHeight(this.project.dataSources);
     } catch (e: any) {
-      logger.error(e);
-      process.exit(1);
+      exitWithError(e, logger);
     }
   }
 
@@ -376,10 +377,10 @@ export abstract class BaseProjectService<
 
   private async initUnfinalizedInternal(): Promise<number | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
-      logger.error(
-        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical'
+      exitWithError(
+        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
+        logger
       );
-      process.exit(1);
     }
 
     return this.initUnfinalized();
@@ -418,14 +419,12 @@ export abstract class BaseProjectService<
       } else {
         if (lastProcessedHeight && upgradePoint < lastProcessedHeight) {
           if (!this.isHistorical) {
-            logger.error(
+            exitWithError(
               `Unable to upgrade project. Cannot rewind to block ${upgradePoint} without historical indexing enabled.`
             );
-            process.exit(1);
           }
           if (!this.projectUpgradeService.isRewindable) {
-            logger.error(`Due to dropped changes in schema migration, project cannot rewind`);
-            process.exit(1);
+            exitWithError(`Due to dropped changes in schema migration, project cannot rewind`, logger);
           }
           logger.info(`Rewinding project to preform project upgrade. Block height="${upgradePoint}"`);
           await this.reindex(upgradePoint);

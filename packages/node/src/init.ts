@@ -3,7 +3,14 @@
 
 import { NestFactory } from '@nestjs/core';
 import { notifyUpdates } from '@subql/common';
-import { getLogger, getValidPort, NestLogger } from '@subql/node-core';
+import {
+  exitWithError,
+  getLogger,
+  getValidPort,
+  MonitorService,
+  NestLogger,
+  setMonitorService,
+} from '@subql/node-core';
 import { AppModule } from './app.module';
 import { ApiService } from './indexer/api.service';
 import { FetchService } from './indexer/fetch.service';
@@ -30,11 +37,13 @@ export async function bootstrap(): Promise<void> {
     const projectService: ProjectService = app.get('IProjectService');
     const fetchService = app.get(FetchService);
     const apiService = app.get(ApiService);
+    const monitorService = app.get(MonitorService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
     await apiService.init();
     await projectService.init();
     await fetchService.init(projectService.startHeight);
+    setMonitorService(monitorService);
 
     app.enableShutdownHooks();
 
@@ -42,7 +51,6 @@ export async function bootstrap(): Promise<void> {
 
     logger.info(`Node started on port: ${port}`);
   } catch (e) {
-    logger.error(e, 'Node failed to start');
-    process.exit(1);
+    exitWithError(`Node failed to start,${e}`, logger);
   }
 }
