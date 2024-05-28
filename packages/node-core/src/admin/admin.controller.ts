@@ -17,12 +17,13 @@ import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {TargetBlockPayload, RewindPayload, AdminEvent, IndexerEvent} from '../events';
 import {MonitorService, PoiService} from '../indexer';
 import {getLogger} from '../logger';
+import {timeout} from '../utils';
 import {BlockRangeDto, BlockRangeDtoInterface} from './blockRange';
 
 const logger = getLogger('admin-api');
 const REWIND_RESPONSE_TIMEOUT = 120; //seconds
 
-async function handleServiceCall<T>(serviceCall: () => Promise<T>): Promise<T> {
+async function handleServiceCall<T>(serviceCall: () => Promise<T> | T): Promise<T> {
   try {
     return await serviceCall();
   } catch (e: any) {
@@ -46,19 +47,8 @@ export class AdminController {
   ) {}
 
   @Get('index_history/range')
-  getIndexBlocks(): (string | number)[] {
-    try {
-      return this.monitorService.getBlockIndexHistory();
-    } catch (e: any) {
-      logger.error(e);
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+  async getIndexBlocks(): Promise<(string | number)[]> {
+    return handleServiceCall(() => this.monitorService.getBlockIndexHistory());
   }
 
   @Get('index_history/forks')
@@ -102,7 +92,7 @@ export class AdminController {
   @Post('rewind')
   async rewindTarget(@Query() rewindData: TargetBlockPayload): Promise<RewindPayload> {
     try {
-      const result = await Promise.race([
+      const result = await timeout(
         new Promise<RewindPayload>((resolve, reject) => {
           this.eventEmitter
             .emitAsync(AdminEvent.rewindTarget, {height: rewindData.height})
@@ -111,22 +101,21 @@ export class AdminController {
             })
             .catch(reject);
         }),
-        new Promise<RewindPayload>(
-          (_, reject) =>
-            setTimeout(
-              () =>
-                reject(
-                  new Error(
-                    `Rewind operation respond timeout after ${REWIND_RESPONSE_TIMEOUT} seconds. Please check metadata to ensure rewind completed`
-                  )
-                ),
-              REWIND_RESPONSE_TIMEOUT * 1000
-            ) // 120 Seconds time out
-        ),
-      ]);
+        REWIND_RESPONSE_TIMEOUT,
+        `Rewind operation respond timeout after ${REWIND_RESPONSE_TIMEOUT} seconds. Please check metadata to ensure rewind completed`
+      );
       return result;
-    } catch (error) {
-      return {success: false, height: rewindData.height, message: `Rewind failed: ${error}`};
+    } catch (e: any) {
+      logger.error(e.message);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Rewind failed: ${e.message}`,
+          success: false,
+          height: rewindData.height,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 }
