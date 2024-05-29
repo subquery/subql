@@ -1,10 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {monitorWrite} from '@subql/node-core/process';
 import {Entity} from '@subql/types-core';
 import {getTypeByScalarName, GraphQLModelsType, u8aConcat, u8aToBuffer, isString, u8aToHex} from '@subql/utils';
 import MerkleTools from 'merkle-tools';
+import {monitorWrite} from '../process';
 import {OperationEntity, OperationType} from './types';
 
 export class StoreOperations {
