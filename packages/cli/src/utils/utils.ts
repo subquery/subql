@@ -76,7 +76,7 @@ export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promis
       if (!authToken) {
         return await cli.prompt('Token cannot be found, Enter token');
       }
-      return authToken;
+      return authToken.trim();
     } catch (e) {
       return cli.prompt('Token cannot be found, Enter token');
     }

@@ -15,6 +15,7 @@ export interface QueryAdvancedOpts {
   subscription?: boolean;
   queryTimeout?: number;
   maxConnection?: number;
+  queryLimit?: number;
   aggregate?: boolean;
 }
 export interface IndexerAdvancedOpts {
@@ -186,6 +187,7 @@ export interface DeploymentFlagsInterface {
   queryTimeout: number;
   queryMaxConnection: number;
   queryAggregate: boolean;
+  queryLimit?: number;
   useDefaults: boolean;
 }
 
