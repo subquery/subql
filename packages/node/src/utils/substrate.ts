@@ -280,9 +280,11 @@ export async function getHeaderByHeight(
 
   const header = await api.rpc.chain.getHeader(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
+      `failed to fetch Block Header hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(
+        blockHash,
+      )}`,
     );
-    throw newApiDecodeError(blockHash);
+    throw ApiPromiseConnection.handleError(e);
   });
   // validate block is valid
   if (header.hash.toHex() !== blockHash.toHex()) {
@@ -330,8 +332,10 @@ export async function fetchEventsRange(
   return Promise.all(
     hashs.map((hash) =>
       api.query.system.events.at(hash).catch((e) => {
-        logger.error(`failed to fetch events at block ${hash}`);
-        throw newApiDecodeError(hash);
+        logger.error(
+          `failed to fetch events at block ${hash}${getApiDecodeErrMsg(hash)}`,
+        );
+        throw ApiPromiseConnection.handleError(e);
       }),
     ),
   );
@@ -449,11 +453,11 @@ export function calcInterval(api: ApiPromise): BN {
   );
 }
 
-function newApiDecodeError(blockHash: BlockHash): Error {
-  return new Error(
-    `Failed to index block ${blockHash}. This is because the block cannot be decoded. To solve this you can either:` +
-      '* Skip the block' +
-      '* Update the chain types. You can test this by viewing the block with https://polkadot.js.org/apps/' +
-      'For further information please read the docs: https://academy.subquery.network/',
+function getApiDecodeErrMsg(blockHash: BlockHash): string {
+  return (
+    `\nFailed to index block ${blockHash}. This is because the block cannot be decoded. To solve this you can either:` +
+    '\n* Skip the block' +
+    '\n* Update the chain types. You can test this by viewing the block with https://polkadot.js.org/apps/' +
+    '\nFor further information please read the docs: https://academy.subquery.network/'
   );
 }
