@@ -13,7 +13,7 @@ export async function testingInit(): Promise<void> {
     const testingService = new TestingService(nodeConfig, project);
     await testingService.run();
   } catch (e) {
-    exitWithError(`Testing failed,${e}`, logger);
+    exitWithError(new Error('Testing failed', { cause: e }), logger);
   }
   process.exit(0);
 }

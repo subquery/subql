@@ -23,7 +23,7 @@ export async function reindexInit(reindexModule: any, targetHeight: number): Pro
     }
     await reindexService.reindex(actualReindexHeight);
   } catch (e: any) {
-    exitWithError(`Reindex failed to execute,${e}`, logger);
+    exitWithError(new Error(`Reindex failed to execute`, {cause: e}), logger);
   }
   process.exit(0);
 }

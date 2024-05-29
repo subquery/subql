@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es2017",
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",

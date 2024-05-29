@@ -197,7 +197,7 @@ export abstract class BlockDispatcher<B, DS>
               // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
               return;
             }
-            exitWithError(`Failed to enqueue fetched block to process,${e}`, logger);
+            exitWithError(new Error(`Failed to enqueue fetched block to process`, {cause: e}), logger);
           });
 
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
@@ -206,7 +206,7 @@ export abstract class BlockDispatcher<B, DS>
       }
     } catch (e: any) {
       if (!this.isShutdown) {
-        exitWithError(`Failed to process blocks from queue,${e}`, logger);
+        exitWithError(new Error(`Failed to process blocks from queue`, {cause: e}), logger);
       }
     } finally {
       this.fetching = false;

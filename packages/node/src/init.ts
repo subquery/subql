@@ -47,6 +47,6 @@ export async function bootstrap(): Promise<void> {
 
     logger.info(`Node started on port: ${port}`);
   } catch (e) {
-    exitWithError(`Node failed to start,${e}`, logger);
+    exitWithError(new Error(`Node failed to start`, { cause: e }), logger);
   }
 }

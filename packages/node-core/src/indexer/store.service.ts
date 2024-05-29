@@ -152,7 +152,7 @@ export class StoreService {
     try {
       await this.syncSchema(schema);
     } catch (e: any) {
-      exitWithError(`Having a problem when syncing schema, ${e}`, logger);
+      exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);
     }
     await this.updateModels(schema, modelsRelations);
   }
@@ -209,7 +209,7 @@ export class StoreService {
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
-      exitWithError(`Having a problem when get indexed fields, ${e}`, logger);
+      exitWithError(new Error(`Having a problem when get indexed fields`, {cause: e}), logger);
     }
   }
 

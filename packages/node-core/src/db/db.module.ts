@@ -45,7 +45,7 @@ async function establishConnectionSequelize(option: SequelizeOption, numRetries:
       await delay(3);
       return establishConnectionSequelize(option, numRetries - 1);
     } else {
-      exitWithError(`Unable to connect to the database,${error}`, logger);
+      exitWithError(new Error(`Unable to connect to the database`, {cause: error}), logger);
     }
   }
   return sequelize;

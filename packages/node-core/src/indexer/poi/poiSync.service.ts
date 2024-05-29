@@ -156,7 +156,7 @@ export class PoiSyncService implements OnApplicationShutdown {
       this.isSyncing = false;
     } catch (e) {
       this.isSyncing = false;
-      exitWithError(`Failed to sync poi: ${e}`, logger);
+      exitWithError(new Error(`Failed to sync poi`, {cause: e}), logger);
     }
   }
 

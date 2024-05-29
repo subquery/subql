@@ -278,7 +278,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
           await this.migrate(project, newProject, undefined);
         }
       } catch (e: any) {
-        exitWithError(`Failed to complete upgrading project, ${e}`, logger, 1);
+        exitWithError(new Error(`Failed to complete upgrading project`, {cause: e}), logger, 1);
       }
 
       logger.info(`Project upgraded to ${newProject.id} at height ${height}`);

@@ -81,7 +81,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
 
       return ds;
     } catch (e: any) {
-      exitWithError(`Failed to create dynamic ds, ${e}`, logger);
+      exitWithError(new Error(`Failed to create dynamic ds`, {cause: e}), logger);
     }
   }
 

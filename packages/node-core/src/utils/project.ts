@@ -61,7 +61,7 @@ export async function getExistingProjectSchema(
     });
     schemas = result.map((x: any) => x.schema_name);
   } catch (err) {
-    exitWithError(`Unable to fetch all schemas: ${err}`, logger);
+    exitWithError(new Error(`Unable to fetch all schemas`, {cause: err}), logger);
   }
   if (!schemas.includes(schema)) {
     return undefined;

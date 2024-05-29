@@ -14,7 +14,7 @@ export async function forceClean(forceCleanModule: any): Promise<void> {
     const forceCleanService = app.get(ForceCleanService);
     await forceCleanService.forceClean();
   } catch (e: any) {
-    exitWithError(`Force-clean failed to execute,${e}`, logger);
+    exitWithError(new Error(`Force-clean failed to execute`, {cause: e}), logger);
   }
 
   process.exit(0);

@@ -7,7 +7,9 @@
     "noImplicitAny": true,
     "esModuleInterop": true,
     "importHelpers": true,
-    "strict": true
+    "strict": true,
+    "target": "ES2022",
+    "lib": ["ES2022"]
   },
   "references": [{"path": "../common"}, {"path": "../utils"}, {"path": "../testing"}],
   "include": ["src/**/*"]

@@ -98,7 +98,7 @@ export class ApiService
         network.endpoint.push(this.nodeConfig.primaryNetworkEndpoint);
       }
     } catch (e) {
-      exitWithError(e, logger);
+      exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
     if (chainTypes) {

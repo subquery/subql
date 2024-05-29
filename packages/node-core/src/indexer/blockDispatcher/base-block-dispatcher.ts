@@ -194,6 +194,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         return;
       } catch (e: any) {
         this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
+        monitorWrite(`***** Rewind failed: ${e.message}`);
         throw e;
       }
     } else {
@@ -217,7 +218,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     if (this.nodeConfig.storeCacheAsync) {
       // Flush all completed block data and don't wait
       await this.storeCacheService.flushAndWaitForCapacity(false)?.catch((e) => {
-        exitWithError(`Flushing cache failed,${e}`, logger);
+        exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);
       });
     } else {
       // Flush all data from cache and wait
@@ -226,9 +227,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
     if (!this.projectService.hasDataSourcesAfterHeight(height)) {
       const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-      logger.info(msg);
       await this.storeCacheService.flushCache(false);
-      exitWithError(msg, undefined, 0);
+      exitWithError(msg, logger, 0);
     }
   }
 

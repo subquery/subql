@@ -18,7 +18,7 @@ export class CsvStoreService implements Exporter {
     this.writeStream = fs.createWriteStream(this.getCsvFilePath(), {flags: 'a'});
 
     this.stringifyStream = stringify({header: !this.fileExist}).on('error', (err) => {
-      exitWithError(`Failed to write to CSV,${err}`, logger);
+      exitWithError(new Error(`Failed to write to CSV`, err), logger);
     });
     this.stringifyStream.pipe(this.writeStream);
   }
