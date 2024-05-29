@@ -25,8 +25,6 @@ import {
   initWorkerServices,
   getWorkerService,
   IBaseIndexerWorker,
-  setMonitorService,
-  MonitorService,
 } from '@subql/node-core';
 import { SpecVersion } from '../dictionary';
 import { ProjectService } from '../project.service';

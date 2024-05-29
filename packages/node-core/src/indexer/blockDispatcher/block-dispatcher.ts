@@ -10,10 +10,9 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
-import {exitWithError} from '../../process';
+import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
-import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
@@ -49,8 +48,7 @@ export abstract class BlockDispatcher<B, DS>
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    fetchBlocksBatches: BatchBlockFetcher<B>,
-    monitorService?: MonitorServiceInterface
+    fetchBlocksBatches: BatchBlockFetcher<B>
   ) {
     super(
       nodeConfig,
@@ -61,8 +59,7 @@ export abstract class BlockDispatcher<B, DS>
       new Queue(nodeConfig.batchSize * 3),
       storeService,
       storeCacheService,
-      poiSyncService,
-      monitorService
+      poiSyncService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch');
@@ -165,7 +162,7 @@ export abstract class BlockDispatcher<B, DS>
 
                 try {
                   await this.preProcessBlock(blockHeight);
-                  this.monitorService?.write(`Processing from main thread`);
+                  monitorWrite(`Processing from main thread`);
                   // Inject runtimeVersion here to enhance api.at preparation
                   const processBlockResponse = await this.indexBlock(block);
                   await this.postProcessBlock(blockHeight, processBlockResponse);

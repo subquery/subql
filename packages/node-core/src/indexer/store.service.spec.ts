@@ -32,7 +32,7 @@ describe('Store Service', () => {
   });
 
   it('could find indexed field', () => {
-    storeService = new StoreService(null as any, null as any, null as any, null as any, null as any);
+    storeService = new StoreService(null as any, null as any, null as any, null as any);
     (storeService as any).__modelIndexedFields = [
       {
         entityName: 'MinerIP', // This is a special case that upperFirst and camelCase will fail

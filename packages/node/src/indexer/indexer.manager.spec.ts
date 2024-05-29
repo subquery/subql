@@ -16,7 +16,6 @@ import {
   IProjectUpgradeService,
   InMemoryCacheService,
   SandboxService,
-  MonitorService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { GraphQLSchema } from 'graphql';

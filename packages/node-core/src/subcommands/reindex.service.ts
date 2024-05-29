@@ -6,17 +6,10 @@ import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig, ProjectUpgradeService} from '../configure';
-import {
-  CacheMetadataModel,
-  IUnfinalizedBlocksService,
-  StoreService,
-  ISubqueryProject,
-  PoiService,
-  MonitorServiceInterface,
-} from '../indexer';
+import {CacheMetadataModel, IUnfinalizedBlocksService, StoreService, ISubqueryProject, PoiService} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
-import {exitWithError} from '../process';
+import {exitWithError, monitorWrite} from '../process';
 import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
 import {ForceCleanService} from './forceClean.service';
 
@@ -36,8 +29,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
-    @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>,
-    private readonly monitorService?: MonitorServiceInterface
+    @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>
   ) {}
 
   private get metadataRepo(): CacheMetadataModel {
@@ -117,9 +109,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
   async reindex(targetBlockHeight: number): Promise<void> {
     const startHeight = this.getStartBlockFromDataSources();
-    this.monitorService?.write(
-      `- Reindex when last processed is ${this.lastProcessedHeight}, to block ${targetBlockHeight}`
-    );
+    monitorWrite(`- Reindex when last processed is ${this.lastProcessedHeight}, to block ${targetBlockHeight}`);
 
     await reindex(
       startHeight,
@@ -134,6 +124,6 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.forceCleanService
     );
     await this.storeService.storeCache.flushCache(true);
-    this.monitorService?.write(`- Reindex completed`);
+    monitorWrite(`- Reindex completed`);
   }
 }

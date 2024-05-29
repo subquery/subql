@@ -8,7 +8,7 @@ import {hexToU8a, u8aEq} from '@subql/utils';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
 import {getLogger} from '../../logger';
-import {exitWithError} from '../../process';
+import {exitWithError, monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
 import {IQueue, mainThreadOnly} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
@@ -156,7 +156,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   // Is called directly before a block is processed
   @mainThreadOnly()
   protected async preProcessBlock(height: number): Promise<void> {
-    this.monitorService?.createBlockStart(height);
+    monitorCreateBlockStart(height);
     this.storeService.setBlockHeight(height);
 
     await this.projectUpgradeService.setCurrentHeight(height);
@@ -174,15 +174,15 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     const {blockHash, dynamicDsCreated, reindexBlockHeight: processReindexBlockHeight} = processBlockResponse;
     // Rewind height received from admin api have higher priority than processed reindexBlockHeight
     const reindexBlockHeight = this._pendingRewindHeight ?? processReindexBlockHeight;
-    this.monitorService?.write(`Finished block ${height}`);
+    monitorWrite(`Finished block ${height}`);
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
       try {
         if (this.nodeConfig.proofOfIndex) {
           await this.poiSyncService.stopSync();
           this.poiSyncService.clear();
-          this.monitorService?.write(`poiSyncService stopped, cache cleared`);
+          monitorWrite(`poiSyncService stopped, cache cleared`);
         }
-        this.monitorService?.createBlockFork(reindexBlockHeight);
+        monitorCreateBlockFork(reindexBlockHeight);
         this.resetPendingRewindHeight();
         await this.rewind(reindexBlockHeight);
         this.setLatestProcessedHeight(reindexBlockHeight);
@@ -242,7 +242,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     }
     this._pendingRewindHeight = blockPayload.height;
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
-    this.monitorService?.write(`***** [ADMIN] ${message}`);
+    monitorWrite(`***** [ADMIN] ${message}`);
     logger.warn(message);
   }
 

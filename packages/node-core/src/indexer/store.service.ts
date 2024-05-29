@@ -23,7 +23,6 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
-import {MonitorService} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {camelCaseObjectKey} from '../utils';
@@ -68,8 +67,7 @@ export class StoreService {
     private sequelize: Sequelize,
     private config: NodeConfig,
     readonly storeCache: StoreCacheService,
-    @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>,
-    private monitorService?: MonitorService
+    @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 
   private get modelIndexedFields(): IndexField[] {
@@ -314,7 +312,7 @@ export class StoreService {
   setBlockHeight(blockHeight: number): void {
     this._blockHeight = blockHeight;
     if (this.config.proofOfIndex) {
-      this.operationStack = new StoreOperations(this.modelsRelations.models, this.monitorService);
+      this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
   }
 
@@ -424,7 +422,7 @@ group by
   }
 
   getStore(): Store {
-    return new Store(this.config, this.storeCache, this, this.monitorService);
+    return new Store(this.config, this.storeCache, this);
   }
 }
 

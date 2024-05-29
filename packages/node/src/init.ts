@@ -7,9 +7,7 @@ import {
   exitWithError,
   getLogger,
   getValidPort,
-  MonitorService,
   NestLogger,
-  setMonitorService,
 } from '@subql/node-core';
 import { AppModule } from './app.module';
 import { ApiService } from './indexer/api.service';

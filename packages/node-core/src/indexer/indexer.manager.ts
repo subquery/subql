@@ -5,9 +5,8 @@ import assert from 'assert';
 import {BaseCustomDataSource, BaseDataSource} from '@subql/types-core';
 import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
-import {MonitorServiceInterface} from '../indexer/monitor.service';
 import {getLogger} from '../logger';
-import {exitWithError} from '../process';
+import {exitWithError, monitorWrite} from '../process';
 import {profilerWrap} from '../profiler';
 import {handledStringify} from './../utils';
 import {ProcessBlockResponse} from './blockDispatcher';
@@ -67,8 +66,7 @@ export abstract class BaseIndexerManager<
     private dynamicDsService: DynamicDsService<DS>,
     private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
     private filterMap: FilterMap,
-    private processorMap: ProcessorMap,
-    private monitorService?: MonitorServiceInterface
+    private processorMap: ProcessorMap
   ) {
     logger.info('indexer manager start');
   }
@@ -88,7 +86,7 @@ export abstract class BaseIndexerManager<
   ): Promise<ProcessBlockResponse> {
     let dynamicDsCreated = false;
     const blockHeight = block.getHeader().blockHeight;
-    this.monitorService?.write(`- BlockHash: ${block.getHeader().blockHash}`);
+    monitorWrite(`- BlockHash: ${block.getHeader().blockHash}`);
 
     const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
@@ -191,7 +189,7 @@ export abstract class BaseIndexerManager<
 
         const parsedData = await this.prepareFilteredData(kind, data, ds);
 
-        this.monitorService?.write(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
+        monitorWrite(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         this.nodeConfig.profiler
           ? await profilerWrap(
               vm.securedExec.bind(vm),
@@ -210,7 +208,7 @@ export abstract class BaseIndexerManager<
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vm = vm! ?? (await getVM(ds));
-        this.monitorService?.write(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
+        monitorWrite(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }
     }

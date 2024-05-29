@@ -5,6 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {monitorWrite} from '@subql/node-core/process';
 import {last} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
@@ -82,7 +83,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
     this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createIndexerWorker()));
-
     return super.init(onDynamicDsCreated);
   }
 
@@ -159,7 +159,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
         await this.preProcessBlock(height);
 
-        this.monitorService?.write(`Processing from worker #${workerIdx}`);
+        monitorWrite(`Processing from worker #${workerIdx}`);
         const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
 
         await this.postProcessBlock(height, {

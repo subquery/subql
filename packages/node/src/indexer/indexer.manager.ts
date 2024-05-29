@@ -63,7 +63,6 @@ export class IndexerManager extends BaseIndexerManager<
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
-    monitorService?: MonitorService,
   ) {
     super(
       apiService,
@@ -74,7 +73,6 @@ export class IndexerManager extends BaseIndexerManager<
       unfinalizedBlocksService,
       FilterTypeMap,
       ProcessorTypeMap,
-      monitorService,
     );
   }
 

@@ -1,16 +1,16 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {monitorWrite} from '@subql/node-core/process';
 import {Entity} from '@subql/types-core';
 import {getTypeByScalarName, GraphQLModelsType, u8aConcat, u8aToBuffer, isString, u8aToHex} from '@subql/utils';
 import MerkleTools from 'merkle-tools';
-import {MonitorServiceInterface} from '../indexer/monitor.service';
 import {OperationEntity, OperationType} from './types';
 
 export class StoreOperations {
   private merkleTools: MerkleTools;
 
-  constructor(private models: GraphQLModelsType[], private monitorService?: MonitorServiceInterface) {
+  constructor(private models: GraphQLModelsType[]) {
     this.merkleTools = new MerkleTools({
       hashType: 'sha256',
     });
@@ -54,7 +54,7 @@ export class StoreOperations {
       data: data,
     };
     // skip full data, should write in higher level
-    this.monitorService?.write(
+    monitorWrite(
       `-- [POI][StoreOperations][put] ${operation} entity ${entity}, data/id: ${
         typeof data === 'string' ? data : data.id
       }`

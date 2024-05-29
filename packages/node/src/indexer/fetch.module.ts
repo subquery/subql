@@ -88,7 +88,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               storeCacheService,
               poiSyncService,
               project,
-              monitorService,
             ),
       inject: [
         NodeConfig,

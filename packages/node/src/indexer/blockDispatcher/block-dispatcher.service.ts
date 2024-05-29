@@ -45,7 +45,6 @@ export class BlockDispatcherService
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    monitorService?: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,
@@ -70,7 +69,6 @@ export class BlockDispatcherService
           specChanged ? undefined : this.runtimeService.parentSpecVersion,
         );
       },
-      monitorService,
     );
   }
 
