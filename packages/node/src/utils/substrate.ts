@@ -282,7 +282,7 @@ export async function getHeaderByHeight(
     logger.error(
       `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
     );
-    throw ApiPromiseConnection.handleError(e);
+    throw newApiDecodeError(blockHash);
   });
   // validate block is valid
   if (header.hash.toHex() !== blockHash.toHex()) {
@@ -331,7 +331,7 @@ export async function fetchEventsRange(
     hashs.map((hash) =>
       api.query.system.events.at(hash).catch((e) => {
         logger.error(`failed to fetch events at block ${hash}`);
-        throw ApiPromiseConnection.handleError(e);
+        throw newApiDecodeError(hash);
       }),
     ),
   );
@@ -446,5 +446,14 @@ export function calcInterval(api: ApiPromise): BN {
         : api.query.parachainSystem
         ? DEFAULT_TIME.mul(BN_TWO)
         : DEFAULT_TIME),
+  );
+}
+
+function newApiDecodeError(blockHash: BlockHash): Error {
+  return new Error(
+    `Failed to index block ${blockHash}. This is because the block cannot be decoded. To solve this you can either:` +
+      '* Skip the block' +
+      '* Update the chain types. You can test this by viewing the block with https://polkadot.js.org/apps/' +
+      'For further information please read the docs: https://academy.subquery.network/',
   );
 }
