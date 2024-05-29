@@ -37,13 +37,11 @@ export async function bootstrap(): Promise<void> {
     const projectService: ProjectService = app.get('IProjectService');
     const fetchService = app.get(FetchService);
     const apiService = app.get(ApiService);
-    const monitorService = app.get(MonitorService);
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
     await apiService.init();
     await projectService.init();
     await fetchService.init(projectService.startHeight);
-    setMonitorService(monitorService);
 
     app.enableShutdownHooks();
 

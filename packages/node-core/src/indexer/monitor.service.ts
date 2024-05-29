@@ -7,6 +7,7 @@ import * as readline from 'readline';
 import {Injectable} from '@nestjs/common';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
+import {setMonitorService} from '../process';
 
 const UNIT_MB = 1024 * 1024;
 
@@ -53,6 +54,7 @@ export class MonitorService implements MonitorServiceInterface {
     this.monitorFileSize = config.monitorFileSize * UNIT_MB;
     this.indexPath = path.join(this.outputPath, `index.csv`);
     this.init();
+    setMonitorService(this);
   }
 
   static forceClean(monitorDir: string): void {

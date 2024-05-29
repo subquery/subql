@@ -63,7 +63,6 @@ export async function getExistingProjectSchema(
   } catch (err) {
     exitWithError(`Unable to fetch all schemas: ${err}`, logger);
   }
-  // @ts-ignore
   if (!schemas.includes(schema)) {
     return undefined;
   }
