@@ -171,7 +171,10 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
         }
         logger.error(
           e,
-          `failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
+          `Failed to index block ${height}. This is because the block cannot be decoded. To solve this you can either:` +
+            '* Skip the block' +
+            '* Update the chain types. You can test this by viewing the block with https://polkadot.js.org/apps/' +
+            'For further information please read the docs: https://academy.subquery.network/'
         );
         process.exit(1);
       }

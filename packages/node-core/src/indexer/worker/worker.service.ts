@@ -89,7 +89,13 @@ export abstract class BaseWorkerService<
       return await this.processFetchedBlock(block, await this.projectService.getDataSources(height));
     } catch (e: any) {
       if (!isBlockUnavailableError(e)) {
-        logger.error(e, `Failed to index block ${height}: ${e.stack}`);
+        logger.error(
+          e,
+          `Failed to index block ${height}. This is because the block cannot be decoded. To solve this you can either:` +
+            '* Skip the block' +
+            '* Update the chain types. You can test this by viewing the block with https://polkadot.js.org/apps/' +
+            'For further information please read the docs: https://academy.subquery.network/'
+        );
       }
       throw e;
     } finally {
