@@ -256,7 +256,9 @@ export async function getBlockByHeight(
 
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block hash="${blockHash}" height="${height}"`,
+      `failed to fetch Block hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(
+        blockHash,
+      )}`,
     );
     throw ApiPromiseConnection.handleError(e);
   });
@@ -280,9 +282,7 @@ export async function getHeaderByHeight(
 
   const header = await api.rpc.chain.getHeader(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block Header hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(
-        blockHash,
-      )}`,
+      `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
     );
     throw ApiPromiseConnection.handleError(e);
   });
