@@ -240,7 +240,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         `Current processing block ${this.currentProcessingHeight}, can not rewind to future block ${blockPayload.height}`
       );
     }
-    this._pendingRewindHeight = blockPayload.height;
+    this._pendingRewindHeight = Number(blockPayload.height);
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
     monitorWrite(`***** [ADMIN] ${message}`);
     logger.warn(message);
