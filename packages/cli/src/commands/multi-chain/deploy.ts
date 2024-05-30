@@ -28,10 +28,11 @@ import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueO
 export default class MultiChainDeploy extends Command {
   static description = 'Multi-chain deployment to hosted service';
 
-  static flags = Object.assign(DefaultDeployFlags, {
+  static flags = {
+    ...DefaultDeployFlags,
     location: Flags.string({char: 'f', description: 'from project folder or specify manifest file', required: true}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
-  });
+  };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(MultiChainDeploy);
@@ -182,12 +183,12 @@ export default class MultiChainDeploy extends Command {
 
     await executeProjectDeployment({
       log: this.log.bind(this),
-      authToken: authToken,
-      chains: chains,
-      flags: flags,
+      authToken,
+      chains,
+      flags,
       ipfsCID: ipfsCID,
       org: flags.org,
-      projectInfo: projectInfo,
+      projectInfo,
       projectName: flags.projectName,
       queryVersion: flags.queryVersion,
     });

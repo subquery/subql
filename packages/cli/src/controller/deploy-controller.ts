@@ -1,11 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Flags} from "@oclif/core";
-import {FlagInput} from "@oclif/core/lib/interfaces/parser";
+import {Flags} from '@oclif/core';
+import {FlagInput} from '@oclif/core/lib/interfaces/parser';
 import axios, {Axios} from 'axios';
-import chalk from "chalk";
-import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from "../constants";
+import chalk from 'chalk';
+import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../constants';
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -16,7 +16,7 @@ import {
   ProjectDeploymentInterface,
   GenerateDeploymentChainInterface,
   DeploymentFlagsInterface,
-  MultichainDataFieldType
+  MultichainDataFieldType,
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
@@ -103,7 +103,7 @@ export async function deploymentStatus(
   url: string
 ): Promise<string> {
   try {
-    const res = await getAxiosInstance(url, authToken).get<{ status: string }>(
+    const res = await getAxiosInstance(url, authToken).get<{status: string}>(
       `subqueries/${buildProjectKey(org, projectName)}/deployments/${deployID}/status`
     );
     return `${res.data.status}`;
@@ -161,7 +161,7 @@ export async function ipfsCID_validate(cid: string, authToken: string, url: stri
     const res = await getAxiosInstance(url, authToken).post<ValidateDataType>(`ipfs/deployment-id/${cid}/validate`);
 
     if (res.status === 500) {
-      throw new Error((res.data as unknown as { message: string }).message);
+      throw new Error((res.data as unknown as {message: string}).message);
     }
 
     return res.data;
@@ -208,7 +208,7 @@ export interface EndpointType {
 export function splitMultichainDataFields(fieldStr: string): MultichainDataFieldType {
   const result: MultichainDataFieldType = {};
 
-  splitEndpoints(String(fieldStr)).forEach(unparsedRow => {
+  splitEndpoints(String(fieldStr)).forEach((unparsedRow) => {
     let regexpResult: string[] = unparsedRow.match(/(.*?):(.*)/);
     if (regexpResult) {
       regexpResult = Object.values(regexpResult);
@@ -221,52 +221,51 @@ export function splitMultichainDataFields(fieldStr: string): MultichainDataField
   return result;
 }
 
-export const DefaultDeployFlags: FlagInput<DeploymentFlagsInterface> =
-  {
-    org: Flags.string({description: 'Enter organization name'}),
-    projectName: Flags.string({description: 'Enter project name'}),
-    // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
+export const DefaultDeployFlags = {
+  org: Flags.string({description: 'Enter organization name'}),
+  projectName: Flags.string({description: 'Enter project name'}),
+  // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
-    type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
-    indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
-    queryVersion: Flags.string({description: 'Enter query-version', required: false}),
-    dict: Flags.string({description: 'Enter dictionary', required: false}),
-    endpoint: Flags.string({description: 'Enter endpoint', required: false}),
-    //indexer set up flags
-    indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-    indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
-    indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
-    disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
-    indexerUnfinalized: Flags.boolean({
-      description: 'Index unfinalized blocks (requires Historical to be enabled)',
-      required: false,
-    }),
-    indexerStoreCacheThreshold: Flags.integer({
-      description: 'The number of items kept in the cache before flushing',
-      required: false,
-    }),
-    disableIndexerStoreCacheAsync: Flags.boolean({
-      description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
-      required: false,
-    }),
-    indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
+  type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+  indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
+  queryVersion: Flags.string({description: 'Enter query-version', required: false}),
+  dict: Flags.string({description: 'Enter dictionary', required: false}),
+  endpoint: Flags.string({description: 'Enter endpoint', required: false}),
+  //indexer set up flags
+  indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+  indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
+  indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
+  disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
+  indexerUnfinalized: Flags.boolean({
+    description: 'Index unfinalized blocks (requires Historical to be enabled)',
+    required: false,
+  }),
+  indexerStoreCacheThreshold: Flags.integer({
+    description: 'The number of items kept in the cache before flushing',
+    required: false,
+  }),
+  disableIndexerStoreCacheAsync: Flags.boolean({
+    description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
+    required: false,
+  }),
+  indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
 
-    //query flags
-    queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-    querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
-    queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
-    queryMaxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
-    queryAggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
+  //query flags
+  queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+  querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
+  queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
+  queryMaxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
+  queryAggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
+  queryLimit: Flags.integer({description: 'Set the max number of results the query service returns', required: false}),
 
-    useDefaults: Flags.boolean({
-      char: 'd',
-      description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
-      required: false,
-    })
-  };
+  useDefaults: Flags.boolean({
+    char: 'd',
+    description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
+    required: false,
+  }),
+} satisfies FlagInput<DeploymentFlagsInterface>;
 
-
-export function generateDeploymentChain(row: GenerateDeploymentChainInterface) {
+export function generateDeploymentChain(row: GenerateDeploymentChainInterface): V3DeploymentIndexerType {
   return {
     cid: row.cid,
     dictEndpoint: row.dictEndpoint,
@@ -283,13 +282,13 @@ export function generateDeploymentChain(row: GenerateDeploymentChainInterface) {
         disableStoreCacheAsync: row.flags.disableIndexerStoreCacheAsync,
       },
     },
-    extraParams: row.flags.indexerWorkers ?
-      {
-        workers: {
-          num: row.flags.indexerWorkers,
-        },
-      } :
-      {}
+    extraParams: row.flags.indexerWorkers
+      ? {
+          workers: {
+            num: row.flags.indexerWorkers,
+          },
+        }
+      : {},
   };
 }
 
@@ -298,11 +297,11 @@ export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): Q
     unsafe: !!flags.queryUnsafe,
     subscription: !!flags.querySubscription,
     queryTimeout: Number(flags.queryTimeout),
+    queryLimit: flags.queryLimit ? Number(flags.queryLimit) : undefined,
     // maxConnection: Number(flags.queryMaxConnection), // project version or plan does not support maxConnection
     aggregate: !!flags.queryAggregate,
-  }
+  };
 }
-
 
 export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
   let deploymentOutput: DeploymentDataType | void;
@@ -332,7 +331,7 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       data.chains,
       ROOT_API_URL_PROD
     ).catch((e) => {
-      throw e
+      throw e;
     });
 
     if (deploymentOutput) {

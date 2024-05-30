@@ -23,10 +23,11 @@ import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../ut
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
-  static flags = Object.assign(DefaultDeployFlags, {
+  static flags = {
+    ...DefaultDeployFlags,
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
     endpoint: Flags.string({description: 'Enter endpoint', required: true}),
-  });
+  };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
@@ -119,12 +120,12 @@ export default class Deploy extends Command {
 
     await executeProjectDeployment({
       log: this.log.bind(this),
-      authToken: authToken,
-      chains: chains,
-      flags: flags,
+      authToken,
+      chains,
+      flags,
       ipfsCID: flags.ipfsCID,
       org: flags.org,
-      projectInfo: flags.projectInfo,
+      projectInfo,
       projectName: flags.projectName,
       queryVersion: flags.queryVersion,
     });
