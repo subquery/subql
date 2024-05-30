@@ -256,7 +256,9 @@ export async function getBlockByHeight(
 
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block hash="${blockHash}" height="${height}"${getApiDecodeErrMsg()}`,
+      `failed to fetch Block hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(
+        e.message,
+      )}`,
     );
     throw ApiPromiseConnection.handleError(e);
   });
@@ -331,7 +333,9 @@ export async function fetchEventsRange(
     hashs.map((hash) =>
       api.query.system.events.at(hash).catch((e) => {
         logger.error(
-          `failed to fetch events at block ${hash}${getApiDecodeErrMsg()}`,
+          `failed to fetch events at block ${hash}${getApiDecodeErrMsg(
+            e.message,
+          )}`,
         );
         throw ApiPromiseConnection.handleError(e);
       }),
@@ -451,7 +455,17 @@ export function calcInterval(api: ApiPromise): BN {
   );
 }
 
-function getApiDecodeErrMsg(): string {
+function getApiDecodeErrMsg(errMsg: string): string {
+  const decodedErrMsgs = [
+    'Unable to decode',
+    'failed decoding',
+    'unknown type',
+  ];
+
+  if (!decodedErrMsgs.find((decodedErrMsg) => errMsg.includes(decodedErrMsg))) {
+    return '';
+  }
+
   return (
     `\nThis is because the block cannot be decoded. To solve this you can either:` +
     '\n* Skip the block' +
