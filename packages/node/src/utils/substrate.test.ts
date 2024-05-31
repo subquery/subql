@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { getLogger } from '@subql/node-core';
 import { stringToArray } from 'cron-converter';
 import {
   fetchBlocksArray,
   fetchBlocksBatches,
   filterExtrinsic,
+  getBlockByHeight,
 } from './substrate';
 
 const ENDPOINT_POLKADOT = 'wss://rpc.polkadot.io';
@@ -64,5 +66,31 @@ describe('substrate utils', () => {
     expect(
       filterExtrinsic(block.extrinsics[2], { isSigned: false }),
     ).toBeFalsy();
+  });
+
+  it('decode fail message', async () => {
+    const logger = getLogger('fetch');
+    const consoleSpy = jest.spyOn(logger, 'error');
+
+    const provider = new WsProvider(ENDPOINT_KARURA);
+    const api = await ApiPromise.create({ provider });
+
+    await expect(getBlockByHeight(api, 86614)).rejects.toThrow(
+      /Unable to decode|failed decoding|unknown type/,
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/Update the chain types/),
+    );
+    consoleSpy.mockRestore();
+    await api.disconnect();
+  });
+
+  it('decode normal message', async () => {
+    const provider = new WsProvider(ENDPOINT_KARURA);
+    const api = await ApiPromise.create({ provider });
+
+    expect(await getBlockByHeight(api, 50710)).toBeTruthy();
+    await api.disconnect();
   });
 });

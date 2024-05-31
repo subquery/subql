@@ -256,7 +256,9 @@ export async function getBlockByHeight(
 
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block hash="${blockHash}" height="${height}"`,
+      `failed to fetch Block hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(
+        e.message,
+      )}`,
     );
     throw ApiPromiseConnection.handleError(e);
   });
@@ -330,7 +332,11 @@ export async function fetchEventsRange(
   return Promise.all(
     hashs.map((hash) =>
       api.query.system.events.at(hash).catch((e) => {
-        logger.error(`failed to fetch events at block ${hash}`);
+        logger.error(
+          `failed to fetch events at block ${hash}${getApiDecodeErrMsg(
+            e.message,
+          )}`,
+        );
         throw ApiPromiseConnection.handleError(e);
       }),
     ),
@@ -446,5 +452,24 @@ export function calcInterval(api: ApiPromise): BN {
         : api.query.parachainSystem
         ? DEFAULT_TIME.mul(BN_TWO)
         : DEFAULT_TIME),
+  );
+}
+
+function getApiDecodeErrMsg(errMsg: string): string {
+  const decodedErrMsgs = [
+    'Unable to decode',
+    'failed decoding',
+    'unknown type',
+  ];
+
+  if (!decodedErrMsgs.find((decodedErrMsg) => errMsg.includes(decodedErrMsg))) {
+    return '';
+  }
+
+  return (
+    `\nThis is because the block cannot be decoded. To solve this you can either:` +
+    '\n* Skip the block' +
+    '\n* Update the chain types. You can test this by viewing the block with https://polkadot.js.org/apps/' +
+    '\nFor further information please read the docs: https://academy.subquery.network/'
   );
 }
