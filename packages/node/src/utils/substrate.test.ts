@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { getLogger } from '@subql/node-core';
 import { stringToArray } from 'cron-converter';
 import {
   fetchBlocksArray,
@@ -68,12 +69,20 @@ describe('substrate utils', () => {
   });
 
   it('decode fail message', async () => {
+    const logger = getLogger('fetch');
+    const consoleSpy = jest.spyOn(logger, 'error');
+
     const provider = new WsProvider(ENDPOINT_KARURA);
     const api = await ApiPromise.create({ provider });
 
     await expect(getBlockByHeight(api, 86614)).rejects.toThrow(
       /Unable to decode|failed decoding|unknown type/,
     );
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/Update the chain types/),
+    );
+    consoleSpy.mockRestore();
     await api.disconnect();
   });
 
