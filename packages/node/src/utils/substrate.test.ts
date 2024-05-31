@@ -7,6 +7,7 @@ import {
   fetchBlocksArray,
   fetchBlocksBatches,
   filterExtrinsic,
+  getBlockByHeight,
 } from './substrate';
 
 const ENDPOINT_POLKADOT = 'wss://rpc.polkadot.io';
@@ -64,5 +65,23 @@ describe('substrate utils', () => {
     expect(
       filterExtrinsic(block.extrinsics[2], { isSigned: false }),
     ).toBeFalsy();
+  });
+
+  it('decode fail message', async () => {
+    const provider = new WsProvider(ENDPOINT_KARURA);
+    const api = await ApiPromise.create({ provider });
+
+    await expect(getBlockByHeight(api, 86614)).rejects.toThrow(
+      /Unable to decode|failed decoding|unknown type/,
+    );
+    await api.disconnect();
+  });
+
+  it('decode normal message', async () => {
+    const provider = new WsProvider(ENDPOINT_KARURA);
+    const api = await ApiPromise.create({ provider });
+
+    expect(await getBlockByHeight(api, 50710)).toBeTruthy();
+    await api.disconnect();
   });
 });
