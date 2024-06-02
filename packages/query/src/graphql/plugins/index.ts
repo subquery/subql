@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable */
@@ -54,6 +54,7 @@ import {PgDistinctPlugin} from './PgDistinctPlugin';
 import PgConnectionArgOrderBy from './PgOrderByUnique';
 import historicalPlugins from './historical';
 import {PgSearchPlugin} from './PgSearchPlugin';
+import OrderByNullsPlugin from './OrderByNullsPlugin';
 
 /* eslint-enable */
 
@@ -113,6 +114,7 @@ const plugins = [
   PgRowByVirtualIdPlugin,
   PgDistinctPlugin,
   PgSearchPlugin,
+  OrderByNullsPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
