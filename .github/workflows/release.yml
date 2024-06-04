@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 18
 
-      #Identify changes
+    #Identify changes
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-utils
