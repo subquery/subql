@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix import monitor service from node-core
+
 ## [4.6.1] - 2024-06-06
 ### Fixed
 - Fix import admin from node-core, update dockerfile to fix monitor default directory permission issue

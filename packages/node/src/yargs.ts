@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { yargsBuilder } from '@subql/node-core/yargs';
+import { yargsBuilder } from '@subql/node-core';
 
 export const yargsOptions = yargsBuilder({
   initTesting: () => {

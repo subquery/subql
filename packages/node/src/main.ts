@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { initLogger } from '@subql/node-core/logger';
+import { initLogger } from '@subql/node-core';
 import { yargsOptions } from './yargs';
 
 const { argv } = yargsOptions;
