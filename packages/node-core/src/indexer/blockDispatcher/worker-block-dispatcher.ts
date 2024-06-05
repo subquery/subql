@@ -11,7 +11,9 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
+import {monitorWrite} from '../../process';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
+import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {ISubqueryProject, IProjectService} from '../types';
@@ -59,7 +61,8 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    private createIndexerWorker: () => Promise<W>
+    private createIndexerWorker: () => Promise<W>,
+    monitorService?: MonitorServiceInterface
   ) {
     super(
       nodeConfig,
@@ -70,7 +73,8 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
       storeService,
       storeCacheService,
-      poiSyncService
+      poiSyncService,
+      monitorService
     );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -79,7 +83,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
     this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createIndexerWorker()));
-
     return super.init(onDynamicDsCreated);
   }
 
@@ -156,6 +159,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
         await this.preProcessBlock(height);
 
+        monitorWrite(`Processing from worker #${workerIdx}`);
         const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
 
         await this.postProcessBlock(height, {

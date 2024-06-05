@@ -3,12 +3,14 @@
 
 import assert from 'assert';
 
-import {EventEmitter2} from '@nestjs/event-emitter';
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
-import {IndexerEvent, PoiEvent} from '../../events';
+import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
 import {getLogger} from '../../logger';
+import {exitWithError, monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
 import {IQueue, mainThreadOnly} from '../../utils';
+import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
@@ -49,6 +51,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   protected _latestProcessedHeight = 0;
   protected currentProcessingHeight = 0;
   private _onDynamicDsCreated?: (height: number) => Promise<void>;
+  private _pendingRewindHeight?: number;
 
   protected smartBatchService: SmartBatchService;
 
@@ -61,7 +64,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     protected queue: Q,
     protected storeService: StoreService,
     private storeCacheService: StoreCacheService,
-    private poiSyncService: PoiSyncService
+    private poiSyncService: PoiSyncService,
+    protected monitorService?: MonitorServiceInterface
   ) {
     this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
   }
@@ -152,6 +156,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   // Is called directly before a block is processed
   @mainThreadOnly()
   protected async preProcessBlock(height: number): Promise<void> {
+    monitorCreateBlockStart(height);
     this.storeService.setBlockHeight(height);
 
     await this.projectUpgradeService.setCurrentHeight(height);
@@ -166,20 +171,32 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   // Is called directly after a block is processed
   @mainThreadOnly()
   protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
-    const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
-
+    const {blockHash, dynamicDsCreated, reindexBlockHeight: processReindexBlockHeight} = processBlockResponse;
+    // Rewind height received from admin api have higher priority than processed reindexBlockHeight
+    const reindexBlockHeight = this._pendingRewindHeight ?? processReindexBlockHeight;
+    monitorWrite(`Finished block ${height}`);
     if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
-      if (this.nodeConfig.proofOfIndex) {
-        await this.poiSyncService.stopSync();
-        this.poiSyncService.clear();
+      try {
+        if (this.nodeConfig.proofOfIndex) {
+          await this.poiSyncService.stopSync();
+          this.poiSyncService.clear();
+          monitorWrite(`poiSyncService stopped, cache cleared`);
+        }
+        monitorCreateBlockFork(reindexBlockHeight);
+        this.resetPendingRewindHeight();
+        await this.rewind(reindexBlockHeight);
+        this.setLatestProcessedHeight(reindexBlockHeight);
+        // Bring poi sync service back to sync again.
+        if (this.nodeConfig.proofOfIndex) {
+          void this.poiSyncService.syncPoi();
+        }
+        this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeight});
+        return;
+      } catch (e: any) {
+        this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
+        monitorWrite(`***** Rewind failed: ${e.message}`);
+        throw e;
       }
-      await this.rewind(reindexBlockHeight);
-      this.setLatestProcessedHeight(reindexBlockHeight);
-      // Bring poi sync service back to sync again.
-      if (this.nodeConfig.proofOfIndex) {
-        void this.poiSyncService.syncPoi();
-      }
-      return;
     } else {
       this.updateStoreMetadata(height);
 
@@ -201,8 +218,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     if (this.nodeConfig.storeCacheAsync) {
       // Flush all completed block data and don't wait
       await this.storeCacheService.flushAndWaitForCapacity(false)?.catch((e) => {
-        logger.error(e, 'Flushing cache failed');
-        process.exit(1);
+        exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);
       });
     } else {
       // Flush all data from cache and wait
@@ -210,10 +226,28 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     }
 
     if (!this.projectService.hasDataSourcesAfterHeight(height)) {
-      logger.info(`All data sources have been processed up to block number ${height}. Exiting gracefully...`);
+      const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
       await this.storeCacheService.flushCache(false);
-      process.exit(0);
+      exitWithError(msg, logger, 0);
     }
+  }
+
+  @OnEvent(AdminEvent.rewindTarget)
+  handleAdminRewind(blockPayload: TargetBlockPayload): void {
+    if (this.currentProcessingHeight < blockPayload.height) {
+      // this will throw back to admin controller, will NOT lead current indexing exit
+      throw new Error(
+        `Current processing block ${this.currentProcessingHeight}, can not rewind to future block ${blockPayload.height}`
+      );
+    }
+    this._pendingRewindHeight = Number(blockPayload.height);
+    const message = `Received admin command to rewind to block ${blockPayload.height}`;
+    monitorWrite(`***** [ADMIN] ${message}`);
+    logger.warn(message);
+  }
+
+  private resetPendingRewindHeight(): void {
+    this._pendingRewindHeight = undefined;
   }
 
   /**

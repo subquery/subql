@@ -5,6 +5,7 @@ import {DynamicModule, Global} from '@nestjs/common';
 import {Sequelize, Options as SequelizeOption} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {delay} from '../utils/promise';
 
 export interface DbOption {
@@ -44,8 +45,7 @@ async function establishConnectionSequelize(option: SequelizeOption, numRetries:
       await delay(3);
       return establishConnectionSequelize(option, numRetries - 1);
     } else {
-      logger.error(error, 'Unable to connect to the database');
-      process.exit(1);
+      exitWithError(new Error(`Unable to connect to the database`, {cause: error}), logger);
     }
   }
   return sequelize;

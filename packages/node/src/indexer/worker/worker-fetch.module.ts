@@ -13,6 +13,8 @@ import {
   WorkerInMemoryCacheService,
   WorkerUnfinalizedBlocksService,
   SandboxService,
+  WorkerMonitorService,
+  MonitorService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
@@ -79,6 +81,10 @@ import { WorkerService } from './worker.service';
     },
     WorkerService,
     WorkerRuntimeService,
+    {
+      provide: MonitorService,
+      useFactory: () => new WorkerMonitorService((global as any).host),
+    },
     {
       provide: InMemoryCacheService,
       useFactory: () => new WorkerInMemoryCacheService((global as any).host),

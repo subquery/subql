@@ -6,6 +6,7 @@ import {Reader} from '@subql/types-core';
 import {camelCase, isNil, omitBy} from 'lodash';
 import {ISubqueryProject} from '../indexer';
 import {getLogger, setDebugFilter} from '../logger';
+import {exitWithError} from '../process';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
 import {IConfig, NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
@@ -106,9 +107,8 @@ export async function registerApp<P extends ISubqueryProject>(
     config = NodeConfig.rebaseWithArgs(config, yargsToIConfig(argv, nameMapping));
   } else {
     if (!argv.subquery) {
-      logger.error('Subquery path is missing in both cli options and config file');
       showHelp();
-      process.exit(1);
+      exitWithError('Subquery path is missing in both cli options and config file', logger, 1);
     }
 
     warnDeprecations(argv);
@@ -122,7 +122,7 @@ export async function registerApp<P extends ISubqueryProject>(
   }
 
   if (!validDbSchemaName(config.dbSchema)) {
-    process.exit(1);
+    exitWithError(`invalid schema name ${config.dbSchema}`, undefined, 1);
   }
 
   if (config.debug) {
@@ -143,7 +143,7 @@ export async function registerApp<P extends ISubqueryProject>(
     )
   ).catch((err: any) => {
     handleCreateSubqueryProjectError(err, pjson, rawManifest, logger);
-    process.exit(1);
+    exitWithError(err, logger, 1);
   });
 
   const createParentProject = async (cid: string): Promise<P> => {

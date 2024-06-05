@@ -1,10 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs, {lstatSync} from 'fs';
+import fs from 'fs';
 import path from 'path';
 import {Stringifier, stringify} from 'csv-stringify';
 import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
 import {Exporter} from './types';
 
 const logger = getLogger('CsvStore');
@@ -17,8 +18,7 @@ export class CsvStoreService implements Exporter {
     this.writeStream = fs.createWriteStream(this.getCsvFilePath(), {flags: 'a'});
 
     this.stringifyStream = stringify({header: !this.fileExist}).on('error', (err) => {
-      logger.error(err, 'Failed to write to CSV');
-      process.exit(1);
+      exitWithError(new Error(`Failed to write to CSV`, err), logger);
     });
     this.stringifyStream.pipe(this.writeStream);
   }

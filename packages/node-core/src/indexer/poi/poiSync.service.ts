@@ -10,6 +10,7 @@ import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db';
 import {PoiEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
 import {hasValue, Queue} from '../../utils';
 import {Metadata, MetadataFactory, MetadataRepo} from '../entities';
 import {PoiFactory, ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
@@ -154,9 +155,8 @@ export class PoiSyncService implements OnApplicationShutdown {
       }
       this.isSyncing = false;
     } catch (e) {
-      throw new Error(`Failed to sync poi: ${e}`);
       this.isSyncing = false;
-      process.exit(1);
+      exitWithError(new Error(`Failed to sync poi`, {cause: e}), logger);
     }
   }
 
@@ -294,6 +294,10 @@ export class PoiSyncService implements OnApplicationShutdown {
   private async syncPoiJob(poiBlocks: ProofOfIndex[]): Promise<void> {
     // const appendedBlocks: ProofOfIndex[] = [];
     for (let i = 0; i < poiBlocks.length; i++) {
+      // Break if we received a signal to stop, otherwise if largeblock range this will keep running
+      if (this.isShutdown) {
+        break;
+      }
       const nextBlock = poiBlocks[i];
       if (this.latestSyncedPoi.id >= nextBlock.id) {
         throw new Error(

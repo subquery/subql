@@ -14,7 +14,7 @@ const logger = getLogger('PoiCache');
 export class CachePoiModel extends Cacheable implements ICachedModelControl, PoiInterface {
   private setCache: Record<number, ProofOfIndex> = {};
   flushableRecordCounter = 0;
-  private plainPoiModel: PlainPoiModel;
+  plainPoiModel: PlainPoiModel;
 
   constructor(readonly model: PoiRepo) {
     super();

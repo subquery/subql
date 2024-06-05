@@ -70,8 +70,8 @@ async function deployTestProject(
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
-
-describe('CLI deploy, delete, promote', () => {
+// Can be re-enabled when test env is ready
+describe.skip('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, projectName, repository, subtitle} = projectSpec;
     try {

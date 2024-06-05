@@ -12,7 +12,9 @@ import {waitForBatchSize} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {IDynamicDsService} from '../dynamic-ds.service';
+import {MonitorServiceInterface} from '../monitor.service';
 import {IUnfinalizedBlocksService} from '../unfinalizedBlocks.service';
+import {hostMonitorKeys, monitorHostFunctions} from '../worker';
 import {WorkerHost, Worker, AsyncMethods} from './worker.builder';
 import {cacheHostFunctions, HostCache, hostCacheKeys} from './worker.cache.service';
 import {
@@ -151,6 +153,7 @@ export function createWorkerHost<
       ...hostCacheKeys,
       ...hostDynamicDsKeys,
       ...hostUnfinalizedBlocksKeys,
+      ...hostMonitorKeys,
       ...hostConnectionPoolStateKeys,
     ],
     {
@@ -184,6 +187,7 @@ export async function createIndexerWorker<
   connectionPoolState: ConnectionPoolStateManager<ApiConnection>,
   root: string,
   startHeight: number,
+  monitorService?: MonitorServiceInterface,
   workerData?: any
 ): Promise<T & {terminate: () => Promise<number>}> {
   const indexerWorker = Worker.create<
@@ -195,6 +199,7 @@ export async function createIndexerWorker<
     {
       ...cacheHostFunctions(cache),
       ...storeHostFunctions(store),
+      ...(monitorService ? monitorHostFunctions(monitorService) : {}),
       ...dynamicDsHostFunctions(dynamicDsService),
       unfinalizedBlocksProcess: unfinalizedBlocksService.processUnfinalizedBlockHeader.bind(unfinalizedBlocksService),
       ...connectionPoolStateHostFunctions(connectionPoolState),

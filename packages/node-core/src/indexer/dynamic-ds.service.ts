@@ -3,6 +3,7 @@
 
 import {cloneDeep} from 'lodash';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {CacheMetadataModel} from './storeCache/cacheMetadata';
 import {ISubqueryProject} from './types';
 
@@ -80,8 +81,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
 
       return ds;
     } catch (e: any) {
-      logger.error(e, 'Failed to create dynamic ds');
-      process.exit(1);
+      exitWithError(new Error(`Failed to create dynamic ds`, {cause: e}), logger);
     }
   }
 

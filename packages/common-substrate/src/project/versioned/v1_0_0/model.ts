@@ -27,7 +27,7 @@ const SUBSTRATE_NODE_NAME = `@subql/node`;
 
 export class SubstrateRunnerNodeImpl extends RunnerNodeImpl {
   @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})
-  name: string;
+  name: string = SUBSTRATE_NODE_NAME;
 }
 
 export class SubstrateRuntimeDataSourceImpl extends RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
@@ -75,7 +75,7 @@ export class ProjectNetworkDeploymentV1_0_0 {
   @ValidateNested()
   @Type(() => FileType)
   @IsOptional()
-  chaintypes?: FileType;
+  chaintypes?: FileType = undefined;
   @IsOptional()
   @IsArray()
   bypassBlocks?: (number | string)[];
@@ -84,7 +84,7 @@ export class ProjectNetworkDeploymentV1_0_0 {
 export class ProjectNetworkV1_0_0 extends CommonProjectNetworkV1_0_0<FileType> {
   @Type(() => FileType)
   @IsOptional()
-  chaintypes?: FileType;
+  chaintypes?: FileType = undefined;
 }
 
 export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
@@ -133,7 +133,7 @@ export class ProjectManifestV1_0_0Impl
   }
 
   @Equals('1.0.0')
-  specVersion: string;
+  specVersion = '1.0.0';
   @Type(() => SubstrateCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',

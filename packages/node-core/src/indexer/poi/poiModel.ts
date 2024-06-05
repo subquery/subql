@@ -4,6 +4,7 @@
 import {DEFAULT_FETCH_RANGE} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
 import {Op, Transaction} from '@subql/x-sequelize';
+import {BlockRangeDtoInterface} from '../../admin';
 import {PoiRepo, ProofOfIndex} from '../entities';
 
 export interface PoiInterface {
@@ -43,10 +44,31 @@ export class PlainPoiModel implements PoiInterface {
     return;
   }
 
-  async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
+  async getStartAndEndBlock(): Promise<BlockRangeDtoInterface | undefined> {
+    const [startRecord, endRecord] = await Promise.all([
+      this.model.findOne({order: [['id', 'ASC']]}),
+      this.model.findOne({order: [['id', 'DESC']]}),
+    ]);
+
+    if (startRecord === null || startRecord?.id === undefined || endRecord === null) {
+      return undefined;
+    } else {
+      return {
+        startBlock: startRecord.id,
+        endBlock: endRecord.id,
+      };
+    }
+  }
+
+  async getPoiBlocksByRange(startHeight: number, endHeight?: number): Promise<ProofOfIndex[]> {
     const result = await this.model.findAll({
       limit: DEFAULT_FETCH_RANGE,
-      where: {id: {[Op.gte]: startHeight}},
+      where:
+        endHeight !== undefined
+          ? {
+              id: {[Op.gte]: startHeight, [Op.lte]: endHeight},
+            }
+          : {id: {[Op.gte]: startHeight}},
       order: [['id', 'ASC']],
     });
     return result.map((r) => ensureProofOfIndexId(r?.toJSON<ProofOfIndex>()));

@@ -53,6 +53,8 @@ export interface IConfig {
   readonly root?: string;
   readonly allowSchemaMigration: boolean;
   readonly csvOutDir?: string;
+  readonly monitorOutDir: string;
+  readonly monitorFileSize?: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -80,6 +82,7 @@ const DEFAULT_CONFIG = {
   storeCacheAsync: true,
   storeFlushInterval: 5,
   allowSchemaMigration: false,
+  monitorOutDir: './.monitor',
 };
 
 export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
@@ -307,6 +310,17 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get csvOutDir(): string | undefined {
     return this._config.csvOutDir;
+  }
+
+  get monitorOutDir(): string {
+    return this._config.monitorOutDir;
+  }
+
+  get monitorFileSize(): number {
+    const defaultMonitorFileSize = 200;
+    // If user passed though yarg, we will record monitor file by this size, no matter poi or not
+    // if user didn't pass through yarg, we will record monitor file by this default size only when poi is enabled
+    return this._config.monitorFileSize ?? this._config.proofOfIndex ? defaultMonitorFileSize : 0;
   }
 
   merge(config: Partial<IConfig>): this {

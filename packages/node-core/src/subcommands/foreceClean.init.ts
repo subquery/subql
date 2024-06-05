@@ -3,6 +3,7 @@
 
 import {NestFactory} from '@nestjs/core';
 import {getLogger} from '../logger';
+import {exitWithError} from '../process';
 import {ForceCleanService} from './forceClean.service';
 
 const logger = getLogger('CLI');
@@ -13,8 +14,7 @@ export async function forceClean(forceCleanModule: any): Promise<void> {
     const forceCleanService = app.get(ForceCleanService);
     await forceCleanService.forceClean();
   } catch (e: any) {
-    logger.error(e, 'Force-clean failed to execute');
-    process.exit(1);
+    exitWithError(new Error(`Force-clean failed to execute`, {cause: e}), logger);
   }
 
   process.exit(0);

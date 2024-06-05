@@ -9,6 +9,7 @@ import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
 import {profiler} from '../../profiler';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {BaseCacheService} from './baseCache.service';
@@ -41,8 +42,7 @@ export class StoreCacheService extends BaseCacheService {
     this._lastFlushTs = new Date();
 
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
-      logger.error('Store cache threshold must be less than the store cache upper limit');
-      process.exit(1);
+      exitWithError('Store cache threshold must be less than the store cache upper limit', logger);
     }
   }
 

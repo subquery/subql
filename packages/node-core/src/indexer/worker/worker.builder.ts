@@ -5,6 +5,7 @@ import * as workers from 'worker_threads';
 import {Logger} from 'pino';
 import {getLogger} from '../../logger';
 import '../../utils/bigint';
+import {exitWithError} from '../../process';
 
 export type SerializableError = {
   message: string;
@@ -188,9 +189,10 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     });
 
     this.worker.on('exit', (code) => {
-      this.logger.error(`Worker exited with code ${code}`);
+      const errMsg = `Worker exited with code ${code}`;
+      this.logger.error(errMsg);
       if (exitMain) {
-        process.exit(code);
+        exitWithError(errMsg, undefined, code);
       }
     });
   }

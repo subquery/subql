@@ -10,6 +10,7 @@ import {findLast, last, parseInt} from 'lodash';
 import {SchemaMigrationService} from '../db';
 import {ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
+import {exitWithError, monitorWrite} from '../process';
 import {getStartHeight, mainThreadOnly} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {NodeConfig} from './NodeConfig';
@@ -267,7 +268,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
           await this.updateIndexedDeployments(newProject.id, startHeight);
         } catch (e: any) {
           logger.error(e, 'Failed to update deployment');
-          throw e;
+          throw new Error(`Failed to update deployment`, {cause: e});
         }
       }
 
@@ -277,11 +278,11 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
           await this.migrate(project, newProject, undefined);
         }
       } catch (e: any) {
-        logger.error(e, `Failed to complete upgrading project`);
-        process.exit(1);
+        exitWithError(new Error(`Failed to complete upgrading project`, {cause: e}), logger, 1);
       }
-
-      logger.info(`Project upgraded to ${newProject.id} at height ${height}`);
+      const msg = `Project upgraded to ${newProject.id} at height ${height}`;
+      monitorWrite(msg);
+      logger.info(msg);
     }
   }
 

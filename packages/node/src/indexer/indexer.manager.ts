@@ -16,7 +16,6 @@ import {
 } from '@subql/common-substrate';
 import {
   NodeConfig,
-  getLogger,
   profiler,
   SandboxService,
   IndexerSandbox,
@@ -39,8 +38,6 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-
-const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
