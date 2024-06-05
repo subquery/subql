@@ -35,6 +35,13 @@ RUN rm /app.tgz && \
     yarn cache clean && \
     rm -rf /root/.npm /root/.cache
 
+# Create ./.monitor directory and set permissions
+RUN mkdir -p .monitor && \
+    chown 1000:1000 .monitor
+
+# Make the user not ROOT
+USER 1000
+
 # Set Entry point and command
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node-flare/bin/run"]
 CMD ["-f","/app"]
