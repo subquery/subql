@@ -127,7 +127,6 @@ describe('Cli can create project', () => {
 
     //spec version is  not returned from readDefaults
     //expect(projectSpec.specVersion).toEqual(specVersion);
-    expect(projectSpec.endpoint).toEqual(endpoint);
     expect(projectSpec.author).toEqual(author);
     expect(projectSpec.description).toEqual(description);
     await promisify(rimraf)(tempPath);

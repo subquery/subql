@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {HttpException} from '@nestjs/common';
+import {HttpException, HttpStatus} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Test, TestingModule} from '@nestjs/testing';
 import {TargetBlockPayload, RewindPayload, AdminEvent} from '../events';
@@ -59,19 +59,19 @@ describe('AdminController', () => {
   });
 
   describe('getIndexBlocks', () => {
-    it('should return block index history', () => {
+    it('should return block index history', async () => {
       const result = ['block1', 'block2'];
       jest.spyOn(monitorService, 'getBlockIndexHistory').mockImplementation(() => result);
 
-      expect(adminController.getIndexBlocks()).toEqual(result);
+      await expect(adminController.getIndexBlocks()).resolves.toEqual(result);
     });
 
-    it('should handle errors', () => {
+    it('should handle errors', async () => {
       jest.spyOn(monitorService, 'getBlockIndexHistory').mockImplementation(() => {
         throw new Error('Test error');
       });
 
-      expect(() => adminController.getIndexBlocks()).toThrow(HttpException);
+      await expect(adminController.getIndexBlocks()).rejects.toThrow(HttpException);
     });
   });
 
@@ -186,11 +186,16 @@ describe('AdminController', () => {
         throw new Error('timeout');
       });
 
-      await expect(adminController.rewindTarget(rewindData)).resolves.toEqual({
-        success: false,
-        height: rewindData.height,
-        message: expect.stringContaining('Rewind failed:'),
-      });
+      const expectError = new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Rewind failed:',
+          height: rewindData.height,
+          success: false,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+      await expect(adminController.rewindTarget(rewindData)).rejects.toThrow(expectError);
     });
 
     it('should handle errors', async () => {
@@ -200,11 +205,17 @@ describe('AdminController', () => {
         throw new Error('Test error');
       });
 
-      await expect(adminController.rewindTarget(rewindData)).resolves.toEqual({
-        success: false,
-        height: rewindData.height,
-        message: expect.stringContaining('Rewind failed:'),
-      });
+      await expect(adminController.rewindTarget(rewindData)).rejects.toThrow(
+        new HttpException(
+          {
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: 'Rewind failed:',
+            height: rewindData.height,
+            success: false,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR
+        )
+      );
     });
   });
 });
