@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.1] - 2024-06-05
 ### Fixed
 - Update dockerfile to fix monitor default directory permission issue
 
@@ -477,7 +478,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.4.1...HEAD
+[4.4.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.4.0...node-ethereum/4.4.1
 [4.4.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.2...node-ethereum/4.4.0
 [4.3.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.1...node-ethereum/4.3.2
 [4.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.3.0...node-ethereum/4.3.1
