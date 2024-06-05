@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix various issue in monitor service, file naming issue and export admin service from node-core
+
 ## [10.4.0] - 2024-06-05
 ### Added
 - Add monitor service to record block indexing actions in order to improve POI accuracy, and provide debug info for Admin api
