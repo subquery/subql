@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix import admin from node-core, update dockerfile to fix monitor default directory permission issue 
+
 ## [4.6.0] - 2024-06-05
 ### Added
 - Add monitor service to record block indexing actions in order to improve POI accuracy, and provide debug info for Admin api

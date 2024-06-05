@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
+import path from 'path';
 import {makeTempDir} from '@subql/common';
 import {NodeConfig} from '../configure';
 import {MonitorService} from './monitor.service';
@@ -53,7 +54,7 @@ describe('Monitor service', () => {
   let nodeConfig: NodeConfig;
   beforeEach(async () => {
     monitorDir = await makeTempDir();
-    nodeConfig = {monitorOutDir: monitorDir, monitorFileSize: 1024} as NodeConfig;
+    nodeConfig = {monitorOutDir: monitorDir, monitorFileSize: 1024, dbSchema: 'test-db'} as NodeConfig;
     monitorService1 = new testMonitorService(nodeConfig);
     monitorService1.resetAll();
   });
@@ -207,5 +208,21 @@ describe('Monitor service', () => {
     monitorService2.resetService();
     monitorService2.testInit();
     expect(spyResetAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('should generate correct file path with sanitized dbSchema', () => {
+    const expectedPath1 = path.join(monitorDir, 'test-db-fileA.txt');
+    expect((monitorService1 as any).getFilePath('A')).toBe(expectedPath1);
+
+    const nodeConfig2 = {
+      monitorOutDir: monitorDir,
+      monitorFileSize: 1024,
+      dbSchema: 'd-1234/subquery/subquery-mainnet',
+    } as NodeConfig;
+    const monitorService2 = new testMonitorService(nodeConfig2);
+    const expectedPath2 = path.join(monitorDir, 'd-1234-subquery-subquery-mainnet-fileA.txt');
+    const indexPath = path.join(monitorDir, 'd-1234-subquery-subquery-mainnet-index.csv');
+    expect((monitorService2 as any).getFilePath('A')).toBe(expectedPath2);
+    expect((monitorService2 as any).indexPath).toBe(indexPath);
   });
 });

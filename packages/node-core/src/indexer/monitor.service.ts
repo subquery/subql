@@ -40,6 +40,10 @@ export interface MonitorServiceInterface {
   createBlockStart(blockHeight: number): void;
 }
 
+function sanitizeDbName(dbName: string): string {
+  return dbName.replace(/[\\/]/g, '-');
+}
+
 @Injectable()
 export class MonitorService implements MonitorServiceInterface {
   private readonly outputPath: string;
@@ -52,7 +56,7 @@ export class MonitorService implements MonitorServiceInterface {
   constructor(protected config: NodeConfig) {
     this.outputPath = config.monitorOutDir;
     this.monitorFileSize = config.monitorFileSize * UNIT_MB;
-    this.indexPath = path.join(this.outputPath, `${this.config.dbSchema}-index.csv`);
+    this.indexPath = path.join(this.outputPath, `${sanitizeDbName(this.config.dbSchema)}-index.csv`);
     this.init();
     setMonitorService(this);
   }
@@ -383,7 +387,7 @@ export class MonitorService implements MonitorServiceInterface {
   }
 
   private getFilePath(file: keyof typeof FileLocation): string {
-    return path.join(this.outputPath, `${this.config.dbSchema}-${FileLocation[file]}`);
+    return path.join(this.outputPath, `${sanitizeDbName(this.config.dbSchema)}-${FileLocation[file]}`);
   }
 
   private updateIndex(indexEntry: IndexEntry): void {
