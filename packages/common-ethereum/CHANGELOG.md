@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2024-06-05
 ### Changed
 - Add default value in model class to follow ES2022 rule
 
@@ -154,7 +155,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.7.0...HEAD
+[3.7.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.6.1...common-ethereum/3.7.0
 [3.6.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.6.0...common-ethereum/3.6.1
 [3.6.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.5.0...common-ethereum/3.6.0
 [3.5.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/3.4.1...common-ethereum/3.5.0
