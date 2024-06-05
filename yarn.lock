@@ -3075,9 +3075,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@subql/common@npm:3.6.0"
+"@subql/common@npm:3.7.0":
+  version: 3.7.0
+  resolution: "@subql/common@npm:3.7.0"
   dependencies:
     "@subql/types-core": 0.7.0
     axios: ^0.28.0
@@ -3089,7 +3089,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: 65c35581969ba31965c1176b57c0881e29e20beb764623cd4fcb5bdf2fb68d632ea8c76149f773514081c4aa23f31be64fbea117dd1c1bbec12196ef1e86199e
+  checksum: 3aad6b35ff4931c3047dc2631516ada328f0a2092d46197a5041ea5588294f85b9e3a88fa6ec9829e527c7bd1c863d69a42c0b58a65eb861ba8ee3f9233f1dea
   languageName: node
   linkType: hard
 
@@ -3111,15 +3111,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^10.3.2":
-  version: 10.3.2
-  resolution: "@subql/node-core@npm:10.3.2"
+"@subql/node-core@npm:10.4.0":
+  version: 10.4.0
+  resolution: "@subql/node-core@npm:10.4.0"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/common": 3.6.0
+    "@subql/common": 3.7.0
     "@subql/testing": 2.1.1
     "@subql/types": 3.6.0
     "@subql/utils": 2.10.0
@@ -3140,7 +3140,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: bc73b8e11103c4b25edbcd5385f45043722f883db6a1c7aef1eeebc97dc9dd2b1a7a8c7d60e61b45817aadce1362359cf30bf15001231f407f9ae80aad6a2b12
+  checksum: 5834ec1cdac3cf1e8d2e09d0351e73c5616c24e096ecb32652517d606c2509f39f546dfe176a9767c3ed638f30566d9a899b3e27bf46f5ec00c2544181606682
   languageName: node
   linkType: hard
 
@@ -3157,7 +3157,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common": ^3.5.1
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^10.3.2
+    "@subql/node-core": 10.4.0
     "@subql/testing": ^2.1.1
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13

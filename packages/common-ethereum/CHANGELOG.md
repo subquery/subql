@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Add default value in model class to follow ES2022 rule
+
 ## [3.6.1] - 2024-05-27
 ### Changed
 - Update ejs dependency (#287)

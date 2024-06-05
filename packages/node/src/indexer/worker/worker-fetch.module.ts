@@ -14,6 +14,8 @@ import {
   WorkerInMemoryCacheService,
   WorkerUnfinalizedBlocksService,
   SandboxService,
+  MonitorService,
+  WorkerMonitorService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { EthereumApiService } from '../../ethereum';
@@ -74,6 +76,10 @@ import { WorkerService } from './worker.service';
         new WorkerUnfinalizedBlocksService((global as any).host),
     },
     WorkerService,
+    {
+      provide: MonitorService,
+      useFactory: () => new WorkerMonitorService((global as any).host),
+    },
     {
       provide: InMemoryCacheService,
       useFactory: () => new WorkerInMemoryCacheService((global as any).host),

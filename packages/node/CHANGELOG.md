@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add monitor service to record block indexing actions in order to improve POI accuracy, and provide debug info for Admin api
+
 ## [4.3.2] - 2024-05-27
 ### Fixed
 - Wrong value being injected for unsafeApi into sandbox (#291)

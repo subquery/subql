@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { getLogger } from '@subql/node-core';
+import { exitWithError, getLogger } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { TestingService } from './testing.service';
 
@@ -13,8 +13,7 @@ export async function testingInit(): Promise<void> {
     const testingService = new TestingService(nodeConfig, project);
     await testingService.run();
   } catch (e) {
-    logger.error(e, 'Testing failed');
-    process.exit(1);
+    exitWithError(new Error('Testing failed', { cause: e }), logger);
   }
   process.exit(0);
 }

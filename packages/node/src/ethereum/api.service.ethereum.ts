@@ -10,6 +10,7 @@ import {
   NodeConfig,
   profilerWrap,
   IBlock,
+  exitWithError,
 } from '@subql/node-core';
 import {
   EthereumBlock,
@@ -56,8 +57,10 @@ export class EthereumApiService extends ApiService<
     try {
       network = this.project.network;
     } catch (e) {
-      logger.error(Object.keys(e));
-      process.exit(1);
+      exitWithError(
+        new Error(`Failed to init api`, { cause: Object.keys(e) }),
+        logger,
+      );
     }
 
     const endpoints = Array.isArray(network.endpoint)

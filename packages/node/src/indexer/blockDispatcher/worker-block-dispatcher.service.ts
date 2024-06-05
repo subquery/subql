@@ -15,6 +15,7 @@ import {
   PoiSyncService,
   InMemoryCacheService,
   createIndexerWorker,
+  MonitorServiceInterface,
 } from '@subql/node-core';
 import { EthereumBlock } from '@subql/types-ethereum';
 import {
@@ -51,6 +52,7 @@ export class WorkerBlockDispatcherService
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
     connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
+    monitorService?: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,
@@ -77,7 +79,9 @@ export class WorkerBlockDispatcherService
           connectionPoolState,
           project.root,
           projectService.startHeight,
+          monitorService,
         ),
+      monitorService,
     );
   }
 

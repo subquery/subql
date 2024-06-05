@@ -3,7 +3,6 @@
 
 import {
   BaseDeploymentV1_0_0,
-  CommonProjectNetworkV1_0_0,
   FileType,
   ParentProjectModel,
   ProjectManifestBaseImpl,
@@ -41,7 +40,7 @@ export class EthereumRunnerNodeImpl extends RunnerNodeImpl {
   @IsIn([Ethereum_NODE_NAME, Flare_NODE_NAME], {
     message: `Runner Substrate node name incorrect, suppose be '${Ethereum_NODE_NAME}'`,
   })
-  name: string;
+  name: string = Ethereum_NODE_NAME;
 }
 
 function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
@@ -165,7 +164,7 @@ export class ProjectManifestV1_0_0Impl
   }
 
   @Equals('1.0.0')
-  specVersion: string;
+  specVersion = '1.0.0';
   @Type(() => EthereumCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',

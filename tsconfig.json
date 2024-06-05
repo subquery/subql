@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "module": "commonjs",
-    "target": "es2017",
     "noImplicitAny": false,
     "noImplicitThis": true,
     "moduleResolution": "node",
@@ -11,7 +12,6 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["ES2017", "ES2020", "ES2021"],
     "emitDecoratorMetadata": true,
     "declaration": true,
     "sourceMap": true,
