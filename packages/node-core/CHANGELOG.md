@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.4.1] - 2024-06-06
 ### Fixed
 - Fix various issue in monitor service, file naming issue and export admin service from node-core
 
@@ -707,7 +708,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.4.1...HEAD
+[10.4.1]: https://github.com/subquery/subql/compare/node-core/10.4.0...node-core/10.4.1
 [10.4.0]: https://github.com/subquery/subql/compare/node-core/10.3.2...node-core/10.4.0
 [10.3.2]: https://github.com/subquery/subql/compare/node-core/10.3.1...node-core/10.3.2
 [10.3.1]: https://github.com/subquery/subql/compare/node-core/10.3.0...node-core/10.3.1
