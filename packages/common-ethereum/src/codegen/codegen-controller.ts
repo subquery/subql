@@ -1,10 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {Interface, EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {FileReference} from '@subql/types-core';
-import {SubqlRuntimeDatasource} from '@subql/types-ethereum';
+import {EthereumHandlerKind, SubqlRuntimeDatasource} from '@subql/types-ethereum';
 import {Data} from 'ejs';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {isCustomDs, isRuntimeDs} from '../project';
@@ -40,6 +42,41 @@ function validateCustomDsDs(d: {kind: string}): boolean {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
 }
 
+function validateAbi(datasource: SubqlRuntimeDatasource): boolean {
+  const abi = datasource.assets.get(datasource.options.abi);
+  let abiObj = require(path.resolve(abi.file));
+  if (!Array.isArray(abiObj) && abiObj.abi) {
+    abiObj = (abiObj as {abi: string[]}).abi;
+  }
+
+  const iface = new Interface(abiObj);
+  const abiFunctions = Object.values(iface.functions).map((func) => func.format());
+  const abiEvents = Object.values(iface.events).map((event) => event.format());
+
+  for (const mappingHandler of datasource.mapping.handlers) {
+    if (mappingHandler.kind === EthereumHandlerKind.Event) {
+      const notMatch = mappingHandler.filter.topics.find(
+        (topic) => !abiEvents.includes(EventFragment.fromString(topic).format())
+      );
+      assert(
+        !notMatch,
+        `Topic: "${notMatch}" not found in contract interface, supported topics: ${abiEvents.join(', ')}`
+      );
+    }
+
+    if (mappingHandler.kind === EthereumHandlerKind.Call) {
+      const functionFormat = FunctionFragment.fromString(mappingHandler.filter.function).format();
+      assert(
+        abiFunctions.includes(functionFormat),
+        `Function: "${
+          mappingHandler.filter.function
+        }" not found in contract interface, supported functions: ${abiFunctions.join(', ')}`
+      );
+    }
+  }
+  return true;
+}
+
 export function joinInputAbiName(abiObject: AbiInterface): string {
   // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
   const inputToSnake = abiObject.inputs.map((obj) => obj.type.replace(/\[\]/g, '_arr').toLowerCase()).join('_');
@@ -69,7 +106,7 @@ export function prepareSortedAssets(
 ): Record<string, string> {
   const sortedAssets: Record<string, string> = {};
   datasources
-    .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)))
+    .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)) && validateAbi(d))
     .forEach((d) => {
       const addAsset = (name: string, value: FileReference) => {
         // should do if covert to absolute
@@ -166,12 +203,18 @@ export function getAbiNames(files: string[]): string[] {
 }
 
 export async function generateAbis(
-  datasources: SubqlRuntimeDatasource[],
+  datasources: any[],
   projectPath: string,
   prepareDirPath: (path: string, recreate: boolean) => Promise<void>,
   upperFirst: (input?: string) => string,
   renderTemplate: (templatePath: string, outputPath: string, templateData: Data) => Promise<void>
 ): Promise<void> {
+  // @subql/cli package calls this function with datasources as an array of objects
+  datasources = datasources.map((d) => ({
+    ...d,
+    assets: d.assets instanceof Map ? d.assets : new Map(Object.entries(d.assets)),
+  })) as SubqlRuntimeDatasource[];
+
   const sortedAssets = prepareSortedAssets(datasources, projectPath);
 
   if (Object.keys(sortedAssets).length === 0) {
