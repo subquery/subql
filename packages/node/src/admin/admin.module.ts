@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Module } from '@nestjs/common';
-import { adminControllers, adminServices } from '@subql/node-core/dist/admin';
+import { adminControllers, adminServices } from '@subql/node-core';
 import { FetchModule } from '../indexer/fetch.module';
 
 @Module({
