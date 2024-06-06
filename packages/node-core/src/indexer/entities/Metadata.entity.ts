@@ -29,6 +29,7 @@ export interface MetadataKeys {
   deployments: string;
   lastCreatedPoiHeight: number;
   latestSyncedPoiHeight: number;
+  dbSize: number;
   latestPoiWithMmr: string; // Deprecated, keep for poi migration
   lastPoiHeight: string; // Deprecated, keep for poi migration
 }

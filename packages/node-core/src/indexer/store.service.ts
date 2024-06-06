@@ -20,6 +20,7 @@ import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   createSchemaTrigger,
   createSchemaTriggerFunction,
+  getDbSizeQuery,
   getTriggers,
   SchemaMigrationService,
 } from '../db';
@@ -58,7 +59,7 @@ export class StoreService {
   private _historical?: boolean;
   private _dbType?: SUPPORT_DB;
   private _metadataModel?: CacheMetadataModel;
-
+  private _schema?: string;
   // Should be updated each block
   private _blockHeight?: number;
   private _operationStack?: StoreOperations;
@@ -103,6 +104,13 @@ export class StoreService {
     return this._historical;
   }
 
+  async syncDbSize(): Promise<number> {
+    const dbSize = await getDbSizeQuery(this.sequelize, this.schema);
+    // It doesn't need to update immediately
+    this.storeCache.metadata.set('dbSize', dbSize);
+    return dbSize;
+  }
+
   private get dbType(): SUPPORT_DB {
     assert(this._dbType, new NoInitError());
     return this._dbType;
@@ -111,6 +119,11 @@ export class StoreService {
   private get metadataModel(): CacheMetadataModel {
     assert(this._metadataModel, new NoInitError());
     return this._metadataModel;
+  }
+
+  private get schema(): string {
+    assert(this._schema, new NoInitError());
+    return this._schema;
   }
 
   // Initialize tables and data that isnt' specific to the users data
@@ -128,6 +141,7 @@ export class StoreService {
     );
 
     this._dbType = await getDbType(this.sequelize);
+    this._schema = schema;
 
     await this.sequelize.sync();
 
@@ -283,10 +297,13 @@ export class StoreService {
           {type: QueryTypes.SELECT}
         );
 
-        const store = res.reduce(function (total, current) {
-          total[current.key] = current.value;
-          return total;
-        }, {} as {[key: string]: string | boolean});
+        const store = res.reduce(
+          function (total, current) {
+            total[current.key] = current.value;
+            return total;
+          },
+          {} as {[key: string]: string | boolean}
+        );
 
         const useHistorical =
           store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);

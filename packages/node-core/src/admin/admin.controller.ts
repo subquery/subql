@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {TargetBlockPayload, RewindPayload, AdminEvent, IndexerEvent} from '../events';
-import {MonitorService, PoiService} from '../indexer';
+import {MonitorService, PoiService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {timeout} from '../utils';
 import {BlockRangeDto, BlockRangeDtoInterface} from './blockRange';
@@ -43,7 +43,8 @@ export class AdminController {
   constructor(
     private monitorService: MonitorService,
     private poiService: PoiService,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
+    private storeService: StoreService
   ) {}
 
   @Get('index_history/range')
@@ -117,6 +118,11 @@ export class AdminController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  @Get('db_size')
+  async getDbSize(): Promise<number> {
+    return handleServiceCall(() => this.storeService.syncDbSize());
   }
 }
 
