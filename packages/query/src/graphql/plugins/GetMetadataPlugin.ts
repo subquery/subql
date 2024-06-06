@@ -33,6 +33,7 @@ const METADATA_TYPES = {
   deployments: 'string',
   lastCreatedPoiHeight: 'number',
   latestSyncedPoiHeight: 'number',
+  dbSize: 'number',
 };
 
 const METADATA_KEYS = Object.keys(METADATA_TYPES);
@@ -217,6 +218,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         unfinalizedBlocks: String
         lastCreatedPoiHeight: Int
         latestSyncedPoiHeight: Int
+        dbSize: Int
       }
 
       type _MetadatasEdge {
@@ -236,8 +238,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         _metadatas(
           after: Cursor
           before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int
-        ): # last: Int
-        # offset: Int
+          # last: Int
+        ): # offset: Int
         # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas
       }
