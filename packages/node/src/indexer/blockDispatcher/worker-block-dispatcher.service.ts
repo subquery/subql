@@ -15,8 +15,8 @@ import {
   PoiSyncService,
   InMemoryCacheService,
   createIndexerWorker as createIndexerWorkerCore,
+  MonitorServiceInterface,
 } from '@subql/node-core';
-import { MonitorServiceInterface } from '@subql/node-core/indexer/monitor.service';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';

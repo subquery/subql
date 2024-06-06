@@ -16,8 +16,8 @@ import {
   PoiSyncService,
   InMemoryCacheService,
   SandboxService,
+  MonitorService,
 } from '@subql/node-core';
-import { MonitorService } from '@subql/node-core/indexer/monitor.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
