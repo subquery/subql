@@ -42,9 +42,10 @@ function validateCustomDsDs(d: {kind: string}): boolean {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
 }
 
-function validateAbi(datasource: SubqlRuntimeDatasource): boolean {
+function validateAbi(datasource: SubqlRuntimeDatasource, projectPath: string): boolean {
   const abi = datasource.assets.get(datasource.options.abi);
-  let abiObj = require(path.resolve(abi.file));
+  const data = fs.readFileSync(path.join(projectPath, abi.file), 'utf8');
+  let abiObj = JSON.parse(data);
   if (!Array.isArray(abiObj) && abiObj.abi) {
     abiObj = (abiObj as {abi: string[]}).abi;
   }
@@ -54,6 +55,8 @@ function validateAbi(datasource: SubqlRuntimeDatasource): boolean {
   const abiEvents = Object.values(iface.events).map((event) => event.format());
 
   for (const mappingHandler of datasource.mapping.handlers) {
+    if (!mappingHandler?.filter) continue;
+
     if (mappingHandler.kind === EthereumHandlerKind.Event) {
       const notMatch = mappingHandler.filter.topics.find(
         (topic) => !abiEvents.includes(EventFragment.fromString(topic).format())
@@ -106,7 +109,9 @@ export function prepareSortedAssets(
 ): Record<string, string> {
   const sortedAssets: Record<string, string> = {};
   datasources
-    .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)) && validateAbi(d))
+    .filter(
+      (d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)) && validateAbi(d, projectPath)
+    )
     .forEach((d) => {
       const addAsset = (name: string, value: FileReference) => {
         // should do if covert to absolute
@@ -126,7 +131,7 @@ export function prepareSortedAssets(
         }
       } else {
         Object.entries(d.assets).map(([name, value]) => {
-          addAsset(name, value as any);
+          addAsset(name, value as FileReference);
         });
       }
     });
@@ -203,7 +208,7 @@ export function getAbiNames(files: string[]): string[] {
 }
 
 export async function generateAbis(
-  datasources: any[],
+  datasources: SubqlRuntimeDatasource[],
   projectPath: string,
   prepareDirPath: (path: string, recreate: boolean) => Promise<void>,
   upperFirst: (input?: string) => string,

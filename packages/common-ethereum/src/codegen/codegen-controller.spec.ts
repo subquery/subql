@@ -4,11 +4,18 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/types-ethereum';
+import {EthereumDatasourceKind, EthereumHandlerKind, SubqlRuntimeDatasource} from '@subql/types-ethereum';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
-import {AbiInterface, getAbiNames, joinInputAbiName, prepareAbiJob, prepareSortedAssets} from './codegen-controller';
+import {
+  AbiInterface,
+  generateAbis,
+  getAbiNames,
+  joinInputAbiName,
+  prepareAbiJob,
+  prepareSortedAssets,
+} from './codegen-controller';
 
 describe('Codegen spec', () => {
   const PROJECT_PATH = path.join(__dirname, '../../test/abiTest');
@@ -102,9 +109,7 @@ describe('Codegen spec', () => {
         abi: 'erc20',
         address: '',
       },
-      assets: {
-        erc20: {file: './abis/erc20.json'},
-      } as unknown as Map<string, {file: string}>,
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
       mapping: {
         file: '',
         handlers: [
@@ -246,6 +251,102 @@ describe('Codegen spec', () => {
     expect(props.functions[4].functionName).toEqual('deregisterOperatorWithCoordinator(bytes,(uint256,uint256))');
     expect(props.functions[27].functionName).toEqual(
       'registerOperatorWithCoordinator(bytes,(uint256,uint256),string,(uint8,address,(uint256,uint256))[],(bytes,bytes32,uint256))'
+    );
+  });
+
+  it('validate Abi.json path field', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'erc20',
+        address: '',
+      },
+      assets: new Map([['erc20', {file: './abis/xxx.json'}]]),
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Call,
+            filter: {
+              function: 'transfer()',
+            },
+          },
+        ],
+      },
+    };
+
+    await expect(generateAbis([ds], PROJECT_PATH, undefined, undefined, undefined)).rejects.toThrow(/ENOENT/);
+  });
+
+  it('validate Abi.json Function Not Exist', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'erc20',
+        address: '',
+      },
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Call,
+            filter: {
+              function: 'approve(address a,uint256 b)',
+            },
+          },
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Call,
+            filter: {
+              function: 'approve222(address a,uint256 b)',
+            },
+          },
+        ],
+      },
+    };
+
+    await expect(generateAbis([ds], PROJECT_PATH, undefined, undefined, undefined)).rejects.toThrow(
+      /Function: "approve222\(address a,uint256 b\)" not found in contract interface/
+    );
+  });
+
+  it('validate Abi.json Topic Not Exist', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'erc20',
+        address: '',
+      },
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address a,address b,uint256 c)'],
+            },
+          },
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address a,address b,uint256 c)', 'NotExist(address a)'],
+            },
+          },
+        ],
+      },
+    };
+
+    await expect(generateAbis([ds], PROJECT_PATH, undefined, undefined, undefined)).rejects.toThrow(
+      /Topic: "NotExist\(address a\)" not found in contract interface/
     );
   });
 });
