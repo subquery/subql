@@ -18,8 +18,7 @@ import {
 } from './block.ethereum';
 
 // Add api key to work
-// const HTTP_ENDPOINT = 'https://eth.api.onfinality.io/public';
-const HTTP_ENDPOINT = 'https://eth.llamarpc.com';
+const HTTP_ENDPOINT = 'https://ethereum.rpc.subquery.network/public';
 const BLOCK_CONFIRMATIONS = 20;
 
 const ds: SubqlRuntimeDatasource = {

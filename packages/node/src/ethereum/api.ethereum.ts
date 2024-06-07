@@ -126,7 +126,7 @@ export class EthereumApi implements ApiWrapper {
     logger.info(`Api host: ${hostname}, method: ${protocolStr}`);
     if (protocolStr === 'https' || protocolStr === 'http') {
       const connection: ConnectionInfo = {
-        url: this.endpoint.split('?')[0],
+        url: this.endpoint,
         headers: {
           'User-Agent': `Subquery-Node ${packageVersion}`,
         },

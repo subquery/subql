@@ -28,7 +28,7 @@ import {
 } from './ethDictionaryV2';
 
 const DEFAULT_DICTIONARY = 'https://ethereum.node.subquery.network/public';
-const HTTP_ENDPOINT = 'https://eth.llamarpc.com';
+const HTTP_ENDPOINT = 'https://ethereum.rpc.subquery.network/public';
 const mockDs: EthereumProjectDs[] = [
   {
     kind: EthereumDatasourceKind.Runtime,

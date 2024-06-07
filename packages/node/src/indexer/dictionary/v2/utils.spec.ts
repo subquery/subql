@@ -10,7 +10,7 @@ import { RawEthBlock } from './types';
 import { rawBlockToEthBlock } from './utils';
 
 const DICTIONARY_URL = 'https://ethereum.node.subquery.network/public';
-const RPC_URL = 'https://eth.llamarpc.com';
+const RPC_URL = 'https://ethereum.rpc.subquery.network/public';
 
 async function fetchDictionaryBlock(): Promise<RawEthBlock> {
   const res = await fetch(DICTIONARY_URL, {

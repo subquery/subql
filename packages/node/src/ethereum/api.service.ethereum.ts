@@ -57,10 +57,7 @@ export class EthereumApiService extends ApiService<
     try {
       network = this.project.network;
     } catch (e) {
-      exitWithError(
-        new Error(`Failed to init api`, { cause: Object.keys(e) }),
-        logger,
-      );
+      exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
     const endpoints = Array.isArray(network.endpoint)
