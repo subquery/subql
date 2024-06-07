@@ -42,42 +42,63 @@ function validateCustomDsDs(d: {kind: string}): boolean {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
 }
 
-function validateAbi(datasource: SubqlRuntimeDatasource, projectPath: string): boolean {
-  const abi = datasource.assets.get(datasource.options.abi);
-  const data = fs.readFileSync(path.join(projectPath, abi.file), 'utf8');
-  let abiObj = JSON.parse(data);
-  if (!Array.isArray(abiObj) && abiObj.abi) {
-    abiObj = (abiObj as {abi: string[]}).abi;
-  }
-
-  const iface = new Interface(abiObj);
-  const abiFunctions = Object.values(iface.functions).map((func) => func.format());
-  const abiEvents = Object.values(iface.events).map((event) => event.format());
-
-  for (const mappingHandler of datasource.mapping.handlers) {
-    if (!mappingHandler?.filter) continue;
-
-    if (mappingHandler.kind === EthereumHandlerKind.Event) {
-      const notMatch = mappingHandler.filter.topics.find(
-        (topic) => !abiEvents.includes(EventFragment.fromString(topic).format())
-      );
-      assert(
-        !notMatch,
-        `Topic: "${notMatch}" not found in contract interface, supported topics: ${abiEvents.join(', ')}`
-      );
+function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string) {
+  const issues: string[] = [];
+  for (const datasource of datasources) {
+    const abiName = datasource.options.abi;
+    const topicIssues: string[] = [];
+    const funcIssues: string[] = [];
+    const abi = datasource.assets.get(abiName);
+    let data = '';
+    try {
+      data = fs.readFileSync(path.join(projectPath, abi.file), 'utf8');
+    } catch (e) {
+      issues.push(`Asset: "${abiName}" not found in project`);
+      continue;
+    }
+    let abiObj = JSON.parse(data);
+    if (!Array.isArray(abiObj) && abiObj.abi) {
+      abiObj = (abiObj as {abi: string[]}).abi;
     }
 
-    if (mappingHandler.kind === EthereumHandlerKind.Call) {
-      const functionFormat = FunctionFragment.fromString(mappingHandler.filter.function).format();
-      assert(
-        abiFunctions.includes(functionFormat),
-        `Function: "${
-          mappingHandler.filter.function
-        }" not found in contract interface, supported functions: ${abiFunctions.join(', ')}`
+    const iface = new Interface(abiObj);
+    const abiFunctions = Object.values(iface.functions).map((func) => func.format());
+    const abiEvents = Object.values(iface.events).map((event) => event.format());
+
+    for (const mappingHandler of datasource.mapping.handlers) {
+      if (!mappingHandler?.filter) continue;
+
+      if (mappingHandler.kind === EthereumHandlerKind.Event) {
+        const notMatch = mappingHandler.filter.topics.find(
+          (topic) => !abiEvents.includes(EventFragment.fromString(topic).format())
+        );
+
+        if (notMatch) topicIssues.push(notMatch);
+      }
+
+      if (mappingHandler.kind === EthereumHandlerKind.Call) {
+        const functionFormat = FunctionFragment.fromString(mappingHandler.filter.function).format();
+        if (!abiFunctions.includes(functionFormat)) funcIssues.push(mappingHandler.filter.function);
+      }
+    }
+
+    if (topicIssues.length) {
+      issues.push(
+        `Topic: "${topicIssues.join(
+          ', '
+        )}" not found in ${abiName} contract interface, supported topics: ${abiEvents.join(', ')}`
+      );
+    }
+    if (funcIssues.length) {
+      issues.push(
+        `Function: "${funcIssues.join(
+          ', '
+        )}" not found in ${abiName} contract interface, supported functions: ${abiFunctions.join(', ')}`
       );
     }
   }
-  return true;
+
+  assert(issues.length === 0, issues.join('\n'));
 }
 
 export function joinInputAbiName(abiObject: AbiInterface): string {
@@ -109,9 +130,7 @@ export function prepareSortedAssets(
 ): Record<string, string> {
   const sortedAssets: Record<string, string> = {};
   datasources
-    .filter(
-      (d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)) && validateAbi(d, projectPath)
-    )
+    .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)))
     .forEach((d) => {
       const addAsset = (name: string, value: FileReference) => {
         // should do if covert to absolute
@@ -219,6 +238,8 @@ export async function generateAbis(
     ...d,
     assets: d.assets instanceof Map ? d.assets : new Map(Object.entries(d.assets)),
   })) as SubqlRuntimeDatasource[];
+
+  validateAbi(datasources, projectPath);
 
   const sortedAssets = prepareSortedAssets(datasources, projectPath);
 
