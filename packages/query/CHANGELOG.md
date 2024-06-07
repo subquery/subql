@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add query `dbSize` under metadata (#2430)
+
 ## [2.11.1] - 2024-05-09
 ### Fixed
 - Certain historical queries not appliying block height (#2398)

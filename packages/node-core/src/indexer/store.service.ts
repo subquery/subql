@@ -20,6 +20,7 @@ import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   createSchemaTrigger,
   createSchemaTriggerFunction,
+  getDbSizeAndUpdateMetadata,
   getTriggers,
   SchemaMigrationService,
 } from '../db';
@@ -35,6 +36,7 @@ import {ISubqueryProject} from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
+const DB_SIZE_CACHE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 interface IndexField {
   entityName: string;
@@ -58,10 +60,11 @@ export class StoreService {
   private _historical?: boolean;
   private _dbType?: SUPPORT_DB;
   private _metadataModel?: CacheMetadataModel;
-
+  private _schema?: string;
   // Should be updated each block
   private _blockHeight?: number;
   private _operationStack?: StoreOperations;
+  private _lastTimeDbSizeChecked?: number;
 
   constructor(
     private sequelize: Sequelize,
@@ -103,6 +106,22 @@ export class StoreService {
     return this._historical;
   }
 
+  async syncDbSize(): Promise<bigint> {
+    if (!this._lastTimeDbSizeChecked || Date.now() - this._lastTimeDbSizeChecked > DB_SIZE_CACHE_TIMEOUT) {
+      this._lastTimeDbSizeChecked = Date.now();
+      return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
+    } else {
+      return this.storeCache.metadata.find('dbSize').then((cachedDbSize) => {
+        if (cachedDbSize !== undefined) {
+          return cachedDbSize;
+        } else {
+          this._lastTimeDbSizeChecked = Date.now();
+          return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
+        }
+      });
+    }
+  }
+
   private get dbType(): SUPPORT_DB {
     assert(this._dbType, new NoInitError());
     return this._dbType;
@@ -111,6 +130,11 @@ export class StoreService {
   private get metadataModel(): CacheMetadataModel {
     assert(this._metadataModel, new NoInitError());
     return this._metadataModel;
+  }
+
+  private get schema(): string {
+    assert(this._schema, new NoInitError());
+    return this._schema;
   }
 
   // Initialize tables and data that isnt' specific to the users data
@@ -128,6 +152,7 @@ export class StoreService {
     );
 
     this._dbType = await getDbType(this.sequelize);
+    this._schema = schema;
 
     await this.sequelize.sync();
 
@@ -283,10 +308,13 @@ export class StoreService {
           {type: QueryTypes.SELECT}
         );
 
-        const store = res.reduce(function (total, current) {
-          total[current.key] = current.value;
-          return total;
-        }, {} as {[key: string]: string | boolean});
+        const store = res.reduce(
+          function (total, current) {
+            total[current.key] = current.value;
+            return total;
+          },
+          {} as {[key: string]: string | boolean}
+        );
 
         const useHistorical =
           store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);

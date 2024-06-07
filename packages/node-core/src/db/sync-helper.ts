@@ -159,8 +159,8 @@ export async function getFunctions(sequelize: Sequelize, schema: string, functio
          information_schema.routines
      WHERE
          specific_schema not in ('pg_catalog', 'information_schema')
-       and routine_type = 'FUNCTION' 
-       and routine_schema = :schema 
+       and routine_type = 'FUNCTION'
+       and routine_schema = :schema
        and routine_name = :functionName;
     `,
     {
@@ -214,10 +214,10 @@ export function createNotifyTrigger(schema: string, table: string): string {
   return `
 DO $$
 BEGIN
-    CREATE TRIGGER "${triggerName}" AFTER INSERT OR UPDATE OR DELETE 
-    ON "${schema}"."${table}" 
+    CREATE TRIGGER "${triggerName}" AFTER INSERT OR UPDATE OR DELETE
+    ON "${schema}"."${table}"
     FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');
-EXCEPTION   
+EXCEPTION
     WHEN duplicate_object THEN
         RAISE NOTICE 'Trigger already exists. Ignoring...';
 END$$;
@@ -276,6 +276,31 @@ export function getExistedIndexesQuery(schema: string): string {
   return `SELECT indexname FROM pg_indexes WHERE schemaname = '${schema}'`;
 }
 
+export async function getDbSizeAndUpdateMetadata(sequelize: Sequelize, schema: string): Promise<bigint> {
+  const [result] = (
+    await sequelize.query(
+      `
+      WITH schema_size AS (
+        SELECT sum(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::bigint AS size
+      FROM pg_tables
+      WHERE schemaname = :schema
+        )
+      UPDATE "${schema}"._metadata
+      SET value = to_jsonb((SELECT size FROM schema_size)),
+          "updatedAt" = now()
+      WHERE key = 'dbSize'
+        RETURNING (SELECT size FROM schema_size) AS size;
+    `,
+      {
+        replacements: {schema},
+        type: QueryTypes.UPDATE,
+      }
+    )
+  )[0] as unknown as {size: number}[];
+
+  return BigInt(result.size);
+}
+
 // SQL improvement
 const DEFAULT_SQL_EXE_BATCH = 2000;
 
@@ -293,7 +318,7 @@ export const sqlIterator = (tableName: string, sql: string, batch: number = DEFA
     current_id INT;
   BEGIN
     SELECT MIN(id), MAX(id) INTO start_id, end_id FROM ${tableName};
-    
+
     IF start_id IS NOT NULL AND end_id IS NOT NULL THEN
         FOR current_id IN start_id..end_id BY batch_size LOOP
             ${sql};
@@ -564,9 +589,9 @@ export function generateForeignKeyQuery(attribute: ModelAttributeColumnOptions, 
   DO $$
   BEGIN
     ALTER TABLE "${foreignTable.schema}"."${tableName}"
-      ADD 
+      ADD
       CONSTRAINT ${fkey}
-      FOREIGN KEY (${attribute.field}) 
+      FOREIGN KEY (${attribute.field})
       REFERENCES "${foreignTable.schema}"."${foreignTable.tableName}" (${references.key})`;
   if (attribute.onDelete) {
     query += ` ON DELETE ${attribute.onDelete}`;

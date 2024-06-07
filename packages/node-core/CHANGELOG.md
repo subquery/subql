@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Admin api add query `/db_size` to check database size and upsert in metadata 
+
 ## [10.4.1] - 2024-06-06
 ### Fixed
 - Fix various issue in monitor service, file naming issue and export admin service from node-core
