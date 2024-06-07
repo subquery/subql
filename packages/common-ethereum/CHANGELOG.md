@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Improve ABI validation
+
 ## [3.7.0] - 2024-06-05
 ### Changed
 - Add default value in model class to follow ES2022 rule

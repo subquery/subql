@@ -1,10 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {Interface, EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {FileReference} from '@subql/types-core';
-import {SubqlRuntimeDatasource} from '@subql/types-ethereum';
+import {EthereumHandlerKind, SubqlRuntimeDatasource} from '@subql/types-ethereum';
 import {Data} from 'ejs';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
 import {isCustomDs, isRuntimeDs} from '../project';
@@ -38,6 +40,65 @@ type AbiInput = {
 
 function validateCustomDsDs(d: {kind: string}): boolean {
   return CUSTOM_EVM_HANDLERS.includes(d.kind);
+}
+
+function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string) {
+  const issues: string[] = [];
+  for (const datasource of datasources) {
+    const abiName = datasource.options.abi;
+    const topicIssues: string[] = [];
+    const funcIssues: string[] = [];
+    const abi = datasource.assets.get(abiName);
+    let data = '';
+    try {
+      data = fs.readFileSync(path.join(projectPath, abi.file), 'utf8');
+    } catch (e) {
+      issues.push(`Asset: "${abiName}" not found in project`);
+      continue;
+    }
+    let abiObj = JSON.parse(data);
+    if (!Array.isArray(abiObj) && abiObj.abi) {
+      abiObj = (abiObj as {abi: string[]}).abi;
+    }
+
+    const iface = new Interface(abiObj);
+    const abiFunctions = Object.values(iface.functions).map((func) => func.format());
+    const abiEvents = Object.values(iface.events).map((event) => event.format());
+
+    for (const mappingHandler of datasource.mapping.handlers) {
+      if (!mappingHandler?.filter) continue;
+
+      if (mappingHandler.kind === EthereumHandlerKind.Event) {
+        const notMatch = mappingHandler.filter.topics.find(
+          (topic) => !abiEvents.includes(EventFragment.fromString(topic).format())
+        );
+
+        if (notMatch) topicIssues.push(notMatch);
+      }
+
+      if (mappingHandler.kind === EthereumHandlerKind.Call) {
+        const functionFormat = FunctionFragment.fromString(mappingHandler.filter.function).format();
+        if (!abiFunctions.includes(functionFormat)) funcIssues.push(mappingHandler.filter.function);
+      }
+    }
+
+    if (topicIssues.length) {
+      issues.push(
+        `Topic: "${topicIssues.join(
+          ', '
+        )}" not found in ${abiName} contract interface, supported topics: ${abiEvents.join(', ')}`
+      );
+    }
+    if (funcIssues.length) {
+      issues.push(
+        `Function: "${funcIssues.join(
+          ', '
+        )}" not found in ${abiName} contract interface, supported functions: ${abiFunctions.join(', ')}`
+      );
+    }
+  }
+
+  assert(issues.length === 0, issues.join('\n'));
 }
 
 export function joinInputAbiName(abiObject: AbiInterface): string {
@@ -89,7 +150,7 @@ export function prepareSortedAssets(
         }
       } else {
         Object.entries(d.assets).map(([name, value]) => {
-          addAsset(name, value as any);
+          addAsset(name, value as FileReference);
         });
       }
     });
@@ -172,6 +233,14 @@ export async function generateAbis(
   upperFirst: (input?: string) => string,
   renderTemplate: (templatePath: string, outputPath: string, templateData: Data) => Promise<void>
 ): Promise<void> {
+  // @subql/cli package calls this function with datasources as an array of objects
+  datasources = datasources.map((d) => ({
+    ...d,
+    assets: d.assets instanceof Map ? d.assets : new Map(Object.entries(d.assets)),
+  })) as SubqlRuntimeDatasource[];
+
+  validateAbi(datasources, projectPath);
+
   const sortedAssets = prepareSortedAssets(datasources, projectPath);
 
   if (Object.keys(sortedAssets).length === 0) {
