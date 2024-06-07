@@ -20,7 +20,7 @@ import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   createSchemaTrigger,
   createSchemaTriggerFunction,
-  getDbSizeQuery,
+  getDbSizeAndUpdateMetadata,
   getTriggers,
   SchemaMigrationService,
 } from '../db';
@@ -36,6 +36,7 @@ import {ISubqueryProject} from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
+const DB_SIZE_CACHE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 interface IndexField {
   entityName: string;
@@ -63,6 +64,7 @@ export class StoreService {
   // Should be updated each block
   private _blockHeight?: number;
   private _operationStack?: StoreOperations;
+  private _lastTimeDbSizeChecked?: number;
 
   constructor(
     private sequelize: Sequelize,
@@ -104,11 +106,20 @@ export class StoreService {
     return this._historical;
   }
 
-  async syncDbSize(): Promise<number> {
-    const dbSize = await getDbSizeQuery(this.sequelize, this.schema);
-    // It doesn't need to update immediately
-    this.storeCache.metadata.set('dbSize', dbSize);
-    return dbSize;
+  async syncDbSize(): Promise<bigint> {
+    if (!this._lastTimeDbSizeChecked || Date.now() - this._lastTimeDbSizeChecked > DB_SIZE_CACHE_TIMEOUT) {
+      this._lastTimeDbSizeChecked = Date.now();
+      return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
+    } else {
+      return this.storeCache.metadata.find('dbSize').then((cachedDbSize) => {
+        if (cachedDbSize !== undefined) {
+          return cachedDbSize;
+        } else {
+          this._lastTimeDbSizeChecked = Date.now();
+          return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
+        }
+      });
+    }
   }
 
   private get dbType(): SUPPORT_DB {

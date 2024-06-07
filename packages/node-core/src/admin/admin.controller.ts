@@ -121,7 +121,7 @@ export class AdminController {
   }
 
   @Get('db_size')
-  async getDbSize(): Promise<number> {
+  async getDbSize(): Promise<bigint> {
     return handleServiceCall(() => this.storeService.syncDbSize());
   }
 }

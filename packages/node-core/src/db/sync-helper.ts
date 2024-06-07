@@ -276,15 +276,29 @@ export function getExistedIndexesQuery(schema: string): string {
   return `SELECT indexname FROM pg_indexes WHERE schemaname = '${schema}'`;
 }
 
-export async function getDbSizeQuery(sequelize: Sequelize, schema: string): Promise<number> {
-  const [size] = (await sequelize.query(
-    `select sum(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::bigint from pg_tables where schemaname = :schema`,
-    {
-      replacements: {schema},
-      type: QueryTypes.SELECT,
-    }
-  )) as {sum: number}[];
-  return Number(size.sum);
+export async function getDbSizeAndUpdateMetadata(sequelize: Sequelize, schema: string): Promise<bigint> {
+  const [result] = (
+    await sequelize.query(
+      `
+      WITH schema_size AS (
+        SELECT sum(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::bigint AS size
+      FROM pg_tables
+      WHERE schemaname = :schema
+        )
+      UPDATE "${schema}"._metadata
+      SET value = to_jsonb((SELECT size FROM schema_size)),
+          "updatedAt" = now()
+      WHERE key = 'dbSize'
+        RETURNING (SELECT size FROM schema_size) AS size;
+    `,
+      {
+        replacements: {schema},
+        type: QueryTypes.UPDATE,
+      }
+    )
+  )[0] as unknown as {size: number}[];
+
+  return BigInt(result.size);
 }
 
 // SQL improvement
