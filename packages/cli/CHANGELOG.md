@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.12.1] - 2024-06-10
+### Fixed
+- Add missing networks for migration
+
 ## [4.12.0] - 2024-06-05
 ### Changed
 - Bump with common dependencies
@@ -593,7 +597,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.12.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.12.1...HEAD
+[4.12.1]: https://github.com/subquery/subql/compare/cli/4.12.0...cli/4.12.1
 [4.12.0]: https://github.com/subquery/subql/compare/cli/4.11.0...cli/4.12.0
 [4.11.0]: https://github.com/subquery/subql/compare/cli/4.10.1...cli/4.11.0
 [4.10.1]: https://github.com/subquery/subql/compare/cli/4.10.0...cli/4.10.1
