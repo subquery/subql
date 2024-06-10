@@ -6210,7 +6210,7 @@ __metadata:
     "@subql/common-algorand": ^3.4.0
     "@subql/common-concordium": ^3.6.0
     "@subql/common-cosmos": ^4.3.0
-    "@subql/common-ethereum": ^3.8.2
+    "@subql/common-ethereum": ^3.8.3-0
     "@subql/common-flare": ^3.6.0
     "@subql/common-near": ^3.5.0
     "@subql/common-stellar": ^3.5.0
@@ -6319,9 +6319,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^3.8.2":
-  version: 3.8.2
-  resolution: "@subql/common-ethereum@npm:3.8.2"
+"@subql/common-ethereum@npm:^3.8.3-0":
+  version: 3.8.3-0
+  resolution: "@subql/common-ethereum@npm:3.8.3-0"
   dependencies:
     "@subql/common": ^3.5.1
     "@subql/types-ethereum": 3.6.1
@@ -6334,7 +6334,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 87ecbe278f0d750c4900bcaafad019faa6292ad9146245fabb2d7544ff26aa507ac6b2877edca9f2c44322ded8e01a6255927de4565e49b4bc20679ef6beb994
+  checksum: cefb46766c58fd19cf4b3a8f6f88352b90fdca39b053d4f2542d7cc283d839b31c5873e8028e3602ba70cb931bdebd9ec5944e50f3a63556b0e4c2038791567d
   languageName: node
   linkType: hard
 
