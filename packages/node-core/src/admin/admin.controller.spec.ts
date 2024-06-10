@@ -5,7 +5,7 @@ import {HttpException, HttpStatus} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Test, TestingModule} from '@nestjs/testing';
 import {TargetBlockPayload, RewindPayload, AdminEvent} from '../events';
-import {MonitorService, PoiService, ProofOfIndex} from '../indexer';
+import {MonitorService, PoiService, ProofOfIndex, StoreService} from '../indexer';
 import {AdminController, AdminListener} from './admin.controller';
 import {BlockRangeDto} from './blockRange';
 
@@ -43,6 +43,12 @@ describe('AdminController', () => {
             emitAsync: jest.fn(),
             once: jest.fn(),
             emit: jest.fn(),
+          },
+        },
+        {
+          provide: StoreService,
+          useValue: {
+            syncDbSize: jest.fn(),
           },
         },
       ],
