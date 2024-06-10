@@ -13,7 +13,7 @@
     "@subql/common-algorand": "^3.4.0",
     "@subql/common-concordium": "^3.6.0",
     "@subql/common-cosmos": "^4.3.0",
-    "@subql/common-ethereum": "^3.6.0",
+    "@subql/common-ethereum": "^3.8.2",
     "@subql/common-flare": "^3.6.0",
     "@subql/common-near": "^3.5.0",
     "@subql/common-stellar": "^3.5.0",
