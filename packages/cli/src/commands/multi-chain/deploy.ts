@@ -58,9 +58,14 @@ export default class MultiChainDeploy extends Command {
     multichainManifestPath = path.join(project.root, multichainManifestPath);
     const multichainManifestObject = YAML.parse(fs.readFileSync(multichainManifestPath, 'utf8'));
 
+    cli.action.start('Uploading project to IPFS');
     const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
-      (e) => this.error(e)
+      (e) => {
+        cli.action.stop();
+        this.error(e);
+      }
     );
+    cli.action.stop('DONE');
 
     flags.org = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
     flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
@@ -129,7 +134,7 @@ export default class MultiChainDeploy extends Command {
             indexerVersions[validator.chainId] = indexerAvailableVersions[0];
           }
         } catch (e) {
-          throw new Error(chalk.bgRedBright('Indexer version is required'));
+          throw new Error(chalk.bgRedBright('Indexer version is required'), {cause: e});
         }
       }
 

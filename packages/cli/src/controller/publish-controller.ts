@@ -161,7 +161,7 @@ export async function uploadFiles(
         fileCidMap.set(result.path, result.cid.toString());
       }
     } catch (e) {
-      throw new Error(`Publish project to provided IPFS gateway failed, ${e}`);
+      throw new Error(`Publish project to provided IPFS gateway failed`, {cause: e});
     }
   }
 
@@ -182,7 +182,7 @@ export async function uploadFiles(
       });
     }
   } catch (e) {
-    throw new Error(`Publish project to default failed, ${e}`);
+    throw new Error(`Publish project files to IPFS failed`, {cause: e});
   }
 
   return fileCidMap;
@@ -203,7 +203,7 @@ export async function uploadFile(
       .add(contents.content, {pin: true, cidVersion: 0})
       .then((result) => result.cid.toString())
       .catch((e) => {
-        throw new Error(`Publish project to default failed, ${e}`);
+        throw new Error(`Publish file to provided IPFS failed`, {cause: e});
       });
   }
 
@@ -227,7 +227,7 @@ export async function uploadFile(
       }
     })
     .catch((e) => {
-      throw new Error(`Publish project to default failed, ${e}`);
+      throw new Error(`Publish project to default IPFS failed`, {cause: e});
     });
 
   fileMap.set(contents.path, pendingCid);

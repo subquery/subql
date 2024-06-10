@@ -286,7 +286,7 @@ export function defaultGitIgnorePath(projectPath: string): string {
   return path.join(projectPath, DEFAULT_GIT_IGNORE);
 }
 
-export function copyFolderSync(source: string, target: string) {
+export function copyFolderSync(source: string, target: string): void {
   if (!fs.existsSync(target)) {
     fs.mkdirSync(target, {recursive: true});
   }
