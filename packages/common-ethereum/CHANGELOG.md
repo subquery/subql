@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix `generateAbis` when datasource without assets
+
 ## [3.8.2] - 2024-06-10
 ### Fixed
 - Abi validatation when DS doesn't specify abi option (#307)

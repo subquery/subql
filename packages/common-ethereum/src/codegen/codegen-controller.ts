@@ -240,7 +240,7 @@ export async function generateAbis(
   // @subql/cli package calls this function with datasources as an array of objects
   datasources = datasources.map((d) => ({
     ...d,
-    assets: d.assets instanceof Map ? d.assets : new Map(Object.entries(d.assets)),
+    assets: d?.assets ? (d.assets instanceof Map ? d.assets : new Map(Object.entries(d.assets))) : undefined,
   })) as SubqlRuntimeDatasource[];
 
   validateAbi(datasources, projectPath);
