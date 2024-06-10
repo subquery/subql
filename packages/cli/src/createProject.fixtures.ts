@@ -5,6 +5,7 @@ import childProcess from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import fetch from 'cross-fetch';
 import Build from './commands/build';
 import Codegen from './commands/codegen';
 import {cloneProjectTemplate, ExampleProjectInterface, prepare} from './controller/init-controller';
