@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Abi validatation when DS doesn't specify abi option (#307)
 
 ## [3.8.1] - 2024-06-07
 ### Added

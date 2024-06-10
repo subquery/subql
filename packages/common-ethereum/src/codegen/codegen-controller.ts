@@ -45,6 +45,10 @@ function validateCustomDsDs(d: {kind: string}): boolean {
 function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string) {
   const issues: string[] = [];
   for (const datasource of datasources) {
+    if (!datasource.options?.abi) {
+      // No ABI to validate
+      continue;
+    }
     const abiName = datasource.options.abi;
     const topicIssues: string[] = [];
     const funcIssues: string[] = [];

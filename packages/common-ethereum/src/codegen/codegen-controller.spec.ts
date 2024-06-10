@@ -351,4 +351,41 @@ describe('Codegen spec', () => {
       /Topic: "NotExist\(address a\)" not found in erc20 contract interface/
     );
   });
+
+  it('doesnt validate if datasource has no abi option set', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address a,address b,uint256 c)'],
+            },
+          },
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address a,address b,uint256 c)', 'NotExist(address a)'],
+            },
+          },
+        ],
+      },
+    };
+
+    await expect(
+      generateAbis(
+        [ds],
+        PROJECT_PATH,
+        (p) => Promise.resolve(),
+        (v) => v,
+        () => Promise.resolve()
+      )
+    ).resolves.not.toThrow();
+  });
 });
