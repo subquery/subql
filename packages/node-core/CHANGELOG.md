@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `exitWithError` logging error messages rather than the error (#2435)
 
+### Changed
+- Logging around switching dictionary (#2435)
+
 ## [10.4.1] - 2024-06-06
 ### Fixed
 - Fix various issue in monitor service, file naming issue and export admin service from node-core
