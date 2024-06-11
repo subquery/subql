@@ -23,6 +23,6 @@
     "@polkadot/api": "^11"
   },
   "devDependencies": {
-    "@polkadot/api": "11.0.2"
+    "@polkadot/api": "11.2.1"
   }
 }
