@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.13.0] - 2024-06-12
 ### Changed
 - Improve logging and error handling for multichain deploy (#2434)
 
@@ -600,7 +602,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.12.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.13.0...HEAD
+[4.13.0]: https://github.com/subquery/subql/compare/cli/4.12.0...cli/4.13.0
 [4.12.0]: https://github.com/subquery/subql/compare/cli/4.11.0...cli/4.12.0
 [4.11.0]: https://github.com/subquery/subql/compare/cli/4.10.1...cli/4.11.0
 [4.10.1]: https://github.com/subquery/subql/compare/cli/4.10.0...cli/4.10.1
