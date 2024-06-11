@@ -6211,7 +6211,6 @@ __metadata:
     "@subql/common-concordium": ^3.6.0
     "@subql/common-cosmos": ^4.3.0
     "@subql/common-ethereum": ^3.6.0
-    "@subql/common-flare": ^3.6.0
     "@subql/common-near": ^3.5.0
     "@subql/common-stellar": ^3.5.0
     "@subql/common-substrate": "workspace:*"
@@ -6335,25 +6334,6 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
   checksum: 46bb855bbffa53a33af95d2c1427876f873e0ebb4c6c7b4dd4be7279acb050f8f0eb8b9ab9c5e81758139b6dada6bc86b35e96dd1638b447115527cc841258c6
-  languageName: node
-  linkType: hard
-
-"@subql/common-flare@npm:^3.6.0":
-  version: 3.6.0
-  resolution: "@subql/common-flare@npm:3.6.0"
-  dependencies:
-    "@subql/common": ^3.5.1
-    "@subql/types-flare": 3.6.0
-    "@typechain/ethers-v5": ^11.1.1
-    "@zilliqa-js/crypto": ^3.5.0
-    js-yaml: ^4.1.0
-    pino: ^6.13.3
-    reflect-metadata: ^0.1.13
-    typechain: ^8.3.1
-  peerDependencies:
-    class-transformer: "*"
-    class-validator: "*"
-  checksum: ec3515ba9deebd19b089bcbde497e44d175fb497669a9fcb47439f6199d263ebf735c34e1d376cdb6aac0675b750202b78b41e5548163b87a0cbe6708815c856
   languageName: node
   linkType: hard
 
@@ -6604,16 +6584,6 @@ __metadata:
     "@ethersproject/abstract-provider": ^5.6.1
     "@subql/types-core": ^0.7.0
   checksum: b463e88d6dca985ea0aab68d43188aa01f185493d91d28c8d97c4b3f1232314f7ce905af90114af169c01b18da540afcc60af1aa96a64fa1fc0878fd0efe384e
-  languageName: node
-  linkType: hard
-
-"@subql/types-flare@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@subql/types-flare@npm:3.6.0"
-  dependencies:
-    "@ethersproject/abstract-provider": ^5.6.1
-    "@subql/types-core": ^0.7.0
-  checksum: 256e653c80c4421481a99774e1c3637a1aa5866f115d81e1a15b0646b9e32a635f10fae348ee621f978291cb3b6a62fbc15329f292ae0a6189dc2aa57e672768
   languageName: node
   linkType: hard
 

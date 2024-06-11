@@ -14,7 +14,6 @@ import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseConcordiumProjectManifest} from '@subql/common-concordium';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
-import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
 import {parseNearProjectManifest} from '@subql/common-near';
 import {parseStellarProjectManifest} from '@subql/common-stellar';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
@@ -67,7 +66,6 @@ export async function uploadToIpfs(
       parseCosmosProjectManifest,
       parseAlgorandProjectManifest,
       parseEthereumProjectManifest,
-      parseFlareProjectManifest,
       parseNearProjectManifest,
       parseStellarProjectManifest,
       parseConcordiumProjectManifest,
