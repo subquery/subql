@@ -1,13 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
 import {promisify} from 'util';
-import {DEFAULT_MANIFEST, mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
+import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import rimraf from 'rimraf';
-import Publish from '../commands/publish';
 import {createTestProject} from '../createProject.fixtures';
 import {uploadToIpfs} from './publish-controller';
 

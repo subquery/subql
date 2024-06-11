@@ -54,6 +54,8 @@ export async function createTestProject(): Promise<string> {
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});
+  // Set test env to be develop mode, only limit to test
+  process.env.NODE_ENV = 'develop';
 
   await Codegen.run(['-l', projectDir]);
   await Build.run(['-f', projectDir]);
