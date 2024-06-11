@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Add missing networks for migration
+- Fixed init command path issue
+- Update common-ethereum to fix issue with ABI validation (#2435)
 
 ## [4.12.0] - 2024-06-05
 ### Changed

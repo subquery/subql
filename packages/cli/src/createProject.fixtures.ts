@@ -5,6 +5,7 @@ import childProcess from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import fetch from 'cross-fetch';
 import Build from './commands/build';
 import Codegen from './commands/codegen';
 import {cloneProjectTemplate, ExampleProjectInterface, prepare} from './controller/init-controller';
@@ -53,6 +54,8 @@ export async function createTestProject(): Promise<string> {
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});
+  // Set test env to be develop mode, only limit to test
+  process.env.NODE_ENV = 'develop';
 
   await Codegen.run(['-l', projectDir]);
   await Build.run(['-f', projectDir]);

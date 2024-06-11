@@ -5,9 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
-- Admin api add query `/db_size` to check database size and upsert in metadata 
+- Admin api add query `/db_size` to check database size and upsert in metadata
+
+### Fixed
+- `exitWithError` logging error messages rather than the error (#2435)
+
+### Changed
+- Logging around switching dictionary (#2435)
 
 ## [10.4.1] - 2024-06-06
 ### Fixed

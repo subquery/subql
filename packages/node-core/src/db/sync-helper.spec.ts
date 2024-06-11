@@ -270,9 +270,9 @@ describe('sync-helper', () => {
       `DO $$
   BEGIN
     ALTER TABLE "test"."test-table"
-      ADD 
+      ADD
       CONSTRAINT test-table_transfer_id_id_fkey
-      FOREIGN KEY (transfer_id_id) 
+      FOREIGN KEY (transfer_id_id)
       REFERENCES "test"."transfers" (id) ON DELETE NO ACTION ON UPDATE CASCADE;
   EXCEPTION
     WHEN duplicate_object THEN

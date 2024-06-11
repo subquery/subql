@@ -3652,7 +3652,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/providers@npm:5.7.2":
+"@ethersproject/providers@npm:5.7.2, @ethersproject/providers@npm:^5.7.2":
   version: 5.7.2
   resolution: "@ethersproject/providers@npm:5.7.2"
   dependencies:
@@ -6210,7 +6210,7 @@ __metadata:
     "@subql/common-algorand": ^3.4.0
     "@subql/common-concordium": ^3.6.0
     "@subql/common-cosmos": ^4.3.0
-    "@subql/common-ethereum": ^3.6.0
+    "@subql/common-ethereum": ^3.8.3
     "@subql/common-flare": ^3.6.0
     "@subql/common-near": ^3.5.0
     "@subql/common-stellar": ^3.5.0
@@ -6319,12 +6319,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^3.6.0":
-  version: 3.6.0
-  resolution: "@subql/common-ethereum@npm:3.6.0"
+"@subql/common-ethereum@npm:^3.8.3":
+  version: 3.8.3
+  resolution: "@subql/common-ethereum@npm:3.8.3"
   dependencies:
     "@subql/common": ^3.5.1
-    "@subql/types-ethereum": 3.6.0
+    "@subql/types-ethereum": 3.6.1
     "@typechain/ethers-v5": ^11.1.1
     "@zilliqa-js/crypto": ^3.5.0
     js-yaml: ^4.1.0
@@ -6334,7 +6334,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 46bb855bbffa53a33af95d2c1427876f873e0ebb4c6c7b4dd4be7279acb050f8f0eb8b9ab9c5e81758139b6dada6bc86b35e96dd1638b447115527cc841258c6
+  checksum: 12a376e9e97a15c7bc1c0317ce1ba9ef7b46caf6d40a720ce669b3d5d3bea744c9d1492e2bf328951bf8a70c2b6ae7f5ba25d9e4dafd56c9f0d5ba4f59d83a42
   languageName: node
   linkType: hard
 
@@ -6597,13 +6597,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@subql/types-ethereum@npm:3.6.0"
+"@subql/types-ethereum@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@subql/types-ethereum@npm:3.6.1"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
+    "@ethersproject/providers": ^5.7.2
     "@subql/types-core": ^0.7.0
-  checksum: b463e88d6dca985ea0aab68d43188aa01f185493d91d28c8d97c4b3f1232314f7ce905af90114af169c01b18da540afcc60af1aa96a64fa1fc0878fd0efe384e
+  checksum: dbee1ddef99840eac82a5f562e25a69491e4f95017f1f3d1e7396a69112bdac80b885b3d689867e365a87d9bf5aff44db6e2ec349f68437fadff1828333cbc33
   languageName: node
   linkType: hard
 
