@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2024-06-12
 ### Added
 - Add query `dbSize` under metadata (#2430)
 
@@ -314,7 +315,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.11.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.12.0...HEAD
+[2.12.0]: https://github.com/subquery/subql/compare/query/2.11.1...query/2.12.0
 [2.11.1]: https://github.com/subquery/subql/compare/query/2.11.0...query/2.11.1
 [2.11.0]: https://github.com/subquery/subql/compare/query/2.10.5...query/2.11.0
 [2.10.5]: https://github.com/subquery/subql/compare/query/2.10.4...query/2.10.5
