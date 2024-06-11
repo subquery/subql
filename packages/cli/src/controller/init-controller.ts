@@ -222,13 +222,22 @@ export async function prepareManifest(projectPath: string, project: ProjectSpecB
   if (isTs) {
     const tsManifest = (await fs.promises.readFile(tsPath, 'utf8')).toString();
     //adding env config for endpoint.
-    const formattedEndpoint = `process.env.ENDPOINT!?.split(',') as string[] | string`;
-    const endpointUpdatedManifestData = findReplace(tsManifest, ENDPOINT_REG, `endpoint: ${formattedEndpoint}`);
-    const chainIdUpdatedManifestData = findReplace(
-      endpointUpdatedManifestData,
-      CHAIN_ID_REG,
-      `chainId: process.env.CHAIN_ID!`
-    );
+    const formattedEnvEndpoint = `process.env.ENDPOINT!?.split(',') as string[] | string`;
+    const formatEndpoint = (endpoint: string | string[]) => {
+      if (Array.isArray(endpoint)) {
+        return JSON.stringify(endpoint);
+      }
+      return `"${endpoint}"`;
+    };
+    const endpoint = project.endpoint ? formatEndpoint(project.endpoint) : formattedEnvEndpoint;
+    const endpointOutput = `endpoint: ${endpoint}`;
+    const endpointUpdatedManifestData = findReplace(tsManifest, ENDPOINT_REG, endpointOutput);
+    const specChainId = isProjectSpecV1_0_0(project) ? project.chainId : undefined;
+
+    const chainId = specChainId ? `"${specChainId}"` : `process.env.CHAIN_ID!`;
+    const chainIdOutput = `chainId: ${chainId}`;
+
+    const chainIdUpdatedManifestData = findReplace(endpointUpdatedManifestData, CHAIN_ID_REG, chainIdOutput);
     manifestData = addDotEnvConfigCode(chainIdUpdatedManifestData);
   } else {
     //load and write manifest(project.yaml)
