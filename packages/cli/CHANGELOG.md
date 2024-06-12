@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Deprecated flare SDK (#2428)
+
 ## [4.13.1] - 2024-06-12
 ### Changed
 - Update `@subql/utils`
@@ -13,7 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.13.0] - 2024-06-12
 ### Changed
 - Improve logging and error handling for multichain deploy (#2434)
-- Deprecated flare SDK (#2428)
 
 ### Fixed
 - Add missing networks for migration
