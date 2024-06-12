@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Deprecated flare SDK (#2428)
+
 ## [3.8.3] - 2024-06-11
 ### Fixed
 - Fix `generateAbis` when datasource without assets

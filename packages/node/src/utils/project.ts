@@ -44,51 +44,13 @@ export function onlyHasLogDataSources(
 ): boolean {
   for (const ds of dataSources) {
     for (const handler of ds.mapping.handlers) {
-      if (
-        handler.kind !== SubqlEthereumHandlerKind.EthEvent &&
-        handler.kind !== SubqlEthereumHandlerKind.FlareEvent
-      ) {
+      if (handler.kind !== SubqlEthereumHandlerKind.EthEvent) {
         return false;
       }
     }
   }
 
   return true;
-}
-
-export async function updateDatasourcesFlare(
-  _dataSources: SubqlDatasource[],
-  reader: Reader,
-  root: string,
-): Promise<EthereumProjectDs[]> {
-  // Cast to any to make types happy
-  const partialUpdate = _dataSources.map((dataSource) => {
-    if ((dataSource.kind as string) === 'flare/Runtime') {
-      dataSource.kind = EthereumDatasourceKind.Runtime;
-    }
-    dataSource.mapping.handlers = dataSource.mapping.handlers.map((handler) => {
-      switch (handler.kind as string) {
-        case 'flare/BlockHandler': {
-          handler.kind = EthereumHandlerKind.Block;
-          break;
-        }
-        case 'flare/TransactionHandler': {
-          handler.kind = EthereumHandlerKind.Call;
-          break;
-        }
-        case 'flare/LogHandler': {
-          handler.kind = EthereumHandlerKind.Event;
-          break;
-        }
-        default:
-      }
-      return handler;
-    });
-
-    return dataSource;
-  });
-
-  return updateDataSourcesV1_0_0(partialUpdate, reader, root, isCustomDs);
 }
 
 function dsContainsNonEventHandlers(ds: EthereumProjectDs): boolean {

@@ -94,7 +94,7 @@ export class BlockHandler implements SubqlBlockHandler {
   @IsOptional()
   @Type(() => BlockFilter)
   filter?: BlockFilter;
-  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.FlareBlock, SubqlEthereumHandlerKind.EthBlock]})
+  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.EthBlock]})
   kind: EthereumHandlerKind.Block;
   @IsString()
   handler: string;
@@ -106,7 +106,7 @@ export class CallHandler implements SubqlCallHandler {
   @ValidateNested()
   @Type(() => TransactionFilter)
   filter?: EthereumTransactionFilter;
-  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.FlareCall, SubqlEthereumHandlerKind.EthCall]})
+  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.EthCall]})
   kind: EthereumHandlerKind.Call;
   @IsString()
   handler: string;
@@ -118,7 +118,7 @@ export class EventHandler implements SubqlEventHandler {
   @ValidateNested()
   @Type(() => LogFilter)
   filter?: EthereumLogFilter;
-  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.FlareEvent, SubqlEthereumHandlerKind.EthEvent]})
+  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.EthEvent]})
   kind: EthereumHandlerKind.Event;
   @IsString()
   handler: string;
@@ -139,12 +139,6 @@ export class EthereumMapping implements SubqlMapping {
     const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubqlEthereumHandlerKind.FlareEvent:
-          return plainToClass(EventHandler, handler);
-        case SubqlEthereumHandlerKind.FlareCall:
-          return plainToClass(CallHandler, handler);
-        case SubqlEthereumHandlerKind.FlareBlock:
-          return plainToClass(BlockHandler, handler);
         case SubqlEthereumHandlerKind.EthEvent:
           return plainToClass(EventHandler, handler);
         case SubqlEthereumHandlerKind.EthCall:
@@ -186,7 +180,7 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
   implements SubqlRuntimeDatasource<M>
 {
   @IsEnum(SubqlEthereumDatasourceKind, {
-    groups: [SubqlEthereumDatasourceKind.FlareRuntime, SubqlEthereumDatasourceKind.EthRuntime],
+    groups: [SubqlEthereumDatasourceKind.EthRuntime],
   })
   kind: EthereumDatasourceKind.Runtime;
   @Type(() => EthereumMapping)

@@ -34,10 +34,9 @@ import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {SubqlEthereumDataSource, SubqlRuntimeHandler} from '../../types';
 
 const Ethereum_NODE_NAME = `@subql/node-ethereum`;
-const Flare_NODE_NAME = `@subql/node-flare`;
 
 export class EthereumRunnerNodeImpl extends RunnerNodeImpl {
-  @IsIn([Ethereum_NODE_NAME, Flare_NODE_NAME], {
+  @IsIn([Ethereum_NODE_NAME], {
     message: `Runner Substrate node name incorrect, suppose be '${Ethereum_NODE_NAME}'`,
   })
   name: string = Ethereum_NODE_NAME;
@@ -131,10 +130,7 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @Type(() => EthereumCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: EthereumRuntimeDataSourceImpl, name: 'flare/Runtime'},
-        {value: EthereumRuntimeDataSourceImpl, name: 'ethereum/Runtime'},
-      ],
+      subTypes: [{value: EthereumRuntimeDataSourceImpl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -145,10 +141,7 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: RuntimeDatasourceTemplateImpl, name: 'flare/Runtime'},
-        {value: RuntimeDatasourceTemplateImpl, name: 'ethereum/Runtime'},
-      ],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -168,10 +161,7 @@ export class ProjectManifestV1_0_0Impl
   @Type(() => EthereumCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: EthereumRuntimeDataSourceImpl, name: 'flare/Runtime'},
-        {value: EthereumRuntimeDataSourceImpl, name: 'ethereum/Runtime'},
-      ],
+      subTypes: [{value: EthereumRuntimeDataSourceImpl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -191,10 +181,7 @@ export class ProjectManifestV1_0_0Impl
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [
-        {value: RuntimeDatasourceTemplateImpl, name: 'flare/Runtime'},
-        {value: RuntimeDatasourceTemplateImpl, name: 'ethereum/Runtime'},
-      ],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

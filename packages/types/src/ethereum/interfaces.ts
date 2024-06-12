@@ -56,8 +56,6 @@ export interface EthereumResult extends ReadonlyArray<any> {
   readonly [key: string]: any;
 }
 
-export type FlareResult = EthereumResult;
-
 export type EthereumBlock = {
   blockExtraData: string;
   difficulty: bigint;
@@ -85,8 +83,6 @@ export type EthereumBlock = {
   baseFeePerGas?: bigint;
   blockGasCost?: bigint;
 };
-
-export type FlareBlock = EthereumBlock;
 
 export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   blockHash: string;
@@ -117,8 +113,6 @@ export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   args?: T;
 };
 
-export type FlareTransaction<T extends FlareResult = FlareResult> = EthereumTransaction<T>;
-
 export type EthereumReceipt = {
   blockHash: string;
   blockNumber: number;
@@ -136,8 +130,6 @@ export type EthereumReceipt = {
   type: string;
 };
 
-export type FlareReceipt = EthereumReceipt;
-
 export type EthereumLog<T extends EthereumResult = EthereumResult> = {
   address: string;
   topics: string[];
@@ -152,8 +144,6 @@ export type EthereumLog<T extends EthereumResult = EthereumResult> = {
   block: EthereumBlock;
   transaction: EthereumTransaction;
 };
-
-export type FlareLog<T extends FlareResult = FlareResult> = EthereumLog<T>;
 
 export type LightEthereumLog<T extends EthereumResult = EthereumResult> = Omit<
   EthereumLog<T>,

@@ -27,7 +27,6 @@ import {
 } from '@subql/types-ethereum';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
-import { updateDatasourcesFlare } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
 
@@ -154,12 +153,6 @@ async function loadProjectFromManifestBase(
   }
   const schema = buildSchemaFromString(schemaString);
 
-  const dataSources = await updateDatasourcesFlare(
-    projectManifest.dataSources,
-    reader,
-    root,
-  );
-
   const templates = await loadProjectTemplates(
     projectManifest.templates,
     root,
@@ -178,7 +171,7 @@ async function loadProjectFromManifestBase(
     reader.root ? reader.root : path, //TODO, need to method to get project_id
     root,
     network,
-    dataSources,
+    projectManifest.dataSources,
     schema,
     templates,
     runner,
