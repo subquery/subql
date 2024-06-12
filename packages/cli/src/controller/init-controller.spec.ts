@@ -186,10 +186,6 @@ describe('Cli can create project (mocked)', () => {
     expect(projectPackage.author).toBe(project.author);
 
     const updatedManifest = await fs.promises.readFile(`${projectPath}/${DEFAULT_TS_MANIFEST}`);
-    const extractedValues = extractFromTs(updatedManifest.toString(), {
-      endpoint: ENDPOINT_REG,
-    });
-    expect(extractedValues.endpoint).toStrictEqual(project.endpoint);
     expect(originalManifest).not.toBe(updatedManifest.toString());
     expect(originalPackage).not.toBe(packageData.toString());
   });

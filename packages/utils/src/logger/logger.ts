@@ -20,6 +20,37 @@ export interface LoggerOption {
   debugFilter?: string[];
 }
 
+function formatErrorString(err: unknown, stack = false): string {
+  if (err instanceof Error) {
+    let formattedError = `${ctx.red('Error:')} ${ctx.yellow(err.message)}`;
+
+    if (stack) {
+      formattedError += `\n${ctx.red('Stack:')} ${ctx.gray(err.stack)}`;
+    }
+
+    if (err.cause) {
+      formattedError += `\n${ctx.red('Cause:')} ${formatErrorString(err.cause, stack)}`;
+    }
+
+    return formattedError;
+  }
+  return String(err);
+}
+
+function formatErrorJson(err: unknown): unknown {
+  if (err instanceof Error) {
+    return {
+      type: 'error',
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+      cause: err.cause ? formatErrorJson(err.cause) : undefined,
+    };
+  } else {
+    return stringify(err);
+  }
+}
+
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
@@ -41,18 +72,7 @@ export class Logger {
       serializers:
         outputFormat === 'json'
           ? {
-              payload: (value) => {
-                if (value instanceof Error) {
-                  return {
-                    type: 'error',
-                    name: value.name,
-                    message: value.message,
-                    stack: value.stack,
-                  };
-                } else {
-                  return stringify(value);
-                }
-              },
+              payload: formatErrorJson,
             }
           : {},
       prettyPrint: outputFormat !== 'json',
@@ -72,9 +92,9 @@ export class Logger {
           let error = '';
           if (payload instanceof Error) {
             if (['debug', 'trace'].includes(logLevel)) {
-              error = `\n${payload.stack}`;
+              error = `\n${formatErrorString(payload, true)}`;
             } else {
-              error = `${payload.name}: ${payload.message}`;
+              error = formatErrorString(payload);
             }
           }
           return `${time} <${ctx.magentaBright(category)}> ${colorizeLevel(level)} ${message} ${error}\n`;

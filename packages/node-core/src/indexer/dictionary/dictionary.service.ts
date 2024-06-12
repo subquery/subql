@@ -45,16 +45,22 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     }
 
     // Only log on change of dictionary
-    if (previousIndex !== this._currentDictionaryIndex) {
-      if (this._currentDictionaryIndex === undefined) {
-        if (this._dictionaries.length) {
-          logger.warn(`No supported dictionary found`);
+    try {
+      if (previousIndex !== this._currentDictionaryIndex) {
+        if (this._currentDictionaryIndex === undefined) {
+          if (this._dictionaries.length) {
+            logger.warn(`No supported dictionary found`);
+          } else {
+            logger.debug(`No dictionaries available to use`);
+          }
         } else {
-          logger.debug(`No dictionaries available to use`);
+          logger.info(
+            `Changed dictionray: new index: ${this._currentDictionaryIndex}, type: ${this._dictionaries[this._currentDictionaryIndex]?.constructor?.name}`
+          );
         }
-      } else {
-        logger.debug(`Updated: current dictionary Index is ${this._currentDictionaryIndex}`);
       }
+    } catch (e) {
+      // Do nothing, logging shouldn't cause errors
     }
 
     return dict;

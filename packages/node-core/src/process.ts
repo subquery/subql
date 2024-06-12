@@ -12,7 +12,7 @@ export function setMonitorService(service: MonitorServiceInterface): void {
 
 export function exitWithError(error: Error | string, logger?: Pino.Logger, code = 1): never {
   const errorMessage = typeof error === 'string' ? error : error.message;
-  logger?.error(errorMessage);
+  logger?.error(error as any); /* Bad types */
   monitorService?.write(`[EXIT ${code}]: ${errorMessage}`);
   process.exit(code);
 }

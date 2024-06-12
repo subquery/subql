@@ -269,7 +269,7 @@ import path from 'path';
 const mode = process.env.NODE_ENV || 'production';
 
 // Load the appropriate .env file
-const dotenvPath = path.resolve(process.cwd(), \`.env\${mode !== 'production' ? \`.$\{mode}\` : ''}\`);
+const dotenvPath = path.resolve(__dirname, \`.env\${mode !== 'production' ? \`.$\{mode}\` : ''}\`);
 dotenv.config({ path: dotenvPath });
 `;
 

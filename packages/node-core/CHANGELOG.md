@@ -6,8 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.5.1] - 2024-06-12
+### Changed
+- Update `@subql/utils`
+
+## [10.5.0] - 2024-06-12
 ### Added
-- Admin api add query `/db_size` to check database size and upsert in metadata 
+- Admin api add query `/db_size` to check database size and upsert in metadata
+
+### Fixed
+- `exitWithError` logging error messages rather than the error (#2435)
+
+### Changed
+- Logging around switching dictionary (#2435)
 
 ## [10.4.1] - 2024-06-06
 ### Fixed
@@ -711,7 +722,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.4.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.5.1...HEAD
+[10.5.1]: https://github.com/subquery/subql/compare/node-core/10.5.0...node-core/10.5.1
+[10.5.0]: https://github.com/subquery/subql/compare/node-core/10.4.1...node-core/10.5.0
 [10.4.1]: https://github.com/subquery/subql/compare/node-core/10.4.0...node-core/10.4.1
 [10.4.0]: https://github.com/subquery/subql/compare/node-core/10.3.2...node-core/10.4.0
 [10.3.2]: https://github.com/subquery/subql/compare/node-core/10.3.1...node-core/10.3.2
