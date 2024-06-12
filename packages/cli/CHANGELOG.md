@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Improve logging and error handling for multichain deploy (#2434)
+- Deprecated flare SDK (#2428)
 
 ### Fixed
 - Add missing networks for migration
