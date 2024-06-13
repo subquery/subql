@@ -80,10 +80,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
   const modelRelations = {models: [], relations: [], enums: [...enums.values()]} as GraphQLModelsRelationsEnums;
   const derivedFrom = schema.getDirective('derivedFrom');
   const indexDirective = schema.getDirective('index');
+  assert(derivedFrom && indexDirective, 'derivedFrom and index directives are required');
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
-      description: entity.description,
+      description: entity.description || undefined,
       fields: [],
       indexes: [],
     };
@@ -92,8 +93,8 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
     const fkNameSet: string[] = [];
     for (const field of entityFields) {
       const typeString = extractType(field.type);
-      const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
-      const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
+      const derivedFromDirectValues = field.astNode ? getDirectiveValues(derivedFrom, field.astNode) : undefined;
+      const indexDirectiveVal = field.astNode ? getDirectiveValues(indexDirective, field.astNode) : undefined;
 
       //If is a basic scalar type
       const typeClass = getTypeByScalarName(typeString);
@@ -104,7 +105,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       else if (enums.has(typeString)) {
         newModel.fields.push({
           type: typeString,
-          description: field.description,
+          description: field.description || undefined,
           isEnum: true,
           isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
           nullable: !isNonNullType(field.type),
@@ -140,10 +141,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       // If is jsonField
       else if (jsonObjects.map((json) => json.name).includes(typeString)) {
         const jsonObject = jsonObjects.find((object) => object.name === typeString);
+        assert(jsonObject, `Json object ${typeString} not found`);
         const jsonObjectType = setJsonObjectType(jsonObject, jsonObjects);
         newModel.fields.push(packJSONField(typeString, field, jsonObjectType));
 
-        const directive = jsonObject.astNode.directives.find(({name: {value}}) => value === DirectiveName.JsonField);
+        const directive = jsonObject.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField);
         const argValue = directive?.arguments?.find((arg) => arg.name.value === 'indexed')?.value;
         // For backwards compatibility if the argument is not defined then the index will be added
         if (!argValue || (isBooleanValueNode(argValue) && argValue.value !== false)) {
@@ -180,10 +182,12 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
 
     // Composite Indexes
     const compositeIndexDirective = schema.getDirective('compositeIndexes');
+    assert(compositeIndexDirective, 'compositeIndexes directive is required');
+    assert(entity.astNode, 'Entity astNode is required');
     const compositeIndexDirectiveVal = getDirectiveValues(compositeIndexDirective, entity.astNode) as {
       fields?: string[][];
     };
-    if (compositeIndexDirectiveVal?.fields.length) {
+    if (compositeIndexDirectiveVal?.fields && compositeIndexDirectiveVal?.fields.length) {
       const duplicateIndexes = findDuplicateStringArray(compositeIndexDirectiveVal.fields);
       if (duplicateIndexes.length) {
         throw new Error(
@@ -200,6 +204,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
 
     // Fulltext Search
     const fullTextDirective = schema.getDirective('fullText');
+    assert(fullTextDirective, 'fullText directive is required');
     const fullTextDirectiveVal = getDirectiveValues(fullTextDirective, entity.astNode) as GraphQLFullTextType;
 
     if (fullTextDirectiveVal) {
@@ -276,7 +281,7 @@ function packEntityField(
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,
     type: isForeignKey ? FieldScalar.String : typeString,
-    description: field.description,
+    description: field.description || undefined,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),
     isEnum: false,
@@ -291,7 +296,7 @@ function packJSONField(
   return {
     name: field.name,
     type: 'Json',
-    description: field.description,
+    description: field.description || undefined,
     jsonInterface: jsonObject,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),
@@ -311,15 +316,12 @@ export function setJsonObjectType(
     //check if field is also json
     const typeString = extractType(field.type);
     const isJsonType = jsonObjects.map((json) => json.name).includes(typeString);
+    const jsonObject = jsonObjects.find((object) => object.name === typeString);
+    assert(jsonObject, `Json object ${typeString} not found`);
     graphQLJsonObject.fields.push({
       name: field.name,
       type: isJsonType ? 'Json' : extractType(field.type),
-      jsonInterface: isJsonType
-        ? setJsonObjectType(
-            jsonObjects.find((object) => object.name === typeString),
-            jsonObjects
-          )
-        : undefined,
+      jsonInterface: isJsonType ? setJsonObjectType(jsonObject, jsonObjects) : undefined,
       nullable: !isNonNullType(field.type),
       isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     } as GraphQLJsonFieldType);
