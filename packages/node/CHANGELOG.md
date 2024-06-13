@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.5.1] - 2024-06-13
 ### Fixed
 - Errors resolving files from IPFS (#314)
 
@@ -492,7 +494,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.5.1...HEAD
+[4.5.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.5.0...node-ethereum/4.5.1
 [4.5.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.4.3...node-ethereum/4.5.0
 [4.4.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.4.2...node-ethereum/4.4.3
 [4.4.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.4.1...node-ethereum/4.4.2
