@@ -7,8 +7,7 @@
     "rootDir": "src",
     "outDir": "./dist",
     "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strict": true
+    "noImplicitThis": true
   },
   "references": [{"path": "../types"}],
   "include": ["src/**/*"]
