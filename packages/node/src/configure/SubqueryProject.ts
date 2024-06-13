@@ -17,6 +17,7 @@ import {
   insertBlockFiltersCronSchedules,
   ISubqueryProject,
   loadProjectTemplates,
+  updateDataSourcesV1_0_0,
 } from '@subql/node-core';
 import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
 import {
@@ -167,11 +168,18 @@ async function loadProjectFromManifestBase(
     ),
   );
 
+  const dataSources = await updateDataSourcesV1_0_0(
+    projectManifest.dataSources,
+    reader,
+    root,
+    isCustomDs,
+  );
+
   return new SubqueryProject(
     reader.root ? reader.root : path, //TODO, need to method to get project_id
     root,
     network,
-    projectManifest.dataSources,
+    dataSources,
     schema,
     templates,
     runner,

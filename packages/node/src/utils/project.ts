@@ -10,9 +10,7 @@ import {
   isCustomDs,
   isRuntimeDs,
 } from '@subql/common-ethereum';
-import { retryOnFail, updateDataSourcesV1_0_0 } from '@subql/node-core';
-import { Reader } from '@subql/types-core';
-import { EthereumDatasourceKind, SubqlDatasource } from '@subql/types-ethereum';
+import { retryOnFail } from '@subql/node-core';
 import {
   EthereumProjectDs,
   SubqueryProject,
