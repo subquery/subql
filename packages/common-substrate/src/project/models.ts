@@ -79,9 +79,9 @@ export class BlockHandler implements SubstrateBlockHandler {
   @Type(() => BlockFilter)
   filter?: SubstrateBlockFilter;
   @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Block]})
-  kind: SubstrateHandlerKind.Block;
+  kind!: SubstrateHandlerKind.Block;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class CallHandler implements SubstrateCallHandler {
@@ -90,9 +90,9 @@ export class CallHandler implements SubstrateCallHandler {
   @Type(() => CallFilter)
   filter?: SubstrateCallFilter;
   @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Call]})
-  kind: SubstrateHandlerKind.Call;
+  kind!: SubstrateHandlerKind.Call;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class EventHandler implements SubstrateEventHandler {
@@ -101,16 +101,16 @@ export class EventHandler implements SubstrateEventHandler {
   @Type(() => EventFilter)
   filter?: SubstrateEventFilter;
   @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Event]})
-  kind: SubstrateHandlerKind.Event;
+  kind!: SubstrateHandlerKind.Event;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class CustomHandler implements SubstrateCustomHandler {
   @IsString()
-  kind: string;
+  kind!: string;
   @IsString()
-  handler: string;
+  handler!: string;
   @IsObject()
   @IsOptional()
   filter?: Record<string, unknown>;
@@ -134,31 +134,31 @@ export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandler> {
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubstrateRuntimeHandler[];
+  handlers!: SubstrateRuntimeHandler[];
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class CustomMapping implements BaseMapping<SubstrateCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
-  handlers: CustomHandler[];
+  handlers!: CustomHandler[];
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class RuntimeDataSourceBase extends BaseDataSource implements SubstrateRuntimeDatasource {
   @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
-  kind: SubstrateDatasourceKind.Runtime;
+  kind!: SubstrateDatasourceKind.Runtime;
   @Type(() => RuntimeMapping)
   @ValidateNested()
-  mapping: RuntimeMapping;
+  mapping!: RuntimeMapping;
 }
 
 export class FileReferenceImpl implements FileReference {
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class CustomDataSourceBase<K extends string, M extends CustomMapping, O = any>
@@ -166,15 +166,15 @@ export class CustomDataSourceBase<K extends string, M extends CustomMapping, O =
   implements SubstrateCustomDatasource<K, M, O>
 {
   @IsString()
-  kind: K;
+  kind!: K;
   @Type(() => CustomMapping)
   @ValidateNested()
-  mapping: M;
+  mapping!: M;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: Map<string, FileReference>;
+  assets!: Map<string, FileReference>;
   @Type(() => ProcessorImpl)
   @IsObject()
   @ValidateNested()
-  processor: Processor<O>;
+  processor!: Processor<O>;
 }
