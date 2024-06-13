@@ -6,22 +6,10 @@ import {DataTypes} from '@subql/x-sequelize';
 type ValueOf<T> = T[keyof T];
 export type SequelizeTypes = string | ValueOf<typeof DataTypes>;
 
-export interface TypeToHashData {
-  BigInt: bigint | string;
-  Bytes: string | Uint8Array;
-  Boolean: boolean;
-  Date: Date;
-  Float: number;
-  ID: string;
-  Int: number;
-  Json: any;
-  String: string;
-}
-
-export class TypeClass<T extends keyof TypeToHashData> {
+export class TypeClass<D> {
   constructor(
-    public name: T,
-    private _hashCode: (data: TypeToHashData[T]) => Uint8Array,
+    public name: string,
+    private _hashCode: (data: D) => Uint8Array,
     private _tsType?: string,
     private _fieldScalar?: string,
     private _sequelizeType?: SequelizeTypes
@@ -36,7 +24,7 @@ export class TypeClass<T extends keyof TypeToHashData> {
     assert(this._sequelizeType !== undefined, `Type ${this.name} associated sequelize type is not supported`);
     return this._sequelizeType;
   }
-  hashCode(data: any): Uint8Array {
+  hashCode(data: D): Uint8Array {
     if (this._hashCode === undefined) {
       return Buffer.from(JSON.stringify(data));
     }

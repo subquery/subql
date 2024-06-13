@@ -13,7 +13,7 @@ describe('general types', () => {
   });
 
   it('get sequelize date type', () => {
-    const typeClass = getTypeByScalarName('Date');
+    const typeClass = getTypeByScalarName('DateObj');
     expect(typeClass?.sequelizeType).toBe('timestamp');
   });
 
