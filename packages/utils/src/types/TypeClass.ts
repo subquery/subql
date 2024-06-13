@@ -24,7 +24,7 @@ export class TypeClass<D> {
     assert(this._sequelizeType !== undefined, `Type ${this.name} associated sequelize type is not supported`);
     return this._sequelizeType;
   }
-  hashCode(data: D): Uint8Array {
+  hashCode(data: D | any): Uint8Array {
     if (this._hashCode === undefined) {
       return Buffer.from(JSON.stringify(data));
     }
