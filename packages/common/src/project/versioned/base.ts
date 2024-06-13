@@ -20,7 +20,7 @@ import {ParentProjectModel} from './v1_0_0/models';
 
 export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   @Allow()
-  definitions: object;
+  definitions!: object;
   @IsOptional()
   @IsString()
   description?: string;
@@ -28,9 +28,9 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
   @IsString()
   repository?: string;
   @IsString()
-  specVersion: string;
+  specVersion!: string;
 
-  protected _deployment: D;
+  protected _deployment!: D;
 
   protected constructor(private readonly _deploymentClass: new () => D) {}
 
@@ -57,7 +57,7 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
 
 export class FileType implements FileReference {
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class ProcessorImpl<O = any> extends FileType implements Processor<O> {
@@ -69,10 +69,10 @@ export class ProcessorImpl<O = any> extends FileType implements Processor<O> {
 export class BaseDeploymentV1_0_0 {
   @Equals('1.0.0')
   @IsString()
-  specVersion: string;
+  specVersion!: string;
   @ValidateNested()
   @Type(() => FileType)
-  schema: FileType;
+  schema!: FileType;
   @IsOptional()
   @IsObject()
   @Type(() => ParentProjectModel)

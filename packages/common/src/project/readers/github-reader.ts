@@ -10,7 +10,7 @@ import {DEFAULT_MANIFEST} from '../utils';
 
 export class GithubReader implements Reader {
   private readonly api: AxiosInstance;
-  private defaultBranch: string;
+  private defaultBranch!: string;
 
   constructor(private readonly key: string) {
     this.api = axios.create({

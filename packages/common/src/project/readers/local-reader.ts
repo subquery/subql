@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {assert} from 'console';
 import * as fs from 'fs';
 import * as path from 'path';
 import {Reader} from '@subql/types-core';
@@ -9,14 +10,19 @@ import {IPackageJson} from 'package-json-type';
 import {extensionIsYamlOrJSON} from '../../project';
 
 export class LocalReader implements Reader {
-  constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
+  constructor(
+    private readonly projectPath: string,
+    private readonly manifestPath: string
+  ) {}
 
   get root(): string {
     return path.resolve(this.projectPath);
   }
 
   async getPkg(): Promise<IPackageJson | undefined> {
-    return yaml.load(await this.getFile('package.json')) as IPackageJson;
+    const pkg = (await this.getFile('package.json')) || '';
+    assert(pkg, 'package.json not found');
+    return yaml.load(pkg) as IPackageJson;
   }
 
   async getProjectSchema(unsafe = false): Promise<unknown | undefined> {

@@ -15,7 +15,7 @@ describe('LocalReader', () => {
 
   it('should return the package json object', async () => {
     const data = await reader.getPkg();
-    expect(data.name).toBe('subquery-starter');
+    expect(data?.name).toBe('subquery-starter');
   });
 
   it('should return the project schema object', async () => {
