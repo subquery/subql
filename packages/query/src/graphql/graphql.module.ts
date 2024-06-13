@@ -72,10 +72,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
     try {
       const schema = await this.buildSchema(dbSchema, options);
-      // @ts-ignore
-      if (schema && !!this.apolloServer?.generateSchemaDerivedData) {
-        // @ts-ignore
-        const schemaDerivedData = await this.apolloServer.generateSchemaDerivedData(schema);
+      if (schema && !!(this.apolloServer as any)?.generateSchemaDerivedData) {
+        const schemaDerivedData = await (this.apolloServer as any).generateSchemaDerivedData(schema);
         set(this.apolloServer, 'schema', schema);
         set(this.apolloServer, 'state.schemaManager.schemaDerivedData', schemaDerivedData);
         logger.info('Schema updated');
