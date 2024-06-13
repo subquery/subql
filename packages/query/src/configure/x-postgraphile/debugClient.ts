@@ -100,6 +100,7 @@ export function debugPgClient(pgClient: PoolClient, logger: Pino.Logger): PoolCl
             });
           }
         }
+        pgClient._explainResults = pgClient._explainResults || [];
         pgClient._explainResults.forEach(({query, values}: {query: string; values?: any[]}) => {
           let res: string;
           res = `\n SQL query: ${query} `;
@@ -108,7 +109,6 @@ export function debugPgClient(pgClient: PoolClient, logger: Pino.Logger): PoolCl
           }
           logger.info(res);
         });
-        pgClient._explainResults = [];
         return pgClient[$$pgClientOrigQuery].apply(this, args);
       } else {
         // We don't understand it (e.g. `pgPool.query`), just let it happen.

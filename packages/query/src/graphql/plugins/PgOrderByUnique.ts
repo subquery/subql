@@ -5,6 +5,7 @@ import {PgClass} from '@subql/x-graphile-build-pg';
 import {Plugin} from 'graphile-build';
 import {GraphQLEnumType} from 'graphql';
 import isString from 'lodash/isString';
+import * as PgSql from 'pg-sql2';
 import {argv} from '../../yargs';
 
 const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
@@ -106,7 +107,7 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
 
       const cursorPrefixFromOrderBy = (orderBy: any) => {
         if (orderBy) {
-          const cursorPrefixes = [];
+          const cursorPrefixes: PgSql.SQLNode[] = [];
 
           for (let itemIndex = 0, itemCount = orderBy.length; itemIndex < itemCount; itemIndex++) {
             const item = orderBy[itemIndex];
@@ -144,8 +145,8 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
                     specNullsFirst !== null
                       ? specNullsFirst
                       : orderByNullsLast !== null
-                      ? !orderByNullsLast
-                      : undefined;
+                        ? !orderByNullsLast
+                        : undefined;
                   queryBuilder.orderBy(expr, ascending, nullsFirst);
                 });
 
