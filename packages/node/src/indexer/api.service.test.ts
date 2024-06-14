@@ -157,9 +157,8 @@ describe('ApiService', () => {
       mockBlock.block.header,
       runtimeVersion,
     );
-    const patchedResult = await patchedApi.rpc.state.getRuntimeVersion(
-      earlyBlockhash,
-    );
+    const patchedResult =
+      await patchedApi.rpc.state.getRuntimeVersion(earlyBlockhash);
     expect(apiResults).toEqual(patchedResult);
     // patchedApi without input blockHash, will return runtimeVersion at 6721195
     const patchedResult2 = await patchedApi.rpc.state.getRuntimeVersion();

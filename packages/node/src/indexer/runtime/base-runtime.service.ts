@@ -14,10 +14,10 @@ type GetLatestFinalizedHeight = () => number;
 
 @Injectable()
 export abstract class BaseRuntimeService {
-  parentSpecVersion: number;
-  specVersionMap: SpecVersion[];
-  protected currentRuntimeVersion: RuntimeVersion;
-  latestFinalizedHeight: number;
+  parentSpecVersion!: number;
+  specVersionMap!: SpecVersion[];
+  protected currentRuntimeVersion!: RuntimeVersion;
+  latestFinalizedHeight!: number;
 
   constructor(protected apiService: ApiService) {}
 
@@ -60,9 +60,8 @@ export abstract class BaseRuntimeService {
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
     );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      parentBlockHash,
-    );
+    const runtimeVersion =
+      await this.api.rpc.state.getRuntimeVersion(parentBlockHash);
     const specVersion = runtimeVersion.specVersion.toNumber();
     return specVersion;
   }

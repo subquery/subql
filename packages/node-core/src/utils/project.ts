@@ -17,7 +17,7 @@ import {exitWithError} from '../process';
 
 const logger = getLogger('Project-Utils');
 
-export async function getValidPort(argvPort: number): Promise<number> {
+export async function getValidPort(argvPort: number | undefined): Promise<number> {
   const validate = (x: any) => {
     const p = parseInt(x);
     return isNaN(p) ? null : p;

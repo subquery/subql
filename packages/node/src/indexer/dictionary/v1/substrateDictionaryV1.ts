@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { gql } from '@apollo/client/core';
 import {
   isCustomDs,
@@ -32,10 +33,10 @@ function eventFilterToQueryEntry(
   return {
     entity: 'events',
     conditions: [
-      { field: 'module', value: filter.module },
+      { field: 'module', value: filter.module }, // Note: ts-strict change -- There are pre-judgments at runtime, but they don't cover all of them
       {
         field: 'event',
-        value: filter.method,
+        value: filter.method, // Note: ts-strict change -- There are pre-judgments at runtime, but they don't cover all of them
       },
     ],
   };
@@ -51,7 +52,7 @@ function callFilterToQueryEntry(
         ({
           field: key === 'method' ? 'call' : key,
           value: filter[key],
-        } as DictionaryQueryCondition),
+        }) as DictionaryQueryCondition,
     ),
   };
 }
@@ -62,7 +63,7 @@ function getBaseHandlerKind<
   ds: SubstrateDataSource,
   handler: SubstrateHandler,
   getDsProcessor: (ds: SubstrateDatasource) => P,
-): SubstrateHandlerKind {
+): SubstrateHandlerKind | undefined {
   if (isRuntimeDs(ds) && isBaseHandler(handler)) {
     return handler.kind;
   } else if (isCustomDs(ds) && isCustomHandler(handler)) {
@@ -109,8 +110,9 @@ export function buildDictionaryV1QueryEntries<
     const plugin = isCustomDs(ds) ? getDsProcessor(ds) : undefined;
     for (const handler of ds.mapping.handlers) {
       const baseHandlerKind = getBaseHandlerKind(ds, handler, getDsProcessor);
-      let filterList: SubstrateRuntimeHandlerFilter[];
+      let filterList: SubstrateRuntimeHandlerFilter[] = [];
       if (isCustomDs(ds)) {
+        assert(plugin, 'plugin should be defined');
         const processor = plugin.handlerProcessors[handler.kind];
         if (processor.dictionaryQuery) {
           const queryEntry = processor.dictionaryQuery(
@@ -128,7 +130,7 @@ export function buildDictionaryV1QueryEntries<
           getDsProcessor,
         );
       } else {
-        filterList = [handler.filter];
+        if (handler.filter) filterList = [handler.filter];
       }
       // Filter out any undefined
       filterList = filterList.filter(Boolean);
@@ -189,7 +191,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
     protected getDsProcessor: (
       ds: SubstrateDatasource,
     ) => DsProcessor<SubstrateDatasource>,
-    dictionaryUrl?: string,
+    dictionaryUrl: string,
     chainId?: string,
   ) {
     super(dictionaryUrl, chainId ?? project.network.chainId, nodeConfig);
@@ -201,7 +203,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
     getDsProcessor: (
       ds: SubstrateDatasource,
     ) => DsProcessor<SubstrateDatasource>,
-    dictionaryUrl?: string,
+    dictionaryUrl: string,
     chainId?: string,
   ): Promise<SubstrateDictionaryV1> {
     const dictionary = new SubstrateDictionaryV1(
@@ -221,7 +223,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
     return buildDictionaryV1QueryEntries(dataSources, this.getDsProcessor);
   }
 
-  parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
+  parseSpecVersions(raw: SpecVersionDictionary | undefined): SpecVersion[] {
     if (raw === undefined) {
       return [];
     }
@@ -250,7 +252,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
     return Array.from(specVersionBlockHeightSet);
   }
 
-  async getSpecVersionsRaw(): Promise<SpecVersionDictionary> {
+  async getSpecVersionsRaw(): Promise<SpecVersionDictionary | undefined> {
     const { query } = this.specVersionQuery();
     try {
       const resp = await timeout(
@@ -264,12 +266,12 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
       const specVersions = resp.data.specVersions;
       return { _metadata, specVersions };
     } catch (err) {
-      logger.warn(err, `failed to fetch specVersion result`);
+      logger.warn(err as Error, `failed to fetch specVersion result`);
       return undefined;
     }
   }
 
-  async getSpecVersions(): Promise<SpecVersion[]> {
+  async getSpecVersions(): Promise<SpecVersion[] | undefined> {
     try {
       return this.parseSpecVersions(await this.getSpecVersionsRaw());
     } catch {

@@ -33,7 +33,7 @@ import { WorkerService } from './worker.service';
 
 const logger = getLogger(`worker #${threadId}`);
 
-async function initWorker(startHeight: number): Promise<void> {
+async function initWorker(startHeight?: number): Promise<void> {
   try {
     const app = await NestFactory.create(WorkerModule, {
       logger: new NestLogger(!!argv.debug), // TIP: If the worker is crashing comment out this line for better logging
@@ -49,7 +49,7 @@ async function initWorker(startHeight: number): Promise<void> {
     initWorkerServices(app, workerService);
   } catch (e) {
     console.log('Failed to start worker', e);
-    logger.error(e, 'Failed to start worker');
+    logger.error(e as Error, 'Failed to start worker');
     throw e;
   }
 }

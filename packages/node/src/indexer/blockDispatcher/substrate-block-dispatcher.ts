@@ -8,7 +8,7 @@ import { RuntimeService } from '../runtime/runtimeService';
 export interface ISubstrateBlockDispatcher
   extends IBlockDispatcher<SubstrateBlock> {
   init(
-    onDynamicDsCreated: (height: number) => Promise<void>,
+    onDynamicDsCreated: (height: number) => void,
     runtimeService?: RuntimeService,
   ): Promise<void>;
 }

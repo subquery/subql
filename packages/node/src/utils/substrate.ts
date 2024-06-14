@@ -51,6 +51,7 @@ export function wrapBlock(
   specVersion?: number,
 ): SubstrateBlock {
   return merge(signedBlock, {
+    // Note: ts-strict change -- t is possible for the runtime to pass in
     timestamp: getTimestamp(signedBlock),
     specVersion: specVersion,
     events,
@@ -70,6 +71,7 @@ export function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
       return date;
     }
   }
+  throw new Error('timestamp not found');
 }
 
 export function wrapExtrinsics(
@@ -375,12 +377,18 @@ export async function fetchBlocksBatches(
       ? undefined
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
+
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const parentSpecVersion =
-      overallSpecVer !== undefined
-        ? overallSpecVer
-        : runtimeVersions[idx].specVersion.toNumber();
+    let parentSpecVersion: number | undefined;
+    if (overallSpecVer !== undefined) {
+      parentSpecVersion = overallSpecVer;
+    } else {
+      parentSpecVersion = runtimeVersions
+        ? runtimeVersions[idx].specVersion.toNumber()
+        : undefined;
+    }
+
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
@@ -450,8 +458,8 @@ export function calcInterval(api: ApiPromise): BN {
       (api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD)
         ? api.consts.timestamp.minimumPeriod.mul(BN_TWO)
         : api.query.parachainSystem
-        ? DEFAULT_TIME.mul(BN_TWO)
-        : DEFAULT_TIME),
+          ? DEFAULT_TIME.mul(BN_TWO)
+          : DEFAULT_TIME),
   );
 }
 

@@ -128,7 +128,7 @@ export function mockProjectUpgradeService(
   project: SubqueryProject,
 ): IProjectUpgradeService<SubqueryProject> {
   const startBlock = Math.min(
-    ...project.dataSources.map((ds) => ds.startBlock),
+    ...project.dataSources.map((ds) => ds.startBlock || 1),
   );
 
   let currentHeight = startBlock;

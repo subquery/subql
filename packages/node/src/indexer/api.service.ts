@@ -22,6 +22,7 @@ import {
   IBlock,
   MetadataMismatchError,
   exitWithError,
+  IApiConnectionSpecific,
 } from '@subql/node-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -105,10 +106,10 @@ export class ApiService
   >
   implements OnApplicationShutdown
 {
-  private fetchBlocksFunction: FetchFunc;
+  private fetchBlocksFunction!: FetchFunc;
   private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
-  private currentBlockHash: string;
-  private currentBlockNumber: number;
+  private currentBlockHash!: string;
+  private currentBlockNumber!: number;
 
   private nodeConfig: SubstrateNodeConfig;
 
@@ -154,7 +155,15 @@ export class ApiService
           chainTypes,
         }),
       //postConnectedHook
-      (connection: ApiPromiseConnection, endpoint: string, index: number) => {
+      (
+        connection: IApiConnectionSpecific<
+          ApiPromise,
+          ApiAt,
+          IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
+        >,
+        endpoint: string,
+        index: number,
+      ) => {
         const api = connection.unsafeApi;
         api.on('connected', () => {
           this.eventEmitter.emit(IndexerEvent.ApiConnected, {
@@ -295,18 +304,21 @@ export class ApiService
   }
 
   private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
-    apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
-      acc[module] = Object.entries(rpcMethods).reduce(
-        (accInner, [name, rpcPromiseResult]) => {
-          accInner[name] = this.redecorateRpcFunction(
-            rpcPromiseResult as RpcMethodResult<any, AnyFunction>,
-          );
-          return accInner;
-        },
-        {},
-      );
-      return acc;
-    }, {} as ApiPromise['rpc']);
+    apiAt.rpc = Object.entries(api.rpc).reduce(
+      (acc, [module, rpcMethods]) => {
+        acc[module] = Object.entries(rpcMethods).reduce(
+          (accInner, [name, rpcPromiseResult]) => {
+            accInner[name] = this.redecorateRpcFunction(
+              rpcPromiseResult as RpcMethodResult<any, AnyFunction>,
+            );
+            return accInner;
+          },
+          {},
+        );
+        return acc;
+      },
+      {} as ApiPromise['rpc'],
+    );
   }
 
   private getRPCFunctionName<T extends 'promise' | 'rxjs'>(

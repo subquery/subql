@@ -58,6 +58,7 @@ export class SubstrateDictionaryService extends DictionaryService<
             this.project,
             this.nodeConfig,
             this.dsProcessorService.getDsProcessor.bind(
+              // Note: ts-strict change
               this.dsProcessorService,
             ),
             endpoint,
@@ -86,6 +87,7 @@ export class SubstrateDictionaryService extends DictionaryService<
 
   private getV1Dictionary(): SubstrateDictionaryV1 | undefined {
     // TODO this needs to be removed once Substrate supports V2 dictionaries
+    if (!this._currentDictionaryIndex) return undefined;
     const dict = this._dictionaries[this._currentDictionaryIndex];
     if (!dict) return undefined;
     assert(

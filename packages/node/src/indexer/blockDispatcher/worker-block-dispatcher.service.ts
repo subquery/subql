@@ -39,7 +39,7 @@ export class WorkerBlockDispatcherService
   >
   implements OnApplicationShutdown
 {
-  private runtimeService: RuntimeService;
+  private runtimeService!: RuntimeService;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -90,12 +90,12 @@ export class WorkerBlockDispatcherService
   }
 
   async init(
-    onDynamicDsCreated: (height: number) => Promise<void>,
+    onDynamicDsCreated: (height: number) => void,
     runtimeService?: RuntimeService,
   ): Promise<void> {
     await super.init(onDynamicDsCreated);
     // Sync workers runtime from main
-    this.runtimeService = runtimeService;
+    if (runtimeService) this.runtimeService = runtimeService;
     this.syncWorkerRuntimes();
   }
 

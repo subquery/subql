@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   NodeConfig,
@@ -67,9 +68,10 @@ export class WorkerService extends BaseWorkerService<
     block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
   ): Promise<ProcessBlockResponse> {
-    const runtimeVersion = !isFullBlock(block.block)
-      ? undefined
-      : await this.workerRuntimeService.getRuntimeVersion(block.block.block);
+    assert(isFullBlock(block.block), 'Block should be Full block');
+    const runtimeVersion = await this.workerRuntimeService.getRuntimeVersion(
+      block.block.block,
+    );
 
     return this.indexerManager.indexBlock(block, dataSources, runtimeVersion);
   }

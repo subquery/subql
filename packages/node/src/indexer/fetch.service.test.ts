@@ -23,19 +23,19 @@ describe('FetchService', () => {
 
     fetchService = new FetchService(
       apiService, // ApiService
-      null, // NodeConfig
-      null, // ProjectService
+      null as any, // NodeConfig
+      null as any, // ProjectService
       {} as any, // Project
-      null, // BlockDispatcher,
-      null, // DictionaryService
+      null as any, // BlockDispatcher,
+      null as any, // DictionaryService
       {
         registerFinalizedBlock: () => {
           /* Nothing */
         },
       } as any, // UnfinalizedBlocks
-      null, // EventEmitter
-      null, // SchedulerRegistry
-      null, // RuntimeService
+      null as any, // EventEmitter
+      null as any, // SchedulerRegistry
+      null as any, // RuntimeService
     ) as any;
   }, 10000);
 

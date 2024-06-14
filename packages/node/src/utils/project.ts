@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { LocalReader, loadFromJsonOrYaml } from '@subql/common';
@@ -42,7 +43,7 @@ export async function getChainTypes(
 ): Promise<ChainTypes> {
   // If the project is load from local, we will direct load them
   if (reader instanceof LocalReader) {
-    return loadChainTypes(file, root);
+    return loadChainTypes(file, root) as ChainTypes;
   } else {
     // If it is stored in ipfs or other resources, we will use the corresponding reader to read the file
     // Because ipfs not provide extension of the file, it is difficult to determine its format
@@ -50,6 +51,8 @@ export async function getChainTypes(
     // if it failed, we will give it another another attempt, and assume the script written in js
     // we will download it to a temp folder, and load them within sandbox
     const res = await reader.getFile(file);
+    assert(res, `File ${file} not found`);
+
     let raw: unknown;
     try {
       raw = yaml.load(res);

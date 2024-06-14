@@ -25,14 +25,14 @@ export class RuntimeService extends BaseRuntimeService {
   async syncDictionarySpecVersions(height: number): Promise<void> {
     try {
       // must check useDictionary before get SpecVersion, this will give the right dictionary to fetch SpecVersions
-      const response = await this.dictionaryService.getSpecVersions();
+      const response = await this.dictionaryService?.getSpecVersions();
       if (response !== undefined) {
         this.specVersionMap = response;
       } else if (this.specVersionMap === undefined) {
         this.specVersionMap = [];
       }
     } catch (e) {
-      logger.error(e, 'Failed to get spec versions');
+      logger.error(e as Error, 'Failed to get spec versions');
     }
   }
 
@@ -40,7 +40,7 @@ export class RuntimeService extends BaseRuntimeService {
   async getSpecVersion(
     blockHeight: number,
   ): Promise<{ blockSpecVersion: number; syncedDictionary: boolean }> {
-    let blockSpecVersion: number;
+    let blockSpecVersion: number | undefined;
     let syncedDictionary = false;
     // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
     // therefore instead of check .useDictionary, we check it length before use it.

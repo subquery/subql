@@ -58,7 +58,7 @@ export class ApiPromiseConnection
     fetchBlocksBatches: GetFetchFunc,
     args: { chainTypes: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
-    let provider: ProviderInterface;
+    let provider: ProviderInterface | undefined;
     let throwOnConnect = false;
 
     const headers = {

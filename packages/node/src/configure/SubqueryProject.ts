@@ -72,7 +72,7 @@ export class SubqueryProject implements ISubqueryProject {
     this.#dataSources = await insertBlockFiltersCronSchedules(
       this.dataSources,
       getTimestamp,
-      isRuntimeDs,
+      isRuntimeDs, // Note: ts-strict change --- Not sure it should be modified
       SubstrateHandlerKind.Block,
     );
   }
@@ -146,7 +146,7 @@ async function loadProjectFromManifestBase(
     ),
   );
 
-  let schemaString: string;
+  let schemaString: string | undefined;
   try {
     schemaString = await reader.getFile(projectManifest.schema.file);
   } catch (e) {
@@ -154,6 +154,7 @@ async function loadProjectFromManifestBase(
       `unable to fetch the schema from ${projectManifest.schema.file}`,
     );
   }
+  assert(schemaString, 'Schema file is empty');
   const schema = buildSchemaFromString(schemaString);
 
   const chainTypes = projectManifest.network.chaintypes
@@ -171,7 +172,7 @@ async function loadProjectFromManifestBase(
     projectManifest.templates,
     root,
     reader,
-    isCustomDs,
+    isCustomDs, // Note: ts-strict change --- Not sure it should be modified
   );
   const runner = projectManifest.runner;
   assert(
