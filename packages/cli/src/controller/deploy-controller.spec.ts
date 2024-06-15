@@ -1,8 +1,9 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {ROOT_API_URL_DEV} from '../constants';
-import {DeploymentDataType, DeploymentSpec, ValidateDataType} from '../types';
+import {DeploymentDataType, DeploymentSpec, V3DeploymentIndexerType, ValidateDataType} from '../types';
 import {delay} from '../utils';
 import {
   createDeployment,
@@ -19,6 +20,7 @@ import {
 import {createProject, deleteProject} from './project-controller';
 
 jest.setTimeout(120000);
+assert(process.env.SUBQL_ORG_TEST, 'Please set SUBQL_ORG_TEST in your environment');
 const projectSpec: DeploymentSpec = {
   org: process.env.SUBQL_ORG_TEST,
   projectName: 'mockedstarter',
@@ -39,6 +41,7 @@ async function deployTestProject(
   testAuth: string,
   url: string
 ): Promise<DeploymentDataType> {
+  assert(validator.manifestRunner, 'Please set manifestRunner in your project');
   const indexerV = await imageVersions(
     validator.manifestRunner.node.name,
     validator.manifestRunner.node.version,
@@ -55,7 +58,8 @@ async function deployTestProject(
   const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
   const dictEndpoint = await dictionaryEndpoints(url);
 
-  const project = {
+  assert(validator.chainId, 'Please set chainId in your project');
+  const project: V3DeploymentIndexerType = {
     cid: ipfs,
     dictEndpoint: processEndpoints(dictEndpoint, validator.chainId),
     endpoint,
@@ -70,6 +74,7 @@ async function deployTestProject(
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
+assert(testAuth, 'Please set SUBQL_ACCESS_TOKEN_TEST in your environment');
 // Can be re-enabled when test env is ready
 describe.skip('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
@@ -115,7 +120,7 @@ describe.skip('CLI deploy, delete, promote', () => {
   // eslint-disable-next-line jest/no-disabled-tests
   it.skip('Promote Deployment', async () => {
     const {ipfs, org, projectName} = projectSpec;
-    let status: string;
+    let status: string | undefined;
     let attempt = 0;
     const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
     const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
@@ -145,6 +150,7 @@ describe.skip('CLI deploy, delete, promote', () => {
   it('get DictEndpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
+    assert(validator.chainId, 'Please set chainId in your project');
     expect(processEndpoints(dict, validator.chainId)).toBe(
       'https://api.subquery.network/sq/subquery/polkadot-dictionary'
     );
@@ -158,6 +164,7 @@ describe.skip('CLI deploy, delete, promote', () => {
     const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
     const initProjectInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);
 
+    assert(validator.manifestRunner, 'Please set manifestRunner in your project');
     const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
     const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
     const indexerV = await imageVersions(
@@ -173,9 +180,10 @@ describe.skip('CLI deploy, delete, promote', () => {
       ROOT_API_URL_DEV
     );
 
+    assert(validator.chainId, 'Please set chainId in your project');
     const project = {
       cid: ipfs,
-      dictEndpoint: processEndpoints(dict, validator.chainId),
+      dictEndpoint: processEndpoints(dict, validator.chainId) || '',
       endpoint,
       indexerImageVersion: indexerV[0],
       indexerAdvancedSettings: {

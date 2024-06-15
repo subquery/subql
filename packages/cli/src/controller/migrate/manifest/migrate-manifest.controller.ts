@@ -42,7 +42,7 @@ export function readSubgraphManifest(inputPath: string, subgraphPath: string): S
     const subgraphManifest: SubgraphProject = YAML.parse(fs.readFileSync(inputPath, 'utf8'));
     return subgraphManifest;
   } catch (e) {
-    if (e.code === 'ENOENT') {
+    if ((e as any).code === 'ENOENT') {
       throw new Error(`Unable to find subgraph manifest under: ${subgraphPath}`);
     }
     throw e;

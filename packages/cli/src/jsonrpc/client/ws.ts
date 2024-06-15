@@ -14,8 +14,8 @@ export class WsJsonRpcClient {
     return ret;
   }
 
-  isReady: Promise<WsJsonRpcClient>;
-  protected _ws: WebSocket;
+  isReady!: Promise<WsJsonRpcClient>;
+  protected _ws!: WebSocket;
   protected isDestroyed = false;
 
   protected handlers: {[id: string]: any};
@@ -34,7 +34,7 @@ export class WsJsonRpcClient {
       });
 
       this._ws.onclose = this.onSocketClose;
-      this._ws.onmessage = this.onSocketMessage;
+      this._ws.onmessage = this.onSocketMessage; // Note: ts-strict change  onmessage: (event: IMessageEvent) => void
     } catch (error) {
       console.error(error);
     }

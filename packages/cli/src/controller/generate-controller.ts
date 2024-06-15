@@ -420,6 +420,6 @@ export async function generateHandlers(
     });
     fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${fileName}"`);
   } catch (e) {
-    throw new Error(`Unable to generate handler scaffolds. ${e.message}`);
+    throw new Error(`Unable to generate handler scaffolds. ${(e as Error).message}`);
   }
 }

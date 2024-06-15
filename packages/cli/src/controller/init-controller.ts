@@ -71,7 +71,7 @@ export async function fetchTemplates(): Promise<Template[]> {
 
     return res.data.templates;
   } catch (e) {
-    errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/all`);
+    throw errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/all`);
   }
 }
 
@@ -82,7 +82,7 @@ export async function fetchNetworks(): Promise<Template[]> {
     const res = await axiosInstance.get<{results: Template[]}>('/networks');
     return res.data.results;
   } catch (e) {
-    errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/networks`);
+    throw errorHandle(e, `Update to reach endpoint '${BASE_TEMPLATE_URl}/networks`);
   }
 }
 
@@ -95,7 +95,7 @@ export async function fetchExampleProjects(
     const res = await axiosInstance.get<{results: ExampleProjectInterface[]}>(`/networks/${familyCode}/${networkCode}`);
     return res.data.results;
   } catch (e) {
-    errorHandle(e, `Update to reach endpoint ${familyCode}/${networkCode}`);
+    throw errorHandle(e, `Update to reach endpoint ${familyCode}/${networkCode}`);
   }
 }
 

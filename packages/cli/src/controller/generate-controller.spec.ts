@@ -684,8 +684,8 @@ describe('CLI codegen:generate', () => {
     );
     // TODO expected to fail, due to unable to skip comments
     expect(v.function).toMatch('approve(address spender, uint256 rawAmount)');
-    expect(v.topics[0]).toMatch('Transfer(address indexed from, address indexed to, uint256 amount)');
-    expect(v.endpoint[0]).toMatch('https://eth.api.onfinality.io/public');
+    expect(v.topics?.[0]).toMatch('Transfer(address indexed from, address indexed to, uint256 amount)');
+    expect(v.endpoint?.[0]).toMatch('https://eth.api.onfinality.io/public');
   });
   // });
   // All these test should test against mockData as well as

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
@@ -43,12 +44,12 @@ function filterInput(arr: string[]) {
 
 async function promptValidRemoteAndBranch(): Promise<string[]> {
   let isValid = false;
-  let remote: string;
+  let remote: string | undefined;
   while (!isValid) {
     try {
-      remote = await cli.prompt('Custom template git remote', {
+      remote = (await cli.prompt('Custom template git remote', {
         required: true,
-      });
+      })) as string;
       new URL(remote);
       isValid = true;
     } catch (e) {
@@ -78,11 +79,11 @@ export default class Init extends Command {
       description: 'Give the starter project name',
     }),
   };
-  private projectPath: string; //path on GitHub
-  private project: ProjectSpecBase;
-  private location: string;
-  private networkFamily: NETWORK_FAMILY;
-  private network: string;
+  private projectPath!: string; //path on GitHub
+  private project!: ProjectSpecBase;
+  private location!: string;
+  private networkFamily!: NETWORK_FAMILY;
+  private network!: string;
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
@@ -118,6 +119,7 @@ export default class Init extends Command {
 
     // if network family is of ethereum, then should prompt them an abiPath
     const selectedFamily = networkTemplates.find((family) => family.name === this.networkFamily);
+    assert(selectedFamily, 'No network family selected');
 
     // Network selection
     const networkStrArr = selectedFamily.networks.map((n) => n.name);
@@ -138,10 +140,11 @@ export default class Init extends Command {
         this.network = networkResponse;
       });
     const selectedNetwork = selectedFamily.networks.find((network) => this.network === network.name);
+    assert(selectedNetwork, 'No network selected');
 
     const candidateProjects = await fetchExampleProjects(selectedFamily.code, selectedNetwork.code);
 
-    let selectedProject: ExampleProjectInterface;
+    let selectedProject: ExampleProjectInterface | undefined;
     // Templates selection
     const paddingWidth = candidateProjects.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
     const templateDisplays = candidateProjects.map(
@@ -167,6 +170,7 @@ export default class Init extends Command {
           selectedProject = candidateProjects.find((project) => project.name === templateName);
         }
       });
+    assert(selectedProject, 'No project selected');
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedProject);
 
     await this.setupProject(flags);

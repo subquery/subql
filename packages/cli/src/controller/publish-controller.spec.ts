@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {promisify} from 'util';
 import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
@@ -9,6 +10,7 @@ import {createTestProject} from '../createProject.fixtures';
 import {uploadToIpfs} from './publish-controller';
 
 // Replace/Update your access token when test locally
+assert(process.env.SUBQL_ACCESS_TOKEN, 'Please set SUBQL_ACCESS in your environment');
 const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 jest.setTimeout(300_000); // 300s

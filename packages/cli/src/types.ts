@@ -165,27 +165,27 @@ export interface ProjectDeploymentInterface {
 
 export interface DeploymentFlagsInterface {
   ipfs?: string;
-  org: string;
-  projectName: string;
+  org?: string;
+  projectName?: string;
   type: string;
-  indexerVersion: string;
-  queryVersion: string;
-  dict: string;
-  endpoint: string;
+  indexerVersion?: string;
+  queryVersion?: string;
+  dict?: string;
+  endpoint?: string;
   indexerUnsafe: boolean;
-  indexerBatchSize: number;
+  indexerBatchSize?: number;
   indexerSubscription: boolean;
   disableHistorical: boolean;
   indexerUnfinalized: boolean;
-  indexerStoreCacheThreshold: number;
+  indexerStoreCacheThreshold?: number;
   disableIndexerStoreCacheAsync: boolean;
   indexerWorkers?: number;
   ipfsCID?: string;
   location?: string;
   queryUnsafe: boolean;
   querySubscription: boolean;
-  queryTimeout: number;
-  queryMaxConnection: number;
+  queryTimeout?: number;
+  queryMaxConnection?: number;
   queryAggregate: boolean;
   queryLimit?: number;
   useDefaults: boolean;

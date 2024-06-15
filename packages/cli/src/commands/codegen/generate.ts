@@ -170,7 +170,7 @@ export default class Generate extends Command {
       });
       this.log('-------------------------------');
     } catch (e) {
-      this.error(e);
+      this.error(e as Error);
     }
   }
 }

@@ -29,7 +29,7 @@ export async function delay(sec: number): Promise<void> {
   });
 }
 
-export async function valueOrPrompt<T>(value: T, msg: string, error: string): Promise<T> {
+export async function valueOrPrompt<T>(value: T, msg: string, error: string): Promise<NonNullable<T>> {
   if (value) return value;
   try {
     return await cli.prompt(msg);

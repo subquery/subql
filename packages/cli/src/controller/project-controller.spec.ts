@@ -1,10 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {ROOT_API_URL_DEV} from '../constants';
 import {delay} from '../utils';
 import {createProject, deleteProject} from './project-controller';
 
+assert(process.env.SUBQL_ORG_TEST, 'Please set SUBQL_ORG_TEST in your environment');
 const projectSpec = {
   org: process.env.SUBQL_ORG_TEST,
   projectName: 'mocked_project',
@@ -18,7 +20,7 @@ const projectSpec = {
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
-
+assert(testAuth, 'Please set SUBQL_ACCESS in your environment');
 const testIf = (condition: boolean, ...args: Parameters<typeof it>) =>
   // eslint-disable-next-line jest/valid-title, jest/no-disabled-tests
   condition ? it(...args) : it.skip(...args);

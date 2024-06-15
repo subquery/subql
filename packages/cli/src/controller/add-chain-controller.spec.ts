@@ -43,7 +43,7 @@ const childChainManifest_1: ProjectManifestV1_0_0 = {
   schema: {
     file: './schema.graphql',
   },
-  dataSources: null,
+  dataSources: [],
 };
 
 const childChainManifest_2: ProjectManifestV1_0_0 = {
@@ -68,7 +68,7 @@ const childChainManifest_2: ProjectManifestV1_0_0 = {
   schema: {
     file: './schema.graphql',
   },
-  dataSources: null,
+  dataSources: [],
 };
 
 const childChainManifest_2_wrongSchema: ProjectManifestV1_0_0 = {
@@ -93,7 +93,7 @@ const childChainManifest_2_wrongSchema: ProjectManifestV1_0_0 = {
   schema: {
     file: './schema_wrong.graphql',
   },
-  dataSources: null,
+  dataSources: [],
 };
 
 async function createMultichainProject(
