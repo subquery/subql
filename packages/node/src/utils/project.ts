@@ -42,7 +42,8 @@ export async function getChainTypes(
 ): Promise<ChainTypes> {
   // If the project is load from local, we will direct load them
   if (reader instanceof LocalReader) {
-    return loadChainTypes(file, root);
+    const raw = loadChainTypes(file, root);
+    return parseChainTypes(raw);
   } else {
     // If it is stored in ipfs or other resources, we will use the corresponding reader to read the file
     // Because ipfs not provide extension of the file, it is difficult to determine its format

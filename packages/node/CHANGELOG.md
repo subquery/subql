@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Add missing chainType validation for local mode
+
 ## [4.6.4] - 2024-06-12
 ### Changed
 - Update `@subql/utils`
