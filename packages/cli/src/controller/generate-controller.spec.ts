@@ -6,8 +6,13 @@ import os from 'os';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {DEFAULT_TS_MANIFEST} from '@subql/common';
-import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
-import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
+import {
+  SubqlRuntimeDatasource as EthereumDs,
+  EthereumLogFilter,
+  EthereumDatasourceKind,
+  EthereumHandlerKind,
+  EthereumTransactionFilter,
+} from '@subql/types-ethereum';
 import {parseContractPath} from 'typechain';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';

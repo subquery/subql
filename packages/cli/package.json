@@ -10,13 +10,13 @@
   "dependencies": {
     "@oclif/core": "^2.15.0",
     "@subql/common": "workspace:*",
-    "@subql/common-algorand": "^3.4.0",
-    "@subql/common-concordium": "^3.6.0",
-    "@subql/common-cosmos": "^4.3.0",
-    "@subql/common-ethereum": "^3.8.3",
-    "@subql/common-near": "^3.5.0",
-    "@subql/common-stellar": "^3.5.0",
-    "@subql/common-substrate": "workspace:*",
+    "@subql/types": "workspace:*",
+    "@subql/types-algorand": "^3.3.0",
+    "@subql/types-concordium": "^3.6.0",
+    "@subql/types-cosmos": "^3.4.0",
+    "@subql/types-ethereum": "^3.0.0",
+    "@subql/types-near": "^3.3.0",
+    "@subql/types-stellar": "^3.3.1",
     "@subql/utils": "workspace:*",
     "algosdk": "^1.19.0",
     "boxen": "5.1.2",
@@ -35,6 +35,7 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
+    "typechain": "^8.3.2",
     "typescript": ">=5.2.2",
     "update-notifier": "5.1.0",
     "webpack": "^5.76.0",
@@ -89,6 +90,5 @@
   "types": "lib/index.d.ts",
   "resolutions": {
     "node-fetch": "2.6.7"
-  },
-  "stableVersion": "4.13.1"
+  }
 }

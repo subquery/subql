@@ -6,17 +6,18 @@ import path from 'path';
 import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {
+  SubqlRuntimeDatasource as EthereumDs,
+  EthereumLogFilter,
   EthereumDatasourceKind,
   EthereumHandlerKind,
   EthereumTransactionFilter,
   SubqlRuntimeHandler,
-  parseContractPath,
-} from '@subql/common-ethereum';
-import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
+} from '@subql/types-ethereum';
 import chalk from 'chalk';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
 import {upperFirst, difference, pickBy} from 'lodash';
+import {parseContractPath} from 'typechain';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';

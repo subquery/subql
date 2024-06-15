@@ -14,7 +14,7 @@ import {
   DEFAULT_MANIFEST,
   DEFAULT_TS_MANIFEST,
 } from '@subql/common';
-import {SubqlRuntimeHandler} from '@subql/common-ethereum';
+import {SubqlRuntimeHandler as EthSubqlRuntimeHandler} from '@subql/types-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
@@ -174,9 +174,11 @@ export function extractArrayValueFromTsManifest(content: string, key: string): s
   const [startIndex, endIndex] = findArrayIndicesTsManifest(content, key);
   return content.slice(startIndex, endIndex + 1);
 }
+// @ts-ignore
+// TODO
 
 export function tsStringify(
-  obj: SubqlRuntimeHandler | SubqlRuntimeHandler[] | string,
+  obj: EthSubqlRuntimeHandler | EthSubqlRuntimeHandler[] | string,
   indent = 2,
   currentIndent = 0
 ): string {

@@ -1,12 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/common-ethereum';
 import {FileReference} from '@subql/types-core';
 import {
   SubqlRuntimeDatasource as EthereumDs,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
+  EthereumDatasourceKind,
+  EthereumHandlerKind,
 } from '@subql/types-ethereum';
 import {DEFAULT_HANDLER_BUILD_PATH} from '../../generate-controller';
 import {MigrateDatasourceKind, SubgraphDataSource, SubgraphTemplate} from '../types';
@@ -37,25 +38,25 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
           };
         }),
         ...(ds.mapping.eventHandlers ?? []).map((h) => {
-              return {
-                kind: EthereumHandlerKind.Event,
-                migrateHandlerType: 'EthereumHandlerKind.Event',
-                handler: h.handler,
-                filter: {
-                  topics: [h.event],
-                },
-              };
-            }),
+          return {
+            kind: EthereumHandlerKind.Event,
+            migrateHandlerType: 'EthereumHandlerKind.Event',
+            handler: h.handler,
+            filter: {
+              topics: [h.event],
+            },
+          };
+        }),
         ...(ds.mapping.callHandlers ?? []).map((h) => {
-              return {
-                kind: EthereumHandlerKind.Call,
-                migrateHandlerType: 'EthereumHandlerKind.Call',
-                handler: h.handler,
-                filter: {
-                  f: h.function,
-                },
-              };
-            }),
+          return {
+            kind: EthereumHandlerKind.Call,
+            migrateHandlerType: 'EthereumHandlerKind.Call',
+            handler: h.handler,
+            filter: {
+              f: h.function,
+            },
+          };
+        }),
       ],
     },
   } as unknown as MigrateDatasourceKind<D>;
