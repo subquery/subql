@@ -4,9 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {generateProto, tempProtoDir} from '@subql/common-cosmos';
+import {NETWORK_FAMILY} from '@subql/common';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
+import {loadDependency} from '../modulars';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
@@ -32,6 +33,8 @@ describe('Able to generate cosmos types from protobuf', () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
   });
 
+  const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
+
   it('Able to generate ts types from protobufs', async () => {
     const expectedGeneratedCode =
       '' +
@@ -49,7 +52,7 @@ export namespace osmosis.gamm.v1beta1.tx {
 }
 
 `;
-    await generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst);
+    await cosmosModule.generateProto(MOCK_CHAINTYPES, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst);
     const codegenResult = await fs.promises.readFile(path.join(PROJECT_PATH, '/src/types/CosmosMessageTypes.ts'));
     expect(fs.existsSync(`${PROJECT_PATH}/src/types/CosmosMessageTypes.ts`)).toBeTruthy();
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
@@ -65,7 +68,7 @@ export namespace osmosis.gamm.v1beta1.tx {
       },
     ];
     await expect(
-      generateProto(badChainTypes, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst)
+      cosmosModule.generateProto(badChainTypes, PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst)
     ).rejects.toThrow(
       'Failed to generate from protobufs. Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
     );
@@ -74,7 +77,7 @@ export namespace osmosis.gamm.v1beta1.tx {
   it('create temp dir with all protobufs', async () => {
     // user Protobufs should not be overwritten
     const preFile = await fs.promises.readFile(path.join(PROJECT_PATH, 'proto/osmosis/gamm/v1beta1/tx.proto'));
-    const tmpDir = await tempProtoDir(PROJECT_PATH);
+    const tmpDir = await cosmosModule.tempProtoDir(PROJECT_PATH);
     const afterFile = await fs.promises.readFile(path.join(tmpDir, 'osmosis/gamm/v1beta1/tx.proto'));
     expect(preFile.toString()).toBe(afterFile.toString());
     await promisify(rimraf)(tmpDir);

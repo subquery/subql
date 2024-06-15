@@ -5,9 +5,8 @@ import fs, {lstatSync} from 'fs';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs} from '@subql/common';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, NETWORK_FAMILY} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
-import {parseContractPath} from 'typechain';
 import {
   constructMethod,
   filterExistingMethods,
@@ -23,6 +22,7 @@ import {
   tsExtractor,
   yamlExtractor,
 } from '../../controller/generate-controller';
+import {loadDependency} from '../../modulars';
 import {extractFromTs} from '../../utils';
 
 export interface SelectedMethod {
@@ -102,8 +102,8 @@ export default class Generate extends Command {
     } else {
       this.error('Invalid manifest path');
     }
-
-    const abiName = parseContractPath(abiPath).name;
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+    const abiName = ethModule.parseContractPath(abiPath).name;
 
     if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {
       throw new Error(`file: ${abiName}Handlers.ts already exists`);
