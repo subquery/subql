@@ -48,7 +48,7 @@ export async function getChainTypes(
     // If it is stored in ipfs or other resources, we will use the corresponding reader to read the file
     // Because ipfs not provide extension of the file, it is difficult to determine its format
     // We will use yaml.load to try to load the script and parse them to supported chain types
-    // if it failed, we will give it another another attempt, and assume the script written in js
+    // if it failed, we will give it another attempt, and assume the script written in js
     // we will download it to a temp folder, and load them within sandbox
     const res = await reader.getFile(file);
     try {
