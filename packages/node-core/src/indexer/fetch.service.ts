@@ -109,7 +109,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       // Alternative, we can expose async function getLastProcessedHeight() to ensure accuracy.
       if (startHeight - 1 === chainLatestHeight) {
         logger.warn(
-          `Project start height is same as current chain height (${chainLatestHeight}). Please ensure the RPC endpoint provider is behaving correctly.`
+          `Project last processed height is same as current chain height (${chainLatestHeight}). Please ensure the RPC endpoint provider is behaving correctly.`
         );
       } else {
         throw new Error(
