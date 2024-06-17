@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Testing framework logging the same date if they were within 1s (#2453)
 
 ### Fixed
 - Handle edge case when last processed height is same as chain target height, app will wait for new block rather than exit. 
