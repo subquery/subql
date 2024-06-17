@@ -38,12 +38,18 @@ const logger = getLogger('graphql-module');
 
 const SCHEMA_RETRY_INTERVAL = 10; //seconds
 const SCHEMA_RETRY_NUMBER = 5;
+
+class NoInitError extends Error {
+  constructor() {
+    super('GraphqlModule has not been initialized');
+  }
+}
 @Module({
   providers: [ProjectService],
 })
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
-  private apolloServer!: ApolloServer;
-  private dbType!: SUPPORT_DB;
+  private _apolloServer?: ApolloServer;
+  private _dbType?: SUPPORT_DB;
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: Config,
@@ -51,15 +57,25 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     private readonly projectService: ProjectService
   ) {}
 
+  private get apolloServer(): ApolloServer {
+    assert(this._apolloServer, new NoInitError());
+    return this._apolloServer;
+  }
+
+  private get dbType(): SUPPORT_DB {
+    assert(this._dbType, new NoInitError());
+    return this._dbType;
+  }
+
   async onModuleInit(): Promise<void> {
     if (!this.httpAdapterHost) {
       return;
     }
-    this.dbType = await getDbType(this.pgPool);
+    this._dbType = await getDbType(this.pgPool);
     try {
-      this.apolloServer = await this.createServer();
-    } catch (e) {
-      throw new Error(`create apollo server failed, ${(e as Error).message}`);
+      this._apolloServer = await this.createServer();
+    } catch (e: any) {
+      throw new Error(`create apollo server failed, ${e.message}`);
     }
     if (this.dbType === SUPPORT_DB.cockRoach) {
       logger.info(`Using Cockroach database, subscription and hot-schema functions are not supported`);
@@ -78,8 +94,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         set(this.apolloServer, 'state.schemaManager.schemaDerivedData', schemaDerivedData);
         logger.info('Schema updated');
       }
-    } catch (e) {
-      logger.error(e as Error, `Failed to hot reload Schema`);
+    } catch (e: any) {
+      logger.error(e, `Failed to hot reload Schema`);
       process.exit(1);
     }
   }
@@ -99,10 +115,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
-      } catch (e) {
+      } catch (e: any) {
         await delay(SCHEMA_RETRY_INTERVAL);
         if (retries === 1) {
-          logger.error(e as Error);
+          logger.error(e);
         }
         return this.buildSchema(dbSchema, options, --retries);
       }
@@ -132,8 +148,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       const pluginHook = makePluginHook([PgPubSub]);
       // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
       options = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
-      options.replaceAllPlugins = options.replaceAllPlugins || [];
-      options.appendPlugins = options.appendPlugins || [];
+      options.replaceAllPlugins ??= [];
+      options.appendPlugins ??= [];
       options.replaceAllPlugins.push(PgSubscriptionPlugin as Plugin);
       while (options.appendPlugins.length) {
         const replaceAllPlugin = options.appendPlugins.pop();
@@ -213,8 +229,8 @@ function limitBatchedQueries(req: Request, res: Response, next: NextFunction): v
           errors.push(new UserInputError('Batch query limit exceeded'));
           throw errors;
         }
-      } catch (error) {
-        res.status(500).json({errors: [...(error as UserInputError[])]});
+      } catch (error: any) {
+        res.status(500).json({errors: [...error]});
         return next(error);
       }
     }

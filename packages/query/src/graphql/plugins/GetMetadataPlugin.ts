@@ -62,17 +62,17 @@ async function fetchFromApi(): Promise<void> {
     meta = await fetch(new URL(`meta`, indexerUrl));
     const result = await meta.json();
     Object.assign(metaCache, result);
-  } catch (e) {
+  } catch (e: any) {
     metaCache.indexerHealthy = false;
-    console.warn(`Failed to fetch indexer meta, `, (e as Error).message);
+    console.warn(`Failed to fetch indexer meta, `, e.message);
   }
 
   try {
     health = await fetch(new URL(`health`, indexerUrl));
     metaCache.indexerHealthy = !!health.ok;
-  } catch (e) {
+  } catch (e: any) {
     metaCache.indexerHealthy = false;
-    console.warn(`Failed to fetch indexer health, `, (e as Error).message);
+    console.warn(`Failed to fetch indexer health, `, e.message);
   }
 }
 
@@ -239,8 +239,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         _metadatas(
           after: Cursor
           before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int
-          # last: Int
-        ): # offset: Int
+          # offset: Int
+        ): # last: Int
         # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas
       }
