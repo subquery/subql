@@ -9,7 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing framework logging the same date if they were within 1s (#2453)
 
 ### Fixed
-- Handle edge case when last processed height is same as chain target height, app will wait for new block rather than exit. 
+- Handle edge case when last processed height is same as chain target height, app will wait for new block rather than exit.
+
+### Changed
+- Skip using the dictionary if processing data within batch size of latest height (#2454)
 
 ## [10.5.1] - 2024-06-12
 ### Changed
