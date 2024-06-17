@@ -14,8 +14,8 @@ async function ensurePool(poolConfig: PoolConfig): Promise<Pool> {
   const pgPool = new Pool(poolConfig);
   try {
     await pgPool.connect();
-  } catch (e) {
-    if (JSON.stringify((e as Error).message).includes(CONNECTION_SSL_ERROR_REGEX)) {
+  } catch (e: any) {
+    if (JSON.stringify(e.message).includes(CONNECTION_SSL_ERROR_REGEX)) {
       poolConfig.ssl = undefined;
       return ensurePool(poolConfig);
     }
@@ -49,8 +49,8 @@ export class ConfigureModule {
           }
 
           return sslConfig;
-        } catch (e) {
-          getLogger('db config').error(e as Error);
+        } catch (e: any) {
+          getLogger('db config').error(e);
           throw e;
         }
       }
