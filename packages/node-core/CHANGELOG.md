@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Handle edge case when last processed height is same as chain target height, app will wait for new block rather than exit. 
+
 ## [10.5.1] - 2024-06-12
 ### Changed
 - Update `@subql/utils`
