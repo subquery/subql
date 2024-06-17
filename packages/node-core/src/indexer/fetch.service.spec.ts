@@ -76,7 +76,7 @@ const nodeConfig = new NodeConfig({
 const getNetworkConfig = () =>
   ({
     dictionary: 'https://example.com',
-  } as IProjectNetworkConfig);
+  }) as IProjectNetworkConfig;
 
 const mockDs: BaseDataSource = {
   kind: 'mock/DataSource',
@@ -130,7 +130,7 @@ const getDictionaryService = () =>
     initDictionaries: () => {
       /* TODO */
     },
-  } as any as DictionaryService<any, any>);
+  }) as any as DictionaryService<any, any>;
 
 const getBlockDispatcher = () => {
   const inst = {
@@ -682,5 +682,10 @@ describe('Fetch Service', () => {
     expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
 
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 19);
+  });
+
+  it('fetch init when last processed height is same as', async () => {
+    // when last processed height is 1000, finalized height is 1000
+    await expect(fetchService.init(1001)).resolves.not.toThrow();
   });
 });
