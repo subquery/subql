@@ -315,13 +315,12 @@ export function setJsonObjectType(
   for (const field of Object.values(jsonObject.getFields())) {
     //check if field is also json
     const typeString = extractType(field.type);
-    const isJsonType = jsonObjects.map((json) => json.name).includes(typeString);
-    const jsonObject = jsonObjects.find((object) => object.name === typeString);
-    assert(jsonObject, `Json object ${typeString} not found`);
+    const jsonType = jsonObjects.find((json) => json.name === typeString);
+
     graphQLJsonObject.fields.push({
       name: field.name,
-      type: isJsonType ? 'Json' : extractType(field.type),
-      jsonInterface: isJsonType ? setJsonObjectType(jsonObject, jsonObjects) : undefined,
+      type: jsonType ? 'Json' : extractType(field.type),
+      jsonInterface: jsonType ? setJsonObjectType(jsonType, jsonObjects) : undefined,
       nullable: !isNonNullType(field.type),
       isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     } as GraphQLJsonFieldType);
@@ -340,7 +339,7 @@ function getEnumsFromSchema(schema: GraphQLSchema): GraphQLEnumType[] {
 }
 
 //Get the type, ready to be convert to string
-function extractType(type: GraphQLOutputType): TypeNames {
+function extractType(type: GraphQLOutputType): string {
   if (isUnionType(type)) {
     throw new Error(`Not support Union type`);
   }

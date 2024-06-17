@@ -17,7 +17,7 @@ export function getTypeByScalarName<
   T extends keyof TypeNameMap,
   R extends TypeNameMap[T]['hashCodeArg'],
   N extends TypeNameMap[T]['name'],
->(type: N): TypeClass<N, R> | undefined {
+>(type: N | string): TypeClass<N, R> | undefined {
   const typeClass = Object.values(supportedTypes).find(({name}) => name === type);
   if (!typeClass) return undefined;
 
