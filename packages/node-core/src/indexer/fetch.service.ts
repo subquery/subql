@@ -102,19 +102,18 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
-    this.projectService.startHeight;
-
-    if (startHeight > this.latestHeight()) {
+    const chainLatestHeight = this.latestHeight();
+    if (startHeight > chainLatestHeight) {
       // This is at init stage, lastProcessedHeight should be always - 1 from the startHeight in this case
       // this is reverse calculated from projectService.nextProcessHeight()
       // Alternative, we can expose async function getLastProcessedHeight() to ensure accuracy.
-      if (startHeight - 1 === this.latestHeight()) {
+      if (startHeight - 1 === chainLatestHeight) {
         logger.warn(
-          `Project start height is same as current chain height (${this.latestHeight()}). Please ensure the RPC endpoint provider is behaving correctly.`
+          `Project start height is same as current chain height (${chainLatestHeight}). Please ensure the RPC endpoint provider is behaving correctly.`
         );
       } else {
         throw new Error(
-          `The startBlock of dataSources in your project manifest (${startHeight}) is higher than the current chain height (${this.latestHeight()}). Please adjust your startBlock to be less that the current chain height.`
+          `The startBlock of dataSources in your project manifest (${startHeight}) is higher than the current chain height (${chainLatestHeight}). Please adjust your startBlock to be less that the current chain height.`
         );
       }
     }
