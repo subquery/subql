@@ -23,7 +23,7 @@ import {
 } from 'graphql';
 import {findDuplicateStringArray} from '../array';
 import {Logger} from '../logger';
-import {getTypeByScalarName} from '../types';
+import {TypeNames, getTypeByScalarName} from '../types';
 import {DirectiveName} from './constant';
 import {buildSchemaFromFile} from './schema';
 import {
@@ -84,7 +84,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
-      description: entity.description || undefined,
+      description: entity.description ?? undefined,
       fields: [],
       indexes: [],
     };
@@ -105,7 +105,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       else if (enums.has(typeString)) {
         newModel.fields.push({
           type: typeString,
-          description: field.description || undefined,
+          description: field.description ?? undefined,
           isEnum: true,
           isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
           nullable: !isNonNullType(field.type),
@@ -281,7 +281,7 @@ function packEntityField(
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,
     type: isForeignKey ? FieldScalar.String : typeString,
-    description: field.description || undefined,
+    description: field.description ?? undefined,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),
     isEnum: false,
@@ -296,7 +296,7 @@ function packJSONField(
   return {
     name: field.name,
     type: 'Json',
-    description: field.description || undefined,
+    description: field.description ?? undefined,
     jsonInterface: jsonObject,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),
@@ -340,7 +340,7 @@ function getEnumsFromSchema(schema: GraphQLSchema): GraphQLEnumType[] {
 }
 
 //Get the type, ready to be convert to string
-function extractType(type: GraphQLOutputType): string {
+function extractType(type: GraphQLOutputType): TypeNames {
   if (isUnionType(type)) {
     throw new Error(`Not support Union type`);
   }

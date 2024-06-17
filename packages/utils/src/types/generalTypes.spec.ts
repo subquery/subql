@@ -13,12 +13,12 @@ describe('general types', () => {
   });
 
   it('get sequelize date type', () => {
-    const typeClass = getTypeByScalarName('DateObj');
+    const typeClass = getTypeByScalarName('Date');
     expect(typeClass?.sequelizeType).toBe('timestamp');
   });
 
   it('get unsupported type', () => {
-    expect(getTypeByScalarName('Unsupported')).toBe(undefined);
+    expect(getTypeByScalarName('Unsupported' as any)).toBe(undefined);
   });
 
   it('Int type should able to hash negative value', () => {

@@ -4,12 +4,22 @@
 import * as supportedTypes from './supported';
 import {TypeClass} from './TypeClass';
 
+type TypeNameMap = {
+  [K in keyof typeof supportedTypes]: {
+    name: (typeof supportedTypes)[K]['name'];
+    hashCodeArg: Parameters<(typeof supportedTypes)[K]['hashCode']>[0];
+  };
+};
+
+export type TypeNames = (typeof supportedTypes)[keyof typeof supportedTypes]['name'];
+
 export function getTypeByScalarName<
-  T extends keyof typeof supportedTypes,
-  R extends Parameters<(typeof supportedTypes)[T]['hashCode']>[0],
->(type: T | string): TypeClass<R> | undefined {
+  T extends keyof TypeNameMap,
+  R extends TypeNameMap[T]['hashCodeArg'],
+  N extends TypeNameMap[T]['name'],
+>(type: N): TypeClass<N, R> | undefined {
   const typeClass = Object.values(supportedTypes).find(({name}) => name === type);
   if (!typeClass) return undefined;
 
-  return typeClass as TypeClass<R>;
+  return typeClass as TypeClass<N, R>;
 }
