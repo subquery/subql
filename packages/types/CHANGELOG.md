@@ -6,9 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- enable ts strict mode
-
 ## [3.6.1] - 2024-06-12
 ### Changed
 - Update polkadot dependencies to 11.2.1 (#2440)

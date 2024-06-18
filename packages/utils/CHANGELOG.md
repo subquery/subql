@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- enable ts strict mode
+
 ## [2.11.0] - 2024-06-12
 ### Changed
 - Support logging errors with provided cause and improve colors (#2435)
