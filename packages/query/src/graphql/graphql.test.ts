@@ -116,7 +116,7 @@ describe('GraphqlModule', () => {
     };
 
     const results = await server.executeOperation({query: GET_META});
-    const fetchedMeta = results.data._metadata;
+    const fetchedMeta = results.data?._metadata;
 
     expect(fetchedMeta).toMatchObject(mock);
   });
@@ -172,7 +172,7 @@ describe('GraphqlModule', () => {
     };
 
     const results = await server.executeOperation({query: GET_META});
-    const fetchedMeta = results.data._metadata;
+    const fetchedMeta = results.data?._metadata;
 
     expect(fetchedMeta).toMatchObject(mock);
   });

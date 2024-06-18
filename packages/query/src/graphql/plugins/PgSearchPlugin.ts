@@ -19,7 +19,7 @@ export const PgSearchPlugin: Plugin = (builder) => {
         ...field,
         resolve(source, args, ctx, info) {
           if (args.search !== undefined) {
-            args.search = parser.parse(args.search).toString();
+            args.search = parser.parse(args.search)?.toString();
           }
           return field.resolve?.(source, args, ctx, info);
         },
