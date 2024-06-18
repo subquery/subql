@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
@@ -14,12 +15,52 @@ type GetLatestFinalizedHeight = () => number;
 
 @Injectable()
 export abstract class BaseRuntimeService {
-  parentSpecVersion!: number;
-  specVersionMap!: SpecVersion[];
-  protected currentRuntimeVersion!: RuntimeVersion;
-  latestFinalizedHeight!: number;
+  private _parentSpecVersion?: number;
+  private _specVersionMap?: SpecVersion[];
+  protected _currentRuntimeVersion?: RuntimeVersion;
+  private _latestFinalizedHeight?: number;
 
   constructor(protected apiService: ApiService) {}
+
+  get parentSpecVersion(): number {
+    assert(
+      this._parentSpecVersion !== undefined,
+      'parentSpecVersion is undefined',
+    );
+    return this._parentSpecVersion;
+  }
+  set parentSpecVersion(value: number) {
+    this._parentSpecVersion = value;
+  }
+  get specVersionMap(): SpecVersion[] {
+    assert(this._specVersionMap !== undefined, 'specVersionMap is undefined');
+    return this._specVersionMap;
+  }
+  set specVersionMap(value: SpecVersion[]) {
+    this._specVersionMap = value;
+  }
+
+  protected get currentRuntimeVersion(): RuntimeVersion {
+    assert(
+      this._currentRuntimeVersion !== undefined,
+      'currentRuntimeVersion is undefined',
+    );
+    return this._currentRuntimeVersion;
+  }
+  protected set currentRuntimeVersion(value: RuntimeVersion) {
+    this._currentRuntimeVersion = value;
+  }
+
+  get latestFinalizedHeight(): number {
+    assert(
+      this._latestFinalizedHeight !== undefined,
+      'latestFinalizedHeight is undefined',
+    );
+    return this._latestFinalizedHeight;
+  }
+  set latestFinalizedHeight(value: number) {
+    this._latestFinalizedHeight = value;
+  }
 
   async specChanged(height: number, specVersion: number): Promise<boolean> {
     if (this.parentSpecVersion !== specVersion) {

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
@@ -106,10 +107,10 @@ export class ApiService
   >
   implements OnApplicationShutdown
 {
-  private fetchBlocksFunction!: FetchFunc;
+  private _fetchBlocksFunction?: FetchFunc;
   private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
-  private currentBlockHash!: string;
-  private currentBlockNumber!: number;
+  private _currentBlockHash?: string;
+  private _currentBlockNumber?: number;
 
   private nodeConfig: SubstrateNodeConfig;
 
@@ -123,6 +124,33 @@ export class ApiService
     this.nodeConfig = new SubstrateNodeConfig(nodeConfig);
 
     this.updateBlockFetching();
+  }
+
+  private get fetchBlocksFunction(): FetchFunc {
+    assert(this._fetchBlocksFunction, 'fetchBlocksFunction not initialized');
+    return this._fetchBlocksFunction;
+  }
+
+  private set fetchBlocksFunction(value: FetchFunc) {
+    this._fetchBlocksFunction = value;
+  }
+
+  private get currentBlockHash(): string {
+    assert(this._currentBlockHash, 'currentBlockHash not initialized');
+    return this._currentBlockHash;
+  }
+
+  private set currentBlockHash(value: string) {
+    this._currentBlockHash = value;
+  }
+
+  private get currentBlockNumber(): number {
+    assert(this._currentBlockNumber, 'currentBlockNumber not initialized');
+    return this._currentBlockNumber;
+  }
+
+  private set currentBlockNumber(value: number) {
+    this._currentBlockNumber = value;
   }
 
   async onApplicationShutdown(): Promise<void> {
