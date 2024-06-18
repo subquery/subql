@@ -251,7 +251,7 @@ export class ApiService
 
   async getPatchedApi(
     header: Header,
-    runtimeVersion: RuntimeVersion,
+    runtimeVersion?: RuntimeVersion,
   ): Promise<ApiAt> {
     this.currentBlockHash = header.hash.toString();
     this.currentBlockNumber = header.number.toNumber();

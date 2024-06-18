@@ -91,10 +91,9 @@ export class BlockDispatcherService
   protected async indexBlock(
     block: IBlock<BlockContent> | IBlock<LightBlockContent>,
   ): Promise<ProcessBlockResponse> {
-    assert(isFullBlock(block.block), 'Block must be a full block');
-    const runtimeVersion = await this.runtimeService.getRuntimeVersion(
-      block.block.block,
-    );
+    const runtimeVersion = !isFullBlock(block.block)
+      ? undefined
+      : await this.runtimeService.getRuntimeVersion(block.block.block);
 
     return this.indexerManager.indexBlock(
       block,

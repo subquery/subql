@@ -68,10 +68,9 @@ export class WorkerService extends BaseWorkerService<
     block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
   ): Promise<ProcessBlockResponse> {
-    assert(isFullBlock(block.block), 'Block should be Full block');
-    const runtimeVersion = await this.workerRuntimeService.getRuntimeVersion(
-      block.block.block,
-    );
+    const runtimeVersion = !isFullBlock(block.block)
+      ? undefined
+      : await this.workerRuntimeService.getRuntimeVersion(block.block.block);
 
     return this.indexerManager.indexBlock(block, dataSources, runtimeVersion);
   }
