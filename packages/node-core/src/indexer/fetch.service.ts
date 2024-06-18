@@ -102,10 +102,20 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
-    if (startHeight > this.latestHeight()) {
-      throw new Error(
-        `The startBlock of dataSources in your project manifest (${startHeight}) is higher than the current chain height (${this.latestHeight()}). Please adjust your startBlock to be less that the current chain height.`
-      );
+    const chainLatestHeight = this.latestHeight();
+    if (startHeight > chainLatestHeight) {
+      // This is at init stage, lastProcessedHeight should be always - 1 from the startHeight in this case
+      // this is reverse calculated from projectService.nextProcessHeight()
+      // Alternative, we can expose async function getLastProcessedHeight() to ensure accuracy.
+      if (startHeight - 1 === chainLatestHeight) {
+        logger.warn(
+          `Project last processed height is same as current chain height (${chainLatestHeight}). Please ensure the RPC endpoint provider is behaving correctly.`
+        );
+      } else {
+        throw new Error(
+          `The startBlock of dataSources in your project manifest (${startHeight}) is higher than the current chain height (${chainLatestHeight}). Please adjust your startBlock to be less that the current chain height.`
+        );
+      }
     }
 
     this.schedulerRegistry.addInterval(
@@ -200,11 +210,24 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       const latestHeight = this.latestHeight();
 
       if (this.blockDispatcher.freeSize < scaledBatchSize || startBlockHeight > latestHeight) {
+        if (this.blockDispatcher.freeSize < scaledBatchSize) {
+          logger.debug(
+            `Fetch service is waiting for free space in the block dispatcher queue, free size: ${this.blockDispatcher.freeSize}, scaledBatchSize: ${scaledBatchSize}`
+          );
+        }
+        if (startBlockHeight > latestHeight) {
+          logger.debug(
+            `Fetch service is waiting for new blocks, startBlockHeight: ${startBlockHeight}, latestHeight: ${latestHeight}`
+          );
+        }
         await delay(1);
         continue;
       }
 
-      if (startBlockHeight < this.latestFinalizedHeight) {
+      // This could be latestBestHeight, dictionary should never include finalized blocks
+      // TODO add buffer so dictionary not used when project synced
+      if (startBlockHeight < this.latestBestHeight - scaledBatchSize) {
+        // if (startBlockHeight < this.latestFinalizedHeight) {
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,

@@ -6393,25 +6393,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:^3.5.1":
-  version: 3.7.0
-  resolution: "@subql/common@npm:3.7.0"
-  dependencies:
-    "@subql/types-core": 0.7.0
-    axios: ^0.28.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 3aad6b35ff4931c3047dc2631516ada328f0a2092d46197a5041ea5588294f85b9e3a88fa6ec9829e527c7bd1c863d69a42c0b58a65eb861ba8ee3f9233f1dea
-  languageName: node
-  linkType: hard
-
-"@subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@^3.5.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -6582,7 +6564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@0.7.0, @subql/types-core@^0.7.0, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+"@subql/types-core@^0.7.0, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:

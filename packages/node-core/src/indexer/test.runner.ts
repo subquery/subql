@@ -102,8 +102,15 @@ export class TestRunner<A, SA, B, DS> {
             const actualAttr = (actualEntity as Record<string, any>)[attr] ?? null;
 
             if (!isEqual(expectedAttr, actualAttr)) {
+              // Converts dates into a format so that ms is visible
+              const fmtValue = (value: any) => {
+                if (value instanceof Date) {
+                  return value.toISOString();
+                }
+                return value;
+              };
               failedAttributes.push(
-                `\t\tattribute: "${attr}":\n\t\t\texpected: "${expectedAttr}"\n\t\t\tactual:   "${actualAttr}"\n`
+                `\t\tattribute: "${attr}":\n\t\t\texpected: "${fmtValue(expectedAttr)}"\n\t\t\tactual:   "${fmtValue(actualAttr)}"\n`
               );
             }
           });

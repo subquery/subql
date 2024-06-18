@@ -76,7 +76,7 @@ const nodeConfig = new NodeConfig({
 const getNetworkConfig = () =>
   ({
     dictionary: 'https://example.com',
-  } as IProjectNetworkConfig);
+  }) as IProjectNetworkConfig;
 
 const mockDs: BaseDataSource = {
   kind: 'mock/DataSource',
@@ -130,7 +130,7 @@ const getDictionaryService = () =>
     initDictionaries: () => {
       /* TODO */
     },
-  } as any as DictionaryService<any, any>);
+  }) as any as DictionaryService<any, any>;
 
 const getBlockDispatcher = () => {
   const inst = {
@@ -655,8 +655,8 @@ describe('Fetch Service', () => {
   });
 
   it('throws if the start block is greater than the chain latest height', async () => {
-    await expect(() => fetchService.init(1001)).rejects.toThrow(
-      `The startBlock of dataSources in your project manifest (1001) is higher than the current chain height (1000). Please adjust your startBlock to be less that the current chain height.`
+    await expect(() => fetchService.init(1002)).rejects.toThrow(
+      `The startBlock of dataSources in your project manifest (1002) is higher than the current chain height (1000). Please adjust your startBlock to be less that the current chain height.`
     );
   });
 
@@ -676,11 +676,31 @@ describe('Fetch Service', () => {
     (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
       return undefined;
     };
+    fetchService.bestHeight = 500;
     const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
     await fetchService.init(10);
     expect(dictionarySpy).toHaveBeenCalledTimes(1);
     expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
 
     expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], 19);
+  });
+
+  it(`doesn't use dictionary if processing near latest height`, async () => {
+    enableDictionary();
+    (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
+      return undefined;
+    };
+    fetchService.bestHeight = 500;
+    const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
+    await fetchService.init(490);
+    expect(dictionarySpy).toHaveBeenCalledTimes(0);
+    expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
+
+    expect(enqueueBlocksSpy).toHaveBeenLastCalledWith([490, 491, 492, 493, 494, 495, 496, 497, 498, 499], 499);
+  });
+
+  it('fetch init when last processed height is same as', async () => {
+    // when last processed height is 1000, finalized height is 1000
+    await expect(fetchService.init(1001)).resolves.not.toThrow();
   });
 });
