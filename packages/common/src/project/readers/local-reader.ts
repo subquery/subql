@@ -19,31 +19,25 @@ export class LocalReader implements Reader {
     return path.resolve(this.projectPath);
   }
 
-  async getPkg(): Promise<IPackageJson | undefined> {
-    const pkg = (await this.getFile('package.json')) || '';
-    assert(pkg, 'package.json not found');
+  async getPkg(): Promise<IPackageJson> {
+    const pkg = await this.getFile('package.json');
     return yaml.load(pkg) as IPackageJson;
   }
 
-  async getProjectSchema(unsafe = false): Promise<unknown | undefined> {
-    if (!fs.existsSync(this.manifestPath)) {
-      return Promise.resolve(undefined);
-    }
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getProjectSchema(): Promise<unknown> {
+    assert(fs.existsSync(this.manifestPath), `Manifest file not found: ${this.manifestPath}`);
     const {ext} = path.parse(this.manifestPath);
-    if (extensionIsYamlOrJSON(ext)) {
-      return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
-    }
+    assert(extensionIsYamlOrJSON(ext), `Manifest file must be a yaml or json file: ${this.manifestPath}`);
+
+    return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
   }
 
-  async getFile(fileName: string): Promise<string | undefined> {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getFile(fileName: string): Promise<string> {
     const file = path.resolve(this.projectPath, fileName);
-    if (!fs.existsSync(file)) {
-      return Promise.resolve(undefined);
-    }
-    try {
-      return fs.readFileSync(file, 'utf-8');
-    } catch (e) {
-      return undefined;
-    }
+    assert(fs.existsSync(file), `projectPath not found: ${file}`);
+
+    return fs.readFileSync(file, 'utf-8');
   }
 }

@@ -22,26 +22,23 @@ export class GithubReader implements Reader {
     return undefined;
   }
 
-  async getPkg(): Promise<IPackageJson | undefined> {
-    return this.getFile('package.json') as Promise<unknown> as Promise<IPackageJson | undefined>;
+  async getPkg(): Promise<IPackageJson> {
+    return this.getFile('package.json') as Promise<unknown> as Promise<IPackageJson>;
   }
 
-  async getProjectSchema(): Promise<unknown | undefined> {
+  async getProjectSchema(): Promise<unknown> {
     // Github reader not support ts manifest.
     const projectYaml = await this.getFile(DEFAULT_MANIFEST);
-    if (projectYaml === undefined) {
-      throw new Error('Fetch project from github got undefined');
-    }
     return yaml.load(projectYaml);
   }
 
-  async getFile(fileName: string): Promise<string | undefined> {
+  async getFile(fileName: string): Promise<string> {
     try {
       const branch = await this.getDefaultBranch();
       const {data} = await this.api.get(path.join(branch, fileName));
       return data;
     } catch (err) {
-      return undefined;
+      throw new Error('Fetch project from github got undefined');
     }
   }
 
