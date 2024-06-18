@@ -22,7 +22,6 @@ import {
   IBlock,
   MetadataMismatchError,
   exitWithError,
-  IApiConnectionSpecific,
 } from '@subql/node-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -102,7 +101,8 @@ export class ApiService
   extends BaseApiService<
     ApiPromise,
     ApiAt,
-    IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
+    IBlock<BlockContent>[] | IBlock<LightBlockContent>[],
+    ApiPromiseConnection
   >
   implements OnApplicationShutdown
 {
@@ -155,15 +155,7 @@ export class ApiService
           chainTypes,
         }),
       //postConnectedHook
-      (
-        connection: IApiConnectionSpecific<
-          ApiPromise,
-          ApiAt,
-          IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
-        >,
-        endpoint: string,
-        index: number,
-      ) => {
+      (connection: ApiPromiseConnection, endpoint: string, index: number) => {
         const api = connection.unsafeApi;
         api.on('connected', () => {
           this.eventEmitter.emit(IndexerEvent.ApiConnected, {
