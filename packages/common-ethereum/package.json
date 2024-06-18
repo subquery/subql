@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/common": "^3.5.1",
+    "@subql/common": "^3.8.0",
     "@subql/types-ethereum": "workspace:*",
     "@typechain/ethers-v5": "^11.1.1",
     "@zilliqa-js/crypto": "^3.5.0",
