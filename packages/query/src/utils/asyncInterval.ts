@@ -3,7 +3,7 @@
 
 //improve util method from : https://dev.to/jsmccrumb/asynchronous-setinterval-4j69
 
-const asyncIntervals = [];
+const asyncIntervals: {run: boolean; id: number | NodeJS.Timeout}[] = [];
 
 const runAsyncInterval = async (cb, interval, intervalIndex) => {
   await cb();

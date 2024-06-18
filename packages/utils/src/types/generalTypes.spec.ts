@@ -9,16 +9,16 @@ import {wrappedNumToU8a} from './u8aUtils';
 describe('general types', () => {
   it('can get json type', () => {
     const typeClass = getTypeByScalarName('Json');
-    expect(typeClass.name).toBe('Json');
+    expect(typeClass?.name).toBe('Json');
   });
 
   it('get sequelize date type', () => {
     const typeClass = getTypeByScalarName('Date');
-    expect(typeClass.sequelizeType).toBe('timestamp');
+    expect(typeClass?.sequelizeType).toBe('timestamp');
   });
 
   it('get unsupported type', () => {
-    expect(getTypeByScalarName('Unsupported')).toBe(undefined);
+    expect(getTypeByScalarName('Unsupported' as any)).toBe(undefined);
   });
 
   it('Int type should able to hash negative value', () => {

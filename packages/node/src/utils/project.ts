@@ -42,13 +42,14 @@ export async function getChainTypes(
   file: string,
 ): Promise<ChainTypes> {
   // If the project is load from local, we will direct load them
+  let raw: unknown;
   if (reader instanceof LocalReader) {
     return loadChainTypes(file, root) as ChainTypes;
   } else {
     // If it is stored in ipfs or other resources, we will use the corresponding reader to read the file
     // Because ipfs not provide extension of the file, it is difficult to determine its format
     // We will use yaml.load to try to load the script and parse them to supported chain types
-    // if it failed, we will give it another another attempt, and assume the script written in js
+    // if it failed, we will give it another attempt, and assume the script written in js
     // we will download it to a temp folder, and load them within sandbox
     const res = await reader.getFile(file);
     assert(res, `File ${file} not found`);
@@ -56,13 +57,12 @@ export async function getChainTypes(
     let raw: unknown;
     try {
       raw = yaml.load(res);
-      return parseChainTypes(raw);
     } catch (e) {
       const chainTypesPath = await saveFile(reader, root, file, res);
       raw = loadChainTypesFromJs(chainTypesPath); //root not required, as it been packed in single js
-      return parseChainTypes(raw);
     }
   }
+  return parseChainTypes(raw);
 }
 
 export function loadChainTypes(file: string, projectRoot: string): unknown {
