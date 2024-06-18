@@ -1,9 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {assert} from 'console';
 import path from 'path';
 import {Reader} from '@subql/types-core';
-import axios, {AxiosInstance} from 'axios';
+import axios, {AxiosInstance, AxiosResponse} from 'axios';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
 import {DEFAULT_MANIFEST} from '../utils';
@@ -46,8 +47,12 @@ export class GithubReader implements Reader {
     if (this.defaultBranch) {
       return this.defaultBranch;
     }
-    const {data} = await axios.get(`https://api.github.com/repos/${this.key}`);
+    const {data} = await axios.get<any, AxiosResponse<{default_branch: string}, any>, any>(
+      `https://api.github.com/repos/${this.key}`
+    );
+    assert(data.default_branch, 'Failed to fetch default branch from github');
+
     this.defaultBranch = data.default_branch;
-    return this.defaultBranch as string;
+    return this.defaultBranch;
   }
 }
