@@ -7,15 +7,7 @@ import {NETWORK_FAMILY} from '@subql/common'; // 引入 NETWORK_FAMILY 枚举
 import {networkPackages} from './config';
 import {ModuleCache} from './types';
 
-const moduleCache: ModuleCache = {
-  [NETWORK_FAMILY.substrate]: undefined,
-  [NETWORK_FAMILY.cosmos]: undefined,
-  [NETWORK_FAMILY.algorand]: undefined,
-  [NETWORK_FAMILY.ethereum]: undefined,
-  [NETWORK_FAMILY.near]: undefined,
-  [NETWORK_FAMILY.stellar]: undefined,
-  [NETWORK_FAMILY.concordium]: undefined,
-};
+const moduleCache: Partial<ModuleCache> = {};
 
 export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCache[N] {
   const packageName = networkPackages[network];
