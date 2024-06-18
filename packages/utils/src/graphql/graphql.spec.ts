@@ -254,14 +254,14 @@ describe('utils that handle schema.graphql', () => {
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const accountModel = getAllEntitiesRelations(schema).models.find((model) => model.name === 'Account');
-    expect(accountModel.fields[0].type).toBe('Json');
-    expect(accountModel.fields[0].jsonInterface.name).toBe('MyJson');
-    expect(accountModel.fields[0].isArray).toBeTruthy();
-    expect(accountModel.fields[0].jsonInterface.fields[0].nullable).toBeFalsy();
-    expect(accountModel.fields[0].jsonInterface.fields[1].isArray).toBeTruthy();
+    expect(accountModel?.fields[0].type).toBe('Json');
+    expect(accountModel?.fields[0].jsonInterface?.name).toBe('MyJson');
+    expect(accountModel?.fields[0].isArray).toBeTruthy();
+    expect(accountModel?.fields[0].jsonInterface?.fields[0].nullable).toBeFalsy();
+    expect(accountModel?.fields[0].jsonInterface?.fields[1].isArray).toBeTruthy();
     // allow json in json
-    expect(accountModel.fields[0].jsonInterface.fields[2].type).toBe('Json');
-    expect(accountModel.fields[0].jsonInterface.fields[2].jsonInterface.name).toBe('MyJson2');
+    expect(accountModel?.fields[0].jsonInterface?.fields[2].type).toBe('Json');
+    expect(accountModel?.fields[0].jsonInterface?.fields[2].jsonInterface?.name).toBe('MyJson2');
   });
 
   it('can read jsonfield with indexed option', () => {

@@ -1,12 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {delay, getDbType, SUPPORT_DB} from '@subql/common';
 import {hashName} from '@subql/utils';
-import {getPostGraphileBuilder, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
+import {getPostGraphileBuilder, Plugin, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
 import {
   ApolloServerPluginCacheControl,
   ApolloServerPluginLandingPageDisabled,
@@ -37,12 +38,18 @@ const logger = getLogger('graphql-module');
 
 const SCHEMA_RETRY_INTERVAL = 10; //seconds
 const SCHEMA_RETRY_NUMBER = 5;
+
+class NoInitError extends Error {
+  constructor() {
+    super('GraphqlModule has not been initialized');
+  }
+}
 @Module({
   providers: [ProjectService],
 })
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
-  private apolloServer: ApolloServer;
-  private dbType: SUPPORT_DB;
+  private _apolloServer?: ApolloServer;
+  private _dbType?: SUPPORT_DB;
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: Config,
@@ -50,14 +57,24 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     private readonly projectService: ProjectService
   ) {}
 
+  private get apolloServer(): ApolloServer {
+    assert(this._apolloServer, new NoInitError());
+    return this._apolloServer;
+  }
+
+  private get dbType(): SUPPORT_DB {
+    assert(this._dbType, new NoInitError());
+    return this._dbType;
+  }
+
   async onModuleInit(): Promise<void> {
     if (!this.httpAdapterHost) {
       return;
     }
-    this.dbType = await getDbType(this.pgPool);
+    this._dbType = await getDbType(this.pgPool);
     try {
-      this.apolloServer = await this.createServer();
-    } catch (e) {
+      this._apolloServer = await this.createServer();
+    } catch (e: any) {
       throw new Error(`create apollo server failed, ${e.message}`);
     }
     if (this.dbType === SUPPORT_DB.cockRoach) {
@@ -71,15 +88,13 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
     try {
       const schema = await this.buildSchema(dbSchema, options);
-      // @ts-ignore
-      if (schema && !!this.apolloServer?.generateSchemaDerivedData) {
-        // @ts-ignore
-        const schemaDerivedData = await this.apolloServer.generateSchemaDerivedData(schema);
+      if (schema && !!(this.apolloServer as any)?.generateSchemaDerivedData) {
+        const schemaDerivedData = await (this.apolloServer as any).generateSchemaDerivedData(schema);
         set(this.apolloServer, 'schema', schema);
         set(this.apolloServer, 'state.schemaManager.schemaDerivedData', schemaDerivedData);
         logger.info('Schema updated');
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, `Failed to hot reload Schema`);
       process.exit(1);
     }
@@ -100,7 +115,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
-      } catch (e) {
+      } catch (e: any) {
         await delay(SCHEMA_RETRY_INTERVAL);
         if (retries === 1) {
           logger.error(e);
@@ -133,9 +148,12 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       const pluginHook = makePluginHook([PgPubSub]);
       // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
       options = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
-      options.replaceAllPlugins.push(PgSubscriptionPlugin);
+      options.replaceAllPlugins ??= [];
+      options.appendPlugins ??= [];
+      options.replaceAllPlugins.push(PgSubscriptionPlugin as Plugin);
       while (options.appendPlugins.length) {
-        options.replaceAllPlugins.push(options.appendPlugins.pop());
+        const replaceAllPlugin = options.appendPlugins.pop();
+        if (replaceAllPlugin) options.replaceAllPlugins.push(replaceAllPlugin);
       }
     }
 
@@ -202,7 +220,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   }
 }
 function limitBatchedQueries(req: Request, res: Response, next: NextFunction): void {
-  const errors = [];
+  const errors: UserInputError[] = [];
   if (argv['query-batch-limit'] && argv['query-batch-limit'] > 0) {
     if (req.method === 'POST') {
       try {
@@ -211,7 +229,7 @@ function limitBatchedQueries(req: Request, res: Response, next: NextFunction): v
           errors.push(new UserInputError('Batch query limit exceeded'));
           throw errors;
         }
-      } catch (error) {
+      } catch (error: any) {
         res.status(500).json({errors: [...error]});
         return next(error);
       }
