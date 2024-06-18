@@ -30,7 +30,7 @@ export class BlockDispatcherService
   extends BlockDispatcher<BlockContent | LightBlockContent, SubstrateDatasource>
   implements OnApplicationShutdown
 {
-  private runtimeService!: RuntimeService;
+  private _runtimeService?: RuntimeService;
 
   constructor(
     private apiService: ApiService,
@@ -70,6 +70,14 @@ export class BlockDispatcherService
         );
       },
     );
+  }
+
+  private get runtimeService(): RuntimeService {
+    assert(this._runtimeService, 'Runtime service not initialized');
+    return this._runtimeService;
+  }
+  private set runtimeService(value: RuntimeService) {
+    this._runtimeService = value;
   }
 
   async init(
