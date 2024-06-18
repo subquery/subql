@@ -10,7 +10,7 @@ import {DEFAULT_MANIFEST} from '../utils';
 
 export class GithubReader implements Reader {
   private readonly api: AxiosInstance;
-  private defaultBranch!: string;
+  private defaultBranch?: string;
 
   constructor(private readonly key: string) {
     this.api = axios.create({
@@ -48,6 +48,6 @@ export class GithubReader implements Reader {
     }
     const {data} = await axios.get(`https://api.github.com/repos/${this.key}`);
     this.defaultBranch = data.default_branch;
-    return this.defaultBranch;
+    return this.defaultBranch as string;
   }
 }
