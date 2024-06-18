@@ -100,7 +100,7 @@ export function debugPgClient(pgClient: PoolClient, logger: Pino.Logger): PoolCl
             });
           }
         }
-        pgClient._explainResults.forEach(({query, values}: {query: string; values?: any[]}) => {
+        pgClient._explainResults?.forEach(({query, values}: {query: string; values?: any[]}) => {
           let res: string;
           res = `\n SQL query: ${query} `;
           if (values && values.length !== 0) {

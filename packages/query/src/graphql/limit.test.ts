@@ -88,7 +88,7 @@ describe('query limits', () => {
 
       const server = await createApolloServer();
       const results = await server.executeOperation({query: LARGE_UNBOUND_QUERY});
-      expect(results.data.tables.nodes.length).toEqual(100);
+      expect(results.data?.tables.nodes.length).toEqual(100);
     }, 5000000);
 
     it('bounded unsafe query clamped to safe bound', async () => {
@@ -105,7 +105,7 @@ describe('query limits', () => {
 
       const server = await createApolloServer();
       const results = await server.executeOperation({query: LARGE_BOUNDED_QUERY});
-      expect(results.data.tables.nodes.length).toEqual(100);
+      expect(results.data?.tables.nodes.length).toEqual(100);
     });
 
     it('bounded safe query remains unchanged', async () => {
@@ -122,7 +122,7 @@ describe('query limits', () => {
 
       const server = await createApolloServer();
       const results = await server.executeOperation({query: LARGE_BOUNDED_QUERY});
-      expect(results.data.tables.nodes.length).toEqual(50);
+      expect(results.data?.tables.nodes.length).toEqual(50);
     });
   });
 });
