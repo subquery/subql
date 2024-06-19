@@ -72,7 +72,7 @@ export class SubqueryProject implements ISubqueryProject {
     this.#dataSources = await insertBlockFiltersCronSchedules(
       this.dataSources,
       getTimestamp,
-      isRuntimeDs, // Note: ts-strict change --- Not sure it should be modified
+      isRuntimeDs,
       SubstrateHandlerKind.Block,
     );
   }
@@ -172,7 +172,7 @@ async function loadProjectFromManifestBase(
     projectManifest.templates,
     root,
     reader,
-    isCustomDs, // Note: ts-strict change --- Not sure it should be modified
+    isCustomDs,
   );
   const runner = projectManifest.runner;
   assert(

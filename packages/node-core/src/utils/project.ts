@@ -229,13 +229,13 @@ export async function initHotSchemaReload(schema: string, storeService: StoreSer
   await storeService.initHotSchemaReloadQueries(schema);
 }
 
-type IsRuntimeDs = (ds: BaseDataSource) => boolean;
+type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource = BaseDataSource>(
   dataSources: DS[],
   getBlockTimestamp: (height: number) => Promise<Date>,
-  isRuntimeDs: IsRuntimeDs,
+  isRuntimeDs: IsRuntimeDs<DS>,
   blockHandlerKind: string
 ): Promise<DS[]> {
   dataSources = await Promise.all(
@@ -282,7 +282,7 @@ export async function loadProjectTemplates<T extends BaseDataSource & TemplateBa
   templates: T[] | undefined,
   root: string,
   reader: Reader,
-  isCustomDs: IsCustomDs<BaseDataSource, BaseCustomDataSource>
+  isCustomDs: IsCustomDs<T, T & BaseCustomDataSource>
 ): Promise<T[]> {
   if (!templates || !templates.length) {
     return [];
@@ -291,7 +291,7 @@ export async function loadProjectTemplates<T extends BaseDataSource & TemplateBa
   return dsTemplates.map((ds, index) => ({
     ...ds,
     name: templates[index].name,
-  })) as T[]; // How to get rid of cast here?
+  })) as T[];
 }
 
 export function getStartHeight(dataSources: BaseDataSource[]): number {
