@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed query service unable to query dynamic datasource due to change from #2302 
 ### Added
 - enable ts strict mode
-- TS check reports errors when debugging Query
 
 ## [2.12.1] - 2024-06-12
 ### Changed
