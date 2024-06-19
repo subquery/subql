@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Reader interface not returning undefined
+
 ## [0.7.0] - 2024-04-24
 ### Added
 - GetOptions type with support for ordering store methods (#2325)

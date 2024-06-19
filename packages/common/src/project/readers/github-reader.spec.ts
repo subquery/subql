@@ -14,7 +14,7 @@ describe('GithubReader', () => {
 
   it('should return the package json object', async () => {
     const data = await reader.getPkg();
-    expect(data.name).toBe('block-timestamp');
+    expect(data?.name).toBe('block-timestamp');
   });
 
   it('should return the project schema object', async () => {

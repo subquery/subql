@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Enable ts strict model 
+- Reader interface method not returning undefined
+
 ## [3.8.0] - 2024-06-18
 ### Changed
 - Deprecated flare SDK (#2428)

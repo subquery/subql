@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import {Reader} from '@subql/types-core';
@@ -9,35 +10,34 @@ import {IPackageJson} from 'package-json-type';
 import {extensionIsYamlOrJSON} from '../../project';
 
 export class LocalReader implements Reader {
-  constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
+  constructor(
+    private readonly projectPath: string,
+    private readonly manifestPath: string
+  ) {}
 
   get root(): string {
     return path.resolve(this.projectPath);
   }
 
-  async getPkg(): Promise<IPackageJson | undefined> {
-    return yaml.load(await this.getFile('package.json')) as IPackageJson;
+  async getPkg(): Promise<IPackageJson> {
+    const pkg = await this.getFile('package.json');
+    return yaml.load(pkg) as IPackageJson;
   }
 
-  async getProjectSchema(unsafe = false): Promise<unknown | undefined> {
-    if (!fs.existsSync(this.manifestPath)) {
-      return Promise.resolve(undefined);
-    }
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getProjectSchema(): Promise<unknown> {
+    assert(fs.existsSync(this.manifestPath), `Manifest file not found: ${this.manifestPath}`);
     const {ext} = path.parse(this.manifestPath);
-    if (extensionIsYamlOrJSON(ext)) {
-      return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
-    }
+    assert(extensionIsYamlOrJSON(ext), `Manifest file must be a yaml or json file: ${this.manifestPath}`);
+
+    return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
   }
 
-  async getFile(fileName: string): Promise<string | undefined> {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getFile(fileName: string): Promise<string> {
     const file = path.resolve(this.projectPath, fileName);
-    if (!fs.existsSync(file)) {
-      return Promise.resolve(undefined);
-    }
-    try {
-      return fs.readFileSync(file, 'utf-8');
-    } catch (e) {
-      return undefined;
-    }
+    assert(fs.existsSync(file), `projectPath not found: ${file}`);
+
+    return fs.readFileSync(file, 'utf-8');
   }
 }
