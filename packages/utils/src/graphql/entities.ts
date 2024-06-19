@@ -20,6 +20,8 @@ import {
   isUnionType,
   ValueNode,
   BooleanValueNode,
+  ListTypeNode,
+  TypeNode,
 } from 'graphql';
 import {findDuplicateStringArray} from '../array';
 import {Logger} from '../logger';
@@ -129,12 +131,28 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           foreignKey: `${field.name}Id`,
         } as GraphQLRelationsType);
 
+        // Ensures that foreign keys are linked correctly
         if (
-          field.astNode.type.kind === 'ListType' ||
-          (field.astNode.type.kind === 'NonNullType' && field.astNode.type.type.kind === 'ListType')
+          field.astNode &&
+          (field.astNode.type.kind === 'ListType' ||
+            (field.astNode.type.kind === 'NonNullType' && field.astNode.type.type.kind === 'ListType'))
         ) {
+          const resolveName = (type: TypeNode): string => {
+            switch (type.kind) {
+              case 'NamedType':
+                return type.name.value;
+              case 'NonNullType':
+                return resolveName(type.type);
+              case 'ListType':
+                return resolveName(type.type);
+              default:
+                // Any case in case future adds new kind
+                throw new Error(`Unandled node kind: ${(type as any).kind}`);
+            }
+          };
+
           throw new Error(
-            `Field "${field.name}" on entity "${newModel.name}" is missing "derivedFrom" directive. Unable to construct database.`
+            `Field "${field.name}" on entity "${newModel.name}" is missing "derivedFrom" directive. Please also make sure "${resolveName(field.astNode.type)}" has a field of type "${newModel.name}".`
           );
         }
 

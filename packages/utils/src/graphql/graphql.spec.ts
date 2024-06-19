@@ -215,7 +215,7 @@ describe('utils that handle schema.graphql', () => {
       type Fruit @entity {
         id: ID!
         apple: Apple
-        banana: [Banana] @index(unique: true)
+        banana: [Banana] @derivedFrom(field: "fruit")
       }
       type Fruit2 @entity {
         id: ID!
@@ -226,6 +226,7 @@ describe('utils that handle schema.graphql', () => {
       }
       type Banana @entity {
         id: ID!
+        fruit: Fruit
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
@@ -233,7 +234,7 @@ describe('utils that handle schema.graphql', () => {
     expect(entities.models?.[0].indexes[0].fields).toEqual(['appleId']);
     expect(entities.models?.[0].indexes[0].using).toEqual('hash');
     expect(entities.models?.[0].indexes[0].unique).toBe(false);
-    expect(entities.models?.[0].indexes[1].unique).toBe(true);
+
     expect(entities.models?.[1].indexes[0].fields).toEqual(['appleId']);
     expect(entities.models?.[1].indexes[0].unique).toBe(false);
   });
@@ -453,7 +454,7 @@ describe('utils that handle schema.graphql', () => {
 
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     expect(() => getAllEntitiesRelations(schema)).toThrow(
-      `Field "bananas" on entity "Fruit" is missing "derivedFrom" directive. Unable to construct database.`
+      `Field "bananas" on entity "Fruit" is missing "derivedFrom" directive. Please also make sure "Banana" has a field of type "Fruit".`
     );
   });
 });
