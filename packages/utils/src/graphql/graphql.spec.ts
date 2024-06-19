@@ -410,4 +410,48 @@ describe('utils that handle schema.graphql', () => {
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     expect(() => getAllEntitiesRelations(schema)).toThrow(`fullText directive fields only supports String types`);
   });
+
+  it('will throw if entity missing id field', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity {
+        field1: Int!
+        field2: String #field2 is an optional field
+        field3: String
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(`Entity "StarterEntity" is missing required id field.`);
+  });
+
+  it('will throw if entity id field isnt id', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity {
+        id: Int!
+        field1: Int!
+        field2: String #field2 is an optional field
+        field3: String
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(`Entity "StarterEntity" type must be ID, received Int`);
+  });
+
+  it('will throw if 1 to Many relationship is missing directive', () => {
+    const graphqlSchema = gql`
+      type Fruit @entity {
+        id: ID!
+        bananas: [Banana!]!
+      }
+      type Banana @entity {
+        id: ID!
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(
+      `Field "bananas" on entity "Fruit" is missing "derivedFrom" directive. Unable to construct database.`
+    );
+  });
 });
