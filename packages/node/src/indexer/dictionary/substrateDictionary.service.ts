@@ -58,7 +58,6 @@ export class SubstrateDictionaryService extends DictionaryService<
             this.project,
             this.nodeConfig,
             this.dsProcessorService.getDsProcessor.bind(
-              // Note: ts-strict change
               this.dsProcessorService,
             ),
             endpoint,

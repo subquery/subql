@@ -30,15 +30,17 @@ import { SpecVersion, SpecVersionDictionary } from '../types';
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
 ): DictionaryV1QueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+  if (filter.module) {
+    conditions.push({ field: 'module', value: filter.module });
+  }
+  if (filter.method) {
+    conditions.push({ field: 'event', value: filter.method });
+  }
+
   return {
     entity: 'events',
-    conditions: [
-      { field: 'module', value: filter.module }, // Note: ts-strict change -- There are pre-judgments at runtime, but they don't cover all of them
-      {
-        field: 'event',
-        value: filter.method, // Note: ts-strict change -- There are pre-judgments at runtime, but they don't cover all of them
-      },
-    ],
+    conditions: conditions,
   };
 }
 
