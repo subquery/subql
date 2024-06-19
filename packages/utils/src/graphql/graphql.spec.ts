@@ -250,6 +250,7 @@ describe('utils that handle schema.graphql', () => {
       }
       type Account @entity {
         field6: [MyJson]!
+        id: ID!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
@@ -282,6 +283,7 @@ describe('utils that handle schema.graphql', () => {
         field1: MyJson!
         field2: MyJson2!
         field3: MyJson3!
+        id: ID!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
