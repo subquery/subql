@@ -6,7 +6,7 @@ import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX, Ta
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import {FieldNode, SelectionNode} from 'graphql';
-import {uniq} from 'lodash';
+import {isArray, uniq} from 'lodash';
 import fetch, {Response} from 'node-fetch';
 import {Client} from 'pg';
 import {Build} from 'postgraphile-core';
@@ -14,7 +14,7 @@ import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
 const {version: packageVersion} = require('../../../package.json');
-const META_JSON_FIELDS = ['deployments'];
+const META_JSON_FIELDS = ['deployments', 'dynamicDatasources'];
 const METADATA_TYPES = {
   lastProcessedHeight: 'number',
   lastProcessedTimestamp: 'number',
@@ -27,7 +27,7 @@ const METADATA_TYPES = {
   indexerHealthy: 'boolean',
   indexerNodeVersion: 'string',
   queryNodeVersion: 'string',
-  dynamicDatasources: 'string',
+  dynamicDatasources: 'object',
   startHeight: 'number',
   evmChainId: 'string',
   deployments: 'string',
@@ -101,7 +101,9 @@ async function fetchMetadataFromTable(
     if (typeof dbKeyValue[key] === METADATA_TYPES[key]) {
       //JSON object are stored in string type, filter here and parse
       if (META_JSON_FIELDS.includes(key)) {
-        metadata[key] = JSON.parse(dbKeyValue[key].toString());
+        metadata[key] = isArray(dbKeyValue[key])
+          ? (metadata[key] = dbKeyValue[key])
+          : JSON.parse(dbKeyValue[key].toString());
       } else {
         metadata[key] = dbKeyValue[key];
       }
@@ -212,7 +214,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         indexerNodeVersion: String
         queryNodeVersion: String
         rowCountEstimate: [TableEstimate]
-        dynamicDatasources: String
+        dynamicDatasources: [JSON]
         evmChainId: String
         deployments: JSON
         lastFinalizedVerifiedHeight: Int
@@ -239,8 +241,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         _metadatas(
           after: Cursor
           before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int
-          # offset: Int
-        ): # last: Int
+          # last: Int
+        ): # offset: Int
         # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas
       }
