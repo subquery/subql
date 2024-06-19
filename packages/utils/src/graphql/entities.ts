@@ -90,6 +90,13 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
     };
     const entityFields = Object.values(entity.getFields());
 
+    const idField = entityFields.find((field) => field.name === 'id');
+    if (!idField) {
+      throw new Error(`Entity "${entity.name}" is missing required id field.`);
+    } else if (idField.type.toString() !== 'ID!') {
+      throw new Error(`Entity "${entity.name}" type must be ID, received ${idField.type.toString()}`);
+    }
+
     const fkNameSet: string[] = [];
     for (const field of entityFields) {
       const typeString = extractType(field.type);
@@ -121,6 +128,16 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           to: typeString,
           foreignKey: `${field.name}Id`,
         } as GraphQLRelationsType);
+
+        if (
+          field.astNode.type.kind === 'ListType' ||
+          (field.astNode.type.kind === 'NonNullType' && field.astNode.type.type.kind === 'ListType')
+        ) {
+          throw new Error(
+            `Field "${field.name}" on entity "${newModel.name}" is missing "derivedFrom" directive. Unable to construct database.`
+          );
+        }
+
         newModel.indexes.push({
           unique: false,
           fields: [`${field.name}Id`],
