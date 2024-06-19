@@ -21,7 +21,7 @@ export class ReaderFactory {
 
     const ipfsMatch = location.match(IPFS_REGEX);
     if (ipfsMatch) {
-      return new IPFSReader(location.replace('ipfs://', ''), options.ipfs);
+      return new IPFSReader(location.replace('ipfs://', ''), options?.ipfs);
     }
 
     //local mode

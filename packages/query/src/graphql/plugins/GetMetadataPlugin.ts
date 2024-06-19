@@ -27,7 +27,7 @@ const METADATA_TYPES = {
   indexerHealthy: 'boolean',
   indexerNodeVersion: 'string',
   queryNodeVersion: 'string',
-  dynamicDatasources: 'string',
+  dynamicDatasources: 'object',
   startHeight: 'number',
   evmChainId: 'string',
   deployments: 'string',
@@ -62,7 +62,7 @@ async function fetchFromApi(): Promise<void> {
     meta = await fetch(new URL(`meta`, indexerUrl));
     const result = await meta.json();
     Object.assign(metaCache, result);
-  } catch (e) {
+  } catch (e: any) {
     metaCache.indexerHealthy = false;
     console.warn(`Failed to fetch indexer meta, `, e.message);
   }
@@ -70,7 +70,7 @@ async function fetchFromApi(): Promise<void> {
   try {
     health = await fetch(new URL(`health`, indexerUrl));
     metaCache.indexerHealthy = !!health.ok;
-  } catch (e) {
+  } catch (e: any) {
     metaCache.indexerHealthy = false;
     console.warn(`Failed to fetch indexer health, `, e.message);
   }
@@ -181,6 +181,7 @@ function findNodePath(nodes: readonly SelectionNode[], path: string[]): FieldNod
 
     if (!newPath.length) return found;
 
+    if (!found.selectionSet) return;
     return findNodePath(found.selectionSet.selections, newPath);
   }
 }
@@ -211,7 +212,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         indexerNodeVersion: String
         queryNodeVersion: String
         rowCountEstimate: [TableEstimate]
-        dynamicDatasources: String
+        dynamicDatasources: [JSON]
         evmChainId: String
         deployments: JSON
         lastFinalizedVerifiedHeight: Int
@@ -246,7 +247,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
     `,
     resolvers: {
       Query: {
-        _metadata: async (_parentObject, args, context, info): Promise<MetaData> => {
+        _metadata: async (_parentObject, args, context, info): Promise<MetaData | undefined> => {
           const tableExists = metadataTableSearch(build);
           if (tableExists) {
             let rowCountFound = false;

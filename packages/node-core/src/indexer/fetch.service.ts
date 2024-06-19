@@ -224,7 +224,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
         continue;
       }
 
-      if (startBlockHeight < this.latestFinalizedHeight) {
+      // This could be latestBestHeight, dictionary should never include finalized blocks
+      // TODO add buffer so dictionary not used when project synced
+      if (startBlockHeight < this.latestBestHeight - scaledBatchSize) {
+        // if (startBlockHeight < this.latestFinalizedHeight) {
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,

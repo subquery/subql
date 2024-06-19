@@ -25,8 +25,8 @@ export async function getValidPort(argvPort: number): Promise<number> {
 
   const port = validate(argvPort) ?? (await findAvailablePort(DEFAULT_PORT));
   if (!port) {
-    const errMsg = `Unable to find available port (tried ports in range (${port}..${
-      port + 10
+    const errMsg = `Unable to find available port (tried ports in range (${DEFAULT_PORT}..${
+      DEFAULT_PORT + 10
     })). Try setting a free port manually by setting the --port flag`;
     exitWithError(errMsg, logger);
   }

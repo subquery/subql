@@ -215,7 +215,7 @@ describe('utils that handle schema.graphql', () => {
       type Fruit @entity {
         id: ID!
         apple: Apple
-        banana: [Banana] @index(unique: true)
+        banana: [Banana] @derivedFrom(field: "fruit")
       }
       type Fruit2 @entity {
         id: ID!
@@ -226,6 +226,7 @@ describe('utils that handle schema.graphql', () => {
       }
       type Banana @entity {
         id: ID!
+        fruit: Fruit
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
@@ -233,7 +234,7 @@ describe('utils that handle schema.graphql', () => {
     expect(entities.models?.[0].indexes[0].fields).toEqual(['appleId']);
     expect(entities.models?.[0].indexes[0].using).toEqual('hash');
     expect(entities.models?.[0].indexes[0].unique).toBe(false);
-    expect(entities.models?.[0].indexes[1].unique).toBe(true);
+
     expect(entities.models?.[1].indexes[0].fields).toEqual(['appleId']);
     expect(entities.models?.[1].indexes[0].unique).toBe(false);
   });
@@ -250,18 +251,19 @@ describe('utils that handle schema.graphql', () => {
       }
       type Account @entity {
         field6: [MyJson]!
+        id: ID!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const accountModel = getAllEntitiesRelations(schema).models.find((model) => model.name === 'Account');
-    expect(accountModel.fields[0].type).toBe('Json');
-    expect(accountModel.fields[0].jsonInterface.name).toBe('MyJson');
-    expect(accountModel.fields[0].isArray).toBeTruthy();
-    expect(accountModel.fields[0].jsonInterface.fields[0].nullable).toBeFalsy();
-    expect(accountModel.fields[0].jsonInterface.fields[1].isArray).toBeTruthy();
+    expect(accountModel?.fields[0].type).toBe('Json');
+    expect(accountModel?.fields[0].jsonInterface?.name).toBe('MyJson');
+    expect(accountModel?.fields[0].isArray).toBeTruthy();
+    expect(accountModel?.fields[0].jsonInterface?.fields[0].nullable).toBeFalsy();
+    expect(accountModel?.fields[0].jsonInterface?.fields[1].isArray).toBeTruthy();
     // allow json in json
-    expect(accountModel.fields[0].jsonInterface.fields[2].type).toBe('Json');
-    expect(accountModel.fields[0].jsonInterface.fields[2].jsonInterface.name).toBe('MyJson2');
+    expect(accountModel?.fields[0].jsonInterface?.fields[2].type).toBe('Json');
+    expect(accountModel?.fields[0].jsonInterface?.fields[2].jsonInterface?.name).toBe('MyJson2');
   });
 
   it('can read jsonfield with indexed option', () => {
@@ -282,6 +284,7 @@ describe('utils that handle schema.graphql', () => {
         field1: MyJson!
         field2: MyJson2!
         field3: MyJson3!
+        id: ID!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
@@ -409,5 +412,49 @@ describe('utils that handle schema.graphql', () => {
 
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     expect(() => getAllEntitiesRelations(schema)).toThrow(`fullText directive fields only supports String types`);
+  });
+
+  it('will throw if entity missing id field', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity {
+        field1: Int!
+        field2: String #field2 is an optional field
+        field3: String
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(`Entity "StarterEntity" is missing required id field.`);
+  });
+
+  it('will throw if entity id field isnt id', () => {
+    const graphqlSchema = gql`
+      type StarterEntity @entity {
+        id: Int!
+        field1: Int!
+        field2: String #field2 is an optional field
+        field3: String
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(`Entity "StarterEntity" type must be ID, received Int`);
+  });
+
+  it('will throw if 1 to Many relationship is missing directive', () => {
+    const graphqlSchema = gql`
+      type Fruit @entity {
+        id: ID!
+        bananas: [Banana!]!
+      }
+      type Banana @entity {
+        id: ID!
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(
+      `Field "bananas" on entity "Fruit" is missing "derivedFrom" directive. Please also make sure "Banana" has a field of type "Fruit".`
+    );
   });
 });
