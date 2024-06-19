@@ -223,7 +223,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
     return buildDictionaryV1QueryEntries(dataSources, this.getDsProcessor);
   }
 
-  parseSpecVersions(raw: SpecVersionDictionary | undefined): SpecVersion[] {
+  parseSpecVersions(raw?: SpecVersionDictionary): SpecVersion[] {
     if (raw === undefined) {
       return [];
     }

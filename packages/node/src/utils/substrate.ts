@@ -380,14 +380,10 @@ export async function fetchBlocksBatches(
 
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    let parentSpecVersion: number | undefined;
-    if (overallSpecVer !== undefined) {
-      parentSpecVersion = overallSpecVer;
-    } else {
-      parentSpecVersion = runtimeVersions
-        ? runtimeVersions[idx].specVersion.toNumber()
-        : undefined;
-    }
+    const parentSpecVersion =
+      overallSpecVer !== undefined
+        ? overallSpecVer
+        : runtimeVersions?.[idx].specVersion.toNumber();
 
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);

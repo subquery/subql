@@ -146,14 +146,9 @@ async function loadProjectFromManifestBase(
     ),
   );
 
-  let schemaString: string | undefined;
-  try {
-    schemaString = await reader.getFile(projectManifest.schema.file);
-  } catch (e) {
-    throw new Error(
-      `unable to fetch the schema from ${projectManifest.schema.file}`,
-    );
-  }
+  const schemaString: string = await reader.getFile(
+    projectManifest.schema.file,
+  );
   assert(schemaString, 'Schema file is empty');
   const schema = buildSchemaFromString(schemaString);
 

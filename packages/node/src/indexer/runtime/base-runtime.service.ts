@@ -92,7 +92,9 @@ export abstract class BaseRuntimeService {
   ): number | undefined {
     //return undefined block can not find inside range
     const spec = specVersions.find(
-      (spec) => blockHeight >= spec.start && blockHeight <= spec.end,
+      (spec) =>
+        blockHeight >= spec.start &&
+        (spec.end !== null ? blockHeight <= spec.end : true),
     );
     return spec ? Number(spec.id) : undefined;
   }
@@ -123,7 +125,9 @@ export abstract class BaseRuntimeService {
       } else {
         for (const specVersion of this.specVersionMap) {
           if (
-            specVersion.start > parentSpecVersion.end &&
+            (parentSpecVersion.end !== null
+              ? specVersion.start > parentSpecVersion.end
+              : true) &&
             specVersion.start <= height
           ) {
             const blockHash = await this.api.rpc.chain.getBlockHash(
