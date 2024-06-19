@@ -25,7 +25,7 @@ const specVersions: SpecVersion[] = [
   { id: '12', start: 443964, end: 528470 },
   { id: '13', start: 528471, end: 687751 },
   { id: '14', start: 687752, end: 746085 },
-  { id: '15', start: 746086, end: 99999999 },
+  { id: '15', start: 746086, end: null },
 ];
 
 const getApiService = (): ApiService =>
