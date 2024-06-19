@@ -1,3 +1,4 @@
 type badEntity @entity {
-  id: BigDecimal
+  id: ID!
+  value: BigDecimal
 }

@@ -27,7 +27,7 @@ const METADATA_TYPES = {
   indexerHealthy: 'boolean',
   indexerNodeVersion: 'string',
   queryNodeVersion: 'string',
-  dynamicDatasources: 'string',
+  dynamicDatasources: 'object',
   startHeight: 'number',
   evmChainId: 'string',
   deployments: 'string',
@@ -212,7 +212,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         indexerNodeVersion: String
         queryNodeVersion: String
         rowCountEstimate: [TableEstimate]
-        dynamicDatasources: String
+        dynamicDatasources: [JSON]
         evmChainId: String
         deployments: JSON
         lastFinalizedVerifiedHeight: Int

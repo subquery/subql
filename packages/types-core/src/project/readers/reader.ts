@@ -8,8 +8,8 @@ export type ReaderOptions = {
 };
 
 export interface Reader {
-  getProjectSchema(): Promise<unknown | undefined>;
-  getPkg(): Promise<IPackageJson | undefined>;
-  getFile(file: string): Promise<string | undefined>;
+  getProjectSchema(): Promise<unknown>;
+  getPkg(): Promise<IPackageJson>;
+  getFile(file: string): Promise<string>;
   root: string | undefined;
 }

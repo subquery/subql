@@ -20,6 +20,8 @@ import {
   isUnionType,
   ValueNode,
   BooleanValueNode,
+  ListTypeNode,
+  TypeNode,
 } from 'graphql';
 import {findDuplicateStringArray} from '../array';
 import {Logger} from '../logger';
@@ -90,6 +92,13 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
     };
     const entityFields = Object.values(entity.getFields());
 
+    const idField = entityFields.find((field) => field.name === 'id');
+    if (!idField) {
+      throw new Error(`Entity "${entity.name}" is missing required id field.`);
+    } else if (idField.type.toString() !== 'ID!') {
+      throw new Error(`Entity "${entity.name}" type must be ID, received ${idField.type.toString()}`);
+    }
+
     const fkNameSet: string[] = [];
     for (const field of entityFields) {
       const typeString = extractType(field.type);
@@ -121,6 +130,32 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           to: typeString,
           foreignKey: `${field.name}Id`,
         } as GraphQLRelationsType);
+
+        // Ensures that foreign keys are linked correctly
+        if (
+          field.astNode &&
+          (field.astNode.type.kind === 'ListType' ||
+            (field.astNode.type.kind === 'NonNullType' && field.astNode.type.type.kind === 'ListType'))
+        ) {
+          const resolveName = (type: TypeNode): string => {
+            switch (type.kind) {
+              case 'NamedType':
+                return type.name.value;
+              case 'NonNullType':
+                return resolveName(type.type);
+              case 'ListType':
+                return resolveName(type.type);
+              default:
+                // Any case in case future adds new kind
+                throw new Error(`Unandled node kind: ${(type as any).kind}`);
+            }
+          };
+
+          throw new Error(
+            `Field "${field.name}" on entity "${newModel.name}" is missing "derivedFrom" directive. Please also make sure "${resolveName(field.astNode.type)}" has a field of type "${newModel.name}".`
+          );
+        }
+
         newModel.indexes.push({
           unique: false,
           fields: [`${field.name}Id`],

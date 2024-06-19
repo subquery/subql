@@ -50,7 +50,7 @@ export async function makeTempDir(): Promise<string> {
   return tempPath;
 }
 
-export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
+export async function findAvailablePort(startPort: number, range = 10): Promise<number | null> {
   for (let port = startPort; port <= startPort + range; port++) {
     try {
       const _port = await detectPort(port);
@@ -193,7 +193,7 @@ export class SemverVersionValidator implements ValidatorConstraintInterface {
     if (valid(value) === null) {
       return validRange(value, {includePrerelease: false}) !== null;
     } else {
-      return prerelease(value) === null;
+      return prerelease(value || '') === null;
     }
   }
   defaultMessage(args: ValidationArguments): string {
@@ -295,7 +295,12 @@ export class FileReferenceImp<T> implements ValidatorConstraintInterface {
   }
 
   private isValidFileReference(fileReference: T): boolean {
-    return typeof fileReference === 'object' && 'file' in fileReference && typeof fileReference.file === 'string';
+    return (
+      fileReference &&
+      typeof fileReference === 'object' &&
+      'file' in fileReference &&
+      typeof fileReference.file === 'string'
+    );
   }
 }
 
