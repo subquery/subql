@@ -3,7 +3,7 @@
 
 import {NETWORK_FAMILY} from '@subql/common';
 import {SubstrateDatasource} from '@subql/types';
-import {AlgorandDataSource} from '@subql/types-algorand';
+import {AlgorandDataSource as AlgorandDatasource} from '@subql/types-algorand';
 import {ConcordiumDatasource} from '@subql/types-concordium';
 import {IProjectManifest} from '@subql/types-core';
 import {
@@ -25,11 +25,11 @@ import {SubqlDatasource as StellarDatasource} from '@subql/types-stellar';
 import {Data} from 'ejs';
 
 export interface ModuleCache {
-  [NETWORK_FAMILY.substrate]: {
+  [NETWORK_FAMILY.substrate]?: {
     parseSubstrateProjectManifest(raw: unknown): IProjectManifest<SubstrateDatasource>;
     isCustomDs(ds: SubstrateDatasource): ds is SubqlCustomDatasource<string>;
   };
-  [NETWORK_FAMILY.cosmos]: {
+  [NETWORK_FAMILY.cosmos]?: {
     parseCosmosProjectManifest(raw: unknown): IProjectManifest<ConcordiumDatasource>;
     generateProto(
       chaintypes: (CosmosChaintypes | Record<string, CustomModule>)[],
@@ -53,11 +53,13 @@ export interface ModuleCache {
     isRuntimeCosmosDs(ds: CosmosDatasource): ds is CosmosRuntimeDatasource;
     CosmosCustomModuleImpl: CustomModule;
   };
-  [NETWORK_FAMILY.algorand]: {
-    parseAlgorandProjectManifest(raw: unknown): IProjectManifest<AlgorandDataSource>;
-  };
-  [NETWORK_FAMILY.ethereum]: {
-    SubqlRuntimeHandler: any;
+
+  [NETWORK_FAMILY.ethereum]?: {
+    parseContractPath(path: string): {
+      name: string;
+      rawName: string;
+      path: string[];
+    };
     EthereumDatasourceKind: {
       Runtime: string;
     };
@@ -71,15 +73,17 @@ export interface ModuleCache {
     ): Promise<void>;
     isRuntimeDs(ds: EthSubqlDatasource): ds is SubqlRuntimeDatasource;
     isCustomDs(ds: EthSubqlDatasource): ds is SubqlCustomDatasource<string>;
-    parseContractPath(contractPath: string): string;
   };
-  [NETWORK_FAMILY.near]: {
+  [NETWORK_FAMILY.algorand]?: {
+    parseAlgorandProjectManifest(raw: unknown): IProjectManifest<AlgorandDatasource>;
+  };
+  [NETWORK_FAMILY.near]?: {
     parseNearProjectManifest(raw: unknown): IProjectManifest<NearDatasource>;
   };
-  [NETWORK_FAMILY.stellar]: {
+  [NETWORK_FAMILY.stellar]?: {
     parseStellarProjectManifest(raw: unknown): IProjectManifest<StellarDatasource>;
   };
-  [NETWORK_FAMILY.concordium]: {
+  [NETWORK_FAMILY.concordium]?: {
     parseConcordiumProjectManifest(raw: unknown): IProjectManifest<ConcordiumDatasource>;
   };
 }

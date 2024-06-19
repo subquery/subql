@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
-import {loadDependency} from '../../../modulars';
+import {loadDependency, ModuleCache} from '../../../modulars';
 import {TestSubgraph} from '../migrate.fixtures';
 import {convertEthereumDs, convertEthereumTemplate} from './ethereum';
 
 describe('migrate eth manifest', () => {
-  let ethModule: any;
-  beforeAll(async () => {
-    ethModule = await loadDependency<NETWORK_FAMILY.ethereum>(NETWORK_FAMILY.ethereum);
+  let ethModule: ModuleCache[NETWORK_FAMILY.ethereum];
+  beforeAll(() => {
+    ethModule = loadDependency(NETWORK_FAMILY.ethereum);
   });
 
   it(`convertEthereumDs`, () => {

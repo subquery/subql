@@ -35,7 +35,6 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
-    "typechain": "^8.3.2",
     "typescript": ">=5.2.2",
     "update-notifier": "5.1.0",
     "webpack": "^5.76.0",
@@ -45,6 +44,13 @@
     "yaml-loader": "^0.6.0"
   },
   "devDependencies": {
+    "@subql/common-algorand": "^3.4.0",
+    "@subql/common-concordium": "^3.6.0",
+    "@subql/common-cosmos": "^4.3.0",
+    "@subql/common-ethereum": "^3.8.3",
+    "@subql/common-near": "^3.5.0",
+    "@subql/common-stellar": "^3.5.0",
+    "@subql/common-substrate": "workspace:*",
     "@types/ejs": "^3.1.0",
     "@types/inquirer": "^8.2.0",
     "@types/node": "^18.16.10",

@@ -3,24 +3,24 @@
 
 import fs from 'fs';
 import path from 'path';
-import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
 import {
-  SubqlRuntimeDatasource as EthereumDs,
-  EthereumLogFilter,
   EthereumDatasourceKind,
   EthereumHandlerKind,
+  EthereumLogFilter,
   EthereumTransactionFilter,
+  SubqlRuntimeDatasource as EthereumDs,
   SubqlRuntimeHandler,
 } from '@subql/types-ethereum';
 import chalk from 'chalk';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst, difference, pickBy} from 'lodash';
-import {parseContractPath} from 'typechain';
+import {difference, pickBy, upperFirst} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
+import {loadDependency} from '../modulars';
 import {
   extractFromTs,
   renderTemplate,
@@ -166,7 +166,8 @@ function generateFormattedHandlers(
 }
 
 export function constructDatasourcesTs(userInput: UserInput): string {
-  const abiName = parseContractPath(userInput.abiPath).name;
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
   const handlersString = tsStringify(formattedHandlers);
 
@@ -186,7 +187,8 @@ export function constructDatasourcesTs(userInput: UserInput): string {
 }
 
 export function constructDatasourcesYaml(userInput: UserInput): EthereumDs {
-  const abiName = parseContractPath(userInput.abiPath).name;
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
     if (kind === 'EthereumHandlerKind.Call') return EthereumHandlerKind.Call;
     return EthereumHandlerKind.Event;

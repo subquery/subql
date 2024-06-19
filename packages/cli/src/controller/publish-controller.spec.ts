@@ -35,7 +35,7 @@ describe('Cli publish', () => {
 
   it('convert to deployment and removed descriptive field', async () => {
     const reader = await ReaderFactory.create(projectDir);
-    const substrateModule = loadDependency<NETWORK_FAMILY.substrate>(NETWORK_FAMILY.substrate);
+    const substrateModule = loadDependency(NETWORK_FAMILY.substrate);
     const manifest = substrateModule.parseSubstrateProjectManifest(await reader.getProjectSchema());
     const deployment = manifest.toDeployment();
     expect(deployment).not.toContain('author');

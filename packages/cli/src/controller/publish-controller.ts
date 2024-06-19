@@ -58,6 +58,7 @@ export async function uploadToIpfs(
 
     const networkFamily = getProjectNetwork(schema);
     const module = loadDependency(networkFamily);
+
     const functionName = `parse${networkFamily}ProjectManifest`;
     // @ts-ignore
     // TODO,need fix type

@@ -33,7 +33,7 @@ describe('Able to generate cosmos types from protobuf', () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
   });
 
-  const cosmosModule = loadDependency<NETWORK_FAMILY.cosmos>(NETWORK_FAMILY.cosmos);
+  const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
 
   it('Able to generate ts types from protobufs', async () => {
     const expectedGeneratedCode =

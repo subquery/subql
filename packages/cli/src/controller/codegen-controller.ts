@@ -10,9 +10,6 @@ import {
   loadFromJsonOrYaml,
   NETWORK_FAMILY,
 } from '@subql/common';
-// import {isCustomDs as isCustomConcordiumDs, isRuntimeDs as isRuntimeConcordiumDs} from '@subql/common-concordium';
-// import {isCustomDs as isCustomNearDs, isRuntimeDs as isRuntimeNearDs} from '@subql/common-near';
-// import {isCustomDs as isCustomStellarDs, isRuntimeDs as isRuntimeStellarDs} from '@subql/common-stellar';
 import {
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
@@ -277,7 +274,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
   if (cosmosManifests.length > 0) {
-    const cosmosModule = loadDependency<NETWORK_FAMILY.cosmos>(NETWORK_FAMILY.cosmos);
+    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
     const chainTypes = getChaintypes(plainManifests, cosmosModule.validateCosmosManifest);
     if (chainTypes.length) {
       await cosmosModule.generateProto(
@@ -293,7 +290,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   }
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
   if (ethManifests.length >= 0 || !!datasources.find((d) => d?.assets)) {
-    const ethModule = loadDependency<NETWORK_FAMILY.ethereum>(NETWORK_FAMILY.ethereum);
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
     await ethModule.generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
   }
 
@@ -401,7 +398,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
 export async function generateDatasourceTemplates(projectPath: string, templates: TemplateKind[]): Promise<void> {
   const props = templates.map((t) => ({
     name: (t as TemplateBase).name,
-    args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
+    args: 'Record<string, unknown>',
   }));
 
   const propsWithoutDuplicates = uniqBy(props, (prop) => `${prop.name}-${prop.args}`);
@@ -416,22 +413,4 @@ export async function generateDatasourceTemplates(projectPath: string, templates
     throw new Error(`Unable to generate datasource template constructors`);
   }
   console.log(`* Datasource template constructors generated !`);
-}
-
-// TODO, need to dynamic load this, rather than load every module
-function hasParameters(t: TemplateKind): boolean {
-  return true;
-  // return (
-  // isRuntimeCosmosDs(t as CosmosDsTemplate) ||
-  // isCustomCosmosDs(t as CosmosDsTemplate) ||
-  // isRuntimeEthereumDs(t as EthereumDsTemplate) ||
-  // isCustomEthereumDs(t as EthereumDsTemplate) ||
-  // isCustomSubstrateDs(t as SubstrateDsTemplate) ||
-  // isRuntimeNearDs(t as NearDsTemplate) ||
-  // isCustomNearDs(t as NearDsTemplate) ||
-  // isRuntimeStellarDs(t as StellarDsTemplate) ||
-  // isCustomStellarDs(t as StellarDsTemplate) ||
-  // isRuntimeConcordiumDs(t as ConcordiumDsTemplate) ||
-  // isCustomConcordiumDs(t as ConcordiumDsTemplate)
-  // );
 }
