@@ -6,7 +6,7 @@ import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX, Ta
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import {FieldNode, SelectionNode} from 'graphql';
-import {isArray, uniq} from 'lodash';
+import {uniq} from 'lodash';
 import fetch, {Response} from 'node-fetch';
 import {Client} from 'pg';
 import {Build} from 'postgraphile-core';
@@ -14,7 +14,7 @@ import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
 const {version: packageVersion} = require('../../../package.json');
-const META_JSON_FIELDS = ['deployments', 'dynamicDatasources'];
+const META_JSON_FIELDS = ['deployments'];
 const METADATA_TYPES = {
   lastProcessedHeight: 'number',
   lastProcessedTimestamp: 'number',
@@ -101,9 +101,7 @@ async function fetchMetadataFromTable(
     if (typeof dbKeyValue[key] === METADATA_TYPES[key]) {
       //JSON object are stored in string type, filter here and parse
       if (META_JSON_FIELDS.includes(key)) {
-        metadata[key] = isArray(dbKeyValue[key])
-          ? (metadata[key] = dbKeyValue[key])
-          : JSON.parse(dbKeyValue[key].toString());
+        metadata[key] = JSON.parse(dbKeyValue[key].toString());
       } else {
         metadata[key] = dbKeyValue[key];
       }
