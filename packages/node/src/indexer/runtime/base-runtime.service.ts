@@ -15,29 +15,23 @@ type GetLatestFinalizedHeight = () => number;
 
 @Injectable()
 export abstract class BaseRuntimeService {
-  private _parentSpecVersion?: number;
-  private _specVersionMap?: SpecVersion[];
+  parentSpecVersion?: number;
+  specVersionMap: SpecVersion[] = [];
   protected _currentRuntimeVersion?: RuntimeVersion;
   private _latestFinalizedHeight?: number;
 
   constructor(protected apiService: ApiService) {}
 
-  get parentSpecVersion(): number {
+  get latestFinalizedHeight(): number {
     assert(
-      this._parentSpecVersion !== undefined,
-      'parentSpecVersion is undefined',
+      this._latestFinalizedHeight !== undefined,
+      'latestFinalizedHeight is undefined',
     );
-    return this._parentSpecVersion;
+    return this._latestFinalizedHeight;
   }
-  set parentSpecVersion(value: number) {
-    this._parentSpecVersion = value;
-  }
-  get specVersionMap(): SpecVersion[] {
-    assert(this._specVersionMap !== undefined, 'specVersionMap is undefined');
-    return this._specVersionMap;
-  }
-  set specVersionMap(value: SpecVersion[]) {
-    this._specVersionMap = value;
+
+  set latestFinalizedHeight(value: number) {
+    this._latestFinalizedHeight = value;
   }
 
   protected get currentRuntimeVersion(): RuntimeVersion {
@@ -49,17 +43,6 @@ export abstract class BaseRuntimeService {
   }
   protected set currentRuntimeVersion(value: RuntimeVersion) {
     this._currentRuntimeVersion = value;
-  }
-
-  get latestFinalizedHeight(): number {
-    assert(
-      this._latestFinalizedHeight !== undefined,
-      'latestFinalizedHeight is undefined',
-    );
-    return this._latestFinalizedHeight;
-  }
-  set latestFinalizedHeight(value: number) {
-    this._latestFinalizedHeight = value;
   }
 
   async specChanged(height: number, specVersion: number): Promise<boolean> {
@@ -88,10 +71,10 @@ export abstract class BaseRuntimeService {
 
   getSpecFromMap(
     blockHeight: number,
-    specVersions: SpecVersion[],
+    specVersions?: SpecVersion[],
   ): number | undefined {
     //return undefined block can not find inside range
-    const spec = specVersions.find(
+    const spec = specVersions?.find(
       (spec) =>
         blockHeight >= spec.start &&
         (spec.end !== null ? blockHeight <= spec.end : true),

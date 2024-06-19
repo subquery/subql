@@ -51,7 +51,6 @@ export function wrapBlock(
   specVersion?: number,
 ): SubstrateBlock {
   return merge(signedBlock, {
-    // Note: ts-strict change -- t is possible for the runtime to pass in
     timestamp: getTimestamp(signedBlock),
     specVersion: specVersion,
     events,
