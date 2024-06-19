@@ -49,7 +49,10 @@ export class RuntimeService extends BaseRuntimeService {
     }
     if (blockSpecVersion === undefined) {
       blockSpecVersion = await this.getSpecFromApi(blockHeight);
-      if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
+      if (
+        this.latestFinalizedHeight &&
+        blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight
+      ) {
         // Ask to sync local specVersionMap with dictionary
         await this.syncDictionarySpecVersions(blockHeight);
         syncedDictionary = true;

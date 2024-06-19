@@ -15,6 +15,7 @@ export class WorkerRuntimeService extends BaseRuntimeService {
     this.specVersionMap = specVersionMap;
     if (
       latestFinalizedHeight !== undefined &&
+      this.latestFinalizedHeight &&
       this.latestFinalizedHeight < latestFinalizedHeight
     ) {
       this.latestFinalizedHeight = latestFinalizedHeight;

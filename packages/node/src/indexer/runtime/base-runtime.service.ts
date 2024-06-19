@@ -18,21 +18,9 @@ export abstract class BaseRuntimeService {
   parentSpecVersion?: number;
   specVersionMap: SpecVersion[] = [];
   protected _currentRuntimeVersion?: RuntimeVersion;
-  private _latestFinalizedHeight?: number;
+  latestFinalizedHeight?: number;
 
   constructor(protected apiService: ApiService) {}
-
-  get latestFinalizedHeight(): number {
-    assert(
-      this._latestFinalizedHeight !== undefined,
-      'latestFinalizedHeight is undefined',
-    );
-    return this._latestFinalizedHeight;
-  }
-
-  set latestFinalizedHeight(value: number) {
-    this._latestFinalizedHeight = value;
-  }
 
   protected get currentRuntimeVersion(): RuntimeVersion {
     assert(

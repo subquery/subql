@@ -59,7 +59,7 @@ export class SubstrateDictionaryService extends DictionaryService<
             this.nodeConfig,
             this.dsProcessorService.getDsProcessor.bind(
               this.dsProcessorService,
-            ),
+            ) as any, // TODO: There is no good way to temporarily
             endpoint,
           );
           dictionariesV1.push(dictionaryV1);
