@@ -39,7 +39,7 @@ export class GithubReader implements Reader {
       const {data} = await this.api.get(path.join(branch, fileName));
       return data;
     } catch (err) {
-      throw new Error('Fetch project from github got undefined');
+      throw new Error('Failed to fetch file from github', {cause: err});
     }
   }
 

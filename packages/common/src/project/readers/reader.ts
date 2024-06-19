@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {Reader, ReaderOptions} from '@subql/types-core';

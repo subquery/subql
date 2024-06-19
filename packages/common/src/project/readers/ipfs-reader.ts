@@ -33,7 +33,7 @@ export class IPFSReader implements Reader {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getPkg(): Promise<IPackageJson> {
-    throw new Error('Project package.json is not found');
+    throw new Error("IPFS Reader doesn't support reading package.json");
   }
 
   async getProjectSchema(): Promise<unknown> {
@@ -50,7 +50,7 @@ export class IPFSReader implements Reader {
       return await this.cache[fileName];
     } catch (e) {
       console.error(`Failed to fetch project from IPFS: ${fileName}`, e);
-      throw new Error(`Failed to fetch project from IPFS: ${fileName}`);
+      throw new Error(`Failed to fetch project from IPFS: ${fileName}`, {cause: e});
     }
   }
 
