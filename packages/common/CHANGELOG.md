@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule`
+
+### Added
 - Enable ts strict model 
 - Reader interface method not returning undefined
 
