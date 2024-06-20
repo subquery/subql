@@ -39,6 +39,9 @@ describe('ReaderFactory', () => {
   it.skip('should support archive files', async () => {
     const reader = await ReaderFactory.create(tarPath);
     const finalPath = reader.root;
+    if (!finalPath) {
+      throw new Error('finalPath error');
+    }
     expect(fs.existsSync(finalPath)).toBeTruthy();
   });
 

@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Store service index check failing with snake_case fields (#2461)
+
+## Changed
+- Error message for finding available port 
+
 ## [10.6.0] - 2024-06-18
 ### Fixed
 - Testing framework logging the same date if they were within 1s (#2453)
