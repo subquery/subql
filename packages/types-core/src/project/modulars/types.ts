@@ -7,5 +7,4 @@ export interface INetworkCommonModule<D extends BaseDataSource = BaseDataSource>
   parseProjectManifest(raw: unknown): IProjectManifest<D>;
   isRuntimeDs(ds: D): boolean;
   isCustomDs(ds: D): boolean;
-  validateProjectManifest(projectPath: string): Promise<boolean>;
 }
