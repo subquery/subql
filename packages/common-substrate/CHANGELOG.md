@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule` (#2462)
+
 ## [3.8.0] - 2024-06-05
 ### Changed
 - Bump with common
