@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Graphql to support snakeCase fields 
+
 ## Changed
 - Error message for finding available port 
 
