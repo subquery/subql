@@ -5,7 +5,14 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} from '@subql/common';
-import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
+import {
+  BaseAssetsDataSource,
+  BaseCustomDataSource,
+  BaseDataSource,
+  BaseTemplateDataSource,
+  Reader,
+  TemplateBase,
+} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {stringToArray, getSchedule} from 'cron-converter';
@@ -278,20 +285,23 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
   return dataSources;
 }
 
-export async function loadProjectTemplates<T extends BaseDataSource & TemplateBase>(
+export async function loadProjectTemplates<T extends BaseTemplateDataSource>(
   templates: T[] | undefined,
   root: string,
   reader: Reader,
-  isCustomDs: IsCustomDs<T, T & BaseCustomDataSource>
+  isCustomDs: IsCustomDs<T, Omit<T & BaseCustomDataSource, keyof TemplateBase>>
 ): Promise<T[]> {
   if (!templates || !templates.length) {
     return [];
   }
-  const dsTemplates = await updateDataSourcesV1_0_0(templates, reader, root, isCustomDs);
+
+  const templateIsCustomDs = (template: T): template is T & BaseCustomDataSource =>
+    isCustomDs(template) && 'name' in template;
+  const dsTemplates = await updateDataSourcesV1_0_0(templates, reader, root, templateIsCustomDs);
   return dsTemplates.map((ds, index) => ({
     ...ds,
     name: templates[index].name,
-  })) as T[];
+  }));
 }
 
 export function getStartHeight(dataSources: BaseDataSource[]): number {

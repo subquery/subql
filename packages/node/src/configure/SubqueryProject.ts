@@ -167,7 +167,7 @@ async function loadProjectFromManifestBase(
     projectManifest.templates,
     root,
     reader,
-    isCustomDs as any, // TODO: There is no good way to temporarily
+    isCustomDs,
   );
   const runner = projectManifest.runner;
   assert(
