@@ -289,16 +289,21 @@ export const yamlExtractor: ManifestExtractor<EthereumDs[]> = (dataSources, case
 
   dataSources
     .filter((d: EthereumDs) => {
-      const dsAddress = d.options.address?.toLowerCase();
+      const dsAddress = d.options?.address?.toLowerCase();
       return casedInputAddress ? casedInputAddress === dsAddress : !dsAddress;
     })
     .forEach((ds: EthereumDs) => {
       ds.mapping.handlers.forEach((handler) => {
-        if ('topics' in handler.filter) {
-          existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
+        if (!handler.filter) return;
+
+        const topics = (handler.filter as EthereumLogFilter).topics?.[0];
+        const func = (handler.filter as EthereumTransactionFilter).function;
+
+        if ('topics' in handler.filter && topics) {
+          existingEvents.push(topics);
         }
-        if ('function' in handler.filter) {
-          existingFunctions.push((handler.filter as EthereumTransactionFilter).function);
+        if ('function' in handler.filter && func) {
+          existingFunctions.push(func);
         }
       });
     });

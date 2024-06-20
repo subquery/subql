@@ -172,7 +172,7 @@ export default class MultiChainDeploy extends Command {
             undefined,
             false
           );
-        } else {
+        } else if (validateDictEndpoint) {
           dictionaries[validator.chainId] = validateDictEndpoint;
         }
       }

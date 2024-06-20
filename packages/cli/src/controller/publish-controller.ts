@@ -198,7 +198,7 @@ export async function uploadFile(
     return pathPromise;
   }
 
-  let pendingClientCid: Promise<string>;
+  let pendingClientCid: Promise<string> = Promise.resolve('');
   if (ipfs) {
     pendingClientCid = ipfs
       .add(contents.content, {pin: true, cidVersion: 0})

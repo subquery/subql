@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
@@ -60,7 +61,7 @@ export async function prepareProject(chainInfo: ChainInfo, subqlDir: string): Pr
 }
 //TODO, this might can be dynamic
 export function getChainIdByNetworkName(networkFamily: NETWORK_FAMILY, chainName: string): string {
-  const chainId = graphNetworkNameChainId[networkFamily][chainName];
+  const chainId = graphNetworkNameChainId[networkFamily]?.[chainName];
   if (!chainId) {
     throw new Error(`Could not find chainId for network ${networkFamily} chain ${chainName}`);
   }
