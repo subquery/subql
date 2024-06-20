@@ -131,8 +131,8 @@ export function buildDictionaryV1QueryEntries<
           handler.kind,
           getDsProcessor,
         );
-      } else {
-        if (handler.filter) filterList = [handler.filter];
+      } else if (handler.filter) {
+        filterList = [handler.filter];
       }
       // Filter out any undefined
       filterList = filterList.filter(Boolean);

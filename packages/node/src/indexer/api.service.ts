@@ -131,10 +131,6 @@ export class ApiService
     return this._fetchBlocksFunction;
   }
 
-  private set fetchBlocksFunction(value: FetchFunc) {
-    this._fetchBlocksFunction = value;
-  }
-
   private get currentBlockHash(): string {
     assert(this._currentBlockHash, 'currentBlockHash not initialized');
     return this._currentBlockHash;
@@ -235,13 +231,13 @@ export class ApiService
       : SubstrateUtil.fetchBlocksBatches;
 
     if (this.nodeConfig?.profiler) {
-      this.fetchBlocksFunction = profilerWrap(
+      this._fetchBlocksFunction = profilerWrap(
         fetchFunc,
         'SubstrateUtil',
         'fetchBlocksBatches',
       );
     } else {
-      this.fetchBlocksFunction = fetchFunc;
+      this._fetchBlocksFunction = fetchFunc;
     }
   }
 
