@@ -73,6 +73,7 @@ export default class MultiChainDeploy extends Command {
 
     // Multichain query descriptor
     const ipfsCID = fileToCidMap.get(path.basename(multichainManifestPath));
+    assert(ipfsCID, 'Multichain query descriptor is required');
 
     const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];

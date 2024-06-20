@@ -169,8 +169,8 @@ export default class Generate extends Command {
         this.log(`Event: ${event.name} successfully generated`);
       });
       this.log('-------------------------------');
-    } catch (e) {
-      this.error(e as Error);
+    } catch (e: any) {
+      this.error(e);
     }
   }
 }

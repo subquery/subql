@@ -19,13 +19,17 @@ export default class Promote extends Command {
     const {flags} = await this.parse(Promote);
     const authToken = await checkToken();
 
-    let deploymentID: number = +flags.deploymentID;
-    let org: string = flags.org;
-    let project_name: string = flags.project_name;
-
-    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
-    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
-    deploymentID = await valueOrPrompt(deploymentID, 'Enter deployment ID', 'Deployment ID is required');
+    const deploymentID: number = +(await valueOrPrompt(
+      flags.deploymentID,
+      'Enter deployment ID',
+      'Deployment ID is required'
+    ));
+    const org: string = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
+    const project_name: string = await valueOrPrompt(
+      flags.project_name,
+      'Enter project name',
+      'Project name is required'
+    );
 
     const promote_output = await promoteDeployment(
       org,

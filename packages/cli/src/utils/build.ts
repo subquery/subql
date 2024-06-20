@@ -53,7 +53,7 @@ export async function buildManifestFromLocation(location: string, log: (...args:
       await Promise.all(tsManifests.map((manifest) => generateManifestFromTs(manifest, log)));
       replaceTsReferencesInMultichain(projectYamlPath);
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log(e);
     throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
   }

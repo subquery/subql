@@ -56,12 +56,13 @@ async function deployTestProject(
   );
 
   const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
-  const dictEndpoint = await dictionaryEndpoints(url);
-
   assert(validator.chainId, 'Please set chainId in your project');
+  const dictEndpoint = processEndpoints(await dictionaryEndpoints(url), validator.chainId);
+  assert(dictEndpoint, 'Please set dictEndpoint in your project');
+
   const project: V3DeploymentIndexerType = {
     cid: ipfs,
-    dictEndpoint: processEndpoints(dictEndpoint, validator.chainId),
+    dictEndpoint,
     endpoint,
     indexerImageVersion: indexerV[0],
     indexerAdvancedSettings: {

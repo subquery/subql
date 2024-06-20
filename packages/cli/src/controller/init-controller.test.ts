@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import * as fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
@@ -117,13 +118,11 @@ describe('Cli can create project', () => {
   it('prepare correctly applies project details', async () => {
     const tempPath = await makeTempDir();
     const projects = await fetchExampleProjects('polkadot', 'polkadot');
-    const projectPath = await cloneProjectTemplate(
-      tempPath,
-      projectSpec.name,
-      projects.find((p) => p.name === 'Polkadot-starter')
-    );
+    const project = projects.find((p) => p.name === 'Polkadot-starter');
+    assert(project, 'Polkadot-starter not found');
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, project);
     await prepare(projectPath, projectSpec);
-    const [endpoint, author, description] = await readDefaults(projectPath);
+    const [, author, description] = await readDefaults(projectPath);
 
     //spec version is  not returned from readDefaults
     //expect(projectSpec.specVersion).toEqual(specVersion);

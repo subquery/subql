@@ -419,7 +419,7 @@ export async function generateHandlers(
       helper: {upperFirst},
     });
     fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${fileName}"`);
-  } catch (e) {
-    throw new Error(`Unable to generate handler scaffolds. ${(e as Error).message}`);
+  } catch (e: any) {
+    throw new Error(`Unable to generate handler scaffolds. ${e.message}`);
   }
 }

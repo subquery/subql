@@ -74,7 +74,7 @@ export async function runWebpack(
 
   await new Promise((resolve, reject) => {
     webpack(config).run((error, stats) => {
-      if (error) {
+      if (error || !stats) {
         reject(error);
         return;
       }
@@ -82,7 +82,7 @@ export async function runWebpack(
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors[0].message);
+        reject(info.errors?.map((e) => e.message).join('\n'));
         return;
       }
 
