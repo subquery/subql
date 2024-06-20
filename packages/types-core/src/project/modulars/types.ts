@@ -5,6 +5,6 @@ import {BaseDataSource, IProjectManifest} from '../index';
 
 export interface INetworkCommonModule<D extends BaseDataSource = BaseDataSource> {
   parseProjectManifest(raw: unknown): IProjectManifest<D>;
-  isRuntimeDs(ds: D): boolean;
-  isCustomDs(ds: D): boolean;
+  isRuntimeDs<DS extends D = D>(ds: D): ds is DS;
+  isCustomDs<CDS extends BaseCustomDataSource = BaseCustomDataSource>(ds: D): ds is CDS;
 }
