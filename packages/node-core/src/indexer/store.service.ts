@@ -432,7 +432,7 @@ group by
           (upperFirst(camelCase(indexField.entityName)) === entity || indexField.entityName === entity) &&
           // We add this because in some case upperFirst and camelCase will not match with entity name,
           // see test entity name like `MinerIP`
-          camelCase(indexField.fieldName) === field
+          camelCase(indexField.fieldName) === camelCase(field)
       ) > -1
     );
   }
@@ -442,7 +442,7 @@ group by
       this.modelIndexedFields.findIndex(
         (indexField) =>
           upperFirst(camelCase(indexField.entityName)) === entity &&
-          camelCase(indexField.fieldName) === field &&
+          camelCase(indexField.fieldName) === camelCase(field) &&
           // With historical indexes are not unique
           (this.historical || indexField.isUnique)
       ) > -1
