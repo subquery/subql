@@ -5,8 +5,10 @@ import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
+import { isCustomDs } from '@subql/common-substrate';
 import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
+import { DsProcessor } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
 import { SpecVersion } from './types';
@@ -57,9 +59,9 @@ export class SubstrateDictionaryService extends DictionaryService<
           const dictionaryV1 = await SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
-            this.dsProcessorService.getDsProcessor.bind(
+            convertGetDsProcessor(this.dsProcessorService.getDsProcessor).bind(
               this.dsProcessorService,
-            ) as any, // TODO: There is no good way to temporarily
+            ),
             endpoint,
           );
           dictionariesV1.push(dictionaryV1);
@@ -101,4 +103,27 @@ export class SubstrateDictionaryService extends DictionaryService<
     if (!dict) return undefined;
     return dict.getSpecVersions();
   }
+}
+
+function convertGetDsProcessor(
+  f: DsProcessorService['getDsProcessor'],
+): (ds: SubstrateDatasource) => DsProcessor<SubstrateDatasource> {
+  function isSubstrateProcessor(
+    p: ReturnType<DsProcessorService['getDsProcessor']>,
+  ): p is DsProcessor<SubstrateDatasource> {
+    // Since the current package is the substrate node startup package, it must be true here.
+    return true;
+  }
+
+  return (ds: SubstrateDatasource) => {
+    if (!isCustomDs(ds)) {
+      throw new Error('data source is not a custom data source');
+    }
+
+    const processor = f(ds);
+    if (!isSubstrateProcessor(processor)) {
+      throw new Error('data source is not a substrate data source');
+    }
+    return processor;
+  };
 }
