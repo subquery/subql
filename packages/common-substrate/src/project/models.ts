@@ -37,7 +37,7 @@ export class BlockFilter extends BlockFilterImpl implements SubstrateBlockFilter
   specVersion?: [number, number];
 }
 
-export class EventFilter extends BlockFilter implements SubstrateEventFilter {
+export class EventFilter implements SubstrateEventFilter {
   @IsOptional()
   @IsString()
   module?: string;
