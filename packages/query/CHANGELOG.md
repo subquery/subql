@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2024-06-21
 ### Fixed
-- Fixed query service unable to query dynamic datasource due to change from #2302 
+- Fixed query service unable to query dynamic datasource due to change from #2302
+
 ### Added
 - enable ts strict mode
 
@@ -324,7 +326,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.12.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.13.0...HEAD
+[2.13.0]: https://github.com/subquery/subql/compare/query/2.12.1...query/2.13.0
 [2.12.1]: https://github.com/subquery/subql/compare/query/2.12.0...query/2.12.1
 [2.12.0]: https://github.com/subquery/subql/compare/query/2.11.1...query/2.12.0
 [2.11.1]: https://github.com/subquery/subql/compare/query/2.11.0...query/2.11.1
