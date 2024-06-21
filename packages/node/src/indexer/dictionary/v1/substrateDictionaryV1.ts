@@ -51,7 +51,7 @@ function callFilterToQueryEntry(
         ({
           field: key === 'method' ? 'call' : key,
           value: filter[key],
-        } as DictionaryQueryCondition),
+        }) as DictionaryQueryCondition,
     ),
   };
 }
@@ -131,7 +131,11 @@ export function buildDictionaryV1QueryEntries<
         filterList = [handler.filter];
       }
       // Filter out any undefined
-      filterList = filterList.filter(Boolean);
+      filterList = filterList.filter(Boolean).map((obj) => {
+        return Object.fromEntries(
+          Object.entries(obj).filter(([key, value]) => value !== undefined),
+        );
+      });
       if (!filterList.length) return [];
       switch (baseHandlerKind) {
         case SubstrateHandlerKind.Block:
