@@ -9,9 +9,10 @@
     "tsBuildInfoFile": "lib/.tsbuildinfo",
     "outDir": "lib",
     "noImplicitAny": true,
-    "strict": true
+    "strict": true,
+    "skipLibCheck": true
   },
   "references": [{"path": "../common"}, {"path": "../common-substrate"}, {"path": "../utils"}],
   "include": ["src/**/*"],
-  "exclude": ["test/schemaTest/project.ts"]
+  "exclude": ["test/schemaTest/project.ts", "**/node_modules/@ethersproject/**"]
 }
