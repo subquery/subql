@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Update with common-substrate, fix `EventFilter` incorrectly extend `BlockFilter`, lead dictionary error
-- Fix dictionary query entries included undefined fields
+- Update with common-substrate, fix `EventFilter` incorrectly extend `BlockFilter`, lead dictionary error (#2463)
+- Fix dictionary query entries included undefined fields (#2463)
 
 ## [4.6.5] - 2024-06-18
 ### Fixed
