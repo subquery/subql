@@ -108,7 +108,7 @@ export async function prepareDirPath(path: string, recreate: boolean): Promise<v
     if (recreate) {
       await fs.promises.mkdir(path, {recursive: true});
     }
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(`Failed to prepare ${path}: ${e.message}`);
   }
 }

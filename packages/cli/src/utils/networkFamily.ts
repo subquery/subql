@@ -17,11 +17,11 @@ export function getNetworkFamily(network: string): NETWORK_FAMILY {
   return NETWORK_FAMILY[lowerCaseFirst(network) as unknown as keyof typeof NETWORK_FAMILY];
 }
 
-export function findRunnerByNetworkFamily(networkFamily: NETWORK_FAMILY): string | undefined {
+export function findRunnerByNetworkFamily(networkFamily: NETWORK_FAMILY): string {
   for (const [key, value] of Object.entries(runnerMapping)) {
     if (value === networkFamily) {
       return key;
     }
   }
-  return undefined;
+  throw new Error(`Runner not found for network family ${networkFamily}`);
 }
