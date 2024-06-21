@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix `EventFilter` incorrectly extend `BlockFilter`, lead dictionary error (#2463)
+
 ## [3.8.0] - 2024-06-05
 ### Changed
 - Bump with common
