@@ -84,6 +84,12 @@ const eventHandler: SubstrateEventHandler = {
   filter: { method: 'event', module: 'module' },
 };
 
+const eventHandlerWithUndefined: SubstrateEventHandler = {
+  kind: SubstrateHandlerKind.Event,
+  handler: 'handleEvent',
+  filter: { method: 'balance', module: undefined },
+};
+
 const callHandlerWithUndefined: SubstrateCallHandler = {
   kind: SubstrateHandlerKind.Call,
   handler: 'handleCall',
@@ -234,6 +240,24 @@ describe('Building dictionary query entries', () => {
           },
         ],
         entity: 'extrinsics',
+      },
+    ]);
+  });
+
+  it('create dictionary event filter condition and remove undefined fields', () => {
+    const result1 = buildDictionaryV1QueryEntries(
+      [makeDs([eventHandlerWithUndefined])],
+      () => undefined,
+    );
+    expect(result1).toEqual([
+      {
+        conditions: [
+          {
+            field: 'event',
+            value: 'balance',
+          },
+        ],
+        entity: 'events',
       },
     ]);
   });

@@ -29,15 +29,16 @@ import { SpecVersion, SpecVersionDictionary } from '../types';
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
 ): DictionaryV1QueryEntry {
+  const conditions: DictionaryQueryCondition[] = [];
+  if (filter.method) {
+    conditions.push({ field: 'event', value: filter.method });
+  }
+  if (filter.module) {
+    conditions.push({ field: 'module', value: filter.module });
+  }
   return {
     entity: 'events',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'event',
-        value: filter.method,
-      },
-    ],
+    conditions,
   };
 }
 
@@ -46,13 +47,15 @@ function callFilterToQueryEntry(
 ): DictionaryV1QueryEntry {
   return {
     entity: 'extrinsics',
-    conditions: Object.keys(filter).map(
-      (key) =>
-        ({
-          field: key === 'method' ? 'call' : key,
-          value: filter[key],
-        }) as DictionaryQueryCondition,
-    ),
+    conditions: Object.keys(filter)
+      .map(
+        (key) =>
+          ({
+            field: key === 'method' ? 'call' : key,
+            value: filter[key],
+          }) as DictionaryQueryCondition,
+      )
+      .filter((c) => c.value !== undefined),
   };
 }
 
@@ -131,11 +134,7 @@ export function buildDictionaryV1QueryEntries<
         filterList = [handler.filter];
       }
       // Filter out any undefined
-      filterList = filterList.filter(Boolean).map((obj) => {
-        return Object.fromEntries(
-          Object.entries(obj).filter(([key, value]) => value !== undefined),
-        );
-      });
+      filterList = filterList.filter(Boolean);
       if (!filterList.length) return [];
       switch (baseHandlerKind) {
         case SubstrateHandlerKind.Block:
