@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import childProcess from 'child_process';
 import fs from 'fs';
 import os from 'os';
@@ -29,7 +30,7 @@ const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
   },
 };
 
-async function getExampleProject(networkFamily: string, network: string): Promise<ExampleProjectInterface | undefined> {
+async function getExampleProject(networkFamily: string, network: string): Promise<ExampleProjectInterface> {
   const res = await fetch('https://raw.githubusercontent.com/subquery/templates/main/dist/output.json');
 
   if (!res.ok) {
@@ -40,7 +41,10 @@ async function getExampleProject(networkFamily: string, network: string): Promis
     code: string;
     networks: {code: string; examples: ExampleProjectInterface[]}[];
   }[];
-  return templates.find((t) => t.code === networkFamily)?.networks.find((n) => n.code === network)?.examples[0];
+  const template = templates.find((t) => t.code === networkFamily)?.networks.find((n) => n.code === network)
+    ?.examples[0];
+  assert(template, 'Failed to get template');
+  return template;
 }
 
 export async function createTestProject(): Promise<string> {

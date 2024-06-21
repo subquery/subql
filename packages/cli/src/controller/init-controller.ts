@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
@@ -151,6 +152,8 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
     const extractedTsValues = extractFromTs(tsManifest.toString(), {
       endpoint: ENDPOINT_REG,
     });
+
+    assert(extractedTsValues.endpoint, 'Failed to extract endpoint from project.ts');
     endpoint = extractedTsValues.endpoint;
   } else {
     const yamlManifest = await fs.promises.readFile(defaultYamlPath, 'utf8');

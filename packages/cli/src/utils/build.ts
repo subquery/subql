@@ -89,7 +89,7 @@ export async function generateManifestFromTs(
 }
 
 //Returns either the single chain ts manifest or the multichain ts/yaml manifest
-export function getTsManifest(location: string): string {
+export function getTsManifest(location: string): string | null {
   let manifest: string;
 
   if (lstatSync(location).isDirectory()) {

@@ -98,7 +98,13 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
+          const response = await promptWithDefaultValues(
+            inquirer,
+            'Enter query version',
+            undefined,
+            queryVersions,
+            true
+          );
           flags.queryVersion = response;
         } else {
           flags.queryVersion = queryVersions[0];

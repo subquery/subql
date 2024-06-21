@@ -6,7 +6,7 @@ import {NETWORK_FAMILY, runnerMapping} from '@subql/common';
 const lowerCaseFirst = (str: string) => str.charAt(0).toLowerCase() + str.slice(1);
 
 function isNetwork(network: string): network is NETWORK_FAMILY {
-  return network && lowerCaseFirst(network) in NETWORK_FAMILY;
+  return !!network && lowerCaseFirst(network) in NETWORK_FAMILY;
 }
 
 // can be either lowerCased or UpperCased

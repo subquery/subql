@@ -213,7 +213,7 @@ export interface EndpointType {
   chainId: string;
 }
 
-export function splitMultichainDataFields(fieldStr: string): MultichainDataFieldType {
+export function splitMultichainDataFields(fieldStr = ''): MultichainDataFieldType {
   const result: MultichainDataFieldType = {};
 
   splitEndpoints(String(fieldStr)).forEach((unparsedRow) => {
