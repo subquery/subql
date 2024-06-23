@@ -6,3 +6,6 @@ export * from './models';
 export * from './types';
 export * from './utils';
 export * from './versioned';
+
+import {parseEthereumProjectManifest} from './load';
+export {parseEthereumProjectManifest as parseProjectManifest};

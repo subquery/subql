@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add type `EthereumNetworkModule` to support eth module (#318)
+
 ## [3.7.0] - 2024-06-12
 ### Changed
 - Deprecated flare SDK (#2428)

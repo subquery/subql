@@ -3192,13 +3192,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-core@npm:^0.8.1-0":
+  version: 0.8.1-0
+  resolution: "@subql/types-core@npm:0.8.1-0"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: 563a62faec865502780ef7f07240c29f74722f881710a9583fa1ba9d66664171b321bb092d754ad96028de9fe787fc77d83a9e3e3b6fdaaee2f84f5cd409674a
+  languageName: node
+  linkType: hard
+
 "@subql/types-ethereum@workspace:*, @subql/types-ethereum@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types-ethereum@workspace:packages/types"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
     "@ethersproject/providers": ^5.7.2
-    "@subql/types-core": ^0.7.0
+    "@subql/types-core": ^0.8.1-0
   languageName: unknown
   linkType: soft
 
