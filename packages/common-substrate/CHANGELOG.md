@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule` (#2462)
 
+## [3.8.1] - 2024-06-21
+### Fixed
+- Fix `EventFilter` incorrectly extend `BlockFilter`, lead dictionary error (#2463)
+
 ## [3.8.0] - 2024-06-05
 ### Changed
 - Bump with common
@@ -155,7 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.8.1...HEAD
+[3.8.1]: https://github.com/subquery/subql/compare/common-substrate/3.8.0...common-substrate/3.8.1
 [3.8.0]: https://github.com/subquery/subql/compare/common-substrate/3.7.0...common-substrate/3.8.0
 [3.7.0]: https://github.com/subquery/subql/compare/common-substrate/3.6.0...common-substrate/3.7.0
 [3.6.0]: https://github.com/subquery/subql/compare/common-substrate/3.5.0...common-substrate/3.6.0
