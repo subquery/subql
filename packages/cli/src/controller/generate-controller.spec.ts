@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {DEFAULT_TS_MANIFEST} from '@subql/common';
 import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';

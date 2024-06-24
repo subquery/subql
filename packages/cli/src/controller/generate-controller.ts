@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
+import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {
   EthereumDatasourceKind,

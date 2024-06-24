@@ -3,7 +3,7 @@
 
 import fs, {lstatSync} from 'fs';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {Command, Flags} from '@oclif/core';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
