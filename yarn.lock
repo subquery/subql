@@ -3054,7 +3054,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": ^3.8.0
+    "@subql/common": ^3.9.1-0
     "@subql/types-ethereum": "workspace:*"
     "@typechain/ethers-v5": ^11.1.1
     "@types/ejs": ^3.1.2
@@ -3090,6 +3090,24 @@ __metadata:
     semver: ^7.5.2
     update-notifier: 5.1.0
   checksum: c4eb96996f99e5a47546613fbc177fba436b9cf62cebfd589898f734cca1fc463dd643acf56bc20319bf3bd256504084c4eef227b636be162a2da35d4e3350cd
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:^3.9.1-0":
+  version: 3.9.1-0
+  resolution: "@subql/common@npm:3.9.1-0"
+  dependencies:
+    "@subql/types-core": 0.8.1-1
+    axios: ^0.28.0
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: db23560ee596b590c0a497708c55a8f142af085ad61a42b636624f883b8557e30b0f59cfb8b40870899651df02548ccae6a99778cb303c38a66ad31a496cbd9e
   languageName: node
   linkType: hard
 
@@ -3192,12 +3210,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:^0.8.1-0":
-  version: 0.8.1-0
-  resolution: "@subql/types-core@npm:0.8.1-0"
+"@subql/types-core@npm:0.8.1-1, @subql/types-core@npm:^0.8.1-1":
+  version: 0.8.1-1
+  resolution: "@subql/types-core@npm:0.8.1-1"
   dependencies:
     package-json-type: ^1.0.3
-  checksum: 563a62faec865502780ef7f07240c29f74722f881710a9583fa1ba9d66664171b321bb092d754ad96028de9fe787fc77d83a9e3e3b6fdaaee2f84f5cd409674a
+  checksum: 403ddeb1f3902a3256b67523a297cbadc5b964e07f2c94631554f76c7b14d1780445db6164b01f87113e5e21e4b497ae7f1fb1578d7e508405efc535c92ef1a3
   languageName: node
   linkType: hard
 
@@ -3207,7 +3225,7 @@ __metadata:
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
     "@ethersproject/providers": ^5.7.2
-    "@subql/types-core": ^0.8.1-0
+    "@subql/types-core": ^0.8.1-1
   languageName: unknown
   linkType: soft
 

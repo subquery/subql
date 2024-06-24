@@ -4,3 +4,4 @@
 export * from './interfaces';
 export * from './project';
 export * from './ethereum';
+export * from './modular';
