@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-ethereum",
-  "version": "3.10.1-0",
+  "version": "3.10.1-1",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -36,5 +36,5 @@
     "ejs": "3.1.10",
     "lodash": "4.17.21"
   },
-  "stableVersion": "3.10.0"
+  "stableVersion": "3.10.1-0"
 }
