@@ -1,7 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FileReference, ParentProject, Processor} from '@subql/types-core';
+import {
+  BaseDeploymentV1_0_0Interface,
+  FileReference,
+  ParentProject,
+  Processor,
+  ProjectManifestBaseImplInterface,
+} from '@subql/types-core';
 import {plainToInstance, Type} from 'class-transformer';
 import {
   Allow,
@@ -18,7 +24,9 @@ import yaml from 'js-yaml';
 import {IsEndBlockGreater, toJsonObject} from '../utils';
 import {ParentProjectModel} from './v1_0_0/models';
 
-export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0> {
+export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0>
+  implements ProjectManifestBaseImplInterface<D>
+{
   @Allow()
   definitions!: object;
   @IsOptional()
@@ -66,7 +74,7 @@ export class ProcessorImpl<O = any> extends FileType implements Processor<O> {
   options?: O;
 }
 
-export class BaseDeploymentV1_0_0 {
+export class BaseDeploymentV1_0_0 implements BaseDeploymentV1_0_0Interface {
   @Equals('1.0.0')
   @IsString()
   specVersion!: string;
