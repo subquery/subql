@@ -14,7 +14,7 @@ import {AggregateSpec, AggregateGroupBySpec} from '@graphile/pg-aggregates/dist/
 import type {Plugin} from 'graphile-build';
 import {makePluginByCombiningPlugins} from 'graphile-utils';
 import {argv} from '../../yargs';
-import AggregateSpecsPlugin from './AggregateSpecsPlugin';
+import AggregateSpecsPlugin from './PgAggregateSpecsPlugin';
 import OrderByAggregatesPlugin from './PgOrderByAggregatesPlugin';
 
 const aggregate = argv('aggregate') as boolean;
