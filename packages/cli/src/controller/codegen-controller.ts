@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import path from 'path';
 import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {isCustomDs as isCustomConcordiumDs, isRuntimeDs as isRuntimeConcordiumDs} from '@subql/common-concordium';
@@ -189,7 +190,7 @@ export function processFields(
           }
           return acc;
         },
-        [false, undefined]
+        [false, undefined] as (boolean | undefined)[]
       );
       injectField.indexed = indexed;
       injectField.unique = unique;
@@ -201,14 +202,12 @@ export function processFields(
     } else {
       switch (field.type) {
         default: {
-          injectField.type = getTypeByScalarName(field.type)?.tsType;
-          if (!injectField.type) {
-            throw new Error(
-              `Schema: undefined type "${field.type.toString()}" on field "${
-                field.name
-              }" in "type ${className} @${type}"`
-            );
-          }
+          const typeClass = getTypeByScalarName(field.type);
+          assert(
+            typeClass && typeClass.tsType,
+            `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className}"`
+          );
+          injectField.type = typeClass.tsType;
           injectField.isJsonInterface = false;
           break;
         }
@@ -304,10 +303,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 export function getChaintypes(
   manifest: {templates?: TemplateKind[]; dataSources: DatasourceKind[]}[]
 ): Map<string, CosmosCustomModuleImpl>[] {
-  return manifest
-    .filter((m) => validateCosmosManifest(m))
-    .map((m) => (m as CosmosManifest).network.chaintypes)
-    .filter((value) => value && Object.keys(value).length !== 0);
+  const chaintypes: Map<string, CosmosCustomModuleImpl>[] = [];
+  for (const m of manifest) {
+    if (!validateCosmosManifest(m)) continue;
+    if (!m.network.chaintypes) continue;
+    chaintypes.push(m.network.chaintypes);
+  }
+
+  return chaintypes;
 }
 
 export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
@@ -38,10 +39,10 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   }
 }
 
-export function addV(str: string | undefined): string {
+export function addV<T extends string | undefined>(str: T): T {
   // replaced includes to first byte.
   if (str && str[0] !== 'v') {
-    return `v${str}`;
+    return `v${str}` as T;
   }
   return str;
 }
@@ -138,7 +139,7 @@ export function findMatchingIndices(
   //  This regex would work in engines that support recursion, such as PCRE (Perl-Compatible Regular Expressions).
 
   let openCount = 0;
-  let startIndex: number;
+  let startIndex: number | undefined;
   const pairs: [number, number][] = [];
 
   for (let i = startFrom; i < content.length; i++) {
@@ -148,6 +149,7 @@ export function findMatchingIndices(
     } else if (content[i] === endChar) {
       openCount--;
       if (openCount === 0) {
+        assert(startIndex, 'startIndex should be defined');
         pairs.push([startIndex, i]);
         break;
       }
@@ -214,7 +216,9 @@ export function extractFromTs(
   const nestArr = ['dataSources', 'handlers'];
   for (const key in patterns) {
     if (!nestArr.includes(key)) {
-      const match = manifest.match(patterns[key]);
+      const regExp = patterns[key];
+      assert(regExp, `Pattern for ${key} is not defined`);
+      const match = manifest.match(regExp);
 
       if (arrKeys.includes(key) && match) {
         const inputStr = match[1].replace(/`/g, '"');
