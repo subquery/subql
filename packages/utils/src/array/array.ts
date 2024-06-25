@@ -7,7 +7,7 @@ import {uniqWith, isEqual} from 'lodash';
 // Only sorted unique string array will be return
 export function findDuplicateStringArray(arrays: string[][]): string[][] {
   const sortedArrays = arrays.map((arr) => arr.sort().join(''));
-  const duplicateArray = [];
+  const duplicateArray: string[][] = [];
   for (let i = 0; i < sortedArrays.length; i++) {
     if (sortedArrays.indexOf(sortedArrays[i]) !== sortedArrays.lastIndexOf(sortedArrays[i])) {
       duplicateArray.push(arrays[i]);

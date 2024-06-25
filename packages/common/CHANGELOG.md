@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] - 2024-06-21
+### Added
+- Enable ts strict model
+- Reader interface method not returning undefined
+
 ## [3.8.0] - 2024-06-18
 ### Changed
 - Deprecated flare SDK (#2428)
@@ -371,7 +376,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/3.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/3.9.0...HEAD
+[3.9.0]: https://github.com/subquery/subql/compare/common/3.8.0...common/3.9.0
 [3.8.0]: https://github.com/subquery/subql/compare/common/3.7.0...common/3.8.0
 [3.7.0]: https://github.com/subquery/subql/compare/common/3.6.0...common/3.7.0
 [3.6.0]: https://github.com/subquery/subql/compare/common/3.5.1...common/3.6.0

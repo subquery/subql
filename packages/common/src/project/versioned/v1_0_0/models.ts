@@ -32,20 +32,20 @@ import {FileType} from '../base';
 
 export class RunnerQueryBaseModel implements QuerySpec {
   @Equals('@subql/query')
-  name: string;
+  name!: string;
   @IsString()
   @Validate(SemverVersionValidator)
   // @Matches(RUNNER_REGEX)
-  version: string;
+  version!: string;
 }
 
 export class RunnerNodeImpl implements NodeSpec {
   @IsString()
-  name: string;
+  name!: string;
   @IsString()
   @Validate(SemverVersionValidator)
   // @Matches(RUNNER_REGEX,{message: 'runner version is not correct'})
-  version: string;
+  version!: string;
   @IsOptional()
   @IsObject()
   @ValidateNested()
@@ -80,18 +80,18 @@ export class BlockFilterImpl implements BlockFilter {
 export class ParentProjectModel implements ParentProject {
   @IsNumber()
   @ValidateIf((obj, value) => value !== null || obj.unitlBlock === null || obj.untilBlock === undefined)
-  block: number;
+  block!: number;
   @IsNumber()
   @ValidateIf((obj, value) => value !== null || obj.block === null || obj.block === undefined)
-  untilBlock: number;
+  untilBlock!: number;
   @IsString()
-  reference: string;
+  reference!: string;
 }
 
 // Use for generic project validation only
 export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements CommonSubqueryProject {
   @Allow()
-  definitions: object;
+  definitions!: object;
   @IsString()
   @IsOptional()
   description?: string;
@@ -99,57 +99,57 @@ export class CommonProjectManifestV1_0_0Impl<D extends object = any> implements 
   @IsString()
   repository?: string;
   @Equals('1.0.0')
-  specVersion: string;
+  specVersion!: string;
   // To be validated in specific manifest type
   @IsArray()
-  dataSources: any[];
+  dataSources!: any[];
   @ValidateNested()
   @Type(() => CommonProjectNetworkV1_0_0)
-  network: IProjectNetworkConfig;
+  network!: IProjectNetworkConfig;
   @IsString()
   @IsOptional()
   name?: string;
   @IsString()
-  version: string;
+  version!: string;
   @ValidateNested()
   @Type(() => FileType)
-  schema: FileType;
+  schema!: FileType;
   @IsOptional()
   @IsArray()
   templates?: any[];
   @IsObject()
   @ValidateNested()
   @Type(() => CommonRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
   @IsOptional()
   @IsObject()
   @Type(() => ParentProjectModel)
   parent?: ParentProject;
-  readonly deployment: D;
+  readonly deployment!: D;
 }
 
 export class CommonRunnerSpecsImpl implements RunnerSpecs {
   @IsObject()
   @ValidateNested()
   @Type(() => RunnerNodeImpl)
-  node: NodeSpec;
+  node!: NodeSpec;
   @IsObject()
   @ValidateNested()
   @Type(() => RunnerQueryBaseModel)
-  query: QuerySpec;
+  query!: QuerySpec;
 }
 
 export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfig {
   @IsString({each: true})
   @IsOptional()
-  endpoint: string | string[];
+  endpoint!: string | string[];
   @IsString({each: true})
   @IsOptional()
-  dictionary: string | string[];
+  dictionary!: string | string[];
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
-  chainId: string;
+  chainId!: string;
   @IsOptional()
   chaintypes?: C; // ensure lowercase to keep consistency
   @IsOptional()

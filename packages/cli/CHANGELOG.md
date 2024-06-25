@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.15.0] - 2024-06-21
+### Changed
+- Update `@subql/utils`, `@subql/common` and other dependencies
+
 ## [4.14.0] - 2024-06-18
 ### Removed
 - Deprecated flare SDK (#2428)
@@ -610,7 +614,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.14.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/4.15.0...HEAD
+[4.15.0]: https://github.com/subquery/subql/compare/cli/4.14.0...cli/4.15.0
 [4.14.0]: https://github.com/subquery/subql/compare/cli/4.13.1...cli/4.14.0
 [4.13.1]: https://github.com/subquery/subql/compare/cli/4.13.0...cli/4.13.1
 [4.13.0]: https://github.com/subquery/subql/compare/cli/4.12.0...cli/4.13.0

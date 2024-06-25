@@ -8,10 +8,10 @@ import {RunnerQueryBaseModel} from '../project';
 
 export class MultichainProjectManifestModel implements MultichainProjectManifest {
   @Equals('1.0.0')
-  specVersion: string;
+  specVersion!: string;
   @IsString({each: true})
-  projects: string[];
+  projects!: string[];
   @IsObject()
   @Type(() => RunnerQueryBaseModel)
-  query: QuerySpec;
+  query!: QuerySpec;
 }
