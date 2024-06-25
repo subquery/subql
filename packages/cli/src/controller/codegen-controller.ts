@@ -19,12 +19,10 @@ import {
   CustomDatasourceTemplate as ConcordiumCustomDsTemplate,
   RuntimeDatasourceTemplate as ConcordiumDsTemplate,
 } from '@subql/types-concordium';
-import {TemplateBase} from '@subql/types-core';
+import {ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
 import {
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
-  CosmosProjectManifestV1_0_0,
-  CustomModule,
 } from '@subql/types-cosmos';
 import {
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
@@ -225,10 +223,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
   const plainManifests = fileNames.map((fileName) => {
-    const project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
-      specVersion: string;
-      templates?: TemplateKind[];
-      dataSources: DatasourceKind[];
+    const project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as ProjectManifestV1_0_0 & {
       networkFamily: NETWORK_FAMILY;
     };
     project.networkFamily = getProjectNetwork(project);
@@ -275,18 +270,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
   if (cosmosManifests.length > 0) {
     const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
-    const chainTypes = getChaintypes(plainManifests, cosmosModule.validateCosmosManifest);
-    if (chainTypes.length) {
-      await cosmosModule.generateProto(
-        chainTypes,
-        projectPath,
-        prepareDirPath,
-        renderTemplate,
-        upperFirst,
-        cosmosModule.tempProtoDir
-      );
-    }
-    await cosmosModule.generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+    await cosmosModule.projectCodegen(
+      plainManifests,
+      projectPath,
+      prepareDirPath,
+      renderTemplate,
+      upperFirst,
+      datasources
+    );
   }
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
   if (ethManifests.length >= 0 || !!datasources.find((d) => d?.assets)) {
@@ -306,16 +297,6 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     }
     console.log(`* Types index generated !`);
   }
-}
-
-export function getChaintypes(
-  manifest: {templates?: TemplateKind[]; dataSources: DatasourceKind[]}[],
-  validateCosmosManifest: (manifest: unknown) => manifest is CosmosProjectManifestV1_0_0
-): Map<string, CustomModule>[] {
-  return manifest
-    .filter((m) => validateCosmosManifest(m))
-    .map((m) => (m as CosmosProjectManifestV1_0_0).network.chaintypes)
-    .filter((value) => value && Object.keys(value).length !== 0);
 }
 
 export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {

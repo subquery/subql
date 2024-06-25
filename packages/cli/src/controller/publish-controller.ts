@@ -59,15 +59,10 @@ export async function uploadToIpfs(
     const networkFamily = getProjectNetwork(schema);
     const module = loadDependency(networkFamily);
 
-    const functionName = `parse${networkFamily}ProjectManifest`;
-    // @ts-ignore
-    // TODO,need fix type
-    const parseFunction = module[functionName];
-
     let manifest;
 
     try {
-      manifest = parseFunction(schema).asImpl;
+      manifest = module.parseProjectManifest(schema).asImpl;
     } catch (e) {
       throw new Error(`Failed to parse project manifest for network ${networkFamily}`, {cause: e});
     }

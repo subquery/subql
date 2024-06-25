@@ -384,8 +384,9 @@ export async function validateEthereumProjectManifest(projectPath: string): Prom
     manifest = loadFromJsonOrYaml(path.join(projectPath, DEFAULT_MANIFEST));
   }
   try {
-    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
-    return isTs ? validateEthereumTsManifest(manifest) : !!ethModule.parseEthereumProjectManifest(manifest);
+    return isTs
+      ? validateEthereumTsManifest(manifest)
+      : !!loadDependency(NETWORK_FAMILY.ethereum).parseProjectManifest(manifest);
   } catch (e) {
     return false;
   }
