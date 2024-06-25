@@ -31,7 +31,7 @@ import {
   RuntimeDatasourceTemplate as ConcordiumDsTemplate,
   CustomDatasourceTemplate as ConcordiumCustomDsTemplate,
 } from '@subql/types-concordium';
-import {TemplateBase} from '@subql/types-core';
+import {BaseDataSource, BaseMapping, TemplateBase} from '@subql/types-core';
 import {
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
@@ -178,7 +178,7 @@ export function processFields(
       isEnum: false,
     } as ProcessedField;
     if (type === 'entity') {
-      const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
+      const [indexed, unique] = indexFields.reduce<[boolean, boolean | undefined]>(
         (acc, indexField) => {
           if (indexField.fields.includes(field.name) && indexField.fields.length <= 1) {
             acc[0] = true;
@@ -190,7 +190,7 @@ export function processFields(
           }
           return acc;
         },
-        [false, undefined] as (boolean | undefined)[]
+        [false, undefined]
       );
       injectField.indexed = indexed;
       injectField.unique = unique;
@@ -259,14 +259,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   let datasources = plainManifests.reduce((prev, current) => {
     return prev.concat(current.dataSources);
-  }, []);
+  }, [] as BaseDataSource[]);
 
   const templates = plainManifests.reduce((prev, current) => {
     if (current.templates && current.templates.length !== 0) {
       return prev.concat(current.templates);
     }
     return prev;
-  }, []);
+  }, [] as TemplateKind[]);
 
   if (templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, templates);
@@ -282,9 +282,11 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   if (chainTypes.length) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
-  await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  // CosmosRuntimeDatasource
+  await generateCosmwasm(datasources as any, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
-  await generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  // SubqlRuntimeDatasource
+  await generateAbis(datasources as any, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
