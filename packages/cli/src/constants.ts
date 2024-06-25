@@ -22,7 +22,6 @@ export const FUNCTION_REG = /function\s*:\s*['"]([^'"]+)['"]/;
 export const CHAIN_ID_REG = /chainId:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
 export const CAPTURE_CHAIN_ID_REG = /chainId:\s*("([^"]*)"|(?<!")(\d+))/;
 
-// 记录process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'],
 const rootPath = process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'];
 assert(rootPath, 'Cannot determine root path');
 export const ACCESS_TOKEN_PATH = path.resolve(rootPath, '.subql/SUBQL_ACCESS_TOKEN');
