@@ -30,7 +30,7 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCach
         if (existsSync(globalModulePath)) {
           moduleCache[network] = require(globalModulePath) as ModuleCache[N];
         } else {
-          throw new Error(`Global module ${packageName} not found, please install and retry`);
+          throw new Error(`Global module ${packageName} not found, please run "npm i -g ${packageName}" and retry`);
         }
       } catch (globalError) {
         throw new Error(`! Failed to load dependency globally: ${packageName}`, {cause: globalError});
