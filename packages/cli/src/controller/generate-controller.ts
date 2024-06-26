@@ -27,7 +27,6 @@ import {
   replaceArrayValueInTsManifest,
   resolveToAbsolutePath,
   splitArrayString,
-  tsStringify,
 } from '../utils';
 
 interface HandlerPropType {
@@ -425,4 +424,32 @@ export async function generateHandlers(
   } catch (e) {
     throw new Error(`Unable to generate handler scaffolds. ${e.message}`);
   }
+}
+
+export function tsStringify(
+  obj: SubqlRuntimeHandler | SubqlRuntimeHandler[] | string,
+  indent = 2,
+  currentIndent = 0
+): string {
+  if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj === 'string' && obj.includes('EthereumHandlerKind')) {
+      return obj; // Return the string as-is without quotes
+    }
+    return JSON.stringify(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    const items = obj.map((item) => tsStringify(item, indent, currentIndent + indent));
+    return `[\n${items.map((item) => ' '.repeat(currentIndent + indent) + item).join(',\n')}\n${' '.repeat(
+      currentIndent
+    )}]`;
+  }
+
+  const entries = Object.entries(obj);
+  const result = entries.map(([key, value]) => {
+    const valueStr = tsStringify(value, indent, currentIndent + indent);
+    return `${' '.repeat(currentIndent + indent)}${key}: ${valueStr}`;
+  });
+
+  return `{\n${result.join(',\n')}\n${' '.repeat(currentIndent)}}`;
 }

@@ -17,6 +17,14 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCach
   if (!moduleCache[network]) {
     try {
       moduleCache[network] = require(packageName) as ModuleCache[N];
+      //Check dependencies actual satisfy INetworkCommonModule
+      if (
+        moduleCache[network].parseProjectManifest === undefined ||
+        moduleCache[network].isCustomDs === undefined ||
+        moduleCache[network].isRuntimeDs === undefined
+      ) {
+        throw new Error(`${packageName} is not compatible, please make sure package update to latest version`);
+      }
     } catch (error) {
       console.warn(`! Failed to load ${packageName} locally: ${error}, attempting to load globally`);
       try {

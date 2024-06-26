@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
-import type {EthereumDatasourceKind} from '@subql/types-ethereum';
+import {EthereumDatasourceKind} from '@subql/types-ethereum';
 import {networkConverters} from '../constants';
 import {SubgraphProject} from '../types';
 import {
@@ -30,7 +30,7 @@ describe('migrate manifest controller', () => {
     const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].startBlock).toBe(7844214);
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].kind).toBe(
-      'ethereum/Runtime' as EthereumDatasourceKind.Runtime
+      EthereumDatasourceKind.Runtime
     );
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].endBlock).toBeUndefined();
   });
