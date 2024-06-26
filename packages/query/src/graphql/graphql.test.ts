@@ -5,13 +5,17 @@ import {getPostGraphileBuilder} from '@subql/x-postgraphile-core';
 import {ApolloServer, gql} from 'apollo-server-express';
 import {Pool} from 'pg';
 import {Config} from '../configure';
-import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 
-jest.mock('../yargs', () => jest.createMockFromModule('../yargs'));
-
-(getYargsOption as jest.Mock).mockImplementation(() => {
-  return {argv: {name: 'test'}};
+jest.mock('../yargs', () => {
+  const actualModule = jest.requireActual('../yargs');
+  const getYargsOption = jest.fn(() => ({argv: {name: 'test', aggregate: true}}));
+  const argv = (arg: string) => getYargsOption().argv[arg];
+  return {
+    ...actualModule,
+    getYargsOption,
+    argv,
+  };
 });
 
 describe('GraphqlModule', () => {
@@ -65,9 +69,18 @@ describe('GraphqlModule', () => {
             "updatedAt" timestamp with time zone NOT NULL,
             CONSTRAINT _metadata_pkey PRIMARY KEY (key)
         )`);
+
+    await pool.query(`CREATE TABLE "${dbSchema}"."pool_snapshots" (
+            "id" text COLLATE "pg_catalog"."default" NOT NULL,
+            "pool_id" text COLLATE "pg_catalog"."default" NOT NULL,
+            "block_number" int4 NOT NULL,
+            "total_reserve" numeric,
+            CONSTRAINT "pool_snapshots_pkey" PRIMARY KEY ("id")
+          )`);
   });
 
   afterEach(async () => {
+    await pool.query(`DROP TABLE "${dbSchema}"."pool_snapshots"`);
     await pool.query(`DROP TABLE subquery_1._metadata`);
   });
 
@@ -175,5 +188,59 @@ describe('GraphqlModule', () => {
     const fetchedMeta = results.data?._metadata;
 
     expect(fetchedMeta).toMatchObject(mock);
+  });
+
+  // sum(price_amount)
+  it('AggregateSpecsPlugin support big number', async () => {
+    await pool.query(
+      `INSERT INTO "${dbSchema}"."pool_snapshots" ("id", "pool_id", "block_number", "total_reserve") VALUES ('1', '1', 1, '1')`
+    );
+    await pool.query(
+      `INSERT INTO "${dbSchema}"."pool_snapshots" ("id", "pool_id", "block_number", "total_reserve") VALUES ('2', '1', 1, '20000000000000000000000')`
+    );
+
+    const server = await createApolloServer();
+
+    const GET_META = gql`
+      query {
+        poolSnapshots(first: 25) {
+          nodes {
+            totalReserve
+            blockNumber
+          }
+          groupedAggregates(groupBy: []) {
+            sum {
+              totalReserve
+              blockNumber
+            }
+            max {
+              totalReserve
+              blockNumber
+            }
+            min {
+              totalReserve
+              blockNumber
+            }
+            average {
+              totalReserve
+              blockNumber
+            }
+          }
+        }
+      }
+    `;
+
+    const results = await server.executeOperation({query: GET_META});
+    expect(results.data).toBeDefined();
+
+    const nodes = (results.data as any).poolSnapshots.nodes[0];
+    expect(nodes.blockNumber).toEqual(1);
+    expect(nodes.totalReserve).toEqual('1');
+
+    const aggregate = (results.data as any).poolSnapshots.groupedAggregates[0];
+    expect(aggregate.average.totalReserve).toEqual('10000000000000000000001');
+    expect(aggregate.sum.totalReserve).toEqual('20000000000000000000001');
+    expect(aggregate.min.totalReserve).toEqual('1');
+    expect(aggregate.max.totalReserve).toEqual('20000000000000000000000');
   });
 });

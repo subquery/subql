@@ -84,6 +84,18 @@ const eventHandler: SubstrateEventHandler = {
   filter: { method: 'event', module: 'module' },
 };
 
+const eventHandlerWithUndefined: SubstrateEventHandler = {
+  kind: SubstrateHandlerKind.Event,
+  handler: 'handleEvent',
+  filter: { method: 'balance', module: undefined },
+};
+
+const callHandlerWithUndefined: SubstrateCallHandler = {
+  kind: SubstrateHandlerKind.Call,
+  handler: 'handleCall',
+  filter: { isSigned: true, module: undefined, method: undefined },
+};
+
 describe('Building dictionary query entries', () => {
   it('supports block handlers', () => {
     /* If there are any blockhandlers without a modulo or timestamp filter we expect no query entries */
@@ -210,6 +222,42 @@ describe('Building dictionary query entries', () => {
           { field: 'filter1', value: 'foo' },
           { field: 'filter2', value: 'bar' },
         ],
+      },
+    ]);
+  });
+
+  it('create dictionary call filter condition and remove undefined fields', () => {
+    const result1 = buildDictionaryV1QueryEntries(
+      [makeDs([callHandlerWithUndefined])],
+      () => undefined,
+    );
+    expect(result1).toEqual([
+      {
+        conditions: [
+          {
+            field: 'isSigned',
+            value: true,
+          },
+        ],
+        entity: 'extrinsics',
+      },
+    ]);
+  });
+
+  it('create dictionary event filter condition and remove undefined fields', () => {
+    const result1 = buildDictionaryV1QueryEntries(
+      [makeDs([eventHandlerWithUndefined])],
+      () => undefined,
+    );
+    expect(result1).toEqual([
+      {
+        conditions: [
+          {
+            field: 'event',
+            value: 'balance',
+          },
+        ],
+        entity: 'events',
       },
     ]);
   });

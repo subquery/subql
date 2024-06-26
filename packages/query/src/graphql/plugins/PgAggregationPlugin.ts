@@ -7,7 +7,6 @@ import AddConnectionGroupedAggregatesPlugin from '@graphile/pg-aggregates/dist/A
 import AddGroupByAggregateEnumsPlugin from '@graphile/pg-aggregates/dist/AddGroupByAggregateEnumsPlugin';
 import AddGroupByAggregateEnumValuesForColumnsPlugin from '@graphile/pg-aggregates/dist/AddGroupByAggregateEnumValuesForColumnsPlugin';
 import AddHavingAggregateTypesPlugin from '@graphile/pg-aggregates/dist/AddHavingAggregateTypesPlugin';
-import AggregateSpecsPlugin from '@graphile/pg-aggregates/dist/AggregateSpecsPlugin';
 import FilterRelationalAggregatesPlugin from '@graphile/pg-aggregates/dist/FilterRelationalAggregatesPlugin';
 import InflectionPlugin from '@graphile/pg-aggregates/dist/InflectionPlugin';
 import {AggregateSpec, AggregateGroupBySpec} from '@graphile/pg-aggregates/dist/interfaces';
@@ -15,6 +14,7 @@ import {AggregateSpec, AggregateGroupBySpec} from '@graphile/pg-aggregates/dist/
 import type {Plugin} from 'graphile-build';
 import {makePluginByCombiningPlugins} from 'graphile-utils';
 import {argv} from '../../yargs';
+import AggregateSpecsPlugin from './PgAggregateSpecsPlugin';
 import OrderByAggregatesPlugin from './PgOrderByAggregatesPlugin';
 
 const aggregate = argv('aggregate') as boolean;

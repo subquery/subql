@@ -31,16 +31,15 @@ function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
 ): DictionaryV1QueryEntry {
   const conditions: DictionaryQueryCondition[] = [];
-  if (filter.module) {
-    conditions.push({ field: 'module', value: filter.module });
-  }
   if (filter.method) {
     conditions.push({ field: 'event', value: filter.method });
   }
-
+  if (filter.module) {
+    conditions.push({ field: 'module', value: filter.module });
+  }
   return {
     entity: 'events',
-    conditions: conditions,
+    conditions,
   };
 }
 
@@ -49,13 +48,15 @@ function callFilterToQueryEntry(
 ): DictionaryV1QueryEntry {
   return {
     entity: 'extrinsics',
-    conditions: Object.keys(filter).map(
-      (key) =>
-        ({
-          field: key === 'method' ? 'call' : key,
-          value: filter[key],
-        }) as DictionaryQueryCondition,
-    ),
+    conditions: Object.keys(filter)
+      .map(
+        (key) =>
+          ({
+            field: key === 'method' ? 'call' : key,
+            value: filter[key],
+          }) as DictionaryQueryCondition,
+      )
+      .filter((c) => c.value !== undefined),
   };
 }
 

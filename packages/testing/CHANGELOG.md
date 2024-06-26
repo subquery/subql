@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2024-06-21
+### Changed
+- Bump version with `@subql/types-core`
+
 ## [2.1.2] - 2024-06-18
 ### Changed
 - Enable strict TS setting (#2446)
@@ -30,7 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Major release 2.0.0, align with other package versions
 
-[Unreleased]: https://github.com/subquery/subql/compare/testing/2.1.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/testing/2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql/compare/testing/2.1.2...testing/2.2.0
 [2.1.2]: https://github.com/subquery/subql/compare/testing/2.1.1...testing/2.1.2
 [2.1.1]: https://github.com/subquery/subql/compare/testing/2.1.0...testing/2.1.1
 [2.1.0]: https://github.com/subquery/subql/compare/testing/2.0.2...testing/2.1.0

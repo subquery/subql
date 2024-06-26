@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2024-06-21
+### Changed
+- Bump version with `@subql/types-core`
+
 ## [3.6.1] - 2024-06-12
 ### Changed
 - Update polkadot dependencies to 11.2.1 (#2440)
@@ -233,7 +237,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/3.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/3.7.0...HEAD
+[3.7.0]: https://github.com/subquery/subql/compare/types/3.6.1...types/3.7.0
 [3.6.1]: https://github.com/subquery/subql/compare/types/3.6.0...types/3.6.1
 [3.6.0]: https://github.com/subquery/subql/compare/types/3.5.0...types/3.6.0
 [3.5.0]: https://github.com/subquery/subql/compare/types/3.4.0...types/3.5.0

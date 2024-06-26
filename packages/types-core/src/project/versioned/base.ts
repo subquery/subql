@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {ParentProject} from '../../project';
 import {FileReference, Processor} from '../types';
 
 export interface BaseDataSource<H extends BaseHandler = BaseHandler, M extends BaseMapping<H> = BaseMapping<H>> {
@@ -80,3 +81,16 @@ export interface TemplateBase {
 
 export type BaseTemplateDataSource<DS extends BaseDataSource = BaseDataSource> = Omit<DS, 'startBlock' | 'endBlock'> &
   TemplateBase;
+
+export interface ProjectManifestBaseImplInterface<
+  D extends BaseDeploymentV1_0_0Interface = BaseDeploymentV1_0_0Interface,
+> {
+  deployment: D;
+}
+
+export interface BaseDeploymentV1_0_0Interface {
+  specVersion: string;
+  schema: FileReference;
+  parent?: ParentProject;
+  toYaml(): string;
+}

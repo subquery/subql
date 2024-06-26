@@ -6394,10 +6394,10 @@ __metadata:
   linkType: soft
 
 "@subql/common@npm:^3.5.1":
-  version: 3.8.0
-  resolution: "@subql/common@npm:3.8.0"
+  version: 3.9.0
+  resolution: "@subql/common@npm:3.9.0"
   dependencies:
-    "@subql/types-core": 0.7.0
+    "@subql/types-core": 0.8.0
     axios: ^0.28.0
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
@@ -6407,7 +6407,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: c4eb96996f99e5a47546613fbc177fba436b9cf62cebfd589898f734cca1fc463dd643acf56bc20319bf3bd256504084c4eef227b636be162a2da35d4e3350cd
+  checksum: f4dd1d0f05b659b8eb46f74212ec104b2435825cb3bb326a60f0fc82e9e84ed856b1c7429a0b3c21101e729ccd52fcfbac8847d32ff09c1df7b31d490a0c531f
   languageName: node
   linkType: hard
 
@@ -6582,7 +6582,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.7.0, @subql/types-core@npm:^0.7.0":
+"@subql/types-core@npm:0.8.0":
+  version: 0.8.0
+  resolution: "@subql/types-core@npm:0.8.0"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: 4523ab756a794cee0a40d7d107395c4cf3ab238457787babe8038a1f0a5ce2badabb8cfbd00d500142a567c037b470a4e0d54095e6be65440082a489e735449e
+  languageName: node
+  linkType: hard
+
+"@subql/types-core@npm:^0.7.0":
   version: 0.7.0
   resolution: "@subql/types-core@npm:0.7.0"
   dependencies:

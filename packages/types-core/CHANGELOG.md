@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
 
+### Added
+- Add generic network module types (#2462)
+
+## [0.8.0] - 2024-06-21
 ### Changed
 - Reader interface not returning undefined
 
@@ -46,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.7.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.8.0...HEAD
+[0.8.0]: https://github.com/subquery/subql/compare/types-core/0.7.0...types-core/0.8.0
 [0.7.0]: https://github.com/subquery/subql/compare/types-core/0.6.0...types-core/0.7.0
 [0.6.0]: https://github.com/subquery/subql/compare/types-core/0.5.0...types-core/0.6.0
 [0.5.0]: https://github.com/subquery/subql/compare/types-core/0.4.0...types-core/0.5.0
