@@ -156,7 +156,7 @@ describe('GraphqlModule', () => {
     `;
 
     const results = await server.executeOperation({query: GET_META});
-    expect(`${results.errors} `).toEqual(`Cannot query field "fakeMetadata" on type "_Metadata". `);
+    expect(`${results.errors}`).toEqual(`Cannot query field "fakeMetadata" on type "_Metadata".`);
   });
 
   it('resolve incorrect fields in db to null when queried from graphql', async () => {
@@ -204,6 +204,10 @@ describe('GraphqlModule', () => {
     const GET_META = gql`
       query {
         poolSnapshots(first: 25) {
+          nodes {
+            totalReserve
+            blockNumber
+          }
           groupedAggregates(groupBy: []) {
             sum {
               totalReserve
@@ -229,9 +233,11 @@ describe('GraphqlModule', () => {
     const results = await server.executeOperation({query: GET_META});
     expect(results.data).toBeDefined();
 
-    // 有值
-    const aggregate = (results.data as any).poolSnapshots.groupedAggregates[0];
+    const nodes = (results.data as any).poolSnapshots.nodes[0];
+    expect(nodes.blockNumber).toEqual(1);
+    expect(nodes.totalReserve).toEqual('1');
 
+    const aggregate = (results.data as any).poolSnapshots.groupedAggregates[0];
     expect(aggregate.average.totalReserve).toEqual('10000000000000000000001');
     expect(aggregate.sum.totalReserve).toEqual('20000000000000000000001');
     expect(aggregate.min.totalReserve).toEqual('1');
