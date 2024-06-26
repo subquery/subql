@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Enable ts strict mode
 - Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule` (#2462)
 
 ## [3.8.1] - 2024-06-21
