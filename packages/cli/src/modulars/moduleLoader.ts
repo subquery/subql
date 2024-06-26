@@ -23,7 +23,7 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCach
         const globalNodePath = process.env.NODE_PATH;
         if (!globalNodePath) {
           throw new Error(
-            'Global node modules path not set, please try to set environment variable NODE_PATH follow this document: https://nodejs.org/api/modules.html#loading-from-the-global-folders'
+            `If you have installed ${packageName} globally please set the NODE_PATH environment variable. Follow this document for more details: https://nodejs.org/api/modules.html#loading-from-the-global-folders`
           );
         }
         const globalModulePath = path.join(globalNodePath, packageName);
