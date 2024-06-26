@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
@@ -58,7 +59,7 @@ export class ApiPromiseConnection
     fetchBlocksBatches: GetFetchFunc,
     args: { chainTypes: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
-    let provider: ProviderInterface | undefined;
+    let provider: ProviderInterface;
     let throwOnConnect = false;
 
     const headers = {
@@ -72,6 +73,8 @@ export class ApiPromiseConnection
     } else if (endpoint.startsWith('http')) {
       provider = createCachedProvider(new HttpProvider(endpoint, headers));
       throwOnConnect = true;
+    } else {
+      throw new Error(`Invalid endpoint: ${endpoint}`);
     }
 
     const apiOption = {

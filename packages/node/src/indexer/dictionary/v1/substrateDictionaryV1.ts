@@ -170,7 +170,9 @@ export function buildDictionaryV1QueryEntries<
           }
           break;
         }
-        default:
+        default: {
+          throw new Error(`Unsupported handler kind: ${baseHandlerKind}`);
+        }
       }
     }
   }
@@ -267,8 +269,8 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
       const _metadata = resp.data._metadata;
       const specVersions = resp.data.specVersions;
       return { _metadata, specVersions };
-    } catch (err) {
-      logger.warn(err as Error, `failed to fetch specVersion result`);
+    } catch (err: any) {
+      logger.warn(err, `failed to fetch specVersion result`);
       return undefined;
     }
   }

@@ -31,8 +31,8 @@ export class RuntimeService extends BaseRuntimeService {
       } else if (this.specVersionMap === undefined) {
         this.specVersionMap = [];
       }
-    } catch (e) {
-      logger.error(e as Error, 'Failed to get spec versions');
+    } catch (e: any) {
+      logger.error(e, 'Failed to get spec versions');
     }
   }
 
