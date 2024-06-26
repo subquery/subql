@@ -229,7 +229,7 @@ describe('Building dictionary query entries', () => {
   it('create dictionary call filter condition and remove undefined fields', () => {
     const result1 = buildDictionaryV1QueryEntries(
       [makeDs([callHandlerWithUndefined])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([
       {
@@ -247,7 +247,7 @@ describe('Building dictionary query entries', () => {
   it('create dictionary event filter condition and remove undefined fields', () => {
     const result1 = buildDictionaryV1QueryEntries(
       [makeDs([eventHandlerWithUndefined])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([
       {
