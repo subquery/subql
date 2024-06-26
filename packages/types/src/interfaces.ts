@@ -8,7 +8,7 @@ import {IEvent} from '@polkadot/types/types';
 
 export interface SubstrateBlock extends SignedBlock {
   // parent block's spec version, can be used to decide the correct metadata that should be used for this block.
-  specVersion?: number;
+  specVersion: number;
   timestamp: Date;
   events: EventRecord[];
 }

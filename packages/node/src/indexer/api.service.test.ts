@@ -101,7 +101,7 @@ describe('ApiService', () => {
     const blockhash = await api.rpc.chain.getBlockHash(2);
     const validators = await api.query.session.validators.at(blockhash);
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 1) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 1 } as unknown as RuntimeVersion;
     const patchedApi = await apiService.getPatchedApi(
       mockBlock.block.header,
@@ -120,7 +120,7 @@ describe('ApiService', () => {
     const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 13) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 13 } as unknown as RuntimeVersion;
     const patchedApi = await apiService.getPatchedApi(
       mockBlock.block.header,
@@ -147,7 +147,7 @@ describe('ApiService', () => {
     const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(6721195);
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 9090) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 9090 } as unknown as RuntimeVersion;
     // step 1, get early block, original polkadot api query result
     const earlyBlockhash = await api.rpc.chain.getBlockHash(5661443);
@@ -176,7 +176,7 @@ describe('ApiService', () => {
     const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(5661443);
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 9050) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 9050 } as unknown as RuntimeVersion;
     // step 1, get future block, original polkadot api query result
     const futureBlockhash = await api.rpc.chain.getBlockHash(6721195);
@@ -208,7 +208,7 @@ describe('ApiService', () => {
     }
 
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 28) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 28 } as unknown as RuntimeVersion;
     const patchedApi = await apiService.getPatchedApi(
       mockBlock.block.header,
@@ -382,7 +382,7 @@ describe('ApiService', () => {
     const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(1);
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 1) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 1 } as unknown as RuntimeVersion;
 
     const patchedApi = await apiService.getPatchedApi(
@@ -403,7 +403,7 @@ describe('ApiService', () => {
     const blockNumber = 1545235;
     const blockhash = await api.rpc.chain.getBlockHash(blockNumber);
     const block = await api.rpc.chain.getBlock(blockhash);
-    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const mockBlock = wrapBlock(block, [], 1103) as unknown as SubstrateBlock;
     const runtimeVersion = { specVersion: 1103 } as unknown as RuntimeVersion;
 
     const patchedApi = await apiService.getPatchedApi(
