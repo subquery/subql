@@ -72,15 +72,4 @@ export namespace osmosis.gamm.v1beta1.tx {
       'Failed to generate from protobufs. Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
     );
   });
-
-  // TODO, we lost tmpDir path here, will move this test to cosmos
-  // it('create temp dir with all protobufs', async () => {
-  //   // user Protobufs should not be overwritten
-  //   const preFile = await fs.promises.readFile(path.join(PROJECT_PATH, 'proto/osmosis/gamm/v1beta1/tx.proto'));
-  //   await cosmosModule.projectCodegen([manifest], PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst,[]);
-  //   const tmpDir = await tempProtoDir(PROJECT_PATH);
-  //   const afterFile = await fs.promises.readFile(path.join(tmpDir, 'osmosis/gamm/v1beta1/tx.proto'));
-  //   expect(preFile.toString()).toBe(afterFile.toString());
-  //   await promisify(rimraf)(tmpDir);
-  // });
 });
