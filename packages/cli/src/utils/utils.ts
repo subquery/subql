@@ -14,7 +14,7 @@ import {
   DEFAULT_MANIFEST,
   DEFAULT_TS_MANIFEST,
 } from '@subql/common';
-import {SubqlRuntimeHandler as EthSubqlRuntimeHandler} from '@subql/types-ethereum';
+import type {SubqlRuntimeHandler as EthSubqlRuntimeHandler} from '@subql/types-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {EthereumProject, EthereumDatasourceKind, EthereumHandlerKind} from '@subql/types-ethereum';
+import type {EthereumProject, EthereumDatasourceKind, EthereumHandlerKind} from '@subql/types-ethereum';
 
 // Can expand the Datasource processor types via the generic param
 const project: EthereumProject = {

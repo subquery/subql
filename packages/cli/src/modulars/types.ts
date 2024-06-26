@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
-import {INetworkCommonModule} from '@subql/types-core';
-import {CosmosNetworkModule} from '@subql/types-cosmos';
-import {EthereumNetworkModule} from '@subql/types-ethereum';
+import type {INetworkCommonModule} from '@subql/types-core';
+import type {CosmosNetworkModule} from '@subql/types-cosmos';
+import type {EthereumNetworkModule} from '@subql/types-ethereum';
 
 export type ModuleCache = {
   [K in Exclude<NETWORK_FAMILY, NETWORK_FAMILY.cosmos | NETWORK_FAMILY.ethereum>]?: INetworkCommonModule;

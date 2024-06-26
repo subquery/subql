@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
+import type {EthereumDatasourceKind} from '@subql/types-ethereum';
 import {loadDependency, ModuleCache} from '../../../modulars';
 import {TestSubgraph} from '../migrate.fixtures';
 import {convertEthereumDs, convertEthereumTemplate} from './ethereum';
@@ -16,7 +17,7 @@ describe('migrate eth manifest', () => {
     const testSubgraph = TestSubgraph;
     const subqlDs = testSubgraph.dataSources.map((ds) => convertEthereumDs(ds));
     expect(subqlDs.length).toBe(1);
-    expect(subqlDs[0].kind).toBe(ethModule.EthereumDatasourceKind.Runtime);
+    expect(subqlDs[0].kind).toBe('ethereum/Runtime' as EthereumDatasourceKind.Runtime);
     expect(subqlDs[0].migrateDatasourceType).toBe('EthereumDatasourceKind.Runtime');
     expect(subqlDs[0].options).toStrictEqual({abi: 'Poap', address: '0x22C1f6050E56d2876009903609a2cC3fEf83B415'});
     expect(subqlDs[0].mapping.handlers[0].migrateHandlerType).toStrictEqual('EthereumHandlerKind.Event');

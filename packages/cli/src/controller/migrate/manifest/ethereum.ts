@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {FileReference} from '@subql/types-core';
-import {
+import type {
   SubqlRuntimeDatasource as EthereumDs,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
@@ -23,7 +23,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
   }
 
   const subqlDs = {
-    kind: EthereumDatasourceKind.Runtime,
+    kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
     migrateDatasourceType: 'EthereumDatasourceKind.Runtime',
     assets: new Map(ds.mapping.abis.map((a) => [a.name, {file: a.file}])),
     mapping: {
@@ -31,7 +31,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
       handlers: [
         ...(ds.mapping.blockHandlers ?? []).map((h) => {
           return {
-            kind: EthereumHandlerKind.Block,
+            kind: 'ethereum/Runtime' as EthereumHandlerKind.Block,
             migrateHandlerType: 'EthereumHandlerKind.Block',
             handler: h.handler,
             filter: undefined,
@@ -39,7 +39,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
         }),
         ...(ds.mapping.eventHandlers ?? []).map((h) => {
           return {
-            kind: EthereumHandlerKind.Event,
+            kind: 'ethereum/LogHandler' as EthereumHandlerKind.Event,
             migrateHandlerType: 'EthereumHandlerKind.Event',
             handler: h.handler,
             filter: {
@@ -49,7 +49,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
         }),
         ...(ds.mapping.callHandlers ?? []).map((h) => {
           return {
-            kind: EthereumHandlerKind.Call,
+            kind: 'ethereum/TransactionHandler' as EthereumHandlerKind.Call,
             migrateHandlerType: 'EthereumHandlerKind.Call',
             handler: h.handler,
             filter: {

@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {DEFAULT_TS_MANIFEST, NETWORK_FAMILY} from '@subql/common';
-import {
+import type {
   SubqlRuntimeDatasource as EthereumDs,
   EthereumLogFilter,
   EthereumDatasourceKind,
@@ -56,7 +56,7 @@ const mockConstructedEvents: SelectedMethod[] = [
 
 const mockDsFn = (): EthereumDs[] => [
   {
-    kind: EthereumDatasourceKind.Runtime,
+    kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
     startBlock: 1,
     options: {
       abi: 'Erc721',
@@ -70,14 +70,14 @@ const mockDsFn = (): EthereumDs[] => [
       handlers: [
         {
           handler: 'handleTransaction',
-          kind: EthereumHandlerKind.Call,
+          kind: 'ethereum/TransactionHandler' as EthereumHandlerKind.Call,
           filter: {
             function: 'approve(address,uint256)',
           },
         },
         {
           handler: 'handleLog',
-          kind: EthereumHandlerKind.Event,
+          kind: 'ethereum/LogHandler' as EthereumHandlerKind.Event,
           filter: {
             topics: ['Transfer(address,address,uint256)'],
           },
@@ -143,7 +143,7 @@ describe('CLI codegen:generate', () => {
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
     expect(constructedDs).toStrictEqual({
-      kind: EthereumDatasourceKind.Runtime,
+      kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
       startBlock: 1,
       options: {
         abi: 'Erc721',
@@ -155,14 +155,14 @@ describe('CLI codegen:generate', () => {
         handlers: [
           {
             handler: 'handleTransferFromErc721Tx',
-            kind: EthereumHandlerKind.Call,
+            kind: 'ethereum/TransactionHandler' as EthereumHandlerKind.Call,
             filter: {
               function: 'transferFrom(address,address,uint256)',
             },
           },
           {
             handler: 'handleApprovalErc721Log',
-            kind: EthereumHandlerKind.Event,
+            kind: 'ethereum/LogHandler' as EthereumHandlerKind.Event,
             filter: {
               topics: ['Approval(address,address,uint256)'],
             },
@@ -557,7 +557,7 @@ describe('CLI codegen:generate', () => {
       address: 'aaa',
     };
     expect(constructDatasourcesYaml(mockUserInput)).toStrictEqual({
-      kind: EthereumDatasourceKind.Runtime,
+      kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
       startBlock: 1,
       options: {
         abi: 'Erc721',
@@ -569,14 +569,14 @@ describe('CLI codegen:generate', () => {
         handlers: [
           {
             handler: 'handleTransferFromErc721Tx',
-            kind: EthereumHandlerKind.Call,
+            kind: 'ethereum/TransactionHandler' as EthereumHandlerKind.Call,
             filter: {
               function: 'transferFrom(address,address,uint256)',
             },
           },
           {
             handler: 'handleApprovalErc721Log',
-            kind: EthereumHandlerKind.Event,
+            kind: 'ethereum/LogHandler' as EthereumHandlerKind.Event,
             filter: {
               topics: ['Approval(address,address,uint256)'],
             },

@@ -3,7 +3,7 @@
 
 import {existsSync} from 'fs';
 import path from 'path';
-import {NETWORK_FAMILY} from '@subql/common'; // 引入 NETWORK_FAMILY 枚举
+import {NETWORK_FAMILY} from '@subql/common';
 import {networkPackages} from './config';
 import {ModuleCache} from './types';
 

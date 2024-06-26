@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
-import {
+import type {
   EthereumDatasourceKind,
   EthereumHandlerKind,
   EthereumLogFilter,
@@ -190,13 +190,13 @@ export function constructDatasourcesYaml(userInput: UserInput): EthereumDs {
   const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
-    if (kind === 'EthereumHandlerKind.Call') return EthereumHandlerKind.Call;
-    return EthereumHandlerKind.Event;
+    if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
+    return 'ethereum/LogHandler' as EthereumHandlerKind.Event;
   });
   const assets = new Map([[abiName, {file: userInput.abiPath}]]);
 
   return {
-    kind: EthereumDatasourceKind.Runtime,
+    kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
     startBlock: userInput.startBlock,
     options: {
       abi: abiName,

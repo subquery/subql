@@ -10,34 +10,12 @@ import {
   loadFromJsonOrYaml,
   NETWORK_FAMILY,
 } from '@subql/common';
-import {
-  CustomDatasourceTemplate as SubstrateCustomDsTemplate,
-  RuntimeDatasourceTemplate as SubstrateDsTemplate,
-  SubstrateCustomDatasource,
-} from '@subql/types';
-import {
-  CustomDatasourceTemplate as ConcordiumCustomDsTemplate,
-  RuntimeDatasourceTemplate as ConcordiumDsTemplate,
-} from '@subql/types-concordium';
-import {ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
-import {
-  CustomDatasourceTemplate as CosmosCustomDsTemplate,
-  RuntimeDatasourceTemplate as CosmosDsTemplate,
-} from '@subql/types-cosmos';
-import {
-  CustomDatasourceTemplate as EthereumCustomDsTemplate,
-  RuntimeDatasourceTemplate as EthereumDsTemplate,
+import type {SubstrateCustomDatasource} from '@subql/types';
+import {BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
+import type {
   SubqlCustomDatasource as EthereumCustomDs,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
-import {
-  CustomDatasourceTemplate as NearCustomDsTemplate,
-  RuntimeDatasourceTemplate as NearDsTemplate,
-} from '@subql/types-near';
-import {
-  CustomDatasourceTemplate as StellarCustomDsTemplate,
-  RuntimeDatasourceTemplate as StellarDsTemplate,
-} from '@subql/types-stellar';
 import {
   getAllEntitiesRelations,
   getAllEnums,
@@ -52,19 +30,7 @@ import {uniq, uniqBy, upperFirst} from 'lodash';
 import {loadDependency} from '../modulars';
 import {prepareDirPath, renderTemplate} from '../utils';
 
-export type TemplateKind =
-  | SubstrateDsTemplate
-  | SubstrateCustomDsTemplate
-  | CosmosDsTemplate
-  | CosmosCustomDsTemplate
-  | EthereumDsTemplate
-  | EthereumCustomDsTemplate
-  | NearDsTemplate
-  | NearCustomDsTemplate
-  | StellarDsTemplate
-  | StellarCustomDsTemplate
-  | ConcordiumDsTemplate
-  | ConcordiumCustomDsTemplate;
+export type TemplateKind = BaseTemplateDataSource;
 
 export type DatasourceKind = SubstrateCustomDatasource | EthereumDs | EthereumCustomDs;
 
