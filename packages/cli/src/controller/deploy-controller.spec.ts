@@ -184,7 +184,7 @@ describe.skip('CLI deploy, delete, promote', () => {
     assert(validator.chainId, 'Please set chainId in your project');
     const project = {
       cid: ipfs,
-      dictEndpoint: processEndpoints(dict, validator.chainId) || '',
+      dictEndpoint: processEndpoints(dict, validator.chainId) ?? '',
       endpoint,
       indexerImageVersion: indexerV[0],
       indexerAdvancedSettings: {

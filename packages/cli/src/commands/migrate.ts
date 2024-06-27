@@ -96,9 +96,9 @@ export default class Migrate extends Command {
       await migrateManifest(chainInfo, subgraphManifest, subqlManifestPath);
       // render package.json
       await preparePackage(subqlDir, {
-        name: subgraphManifest.name || '',
+        name: subgraphManifest.name ?? '',
         description: subgraphManifest.description,
-        author: subgraphManifest.author || '',
+        author: subgraphManifest.author ?? '',
         endpoint: [],
       });
       await migrateSchema(subgraphSchemaPath, subqlSchemaPath);
