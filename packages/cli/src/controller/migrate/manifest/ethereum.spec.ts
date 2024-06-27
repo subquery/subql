@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import {EthereumDatasourceKind} from '@subql/types-ethereum/dist/project';
 import {TestSubgraph} from '../migrate.fixtures';
 import {convertEthereumDs, convertEthereumTemplate} from './ethereum';

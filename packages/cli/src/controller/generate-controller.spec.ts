@@ -287,7 +287,7 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out existing methods, input address === undefined && ds address === "", should filter', () => {
     const ds = mockDsFn();
-    ds[0].options = Object.assign(ds[0].options ?? {}, {address: ''});
+    ds[0].options!.address = '';
     const [cleanEvents, cleanFunctions] = filterExistingMethods(
       eventFragments,
       functionFragments,
@@ -306,7 +306,7 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out existing methods, only on matching address', () => {
     const ds = mockDsFn();
-    ds[0].options = Object.assign(ds[0].options ?? {}, {address: '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2'});
+    ds[0].options!.address = '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2';
 
     const [cleanEvents, cleanFunctions] = filterExistingMethods(
       eventFragments,
@@ -342,7 +342,7 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out different formatted filters', () => {
     const ds = mockDsFn();
-    ds[0].options = Object.assign(ds[0].options ?? {}, {address: 'zzz'});
+    ds[0].options!.address = 'zzz';
     const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
     const txHandler = ds[0].mapping.handlers[0].filter as EthereumTransactionFilter;
     txHandler.function = 'approve(address to, uint256 tokenId)';

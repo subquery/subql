@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import {ROOT_API_URL_DEV} from '../constants';
 import {DeploymentDataType, DeploymentSpec, V3DeploymentIndexerType, ValidateDataType} from '../types';
 import {delay} from '../utils';
@@ -20,9 +19,9 @@ import {
 import {createProject, deleteProject} from './project-controller';
 
 jest.setTimeout(120000);
-assert(process.env.SUBQL_ORG_TEST, 'Please set SUBQL_ORG_TEST in your environment');
+
 const projectSpec: DeploymentSpec = {
-  org: process.env.SUBQL_ORG_TEST,
+  org: process.env.SUBQL_ORG_TEST!,
   projectName: 'mockedstarter',
   repository: 'https://github.com/bz888/test-deployment-2',
   ipfs: 'QmaVh8DGzuRCJZ5zYEDxXQsXYqP9HihjjeuxNNteSDq8xX',
@@ -41,24 +40,21 @@ async function deployTestProject(
   testAuth: string,
   url: string
 ): Promise<DeploymentDataType> {
-  assert(validator.manifestRunner, 'Please set manifestRunner in your project');
   const indexerV = await imageVersions(
-    validator.manifestRunner.node.name,
-    validator.manifestRunner.node.version,
+    validator.manifestRunner!.node.name,
+    validator.manifestRunner!.node.version,
     testAuth,
     url
   );
   const queryV = await imageVersions(
-    validator.manifestRunner.query.name,
-    validator.manifestRunner.query.version,
+    validator.manifestRunner!.query.name,
+    validator.manifestRunner!.query.version,
     testAuth,
     url
   );
 
   const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
-  assert(validator.chainId, 'Please set chainId in your project');
-  const dictEndpoint = processEndpoints(await dictionaryEndpoints(url), validator.chainId);
-  assert(dictEndpoint, 'Please set dictEndpoint in your project');
+  const dictEndpoint = processEndpoints(await dictionaryEndpoints(url), validator.chainId!)!;
 
   const project: V3DeploymentIndexerType = {
     cid: ipfs,
@@ -74,8 +70,7 @@ async function deployTestProject(
 }
 
 // Replace/Update your access token when test locally
-const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
-assert(testAuth, 'Please set SUBQL_ACCESS_TOKEN_TEST in your environment');
+const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST!;
 // Can be re-enabled when test env is ready
 describe.skip('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
@@ -151,8 +146,7 @@ describe.skip('CLI deploy, delete, promote', () => {
   it('get DictEndpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
-    assert(validator.chainId, 'Please set chainId in your project');
-    expect(processEndpoints(dict, validator.chainId)).toBe(
+    expect(processEndpoints(dict, validator.chainId!)).toBe(
       'https://api.subquery.network/sq/subquery/polkadot-dictionary'
     );
   });
@@ -165,26 +159,24 @@ describe.skip('CLI deploy, delete, promote', () => {
     const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
     const initProjectInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);
 
-    assert(validator.manifestRunner, 'Please set manifestRunner in your project');
     const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
     const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
     const indexerV = await imageVersions(
-      validator.manifestRunner.node.name,
-      validator.manifestRunner.node.version,
+      validator.manifestRunner!.node.name,
+      validator.manifestRunner!.node.version,
       testAuth,
       ROOT_API_URL_DEV
     );
     const queryV = await imageVersions(
-      validator.manifestRunner.query.name,
-      validator.manifestRunner.query.version,
+      validator.manifestRunner!.query.name,
+      validator.manifestRunner!.query.version,
       testAuth,
       ROOT_API_URL_DEV
     );
 
-    assert(validator.chainId, 'Please set chainId in your project');
     const project = {
       cid: ipfs,
-      dictEndpoint: processEndpoints(dict, validator.chainId) ?? '',
+      dictEndpoint: processEndpoints(dict, validator.chainId!) ?? '',
       endpoint,
       indexerImageVersion: indexerV[0],
       indexerAdvancedSettings: {

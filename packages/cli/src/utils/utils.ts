@@ -88,10 +88,10 @@ export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promis
 
 export function errorHandle(e: any, msg: string): Error {
   if (axios.isAxiosError(e) && e?.response?.data) {
-    throw new Error(`${msg} ${e.response.data.message ?? e.response.data}`);
+    return new Error(`${msg} ${e.response.data.message ?? e.response.data}`);
   }
 
-  throw new Error(`${msg} ${e.message}`);
+  return new Error(`${msg} ${e.message}`);
 }
 
 export function buildProjectKey(org: string, projectName: string): string {

@@ -164,8 +164,8 @@ export async function ipfsCID_validate(
   authToken: string,
   url: string
 ): Promise<ValidateDataType> {
+  assert(cid, 'IPFS CID is required');
   try {
-    assert;
     const res = await getAxiosInstance(url, authToken).post<ValidateDataType>(`ipfs/deployment-id/${cid}/validate`);
 
     if (res.status === 500) {

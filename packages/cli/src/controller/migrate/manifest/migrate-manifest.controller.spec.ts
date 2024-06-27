@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
 import {EthereumDatasourceKind} from '@subql/types-ethereum';
@@ -28,8 +27,7 @@ describe('migrate manifest controller', () => {
   });
 
   it(`subgraphDsToSubqlDs`, () => {
-    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
-    assert(networkConverter, 'networkConverter not found');
+    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum]!;
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].startBlock).toBe(7844214);
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].kind).toBe(
       EthereumDatasourceKind.Runtime
@@ -38,8 +36,7 @@ describe('migrate manifest controller', () => {
   });
 
   it(`subgraphTemplateToSubqlTemplate`, () => {
-    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
-    assert(networkConverter, 'networkConverter not found');
+    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum]!;
 
     const testTemplateDataSource = subgraph.dataSources;
     delete (testTemplateDataSource[0].source as any).address;

@@ -82,7 +82,7 @@ export async function runWebpack(
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors?.map((e) => e.message).join('\n'));
+        reject(info.errors?.map((e) => e.message).join('\n') ?? 'Unknown error');
         return;
       }
 
