@@ -59,7 +59,7 @@ export class SubstrateDictionaryService extends DictionaryService<
           const dictionaryV1 = await SubstrateDictionaryV1.create(
             this.project,
             this.nodeConfig,
-            convertGetDsProcessor(this.dsProcessorService.getDsProcessor).bind(
+            this.dsProcessorService.getDsProcessor.bind(
               this.dsProcessorService,
             ),
             endpoint,
@@ -103,27 +103,4 @@ export class SubstrateDictionaryService extends DictionaryService<
     if (!dict) return undefined;
     return dict.getSpecVersions();
   }
-}
-
-function convertGetDsProcessor(
-  f: DsProcessorService['getDsProcessor'],
-): (ds: SubstrateDatasource) => DsProcessor<SubstrateDatasource> {
-  function isSubstrateProcessor(
-    p: ReturnType<DsProcessorService['getDsProcessor']>,
-  ): p is DsProcessor<SubstrateDatasource> {
-    // Since the current package is the substrate node startup package, it must be true here.
-    return true;
-  }
-
-  return (ds: SubstrateDatasource) => {
-    if (!isCustomDs(ds)) {
-      throw new Error('data source is not a custom data source');
-    }
-
-    const processor = f(ds);
-    if (!isSubstrateProcessor(processor)) {
-      throw new Error('data source is not a substrate data source');
-    }
-    return processor;
-  };
 }

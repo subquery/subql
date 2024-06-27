@@ -238,7 +238,7 @@ type ISubstrateDatasource<M extends SubstrateMapping> = BaseDataSource<Substrate
  * @template M - The mapping type for the datasource (default: SubstrateMapping<SubstrateRuntimeHandler>).
  */
 export interface SubstrateRuntimeDatasource<
-  M extends SubstrateMapping<SubstrateRuntimeHandler> = SubstrateMapping<SubstrateRuntimeHandler>
+  M extends SubstrateMapping<SubstrateRuntimeHandler> = SubstrateMapping<SubstrateRuntimeHandler>,
 > extends ISubstrateDatasource<M> {
   /**
    * The kind of the datasource, which is `substrate/Runtime`.
@@ -263,7 +263,7 @@ export type SubstrateDatasource = SubstrateRuntimeDatasource | SubstrateCustomDa
 export interface SubstrateCustomDatasource<
   K extends string = string,
   M extends SubstrateMapping = SubstrateMapping<SubstrateCustomHandler>,
-  O = any
+  O = any,
 > extends BaseCustomDataSource<SubstrateHandler, M> {
   /**
    * The kind of the custom datasource. This should follow the pattern `substrate/*`.
@@ -294,7 +294,7 @@ export type HandlerInputTransformer_0_0_0<
   IM extends RuntimeHandlerInputMap<IT>,
   T extends SubstrateHandlerKind,
   E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
 > = BaseHandlerInputTransformer_0_0_0<IM, T, DS, ApiPromise, E>;
 
 /**
@@ -306,19 +306,18 @@ export type HandlerInputTransformer_1_0_0<
   T extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
 > = BaseHandlerInputTransformer_1_0_0<IM, T, DS, ApiPromise, F, E>;
 
 type SecondLayerHandlerProcessorArray<
   K extends string,
   F extends Record<string, unknown>,
   T,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>
+  DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>,
 > =
-  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, IT, DS>
-  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, IT, DS>
-  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, IT, DS>;
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, DS>
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, DS>
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, DS>;
 
 /**
  * @deprecated use types core version. datasource processors need updating before this can be removed
@@ -327,10 +326,10 @@ export type SubstrateDatasourceProcessor<
   K extends string,
   F extends Record<string, unknown>,
   DS extends SubstrateCustomDatasource<K> = SubstrateCustomDatasource<K>,
-  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, any, DS>> = Record<
+  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>> = Record<
     string,
-    SecondLayerHandlerProcessorArray<K, F, any, any, DS>
-  >
+    SecondLayerHandlerProcessorArray<K, F, any, DS>
+  >,
 > = DsProcessor<DS, P, ApiPromise>;
 
 /**
@@ -340,9 +339,8 @@ export type SecondLayerHandlerProcessor_0_0_0<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> = BaseSecondLayerHandlerProcessor_0_0_0<RuntimeHandlerInputMap<IT>, K, F, E, DS, ApiPromise>;
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+> = BaseSecondLayerHandlerProcessor_0_0_0<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
 
 /**
  * @deprecated use types core version. datasource processors need updating before this can be removed
@@ -351,9 +349,8 @@ export type SecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> = BaseSecondLayerHandlerProcessor_1_0_0<RuntimeHandlerInputMap<IT>, K, F, E, DS, ApiPromise>;
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+> = BaseSecondLayerHandlerProcessor_1_0_0<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
 
 /**
  * @deprecated use types core version. datasource processors need updating before this can be removed
@@ -362,9 +359,8 @@ export type SecondLayerHandlerProcessor<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> = BaseSecondLayerHandlerProcessor<RuntimeHandlerInputMap<IT>, K, F, E, DS, ApiPromise>;
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+> = BaseSecondLayerHandlerProcessor<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
 
 /**
  * Represents a Substrate subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.
