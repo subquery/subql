@@ -6,6 +6,7 @@ import path from 'path';
 import {promisify} from 'util';
 import {loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
+import type {CosmosDatasource, CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/types-cosmos';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
 import {loadDependency} from '../modulars';
@@ -31,7 +32,11 @@ describe('Able to generate cosmos types from protobuf', () => {
   });
 
   const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
-  const manifest = loadFromJsonOrYaml(path.join(PROJECT_PATH, 'project.yaml')) as ProjectManifestV1_0_0<any, any, any>;
+  const manifest = loadFromJsonOrYaml(path.join(PROJECT_PATH, 'project.yaml')) as ProjectManifestV1_0_0<
+    CosmosDatasource,
+    RuntimeDatasourceTemplate | CustomDatasourceTemplate,
+    any
+  >;
 
   it('Able to generate ts types from protobufs', async () => {
     const expectedGeneratedCode =
