@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Enable ts strict model 
+
 ## [10.9.0] - 2024-06-21
 ### Fixed
 - Store service index check failing with snake_case fields (#2461)

@@ -52,7 +52,6 @@ export async function getChainTypes(
     // if it failed, we will give it another attempt, and assume the script written in js
     // we will download it to a temp folder, and load them within sandbox
     const res = await reader.getFile(file);
-    let raw: unknown;
     try {
       raw = yaml.load(res);
     } catch (e) {

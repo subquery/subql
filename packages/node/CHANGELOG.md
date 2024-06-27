@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Enable ts strict model 
+
 ## [4.6.6] - 2024-06-21
 ### Fixed
 - Update with common-substrate, fix `EventFilter` incorrectly extend `BlockFilter`, lead dictionary error (#2463)

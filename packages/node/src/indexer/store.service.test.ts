@@ -64,7 +64,7 @@ describe('Store service integration test', () => {
 
     tempDir = (projectService as any).project.root;
 
-    const [result] = await sequelize.query(
+    const result = await sequelize.query<{ table_name: string }>(
       `
        SELECT 
           table_name
@@ -74,12 +74,11 @@ describe('Store service integration test', () => {
           table_schema = :schema; 
         `,
       {
+        type: QueryTypes.SELECT,
         replacements: { schema: schemaName },
       },
     );
-    const expectedTables = (result as { table_name: string }[]).map(
-      (t) => t.table_name,
-    );
+    const expectedTables = result.map((t) => t.table_name);
 
     const columnResult = await sequelize.query(
       `
@@ -278,7 +277,7 @@ WHERE
 
     tempDir = (projectService as any).project.root;
 
-    const result: { enum_type: string }[] = await sequelize.query(
+    const result: any = await sequelize.query(
       `
       SELECT n.nspname AS schema_name,
        t.typname AS enum_type,
