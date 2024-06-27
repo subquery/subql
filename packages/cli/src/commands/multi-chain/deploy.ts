@@ -186,7 +186,7 @@ export default class MultiChainDeploy extends Command {
       );
     }
 
-    this.log('Deploying SubQuery multi-chain project to Hosted Service');
+    this.log('Deploying SubQuery multi-chain project to Hosted Service, IPFS: ', ipfsCID);
 
     await executeProjectDeployment({
       log: this.log.bind(this),
