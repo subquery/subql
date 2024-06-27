@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
@@ -71,7 +72,8 @@ export default class MultiChainDeploy extends Command {
     flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
 
     // Multichain query descriptor
-    const ipfsCID = fileToCidMap.get(path.basename(multichainManifestPath));
+    const ipfsCID = Array.from(fileToCidMap).find(([file]) => file === '')?.[1];
+    assert(ipfsCID, 'Multichain deployment CID not found');
 
     const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
