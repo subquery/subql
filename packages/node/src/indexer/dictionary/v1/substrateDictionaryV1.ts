@@ -19,13 +19,15 @@ import { SubstrateBlockFilter, SubstrateDatasource } from '@subql/types';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry as DictionaryV1QueryEntry,
-  DsProcessor,
 } from '@subql/types-core';
 import { buildQuery, GqlNode, GqlQuery } from '@subql/utils';
 import { sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../../../utils/project';
+import { DsProcessorService } from '../../ds-processor.service';
 import { SpecVersion, SpecVersionDictionary } from '../types';
+
+type GetDsProcessor = DsProcessorService['getDsProcessor'];
 
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
@@ -60,12 +62,10 @@ function callFilterToQueryEntry(
   };
 }
 
-function getBaseHandlerKind<
-  P extends DsProcessor<SubstrateDatasource> = DsProcessor<SubstrateDatasource>,
->(
+function getBaseHandlerKind(
   ds: SubstrateDataSource,
   handler: SubstrateHandler,
-  getDsProcessor: (ds: SubstrateDatasource) => P,
+  getDsProcessor: GetDsProcessor,
 ): SubstrateHandlerKind | undefined {
   if (isRuntimeDs(ds) && isBaseHandler(handler)) {
     return handler.kind;
@@ -81,13 +81,10 @@ function getBaseHandlerKind<
   }
 }
 
-function getBaseHandlerFilters<
-  T extends SubstrateRuntimeHandlerFilter,
-  P extends DsProcessor<SubstrateDatasource> = DsProcessor<SubstrateDatasource>,
->(
+function getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
   ds: SubstrateDataSource,
   handlerKind: string,
-  getDsProcessor: (ds: SubstrateDatasource) => P,
+  getDsProcessor: GetDsProcessor,
 ): T[] {
   if (isCustomDs(ds)) {
     const plugin = getDsProcessor(ds);
@@ -101,11 +98,9 @@ function getBaseHandlerFilters<
 }
 
 // eslint-disable-next-line complexity
-export function buildDictionaryV1QueryEntries<
-  P extends DsProcessor<SubstrateDatasource> = DsProcessor<SubstrateDatasource>,
->(
+export function buildDictionaryV1QueryEntries(
   dataSources: SubstrateDatasource[],
-  getDsProcessor: (ds: SubstrateDatasource) => P,
+  getDsProcessor: GetDsProcessor,
 ): DictionaryV1QueryEntry[] {
   const queryEntries: DictionaryV1QueryEntry[] = [];
 
@@ -117,11 +112,9 @@ export function buildDictionaryV1QueryEntries<
       if (isCustomDs(ds)) {
         assert(plugin, 'plugin should be defined');
         const processor = plugin.handlerProcessors[handler.kind];
-        if (processor.dictionaryQuery) {
-          const queryEntry = processor.dictionaryQuery(
-            (handler as SubstrateCustomHandler).filter,
-            ds,
-          );
+        const filter = (handler as SubstrateCustomHandler).filter;
+        if (processor.dictionaryQuery && filter) {
+          const queryEntry = processor.dictionaryQuery(filter, ds);
           if (queryEntry) {
             queryEntries.push(queryEntry);
             continue;
@@ -193,9 +186,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
   constructor(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
-    protected getDsProcessor: (
-      ds: SubstrateDatasource,
-    ) => DsProcessor<SubstrateDatasource>,
+    protected getDsProcessor: GetDsProcessor,
     dictionaryUrl: string,
     chainId?: string,
   ) {
@@ -205,9 +196,7 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
   static async create(
     project: SubqueryProject,
     nodeConfig: NodeConfig,
-    getDsProcessor: (
-      ds: SubstrateDatasource,
-    ) => DsProcessor<SubstrateDatasource>,
+    getDsProcessor: GetDsProcessor,
     dictionaryUrl: string,
     chainId?: string,
   ): Promise<SubstrateDictionaryV1> {
