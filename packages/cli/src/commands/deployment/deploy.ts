@@ -63,12 +63,10 @@ export default class Deploy extends Command {
       } else {
         flags.dict = validateDictEndpoint;
       }
-
-      assert(flags.dict, 'Dictionary is required');
     }
 
-    assert(validator.manifestRunner, 'Please set manifestRunner in your project');
     if (!flags.indexerVersion) {
+      assert(validator.manifestRunner, 'Please set manifestRunner in your project');
       try {
         const indexerVersions = await imageVersions(
           validator.manifestRunner.node.name,

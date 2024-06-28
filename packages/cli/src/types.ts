@@ -134,7 +134,7 @@ export interface V3DeploymentInput {
 
 export interface V3DeploymentIndexerType {
   cid: string;
-  dictEndpoint: string;
+  dictEndpoint?: string;
   endpoint: string | string[];
   indexerImageVersion: string;
   indexerAdvancedSettings: {
@@ -193,7 +193,7 @@ export interface DeploymentFlagsInterface {
 
 export interface GenerateDeploymentChainInterface {
   cid: string;
-  dictEndpoint: string;
+  dictEndpoint?: string;
   endpoint: string[];
   indexerImageVersion: string;
   flags: DeploymentFlagsInterface;

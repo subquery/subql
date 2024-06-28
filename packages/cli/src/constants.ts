@@ -23,7 +23,10 @@ export const CHAIN_ID_REG = /chainId:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
 export const CAPTURE_CHAIN_ID_REG = /chainId:\s*("([^"]*)"|(?<!")(\d+))/;
 
 const rootPath = process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'];
-assert(rootPath, 'Cannot determine root path');
+assert(
+  rootPath,
+  'Cannot determine root path, please create an issue and include your OS. https://github.com/subquery/subql/issues/new'
+);
 export const ACCESS_TOKEN_PATH = path.resolve(rootPath, '.subql/SUBQL_ACCESS_TOKEN');
 
 export const DEFAULT_SUBGRAPH_MANIFEST = 'subgraph.yaml';
