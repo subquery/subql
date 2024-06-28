@@ -90,6 +90,7 @@ export default class Deploy extends Command {
       }
     }
     if (!flags.queryVersion) {
+      assert(validator.manifestRunner, 'Please set manifestRunner in your project');
       try {
         const queryVersions = await imageVersions(
           validator.manifestRunner.query.name,
