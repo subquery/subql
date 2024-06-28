@@ -140,8 +140,8 @@ describe('Building dictionary query entries', () => {
       {
         entity: 'events',
         conditions: [
-          { field: 'module', value: 'module' },
           { field: 'event', value: 'event' },
+          { field: 'module', value: 'module' },
         ],
       },
     ]);
