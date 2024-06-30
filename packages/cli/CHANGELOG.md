@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Breaking Change: Removed common network packages from dependencies, only import required module from local/global when using. (#2456)
+
 ## [4.15.0] - 2024-06-21
 ### Changed
 - Update `@subql/utils`, `@subql/common` and other dependencies

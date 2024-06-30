@@ -1,8 +1,15 @@
-specVersion: '0.0.1'
+specVersion: '1.0.0'
 description: ''
 repository: 'https://github.com/subquery/subql-starter'
-schema: './badEntity.graphql'
-
+schema:
+  file: './badEntity.graphql'
+runner:
+  node:
+    name: '@subql/node'
+    version: '>=3.0.1'
+  query:
+    name: '@subql/query'
+    version: '*'
 network:
   endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
 
