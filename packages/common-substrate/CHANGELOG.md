@@ -6,9 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-07-01
 ### Added
 - Enable ts strict mode
-- Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule` (#2462)
+- Breaking Change: Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule` (#2462)
 
 ## [3.8.1] - 2024-06-21
 ### Fixed
@@ -160,7 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/3.8.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.0.0...HEAD
+[3.9.0]: https://github.com/subquery/subql/compare/common-substrate/3.8.1...common-substrate/4.0.0
 [3.8.1]: https://github.com/subquery/subql/compare/common-substrate/3.8.0...common-substrate/3.8.1
 [3.8.0]: https://github.com/subquery/subql/compare/common-substrate/3.7.0...common-substrate/3.8.0
 [3.7.0]: https://github.com/subquery/subql/compare/common-substrate/3.6.0...common-substrate/3.7.0

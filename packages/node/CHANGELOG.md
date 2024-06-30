@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.7.0] - 2024-07-01
+### Changed
+- Update with `@subql/node-core`, `@subql/common-substrate`
+
 ## [4.6.6] - 2024-06-21
 ### Fixed
 - Update with common-substrate, fix `EventFilter` incorrectly extend `BlockFilter`, lead dictionary error (#2463)
@@ -1233,7 +1237,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.6.6...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/4.7.0...HEAD
+[4.7.0]: https://github.com/subquery/subql/compare/node/4.6.6...node/4.7.0
 [4.6.6]: https://github.com/subquery/subql/compare/node/4.6.5...node/4.6.6
 [4.6.5]: https://github.com/subquery/subql/compare/node/4.6.4...node/4.6.5
 [4.6.4]: https://github.com/subquery/subql/compare/node/4.6.3...node/4.6.4
