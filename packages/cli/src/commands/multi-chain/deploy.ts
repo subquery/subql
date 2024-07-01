@@ -71,8 +71,8 @@ export default class MultiChainDeploy extends Command {
     flags.org = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
     flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
 
-    // Multichain query descriptor
-    const ipfsCID = Array.from(fileToCidMap).find(([file]) => file === '')?.[1];
+    // Multichain query descriptor, The IPFS provided for deployment here must be a directory
+    const ipfsCID = fileToCidMap.get('');
     assert(ipfsCID, 'Multichain deployment CID not found');
 
     const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
