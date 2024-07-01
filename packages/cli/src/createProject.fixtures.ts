@@ -5,6 +5,7 @@ import childProcess from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import fetch from 'cross-fetch';
 import Build from './commands/build';
 import Codegen from './commands/codegen';
@@ -81,14 +82,13 @@ export async function createTestProject(): Promise<string> {
   return projectDir;
 }
 
-export async function createMultiChainTestProject(): Promise<string> {
+export async function createMultiChainTestProject(): Promise<{multichainManifestPath: string; fullPaths: string[]}> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, multiProjectSpecV1_0_0.name);
 
   const exampleProject = await getExampleProject('multi', 'multi');
 
-  const projectPath = await cloneProjectTemplate(tmpdir, multiProjectSpecV1_0_0.name, exampleProject);
-  await prepare(projectPath, multiProjectSpecV1_0_0);
+  await cloneProjectTemplate(tmpdir, multiProjectSpecV1_0_0.name, exampleProject);
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});
@@ -98,5 +98,15 @@ export async function createMultiChainTestProject(): Promise<string> {
   await Codegen.run(['-l', projectDir]);
   await Build.run(['-f', projectDir]);
 
-  return projectDir;
+  const project = getProjectRootAndManifest(projectDir);
+  const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));
+  let multichainManifestPath = getMultichainManifestPath(projectDir);
+  if (!multichainManifestPath) {
+    throw new Error(
+      'Selected project is not multi-chain. Please set correct file.\n\n https://academy.subquery.network/build/multi-chain.html'
+    );
+  }
+
+  multichainManifestPath = path.join(project.root, multichainManifestPath);
+  return {multichainManifestPath, fullPaths};
 }

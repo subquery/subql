@@ -15,8 +15,12 @@ jest.setTimeout(300_000); // 300s
 describe('Cli publish', () => {
   let projectDir: string;
   let multiChainProjectDir: string;
+  let fullPaths: string[];
   beforeAll(async () => {
-    [projectDir, multiChainProjectDir] = await Promise.all([createTestProject(), createMultiChainTestProject()]);
+    const res = await Promise.all([createTestProject(), createMultiChainTestProject()]);
+    projectDir = res[0];
+    multiChainProjectDir = res[1].multichainManifestPath;
+    fullPaths = res[1].fullPaths;
   });
 
   afterAll(async () => {
@@ -61,7 +65,7 @@ describe('Cli publish', () => {
   });
 
   it('Get directory CID from multi-chain project', async () => {
-    const cidMap = await uploadToIpfs([projectDir], testAuth, projectDir);
+    const cidMap = await uploadToIpfs(fullPaths, testAuth, multiChainProjectDir);
     const directoryCid = getDirectoryCid(cidMap);
     expect(directoryCid).toBeDefined();
   });
