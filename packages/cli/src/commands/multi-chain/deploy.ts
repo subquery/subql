@@ -22,7 +22,7 @@ import {
   projectsInfo,
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
-import {uploadToIpfs} from '../../controller/publish-controller';
+import {getDirectoryCid, uploadToIpfs} from '../../controller/publish-controller';
 import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
 
@@ -72,7 +72,7 @@ export default class MultiChainDeploy extends Command {
     flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
 
     // Multichain query descriptor, The IPFS provided for deployment here must be a directory
-    const ipfsCID = fileToCidMap.get('');
+    const ipfsCID = getDirectoryCid(fileToCidMap);
     assert(ipfsCID, 'Multichain deployment CID not found');
 
     const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);

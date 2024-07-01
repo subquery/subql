@@ -29,6 +29,24 @@ const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
   },
 };
 
+const multiProjectSpecV1_0_0: ProjectSpecV1_0_0 = {
+  name: 'multi_mocked_starter',
+  chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+  endpoint: 'https://arbitrum.llamarpc.com',
+  author: 'jay',
+  description: 'this is test for init controller',
+  runner: {
+    node: {
+      name: '@subql/node-ethereum',
+      version: '>=3.0.0',
+    },
+    query: {
+      name: '@subql/query',
+      version: '*',
+    },
+  },
+};
+
 async function getExampleProject(networkFamily: string, network: string): Promise<ExampleProjectInterface | undefined> {
   const res = await fetch('https://raw.githubusercontent.com/subquery/templates/main/dist/output.json');
 
@@ -51,6 +69,26 @@ export async function createTestProject(): Promise<string> {
 
   const projectPath = await cloneProjectTemplate(tmpdir, projectSpecV1_0_0.name, exampleProject);
   await prepare(projectPath, projectSpecV1_0_0);
+
+  // Install dependencies
+  childProcess.execSync(`npm i`, {cwd: projectDir});
+  // Set test env to be develop mode, only limit to test
+  process.env.NODE_ENV = 'develop';
+
+  await Codegen.run(['-l', projectDir]);
+  await Build.run(['-f', projectDir]);
+
+  return projectDir;
+}
+
+export async function createMultiChainTestProject(): Promise<string> {
+  const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
+  const projectDir = path.join(tmpdir, multiProjectSpecV1_0_0.name);
+
+  const exampleProject = await getExampleProject('multi', 'multi');
+
+  const projectPath = await cloneProjectTemplate(tmpdir, multiProjectSpecV1_0_0.name, exampleProject);
+  await prepare(projectPath, multiProjectSpecV1_0_0);
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});

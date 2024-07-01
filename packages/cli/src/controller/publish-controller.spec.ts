@@ -5,8 +5,8 @@ import {promisify} from 'util';
 import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import rimraf from 'rimraf';
-import {createTestProject} from '../createProject.fixtures';
-import {uploadToIpfs} from './publish-controller';
+import {createMultiChainTestProject, createTestProject} from '../createProject.fixtures';
+import {getDirectoryCid, uploadToIpfs} from './publish-controller';
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN;
@@ -14,9 +14,9 @@ const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 jest.setTimeout(300_000); // 300s
 describe('Cli publish', () => {
   let projectDir: string;
-
+  let multiChainProjectDir: string;
   beforeAll(async () => {
-    projectDir = await createTestProject();
+    [projectDir, multiChainProjectDir] = await Promise.all([createTestProject(), createMultiChainTestProject()]);
   });
 
   afterAll(async () => {
@@ -58,5 +58,11 @@ describe('Cli publish', () => {
       obj: {abc: 111},
     });
     expect(mapToObject(mockMap)).toStrictEqual({'1': 'aaa', '2': 'bbb'});
+  });
+
+  it('Get directory CID from multi-chain project', async () => {
+    const cidMap = await uploadToIpfs([projectDir], testAuth, projectDir);
+    const directoryCid = getDirectoryCid(cidMap);
+    expect(directoryCid).toBeDefined();
   });
 });
