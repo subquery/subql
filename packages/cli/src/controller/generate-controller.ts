@@ -3,30 +3,30 @@
 
 import fs from 'fs';
 import path from 'path';
-import {FunctionFragment, EventFragment, ConstructorFragment, Fragment} from '@ethersproject/abi/src.ts/fragments';
-import {loadFromJsonOrYaml} from '@subql/common';
-import {
+import {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
+import type {
   EthereumDatasourceKind,
   EthereumHandlerKind,
+  EthereumLogFilter,
   EthereumTransactionFilter,
+  SubqlRuntimeDatasource as EthereumDs,
   SubqlRuntimeHandler,
-  parseContractPath,
-} from '@subql/common-ethereum';
-import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
+} from '@subql/types-ethereum';
 import chalk from 'chalk';
 import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
-import {upperFirst, difference, pickBy} from 'lodash';
+import {difference, pickBy, upperFirst} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
+import {loadDependency} from '../modulars';
 import {
   extractFromTs,
   renderTemplate,
   replaceArrayValueInTsManifest,
   resolveToAbsolutePath,
   splitArrayString,
-  tsStringify,
 } from '../utils';
 
 interface HandlerPropType {
@@ -165,7 +165,8 @@ function generateFormattedHandlers(
 }
 
 export function constructDatasourcesTs(userInput: UserInput): string {
-  const abiName = parseContractPath(userInput.abiPath).name;
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
   const handlersString = tsStringify(formattedHandlers);
 
@@ -185,15 +186,16 @@ export function constructDatasourcesTs(userInput: UserInput): string {
 }
 
 export function constructDatasourcesYaml(userInput: UserInput): EthereumDs {
-  const abiName = parseContractPath(userInput.abiPath).name;
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
-    if (kind === 'EthereumHandlerKind.Call') return EthereumHandlerKind.Call;
-    return EthereumHandlerKind.Event;
+    if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
+    return 'ethereum/LogHandler' as EthereumHandlerKind.Event;
   });
   const assets = new Map([[abiName, {file: userInput.abiPath}]]);
 
   return {
-    kind: EthereumDatasourceKind.Runtime,
+    kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
     startBlock: userInput.startBlock,
     options: {
       abi: abiName,
@@ -422,4 +424,32 @@ export async function generateHandlers(
   } catch (e) {
     throw new Error(`Unable to generate handler scaffolds. ${e.message}`);
   }
+}
+
+export function tsStringify(
+  obj: SubqlRuntimeHandler | SubqlRuntimeHandler[] | string,
+  indent = 2,
+  currentIndent = 0
+): string {
+  if (typeof obj !== 'object' || obj === null) {
+    if (typeof obj === 'string' && obj.includes('EthereumHandlerKind')) {
+      return obj; // Return the string as-is without quotes
+    }
+    return JSON.stringify(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    const items = obj.map((item) => tsStringify(item, indent, currentIndent + indent));
+    return `[\n${items.map((item) => ' '.repeat(currentIndent + indent) + item).join(',\n')}\n${' '.repeat(
+      currentIndent
+    )}]`;
+  }
+
+  const entries = Object.entries(obj);
+  const result = entries.map(([key, value]) => {
+    const valueStr = tsStringify(value, indent, currentIndent + indent);
+    return `${' '.repeat(currentIndent + indent)}${key}: ${valueStr}`;
+  });
+
+  return `{\n${result.join(',\n')}\n${' '.repeat(currentIndent)}}`;
 }

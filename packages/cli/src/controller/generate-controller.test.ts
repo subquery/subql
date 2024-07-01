@@ -5,12 +5,12 @@ import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi';
-import {DEFAULT_TS_MANIFEST, loadFromJsonOrYaml} from '@subql/common';
+import {DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import rimraf from 'rimraf';
-import {parseContractPath} from 'typechain';
 import {Document, stringify} from 'yaml';
 import Generate, {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {loadDependency} from '../modulars';
 import {
   constructMethod,
   filterExistingMethods,
@@ -160,7 +160,8 @@ const originalManifestData2 = {
   ],
 };
 
-const abiName = parseContractPath('./erc721.json').name;
+const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+const abiName = ethModule.parseContractPath('./erc721.json').name;
 
 const mockUserInput: UserInput = {
   startBlock: 1,
