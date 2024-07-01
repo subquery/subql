@@ -6,10 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-07-01
+### Changed
+- Breaking Change: Bump version with `@subql/types-core`, apply parseFunction type missing asImpl and its deployment (#2466)
+
 ## [3.9.0] - 2024-06-21
 ### Added
-- Enable ts strict model
-- Reader interface method not returning undefined
+- Enable ts strict model (#2448)
+- Reader interface method not returning undefined (#2448)
 
 ## [3.8.0] - 2024-06-18
 ### Changed
@@ -376,7 +380,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/3.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/4.0.0...HEAD
+[3.11.0]: https://github.com/subquery/subql/compare/common/3.9.0...common/4.0.0
 [3.9.0]: https://github.com/subquery/subql/compare/common/3.8.0...common/3.9.0
 [3.8.0]: https://github.com/subquery/subql/compare/common/3.7.0...common/3.8.0
 [3.7.0]: https://github.com/subquery/subql/compare/common/3.6.0...common/3.7.0

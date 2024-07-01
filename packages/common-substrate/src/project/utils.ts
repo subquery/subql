@@ -12,24 +12,31 @@ import {
   RuntimeDatasourceTemplate,
   SubstrateMapping,
   SubstrateCustomHandler,
+  SecondLayerHandlerProcessorArray,
 } from '@subql/types';
 import {BaseTemplateDataSource} from '@subql/types-core';
 import {gte} from 'semver';
 
 export function isBlockHandlerProcessor<F extends Record<string, unknown>, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, F, unknown>
+  hp: SecondLayerHandlerProcessorArray<SubstrateHandlerKind, F, unknown>
 ): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, E> {
   return hp.baseHandlerKind === SubstrateHandlerKind.Block;
 }
 
 export function isEventHandlerProcessor<F extends Record<string, unknown>, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, F, unknown>
+  hp: SecondLayerHandlerProcessorArray<SubstrateHandlerKind, F, unknown>
 ): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, E> {
   return hp.baseHandlerKind === SubstrateHandlerKind.Event;
 }
 
 export function isCallHandlerProcessor<F extends Record<string, unknown>, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, F, unknown>
+  hp: SecondLayerHandlerProcessorArray<SubstrateHandlerKind, F, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, E> {
+  return hp.baseHandlerKind === SubstrateHandlerKind.Call;
+}
+
+function debug<F extends Record<string, unknown>, E>(
+  hp: SecondLayerHandlerProcessorArray<SubstrateHandlerKind, F, unknown>
 ): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, E> {
   return hp.baseHandlerKind === SubstrateHandlerKind.Call;
 }

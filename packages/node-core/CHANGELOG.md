@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.10.0] - 2024-07-01
+### Changed
+- Bump version with `@subql/common`
+
 ## [10.9.0] - 2024-06-21
 ### Fixed
 - Store service index check failing with snake_case fields (#2461)
@@ -739,7 +743,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.10.0...HEAD
+[10.10.0]: https://github.com/subquery/subql/compare/node-core/10.9.0...node-core/10.10.0
 [10.9.0]: https://github.com/subquery/subql/compare/node-core/10.6.0...node-core/10.9.0
 [10.6.0]: https://github.com/subquery/subql/compare/node-core/10.5.1...node-core/10.6.0
 [10.5.1]: https://github.com/subquery/subql/compare/node-core/10.5.0...node-core/10.5.1
