@@ -149,7 +149,7 @@ export function findMatchingIndices(
     } else if (content[i] === endChar) {
       openCount--;
       if (openCount === 0) {
-        assert(startIndex, 'startIndex should be defined');
+        assert(startIndex !== undefined, 'startIndex should be defined');
         pairs.push([startIndex, i]);
         break;
       }
