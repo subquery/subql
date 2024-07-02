@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Added
 - Enable ts strict mode
 
+### Fixed
+- The IPFS CID for multi-chain requires the directory CID.
+
 ## [4.15.0] - 2024-06-21
 ### Changed
 - Update `@subql/utils`, `@subql/common` and other dependencies
