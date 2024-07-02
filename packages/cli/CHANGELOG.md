@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Added
+- Enable ts strict mode
+
 ## [4.15.0] - 2024-06-21
 ### Changed
 - Update `@subql/utils`, `@subql/common` and other dependencies
