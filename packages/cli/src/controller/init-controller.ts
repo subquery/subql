@@ -153,7 +153,7 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
       endpoint: ENDPOINT_REG,
     });
 
-    assert(extractedTsValues.endpoint, 'Failed to extract endpoint from project.ts');
+    assert(extractedTsValues.endpoint !== null, 'Failed to extract endpoint from project.ts');
     endpoint = extractedTsValues.endpoint;
   } else {
     const yamlManifest = await fs.promises.readFile(defaultYamlPath, 'utf8');
