@@ -88,7 +88,7 @@ export class SubstrateDictionaryService extends DictionaryService<
 
   private getV1Dictionary(): SubstrateDictionaryV1 | undefined {
     // TODO this needs to be removed once Substrate supports V2 dictionaries
-    if (!this._currentDictionaryIndex) return undefined;
+    if (this._currentDictionaryIndex === undefined) return undefined;
     const dict = this._dictionaries[this._currentDictionaryIndex];
     if (!dict) return undefined;
     assert(
