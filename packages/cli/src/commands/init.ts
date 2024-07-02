@@ -79,8 +79,6 @@ export default class Init extends Command {
       description: 'Give the starter project name',
     }),
   };
-  // private projectPath!: string; //path on GitHub
-  // private project!: ProjectSpecBase;
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);

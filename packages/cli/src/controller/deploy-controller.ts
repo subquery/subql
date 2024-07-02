@@ -312,8 +312,6 @@ export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): Q
 }
 
 export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
-  let deploymentOutput: DeploymentDataType | void;
-
   if (data.projectInfo !== undefined) {
     await updateDeployment(
       data.org,
@@ -327,9 +325,8 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       ROOT_API_URL_PROD
     );
     data.log(`Project: ${data.projectName} has been re-deployed`);
-    return;
   } else {
-    deploymentOutput = await createDeployment(
+    const deploymentOutput: DeploymentDataType = await createDeployment(
       data.org,
       data.projectName,
       data.authToken,
@@ -358,6 +355,6 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
       `);
     }
+    return deploymentOutput;
   }
-  return deploymentOutput;
 }
