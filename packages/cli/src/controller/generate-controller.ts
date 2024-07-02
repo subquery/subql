@@ -299,10 +299,10 @@ export const yamlExtractor: ManifestExtractor<EthereumDs[]> = (dataSources, case
         const topics = (handler.filter as EthereumLogFilter).topics?.[0];
         const func = (handler.filter as EthereumTransactionFilter).function;
 
-        if ('topics' in handler.filter && topics) {
+        if (topics) {
           existingEvents.push(topics);
         }
-        if ('function' in handler.filter && func) {
+        if (func) {
           existingFunctions.push(func);
         }
       });
