@@ -205,7 +205,7 @@ export function processFields(
           const typeClass = getTypeByScalarName(field.type);
           assert(
             typeClass && typeClass.tsType,
-            `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className}"`
+            `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className} @${type}"`
           );
           injectField.type = typeClass.tsType;
           injectField.isJsonInterface = false;
