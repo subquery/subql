@@ -16,6 +16,7 @@ import {
   ConnectionPoolStateManager,
   createIndexerWorker,
   InMemoryCacheService,
+  MonitorServiceInterface,
 } from '@subql/node-core';
 import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -55,6 +56,7 @@ export class WorkerBlockDispatcherService
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksSevice: UnfinalizedBlocksService,
     connectionPoolState: ConnectionPoolStateManager<StellarApiConnection>,
+    monitorService?: MonitorServiceInterface,
   ) {
     super(
       nodeConfig,
@@ -81,7 +83,9 @@ export class WorkerBlockDispatcherService
           connectionPoolState,
           project.root,
           projectService.startHeight,
+          monitorService,
         ),
+      monitorService,
     );
   }
 

@@ -15,6 +15,8 @@ import {
   WorkerInMemoryCacheService,
   SandboxService,
   WorkerUnfinalizedBlocksService,
+  MonitorService,
+  WorkerMonitorService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { StellarApiService } from '../../stellar';
@@ -87,6 +89,10 @@ import { WorkerService } from './worker.service';
         }
         return new WorkerUnfinalizedBlocksService((global as any).host);
       },
+    },
+    {
+      provide: MonitorService,
+      useFactory: () => new WorkerMonitorService((global as any).host),
     },
     {
       provide: InMemoryCacheService,

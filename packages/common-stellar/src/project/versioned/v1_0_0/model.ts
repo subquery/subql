@@ -37,16 +37,11 @@ import {SubqlStellarDataSource, SubqlRuntimeHandler} from '../../types';
 
 const Stellar_NODE_NAME = `@subql/node-stellar`;
 
-export class StellarProjectMapping extends StellarMapping {
-  @IsString()
-  file: string;
-}
-
 export class StellarRunnerNodeImpl extends RunnerNodeImpl {
   @IsIn([Stellar_NODE_NAME], {
     message: `Runner Substrate node name incorrect, suppose be '${Stellar_NODE_NAME}'`,
   })
-  name: string;
+  name: string = Stellar_NODE_NAME;
 }
 
 export class StellarRuntimeDataSourceImpl
@@ -151,7 +146,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   }
 
   @Equals('1.0.0')
-  specVersion: string;
+  specVersion = '1.0.0';
   @Type(() => StellarCustomDataSourceImpl, {
     discriminator: {
       property: 'kind',

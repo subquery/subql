@@ -13,6 +13,7 @@ import {
   getLogger,
   ProjectUpgradeService,
   IBlock,
+  exitWithError,
 } from '@subql/node-core';
 import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import {
@@ -47,8 +48,7 @@ export class StellarApiService extends ApiService<
     try {
       network = this.project.network;
     } catch (e) {
-      logger.error(Object.keys(e));
-      process.exit(1);
+      exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
     const sorobanEndpoint: string | undefined =

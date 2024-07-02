@@ -236,7 +236,7 @@ export class CustomDataSourceBase<K extends string, M extends SubqlMapping = Sub
   mapping: M;
   @IsOptional()
   @IsInt()
-  startBlock?: number;
+  startBlock?: number = undefined;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, CustomDataSourceAsset>;
