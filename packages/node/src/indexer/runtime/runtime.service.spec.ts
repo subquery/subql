@@ -49,7 +49,7 @@ const getApiService = (): ApiService =>
 
             return Promise.resolve({
               specVersion: {
-                toNumber: () => parseInt(specVersion.id),
+                toNumber: () => parseInt(specVersion.id, 10),
               },
             } as RuntimeVersion);
           },
