@@ -50,7 +50,7 @@ export default class Deployment extends Command {
       // removes arguments -> deployment and everything before it from the process.argv
       const stripped_argv: string[] = process.argv
         .filter((v, idx) => idx > process.argv.indexOf('deployment') && !v.includes('--options'))
-        .reduce((acc, val) => acc.concat(val.split('=')), []);
+        .reduce((acc, val) => acc.concat(val.split('=')), [] as string[]);
 
       await handler.run(stripped_argv);
     } catch (e) {

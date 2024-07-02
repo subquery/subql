@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
@@ -43,12 +44,12 @@ function filterInput(arr: string[]) {
 
 async function promptValidRemoteAndBranch(): Promise<string[]> {
   let isValid = false;
-  let remote: string;
+  let remote: string | undefined;
   while (!isValid) {
     try {
-      remote = await cli.prompt('Custom template git remote', {
+      remote = (await cli.prompt('Custom template git remote', {
         required: true,
-      });
+      })) as string;
       new URL(remote);
       isValid = true;
     } catch (e) {
@@ -78,29 +79,24 @@ export default class Init extends Command {
       description: 'Give the starter project name',
     }),
   };
-  private projectPath: string; //path on GitHub
-  private project: ProjectSpecBase;
-  private location: string;
-  private networkFamily: NETWORK_FAMILY;
-  private network: string;
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
 
-    this.location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
-    this.project = {} as ProjectSpecBase;
-    this.project.name = args.projectName
+    const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();
+    const project = {} as ProjectSpecBase;
+    project.name = args.projectName
       ? args.projectName
       : await cli.prompt('Project name', {default: 'subql-starter', required: true});
-    if (fs.existsSync(path.join(this.location, `${this.project.name}`))) {
-      throw new Error(`Directory ${this.project.name} exists, try another project name`);
+    if (fs.existsSync(path.join(location, `${project.name}`))) {
+      throw new Error(`Directory ${project.name} exists, try another project name`);
     }
 
     const networkTemplates = await fetchNetworks();
 
     //Family selection
     const families = networkTemplates.map(({name}) => name);
-    await inquirer
+    const networkFamily: NETWORK_FAMILY = await inquirer
       .prompt([
         {
           name: 'familyResponse',
@@ -112,17 +108,16 @@ export default class Init extends Command {
           source: filterInput(families),
         },
       ])
-      .then(({familyResponse}) => {
-        this.networkFamily = familyResponse;
-      });
+      .then(({familyResponse}) => familyResponse);
 
     // if network family is of ethereum, then should prompt them an abiPath
-    const selectedFamily = networkTemplates.find((family) => family.name === this.networkFamily);
+    const selectedFamily = networkTemplates.find((family) => family.name === networkFamily);
+    assert(selectedFamily, 'No network family selected');
 
     // Network selection
     const networkStrArr = selectedFamily.networks.map((n) => n.name);
 
-    await inquirer
+    const network: string = await inquirer
       .prompt([
         {
           name: 'networkResponse',
@@ -134,14 +129,14 @@ export default class Init extends Command {
           source: filterInput(networkStrArr),
         },
       ])
-      .then(({networkResponse}) => {
-        this.network = networkResponse;
-      });
-    const selectedNetwork = selectedFamily.networks.find((network) => this.network === network.name);
+      .then(({networkResponse}) => networkResponse);
+
+    const selectedNetwork = selectedFamily.networks.find((v) => network === v.name);
+    assert(selectedNetwork, 'No network selected');
 
     const candidateProjects = await fetchExampleProjects(selectedFamily.code, selectedNetwork.code);
 
-    let selectedProject: ExampleProjectInterface;
+    let selectedProject: ExampleProjectInterface | undefined;
     // Templates selection
     const paddingWidth = candidateProjects.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
     const templateDisplays = candidateProjects.map(
@@ -162,16 +157,17 @@ export default class Init extends Command {
       .then(async ({templateDisplay}) => {
         const templateName = (templateDisplay as string).split(' ')[0];
         if (templateName === 'Other') {
-          await this.cloneCustomRepo();
+          await this.cloneCustomRepo(project, projectPath, location);
         } else {
           selectedProject = candidateProjects.find((project) => project.name === templateName);
         }
       });
-    this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedProject);
+    assert(selectedProject, 'No project selected');
+    const projectPath: string = await cloneProjectTemplate(location, project.name, selectedProject);
 
-    await this.setupProject(flags);
+    await this.setupProject(project, projectPath, flags);
 
-    if (await validateEthereumProjectManifest(this.projectPath)) {
+    if (await validateEthereumProjectManifest(projectPath)) {
       const {loadAbi} = await inquirer.prompt([
         {
           type: 'confirm',
@@ -182,30 +178,30 @@ export default class Init extends Command {
       ]);
 
       if (loadAbi) {
-        await this.createProjectScaffold();
+        await this.createProjectScaffold(projectPath);
       }
     }
   }
 
-  async cloneCustomRepo(): Promise<void> {
+  async cloneCustomRepo(project: ProjectSpecBase, projectPath: string, location: string): Promise<void> {
     const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
-    this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
+    projectPath = await cloneProjectGit(location, project.name, gitRemote, gitBranch);
   }
 
-  async setupProject(flags: any): Promise<void> {
-    const [defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(this.projectPath);
+  async setupProject(project: ProjectSpecBase, projectPath: string, flags: any): Promise<void> {
+    const [defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(projectPath);
 
-    this.project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
+    project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
     const userInput = await cli.prompt('RPC endpoint:', {
       default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
       required: false,
     });
-    if (!this.project.endpoint.includes(userInput)) {
-      (this.project.endpoint as string[]).push(userInput);
+    if (!project.endpoint.includes(userInput)) {
+      (project.endpoint as string[]).push(userInput);
     }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
-    this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
-    this.project.description = await cli
+    project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
+    project.description = await cli
       .prompt('Description', {
         required: false,
         default: descriptionHint,
@@ -215,17 +211,17 @@ export default class Init extends Command {
       });
 
     cli.action.start('Preparing project');
-    await prepare(this.projectPath, this.project);
+    await prepare(projectPath, project);
     cli.action.stop();
     if (flags['install-dependencies']) {
       cli.action.start('Installing dependencies');
-      installDependencies(this.projectPath, flags.npm);
+      installDependencies(projectPath, flags.npm);
       cli.action.stop();
     }
-    this.log(`${this.project.name} is ready`);
+    this.log(`${project.name} is ready`);
   }
-  async createProjectScaffold(): Promise<void> {
-    await prepareProjectScaffold(this.projectPath);
+  async createProjectScaffold(projectPath: string): Promise<void> {
+    await prepareProjectScaffold(projectPath);
 
     const {abiFilePath} = await inquirer.prompt([
       {
@@ -257,7 +253,7 @@ export default class Init extends Command {
     this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
     await Generate.run([
       '-f',
-      this.projectPath,
+      projectPath,
       '--abiPath',
       `${abiFilePath}`,
       '--address',

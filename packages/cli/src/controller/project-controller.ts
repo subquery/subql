@@ -46,7 +46,7 @@ export async function createProject(
     });
     return res.data as unknown as CreateProjectResponse;
   } catch (e) {
-    errorHandle(e, 'Failed to create project:');
+    throw errorHandle(e, 'Failed to create project:');
   }
 }
 
@@ -68,6 +68,6 @@ export async function deleteProject(
     });
     return `${key}`;
   } catch (e) {
-    errorHandle(e, 'Failed to delete project:');
+    throw errorHandle(e, 'Failed to delete project:');
   }
 }

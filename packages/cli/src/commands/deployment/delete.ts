@@ -18,13 +18,17 @@ export default class Delete extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Delete);
     const authToken = await checkToken();
-    let deploymentID: number = +flags.deploymentID;
-    let project_name: string = flags.project_name;
-    let org: string = flags.org;
-
-    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
-    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
-    deploymentID = await valueOrPrompt(deploymentID, 'Enter deployment ID', 'Deployment ID is required');
+    const org: string = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
+    const project_name: string = await valueOrPrompt(
+      flags.project_name,
+      'Enter project name',
+      'Project name is required'
+    );
+    const deploymentID: number = +(await valueOrPrompt(
+      flags.deploymentID,
+      'Enter deployment ID',
+      'Deployment ID is required'
+    ));
 
     this.log(`Removing deployment: ${deploymentID}`);
     const delete_output = await deleteDeployment(org, project_name, authToken, +deploymentID, ROOT_API_URL_PROD).catch(

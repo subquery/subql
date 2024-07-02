@@ -117,13 +117,10 @@ describe('Cli can create project', () => {
   it('prepare correctly applies project details', async () => {
     const tempPath = await makeTempDir();
     const projects = await fetchExampleProjects('polkadot', 'polkadot');
-    const projectPath = await cloneProjectTemplate(
-      tempPath,
-      projectSpec.name,
-      projects.find((p) => p.name === 'Polkadot-starter')
-    );
+    const project = projects.find((p) => p.name === 'Polkadot-starter')!;
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, project);
     await prepare(projectPath, projectSpec);
-    const [endpoint, author, description] = await readDefaults(projectPath);
+    const [, author, description] = await readDefaults(projectPath);
 
     //spec version is  not returned from readDefaults
     //expect(projectSpec.specVersion).toEqual(specVersion);

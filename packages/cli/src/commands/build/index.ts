@@ -81,7 +81,7 @@ export default class Build extends Command {
         this.log('Building and packing code ...');
         this.log('Done!');
       }
-    } catch (e) {
+    } catch (e: any) {
       this.error(e);
     }
   }

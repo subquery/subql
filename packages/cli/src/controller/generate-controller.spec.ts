@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {DEFAULT_TS_MANIFEST} from '@subql/common';
 import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
@@ -287,7 +287,7 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out existing methods, input address === undefined && ds address === "", should filter', () => {
     const ds = mockDsFn();
-    ds[0].options.address = '';
+    ds[0].options!.address = '';
     const [cleanEvents, cleanFunctions] = filterExistingMethods(
       eventFragments,
       functionFragments,
@@ -306,7 +306,8 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out existing methods, only on matching address', () => {
     const ds = mockDsFn();
-    ds[0].options.address = '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2';
+    ds[0].options!.address = '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2';
+
     const [cleanEvents, cleanFunctions] = filterExistingMethods(
       eventFragments,
       functionFragments,
@@ -323,7 +324,7 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out existing methods, inputAddress === undefined || "" should filter all ds that contains no address', () => {
     const ds = mockDsFn();
-    ds[0].options.address = undefined;
+    if (ds[0].options?.address) ds[0].options.address = undefined;
     const [cleanEvents, cleanFunctions] = filterExistingMethods(
       eventFragments,
       functionFragments,
@@ -341,7 +342,7 @@ describe('CLI codegen:generate', () => {
   });
   it('filter out different formatted filters', () => {
     const ds = mockDsFn();
-    ds[0].options.address = 'zzz';
+    ds[0].options!.address = 'zzz';
     const logHandler = ds[0].mapping.handlers[1].filter as EthereumLogFilter;
     const txHandler = ds[0].mapping.handlers[0].filter as EthereumTransactionFilter;
     txHandler.function = 'approve(address to, uint256 tokenId)';
@@ -684,8 +685,8 @@ describe('CLI codegen:generate', () => {
     );
     // TODO expected to fail, due to unable to skip comments
     expect(v.function).toMatch('approve(address spender, uint256 rawAmount)');
-    expect(v.topics[0]).toMatch('Transfer(address indexed from, address indexed to, uint256 amount)');
-    expect(v.endpoint[0]).toMatch('https://eth.api.onfinality.io/public');
+    expect(v.topics?.[0]).toMatch('Transfer(address indexed from, address indexed to, uint256 amount)');
+    expect(v.endpoint?.[0]).toMatch('https://eth.api.onfinality.io/public');
   });
   // });
   // All these test should test against mockData as well as

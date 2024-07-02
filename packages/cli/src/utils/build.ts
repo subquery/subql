@@ -53,7 +53,7 @@ export async function buildManifestFromLocation(location: string, log: (...args:
       await Promise.all(tsManifests.map((manifest) => generateManifestFromTs(manifest, log)));
       replaceTsReferencesInMultichain(projectYamlPath);
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log(e);
     throw new Error(`Failed to generate manifest from typescript ${projectManifestEntry}, ${e.message}`);
   }
@@ -89,7 +89,7 @@ export async function generateManifestFromTs(
 }
 
 //Returns either the single chain ts manifest or the multichain ts/yaml manifest
-export function getTsManifest(location: string): string {
+export function getTsManifest(location: string): string | null {
   let manifest: string;
 
   if (lstatSync(location).isDirectory()) {

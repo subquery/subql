@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import path from 'path';
 import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {isCustomDs as isCustomConcordiumDs, isRuntimeDs as isRuntimeConcordiumDs} from '@subql/common-concordium';
@@ -30,7 +31,7 @@ import {
   RuntimeDatasourceTemplate as ConcordiumDsTemplate,
   CustomDatasourceTemplate as ConcordiumCustomDsTemplate,
 } from '@subql/types-concordium';
-import {TemplateBase} from '@subql/types-core';
+import {BaseDataSource, BaseMapping, TemplateBase} from '@subql/types-core';
 import {
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
@@ -177,7 +178,7 @@ export function processFields(
       isEnum: false,
     } as ProcessedField;
     if (type === 'entity') {
-      const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
+      const [indexed, unique] = indexFields.reduce<[boolean, boolean | undefined]>(
         (acc, indexField) => {
           if (indexField.fields.includes(field.name) && indexField.fields.length <= 1) {
             acc[0] = true;
@@ -201,14 +202,12 @@ export function processFields(
     } else {
       switch (field.type) {
         default: {
-          injectField.type = getTypeByScalarName(field.type)?.tsType;
-          if (!injectField.type) {
-            throw new Error(
-              `Schema: undefined type "${field.type.toString()}" on field "${
-                field.name
-              }" in "type ${className} @${type}"`
-            );
-          }
+          const typeClass = getTypeByScalarName(field.type);
+          assert(
+            typeClass && typeClass.tsType,
+            `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className} @${type}"`
+          );
+          injectField.type = typeClass.tsType;
           injectField.isJsonInterface = false;
           break;
         }
@@ -260,14 +259,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   let datasources = plainManifests.reduce((prev, current) => {
     return prev.concat(current.dataSources);
-  }, []);
+  }, [] as BaseDataSource[]);
 
   const templates = plainManifests.reduce((prev, current) => {
     if (current.templates && current.templates.length !== 0) {
       return prev.concat(current.templates);
     }
     return prev;
-  }, []);
+  }, [] as TemplateKind[]);
 
   if (templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, templates);
@@ -283,9 +282,11 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   if (chainTypes.length) {
     await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
   }
-  await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  // CosmosRuntimeDatasource
+  await generateCosmwasm(datasources as any, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
-  await generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  // SubqlRuntimeDatasource
+  await generateAbis(datasources as any, projectPath, prepareDirPath, upperFirst, renderTemplate);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
@@ -304,10 +305,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 export function getChaintypes(
   manifest: {templates?: TemplateKind[]; dataSources: DatasourceKind[]}[]
 ): Map<string, CosmosCustomModuleImpl>[] {
-  return manifest
-    .filter((m) => validateCosmosManifest(m))
-    .map((m) => (m as CosmosManifest).network.chaintypes)
-    .filter((value) => value && Object.keys(value).length !== 0);
+  const chaintypes: Map<string, CosmosCustomModuleImpl>[] = [];
+  for (const m of manifest) {
+    if (!validateCosmosManifest(m)) continue;
+    if (!m.network.chaintypes) continue;
+    chaintypes.push(m.network.chaintypes);
+  }
+
+  return chaintypes;
 }
 
 export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {

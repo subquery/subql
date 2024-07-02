@@ -23,12 +23,12 @@ describe('migrate eth manifest', () => {
   it(`convertEthereumTemplate`, () => {
     const testTemplateDataSource = TestSubgraph.dataSources;
 
-    delete testTemplateDataSource[0].source.address;
-    delete testTemplateDataSource[0].source.startBlock;
+    delete (testTemplateDataSource[0].source as any).address;
+    delete (testTemplateDataSource[0].source as any).startBlock;
 
     const subqlTemplate = convertEthereumTemplate(testTemplateDataSource[0]);
-    expect(subqlTemplate.options.address).toBeUndefined();
-    expect(subqlTemplate.options.abi).toBe('Poap');
-    expect(subqlTemplate.assets.get('Poap')).toBeTruthy();
+    expect(subqlTemplate.options?.address).toBeUndefined();
+    expect(subqlTemplate.options?.abi).toBe('Poap');
+    expect(subqlTemplate.assets?.get('Poap')).toBeTruthy();
   });
 });

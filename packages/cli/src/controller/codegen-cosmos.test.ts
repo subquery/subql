@@ -10,7 +10,7 @@ import rimraf from 'rimraf';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
-const MOCK_CHAINTYPES = [
+const MOCK_CHAINTYPES: any = [
   {
     'osmosis.gamm.v1beta1': {
       file: './proto/osmosis/gamm/v1beta1/tx.proto',

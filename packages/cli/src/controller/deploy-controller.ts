@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {Flags} from '@oclif/core';
 import {FlagInput} from '@oclif/core/lib/interfaces/parser';
 import axios, {Axios} from 'axios';
@@ -57,7 +58,7 @@ export async function createDeployment(
     );
     return res.data.deployment;
   } catch (e) {
-    errorHandle(e, 'Error deploying to hosted service:');
+    throw errorHandle(e, 'Error deploying to hosted service:');
   }
 }
 
@@ -74,7 +75,7 @@ export async function promoteDeployment(
     );
     return `${deploymentId}`;
   } catch (e) {
-    errorHandle(e, 'Failed to promote project:');
+    throw errorHandle(e, 'Failed to promote project:');
   }
 }
 
@@ -91,7 +92,7 @@ export async function deleteDeployment(
     );
     return `${deploymentId}`;
   } catch (e) {
-    errorHandle(e, 'Failed to delete deployment:');
+    throw errorHandle(e, 'Failed to delete deployment:');
   }
 }
 
@@ -108,7 +109,7 @@ export async function deploymentStatus(
     );
     return `${res.data.status}`;
   } catch (e) {
-    errorHandle(e, 'Failed to get deployment status:');
+    throw errorHandle(e, 'Failed to get deployment status:');
   }
 }
 
@@ -124,9 +125,11 @@ export async function projectsInfo(
     const res = await getAxiosInstance(url, authToken).get<ProjectDataType[]>(
       `subqueries/${buildProjectKey(org, projectName)}/deployments`
     );
-    return res.data.find((element) => element.projectKey === `${key}` && element.type === type);
+    const info = res.data.find((element) => element.projectKey === `${key}` && element.type === type);
+    assert(info, `Project ${key} not found`);
+    return info;
   } catch (e) {
-    errorHandle(e, 'Failed to get projects:');
+    throw errorHandle(e, 'Failed to get projects:');
   }
 }
 
@@ -152,11 +155,16 @@ export async function updateDeployment(
       } as V3DeploymentInput
     );
   } catch (e) {
-    errorHandle(e, `Failed to redeploy project: ${e.message}`);
+    throw errorHandle(e, `Failed to redeploy project: ${(e as any).message}`);
   }
 }
 
-export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<ValidateDataType> {
+export async function ipfsCID_validate(
+  cid: string | undefined,
+  authToken: string,
+  url: string
+): Promise<ValidateDataType> {
+  assert(cid, 'IPFS CID is required');
   try {
     const res = await getAxiosInstance(url, authToken).post<ValidateDataType>(`ipfs/deployment-id/${cid}/validate`);
 
@@ -166,7 +174,7 @@ export async function ipfsCID_validate(cid: string, authToken: string, url: stri
 
     return res.data;
   } catch (e) {
-    errorHandle(e, 'Failed to validate IPFS CID:');
+    throw errorHandle(e, 'Failed to validate IPFS CID:');
   }
 }
 
@@ -176,7 +184,7 @@ export async function dictionaryEndpoints(url: string): Promise<EndpointType[]> 
 
     return res.data;
   } catch (e) {
-    errorHandle(e, 'Failed to get dictionary endpoint:');
+    throw errorHandle(e, 'Failed to get dictionary endpoint:');
   }
 }
 
@@ -191,7 +199,7 @@ export async function imageVersions(name: string, version: string, authToken: st
     );
     return res.data;
   } catch (e) {
-    errorHandle(e, 'Failed to get image:');
+    throw errorHandle(e, 'Failed to get image:');
   }
 }
 
@@ -205,15 +213,15 @@ export interface EndpointType {
   chainId: string;
 }
 
-export function splitMultichainDataFields(fieldStr: string): MultichainDataFieldType {
+export function splitMultichainDataFields(fieldStr = ''): MultichainDataFieldType {
   const result: MultichainDataFieldType = {};
 
   splitEndpoints(String(fieldStr)).forEach((unparsedRow) => {
-    let regexpResult: string[] = unparsedRow.match(/(.*?):(.*)/);
+    const regexpResult = unparsedRow.match(/(.*?):(.*)/);
     if (regexpResult) {
-      regexpResult = Object.values(regexpResult);
-      if (regexpResult && regexpResult.length === 6 && ['http', 'https', 'ws', 'wss'].indexOf(regexpResult[1]) === -1) {
-        result[regexpResult[1]] = regexpResult[2];
+      const regexpRes = Object.values(regexpResult);
+      if (regexpRes && regexpRes.length === 6 && ['http', 'https', 'ws', 'wss'].indexOf(regexpRes[1]) === -1) {
+        result[regexpRes[1]] = regexpRes[2];
       }
     }
   });
@@ -304,8 +312,6 @@ export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): Q
 }
 
 export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
-  let deploymentOutput: DeploymentDataType | void;
-
   if (data.projectInfo !== undefined) {
     await updateDeployment(
       data.org,
@@ -320,7 +326,7 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
     );
     data.log(`Project: ${data.projectName} has been re-deployed`);
   } else {
-    deploymentOutput = await createDeployment(
+    const deploymentOutput: DeploymentDataType = await createDeployment(
       data.org,
       data.projectName,
       data.authToken,
@@ -349,6 +355,6 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
       `);
     }
+    return deploymentOutput;
   }
-  return deploymentOutput;
 }

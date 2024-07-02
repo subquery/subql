@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import TerserPlugin from 'terser-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
@@ -78,11 +79,12 @@ export async function runWebpack(
         reject(error);
         return;
       }
+      assert(stats, 'Webpack stats is undefined');
 
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors[0].message);
+        reject(info.errors?.map((e) => e.message).join('\n') ?? 'Unknown error');
         return;
       }
 
