@@ -78,7 +78,7 @@ export class IndexerManager extends BaseIndexerManager<
   async indexBlock(
     block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
-    runtimeVersion: RuntimeVersion,
+    runtimeVersion?: RuntimeVersion,
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
       this.getApi(block.block, runtimeVersion),
@@ -88,7 +88,7 @@ export class IndexerManager extends BaseIndexerManager<
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(
     block: LightBlockContent | BlockContent,
-    runtimeVersion: RuntimeVersion,
+    runtimeVersion?: RuntimeVersion,
   ): Promise<ApiAt> {
     return this.apiService.getPatchedApi(
       block.block.block.header,

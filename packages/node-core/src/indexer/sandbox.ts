@@ -45,7 +45,11 @@ export class Sandbox extends NodeVM {
   private entry: string;
   private sourceMap: any | undefined;
 
-  constructor(option: SandboxOption, protected readonly script: VMScript, protected config: NodeConfig) {
+  constructor(
+    option: SandboxOption,
+    protected readonly script: VMScript,
+    protected config: NodeConfig
+  ) {
     super(
       merge(DEFAULT_OPTION(config.unsafe), {
         require: {
@@ -155,7 +159,7 @@ export class IndexerSandbox extends Sandbox {
     try {
       await this.runTimeout(this.config.timeout);
     } catch (e: any) {
-      const newStack = await this.convertStack((e as Error).stack);
+      const newStack = await this.convertStack(e.stack);
       e.stack = newStack;
       e.handler = funcName;
       if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {

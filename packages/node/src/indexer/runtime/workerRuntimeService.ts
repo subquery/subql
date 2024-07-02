@@ -14,7 +14,8 @@ export class WorkerRuntimeService extends BaseRuntimeService {
   ): void {
     this.specVersionMap = specVersionMap;
     if (
-      latestFinalizedHeight !== undefined ||
+      latestFinalizedHeight !== undefined &&
+      this.latestFinalizedHeight &&
       this.latestFinalizedHeight < latestFinalizedHeight
     ) {
       this.latestFinalizedHeight = latestFinalizedHeight;
@@ -26,7 +27,7 @@ export class WorkerRuntimeService extends BaseRuntimeService {
   async getSpecVersion(
     blockHeight: number,
   ): Promise<{ blockSpecVersion: number; syncedDictionary: boolean }> {
-    let blockSpecVersion: number;
+    let blockSpecVersion: number | undefined;
     // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
     // therefore instead of check .useDictionary, we check it length before use it.
     if (this.specVersionMap && this.specVersionMap.length !== 0) {

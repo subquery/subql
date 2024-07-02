@@ -54,7 +54,7 @@ describe('Substrate DictionaryService', () => {
 
     const specVersions = await dictionaryService.getSpecVersions();
 
-    expect(specVersions.length).toBeGreaterThan(0);
+    expect(specVersions?.length).toBeGreaterThan(0);
     dictionaryService.onApplicationShutdown();
   }, 50000);
 });
@@ -101,19 +101,19 @@ describe('Building dictionary query entries', () => {
     /* If there are any blockhandlers without a modulo or timestamp filter we expect no query entries */
     const result1 = buildDictionaryV1QueryEntries(
       [makeDs([blockHandler])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([]);
 
     const result2 = buildDictionaryV1QueryEntries(
       [makeDs([blockHandler, callHandler, eventHandler])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result2).toEqual([]);
 
     const result3 = buildDictionaryV1QueryEntries(
       [makeDs([blockHandler]), makeDs([callHandler]), makeDs([eventHandler])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result3).toEqual([]);
   });
@@ -127,7 +127,7 @@ describe('Building dictionary query entries', () => {
           eventHandler,
         ]),
       ],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([
       {
@@ -150,13 +150,13 @@ describe('Building dictionary query entries', () => {
   it('supports any handler with no filters', () => {
     const result1 = buildDictionaryV1QueryEntries(
       [makeDs([{ kind: SubstrateHandlerKind.Call, handler: 'handleCall' }])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([]);
 
     const result2 = buildDictionaryV1QueryEntries(
       [makeDs([{ kind: SubstrateHandlerKind.Event, handler: 'handleEvent' }])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result2).toEqual([]);
   });
@@ -229,7 +229,7 @@ describe('Building dictionary query entries', () => {
   it('create dictionary call filter condition and remove undefined fields', () => {
     const result1 = buildDictionaryV1QueryEntries(
       [makeDs([callHandlerWithUndefined])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([
       {
@@ -247,7 +247,7 @@ describe('Building dictionary query entries', () => {
   it('create dictionary event filter condition and remove undefined fields', () => {
     const result1 = buildDictionaryV1QueryEntries(
       [makeDs([eventHandlerWithUndefined])],
-      () => undefined,
+      () => undefined as any,
     );
     expect(result1).toEqual([
       {

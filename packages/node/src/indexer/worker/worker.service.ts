@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   NodeConfig,
@@ -17,7 +18,7 @@ import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent, isFullBlock, LightBlockContent } from '../types';
 
-export type FetchBlockResponse = { specVersion: number; parentHash: string };
+export type FetchBlockResponse = { specVersion?: number; parentHash: string };
 
 @Injectable()
 export class WorkerService extends BaseWorkerService<

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import path from 'path';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -39,7 +40,7 @@ export class WorkerBlockDispatcherService
   >
   implements OnApplicationShutdown
 {
-  private runtimeService: RuntimeService;
+  private _runtimeService?: RuntimeService;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -89,13 +90,22 @@ export class WorkerBlockDispatcherService
     );
   }
 
+  private get runtimeService(): RuntimeService {
+    assert(this._runtimeService, 'RuntimeService not initialized');
+    return this._runtimeService;
+  }
+
+  private set runtimeService(runtimeService: RuntimeService) {
+    this._runtimeService = runtimeService;
+  }
+
   async init(
-    onDynamicDsCreated: (height: number) => Promise<void>,
+    onDynamicDsCreated: (height: number) => void,
     runtimeService?: RuntimeService,
   ): Promise<void> {
     await super.init(onDynamicDsCreated);
     // Sync workers runtime from main
-    this.runtimeService = runtimeService;
+    if (runtimeService) this.runtimeService = runtimeService;
     this.syncWorkerRuntimes();
   }
 
