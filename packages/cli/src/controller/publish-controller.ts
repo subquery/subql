@@ -239,3 +239,8 @@ export async function uploadFile(
 
   return cid;
 }
+
+export function getDirectoryCid(fileToCidMap: Map<string, string>): string | undefined {
+  const directoryCid = fileToCidMap.get('');
+  return directoryCid;
+}

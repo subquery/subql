@@ -47,23 +47,23 @@ export class SubstrateCustomDataSourceImpl<K extends string = string, M extends 
 
 export class RuntimeDatasourceTemplateImpl extends SubstrateRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
   @IsString()
-  name: string;
+  name!: string;
 }
 
 export class CustomDatasourceTemplateImpl extends SubstrateCustomDataSourceImpl implements CustomDatasourceTemplate {
   @IsString()
-  name: string;
+  name!: string;
 }
 
 export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
   @IsObject()
   @ValidateNested()
   @Type(() => SubstrateRunnerNodeImpl)
-  node: NodeSpec;
+  node!: NodeSpec;
   @IsObject()
   @ValidateNested()
   @Type(() => RunnerQueryBaseModel)
-  query: QuerySpec;
+  query!: QuerySpec;
 }
 
 // ChainTypes is different with other network
@@ -71,7 +71,7 @@ export class ProjectNetworkDeploymentV1_0_0 {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
-  chainId: string;
+  chainId!: string;
   @ValidateNested()
   @Type(() => FileType)
   @IsOptional()
@@ -96,11 +96,11 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
-  network: ProjectNetworkDeploymentV1_0_0;
+  network!: ProjectNetworkDeploymentV1_0_0;
   @IsObject()
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
   @IsArray()
   @ValidateNested()
   @Type(() => SubstrateCustomDataSourceImpl, {
@@ -110,7 +110,7 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[];
+  dataSources!: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -141,17 +141,17 @@ export class ProjectManifestV1_0_0Impl
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[];
+  dataSources!: (SubstrateRuntimeDatasource | SubstrateCustomDatasource)[];
   @Type(() => ProjectNetworkV1_0_0)
-  network: ProjectNetworkV1_0_0;
+  network!: ProjectNetworkV1_0_0;
   @IsOptional()
   @IsString()
   name?: string;
   @IsString()
-  version: string;
+  version!: string;
   @ValidateNested()
   @Type(() => FileType)
-  schema: FileType;
+  schema!: FileType;
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -166,7 +166,7 @@ export class ProjectManifestV1_0_0Impl
   @IsObject()
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
 
   @IsOptional()
   @IsObject()

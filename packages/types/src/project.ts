@@ -309,7 +309,7 @@ export type HandlerInputTransformer_1_0_0<
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
 > = BaseHandlerInputTransformer_1_0_0<IM, T, DS, ApiPromise, F, E>;
 
-type SecondLayerHandlerProcessorArray<
+export type SecondLayerHandlerProcessorArray<
   K extends string,
   F extends Record<string, unknown>,
   T,

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
@@ -21,7 +22,7 @@ import {
   projectsInfo,
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
-import {uploadToIpfs} from '../../controller/publish-controller';
+import {getDirectoryCid, uploadToIpfs} from '../../controller/publish-controller';
 import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
 
@@ -70,8 +71,9 @@ export default class MultiChainDeploy extends Command {
     flags.org = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
     flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
 
-    // Multichain query descriptor
-    const ipfsCID = fileToCidMap.get(path.basename(multichainManifestPath));
+    // Multichain query descriptor, The IPFS provided for deployment here must be a directory
+    const ipfsCID = getDirectoryCid(fileToCidMap);
+    assert(ipfsCID, 'Multichain deployment CID not found');
 
     const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
@@ -184,7 +186,7 @@ export default class MultiChainDeploy extends Command {
       );
     }
 
-    this.log('Deploying SubQuery multi-chain project to Hosted Service');
+    this.log('Deploying SubQuery multi-chain project to Hosted Service, IPFS: ', ipfsCID);
 
     await executeProjectDeployment({
       log: this.log.bind(this),

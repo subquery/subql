@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2024-07-01
 ### Added
 - Add generic network module types (#2462)
 
@@ -49,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/0.9.0...HEAD
+[0.9.0]: https://github.com/subquery/subql/compare/types-core/0.8.0...types-core/0.9.0
 [0.8.0]: https://github.com/subquery/subql/compare/types-core/0.7.0...types-core/0.8.0
 [0.7.0]: https://github.com/subquery/subql/compare/types-core/0.6.0...types-core/0.7.0
 [0.6.0]: https://github.com/subquery/subql/compare/types-core/0.5.0...types-core/0.6.0
