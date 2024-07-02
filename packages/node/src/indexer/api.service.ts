@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
@@ -101,14 +102,15 @@ export class ApiService
   extends BaseApiService<
     ApiPromise,
     ApiAt,
-    IBlock<BlockContent>[] | IBlock<LightBlockContent>[]
+    IBlock<BlockContent>[] | IBlock<LightBlockContent>[],
+    ApiPromiseConnection
   >
   implements OnApplicationShutdown
 {
-  private fetchBlocksFunction: FetchFunc;
+  private _fetchBlocksFunction?: FetchFunc;
   private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
-  private currentBlockHash: string;
-  private currentBlockNumber: number;
+  private _currentBlockHash?: string;
+  private _currentBlockNumber?: number;
 
   private nodeConfig: SubstrateNodeConfig;
 
@@ -122,6 +124,29 @@ export class ApiService
     this.nodeConfig = new SubstrateNodeConfig(nodeConfig);
 
     this.updateBlockFetching();
+  }
+
+  private get fetchBlocksFunction(): FetchFunc {
+    assert(this._fetchBlocksFunction, 'fetchBlocksFunction not initialized');
+    return this._fetchBlocksFunction;
+  }
+
+  private get currentBlockHash(): string {
+    assert(this._currentBlockHash, 'currentBlockHash not initialized');
+    return this._currentBlockHash;
+  }
+
+  private set currentBlockHash(value: string) {
+    this._currentBlockHash = value;
+  }
+
+  private get currentBlockNumber(): number {
+    assert(this._currentBlockNumber, 'currentBlockNumber not initialized');
+    return this._currentBlockNumber;
+  }
+
+  private set currentBlockNumber(value: number) {
+    this._currentBlockNumber = value;
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -206,13 +231,13 @@ export class ApiService
       : SubstrateUtil.fetchBlocksBatches;
 
     if (this.nodeConfig?.profiler) {
-      this.fetchBlocksFunction = profilerWrap(
+      this._fetchBlocksFunction = profilerWrap(
         fetchFunc,
         'SubstrateUtil',
         'fetchBlocksBatches',
       );
     } else {
-      this.fetchBlocksFunction = fetchFunc;
+      this._fetchBlocksFunction = fetchFunc;
     }
   }
 
@@ -222,7 +247,7 @@ export class ApiService
 
   async getPatchedApi(
     header: Header,
-    runtimeVersion: RuntimeVersion,
+    runtimeVersion?: RuntimeVersion,
   ): Promise<ApiAt> {
     this.currentBlockHash = header.hash.toString();
     this.currentBlockNumber = header.number.toNumber();
@@ -295,18 +320,21 @@ export class ApiService
   }
 
   private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
-    apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
-      acc[module] = Object.entries(rpcMethods).reduce(
-        (accInner, [name, rpcPromiseResult]) => {
-          accInner[name] = this.redecorateRpcFunction(
-            rpcPromiseResult as RpcMethodResult<any, AnyFunction>,
-          );
-          return accInner;
-        },
-        {},
-      );
-      return acc;
-    }, {} as ApiPromise['rpc']);
+    apiAt.rpc = Object.entries(api.rpc).reduce(
+      (acc, [module, rpcMethods]) => {
+        acc[module] = Object.entries(rpcMethods).reduce(
+          (accInner, [name, rpcPromiseResult]) => {
+            accInner[name] = this.redecorateRpcFunction(
+              rpcPromiseResult as RpcMethodResult<any, AnyFunction>,
+            );
+            return accInner;
+          },
+          {},
+        );
+        return acc;
+      },
+      {} as ApiPromise['rpc'],
+    );
   }
 
   private getRPCFunctionName<T extends 'promise' | 'rxjs'>(

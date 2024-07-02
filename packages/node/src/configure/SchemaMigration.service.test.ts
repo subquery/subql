@@ -62,7 +62,7 @@ describe('SchemaMigration integration tests', () => {
       `SELECT table_name FROM information_schema.tables WHERE table_schema= :schema;`,
       { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
     );
-    const tableNames: string[] = dbResults.map((row: string[]) => {
+    const tableNames: string[] = dbResults.map((row) => {
       return row[0];
     });
 

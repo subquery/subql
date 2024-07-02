@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Changed
+- Enable strict mode for the other packages.
 ## [3.8.0] - 2024-07-01
 ### Changed
 - Bump version with `@subql/types-core`

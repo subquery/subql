@@ -40,7 +40,10 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   private cacheSizeThreshold = 10;
   private cacheFlushInterval = 60 * 100;
 
-  constructor(private nodeConfig: NodeConfig, private poolStateManager: ConnectionPoolStateManager<T>) {
+  constructor(
+    private nodeConfig: NodeConfig,
+    private poolStateManager: ConnectionPoolStateManager<T>
+  ) {
     this.cacheSizeThreshold = this.nodeConfig.batchSize;
   }
 
@@ -112,8 +115,8 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
               await this.handleApiSuccess(endpoint, end - start);
               await this.poolStateManager.setFieldValue(endpoint, 'lastRequestTime', end); // Update the last request time
               return result;
-            } catch (error) {
-              await this.handleApiError(endpoint, target.handleError(error as Error));
+            } catch (error: any) {
+              await this.handleApiError(endpoint, target.handleError(error));
               throw error;
             }
           };

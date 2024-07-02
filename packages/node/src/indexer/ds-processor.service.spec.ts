@@ -10,7 +10,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 
 function getTestProject(
-  extraDataSources?: SubstrateCustomDatasource[],
+  extraDataSources: SubstrateCustomDatasource[],
 ): SubqueryProject {
   return new SubqueryProject(
     'test',

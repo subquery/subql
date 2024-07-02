@@ -60,16 +60,16 @@ describe('FetchSevice', () => {
 
   beforeEach(() => {
     fetchService = new FetchService(
-      null, // ApiService
-      null, // NodeConfig
+      null as any, // ApiService
+      null as any, // NodeConfig
       projectService, // ProjectService
       {} as any, // Project
-      null, // BlockDispatcher,
-      null, // DictionaryService
-      null, // UnfinalizedBlocks
-      null, // EventEmitter
-      null, // SchedulerRegistry
-      null, // RuntimeService
+      null as any, // BlockDispatcher,
+      null as any, // DictionaryService
+      null as any, // UnfinalizedBlocks
+      null as any, // EventEmitter
+      null as any, // SchedulerRegistry
+      null as any, // RuntimeService
     ) as any;
   });
 

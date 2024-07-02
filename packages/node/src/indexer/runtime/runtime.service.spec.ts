@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { ApiService } from '../api.service';
 import {
@@ -41,13 +42,14 @@ const getApiService = (): ApiService =>
             // Treat 0 as 1 for parent hash of block 1
             const blockNum = Math.max(parseInt(blockHash), 1);
 
-            const { id } = specVersions.find(
+            const specVersion = specVersions.find(
               (v) => v.start <= blockNum && (!v.end || v.end >= blockNum),
             );
+            assert(specVersion, `Spec version not found for block ${blockNum}`);
 
             return Promise.resolve({
               specVersion: {
-                toNumber: () => parseInt(id),
+                toNumber: () => parseInt(specVersion.id, 10),
               },
             } as RuntimeVersion);
           },
@@ -55,7 +57,7 @@ const getApiService = (): ApiService =>
       },
       getBlockRegistry: (hash: string) => Promise.resolve(),
     },
-  } as any);
+  }) as any;
 
 const getDictionaryService = (): SubstrateDictionaryService =>
   ({
@@ -74,7 +76,7 @@ const getDictionaryService = (): SubstrateDictionaryService =>
     initDictionariesV2: () => {
       //TODO
     },
-  } as any);
+  }) as any;
 
 describe('Runtime service', () => {
   let runtimeService: RuntimeService;

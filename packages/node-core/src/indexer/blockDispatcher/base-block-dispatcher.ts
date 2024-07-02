@@ -50,7 +50,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   protected _processedBlockCount = 0;
   protected _latestProcessedHeight = 0;
   protected currentProcessingHeight = 0;
-  private _onDynamicDsCreated?: (height: number) => Promise<void>;
+  private _onDynamicDsCreated?: (height: number) => void;
   private _pendingRewindHeight?: number;
 
   protected smartBatchService: SmartBatchService;
@@ -72,7 +72,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
 
-  async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
+  async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
     this._onDynamicDsCreated = onDynamicDsCreated;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.setProcessedBlockCount((await this.storeCacheService.metadata.find('processedBlockCount', 0))!);
@@ -103,7 +103,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     this._latestProcessedHeight = height;
   }
 
-  protected get onDynamicDsCreated(): (height: number) => Promise<void> {
+  protected get onDynamicDsCreated(): (height: number) => void {
     if (!this._onDynamicDsCreated) {
       throw new Error('BaseBlockDispatcher has not been initialized');
     }
@@ -204,7 +204,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       this.createPOI(height, blockHash, operationHash);
 
       if (dynamicDsCreated) {
-        await this.onDynamicDsCreated(height);
+        this.onDynamicDsCreated(height);
       }
       assert(
         !this.latestProcessedHeight || height > this.latestProcessedHeight,
