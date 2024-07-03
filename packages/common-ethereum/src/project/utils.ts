@@ -1,6 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import path from 'path';
+import {loadFromJsonOrYaml} from '@subql/common';
 import {
   SecondLayerHandlerProcessor,
   SubqlCustomDatasource,
@@ -11,6 +13,10 @@ import {
 } from '@subql/types-ethereum';
 import {fromBech32Address} from '@zilliqa-js/crypto';
 import {buildMessage, isEthereumAddress, ValidateBy, ValidationOptions} from 'class-validator';
+import {Interface} from 'ethers/lib/utils';
+
+// Todo, this aligns with cli/src/generate-controller, but we should move this to common in next version
+export const DEFAULT_ABI_DIR = '/abis';
 
 type DefaultFilter = Record<string, unknown>;
 
@@ -63,4 +69,16 @@ export function IsEthereumOrZilliqaAddress(validationOptions?: ValidationOptions
     },
     validationOptions
   );
+}
+
+export function getAbiInterface(projectPath: string, abiFileName: string): Interface {
+  const abi = loadFromJsonOrYaml(path.join(projectPath, DEFAULT_ABI_DIR, abiFileName)) as any;
+  if (!Array.isArray(abi)) {
+    if (!abi.abi) {
+      throw new Error(`Provided ABI is not a valid ABI or Artifact`);
+    }
+    return new Interface(abi.abi);
+  } else {
+    return new Interface(abi);
+  }
 }

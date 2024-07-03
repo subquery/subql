@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- bump with `@subql/common-ethereum` and `@subql/types-ethereum`
+
 ## [4.6.0] - 2024-07-03
 ### Changed
 - Update `@subql/node-core`,bump with `@subql/types-ethereum`
