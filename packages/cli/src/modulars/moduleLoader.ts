@@ -18,7 +18,7 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCach
     try {
       moduleCache[network] = require(packageName) as ModuleCache[N];
     } catch (error) {
-      console.warn(`! Failed to load ${packageName} locally: ${error}, attempting to load globally`);
+      console.warn(`! Failed to load ${packageName} locally: ${error}. \n ! Attempting to load globally`);
       try {
         const globalNodePath = process.env.NODE_PATH;
         if (!globalNodePath) {
