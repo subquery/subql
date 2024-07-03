@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.12.0] - 2024-07-03
 ### Changed
 - Bump version with `@subql/common-stellar`, sync with `@subql/node-core`, add admin module
 
@@ -136,7 +137,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.0...HEAD
+[3.12.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.2...node-stellar/3.12.0
 [3.11.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.1...node-stellar/3.11.2
 [3.11.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.0...node-stellar/3.11.1
 [3.11.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.10.1...node-stellar/3.11.0

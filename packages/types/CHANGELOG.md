@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2024-07-03
 ### Changed
 - Bump version with `@subql/types-core`
 
@@ -45,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use @subql/types-core (#18)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.5.0...HEAD
+[3.5.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.4.0...types-stellar/3.5.0
 [3.4.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.3.1...types-stellar/3.4.0
 [3.3.1]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.3.0...types-stellar/3.3.1
 [3.3.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.2.1...types-stellar/3.3.0
