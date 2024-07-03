@@ -1,12 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {EthereumDatasourceKind, EthereumHandlerKind} from '@subql/common-ethereum';
 import {FileReference} from '@subql/types-core';
-import {
+import type {
   SubqlRuntimeDatasource as EthereumDs,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
+  EthereumDatasourceKind,
+  EthereumHandlerKind,
 } from '@subql/types-ethereum';
 import {DEFAULT_HANDLER_BUILD_PATH} from '../../generate-controller';
 import {MigrateDatasourceKind, SubgraphDataSource, SubgraphTemplate} from '../types';
@@ -22,7 +23,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
   }
 
   const subqlDs = {
-    kind: EthereumDatasourceKind.Runtime,
+    kind: 'ethereum/Runtime' as EthereumDatasourceKind.Runtime,
     migrateDatasourceType: 'EthereumDatasourceKind.Runtime',
     assets: new Map(ds.mapping.abis.map((a) => [a.name, {file: a.file}])),
     mapping: {
@@ -30,32 +31,32 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
       handlers: [
         ...(ds.mapping.blockHandlers ?? []).map((h) => {
           return {
-            kind: EthereumHandlerKind.Block,
+            kind: 'ethereum/Runtime' as EthereumHandlerKind.Block,
             migrateHandlerType: 'EthereumHandlerKind.Block',
             handler: h.handler,
             filter: undefined,
           };
         }),
         ...(ds.mapping.eventHandlers ?? []).map((h) => {
-              return {
-                kind: EthereumHandlerKind.Event,
-                migrateHandlerType: 'EthereumHandlerKind.Event',
-                handler: h.handler,
-                filter: {
-                  topics: [h.event],
-                },
-              };
-            }),
+          return {
+            kind: 'ethereum/LogHandler' as EthereumHandlerKind.Event,
+            migrateHandlerType: 'EthereumHandlerKind.Event',
+            handler: h.handler,
+            filter: {
+              topics: [h.event],
+            },
+          };
+        }),
         ...(ds.mapping.callHandlers ?? []).map((h) => {
-              return {
-                kind: EthereumHandlerKind.Call,
-                migrateHandlerType: 'EthereumHandlerKind.Call',
-                handler: h.handler,
-                filter: {
-                  f: h.function,
-                },
-              };
-            }),
+          return {
+            kind: 'ethereum/TransactionHandler' as EthereumHandlerKind.Call,
+            migrateHandlerType: 'EthereumHandlerKind.Call',
+            handler: h.handler,
+            filter: {
+              f: h.function,
+            },
+          };
+        }),
       ],
     },
   } as unknown as MigrateDatasourceKind<D>;

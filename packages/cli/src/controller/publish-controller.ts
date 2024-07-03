@@ -10,16 +10,11 @@ import {
   isFileReference,
   validateCommonProjectManifest,
   mapToObject,
+  getProjectNetwork,
 } from '@subql/common';
-import {parseAlgorandProjectManifest} from '@subql/common-algorand';
-import {parseConcordiumProjectManifest} from '@subql/common-concordium';
-import {parseCosmosProjectManifest} from '@subql/common-cosmos';
-import {parseEthereumProjectManifest} from '@subql/common-ethereum';
-import {parseNearProjectManifest} from '@subql/common-near';
-import {parseStellarProjectManifest} from '@subql/common-stellar';
-import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {Reader} from '@subql/types-core';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
+import {loadDependency} from '../modulars';
 
 const PIN_SERVICE = 'onfinality';
 
@@ -62,24 +57,15 @@ export async function uploadToIpfs(
 
     validateCommonProjectManifest(schema);
 
-    const parsingFunctions = [
-      parseSubstrateProjectManifest,
-      parseCosmosProjectManifest,
-      parseAlgorandProjectManifest,
-      parseEthereumProjectManifest,
-      parseNearProjectManifest,
-      parseStellarProjectManifest,
-      parseConcordiumProjectManifest,
-    ];
+    const networkFamily = getProjectNetwork(schema);
+    const module = loadDependency(networkFamily);
 
-    let manifest = null;
-    for (const parseFunction of parsingFunctions) {
-      try {
-        manifest = parseFunction(schema).asImpl;
-        break; // Exit the loop if successful
-      } catch (e) {
-        // Continue to the next parsing function
-      }
+    let manifest;
+
+    try {
+      manifest = module.parseProjectManifest(schema).asImpl;
+    } catch (e) {
+      throw new Error(`Failed to parse project manifest for network ${networkFamily}`, {cause: e});
     }
 
     if (manifest === null) {

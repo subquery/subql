@@ -15,7 +15,6 @@ import {
   DEFAULT_MANIFEST,
   DEFAULT_TS_MANIFEST,
 } from '@subql/common';
-import {SubqlRuntimeHandler} from '@subql/common-ethereum';
 import axios from 'axios';
 import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
@@ -175,34 +174,6 @@ export function replaceArrayValueInTsManifest(content: string, key: string, newV
 export function extractArrayValueFromTsManifest(content: string, key: string): string | null {
   const [startIndex, endIndex] = findArrayIndicesTsManifest(content, key);
   return content.slice(startIndex, endIndex + 1);
-}
-
-export function tsStringify(
-  obj: SubqlRuntimeHandler | SubqlRuntimeHandler[] | string,
-  indent = 2,
-  currentIndent = 0
-): string {
-  if (typeof obj !== 'object' || obj === null) {
-    if (typeof obj === 'string' && obj.includes('EthereumHandlerKind')) {
-      return obj; // Return the string as-is without quotes
-    }
-    return JSON.stringify(obj);
-  }
-
-  if (Array.isArray(obj)) {
-    const items = obj.map((item) => tsStringify(item, indent, currentIndent + indent));
-    return `[\n${items.map((item) => ' '.repeat(currentIndent + indent) + item).join(',\n')}\n${' '.repeat(
-      currentIndent
-    )}]`;
-  }
-
-  const entries = Object.entries(obj);
-  const result = entries.map(([key, value]) => {
-    const valueStr = tsStringify(value, indent, currentIndent + indent);
-    return `${' '.repeat(currentIndent + indent)}${key}: ${valueStr}`;
-  });
-
-  return `{\n${result.join(',\n')}\n${' '.repeat(currentIndent)}}`;
 }
 
 export function extractFromTs(

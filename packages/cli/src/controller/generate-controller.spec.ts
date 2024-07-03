@@ -4,13 +4,19 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi';
-import {DEFAULT_TS_MANIFEST} from '@subql/common';
-import {EthereumDatasourceKind, EthereumHandlerKind, EthereumTransactionFilter} from '@subql/common-ethereum';
-import {SubqlRuntimeDatasource as EthereumDs, EthereumLogFilter} from '@subql/types-ethereum';
-import {parseContractPath} from 'typechain';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {DEFAULT_TS_MANIFEST, NETWORK_FAMILY} from '@subql/common';
+import {getAbiInterface} from '@subql/common-ethereum';
+import {
+  SubqlRuntimeDatasource as EthereumDs,
+  EthereumLogFilter,
+  EthereumDatasourceKind,
+  EthereumHandlerKind,
+  EthereumTransactionFilter,
+} from '@subql/types-ethereum';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
+import {loadDependency} from '../modulars';
 import {
   extractArrayValueFromTsManifest,
   extractFromTs,
@@ -18,7 +24,6 @@ import {
   replaceArrayValueInTsManifest,
   resolveToAbsolutePath,
   splitArrayString,
-  tsStringify,
 } from '../utils';
 import {
   constructDatasourcesTs,
@@ -28,11 +33,11 @@ import {
   filterExistingMethods,
   filterObjectsByStateMutability,
   generateHandlerName,
-  getAbiInterface,
   prepareInputFragments,
   removeKeyword,
   tsExtractor,
   yamlExtractor,
+  tsStringify,
 } from './generate-controller';
 
 const mockConstructedFunctions: SelectedMethod[] = [
@@ -121,7 +126,8 @@ const mockDsStr =
 describe('CLI codegen:generate', () => {
   const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
-  const abiName = parseContractPath('./erc721.json').name;
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const abiName = ethModule.parseContractPath('./erc721.json').name;
   const eventFragments = abiInterface.events;
   const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
