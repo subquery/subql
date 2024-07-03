@@ -2,81 +2,37 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import {DEFAULT_MANIFEST, getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
-import {isCustomDs as isCustomConcordiumDs, isRuntimeDs as isRuntimeConcordiumDs} from '@subql/common-concordium';
 import {
-  isCustomCosmosDs,
-  isRuntimeCosmosDs,
-  generateProto,
-  tempProtoDir,
-  validateCosmosManifest,
-  ProjectManifestImpls as CosmosManifest,
-  generateCosmwasm,
-  CosmosCustomModuleImpl,
-} from '@subql/common-cosmos';
-import {
-  isCustomDs as isCustomEthereumDs,
-  isRuntimeDs as isRuntimeEthereumDs,
-  generateAbis,
-} from '@subql/common-ethereum';
-import {isCustomDs as isCustomNearDs, isRuntimeDs as isRuntimeNearDs} from '@subql/common-near';
-import {isCustomDs as isCustomStellarDs, isRuntimeDs as isRuntimeStellarDs} from '@subql/common-stellar';
-import {isCustomDs as isCustomSubstrateDs, SubstrateCustomDataSource} from '@subql/common-substrate';
-import {
-  RuntimeDatasourceTemplate as SubstrateDsTemplate,
-  CustomDatasourceTemplate as SubstrateCustomDsTemplate,
-} from '@subql/types';
-import {
-  RuntimeDatasourceTemplate as ConcordiumDsTemplate,
-  CustomDatasourceTemplate as ConcordiumCustomDsTemplate,
-} from '@subql/types-concordium';
-import {TemplateBase} from '@subql/types-core';
-import {
-  RuntimeDatasourceTemplate as CosmosDsTemplate,
-  CustomDatasourceTemplate as CosmosCustomDsTemplate,
-} from '@subql/types-cosmos';
-import {
-  RuntimeDatasourceTemplate as EthereumDsTemplate,
-  CustomDatasourceTemplate as EthereumCustomDsTemplate,
-  SubqlRuntimeDatasource as EthereumDs,
+  DEFAULT_MANIFEST,
+  getManifestPath,
+  getProjectNetwork,
+  getSchemaPath,
+  loadFromJsonOrYaml,
+  NETWORK_FAMILY,
+} from '@subql/common';
+import type {SubstrateCustomDatasource} from '@subql/types';
+import {BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
+import type {
   SubqlCustomDatasource as EthereumCustomDs,
+  SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
 import {
-  RuntimeDatasourceTemplate as NearDsTemplate,
-  CustomDatasourceTemplate as NearCustomDsTemplate,
-} from '@subql/types-near';
-import {
-  RuntimeDatasourceTemplate as StellarDsTemplate,
-  CustomDatasourceTemplate as StellarCustomDsTemplate,
-} from '@subql/types-stellar';
-import {
   getAllEntitiesRelations,
+  getAllEnums,
   getAllJsonObjects,
-  setJsonObjectType,
   getTypeByScalarName,
   GraphQLEntityField,
-  GraphQLJsonFieldType,
   GraphQLEntityIndex,
-  getAllEnums,
+  GraphQLJsonFieldType,
+  setJsonObjectType,
 } from '@subql/utils';
-import {upperFirst, uniq, uniqBy} from 'lodash';
-import {renderTemplate, prepareDirPath} from '../utils';
+import {uniq, uniqBy, upperFirst} from 'lodash';
+import {loadDependency} from '../modulars';
+import {prepareDirPath, renderTemplate} from '../utils';
 
-export type TemplateKind =
-  | SubstrateDsTemplate
-  | SubstrateCustomDsTemplate
-  | CosmosDsTemplate
-  | CosmosCustomDsTemplate
-  | EthereumDsTemplate
-  | EthereumCustomDsTemplate
-  | NearDsTemplate
-  | NearCustomDsTemplate
-  | StellarDsTemplate
-  | StellarCustomDsTemplate
-  | ConcordiumDsTemplate
-  | ConcordiumCustomDsTemplate;
+export type TemplateKind = BaseTemplateDataSource;
 
-export type DatasourceKind = SubstrateCustomDataSource | EthereumDs | EthereumCustomDs;
+export type DatasourceKind = SubstrateCustomDatasource | EthereumDs | EthereumCustomDs;
 
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
@@ -233,12 +189,11 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
   const plainManifests = fileNames.map((fileName) => {
-    const project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName));
-    return project as {
-      specVersion: string;
-      templates?: TemplateKind[];
-      dataSources: DatasourceKind[];
+    const project = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as ProjectManifestV1_0_0 & {
+      networkFamily: NETWORK_FAMILY;
     };
+    project.networkFamily = getProjectNetwork(project);
+    return project;
   });
 
   const expectKeys = ['datasources', 'templates'];
@@ -278,14 +233,23 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     datasources = datasources.concat(customDatasources);
   }
 
-  const chainTypes = getChaintypes(plainManifests);
-
-  if (chainTypes.length) {
-    await generateProto(chainTypes, projectPath, prepareDirPath, renderTemplate, upperFirst, tempProtoDir);
+  const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
+  if (cosmosManifests.length > 0) {
+    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
+    await cosmosModule.projectCodegen(
+      plainManifests,
+      projectPath,
+      prepareDirPath,
+      renderTemplate,
+      upperFirst,
+      datasources
+    );
   }
-  await generateCosmwasm(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
-
-  await generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
+  if (ethManifests.length >= 0 || !!datasources.find((d) => d?.assets)) {
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+    await ethModule.generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  }
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
@@ -299,15 +263,6 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     }
     console.log(`* Types index generated !`);
   }
-}
-
-export function getChaintypes(
-  manifest: {templates?: TemplateKind[]; dataSources: DatasourceKind[]}[]
-): Map<string, CosmosCustomModuleImpl>[] {
-  return manifest
-    .filter((m) => validateCosmosManifest(m))
-    .map((m) => (m as CosmosManifest).network.chaintypes)
-    .filter((value) => value && Object.keys(value).length !== 0);
 }
 
 export async function generateSchemaModels(projectPath: string, schemaPath: string): Promise<void> {
@@ -390,7 +345,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
 export async function generateDatasourceTemplates(projectPath: string, templates: TemplateKind[]): Promise<void> {
   const props = templates.map((t) => ({
     name: (t as TemplateBase).name,
-    args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
+    args: 'Record<string, unknown>',
   }));
 
   const propsWithoutDuplicates = uniqBy(props, (prop) => `${prop.name}-${prop.args}`);
@@ -405,20 +360,4 @@ export async function generateDatasourceTemplates(projectPath: string, templates
     throw new Error(`Unable to generate datasource template constructors`);
   }
   console.log(`* Datasource template constructors generated !`);
-}
-
-function hasParameters(t: TemplateKind): boolean {
-  return (
-    isRuntimeCosmosDs(t as CosmosDsTemplate) ||
-    isCustomCosmosDs(t as CosmosDsTemplate) ||
-    isRuntimeEthereumDs(t as EthereumDsTemplate) ||
-    isCustomEthereumDs(t as EthereumDsTemplate) ||
-    isCustomSubstrateDs(t as SubstrateDsTemplate) ||
-    isRuntimeNearDs(t as NearDsTemplate) ||
-    isCustomNearDs(t as NearDsTemplate) ||
-    isRuntimeStellarDs(t as StellarDsTemplate) ||
-    isCustomStellarDs(t as StellarDsTemplate) ||
-    isRuntimeConcordiumDs(t as ConcordiumDsTemplate) ||
-    isCustomConcordiumDs(t as ConcordiumDsTemplate)
-  );
 }

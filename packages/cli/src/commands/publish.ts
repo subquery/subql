@@ -41,7 +41,13 @@ export default class Publish extends Command {
     }
 
     const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
-      (e) => this.error(e)
+      (e) => {
+        // log further cause from error
+        if (e.cause) {
+          console.error(e.cause);
+        }
+        return this.error(e);
+      }
     );
 
     await Promise.all(

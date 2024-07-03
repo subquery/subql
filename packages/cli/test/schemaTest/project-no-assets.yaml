@@ -1,6 +1,12 @@
 specVersion: '1.0.0'
 name: 'example'
-
+runner:
+  node:
+    name: '@subql/node-ethereum'
+    version: '>=3.0.1'
+  query:
+    name: '@subql/query'
+    version: '*'
 schema:
   file: './schema.graphql'
 

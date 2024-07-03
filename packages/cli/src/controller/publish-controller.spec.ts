@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {promisify} from 'util';
-import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
-import {parseSubstrateProjectManifest} from '@subql/common-substrate';
+import {mapToObject, NETWORK_FAMILY, ReaderFactory, toJsonObject} from '@subql/common';
 import rimraf from 'rimraf';
 import {createMultiChainTestProject, createTestProject} from '../createProject.fixtures';
+import {loadDependency} from '../modulars';
 import {getDirectoryCid, uploadToIpfs} from './publish-controller';
 
 // Replace/Update your access token when test locally
@@ -39,7 +39,8 @@ describe('Cli publish', () => {
 
   it('convert to deployment and removed descriptive field', async () => {
     const reader = await ReaderFactory.create(projectDir);
-    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema());
+    const substrateModule = loadDependency(NETWORK_FAMILY.substrate);
+    const manifest = substrateModule.parseProjectManifest(await reader.getProjectSchema());
     const deployment = manifest.toDeployment();
     expect(deployment).not.toContain('author');
     expect(deployment).not.toContain('endpoint');
