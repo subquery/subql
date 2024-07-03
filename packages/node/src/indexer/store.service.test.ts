@@ -64,7 +64,7 @@ describe('Store service integration test', () => {
 
     tempDir = (projectService as any).project.root;
 
-    const [result] = await sequelize.query(
+    const result = await sequelize.query<{ table_name: string }>(
       `
        SELECT 
           table_name
@@ -74,12 +74,11 @@ describe('Store service integration test', () => {
           table_schema = :schema; 
         `,
       {
+        type: QueryTypes.SELECT,
         replacements: { schema: schemaName },
       },
     );
-    const expectedTables = result.map(
-      (t: { table_name: string }) => t.table_name,
-    );
+    const expectedTables = result.map((t) => t.table_name);
 
     const columnResult = await sequelize.query(
       `
@@ -278,7 +277,7 @@ WHERE
 
     tempDir = (projectService as any).project.root;
 
-    const result = await sequelize.query(
+    const result: any = await sequelize.query(
       `
       SELECT n.nspname AS schema_name,
        t.typname AS enum_type,
@@ -291,9 +290,11 @@ ORDER BY t.typname, e.enumsortorder;`,
       { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
     );
     expect(result.length).toBe(3);
-    expect(result.map((r: { enum_type: string }) => r.enum_type)).toStrictEqual(
-      ['65c7fd4e5d', '65c7fd4e5d', '65c7fd4e5d'],
-    );
+    expect(result.map((r) => r.enum_type)).toStrictEqual([
+      '65c7fd4e5d',
+      '65c7fd4e5d',
+      '65c7fd4e5d',
+    ]);
   });
   it('Able to drop notification triggers and functions', async () => {
     // if subscription is no longer enabled should be able to drop all prior triggers and functions related to subscription

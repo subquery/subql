@@ -5,8 +5,10 @@ import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
+import { isCustomDs } from '@subql/common-substrate';
 import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
+import { DsProcessor } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { DsProcessorService } from '../ds-processor.service';
 import { SpecVersion } from './types';
@@ -86,6 +88,7 @@ export class SubstrateDictionaryService extends DictionaryService<
 
   private getV1Dictionary(): SubstrateDictionaryV1 | undefined {
     // TODO this needs to be removed once Substrate supports V2 dictionaries
+    if (this._currentDictionaryIndex === undefined) return undefined;
     const dict = this._dictionaries[this._currentDictionaryIndex];
     if (!dict) return undefined;
     assert(

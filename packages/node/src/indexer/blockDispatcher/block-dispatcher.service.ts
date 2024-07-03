@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -29,7 +30,7 @@ export class BlockDispatcherService
   extends BlockDispatcher<BlockContent | LightBlockContent, SubstrateDatasource>
   implements OnApplicationShutdown
 {
-  private runtimeService: RuntimeService;
+  private _runtimeService?: RuntimeService;
 
   constructor(
     private apiService: ApiService,
@@ -71,12 +72,20 @@ export class BlockDispatcherService
     );
   }
 
+  private get runtimeService(): RuntimeService {
+    assert(this._runtimeService, 'Runtime service not initialized');
+    return this._runtimeService;
+  }
+  private set runtimeService(value: RuntimeService) {
+    this._runtimeService = value;
+  }
+
   async init(
-    onDynamicDsCreated: (height: number) => Promise<void>,
+    onDynamicDsCreated: (height: number) => void,
     runtimeService?: RuntimeService,
   ): Promise<void> {
     await super.init(onDynamicDsCreated);
-    this.runtimeService = runtimeService;
+    if (runtimeService) this.runtimeService = runtimeService;
   }
 
   protected async indexBlock(
@@ -85,6 +94,7 @@ export class BlockDispatcherService
     const runtimeVersion = !isFullBlock(block.block)
       ? undefined
       : await this.runtimeService.getRuntimeVersion(block.block.block);
+
     return this.indexerManager.indexBlock(
       block,
       await this.projectService.getDataSources(block.getHeader().blockHeight),

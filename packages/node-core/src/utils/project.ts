@@ -5,7 +5,14 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} from '@subql/common';
-import {BaseAssetsDataSource, BaseCustomDataSource, BaseDataSource, Reader, TemplateBase} from '@subql/types-core';
+import {
+  BaseAssetsDataSource,
+  BaseCustomDataSource,
+  BaseDataSource,
+  BaseTemplateDataSource,
+  Reader,
+  TemplateBase,
+} from '@subql/types-core';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {stringToArray, getSchedule} from 'cron-converter';
@@ -17,7 +24,7 @@ import {exitWithError} from '../process';
 
 const logger = getLogger('Project-Utils');
 
-export async function getValidPort(argvPort: number): Promise<number> {
+export async function getValidPort(argvPort?: number): Promise<number> {
   const validate = (x: any) => {
     const p = parseInt(x);
     return isNaN(p) ? null : p;
@@ -229,13 +236,13 @@ export async function initHotSchemaReload(schema: string, storeService: StoreSer
   await storeService.initHotSchemaReloadQueries(schema);
 }
 
-type IsRuntimeDs = (ds: BaseDataSource) => boolean;
+type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource = BaseDataSource>(
   dataSources: DS[],
   getBlockTimestamp: (height: number) => Promise<Date>,
-  isRuntimeDs: IsRuntimeDs,
+  isRuntimeDs: IsRuntimeDs<DS>,
   blockHandlerKind: string
 ): Promise<DS[]> {
   dataSources = await Promise.all(
@@ -278,20 +285,23 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
   return dataSources;
 }
 
-export async function loadProjectTemplates<T extends BaseDataSource & TemplateBase>(
+export async function loadProjectTemplates<T extends BaseTemplateDataSource>(
   templates: T[] | undefined,
   root: string,
   reader: Reader,
-  isCustomDs: IsCustomDs<BaseDataSource, BaseCustomDataSource>
+  isCustomDs: IsCustomDs<T, Omit<T & BaseCustomDataSource, keyof TemplateBase>>
 ): Promise<T[]> {
   if (!templates || !templates.length) {
     return [];
   }
-  const dsTemplates = await updateDataSourcesV1_0_0(templates, reader, root, isCustomDs);
+
+  const templateIsCustomDs = (template: T): template is T & BaseCustomDataSource =>
+    isCustomDs(template) && 'name' in template;
+  const dsTemplates = await updateDataSourcesV1_0_0(templates, reader, root, templateIsCustomDs);
   return dsTemplates.map((ds, index) => ({
     ...ds,
     name: templates[index].name,
-  })) as T[]; // How to get rid of cast here?
+  }));
 }
 
 export function getStartHeight(dataSources: BaseDataSource[]): number {

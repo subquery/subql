@@ -81,7 +81,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     this.numWorkers = nodeConfig.workers!;
   }
 
-  async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
+  async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
     this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createIndexerWorker()));
     return super.init(onDynamicDsCreated);
   }

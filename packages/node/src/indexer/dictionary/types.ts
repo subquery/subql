@@ -6,7 +6,7 @@ import { MetaData } from '@subql/utils';
 export type SpecVersion = {
   id: string;
   start: number; //start with this block
-  end: number;
+  end: number | null;
 };
 
 export type SpecVersionDictionary = {

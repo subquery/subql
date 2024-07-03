@@ -16,13 +16,13 @@ export async function retryOnFail<T>(
 ): Promise<T> {
   try {
     return await request();
-  } catch (e) {
+  } catch (e: any) {
     if (!shouldRetry(e)) throw e;
     if (retries > 1) {
       await delay(RETRY_DELAY);
       return retryOnFail(request, shouldRetry, --retries);
     } else {
-      logger.error(e as Error, `Retries failed after ${RETRY_COUNT}`);
+      logger.error(e, `Retries failed after ${RETRY_COUNT}`);
       throw e;
     }
   }
