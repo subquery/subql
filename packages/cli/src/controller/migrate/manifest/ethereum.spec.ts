@@ -1,18 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {NETWORK_FAMILY} from '@subql/common';
 import {EthereumDatasourceKind} from '@subql/types-ethereum';
-import {loadDependency, ModuleCache} from '../../../modulars';
 import {TestSubgraph} from '../migrate.fixtures';
 import {convertEthereumDs, convertEthereumTemplate} from './ethereum';
 
 describe('migrate eth manifest', () => {
-  let ethModule: ModuleCache[NETWORK_FAMILY.ethereum];
-  beforeAll(() => {
-    ethModule = loadDependency(NETWORK_FAMILY.ethereum);
-  });
-
   it(`convertEthereumDs`, () => {
     const testSubgraph = TestSubgraph;
     const subqlDs = testSubgraph.dataSources.map((ds) => convertEthereumDs(ds));

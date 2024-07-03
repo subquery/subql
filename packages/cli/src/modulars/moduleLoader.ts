@@ -1,9 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {existsSync} from 'fs';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
+import type {CosmosNetworkModule} from '@subql/types-cosmos';
+import type {EthereumNetworkModule} from '@subql/types-ethereum';
 import {networkPackages} from './config';
 import {ModuleCache} from './types';
 
@@ -39,11 +42,23 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCach
   }
   //Check dependencies actual satisfy INetworkCommonModule
   if (
-    moduleCache[network].parseProjectManifest === undefined ||
-    moduleCache[network].isCustomDs === undefined ||
-    moduleCache[network].isRuntimeDs === undefined
+    moduleCache[network]?.parseProjectManifest === undefined ||
+    moduleCache[network]?.isCustomDs === undefined ||
+    moduleCache[network]?.isRuntimeDs === undefined
   ) {
     throw new Error(`${packageName} is not compatible, please make sure package update to latest version`);
   }
   return moduleCache[network];
+}
+
+export function loadEthModule(): EthereumNetworkModule {
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  assert(ethModule, 'Eth module got undefined, expected to be loaded from local or global');
+  return ethModule;
+}
+
+export function loadCosmosModule(): CosmosNetworkModule {
+  const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
+  assert(cosmosModule, 'Cosmos module got undefined, expected to be loaded from local or global');
+  return cosmosModule;
 }

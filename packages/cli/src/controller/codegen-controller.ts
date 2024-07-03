@@ -12,16 +12,12 @@ import {
   NETWORK_FAMILY,
 } from '@subql/common';
 import type {SubstrateCustomDatasource} from '@subql/types';
-import {
-  BaseDataSource,
-  BaseMapping,
-  BaseTemplateDataSource,
-  ProjectManifestV1_0_0,
-  TemplateBase,
-} from '@subql/types-core';
+import {BaseDataSource, BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
+import {CosmosRuntimeDatasource} from '@subql/types-cosmos/dist/project';
 import type {
   SubqlCustomDatasource as EthereumCustomDs,
   SubqlRuntimeDatasource as EthereumDs,
+  SubqlDatasource,
 } from '@subql/types-ethereum';
 import {
   getAllEntitiesRelations,
@@ -34,7 +30,7 @@ import {
   setJsonObjectType,
 } from '@subql/utils';
 import {uniq, uniqBy, upperFirst} from 'lodash';
-import {loadDependency} from '../modulars';
+import {loadCosmosModule, loadEthModule} from '../modulars';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 export type TemplateKind = BaseTemplateDataSource;
@@ -240,20 +236,22 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
   if (cosmosManifests.length > 0) {
-    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
+    const cosmosModule = loadCosmosModule();
     await cosmosModule.projectCodegen(
       plainManifests,
       projectPath,
       prepareDirPath,
       renderTemplate,
       upperFirst,
-      datasources
+      datasources as CosmosRuntimeDatasource[]
     );
   }
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
-  if (ethManifests.length >= 0 || !!datasources.find((d) => d?.assets)) {
-    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
-    await ethModule.generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+  // as we determine it is eth network, ds type should SubqlDatasource
+  if (ethManifests.length >= 0 || !!datasources.find((d) => (d as SubqlDatasource)?.assets)) {
+    const ethModule = loadEthModule();
+
+    await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
   }
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {

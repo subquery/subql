@@ -4,8 +4,8 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
-import {DEFAULT_TS_MANIFEST, NETWORK_FAMILY} from '@subql/common';
+import {EventFragment, FunctionFragment} from '@ethersproject/abi';
+import {DEFAULT_TS_MANIFEST} from '@subql/common';
 import {getAbiInterface} from '@subql/common-ethereum';
 import {
   SubqlRuntimeDatasource as EthereumDs,
@@ -16,7 +16,7 @@ import {
 } from '@subql/types-ethereum';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
-import {loadDependency} from '../modulars';
+import {loadEthModule} from '../modulars';
 import {
   extractArrayValueFromTsManifest,
   extractFromTs,
@@ -126,7 +126,7 @@ const mockDsStr =
 describe('CLI codegen:generate', () => {
   const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const ethModule = loadEthModule();
   const abiName = ethModule.parseContractPath('./erc721.json').name;
   const eventFragments = abiInterface.events;
   const functionFragments = filterObjectsByStateMutability(abiInterface.functions);

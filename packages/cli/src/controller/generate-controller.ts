@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
 import type {
   EthereumDatasourceKind,
   EthereumHandlerKind,
@@ -18,6 +18,7 @@ import {difference, pickBy, upperFirst} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
+import {loadEthModule} from '../modulars';
 import {
   extractFromTs,
   renderTemplate,
@@ -150,7 +151,7 @@ function generateFormattedHandlers(
 }
 
 export function constructDatasourcesTs(userInput: UserInput): string {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const ethModule = loadEthModule();
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
   const handlersString = tsStringify(formattedHandlers);
@@ -171,7 +172,7 @@ export function constructDatasourcesTs(userInput: UserInput): string {
 }
 
 export function constructDatasourcesYaml(userInput: UserInput): EthereumDs {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const ethModule = loadEthModule();
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
     if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;

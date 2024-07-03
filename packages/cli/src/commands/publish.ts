@@ -53,8 +53,8 @@ export default class Publish extends Command {
 
     await Promise.all(
       project.manifests.map((manifest) => {
-        const cid = fileToCidMap.get(path.join(project.root, manifest));
-        assert(cid, 'CID not found');
+        const cid = fileToCidMap.get(manifest);
+        assert(cid, `CID for ${manifest} not found`);
         return createIPFSFile(project.root, manifest, cid);
       })
     );

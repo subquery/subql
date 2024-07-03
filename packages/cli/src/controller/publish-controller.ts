@@ -59,6 +59,7 @@ export async function uploadToIpfs(
 
     const networkFamily = getProjectNetwork(schema);
     const module = loadDependency(networkFamily);
+    assert(module, `Failed to load module for network ${networkFamily}`);
 
     let manifest;
 
