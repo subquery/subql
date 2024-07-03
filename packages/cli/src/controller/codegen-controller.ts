@@ -308,7 +308,7 @@ export function getChaintypes(
   const chaintypes: Map<string, CosmosCustomModuleImpl>[] = [];
   for (const m of manifest) {
     if (!validateCosmosManifest(m)) continue;
-    if (!m.network.chaintypes) continue;
+    if (!m.network.chaintypes || !m.network.chaintypes.size) continue;
     chaintypes.push(m.network.chaintypes);
   }
 
