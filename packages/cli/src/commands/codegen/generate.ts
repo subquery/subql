@@ -14,7 +14,6 @@ import {
   generateHandlers,
   generateManifestTs,
   generateManifestYaml,
-  getAbiInterface,
   getManifestData,
   ManifestExtractor,
   prepareAbiDirectory,
@@ -113,7 +112,7 @@ export default class Generate extends Command {
     const abiFileName = path.basename(abiPath);
 
     // fragments from abi
-    const abiInterface = getAbiInterface(root, abiFileName);
+    const abiInterface = ethModule.getAbiInterface(root, abiFileName);
     const eventsFragments = abiInterface.events;
     const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 

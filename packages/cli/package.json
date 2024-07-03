@@ -38,7 +38,7 @@
     "@subql/common-algorand": "^4.0.0",
     "@subql/common-concordium": "^4.0.1",
     "@subql/common-cosmos": "^5.0.0",
-    "@subql/common-ethereum": "^4.0.0",
+    "@subql/common-ethereum": "^4.1.0",
     "@subql/common-near": "^4.0.0",
     "@subql/common-stellar": "^4.0.0",
     "@subql/common-substrate": "workspace:*",
@@ -52,6 +52,7 @@
     "eslint": "^8.8.0",
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.2",
+    "ethers": "^5.7.0",
     "oclif": "^3.15.0"
   },
   "engines": {

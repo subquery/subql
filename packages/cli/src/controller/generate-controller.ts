@@ -3,8 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
-import {loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
+import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import {NETWORK_FAMILY} from '@subql/common';
 import type {
   EthereumDatasourceKind,
   EthereumHandlerKind,
@@ -14,7 +14,6 @@ import type {
   SubqlRuntimeHandler,
 } from '@subql/types-ethereum';
 import chalk from 'chalk';
-import {Interface} from 'ethers/lib/utils';
 import * as inquirer from 'inquirer';
 import {difference, pickBy, upperFirst} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
@@ -101,18 +100,6 @@ export async function promptSelectables<T extends ConstructorFragment | Fragment
   });
 
   return selectedMethods;
-}
-
-export function getAbiInterface(projectPath: string, abiFileName: string): Interface {
-  const abi = loadFromJsonOrYaml(path.join(projectPath, DEFAULT_ABI_DIR, abiFileName)) as any;
-  if (!Array.isArray(abi)) {
-    if (!abi.abi) {
-      throw new Error(`Provided ABI is not a valid ABI or Artifact`);
-    }
-    return new Interface(abi.abi);
-  } else {
-    return new Interface(abi);
-  }
 }
 
 export function filterObjectsByStateMutability(

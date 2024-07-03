@@ -6,6 +6,7 @@ import path from 'path';
 import {promisify} from 'util';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
+import {getAbiInterface} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import rimraf from 'rimraf';
 import {Document, stringify} from 'yaml';
@@ -19,7 +20,6 @@ import {
   generateHandlers,
   generateManifestTs,
   generateManifestYaml,
-  getAbiInterface,
   getManifestData,
   prepareAbiDirectory,
   prepareInputFragments,

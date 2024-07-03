@@ -6,6 +6,7 @@ import os from 'os';
 import path from 'path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
 import {DEFAULT_TS_MANIFEST, NETWORK_FAMILY} from '@subql/common';
+import {getAbiInterface} from '@subql/common-ethereum';
 import {
   SubqlRuntimeDatasource as EthereumDs,
   EthereumLogFilter,
@@ -32,7 +33,6 @@ import {
   filterExistingMethods,
   filterObjectsByStateMutability,
   generateHandlerName,
-  getAbiInterface,
   prepareInputFragments,
   removeKeyword,
   tsExtractor,
