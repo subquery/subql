@@ -76,7 +76,7 @@ export async function createTestProject(): Promise<string> {
   // Set test env to be develop mode, only limit to test
   process.env.NODE_ENV = 'develop';
 
-  await Codegen.run(['-l', projectDir]);
+  await Codegen.run(['-f', projectDir]);
   await Build.run(['-f', projectDir]);
 
   return projectDir;
@@ -95,7 +95,7 @@ export async function createMultiChainTestProject(): Promise<{multichainManifest
   // Set test env to be develop mode, only limit to test
   process.env.NODE_ENV = 'develop';
 
-  await Codegen.run(['-l', projectDir]);
+  await Codegen.run(['-f', projectDir]);
   await Build.run(['-f', projectDir]);
 
   const project = getProjectRootAndManifest(projectDir);
