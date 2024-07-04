@@ -248,7 +248,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   }
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
   // as we determine it is eth network, ds type should SubqlDatasource
-  if (ethManifests.length >= 0 || !!datasources.find((d) => (d as SubqlDatasource)?.assets)) {
+  if (ethManifests.length > 0 || !!datasources.find((d) => (d as SubqlDatasource)?.assets)) {
     const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
 
     await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
