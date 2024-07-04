@@ -37,13 +37,14 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCach
       }
     }
   }
-  //Check dependencies actual satisfy INetworkCommonModule
+  // Check dependencies actually satisfy INetworkCommonModule
+  const loadedModule = moduleCache[network];
   if (
-    moduleCache[network].parseProjectManifest === undefined ||
-    moduleCache[network].isCustomDs === undefined ||
-    moduleCache[network].isRuntimeDs === undefined
+    loadedModule?.parseProjectManifest === undefined ||
+    loadedModule?.isCustomDs === undefined ||
+    loadedModule?.isRuntimeDs === undefined
   ) {
     throw new Error(`${packageName} is not compatible, please make sure package update to latest version`);
   }
-  return moduleCache[network];
+  return loadedModule;
 }

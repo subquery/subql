@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs, {lstatSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
@@ -60,6 +61,7 @@ export default class Migrate extends Command {
         subgraphDir = path.join(tempSubgraphDir, gitSubDirectory);
         await git(tempSubgraphDir).init().addRemote('origin', link);
         await git(tempSubgraphDir).raw('sparse-checkout', 'set', `${gitSubDirectory}`);
+        assert(branch, 'Branch is required for git subdirectory');
         await git(tempSubgraphDir).raw('pull', 'origin', branch);
       } else {
         subgraphDir = tempSubgraphDir;
@@ -94,9 +96,9 @@ export default class Migrate extends Command {
       await migrateManifest(chainInfo, subgraphManifest, subqlManifestPath);
       // render package.json
       await preparePackage(subqlDir, {
-        name: subgraphManifest.name,
+        name: subgraphManifest.name ?? '',
         description: subgraphManifest.description,
-        author: subgraphManifest.author,
+        author: subgraphManifest.author ?? '',
         endpoint: [],
       });
       await migrateSchema(subgraphSchemaPath, subqlSchemaPath);

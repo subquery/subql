@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
@@ -51,19 +52,21 @@ export default class Deploy extends Command {
         throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag'));
       }
 
-      flags.endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, null, true);
+      flags.endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, undefined, true);
     }
 
     if (!flags.dict) {
+      assert(validator.chainId, 'Please set chainId in your project');
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults && !validateDictEndpoint) {
-        flags.dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
+        flags.dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, undefined, false);
       } else {
         flags.dict = validateDictEndpoint;
       }
     }
 
     if (!flags.indexerVersion) {
+      assert(validator.manifestRunner, 'Please set manifestRunner in your project');
       try {
         const indexerVersions = await imageVersions(
           validator.manifestRunner.node.name,
@@ -75,7 +78,7 @@ export default class Deploy extends Command {
           flags.indexerVersion = await promptWithDefaultValues(
             inquirer,
             'Enter indexer version',
-            null,
+            undefined,
             indexerVersions,
             true
           );
@@ -87,6 +90,7 @@ export default class Deploy extends Command {
       }
     }
     if (!flags.queryVersion) {
+      assert(validator.manifestRunner, 'Please set manifestRunner in your project');
       try {
         const queryVersions = await imageVersions(
           validator.manifestRunner.query.name,
@@ -95,7 +99,13 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
+          const response = await promptWithDefaultValues(
+            inquirer,
+            'Enter query version',
+            undefined,
+            queryVersions,
+            true
+          );
           flags.queryVersion = response;
         } else {
           flags.queryVersion = queryVersions[0];

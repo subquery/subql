@@ -1,18 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {NETWORK_FAMILY} from '@subql/common';
 import {EthereumDatasourceKind} from '@subql/types-ethereum';
-import {loadDependency, ModuleCache} from '../../../modulars';
 import {TestSubgraph} from '../migrate.fixtures';
 import {convertEthereumDs, convertEthereumTemplate} from './ethereum';
 
 describe('migrate eth manifest', () => {
-  let ethModule: ModuleCache[NETWORK_FAMILY.ethereum];
-  beforeAll(() => {
-    ethModule = loadDependency(NETWORK_FAMILY.ethereum);
-  });
-
   it(`convertEthereumDs`, () => {
     const testSubgraph = TestSubgraph;
     const subqlDs = testSubgraph.dataSources.map((ds) => convertEthereumDs(ds));
@@ -30,12 +23,12 @@ describe('migrate eth manifest', () => {
   it(`convertEthereumTemplate`, () => {
     const testTemplateDataSource = TestSubgraph.dataSources;
 
-    delete testTemplateDataSource[0].source.address;
-    delete testTemplateDataSource[0].source.startBlock;
+    delete (testTemplateDataSource[0].source as any).address;
+    delete (testTemplateDataSource[0].source as any).startBlock;
 
     const subqlTemplate = convertEthereumTemplate(testTemplateDataSource[0]);
-    expect(subqlTemplate.options.address).toBeUndefined();
-    expect(subqlTemplate.options.abi).toBe('Poap');
-    expect(subqlTemplate.assets.get('Poap')).toBeTruthy();
+    expect(subqlTemplate.options?.address).toBeUndefined();
+    expect(subqlTemplate.options?.abi).toBe('Poap');
+    expect(subqlTemplate.assets?.get('Poap')).toBeTruthy();
   });
 });

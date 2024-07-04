@@ -4,16 +4,16 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
+import {loadFromJsonOrYaml} from '@subql/common';
+import {projectCodegen} from '@subql/common-cosmos';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import type {CosmosDatasource, CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/types-cosmos';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
-import {loadDependency} from '../modulars';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
-const MOCK_CHAINTYPES = {
+const MOCK_CHAINTYPES: any = {
   'osmosis.gamm.v1beta1': {
     file: './proto/osmosis/gamm/v1beta1/tx.proto',
     messages: ['MsgSwapExactAmountIn'],
@@ -31,7 +31,6 @@ describe('Able to generate cosmos types from protobuf', () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
   });
 
-  const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
   const manifest = loadFromJsonOrYaml(path.join(PROJECT_PATH, 'project.yaml')) as ProjectManifestV1_0_0<
     CosmosDatasource,
     RuntimeDatasourceTemplate | CustomDatasourceTemplate,
@@ -57,7 +56,7 @@ export namespace osmosis.gamm.v1beta1.tx {
 `;
 
     manifest.network.chaintypes = MOCK_CHAINTYPES;
-    await cosmosModule.projectCodegen([manifest], PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, []);
+    await projectCodegen([manifest], PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, []);
     const codegenResult = await fs.promises.readFile(path.join(PROJECT_PATH, '/src/types/CosmosMessageTypes.ts'));
     expect(fs.existsSync(`${PROJECT_PATH}/src/types/CosmosMessageTypes.ts`)).toBeTruthy();
     expect(codegenResult.toString()).toBe(expectedGeneratedCode);
@@ -72,7 +71,7 @@ export namespace osmosis.gamm.v1beta1.tx {
     };
     manifest.network.chaintypes = badChainType;
     await expect(() =>
-      cosmosModule.projectCodegen([manifest], PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, [])
+      projectCodegen([manifest], PROJECT_PATH, prepareDirPath, renderTemplate, upperFirst, [])
     ).rejects.toThrow(
       'Failed to generate from protobufs. Error: chainType osmosis.gamm.v1beta1, file ./proto/cosmos/osmosis/gamm/v1beta1/tx.proto does not exist'
     );

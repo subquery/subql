@@ -94,7 +94,7 @@ export default class MultiChainDeploy extends Command {
           flags.queryVersion = await promptWithDefaultValues(
             inquirer,
             `Enter query version`,
-            null,
+            undefined,
             queryAvailableVersions,
             true
           );
@@ -116,8 +116,10 @@ export default class MultiChainDeploy extends Command {
         throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
       }
 
+      assert(validator.chainId, 'Please set chainId in your project');
       if (!indexerVersions[validator.chainId]) {
         try {
+          assert(validator.manifestRunner, 'Please set manifestRunner in your project');
           const indexerAvailableVersions = await imageVersions(
             validator.manifestRunner.node.name,
             validator.manifestRunner.node.version,
@@ -128,7 +130,7 @@ export default class MultiChainDeploy extends Command {
             indexerVersions[validator.chainId] = await promptWithDefaultValues(
               inquirer,
               `Enter indexer version for ${multichainProjectPath}`,
-              null,
+              undefined,
               indexerAvailableVersions,
               true
             );
@@ -155,7 +157,7 @@ export default class MultiChainDeploy extends Command {
           cli,
           `Enter endpoint for ${multichainProjectPath}`,
           undefined,
-          null,
+          undefined,
           true
         );
       }
@@ -167,10 +169,10 @@ export default class MultiChainDeploy extends Command {
             cli,
             `Enter dictionary for ${multichainProjectPath}`,
             validateDictEndpoint,
-            null,
+            undefined,
             false
           );
-        } else {
+        } else if (validateDictEndpoint) {
           dictionaries[validator.chainId] = validateDictEndpoint;
         }
       }

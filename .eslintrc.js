@@ -112,4 +112,12 @@ module.exports = {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
+  overrides:[
+    {
+      files: ['*.test.ts', '*.spec.ts'],
+      rules: {
+        '@typescript-eslint/no-non-null-assertion': 'off',
+      },
+    },
+  ]
 };

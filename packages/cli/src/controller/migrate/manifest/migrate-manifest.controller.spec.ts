@@ -27,7 +27,7 @@ describe('migrate manifest controller', () => {
   });
 
   it(`subgraphDsToSubqlDs`, () => {
-    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
+    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum]!;
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].startBlock).toBe(7844214);
     expect(subgraphDsToSubqlDs(networkConverter.dsConverter, subgraph.dataSources)[0].kind).toBe(
       EthereumDatasourceKind.Runtime
@@ -36,11 +36,11 @@ describe('migrate manifest controller', () => {
   });
 
   it(`subgraphTemplateToSubqlTemplate`, () => {
-    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum];
+    const networkConverter = networkConverters[NETWORK_FAMILY.ethereum]!;
 
     const testTemplateDataSource = subgraph.dataSources;
-    delete testTemplateDataSource[0].source.address;
-    delete testTemplateDataSource[0].source.startBlock;
+    delete (testTemplateDataSource[0].source as any).address;
+    delete (testTemplateDataSource[0].source as any).startBlock;
     expect(subgraphTemplateToSubqlTemplate(networkConverter.templateConverter, testTemplateDataSource)[0].name).toBe(
       'Poap'
     );
@@ -59,7 +59,7 @@ describe('migrate manifest controller', () => {
   });
 
   it(`extractNetworkFromManifest, should throw if can not determine network family from ds`, () => {
-    delete subgraph.dataSources[0].kind;
+    delete (subgraph.dataSources[0] as any).kind;
     expect(() => extractNetworkFromManifest(subgraph)).toThrow(`Subgraph dataSource kind or network not been found`);
   });
 });

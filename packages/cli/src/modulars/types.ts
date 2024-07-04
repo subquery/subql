@@ -7,8 +7,8 @@ import type {CosmosNetworkModule} from '@subql/types-cosmos';
 import type {EthereumNetworkModule} from '@subql/types-ethereum';
 
 export type ModuleCache = {
-  [K in Exclude<NETWORK_FAMILY, NETWORK_FAMILY.cosmos | NETWORK_FAMILY.ethereum>]?: INetworkCommonModule;
+  [K in Exclude<NETWORK_FAMILY, NETWORK_FAMILY.cosmos | NETWORK_FAMILY.ethereum>]: INetworkCommonModule;
 } & {
-  [NETWORK_FAMILY.cosmos]?: CosmosNetworkModule;
-  [NETWORK_FAMILY.ethereum]?: EthereumNetworkModule;
+  [NETWORK_FAMILY.cosmos]: CosmosNetworkModule;
+  [NETWORK_FAMILY.ethereum]: EthereumNetworkModule;
 };

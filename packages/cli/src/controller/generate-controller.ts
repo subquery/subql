@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
 import {NETWORK_FAMILY} from '@subql/common';
 import type {
   EthereumDatasourceKind,
@@ -278,16 +278,21 @@ export const yamlExtractor: ManifestExtractor<EthereumDs[]> = (dataSources, case
 
   dataSources
     .filter((d: EthereumDs) => {
-      const dsAddress = d.options.address?.toLowerCase();
+      const dsAddress = d.options?.address?.toLowerCase();
       return casedInputAddress ? casedInputAddress === dsAddress : !dsAddress;
     })
     .forEach((ds: EthereumDs) => {
       ds.mapping.handlers.forEach((handler) => {
-        if ('topics' in handler.filter) {
-          existingEvents.push((handler.filter as EthereumLogFilter).topics[0]);
+        if (!handler.filter) return;
+
+        const topics = (handler.filter as EthereumLogFilter).topics?.[0];
+        const func = (handler.filter as EthereumTransactionFilter).function;
+
+        if (topics) {
+          existingEvents.push(topics);
         }
-        if ('function' in handler.filter) {
-          existingFunctions.push((handler.filter as EthereumTransactionFilter).function);
+        if (func) {
+          existingFunctions.push(func);
         }
       });
     });
@@ -408,7 +413,7 @@ export async function generateHandlers(
       helper: {upperFirst},
     });
     fs.appendFileSync(path.join(projectPath, 'src/index.ts'), `\nexport * from "./mappings/${fileName}"`);
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(`Unable to generate handler scaffolds. ${e.message}`);
   }
 }

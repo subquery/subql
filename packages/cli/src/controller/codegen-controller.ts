@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import path from 'path';
 import {
   DEFAULT_MANIFEST,
@@ -11,9 +12,11 @@ import {
   NETWORK_FAMILY,
 } from '@subql/common';
 import type {SubstrateCustomDatasource} from '@subql/types';
-import {BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
+import {BaseDataSource, BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
+import {CosmosRuntimeDatasource} from '@subql/types-cosmos/dist/project';
 import type {
   SubqlCustomDatasource as EthereumCustomDs,
+  SubqlDatasource,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
 import {
@@ -133,7 +136,7 @@ export function processFields(
       isEnum: false,
     } as ProcessedField;
     if (type === 'entity') {
-      const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
+      const [indexed, unique] = indexFields.reduce<[boolean, boolean | undefined]>(
         (acc, indexField) => {
           if (indexField.fields.includes(field.name) && indexField.fields.length <= 1) {
             acc[0] = true;
@@ -157,14 +160,12 @@ export function processFields(
     } else {
       switch (field.type) {
         default: {
-          injectField.type = getTypeByScalarName(field.type)?.tsType;
-          if (!injectField.type) {
-            throw new Error(
-              `Schema: undefined type "${field.type.toString()}" on field "${
-                field.name
-              }" in "type ${className} @${type}"`
-            );
-          }
+          const typeClass = getTypeByScalarName(field.type);
+          assert(
+            typeClass && typeClass.tsType,
+            `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className} @${type}"`
+          );
+          injectField.type = typeClass.tsType;
           injectField.isJsonInterface = false;
           break;
         }
@@ -215,14 +216,14 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   let datasources = plainManifests.reduce((prev, current) => {
     return prev.concat(current.dataSources);
-  }, []);
+  }, [] as BaseDataSource[]);
 
   const templates = plainManifests.reduce((prev, current) => {
     if (current.templates && current.templates.length !== 0) {
       return prev.concat(current.templates);
     }
     return prev;
-  }, []);
+  }, [] as TemplateKind[]);
 
   if (templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, templates);
@@ -242,13 +243,15 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
       prepareDirPath,
       renderTemplate,
       upperFirst,
-      datasources
+      datasources as CosmosRuntimeDatasource[]
     );
   }
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
-  if (ethManifests.length >= 0 || !!datasources.find((d) => d?.assets)) {
+  // as we determine it is eth network, ds type should SubqlDatasource
+  if (ethManifests.length >= 0 || !!datasources.find((d) => (d as SubqlDatasource)?.assets)) {
     const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
-    await ethModule.generateAbis(datasources, projectPath, prepareDirPath, upperFirst, renderTemplate);
+
+    await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
   }
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {

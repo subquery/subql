@@ -5,7 +5,7 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "./dist",
-    "strict": true
+    "noImplicitAny": false
   },
   "references": [
     { "path": "../common" },

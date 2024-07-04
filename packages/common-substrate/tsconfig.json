@@ -3,9 +3,7 @@
   "compilerOptions": {
     "rootDir": "src",
     "tsBuildInfoFile": "dist/.tsbuildinfo",
-    "outDir": "dist",
-    "noImplicitAny": true,
-    "strict": true
+    "outDir": "dist"
   },
   "references": [{"path": "../types"}, {"path": "../common"}],
   "include": ["src/**/*"]

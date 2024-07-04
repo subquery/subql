@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ICloseEvent, w3cwebsocket as WebSocket} from 'websocket';
+import {ICloseEvent, IMessageEvent, w3cwebsocket as WebSocket} from 'websocket';
 import {Request, ResponseSuccessType} from './types';
 
 let id = 0;
@@ -14,8 +14,8 @@ export class WsJsonRpcClient {
     return ret;
   }
 
-  isReady: Promise<WsJsonRpcClient>;
-  protected _ws: WebSocket;
+  isReady!: Promise<WsJsonRpcClient>;
+  protected _ws!: WebSocket;
   protected isDestroyed = false;
 
   protected handlers: {[id: string]: any};
@@ -63,7 +63,7 @@ export class WsJsonRpcClient {
     }, 1000);
   };
 
-  private onSocketMessage = ({data: dataStr}: {data: string}) => {
+  private onSocketMessage = ({data: dataStr}: IMessageEvent) => {
     try {
       const data = JSON.parse(String(dataStr));
       if (data.id !== undefined && data.id !== null && this.handlers[data.id]) {

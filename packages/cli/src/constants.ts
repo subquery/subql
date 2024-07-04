@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import path from 'path';
 
 //DEPLOYMENT
@@ -21,10 +22,12 @@ export const FUNCTION_REG = /function\s*:\s*['"]([^'"]+)['"]/;
 export const CHAIN_ID_REG = /chainId:\s*(\[[^\]]+\]|['"`][^'"`]+['"`])/;
 export const CAPTURE_CHAIN_ID_REG = /chainId:\s*("([^"]*)"|(?<!")(\d+))/;
 
-export const ACCESS_TOKEN_PATH = path.resolve(
-  process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'],
-  '.subql/SUBQL_ACCESS_TOKEN'
+const rootPath = process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'];
+assert(
+  rootPath,
+  'Cannot determine root path, please create an issue and include your OS. https://github.com/subquery/subql/issues/new'
 );
+export const ACCESS_TOKEN_PATH = path.resolve(rootPath, '.subql/SUBQL_ACCESS_TOKEN');
 
 export const DEFAULT_SUBGRAPH_MANIFEST = 'subgraph.yaml';
 export const DEFAULT_SUBGRAPH_SCHEMA = 'schema.graphql';

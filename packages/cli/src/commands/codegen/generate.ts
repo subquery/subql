@@ -3,7 +3,7 @@
 
 import fs, {lstatSync} from 'fs';
 import path from 'path';
-import type {EventFragment, FunctionFragment} from '@ethersproject/abi/src.ts/fragments';
+import type {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {Command, Flags} from '@oclif/core';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, NETWORK_FAMILY} from '@subql/common';
 import type {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
@@ -101,6 +101,7 @@ export default class Generate extends Command {
     } else {
       this.error('Invalid manifest path');
     }
+
     const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
     const abiName = ethModule.parseContractPath(abiPath).name;
 
@@ -168,7 +169,7 @@ export default class Generate extends Command {
         this.log(`Event: ${event.name} successfully generated`);
       });
       this.log('-------------------------------');
-    } catch (e) {
+    } catch (e: any) {
       this.error(e);
     }
   }

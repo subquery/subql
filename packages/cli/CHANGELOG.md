@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Added
+- Enable ts strict mode
+
 ### Fixed
 - The IPFS CID for multi-chain requires the directory CID.
 

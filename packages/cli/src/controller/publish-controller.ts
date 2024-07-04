@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -45,7 +46,7 @@ export async function uploadToIpfs(
 
   const contents: {path: string; content: string}[] = [];
 
-  let ipfs: IPFSHTTPClient;
+  let ipfs: IPFSHTTPClient | undefined;
   if (ipfsEndpoint) {
     ipfs = create({url: ipfsEndpoint});
   }
@@ -58,6 +59,7 @@ export async function uploadToIpfs(
 
     const networkFamily = getProjectNetwork(schema);
     const module = loadDependency(networkFamily);
+    assert(module, `Failed to load module for network ${networkFamily}`);
 
     let manifest;
 
@@ -71,6 +73,7 @@ export async function uploadToIpfs(
       throw new Error('Unable to parse project manifest');
     }
 
+    assert(reader.root, 'Reader root is not set');
     // the JSON object conversion must occur on manifest.deployment
     const deployment = await replaceFileReferences(reader.root, manifest.deployment, authToken, ipfs);
 
@@ -94,7 +97,7 @@ export async function uploadToIpfs(
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
-async function replaceFileReferences<T>(
+async function replaceFileReferences<T extends Record<string, any>>(
   projectDir: string,
   input: T,
   authToken: string,
@@ -177,11 +180,12 @@ export async function uploadFile(
   authToken: string,
   ipfs?: IPFSHTTPClient
 ): Promise<string> {
-  if (fileMap.has(contents.path)) {
-    return fileMap.get(contents.path);
+  const pathPromise = fileMap.get(contents.path);
+  if (pathPromise !== undefined) {
+    return pathPromise;
   }
 
-  let pendingClientCid: Promise<string>;
+  let pendingClientCid: Promise<string> = Promise.resolve('');
   if (ipfs) {
     pendingClientCid = ipfs
       .add(contents.content, {pin: true, cidVersion: 0})
