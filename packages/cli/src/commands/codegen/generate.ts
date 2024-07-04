@@ -5,7 +5,7 @@ import fs, {lstatSync} from 'fs';
 import path from 'path';
 import type {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs} from '@subql/common';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, NETWORK_FAMILY} from '@subql/common';
 import type {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {
   constructMethod,
@@ -21,7 +21,7 @@ import {
   tsExtractor,
   yamlExtractor,
 } from '../../controller/generate-controller';
-import {loadEthModule} from '../../modulars';
+import {loadDependency} from '../../modulars';
 import {extractFromTs} from '../../utils';
 
 export interface SelectedMethod {
@@ -102,7 +102,7 @@ export default class Generate extends Command {
       this.error('Invalid manifest path');
     }
 
-    const ethModule = loadEthModule();
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
     const abiName = ethModule.parseContractPath(abiPath).name;
 
     if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {

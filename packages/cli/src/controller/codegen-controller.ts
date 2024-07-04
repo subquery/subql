@@ -16,8 +16,8 @@ import {BaseDataSource, BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateB
 import {CosmosRuntimeDatasource} from '@subql/types-cosmos/dist/project';
 import type {
   SubqlCustomDatasource as EthereumCustomDs,
-  SubqlRuntimeDatasource as EthereumDs,
   SubqlDatasource,
+  SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
 import {
   getAllEntitiesRelations,
@@ -30,7 +30,7 @@ import {
   setJsonObjectType,
 } from '@subql/utils';
 import {uniq, uniqBy, upperFirst} from 'lodash';
-import {loadCosmosModule, loadEthModule} from '../modulars';
+import {loadDependency} from '../modulars';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 export type TemplateKind = BaseTemplateDataSource;
@@ -236,7 +236,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
   if (cosmosManifests.length > 0) {
-    const cosmosModule = loadCosmosModule();
+    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
     await cosmosModule.projectCodegen(
       plainManifests,
       projectPath,
@@ -249,7 +249,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
   // as we determine it is eth network, ds type should SubqlDatasource
   if (ethManifests.length >= 0 || !!datasources.find((d) => (d as SubqlDatasource)?.assets)) {
-    const ethModule = loadEthModule();
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
 
     await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
   }

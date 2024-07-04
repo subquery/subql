@@ -7,9 +7,7 @@
     "importHelpers": true,
     "rootDir": "src",
     "tsBuildInfoFile": "lib/.tsbuildinfo",
-    "outDir": "lib",
-    "noImplicitAny": true,
-    "strict": true
+    "outDir": "lib"
   },
   "references": [{"path": "../common"}, {"path": "../common-substrate"}, {"path": "../utils"}],
   "include": ["src/**/*"],

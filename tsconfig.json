@@ -3,7 +3,6 @@
     "module": "commonjs",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "noImplicitAny": false,
     "noImplicitThis": true,
     "moduleResolution": "node",
     "outDir": "dist",
@@ -33,7 +32,9 @@
       "@subql/testing": ["packages/testing/src"],
       "@subql/testing/*": ["packages/testing/src/*"]
     },
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "strict": true
   },
   "references": [
     {"path": "packages/cli"},

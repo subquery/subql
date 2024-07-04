@@ -5,7 +5,7 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir} from '@subql/common';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir, NETWORK_FAMILY} from '@subql/common';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
@@ -13,7 +13,7 @@ import rimraf from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
 import {BASE_TEMPLATE_URl, CAPTURE_CHAIN_ID_REG, CHAIN_ID_REG, ENDPOINT_REG} from '../constants';
-import {loadEthModule} from '../modulars';
+import {loadDependency} from '../modulars';
 import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 import {
   defaultEnvDevelopLocalPath,
@@ -385,7 +385,9 @@ export async function validateEthereumProjectManifest(projectPath: string): Prom
     manifest = loadFromJsonOrYaml(path.join(projectPath, DEFAULT_MANIFEST));
   }
   try {
-    return isTs ? validateEthereumTsManifest(manifest) : !!loadEthModule().parseProjectManifest(manifest);
+    return isTs
+      ? validateEthereumTsManifest(manifest)
+      : !!loadDependency(NETWORK_FAMILY.ethereum).parseProjectManifest(manifest);
   } catch (e) {
     return false;
   }
