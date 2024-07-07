@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
@@ -17,21 +16,10 @@ type GetLatestFinalizedHeight = () => number;
 export abstract class BaseRuntimeService {
   parentSpecVersion?: number;
   specVersionMap: SpecVersion[] = [];
-  protected _currentRuntimeVersion?: RuntimeVersion;
+  private currentRuntimeVersion?: RuntimeVersion;
   latestFinalizedHeight?: number;
 
   constructor(protected apiService: ApiService) {}
-
-  protected get currentRuntimeVersion(): RuntimeVersion {
-    assert(
-      this._currentRuntimeVersion !== undefined,
-      'currentRuntimeVersion is undefined',
-    );
-    return this._currentRuntimeVersion;
-  }
-  protected set currentRuntimeVersion(value: RuntimeVersion) {
-    this._currentRuntimeVersion = value;
-  }
 
   async specChanged(height: number, specVersion: number): Promise<boolean> {
     if (this.parentSpecVersion !== specVersion) {

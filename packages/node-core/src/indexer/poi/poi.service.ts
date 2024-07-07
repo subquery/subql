@@ -25,7 +25,10 @@ export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
   private _poiRepo?: CachePoiModel;
 
-  constructor(protected readonly nodeConfig: NodeConfig, private storeCache: StoreCacheService) {}
+  constructor(
+    protected readonly nodeConfig: NodeConfig,
+    private storeCache: StoreCacheService
+  ) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
@@ -93,7 +96,7 @@ export class PoiService implements OnApplicationShutdown {
       // Drop previous keys in metadata
       this.storeCache.metadata.bulkRemove(['blockOffset', 'latestPoiWithMmr', 'lastPoiHeight']);
 
-      const queries = [];
+      const queries: string[] = [];
 
       if (checkResult) {
         if (checkResult.mmr_exists) {
