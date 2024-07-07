@@ -17,9 +17,8 @@ import {
   BaseCustomDataSource,
   HandlerInputTransformer_0_0_0 as BaseHandlerInputTransformer_0_0_0,
   HandlerInputTransformer_1_0_0 as BaseHandlerInputTransformer_1_0_0,
-  SecondLayerHandlerProcessor_0_0_0 as BaseSecondLayerHandlerProcessor_0_0_0,
-  SecondLayerHandlerProcessor_1_0_0 as BaseSecondLayerHandlerProcessor_1_0_0,
-  SecondLayerHandlerProcessor as BaseSecondLayerHandlerProcessor,
+  SecondLayerHandlerProcessor_0_0_0,
+  SecondLayerHandlerProcessor_1_0_0,
   DsProcessor,
 } from '@subql/types-core';
 import {LightSubstrateEvent, SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
@@ -332,35 +331,14 @@ export type SubstrateDatasourceProcessor<
   >,
 > = DsProcessor<DS, P, ApiPromise>;
 
-/**
- * @deprecated use types core version. datasource processors need updating before this can be removed
- * */
-export type SecondLayerHandlerProcessor_0_0_0<
-  K extends SubstrateHandlerKind,
-  F extends Record<string, unknown>,
-  E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
-> = BaseSecondLayerHandlerProcessor_0_0_0<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
-
-/**
- * @deprecated use types core version. datasource processors need updating before this can be removed
- * */
-export type SecondLayerHandlerProcessor_1_0_0<
-  K extends SubstrateHandlerKind,
-  F extends Record<string, unknown>,
-  E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
-> = BaseSecondLayerHandlerProcessor_1_0_0<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
-
-/**
- * @deprecated use types core version. datasource processors need updating before this can be removed
- * */
 export type SecondLayerHandlerProcessor<
   K extends SubstrateHandlerKind,
   F extends Record<string, unknown>,
   E,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
-> = BaseSecondLayerHandlerProcessor<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
+> =
+  | SecondLayerHandlerProcessor_0_0_0<RuntimeFilterMap, K, F, E, DS, ApiPromise>
+  | SecondLayerHandlerProcessor_1_0_0<RuntimeFilterMap, K, F, E, DS, ApiPromise>;
 
 /**
  * Represents a Substrate subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.
