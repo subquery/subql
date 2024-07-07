@@ -95,9 +95,9 @@ export class BlockHandler implements SubqlBlockHandler {
   @Type(() => BlockFilter)
   filter?: BlockFilter;
   @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.EthBlock]})
-  kind: EthereumHandlerKind.Block;
+  kind!: EthereumHandlerKind.Block;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class CallHandler implements SubqlCallHandler {
@@ -107,9 +107,9 @@ export class CallHandler implements SubqlCallHandler {
   @Type(() => TransactionFilter)
   filter?: EthereumTransactionFilter;
   @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.EthCall]})
-  kind: EthereumHandlerKind.Call;
+  kind!: EthereumHandlerKind.Call;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class EventHandler implements SubqlEventHandler {
@@ -119,16 +119,16 @@ export class EventHandler implements SubqlEventHandler {
   @Type(() => LogFilter)
   filter?: EthereumLogFilter;
   @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.EthEvent]})
-  kind: EthereumHandlerKind.Event;
+  kind!: EthereumHandlerKind.Event;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class CustomHandler implements SubqlCustomHandler {
   @IsString()
-  kind: string;
+  kind!: string;
   @IsString()
-  handler: string;
+  handler!: string;
   @IsObject()
   @IsOptional()
   filter?: Record<string, unknown>;
@@ -152,18 +152,18 @@ export class EthereumMapping implements SubqlMapping {
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubqlHandler[];
+  handlers!: SubqlHandler[];
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
-  handlers: CustomHandler[];
+  handlers!: CustomHandler[];
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class EthereumProcessorOptions implements SubqlEthereumProcessorOptions {
@@ -182,10 +182,10 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
   @IsEnum(SubqlEthereumDatasourceKind, {
     groups: [SubqlEthereumDatasourceKind.EthRuntime],
   })
-  kind: EthereumDatasourceKind.Runtime;
+  kind!: EthereumDatasourceKind.Runtime;
   @Type(() => EthereumMapping)
   @ValidateNested()
-  mapping: M;
+  mapping!: M;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
   @IsOptional()
@@ -198,7 +198,7 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
 
 export class FileReferenceImpl implements FileReference {
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class CustomDataSourceBase<K extends string, M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>>
@@ -206,16 +206,16 @@ export class CustomDataSourceBase<K extends string, M extends SubqlMapping = Sub
   implements SubqlCustomDatasource<K, M>
 {
   @IsString()
-  kind: K;
+  kind!: K;
   @Type(() => CustomMapping)
   @ValidateNested()
-  mapping: M;
+  mapping!: M;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: Map<string, CustomDataSourceAsset>;
+  assets!: Map<string, CustomDataSourceAsset>;
   @Type(() => FileReferenceImpl)
   @IsObject()
-  processor: FileReference;
+  processor!: FileReference;
   @IsOptional()
   @ValidateNested()
   options?: EthereumProcessorOptions;

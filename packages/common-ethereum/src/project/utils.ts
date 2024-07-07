@@ -10,6 +10,7 @@ import {
   EthereumDatasourceKind,
   EthereumHandlerKind,
   SubqlRuntimeDatasource,
+  SecondLayerHandlerProcessorArray,
 } from '@subql/types-ethereum';
 import {fromBech32Address} from '@zilliqa-js/crypto';
 import {buildMessage, isEthereumAddress, ValidateBy, ValidationOptions} from 'class-validator';
@@ -21,19 +22,19 @@ export const DEFAULT_ABI_DIR = '/abis';
 type DefaultFilter = Record<string, unknown>;
 
 export function isBlockHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, DefaultFilter, unknown>
+  hp: SecondLayerHandlerProcessorArray<EthereumHandlerKind, DefaultFilter, unknown>
 ): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Block, DefaultFilter, E> {
   return hp.baseHandlerKind === EthereumHandlerKind.Block;
 }
 
 export function isEventHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, DefaultFilter, unknown>
+  hp: SecondLayerHandlerProcessorArray<EthereumHandlerKind, DefaultFilter, unknown>
 ): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Event, DefaultFilter, E> {
   return hp.baseHandlerKind === EthereumHandlerKind.Event;
 }
 
 export function isCallHandlerProcessor<E>(
-  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, DefaultFilter, unknown>
+  hp: SecondLayerHandlerProcessorArray<EthereumHandlerKind, DefaultFilter, unknown>
 ): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Call, DefaultFilter, E> {
   return hp.baseHandlerKind === EthereumHandlerKind.Call;
 }

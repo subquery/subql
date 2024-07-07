@@ -70,30 +70,30 @@ export class EthereumCustomDataSourceImpl<K extends string = string, M extends B
 
 export class RuntimeDatasourceTemplateImpl extends EthereumRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
   @IsString()
-  name: string;
+  name!: string;
 }
 
 export class CustomDatasourceTemplateImpl extends EthereumCustomDataSourceImpl implements CustomDatasourceTemplate {
   @IsString()
-  name: string;
+  name!: string;
 }
 
 export class EthereumRunnerSpecsImpl implements RunnerSpecs {
   @IsObject()
   @ValidateNested()
   @Type(() => EthereumRunnerNodeImpl)
-  node: NodeSpec;
+  node!: NodeSpec;
   @IsObject()
   @ValidateNested()
   @Type(() => RunnerQueryBaseModel)
-  query: QuerySpec;
+  query!: QuerySpec;
 }
 
 export class ProjectNetworkDeploymentV1_0_0 {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
-  chainId: string;
+  chainId!: string;
   @ValidateNested()
   @Type(() => FileType)
   @IsOptional()
@@ -105,7 +105,7 @@ export class ProjectNetworkDeploymentV1_0_0 {
 
 export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
   @IsString({each: true})
-  endpoint: string | string[];
+  endpoint!: string | string[];
   @IsString()
   @IsOptional()
   dictionary?: string;
@@ -120,11 +120,11 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
-  network: ProjectNetworkDeploymentV1_0_0;
+  network!: ProjectNetworkDeploymentV1_0_0;
   @IsObject()
   @ValidateNested()
   @Type(() => EthereumRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
   @IsArray()
   @ValidateNested()
   @Type(() => EthereumCustomDataSourceImpl, {
@@ -134,7 +134,7 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubqlRuntimeDatasource | SubqlCustomDatasource)[];
+  dataSources!: (SubqlRuntimeDatasource | SubqlCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -165,16 +165,16 @@ export class ProjectManifestV1_0_0Impl
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: SubqlEthereumDataSource[];
+  dataSources!: SubqlEthereumDataSource[];
   @Type(() => ProjectNetworkV1_0_0)
-  network: ProjectNetworkV1_0_0;
+  network!: ProjectNetworkV1_0_0;
   @IsString()
-  name: string;
+  name!: string;
   @IsString()
-  version: string;
+  version!: string;
   @ValidateNested()
   @Type(() => FileType)
-  schema: FileType;
+  schema!: FileType;
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -189,7 +189,7 @@ export class ProjectManifestV1_0_0Impl
   @IsObject()
   @ValidateNested()
   @Type(() => EthereumRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
 
   @IsOptional()
   @IsObject()

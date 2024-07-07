@@ -255,10 +255,10 @@ export type SecondLayerHandlerProcessor<
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > =
-  | SecondLayerHandlerProcessor_0_0_0<EthereumRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>
-  | SecondLayerHandlerProcessor_1_0_0<EthereumRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>;
+  | SecondLayerHandlerProcessor_0_0_0<EthereumRuntimeFilterMap, K, F, E, DS, ApiWrapper>
+  | SecondLayerHandlerProcessor_1_0_0<EthereumRuntimeFilterMap, K, F, E, DS, ApiWrapper>;
 
-type SecondLayerHandlerProcessorArray<
+export type SecondLayerHandlerProcessorArray<
   K extends string,
   F extends Record<string, unknown>,
   T,

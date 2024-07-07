@@ -52,9 +52,14 @@ function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string)
     const abiName = datasource.options.abi;
     const topicIssues: string[] = [];
     const funcIssues: string[] = [];
-    const abi = datasource.assets.get(abiName);
+
     let data = '';
     try {
+      const abi = datasource.assets?.get(abiName);
+      if (!abi) {
+        issues.push(`Asset: "${abiName}" not found in project`);
+        continue;
+      }
       data = fs.readFileSync(path.join(projectPath, abi.file), 'utf8');
     } catch (e) {
       issues.push(`Asset: "${abiName}" not found in project`);
@@ -73,14 +78,18 @@ function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string)
       if (!mappingHandler?.filter) continue;
 
       if (mappingHandler.kind === EthereumHandlerKind.Event) {
+        if (!mappingHandler.filter.topics || !mappingHandler.filter.topics.length) continue;
+
         const notMatch = mappingHandler.filter.topics.find(
-          (topic) => !abiEvents.includes(EventFragment.fromString(topic).format())
+          (topic) => topic && !abiEvents.includes(EventFragment.fromString(topic).format())
         );
 
         if (notMatch) topicIssues.push(notMatch);
       }
 
       if (mappingHandler.kind === EthereumHandlerKind.Call) {
+        if (!mappingHandler.filter.function) continue;
+
         const functionFormat = FunctionFragment.fromString(mappingHandler.filter.function).format();
         if (!abiFunctions.includes(functionFormat)) funcIssues.push(mappingHandler.filter.function);
       }
@@ -133,31 +142,28 @@ export function prepareSortedAssets(
   projectPath: string
 ): Record<string, string> {
   const sortedAssets: Record<string, string> = {};
-  datasources
-    .filter((d) => !!d?.assets && (isRuntimeDs(d) || isCustomDs(d) || validateCustomDsDs(d)))
-    .forEach((d) => {
-      const addAsset = (name: string, value: FileReference) => {
-        // should do if covert to absolute
-        // if value.file is not absolute, the
-        const filePath = path.join(projectPath, value.file);
-        if (!fs.existsSync(filePath)) {
-          throw new Error(`Error: Asset ${name}, file ${value.file} does not exist`);
-        }
-        // We use actual abi file name instead on name provided in assets
-        // This is aligning with files in './ethers-contracts'
-        sortedAssets[parseContractPath(filePath).name] = value.file;
-      };
 
-      if (d.assets instanceof Map) {
-        for (const [name, value] of d.assets.entries()) {
-          addAsset(name, value);
-        }
-      } else {
-        Object.entries(d.assets).map(([name, value]) => {
-          addAsset(name, value as FileReference);
-        });
-      }
-    });
+  const addAsset = (name: string, value: FileReference) => {
+    // should do if covert to absolute
+    // if value.file is not absolute, the
+    const filePath = path.join(projectPath, value.file);
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Error: Asset ${name}, file ${value.file} does not exist`);
+    }
+    // We use actual abi file name instead on name provided in assets
+    // This is aligning with files in './ethers-contracts'
+    sortedAssets[parseContractPath(filePath).name] = value.file;
+  };
+
+  for (const d of datasources) {
+    if (!d.assets) continue;
+    if (!isRuntimeDs(d) && !isCustomDs(d) && !validateCustomDsDs(d)) continue;
+
+    for (const [name, value] of d.assets.entries()) {
+      addAsset(name, value);
+    }
+  }
+
   return sortedAssets;
 }
 
@@ -298,7 +304,7 @@ export async function generateAbis(
         );
       })
     );
-  } catch (e) {
+  } catch (e: any) {
     console.error(`! Unable to generate abi interface. ${e.message}`);
   }
 }
