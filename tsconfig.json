@@ -33,7 +33,6 @@
       "@subql/testing/*": ["packages/testing/src/*"]
     },
     "skipLibCheck": true,
-    "noImplicitAny": true,
     "strict": true
   },
   "references": [
