@@ -76,7 +76,7 @@ export class BlockHeightMap<T> {
 
   getWithinRange(startHeight: number, endHeight: number): Map<number, T> {
     const result = new Map<number, T>();
-    let previousKey = null;
+    let previousKey: number | null = null;
 
     for (const [key, value] of this.#map) {
       if (previousKey !== null && previousKey < startHeight && key >= startHeight) {
