@@ -16,6 +16,9 @@
     "sourceMap": true,
     "inlineSources": true,
     "composite": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false,
     "paths": {
       "@subql/utils": ["packages/utils/src"],
       "@subql/utils/*": ["packages/utils/src/*"],
@@ -32,8 +35,6 @@
       "@subql/testing": ["packages/testing/src"],
       "@subql/testing/*": ["packages/testing/src/*"]
     },
-    "skipLibCheck": true,
-    "strict": true
   },
   "references": [
     {"path": "packages/cli"},
