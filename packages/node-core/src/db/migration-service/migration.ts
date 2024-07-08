@@ -34,7 +34,9 @@ type RemovedIndexes = Record<string, IndexesOptions[]>;
 const logger = getLogger('db-manager');
 
 export class Migration {
-  private sequelizeModels: ModelStatic<any>[] = [];
+  /* Models that are added or modified during the migration */
+  private modifiedModels: ModelStatic<any>[] = [];
+  private removedModels: string[] = [];
   /*
   mainQueries are used for executions, that are not reliant on any prior db operations
   extraQueries are executions, that are reliant on certain db operations, e.g. comments on foreignKeys or comments on tables, should be executed only after the table has been created
@@ -103,7 +105,7 @@ export class Migration {
     );
   }
 
-  async run(transaction: Transaction | undefined): Promise<ModelStatic<any>[]> {
+  async run(transaction?: Transaction): Promise<{modifiedModels: ModelStatic<any>[]; removedModels: string[]}> {
     const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
 
     if (this.historical) {
@@ -137,7 +139,10 @@ export class Migration {
 
     this.afterHandleCockroachIndex();
 
-    return this.sequelizeModels;
+    return {
+      modifiedModels: this.modifiedModels,
+      removedModels: this.removedModels,
+    };
   }
 
   private prepareModelAttributesAndIndexes(model: GraphQLModelsType): {
@@ -160,8 +165,8 @@ export class Migration {
 
   private addModelToSequelizeCache(sequelizeModel: ModelStatic<any>): void {
     const modelName = sequelizeModel.name;
-    if (!this.sequelizeModels.find((m) => m.name === modelName)) {
-      this.sequelizeModels.push(sequelizeModel);
+    if (!this.modifiedModels.find((m) => m.name === modelName)) {
+      this.modifiedModels.push(sequelizeModel);
     }
   }
 
@@ -235,6 +240,7 @@ export class Migration {
     // should prioritise dropping the triggers
     this.mainQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, tableName));
     this.mainQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${tableName}";`);
+    this.removedModels.push(model.name);
   }
 
   createColumn(model: GraphQLModelsType, field: GraphQLEntityField): void {

@@ -181,12 +181,10 @@ export class SchemaMigrationService {
         migrationAction.dropEnum(enumValue);
       }
 
-      const results = await migrationAction.run(transaction);
+      const modelChanges = await migrationAction.run(transaction);
 
       // Update any relevant application state so the right models are used
-      if (results?.length) {
-        this.storeService.storeCache.updateModels(results);
-      }
+      this.storeService.storeCache.updateModels(modelChanges);
       await this.storeService.updateModels(this.dbSchema, getAllEntitiesRelations(nextSchema));
 
       await this.flushCache();
