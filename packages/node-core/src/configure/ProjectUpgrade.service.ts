@@ -8,7 +8,7 @@ import {getAllEntitiesRelations} from '@subql/utils';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
 import {SchemaMigrationService} from '../db';
-import {ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
+import {CacheMetadataModel, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
 import {getStartHeight, mainThreadOnly} from '../utils';
@@ -109,21 +109,26 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   #currentProject: P;
 
   #storeCache?: StoreCacheService;
-  #storeService?: StoreService;
-  #schema?: string;
   #initialized = false;
 
   private config?: NodeConfig;
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
 
-  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number, private _isRewindable = true) {
+  private constructor(
+    private _projects: BlockHeightMap<P>,
+    currentHeight: number,
+    private _isRewindable = true
+  ) {
     logger.info(
       `Projects: ${JSON.stringify(
-        [..._projects.getAll().entries()].reduce((acc, curr) => {
-          acc[curr[0]] = curr[1].id;
-          return acc;
-        }, {} as Record<number, string>),
+        [..._projects.getAll().entries()].reduce(
+          (acc, curr) => {
+            acc[curr[0]] = curr[1].id;
+            return acc;
+          },
+          {} as Record<number, string>
+        ),
         undefined,
         2
       )}`
@@ -147,8 +152,6 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     }
     this.#initialized = true;
     this.#storeCache = storeService.storeCache;
-    this.#storeService = storeService;
-    this.#schema = schema;
     this.config = config;
 
     this.migrationService = new SchemaMigrationService(
@@ -194,6 +197,11 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     return this.#currentHeight;
   }
 
+  private get metadata(): CacheMetadataModel {
+    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
+    return this.#storeCache.metadata;
+  }
+
   async rewind(
     targetBlockHeight: number,
     lastProcessedHeight: number,
@@ -216,7 +224,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
       if (currentProject && nextProject) {
         if (this.config?.dbSchema) {
-          await storeService.init(getAllEntitiesRelations(currentProject.schema), this.config.dbSchema);
+          await storeService.init(this.config.dbSchema);
         }
         await this.migrate(currentProject, nextProject, transaction);
       }
@@ -237,12 +245,8 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     if (!this.config.unfinalizedBlocks) {
       assert(this.migrationService, 'MigrationService is undefined');
       if (this.config.allowSchemaMigration) {
-        const modifiedModels = await this.migrationService.run(project.schema, newProject.schema, transaction);
-        if (modifiedModels) {
-          this.#storeCache?.updateModels(modifiedModels);
-          assert(this.#schema, 'Schema is undefined');
-          await this.#storeService?.updateModels(this.#schema, getAllEntitiesRelations(newProject.schema));
-        }
+        await this.migrationService.run(project.schema, newProject.schema, transaction);
+        this.metadata.setIncrement('schemaMigrationCount');
       }
     }
   }
@@ -410,8 +414,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   }
 
   private async getDeploymentsMetadata(): Promise<Record<number, string>> {
-    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
-    const deploymentsRaw = await this.#storeCache?.metadata.find('deployments');
+    const deploymentsRaw = await this.metadata.find('deployments');
 
     if (!deploymentsRaw) return {};
 
@@ -420,7 +423,6 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
   @mainThreadOnly()
   async updateIndexedDeployments(id: string, blockHeight: number): Promise<void> {
-    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
     const deployments = await this.getDeploymentsMetadata();
 
     // If the last deployment is the same as the one we're updating to theres no need to do anything
@@ -438,12 +440,11 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
     deployments[blockHeight] = id;
 
-    this.#storeCache?.metadata.set('deployments', JSON.stringify(deployments));
+    this.metadata.set('deployments', JSON.stringify(deployments));
   }
 
   // Remove metadata deployments beyond this blockHeight
   async removeIndexedDeployments(blockHeight: number): Promise<void> {
-    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
     const deployments = await this.getDeploymentsMetadata();
 
     // remove all future block heights
@@ -455,6 +456,6 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       }
     });
 
-    this.#storeCache?.metadata.set('deployments', JSON.stringify(deployments));
+    this.metadata.set('deployments', JSON.stringify(deployments));
   }
 }

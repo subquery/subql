@@ -223,17 +223,8 @@ export async function loadDataSourceScript(reader: Reader, file?: string): Promi
   return entryScript;
 }
 
-export async function initDbSchema(
-  project: ISubqueryProject,
-  schema: string,
-  storeService: StoreService
-): Promise<void> {
-  const modelsRelation = getAllEntitiesRelations(project.schema);
-  await storeService.init(modelsRelation, schema);
-}
-
-export async function initHotSchemaReload(schema: string, storeService: StoreService): Promise<void> {
-  await storeService.initHotSchemaReloadQueries(schema);
+export async function initDbSchema(schema: string, storeService: StoreService): Promise<void> {
+  await storeService.init(schema);
 }
 
 type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
