@@ -148,6 +148,10 @@ describe('SchemaMigration integration tests', () => {
 
     const cachedModels = (storeCache as any).cachedModels;
 
-    expect(Object.keys(cachedModels)).toStrictEqual(['_metadata', 'Account']);
+    expect(Object.keys(cachedModels)).toStrictEqual([
+      '_metadata',
+      'Transfer',
+      'Account',
+    ]);
   });
 });
