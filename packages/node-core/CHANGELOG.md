@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [10.11.0] - 2024-07-09
 ### Added
 - Enable ts strict model
 
@@ -748,7 +750,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.11.0...HEAD
+[10.11.0]: https://github.com/subquery/subql/compare/node-core/10.10.0...node-core/10.11.0
 [10.10.0]: https://github.com/subquery/subql/compare/node-core/10.9.0...node-core/10.10.0
 [10.9.0]: https://github.com/subquery/subql/compare/node-core/10.6.0...node-core/10.9.0
 [10.6.0]: https://github.com/subquery/subql/compare/node-core/10.5.1...node-core/10.6.0
