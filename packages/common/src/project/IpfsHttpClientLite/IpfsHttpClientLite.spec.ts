@@ -3,7 +3,6 @@
 
 import {u8aConcat} from '@polkadot/util';
 import {create, IPFSHTTPClient} from 'ipfs-http-client';
-import {CID} from 'multiformats/cid';
 import {IPFS_NODE_ENDPOINT, IPFS_WRITE_ENDPOINT} from '../../constants';
 import {IPFSHTTPClientLite} from './IPFSHTTPClientLite';
 
@@ -12,15 +11,11 @@ const testAuth = process.env.SUBQL_ACCESS_TOKEN!;
 describe('SubIPFSClient', () => {
   let readClient: IPFSHTTPClientLite;
   let writeClient: IPFSHTTPClientLite;
-  let originalReadClient: IPFSHTTPClient;
   let originalWriteClient: IPFSHTTPClient;
 
   beforeAll(() => {
     readClient = new IPFSHTTPClientLite({url: IPFS_NODE_ENDPOINT});
     writeClient = new IPFSHTTPClientLite({url: IPFS_WRITE_ENDPOINT, headers: {Authorization: `Bearer ${testAuth}`}});
-    originalReadClient = create({
-      url: IPFS_NODE_ENDPOINT,
-    });
     originalWriteClient = create({
       url: IPFS_WRITE_ENDPOINT,
       headers: {Authorization: `Bearer ${testAuth}`},
@@ -38,9 +33,9 @@ describe('SubIPFSClient', () => {
     for await (const result of originalResults) {
       originalOutput.set(result.path, result.cid.toString());
     }
-    const results = writeClient.addAll(source, {pin: true, cidVersion: 0, wrapWithDirectory: false});
+    const results = await writeClient.addAll(source, {pin: true, cidVersion: 0, wrapWithDirectory: false});
     const output: Map<string, string> = new Map();
-    for await (const result of results) {
+    for (const result of results) {
       output.set(result.path, result.cid.toString());
     }
     expect(originalOutput).toEqual(output);
@@ -72,8 +67,8 @@ describe('SubIPFSClient', () => {
   //
   it('should pin a content with given CID to a remote pinning service', async () => {
     const testCID = 'QmQKeYj2UZJoTN5yXSvzJy4A3CjUuSmEWAKeZV4herh5bS';
-    const result = await writeClient.pinRemoteAdd(CID.parse(testCID), {service: 'onfinality'});
-    expect(result.cid.toString()).toBe(testCID);
+    const result = await writeClient.pinRemoteAdd(testCID, {service: 'onfinality'});
+    expect(result.Cid).toBe(testCID);
   });
 });
 
