@@ -90,7 +90,11 @@ export class FetchService extends BaseFetchService<
     );
   }
 
-  protected async preLoopHook({ startHeight }): Promise<void> {
+  protected async preLoopHook({
+    startHeight,
+  }: {
+    startHeight: number;
+  }): Promise<void> {
     this.runtimeService.init(this.getLatestFinalizedHeight.bind(this));
 
     await this.runtimeService.syncDictionarySpecVersions(startHeight);
