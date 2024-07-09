@@ -39,6 +39,7 @@ describe('SchemaMigration integration tests', () => {
     await sequelize.dropSchema(schemaName, { logging: false });
     await app?.close();
   });
+
   afterAll(async () => {
     await promisify(rimraf)(tempDir);
     await sequelize?.close();
@@ -71,6 +72,7 @@ describe('SchemaMigration integration tests', () => {
     expect(tableNames).toContain('test_index_ones');
     expect(tableNames).toContain('transfers');
   });
+
   it('On entity drop isRewindable should be false', async () => {
     const cid = 'QmZcEv4UWrCkkiHUmtz7q5AAXdu82aAdkxH8X8BQK3TjCy';
     schemaName = 'test-migrations-7';
@@ -88,6 +90,7 @@ describe('SchemaMigration integration tests', () => {
 
     expect(isRewindable).toBe(false);
   });
+
   it('Should update sequelize Models in cachedModels', async () => {
     const cid = 'QmWKRpKXgmPArnAGRNaK2wTiWNuosUtxBcB581mcth8B82';
     schemaName = 'test-migrations-8';
@@ -109,8 +112,9 @@ describe('SchemaMigration integration tests', () => {
 
     expect(Object.keys(cachedModels)).toStrictEqual([
       '_metadata',
-      'AddedEntity',
+      'Transfer',
       'Account',
+      'AddedEntity',
     ]);
     expect(
       Object.keys((cachedModels.Account.model as any).rawAttributes).includes(
@@ -123,8 +127,9 @@ describe('SchemaMigration integration tests', () => {
       ),
     ).toBe(false);
 
-    expect(cacheSpy).toHaveBeenCalledTimes(1);
+    expect(cacheSpy).toHaveBeenCalledTimes(2);
   });
+
   it('Ensure no duplication in cacheModels', async () => {
     const cid = 'QmSmQvbssnCCH2fdi2VyqCQsjKti7tKsJMtxMUmZKUjhq7';
     schemaName = 'test-migrations-9';
@@ -143,6 +148,10 @@ describe('SchemaMigration integration tests', () => {
 
     const cachedModels = (storeCache as any).cachedModels;
 
-    expect(Object.keys(cachedModels)).toStrictEqual(['_metadata', 'Account']);
+    expect(Object.keys(cachedModels)).toStrictEqual([
+      '_metadata',
+      'Transfer',
+      'Account',
+    ]);
   });
 });

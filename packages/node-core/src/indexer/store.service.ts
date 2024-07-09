@@ -14,7 +14,7 @@ import {
   GraphQLModelsType,
 } from '@subql/utils';
 import {IndexesOptions, ModelAttributes, ModelStatic, Op, QueryTypes, Sequelize, Transaction} from '@subql/x-sequelize';
-import {camelCase, flatten, upperFirst} from 'lodash';
+import {camelCase, flatten, last, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
@@ -167,22 +167,52 @@ export class StoreService {
 
     this._metadataModel = this.storeCache.metadata;
 
+    await this.initHotSchemaReloadQueries(schema);
+
     this.metadataModel.set('historicalStateEnabled', this.historical);
-    this.metadataModel.setIncrement('schemaMigrationCount');
   }
 
-  async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
-    this._modelsRelations = modelsRelations;
-
+  async init(schema: string): Promise<void> {
     try {
-      await this.syncSchema(schema);
+      const tx = await this.sequelize.transaction();
+      if (this.historical) {
+        const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
+        if (results.length === 0) {
+          throw new Error('Btree_gist extension is required to enable historical data, contact DB admin for support');
+        }
+      }
+      /*
+      On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
+      every start up is a migration
+       */
+      const schemaMigrationService = new SchemaMigrationService(
+        this.sequelize,
+        this,
+        this.storeCache._flushCache.bind(this.storeCache),
+        schema,
+        this.config
+      );
+
+      await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
+
+      const deploymentsRaw = await this.metadataModel.find('deployments');
+      const deployments = deploymentsRaw ? JSON.parse(deploymentsRaw) : {};
+
+      // Check if the deployment change or a local project is running
+      // WARNING:This assumes that the root is the same as the id for local project, there are no checks for this and it could change at any time
+      if (
+        this.subqueryProject.id === this.subqueryProject.root ||
+        last(Object.values(deployments)) !== this.subqueryProject.id
+      ) {
+        // TODO this should run with the same db transaction as the migration
+        this.metadataModel.setIncrement('schemaMigrationCount');
+      }
     } catch (e: any) {
       exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);
     }
-    await this.updateModels(schema, modelsRelations);
   }
 
-  async initHotSchemaReloadQueries(schema: string): Promise<void> {
+  private async initHotSchemaReloadQueries(schema: string): Promise<void> {
     if (this.dbType === SUPPORT_DB.cockRoach) {
       logger.warn(`Hot schema reload feature is not supported with ${this.dbType}`);
       return;
@@ -207,34 +237,12 @@ export class StoreService {
     }
   }
 
-  async syncSchema(schema: string): Promise<void> {
-    const tx = await this.sequelize.transaction();
-    if (this.historical) {
-      const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
-      if (results.length === 0) {
-        throw new Error('Btree_gist extension is required to enable historical data, contact DB admin for support');
-      }
-    }
-    /*
-    On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
-    every start up is a migration
-     */
-    const schemaMigrationService = new SchemaMigrationService(
-      this.sequelize,
-      this,
-      this.storeCache._flushCache.bind(this.storeCache),
-      schema,
-      this.config
-    );
-    await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
-  }
-
   async updateModels(schema: string, modelsRelations: GraphQLModelsRelationsEnums): Promise<void> {
     this._modelsRelations = modelsRelations;
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when get indexed fields`, {cause: e}), logger);
+      exitWithError(new Error(`Having a problem when getting indexed fields`, {cause: e}), logger);
     }
   }
 
@@ -269,7 +277,7 @@ export class StoreService {
       sequelizeModel.addHook('beforeValidate', (attributes, options) => {
         attributes.__block_range = [this.blockHeight, null];
       });
-      // TODO, remove id and block_range constrain, check id manually
+      // TODO, remove id and block_range constraint, check id manually
       // see https://github.com/subquery/subql/issues/1542
     }
 

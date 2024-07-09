@@ -49,7 +49,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     if (this.nodeConfig.proofOfIndex) {
       await this.poiService.init(schema);
     }
-    await initDbSchema(this.project, schema, this.storeService);
+    await initDbSchema(schema, this.storeService);
 
     this._metadataRepo = this.storeService.storeCache.metadata;
 
@@ -87,10 +87,6 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
   private async getLastProcessedHeight(): Promise<number | undefined> {
     return this.metadataRepo.find('lastProcessedHeight');
-  }
-
-  private async getSyncedPoiHeight(): Promise<number | undefined> {
-    return this.metadataRepo.find('latestSyncedPoiHeight');
   }
 
   private getStartBlockFromDataSources(): number {
