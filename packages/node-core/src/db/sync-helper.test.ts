@@ -12,8 +12,12 @@ const nodeConfig = new NodeConfig({subquery: 'packages/node-core/test/v1.0.0', s
 
 describe('sync helper test', () => {
   let app: INestApplication;
+  let sequelize: Sequelize;
+  let schema: string;
 
   afterEach(async () => {
+    await sequelize.dropSchema(schema, {});
+    await sequelize.close();
     return app?.close();
   });
 
@@ -24,12 +28,9 @@ describe('sync helper test', () => {
 
     app = module.createNestApplication();
     await app.init();
-    const sequelize = app.get(Sequelize);
-
-    const schema = 'admin-test';
-
+    sequelize = app.get(Sequelize);
+    schema = 'admin-test';
     await sequelize.createSchema(schema, {});
-
     // mock create metadata table
     await sequelize.query(`
       CREATE TABLE IF NOT EXISTS "${schema}"._metadata (
@@ -38,11 +39,7 @@ describe('sync helper test', () => {
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL
     )`);
-
     const dbSize = await getDbSizeAndUpdateMetadata(sequelize, schema);
     expect(dbSize).not.toBeUndefined();
-
-    await sequelize.dropSchema(schema, {});
-    await sequelize.close();
   }, 50000);
 });
