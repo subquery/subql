@@ -59,7 +59,7 @@ describe('SchemaMigration integration tests', () => {
     await apiService.init();
     await projectService.init(1);
 
-    const dbResults = await sequelize.query(
+    const dbResults = await sequelize.query<string[]>(
       `SELECT table_name FROM information_schema.tables WHERE table_schema= :schema;`,
       { type: QueryTypes.SELECT, replacements: { schema: schemaName } },
     );

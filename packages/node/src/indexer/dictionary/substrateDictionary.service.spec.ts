@@ -73,7 +73,7 @@ describe('Substrate Dictionary service', function () {
     expect(spyDictionaryV1Create).toHaveBeenCalledTimes(1);
     expect(
       (dictionaryService as any)._dictionaries.every(
-        (d) => d instanceof SubstrateDictionaryV1,
+        (d: any) => d instanceof SubstrateDictionaryV1,
       ),
     ).toBeTruthy();
   });

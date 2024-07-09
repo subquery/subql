@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   NodeConfig,
@@ -42,7 +41,7 @@ export class WorkerService extends BaseWorkerService<
 
   protected async fetchChainBlock(
     height: number,
-    { specVersion },
+    { specVersion }: { specVersion: number },
   ): Promise<IBlock<BlockContent | LightBlockContent>> {
     const specChanged = await this.workerRuntimeService.specChanged(
       height,

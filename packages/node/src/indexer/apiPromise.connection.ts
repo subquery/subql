@@ -57,7 +57,7 @@ export class ApiPromiseConnection
   static async create(
     endpoint: string,
     fetchBlocksBatches: GetFetchFunc,
-    args: { chainTypes: RegisteredTypes },
+    args: { chainTypes?: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
     let provider: ProviderInterface;
     let throwOnConnect = false;

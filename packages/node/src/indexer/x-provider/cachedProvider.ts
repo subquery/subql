@@ -19,8 +19,8 @@ export function createCachedProvider(
   const cachedMethodHandler = (
     method: string,
     params: unknown[],
-    target,
-    args,
+    target: any,
+    args: any[],
   ) => {
     // If there are no parameters then we don't cache as we want the latest results
     if (!params.length) {
@@ -53,7 +53,7 @@ export function createCachedProvider(
               method,
               params,
               target.send.bind(target),
-              arguments,
+              arguments as unknown as any[],
             );
           }
 
