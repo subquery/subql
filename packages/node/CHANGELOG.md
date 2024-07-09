@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump with `@subql/node-core`, fix admin api `dbSize` issue
+
 ## [4.7.1] - 2024-07-09
 ### Added
 - Enable ts strict model

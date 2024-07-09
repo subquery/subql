@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix issue admin api can not get `dbSize` due to it not been set in _metadata table
+
 ## [10.10.1] - 2024-07-09
 ### Added
 - Enable ts strict setting
