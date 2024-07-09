@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.10.2] - 2024-07-10
 ### Fixed
-- Fix issue admin api can not get `dbSize` due to it not been set in _metadata table
+- Fix issue admin api can not get `dbSize` due to it not been set in \_metadata table
 
 ## [10.10.1] - 2024-07-09
 ### Added
@@ -753,7 +754,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.10.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/10.10.2...HEAD
+[10.10.2]: https://github.com/subquery/subql/compare/node-core/10.10.1...node-core/10.10.2
 [10.10.1]: https://github.com/subquery/subql/compare/node-core/10.10.0...node-core/10.10.1
 [10.10.0]: https://github.com/subquery/subql/compare/node-core/10.9.0...node-core/10.10.0
 [10.9.0]: https://github.com/subquery/subql/compare/node-core/10.6.0...node-core/10.9.0
