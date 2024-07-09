@@ -3,10 +3,10 @@
 
 import {u8aConcat} from '@polkadot/util';
 import {Reader} from '@subql/types-core';
-import {IPFSHTTPClient, create} from 'ipfs-http-client';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
 import {IPFS_NODE_ENDPOINT} from '../../constants';
+import {IPFSHTTPClientLite} from '../IpfsHttpClientLite';
 
 const CIDv0 = new RegExp(/Qm[1-9A-Za-z]{44}[^OIl]/i);
 const CIDv1 = new RegExp(
@@ -14,7 +14,7 @@ const CIDv1 = new RegExp(
 );
 
 export class IPFSReader implements Reader {
-  private ipfs: IPFSHTTPClient;
+  private ipfs: IPFSHTTPClientLite;
   private cache: Record<string, Promise<string>> = {};
 
   constructor(
@@ -24,7 +24,7 @@ export class IPFSReader implements Reader {
     if (!CIDv0.test(cid) && !CIDv1.test(cid)) {
       throw new Error('IPFS project path CID is not valid');
     }
-    this.ipfs = create({url: gateway ?? IPFS_NODE_ENDPOINT});
+    this.ipfs = new IPFSHTTPClientLite({url: gateway ?? IPFS_NODE_ENDPOINT});
   }
 
   get root(): undefined {

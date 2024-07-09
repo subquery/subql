@@ -6442,6 +6442,7 @@ __metadata:
     fs-extra: ^10.1.0
     ipfs-http-client: 56
     js-yaml: ^4.1.0
+    multiformats: 9.9.0
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
@@ -16622,7 +16623,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multiformats@npm:^9.0.2, multiformats@npm:^9.5.1":
+"multiformats@npm:9.9.0, multiformats@npm:^9.0.2, multiformats@npm:^9.5.1":
   version: 9.9.0
   resolution: "multiformats@npm:9.9.0"
   checksum: d3e8c1be400c09a014f557ea02251a2710dbc9fca5aa32cc702ff29f636c5471e17979f30bdcb0a9cbb556f162a8591dc2e1219c24fc21394a56115b820bb84e

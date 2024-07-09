@@ -19,8 +19,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "fs-extra": "^10.1.0",
-    "ipfs-http-client": "56",
     "js-yaml": "^4.1.0",
+    "multiformats": "9.9.0",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "update-notifier": "5.1.0"
@@ -33,7 +33,8 @@
     "@types/pino": "^6.3.12",
     "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1",
-    "@types/update-notifier": "^6"
+    "@types/update-notifier": "^6",
+    "ipfs-http-client": "56"
   },
   "stableVersion": "4.0.0"
 }
