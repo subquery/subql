@@ -33,7 +33,6 @@ export class StoreCacheService extends BaseCacheService {
   private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
-  private _lastFlushTs: Date;
   private exports: Exporter[] = [];
 
   constructor(
@@ -45,7 +44,6 @@ export class StoreCacheService extends BaseCacheService {
     super('StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
     this.cacheUpperLimit = config.storeCacheUpperLimit;
-    this._lastFlushTs = new Date();
 
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
       exitWithError('Store cache threshold must be less than the store cache upper limit', logger);
@@ -61,7 +59,7 @@ export class StoreCacheService extends BaseCacheService {
     this.schedulerRegistry.addInterval(
       'storeFlushInterval',
       setInterval(() => {
-        this.flushCache(false).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
+        this.flushCache(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
       }, this.config.storeFlushInterval * 1000)
     );
   }
@@ -190,7 +188,6 @@ export class StoreCacheService extends BaseCacheService {
       await tx.rollback();
       throw e;
     }
-    this._lastFlushTs = new Date();
   }
 
   _resetCache(): void {
@@ -219,7 +216,6 @@ export class StoreCacheService extends BaseCacheService {
     this.eventEmitter.emit(IndexerEvent.StoreCacheRecordsSize, {
       value: numOfRecords,
     });
-    const timeBasedFlush = new Date().getTime() - this._lastFlushTs.getTime() > this.config.storeFlushInterval * 1000;
-    return numOfRecords >= this.storeCacheThreshold || timeBasedFlush;
+    return numOfRecords >= this.storeCacheThreshold;
   }
 }
