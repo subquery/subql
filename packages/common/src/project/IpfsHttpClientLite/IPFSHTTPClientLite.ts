@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 import FormData from 'form-data';
-import {asyncIterableFromStream} from './utils';
+import {streamCat} from './utils';
 
 type ContentData = string | Uint8Array;
 
@@ -42,16 +42,7 @@ export class IPFSHTTPClientLite {
    * Returns content of the file addressed by a valid IPFS Path or CID
    */
   cat(ipfsCID: string): AsyncIterable<Uint8Array> {
-    const url = `${this.option.url}/cat?arg=${ipfsCID}`;
-
-    try {
-      const response = axios.post(url, {
-        responseType: 'stream',
-      });
-      return asyncIterableFromStream(response);
-    } catch (error) {
-      throw new Error(`Failed to fetch data from IPFS for CID ${ipfsCID}`);
-    }
+    return streamCat(this.option.url, ipfsCID);
   }
 
   /**

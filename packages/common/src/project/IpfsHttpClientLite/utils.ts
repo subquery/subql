@@ -1,11 +1,25 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {AxiosResponse} from 'axios';
+import axios from 'axios';
 
-export async function* asyncIterableFromStream(response: Promise<AxiosResponse>): AsyncIterable<Uint8Array> {
-  const stream = (await response).data;
-  for await (const chunk of stream) {
-    yield new Uint8Array(Buffer.from(chunk));
+export async function* streamCat(baseUrl: string, ipfsCID: string) {
+  const url = new URL(`${baseUrl}/cat?progress=true`);
+  url.searchParams.append('arg', ipfsCID);
+
+  try {
+    const res = await axios.post(
+      url.toString(),
+      {},
+      {
+        responseType: 'stream',
+      }
+    );
+    // Iterate over the stream and yield data
+    for await (const chunk of res.data) {
+      yield chunk;
+    }
+  } catch (error) {
+    throw new Error(`Failed to fetch data from IPFS for CID ${ipfsCID}`);
   }
 }

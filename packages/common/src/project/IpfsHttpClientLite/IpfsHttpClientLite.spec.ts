@@ -74,4 +74,16 @@ describe('IPFSClient Lite', () => {
     const result = await writeClient.pinRemoteAdd(testCID, {service: 'onfinality'});
     expect(result.Cid).toBe(testCID);
   });
+
+  it('can cat large file', async () => {
+    const testCID = 'Qmab25SoVT4U7YJLFSzt4UXNQpyG9Du2Q7VGDu2b4w2eGr';
+    const req = readClient.cat(testCID);
+    const scriptBufferArray: Uint8Array[] = [];
+    for await (const res of req) {
+      scriptBufferArray.push(res);
+    }
+    const output = Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
+    expect(output).toBeDefined();
+    expect(output.length).toBeGreaterThan(1);
+  }, 500000);
 });
