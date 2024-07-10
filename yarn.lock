@@ -6576,14 +6576,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@^0.9.0, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
-  version: 0.0.0-use.local
-  resolution: "@subql/types-core@workspace:packages/types-core"
-  dependencies:
-    package-json-type: ^1.0.3
-  languageName: unknown
-  linkType: soft
-
 "@subql/types-core@npm:0.8.1-1-modular-0.0.1, @subql/types-core@npm:^0.8.1-1":
   version: 0.8.1-1-modular-0.0.1
   resolution: "@subql/types-core@npm:0.8.1-1-modular-0.0.1"
@@ -6592,6 +6584,23 @@ __metadata:
   checksum: 521dd78a878d72f565dc5db3a5d2596f16d3470050587b5b753cb1dfed2cc659a2405ac73a024d0121c976a3b2ef8ae35a4ca9fdcd72a2a137eb0024f2bb9ca2
   languageName: node
   linkType: hard
+
+"@subql/types-core@npm:^0.9.0":
+  version: 0.9.1
+  resolution: "@subql/types-core@npm:0.9.1"
+  dependencies:
+    package-json-type: ^1.0.3
+  checksum: cb6ae7220f02e76f8a05bdb5572b2864c8686523c756aadbcd0f3aeab5099acd93eac1cba04a81e2cb02e5e07bd9569ec46565ba78bf1f6213cb2dc2476951f7
+  languageName: node
+  linkType: hard
+
+"@subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+  version: 0.0.0-use.local
+  resolution: "@subql/types-core@workspace:packages/types-core"
+  dependencies:
+    package-json-type: ^1.0.3
+  languageName: unknown
+  linkType: soft
 
 "@subql/types-cosmos@npm:3.5.0":
   version: 3.5.0
