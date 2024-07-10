@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -165,7 +166,12 @@ function createIndexerManager(
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
-  const storeCache = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
+  const storeCache = new StoreCacheService(
+    sequelize,
+    nodeConfig,
+    eventEmitter,
+    new SchedulerRegistry(),
+  );
   const storeService = new StoreService(
     sequelize,
     nodeConfig,

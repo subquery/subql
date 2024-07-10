@@ -4,6 +4,7 @@
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import {DatabaseError, Deferrable, ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
@@ -38,7 +39,8 @@ export class StoreCacheService extends BaseCacheService {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    protected eventEmitter: EventEmitter2
+    protected eventEmitter: EventEmitter2,
+    private schedulerRegistry: SchedulerRegistry
   ) {
     super('StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
@@ -55,6 +57,18 @@ export class StoreCacheService extends BaseCacheService {
     this._historical = historical;
     this.metadataRepo = meta;
     this.poiRepo = poi;
+
+    this.schedulerRegistry.addInterval(
+      'storeFlushInterval',
+      setInterval(() => {
+        this.flushCache(false).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
+      }, this.config.storeFlushInterval * 1000)
+    );
+  }
+
+  async beforeApplicationShutdown(): Promise<void> {
+    this.schedulerRegistry.deleteInterval('storeFlushInterval');
+    await super.beforeApplicationShutdown();
   }
 
   getNextStoreOperationIndex(): number {

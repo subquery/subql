@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {delay} from '../../utils';
@@ -61,7 +62,7 @@ describe('Store Cache Service historical', () => {
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
   });
 
   it('could init store cache service and init cache for models', () => {
@@ -147,7 +148,7 @@ describe('Store Cache flush with order', () => {
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
     storeService.init(false, true, {} as any, undefined);
   });
 
@@ -184,7 +185,7 @@ describe('Store Cache flush with non-historical', () => {
   const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
     storeService.init(false, false, {} as any, undefined);
   });
 
@@ -242,7 +243,7 @@ describe('Store cache upper threshold', () => {
   } as NodeConfig;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
+    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
     storeService.init(false, false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
   });
 
