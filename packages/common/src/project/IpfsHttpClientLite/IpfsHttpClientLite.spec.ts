@@ -42,7 +42,7 @@ describe('SubIPFSClient', () => {
   });
 
   it('should return file content from IPFS for given CID', async () => {
-    const testCID = 'QmNbkA1fJpV2gCAWCBjgUQ8xBTwkLZHuzx4EkUoKx7VYaD';
+    const testCID = 'QmQKeYj2UZJoTN5yXSvzJy4A3CjUuSmEWAKeZV4herh5bS';
     const req = readClient.cat(testCID);
 
     const scriptBufferArray: Uint8Array[] = [];
@@ -51,7 +51,7 @@ describe('SubIPFSClient', () => {
     }
     const output = Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
 
-    console.log(output);
+    expect(output).toBe(`test string to upload`);
   });
 
   it('should add a file to IPFS and return AddResult', async () => {
@@ -59,36 +59,19 @@ describe('SubIPFSClient', () => {
     const testContentStr = `test string to upload`;
 
     const resultStr = await writeClient.add(testContentStr, {pin: true, cidVersion: 0});
+    const originalResultStr = await originalWriteClient.add(testContentStr, {pin: true, cidVersion: 0});
     expect(resultStr.cid.toString()).toBe(`QmQKeYj2UZJoTN5yXSvzJy4A3CjUuSmEWAKeZV4herh5bS`);
+    expect(resultStr.cid.toString()).toBe(originalResultStr.cid.toString());
 
     const resultBuffer = await writeClient.add(testContentBuffer, {pin: true, cidVersion: 0});
+    const originalResultBuffer = await originalWriteClient.add(testContentBuffer, {pin: true, cidVersion: 0});
     expect(resultBuffer.cid.toString()).toBe(`QmUatvHNjq696qkB8SBz5VBytcEeTrM1VwFyy4Rt4Z43mX`);
+    expect(resultBuffer.cid.toString()).toBe(originalResultBuffer.cid.toString());
   });
   //
   it('should pin a content with given CID to a remote pinning service', async () => {
     const testCID = 'QmQKeYj2UZJoTN5yXSvzJy4A3CjUuSmEWAKeZV4herh5bS';
     const result = await writeClient.pinRemoteAdd(testCID, {service: 'onfinality'});
     expect(result.Cid).toBe(testCID);
-  });
-});
-
-describe('Original IPFS Client', () => {
-  const ipfsWrite = create({
-    url: IPFS_WRITE_ENDPOINT,
-    headers: {Authorization: `Bearer ${testAuth}`},
-  });
-
-  it('Upload multiple files to IPFS', async () => {
-    const source = [
-      {path: 'mockPath1', content: 'mockContent1'},
-      {path: 'mockPath2', content: 'mockContent2'},
-    ];
-
-    const output: Map<string, string> = new Map();
-    const results = ipfsWrite.addAll(source, {pin: true, cidVersion: 0, wrapWithDirectory: false});
-    for await (const result of results) {
-      output.set(result.path, result.cid.toString());
-    }
-    console.log(output);
   });
 });

@@ -20,7 +20,6 @@
     "class-validator": "^0.14.0",
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
-    "multiformats": "9.9.0",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "update-notifier": "5.1.0"
