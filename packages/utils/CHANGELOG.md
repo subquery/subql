@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.1] - 2024-07-09
+### Changed
+- Changes to ts build settings (#2475)
+
 ## [2.12.0] - 2024-06-21
 ### Added
 - Better error messages for invalid graphql schemas (#2458)
@@ -151,7 +155,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.12.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.12.1...HEAD
+[2.12.1]: https://github.com/subquery/subql/compare/utils/2.12.0...utils/2.12.1
 [2.12.0]: https://github.com/subquery/subql/compare/utils/2.11.0...utils/2.12.0
 [2.11.0]: https://github.com/subquery/subql/compare/utils/2.10.0...utils/2.11.0
 [2.10.0]: https://github.com/subquery/subql/compare/utils/2.9.2...utils/2.10.0

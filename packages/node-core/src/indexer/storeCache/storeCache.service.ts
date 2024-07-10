@@ -35,7 +35,11 @@ export class StoreCacheService extends BaseCacheService {
   private _lastFlushTs: Date;
   private exports: Exporter[] = [];
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
+  constructor(
+    private sequelize: Sequelize,
+    private config: NodeConfig,
+    protected eventEmitter: EventEmitter2
+  ) {
     super('StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
     this.cacheUpperLimit = config.storeCacheUpperLimit;
@@ -96,11 +100,14 @@ export class StoreCacheService extends BaseCacheService {
   async flushExportStores(): Promise<void> {
     await Promise.all(this.exports.map((f) => f.shutdown()));
   }
-  updateModels(models: ModelStatic<any>[]): void {
-    models.forEach((m) => {
+
+  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void {
+    modifiedModels.forEach((m) => {
       this.cachedModels[m.name] = this.createModel(m.name);
     });
+    removedModels.forEach((r) => delete this.cachedModels[r]);
   }
+
   get metadata(): CacheMetadataModel {
     const entity = '_metadata';
     if (!this.cachedModels[entity]) {

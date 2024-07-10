@@ -55,7 +55,7 @@ function callFilterToQueryEntry(
         (key) =>
           ({
             field: key === 'method' ? 'call' : key,
-            value: filter[key],
+            value: filter[key as keyof SubstrateCallFilter],
           }) as DictionaryQueryCondition,
       )
       .filter((c) => c.value !== undefined),

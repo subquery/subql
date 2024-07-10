@@ -43,7 +43,7 @@ async function setup(
   await sequelize.createSchema(`"${schemaName}"`, {});
 
   await storeService.initCoreTables(schemaName);
-  await initDbSchema(project, schemaName, storeService);
+  await initDbSchema(schemaName, storeService);
 
   return new SchemaMigrationService(
     sequelize,

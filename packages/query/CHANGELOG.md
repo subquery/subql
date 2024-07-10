@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.2] - 2024-07-09
+### Changed
+- Enable TS strict setting
+
 ## [2.13.1] - 2024-06-26
 ### Fixed
 - Fixed the aggregate query, type conversion causes precision loss.
@@ -330,7 +334,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.13.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.13.2...HEAD
+[2.13.2]: https://github.com/subquery/subql/compare/query/2.13.1...query/2.13.2
 [2.13.1]: https://github.com/subquery/subql/compare/query/2.13.0...query/2.13.1
 [2.13.0]: https://github.com/subquery/subql/compare/query/2.12.1...query/2.13.0
 [2.12.1]: https://github.com/subquery/subql/compare/query/2.12.0...query/2.12.1

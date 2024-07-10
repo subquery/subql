@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Added
+## [5.0.1] - 2024-07-09
+### Changed
+- Changes to ts build settings (#2475)
+
+## [5.0.0] - 2024-07-04
+### Added
 - Enable ts strict mode
 
 ### Fixed
@@ -623,7 +628,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/4.15.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.0.1...HEAD
+[5.0.1]: https://github.com/subquery/subql/compare/cli/5.0.0...cli/5.0.1
+[5.0.0]: https://github.com/subquery/subql/compare/cli/4.15.0...cli/5.0.0
 [4.15.0]: https://github.com/subquery/subql/compare/cli/4.14.0...cli/4.15.0
 [4.14.0]: https://github.com/subquery/subql/compare/cli/4.13.1...cli/4.14.0
 [4.13.1]: https://github.com/subquery/subql/compare/cli/4.13.0...cli/4.13.1

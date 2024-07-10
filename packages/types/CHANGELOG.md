@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Changed
-- Enable strict mode for the other packages.
+## [3.9.0] - 2024-07-09
+### Changed
+- Enable TS strict setting.
+
+### Removed
+- Deprecated types relating to datasource processors (#2475)
+
 ## [3.8.0] - 2024-07-01
 ### Changed
 - Bump version with `@subql/types-core`
@@ -243,7 +248,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/3.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/3.9.0...HEAD
+[3.9.0]: https://github.com/subquery/subql/compare/types/3.8.0...types/3.9.0
 [3.8.0]: https://github.com/subquery/subql/compare/types/3.7.0...types/3.8.0
 [3.7.0]: https://github.com/subquery/subql/compare/types/3.6.1...types/3.7.0
 [3.6.1]: https://github.com/subquery/subql/compare/types/3.6.0...types/3.6.1

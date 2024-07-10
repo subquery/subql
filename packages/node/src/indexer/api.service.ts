@@ -5,7 +5,11 @@ import assert from 'assert';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
-import { RpcMethodResult } from '@polkadot/api/types';
+import {
+  ApiTypes,
+  DecoratedRpcSection,
+  RpcMethodResult,
+} from '@polkadot/api/types';
 import { RuntimeVersion, Header } from '@polkadot/types/interfaces';
 import {
   AnyFunction,
@@ -24,6 +28,7 @@ import {
   MetadataMismatchError,
   exitWithError,
 } from '@subql/node-core';
+import { SubstrateNetworkConfig } from '@subql/types';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';
@@ -65,8 +70,9 @@ async function dynamicImportHasher(
   methodName: string,
 ): Promise<(data: Uint8Array) => Uint8Array> {
   const module = await import('@polkadot/util-crypto');
-  if (module[methodName]) {
-    return module[methodName];
+  const method = module[methodName as keyof typeof module];
+  if (method) {
+    return method as (data: Uint8Array) => Uint8Array;
   } else {
     throw new Error(
       `Hasher Method ${methodName} not found in @polkadot/util-crypto`,
@@ -155,13 +161,16 @@ export class ApiService
 
   async init(): Promise<ApiService> {
     overrideConsoleWarn();
-    let chainTypes, network;
+    let chainTypes: RegisteredTypes | undefined;
+    let network: SubstrateNetworkConfig;
     try {
       chainTypes = await updateChainTypesHasher(this.project.chainTypes);
       network = this.project.network;
 
       if (this.nodeConfig.primaryNetworkEndpoint) {
-        network.endpoint.push(this.nodeConfig.primaryNetworkEndpoint);
+        (network.endpoint as string[]).push(
+          this.nodeConfig.primaryNetworkEndpoint,
+        );
       }
     } catch (e) {
       exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
@@ -261,7 +270,7 @@ export class ApiService
     return apiAt;
   }
 
-  private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(
+  private redecorateRpcFunction<T extends ApiTypes>(
     original: RpcMethodResult<T, AnyFunction>,
   ): RpcMethodResult<T, AnyFunction> {
     const methodName = this.getRPCFunctionName(original);
@@ -319,18 +328,23 @@ export class ApiService
     return ret;
   }
 
-  private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
+  private patchApiRpc<T extends ApiTypes = 'promise'>(
+    api: ApiPromise,
+    apiAt: ApiAt,
+  ): void {
     apiAt.rpc = Object.entries(api.rpc).reduce(
       (acc, [module, rpcMethods]) => {
-        acc[module] = Object.entries(rpcMethods).reduce(
+        acc[module as keyof ApiPromise['rpc']] = Object.entries(
+          rpcMethods,
+        ).reduce(
           (accInner, [name, rpcPromiseResult]) => {
-            accInner[name] = this.redecorateRpcFunction(
-              rpcPromiseResult as RpcMethodResult<any, AnyFunction>,
+            accInner[name] = this.redecorateRpcFunction<T>(
+              rpcPromiseResult as RpcMethodResult<T, AnyFunction>,
             );
             return accInner;
           },
-          {},
-        );
+          {} as DecoratedRpcSection<T, any>,
+        ) as any;
         return acc;
       },
       {} as ApiPromise['rpc'],

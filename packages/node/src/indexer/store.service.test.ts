@@ -277,7 +277,7 @@ WHERE
 
     tempDir = (projectService as any).project.root;
 
-    const result: any = await sequelize.query(
+    const result = await sequelize.query<{ enum_type: string }>(
       `
       SELECT n.nspname AS schema_name,
        t.typname AS enum_type,

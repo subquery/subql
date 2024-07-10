@@ -280,20 +280,20 @@ export async function getDbSizeAndUpdateMetadata(sequelize: Sequelize, schema: s
   const [result] = (
     await sequelize.query(
       `
-      WITH schema_size AS (
-        SELECT sum(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::bigint AS size
-      FROM pg_tables
-      WHERE schemaname = :schema
-        )
-      UPDATE "${schema}"._metadata
-      SET value = to_jsonb((SELECT size FROM schema_size)),
-          "updatedAt" = now()
-      WHERE key = 'dbSize'
-        RETURNING (SELECT size FROM schema_size) AS size;
-    `,
+        WITH schema_size AS (
+          SELECT sum(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::bigint AS size
+        FROM pg_tables
+        WHERE schemaname = :schema
+          )
+        INSERT INTO "${schema}"._metadata (key, value, "createdAt", "updatedAt")
+        VALUES ('dbSize', to_jsonb((SELECT size FROM schema_size)), now(), now())
+        ON CONFLICT (key)
+          DO UPDATE SET value = to_jsonb((SELECT size FROM schema_size)), "updatedAt" = now()
+               RETURNING (SELECT size FROM schema_size) AS size;
+      `,
       {
         replacements: {schema},
-        type: QueryTypes.UPDATE,
+        type: QueryTypes.INSERT,
       }
     )
   )[0] as unknown as {size: number}[];
