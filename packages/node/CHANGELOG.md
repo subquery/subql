@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.8.0] - 2024-07-10
 ### Changed
 - Bump with `@subql/node-core`, fix admin api `dbSize` issue
 
@@ -1247,7 +1248,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.7.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/4.8.0...HEAD
+[4.8.0]: https://github.com/subquery/subql/compare/node/4.7.1...node/4.8.0
 [4.7.1]: https://github.com/subquery/subql/compare/node/4.7.0...node/4.7.1
 [4.7.0]: https://github.com/subquery/subql/compare/node/4.6.6...node/4.7.0
 [4.6.6]: https://github.com/subquery/subql/compare/node/4.6.5...node/4.6.6
