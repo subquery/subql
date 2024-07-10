@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
 import {Test, TestingModule} from '@nestjs/testing';
 import {delay} from '@subql/common';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
@@ -60,7 +61,7 @@ describe('PoiService', () => {
     } as unknown as NodeConfig;
 
     const sequelize = new Sequelize();
-    storeCache = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2());
+    storeCache = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2(), new SchedulerRegistry());
 
     storeCache.init(true, true, {} as any, {} as any);
     (storeCache as any).cachedModels._metadata = {

@@ -13,6 +13,12 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   private queuedFlush?: Promise<void>;
   protected logger: Pino.Logger;
 
+  abstract _flushCache(): Promise<void>;
+  abstract _resetCache(): Promise<void> | void;
+  abstract isFlushable(): boolean;
+  abstract get flushableRecords(): number;
+  abstract flushExportStores(): Promise<void>;
+
   protected constructor(loggerName: string) {
     this.logger = getLogger(loggerName);
   }
@@ -42,14 +48,10 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
 
     return this.queuedFlush;
   }
+
   async resetCache(): Promise<void> {
     await this._resetCache();
   }
-  abstract _flushCache(): Promise<void>;
-  abstract _resetCache(): Promise<void> | void;
-  abstract isFlushable(): boolean;
-  abstract get flushableRecords(): number;
-  abstract flushExportStores(): Promise<void>;
 
   async beforeApplicationShutdown(): Promise<void> {
     await timeout(this.flushCache(true), 60, 'Before shutdown flush cache timeout');
