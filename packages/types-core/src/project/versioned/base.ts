@@ -46,7 +46,7 @@ export interface BaseAssetsDataSource {
    * @example
    * assets: new Map([['erc20', './abis/erc20.json']])
    */
-  assets: Map<string, FileReference>;
+  assets?: Map<string, FileReference>;
 }
 
 export interface BaseMapping<T extends BaseHandler> extends FileReference {

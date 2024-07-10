@@ -23,8 +23,10 @@ export type FilterTypeMap<DS extends BaseDataSource = BaseDataSource> = Record<
   string,
   (data: any, filter: any, ds: DS) => boolean
 >;
-export type ProcessorTypeMap<FM extends FilterTypeMap> = {[K in keyof FM]: (data: any) => boolean};
-export type HandlerInputTypeMap<FM extends FilterTypeMap> = {[K in keyof FM]: any};
+export type ProcessorTypeMap<DS extends BaseDataSource, FM extends FilterTypeMap<DS>> = {
+  [K in keyof FM]: (data: any) => boolean;
+};
+export type HandlerInputTypeMap<DS extends BaseDataSource, FM extends FilterTypeMap<DS>> = {[K in keyof FM]: any};
 
 export interface CustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
@@ -39,9 +41,9 @@ export abstract class BaseIndexerManager<
   API extends IApi<A, SA, IBlock<B>[]>,
   DS extends BaseDataSource,
   CDS extends DS & BaseCustomDataSource, // Custom datasource
-  FilterMap extends FilterTypeMap,
-  ProcessorMap extends ProcessorTypeMap<FilterMap>,
-  HandlerInputMap extends HandlerInputTypeMap<FilterMap>
+  FilterMap extends FilterTypeMap<DS>,
+  ProcessorMap extends ProcessorTypeMap<DS, FilterMap>,
+  HandlerInputMap extends HandlerInputTypeMap<DS, FilterMap>,
 > implements IIndexerManager<B, DS>
 {
   abstract indexBlock(block: IBlock<B>, datasources: DS[], ...args: any[]): Promise<ProcessBlockResponse>;

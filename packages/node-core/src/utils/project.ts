@@ -129,7 +129,7 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
     _dataSources.map(async (dataSource) => {
       dataSource.startBlock = dataSource.startBlock ?? 1;
       const entryScript = await loadDataSourceScript(reader, dataSource.mapping.file);
-      if (isAssetsDs(dataSource)) {
+      if (isAssetsDs(dataSource) && dataSource.assets) {
         for (const [, asset] of dataSource.assets.entries()) {
           // Only need to resolve path for local file
           if (reader instanceof LocalReader) {
