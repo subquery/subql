@@ -8,7 +8,7 @@ import {IPFSHTTPClientLite} from './IPFSHTTPClientLite';
 
 const testAuth = process.env.SUBQL_ACCESS_TOKEN!;
 
-describe('SubIPFSClient', () => {
+describe('IPFSClient Lite', () => {
   let readClient: IPFSHTTPClientLite;
   let writeClient: IPFSHTTPClientLite;
   let originalWriteClient: IPFSHTTPClient;

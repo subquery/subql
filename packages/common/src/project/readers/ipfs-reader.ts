@@ -49,8 +49,8 @@ export class IPFSReader implements Reader {
       }
       return await this.cache[fileName];
     } catch (e) {
-      console.error(`Failed to fetch project from IPFS: ${fileName}`, e);
-      throw new Error(`Failed to fetch project from IPFS: ${fileName}`, {cause: e});
+      console.error(`Failed to fetch file from IPFS: ${fileName}`, e);
+      throw new Error(`Failed to fetch file from IPFS: ${fileName}`, {cause: e});
     }
   }
 
