@@ -82,6 +82,11 @@ describe('PoiService', () => {
     service = module.get<PoiService>(PoiService);
   });
 
+  afterEach(async () => {
+    await storeCache?.beforeApplicationShutdown();
+    service.onApplicationShutdown();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
@@ -126,7 +131,6 @@ describe('PoiService', () => {
     });
 
     it('should not migratePoi if latestSyncedPoiHeight is defined', async () => {
-      storeCache.init(true, true, {} as any, {} as any);
       await service.init('testSchema');
       expect(storeCache.metadata.find).toHaveBeenCalledWith('latestSyncedPoiHeight');
     });

@@ -8,14 +8,11 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
   SubstrateRuntimeDatasource,
-  CustomDatasourceTemplate,
-  RuntimeDatasourceTemplate,
   SubstrateMapping,
   SubstrateCustomHandler,
   SecondLayerHandlerProcessorArray,
 } from '@subql/types';
 import {BaseTemplateDataSource} from '@subql/types-core';
-import {gte} from 'semver';
 
 export function isBlockHandlerProcessor<F extends Record<string, unknown>, E>(
   hp: SecondLayerHandlerProcessorArray<SubstrateHandlerKind, F, unknown>
@@ -35,12 +32,6 @@ export function isCallHandlerProcessor<F extends Record<string, unknown>, E>(
   return hp.baseHandlerKind === SubstrateHandlerKind.Call;
 }
 
-function debug<F extends Record<string, unknown>, E>(
-  hp: SecondLayerHandlerProcessorArray<SubstrateHandlerKind, F, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, E> {
-  return hp.baseHandlerKind === SubstrateHandlerKind.Call;
-}
-
 export function isCustomDs<F extends SubstrateMapping<SubstrateCustomHandler>>(
   ds: SubstrateDatasource | BaseTemplateDataSource<SubstrateDatasource>
 ): ds is SubstrateCustomDatasource<string, F> {
@@ -49,11 +40,4 @@ export function isCustomDs<F extends SubstrateMapping<SubstrateCustomHandler>>(
 
 export function isRuntimeDs(ds: SubstrateDatasource): ds is SubstrateRuntimeDatasource {
   return ds.kind === SubstrateDatasourceKind.Runtime;
-}
-
-export function isSubstrateTemplates(
-  templatesData: any,
-  specVersion: string
-): templatesData is (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[] {
-  return (isRuntimeDs(templatesData[0]) || isCustomDs(templatesData[0])) && gte(specVersion, '0.2.1');
 }

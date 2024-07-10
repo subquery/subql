@@ -175,12 +175,6 @@ export class IndexerManager extends BaseIndexerManager<
   }
 }
 
-type ProcessorTypeMap = {
-  [SubstrateHandlerKind.Block]: typeof isBlockHandlerProcessor;
-  [SubstrateHandlerKind.Event]: typeof isEventHandlerProcessor;
-  [SubstrateHandlerKind.Call]: typeof isCallHandlerProcessor;
-};
-
 const ProcessorTypeMap = {
   [SubstrateHandlerKind.Block]: isBlockHandlerProcessor,
   [SubstrateHandlerKind.Event]: isEventHandlerProcessor,

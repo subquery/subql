@@ -24,4 +24,4 @@ export interface DictionaryV2Metadata {
   supported: string[];
 }
 
-export type DictionaryV2QueryEntry = Record<string, object>;
+export type DictionaryV2QueryEntry = Record<string, unknown>;
