@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.1.0] - 2024-07-11
 ### Removed
 - Unused functions (#2484)
 
@@ -167,7 +169,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql/compare/common-substrate/4.0.1...common-substrate/4.1.0
 [4.0.1]: https://github.com/subquery/subql/compare/common-substrate/4.0.0...common-substrate/4.0.1
 [4.0.0]: https://github.com/subquery/subql/compare/common-substrate/3.8.1...common-substrate/4.0.0
 [3.8.1]: https://github.com/subquery/subql/compare/common-substrate/3.8.0...common-substrate/3.8.1
