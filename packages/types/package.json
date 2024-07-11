@@ -19,6 +19,6 @@
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.6.1",
     "@ethersproject/providers": "^5.7.2",
-    "@subql/types-core": "^0.9.1"
+    "@subql/types-core": "^0.10.0"
   }
 }

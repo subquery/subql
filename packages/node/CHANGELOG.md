@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Update with `node-core`, change `getFinalizedHeight` to `getFinalizedHeader`. Fix indexer could stall due to rpc finalized height could be smaller than previous result. (#2487)
+
 ## [4.7.1] - 2024-07-10
 ### Fixed
 - Bump `@subql/common-ethereum` and `@subql/types-ethereum`, update `@subql/node-core` to fix admin api `dbSize` issue (#326)

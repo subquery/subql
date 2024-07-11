@@ -11,6 +11,8 @@ import {
   BaseFetchService,
   ApiService,
   getModulos,
+  getLogger,
+  Header,
 } from '@subql/node-core';
 import { EthereumBlock, SubqlDatasource } from '@subql/types-ethereum';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -42,7 +44,7 @@ export class FetchService extends BaseFetchService<
     @Inject('IBlockDispatcher')
     blockDispatcher: IEthereumBlockDispatcher,
     dictionaryService: EthDictionaryService,
-    private unfinalizedBlocksService: UnfinalizedBlocksService,
+    unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
   ) {
@@ -54,6 +56,7 @@ export class FetchService extends BaseFetchService<
       dictionaryService,
       eventEmitter,
       schedulerRegistry,
+      unfinalizedBlocksService,
     );
   }
 
@@ -61,13 +64,9 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
-  protected async getFinalizedHeight(): Promise<number> {
+  protected async getFinalizedHeader(): Promise<Header> {
     const block = await this.api.getFinalizedBlock();
-
-    const header = ethereumBlockToHeader(block);
-
-    this.unfinalizedBlocksService.registerFinalizedBlock(header);
-    return header.blockHeight;
+    return ethereumBlockToHeader(block);
   }
 
   protected async getBestHeight(): Promise<number> {

@@ -83,7 +83,7 @@ describe('ApiService', () => {
   });
 
   it('can get the finalized height', async () => {
-    const height = await apiService.api.getFinalizedBlockHeight();
+    const height = (await apiService.api.getFinalizedBlock()).number;
 
     console.log('Finalized height', height);
     expect(height).toBeGreaterThan(16_000_000);
