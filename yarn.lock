@@ -6387,43 +6387,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:^3.9.1-0":
-  version: 3.9.1-0-modular-0.0.1
-  resolution: "@subql/common@npm:3.9.1-0-modular-0.0.1"
-  dependencies:
-    "@subql/types-core": 0.8.1-1-modular-0.0.1
-    axios: ^0.28.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 80dc30b4ac5ab4f34ddcb011f425acbd40ca4909e343653108ac03d07abae33f7df0d35b34de1fbe00021adab5a162d61372c4d9689ae3a8e4a7755bbacc69ed
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:^4.0.0":
-  version: 4.0.1
-  resolution: "@subql/common@npm:4.0.1"
-  dependencies:
-    "@subql/types-core": 0.9.1
-    axios: ^0.28.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    ipfs-http-client: 56
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: b9f4080475e5fc760b0ddbe7ccbcacd4cd297ceadbfd28cd288877c12d83ff344ff541d28deac85a36417dd8945a12e2fc2c730fe8b41d6cf25ff84486a352c2
-  languageName: node
-  linkType: hard
-
-"@subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@^4.0.0, @subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -6446,6 +6410,24 @@ __metadata:
     update-notifier: 5.1.0
   languageName: unknown
   linkType: soft
+
+"@subql/common@npm:^3.9.1-0":
+  version: 3.9.1-0-modular-0.0.1
+  resolution: "@subql/common@npm:3.9.1-0-modular-0.0.1"
+  dependencies:
+    "@subql/types-core": 0.8.1-1-modular-0.0.1
+    axios: ^0.28.0
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    ipfs-http-client: 56
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: 80dc30b4ac5ab4f34ddcb011f425acbd40ca4909e343653108ac03d07abae33f7df0d35b34de1fbe00021adab5a162d61372c4d9689ae3a8e4a7755bbacc69ed
+  languageName: node
+  linkType: hard
 
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
@@ -6602,7 +6584,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.9.1, @subql/types-core@npm:^0.9.0":
+"@subql/types-core@npm:^0.9.0":
   version: 0.9.1
   resolution: "@subql/types-core@npm:0.9.1"
   dependencies:
