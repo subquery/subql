@@ -32,7 +32,6 @@
     "@types/pino": "^6.3.12",
     "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1",
-    "@types/update-notifier": "^6",
-    "ipfs-http-client": "56"
+    "@types/update-notifier": "^6"
   }
 }

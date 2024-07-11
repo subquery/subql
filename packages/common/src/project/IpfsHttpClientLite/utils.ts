@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-export async function* streamCat(baseUrl: string, ipfsCID: string) {
+export async function* streamCat(baseUrl: string, ipfsCID: string): AsyncIterable<Uint8Array> {
   const url = new URL(`${baseUrl}/cat?progress=true`);
   url.searchParams.append('arg', ipfsCID);
 

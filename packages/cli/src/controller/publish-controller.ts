@@ -160,7 +160,7 @@ export async function uploadFiles(
   try {
     const results = await ipfsWrite.addAll(contents, {pin: true, cidVersion: 0, wrapWithDirectory: isMultichain});
     for (const result of results) {
-      fileCidMap.set(result.path, result.cid.toString());
+      fileCidMap.set(result.path, result.cid);
 
       await ipfsWrite.pinRemoteAdd(result.cid, {service: PIN_SERVICE}).catch((e) => {
         console.warn(
