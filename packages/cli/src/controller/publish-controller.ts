@@ -11,9 +11,9 @@ import {
   validateCommonProjectManifest,
   mapToObject,
   getProjectNetwork,
+  IPFSHTTPClientLite,
 } from '@subql/common';
 import {Reader} from '@subql/types-core';
-import {IPFSHTTPClient, create} from 'ipfs-http-client';
 import {loadDependency} from '../modulars';
 
 const PIN_SERVICE = 'onfinality';
@@ -46,9 +46,9 @@ export async function uploadToIpfs(
 
   const contents: {path: string; content: string}[] = [];
 
-  let ipfs: IPFSHTTPClient | undefined;
+  let ipfs: IPFSHTTPClientLite | undefined;
   if (ipfsEndpoint) {
-    ipfs = create({url: ipfsEndpoint});
+    ipfs = new IPFSHTTPClientLite({url: ipfsEndpoint});
   }
 
   for (const project in projectToReader) {
@@ -101,7 +101,7 @@ async function replaceFileReferences<T extends Record<string, any>>(
   projectDir: string,
   input: T,
   authToken: string,
-  ipfs?: IPFSHTTPClient
+  ipfs?: IPFSHTTPClientLite
 ): Promise<T> {
   if (Array.isArray(input)) {
     return (await Promise.all(
@@ -136,15 +136,15 @@ export async function uploadFiles(
   contents: {path: string; content: string}[],
   authToken: string,
   isMultichain?: boolean,
-  ipfs?: IPFSHTTPClient
+  ipfs?: IPFSHTTPClientLite
 ): Promise<Map<string, string>> {
   const fileCidMap: Map<string, string> = new Map();
 
   if (ipfs) {
     try {
-      const results = ipfs.addAll(contents, {wrapWithDirectory: isMultichain});
+      const results = await ipfs.addAll(contents, {wrapWithDirectory: isMultichain});
 
-      for await (const result of results) {
+      for (const result of results) {
         fileCidMap.set(result.path, result.cid.toString());
       }
     } catch (e) {
@@ -152,17 +152,17 @@ export async function uploadFiles(
     }
   }
 
-  const ipfsWrite = create({
+  const ipfsWrite = new IPFSHTTPClientLite({
     url: IPFS_WRITE_ENDPOINT,
     headers: {Authorization: `Bearer ${authToken}`},
   });
 
   try {
-    const results = ipfsWrite.addAll(contents, {pin: true, cidVersion: 0, wrapWithDirectory: isMultichain});
-    for await (const result of results) {
-      fileCidMap.set(result.path, result.cid.toString());
+    const results = await ipfsWrite.addAll(contents, {pin: true, cidVersion: 0, wrapWithDirectory: isMultichain});
+    for (const result of results) {
+      fileCidMap.set(result.path, result.cid);
 
-      await ipfsWrite.pin.remote.add(result.cid, {service: PIN_SERVICE}).catch((e) => {
+      await ipfsWrite.pinRemoteAdd(result.cid, {service: PIN_SERVICE}).catch((e) => {
         console.warn(
           `Failed to pin file ${result.path}. There might be problems with this file being accessible later. ${e}`
         );
@@ -178,7 +178,7 @@ export async function uploadFiles(
 export async function uploadFile(
   contents: {path: string; content: string},
   authToken: string,
-  ipfs?: IPFSHTTPClient
+  ipfs?: IPFSHTTPClientLite
 ): Promise<string> {
   const pathPromise = fileMap.get(contents.path);
   if (pathPromise !== undefined) {
@@ -195,7 +195,7 @@ export async function uploadFile(
       });
   }
 
-  const ipfsWrite = create({
+  const ipfsWrite = new IPFSHTTPClientLite({
     url: IPFS_WRITE_ENDPOINT,
     headers: {Authorization: `Bearer ${authToken}`},
   });
@@ -205,7 +205,7 @@ export async function uploadFile(
     .then((result) => result.cid)
     .then(async (cid) => {
       try {
-        await ipfsWrite.pin.remote.add(cid, {service: PIN_SERVICE});
+        await ipfsWrite.pinRemoteAdd(cid, {service: PIN_SERVICE});
         return cid.toString();
       } catch (e) {
         console.warn(
