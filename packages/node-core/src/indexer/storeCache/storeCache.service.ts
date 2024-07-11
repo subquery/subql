@@ -56,16 +56,22 @@ export class StoreCacheService extends BaseCacheService {
     this.metadataRepo = meta;
     this.poiRepo = poi;
 
-    this.schedulerRegistry.addInterval(
-      'storeFlushInterval',
-      setInterval(() => {
-        this.flushCache(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
-      }, this.config.storeFlushInterval * 1000)
-    );
+    if (this.config.storeFlushInterval > 0) {
+      this.schedulerRegistry.addInterval(
+        'storeFlushInterval',
+        setInterval(() => {
+          this.flushCache(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
+        }, this.config.storeFlushInterval * 1000)
+      );
+    }
   }
 
   async beforeApplicationShutdown(): Promise<void> {
-    this.schedulerRegistry.deleteInterval('storeFlushInterval');
+    try {
+      this.schedulerRegistry.deleteInterval('storeFlushInterval');
+    } catch (e) {
+      /* Do nothing, an interval might not have been created */
+    }
     await super.beforeApplicationShutdown();
   }
 
