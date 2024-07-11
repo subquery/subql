@@ -23,13 +23,17 @@ const UNFINALIZED_THRESHOLD = 200;
 
 type UnfinalizedBlocks = Header[];
 
-export interface IUnfinalizedBlocksService<B> {
+export interface IUnfinalizedBlocksService<B> extends IUnfinalizedBlocksServiceUtil {
   init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined>;
   processUnfinalizedBlocks(block: IBlock<B> | undefined): Promise<number | undefined>;
   processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined>;
   resetUnfinalizedBlocks(): void;
   resetLastFinalizedVerifiedHeight(): void;
   getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks>;
+}
+
+export interface IUnfinalizedBlocksServiceUtil {
+  registerFinalizedBlock(header: Header): void;
 }
 
 export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlocksService<B> {
@@ -65,7 +69,10 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return this._finalizedHeader;
   }
 
-  constructor(protected readonly nodeConfig: NodeConfig, protected readonly storeCache: StoreCacheService) {}
+  constructor(
+    protected readonly nodeConfig: NodeConfig,
+    protected readonly storeCache: StoreCacheService
+  ) {}
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Unused type (#2484)
 
+### Changed
+- Make change with `node-core` fetch service, change `getFinalizedHeight` to `getFinalizedHeader` (#2487)
+
 ## [4.8.0] - 2024-07-10
 ### Changed
 - Bump with `@subql/node-core`, fix admin api `dbSize` issue

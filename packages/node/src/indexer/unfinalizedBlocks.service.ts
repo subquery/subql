@@ -4,7 +4,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   BaseUnfinalizedBlocksService,
-  getLogger,
   Header,
   mainThreadOnly,
   NodeConfig,
