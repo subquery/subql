@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.7.2] - 2024-07-11
 ### Fixed
 - Update with `node-core`, change `getFinalizedHeight` to `getFinalizedHeader`. Fix indexer could stall due to rpc finalized height could be smaller than previous result. (#2487)
 
@@ -513,7 +514,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.2...HEAD
+[4.7.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.1...node-ethereum/4.7.2
 [4.7.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.0...node-ethereum/4.7.1
 [4.7.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.6.0...node-ethereum/4.7.0
 [4.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.5.2...node-ethereum/4.6.0
