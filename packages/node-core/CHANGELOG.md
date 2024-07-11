@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create interval for flushing the cache, this is to support chains that only produce blocks with new transactions (#2485)
 - Improved types for strict TS setting (#2484)
 
+### Fixed
+- Improve indexer could stall due to rpc finalized height could be smaller than previous result (#2487)
+
 ## [10.10.2] - 2024-07-10
 ### Fixed
 - Fix issue admin api can not get `dbSize` due to it not been set in \_metadata table

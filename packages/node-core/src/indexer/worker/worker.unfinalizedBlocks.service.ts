@@ -42,4 +42,8 @@ export class WorkerUnfinalizedBlocksService<T> implements IUnfinalizedBlocksServ
   getMetadataUnfinalizedBlocks(): Promise<Header[]> {
     throw new Error('This method should not be called from a worker');
   }
+
+  registerFinalizedBlock(header: Header): void {
+    throw new Error('This method should not be called from a worker');
+  }
 }
