@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "4.0.1",
+  "version": "4.0.2-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -19,7 +19,6 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "fs-extra": "^10.1.0",
-    "ipfs-http-client": "56",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
@@ -34,5 +33,6 @@
     "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1",
     "@types/update-notifier": "^6"
-  }
+  },
+  "stableVersion": "4.0.1"
 }
