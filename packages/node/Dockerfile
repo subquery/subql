@@ -1,6 +1,6 @@
 # Build stage
 FROM node:18-alpine as builder
-
+ENV TZ utc
 # Set working directory
 WORKDIR /app
 
