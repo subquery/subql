@@ -70,6 +70,7 @@ describe('FetchSevice', () => {
       null as any, // EventEmitter
       null as any, // SchedulerRegistry
       null as any, // RuntimeService
+      null as any, // StoreCacheService
     ) as any;
   });
 

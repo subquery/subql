@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {TargetBlockPayload, RewindPayload, AdminEvent, IndexerEvent} from '../events';
-import {MonitorService, PoiService, StoreService} from '../indexer';
+import {MonitorService, PoiService, ProofOfIndexHuman, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {timeout} from '../utils';
 import {BlockRangeDto, BlockRangeDtoInterface} from './blockRange';
@@ -68,7 +68,7 @@ export class AdminController {
   }
 
   @Get('poi/')
-  async getPoisByRange(@Query(ValidationPipe) blockRange: BlockRangeDto) {
+  async getPoisByRange(@Query(ValidationPipe) blockRange: BlockRangeDto): Promise<ProofOfIndexHuman[]> {
     const {endBlock, startBlock} = blockRange;
     // TODO, class validator seems not work properly, need to complete in future
     if (endBlock && Number(startBlock) > Number(endBlock)) {
@@ -131,7 +131,7 @@ export class AdminListener {
   constructor(private eventEmitter: EventEmitter2) {}
 
   @OnEvent(IndexerEvent.RewindSuccess)
-  handleRewindSuccess(payload: RewindPayload) {
+  handleRewindSuccess(payload: RewindPayload): void {
     this.eventEmitter.emit(AdminEvent.RewindTargetResponse, {
       ...payload,
       message: `Rewind to block ${payload.height} successful`,
@@ -139,7 +139,7 @@ export class AdminListener {
   }
 
   @OnEvent(IndexerEvent.RewindFailure)
-  handleRewindFailure(payload: RewindPayload) {
+  handleRewindFailure(payload: RewindPayload): void {
     this.eventEmitter.emit(AdminEvent.RewindTargetResponse, {...payload});
   }
 }

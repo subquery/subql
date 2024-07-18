@@ -214,7 +214,12 @@ describe('Fetch Service', () => {
       dictionaryService,
       eventEmitter,
       schedulerRegistry,
-      unfinalizedBlocksService
+      unfinalizedBlocksService,
+      {
+        metadata: {
+          set: jest.fn(),
+        },
+      } as any
     );
 
     spyOnEnqueueSequential = jest.spyOn(fetchService as any, 'enqueueSequential') as any;
