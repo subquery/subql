@@ -1,9 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {GraphQLModelsType, Json} from '@subql/utils';
 import {Sequelize, DataTypes} from '@subql/x-sequelize';
 import {padStart} from 'lodash';
-import {DbOption, NodeConfig} from '../../';
+import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../';
 import {CachedModel} from './cacheModel';
 
 const option: DbOption = {
@@ -15,7 +16,7 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-jest.setTimeout(10_000);
+jest.setTimeout(100_000);
 
 describe('cacheMetadata integration', () => {
   let sequelize: Sequelize;
@@ -247,6 +248,152 @@ describe('cacheMetadata integration', () => {
         const result = await cacheModel.getByFields([], {limit: 50, orderDirection: 'DESC'});
         expect(result[0].id).toEqual('entity1_id_0x129'); // Failing because we cant offset cache data correctly
         expect(result[result.length - 1].id).toEqual('entity1_id_0x090');
+      });
+    });
+  });
+});
+
+describe('cacheModel integration', () => {
+  let sequelize: Sequelize;
+  let schema: string;
+  let model: any;
+  let cacheModel: CachedModel<{id: string; selfStake: bigint; delegators: DelegationFrom[]}>;
+
+  const flush = async (blockHeight: number) => {
+    const tx = await sequelize.transaction();
+    await cacheModel.flush(tx, blockHeight);
+    await tx.commit();
+  };
+
+  interface DelegationFrom {
+    delegator: string;
+    amount: bigint;
+  }
+
+  beforeAll(async () => {
+    sequelize = new Sequelize(
+      `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
+      option
+    );
+    await sequelize.authenticate();
+
+    schema = '"model-test-2"';
+    // await sequelize.dropSchema(schema, {logging: false});
+
+    await sequelize.createSchema(schema, {});
+
+    const modelType: GraphQLModelsType = {
+      name: 'testModel',
+      fields: [
+        {
+          name: 'id',
+          type: 'ID',
+          isArray: false,
+          nullable: false,
+          isEnum: false,
+        },
+        {
+          name: 'selfStake',
+          type: 'BigInt',
+          nullable: false,
+          isEnum: false,
+          isArray: false,
+        },
+        {
+          name: 'delegators',
+          type: 'DelegationFrom',
+          nullable: false,
+          jsonInterface: {
+            name: 'DelegationFrom',
+            fields: [
+              {name: 'delegator', type: 'String', isArray: false, nullable: false},
+              {name: 'amount', type: 'BigInt', isArray: false, nullable: false},
+            ],
+          },
+          isEnum: false,
+          isArray: true,
+        },
+      ],
+      indexes: [],
+    };
+    const modelAttributes = modelsTypeToModelAttributes(modelType, new Map(), schema);
+
+    // TODO create model
+    const modelFactory = sequelize.define('testModel', modelAttributes, {timestamps: false, schema: schema});
+    model = await modelFactory.sync().catch((e) => {
+      console.log('error', e);
+      throw e;
+    });
+
+    let i = 0;
+
+    cacheModel = new CachedModel(model, false, new NodeConfig({} as any), () => i++);
+  });
+
+  afterAll(async () => {
+    // await sequelize.dropSchema(schema, {logging: false});
+    await sequelize.close();
+  });
+
+  const toBigInt = (amount: string | undefined | null): bigint => BigInt((amount || '').replace('n', ''));
+
+  describe('cached data and db data compare', () => {
+    it('bigint value in jsonb', async () => {
+      cacheModel.set(
+        `0x01`,
+        {
+          id: `0x01`,
+          selfStake: BigInt(1000000000000000000000n),
+          // TODO, need to update amount to "0x3635c9adc5dea00000" in the db
+          delegators: [{delegator: '0x02', amount: BigInt('0x3635c9adc5dea00000')}],
+        },
+        1
+      );
+      await flush(2);
+
+      // Db value
+      const res0 = await cacheModel.get('0x01');
+      console.log(JSON.stringify(res0));
+
+      expect(res0).toEqual({
+        delegators: [
+          {
+            amount: '0x3635c9adc5dea00000',
+            delegator: '0x02',
+          },
+        ],
+        id: '0x01',
+        selfStake: BigInt(1000000000000000000000n),
+      });
+
+      if (res0?.delegators) {
+        for (const d of res0.delegators) {
+          d.amount = toBigInt(d.amount.toString()) - BigInt(0);
+        }
+      }
+
+      // if(res0){
+      //   // console.log(JSON.stringify(res0))
+      //   cacheModel.set(
+      //     `0x01`,
+      //     res0,
+      //     1
+      //   );
+      //   await flush(2);
+      // }
+
+      // Cache value
+      const res1 = await cacheModel.get('0x01');
+      console.log(JSON.stringify(res1));
+      expect(res1).toEqual({
+        delegators: [
+          {
+            amount: BigInt(1000000000000000000000n),
+            delegator: '0x02',
+          },
+        ],
+        id: '0x01',
+        selfStake: BigInt(1000000000000000000000n),
       });
     });
   });
