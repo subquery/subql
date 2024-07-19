@@ -67,7 +67,7 @@ export class DynamicDsService extends BaseDynamicDsService<
         }
       }
       return dsObj;
-    } catch (e) {
+    } catch (e: any) {
       throw new Error(`Unable to create dynamic datasource.\n ${e.message}`);
     }
   }

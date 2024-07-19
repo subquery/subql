@@ -30,7 +30,6 @@ describe('OPRPCProviders', () => {
       await provider.getTransactionReceipt(
         '0x5496af6ad1d619279d82b8f4c94cf3f8da8c02f22481c66a840ae9dd3f5e1a23',
       ),
-      null,
     );
 
     expect(receipt.l1Fee).toEqual(BigNumber.from('0x1375ad1b756e'));
@@ -46,7 +45,6 @@ describe('OPRPCProviders', () => {
       await provider.getTransactionReceipt(
         '0x7c20ced906264f81929802ee6b642d003a236c542c5de6298ede5b2a4f7f9bb9',
       ),
-      null,
     );
 
     expect(receipt.l1Fee).toBeUndefined();

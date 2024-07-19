@@ -74,11 +74,11 @@ describe('Api.ethereum', () => {
     expect(typeof blockData.transactions[0].receipt).toEqual('function');
     expect(typeof blockData.logs[0].transaction.receipt).toEqual('function');
     expect(typeof blockData.logs[0].transaction.from).toEqual('string');
-    expect(typeof blockData.transactions[81].logs[0].transaction.from).toEqual(
+    expect(typeof blockData.transactions[81].logs![0].transaction.from).toEqual(
       'string',
     );
     expect(
-      typeof blockData.transactions[81].logs[0].transaction.receipt,
+      typeof blockData.transactions[81].logs![0].transaction.receipt,
     ).toEqual('function');
   });
 
@@ -89,8 +89,8 @@ describe('Api.ethereum', () => {
         e.hash ===
         '0x8e419d0e36d7f9c099a001fded516bd168edd9d27b4aec2bcd56ba3b3b955ccc',
     );
-    const parsedTx = await ethApi.parseTransaction(tx, ds);
-    expect(parsedTx.logs[0].args).toBeTruthy();
+    const parsedTx = await ethApi.parseTransaction(tx!, ds);
+    expect(parsedTx.logs![0].args).toBeTruthy();
   });
 
   it('Should decode transaction data and not clone object', async () => {
@@ -99,7 +99,7 @@ describe('Api.ethereum', () => {
         e.hash ===
         '0x8e419d0e36d7f9c099a001fded516bd168edd9d27b4aec2bcd56ba3b3b955ccc',
     );
-    const parsedTx = await ethApi.parseTransaction(tx, ds);
+    const parsedTx = await ethApi.parseTransaction(tx!, ds);
 
     expect(parsedTx).toBe(tx);
   });
@@ -111,7 +111,7 @@ describe('Api.ethereum', () => {
         e.hash ===
         '0xed62f7a7720fe6ae05dec45ad9dd4f53034a0aae2c140d229b1151504ee9a6c9',
     );
-    const parsedLog = await ethApi.parseLog(tx.logs[0], ds);
+    const parsedLog = await ethApi.parseLog(tx!.logs![0], ds);
     expect(parsedLog).not.toHaveProperty('args');
     expect(parsedLog).toBeTruthy();
   });
@@ -122,7 +122,7 @@ describe('Api.ethereum', () => {
       (e) =>
         e.hash ===
         '0x8e419d0e36d7f9c099a001fded516bd168edd9d27b4aec2bcd56ba3b3b955ccc',
-    ).logs[1];
+    )!.logs![1];
 
     const parsedLog = await ethApi.parseLog(log, ds);
     expect(parsedLog).toBe(log);
@@ -174,12 +174,12 @@ describe('Api.ethereum', () => {
       (tx) =>
         tx.hash ===
         '0xeb2e443f2d4e784193fa13bbbae2b85e6ee459e7b7b53f8ca098ffae9b25b059',
-    );
+    )!;
 
-    const erc20Transfers = transaction.logs.filter((log) =>
+    const erc20Transfers = transaction.logs!.filter((log) =>
       filterLogsProcessor(log, filter_2),
     );
-    const erc721Transfers = transaction.logs.filter((log) =>
+    const erc721Transfers = transaction.logs!.filter((log) =>
       filterLogsProcessor(log, filter_1),
     );
 

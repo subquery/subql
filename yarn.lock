@@ -3026,7 +3026,7 @@ __metadata:
     "@nestjs/testing": ^9.4.0
     "@subql/common-ethereum": "workspace:*"
     "@subql/node-core": ^11.0.0
-    "@subql/testing": ^2.1.1
+    "@subql/testing": ^2.2.1
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -3051,21 +3051,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/testing@npm:2.2.1":
+"@subql/testing@npm:2.2.1, @subql/testing@npm:^2.2.1":
   version: 2.2.1
   resolution: "@subql/testing@npm:2.2.1"
   dependencies:
     "@subql/types-core": ^0.9.1
   checksum: 0e2529ec5e3c0b1360f51c3ad7d536b7d63efa9fdafa956c388c7547a23eeca0b9d1445b27010d9fa249b2541882c8009c8f2a4a49a00ef78d94e55c9675f392
-  languageName: node
-  linkType: hard
-
-"@subql/testing@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "@subql/testing@npm:2.1.1"
-  dependencies:
-    "@subql/types-core": ^0.7.0
-  checksum: 6b81d0130d364984e1a565228523b414c2fd66d128b2795161872657546ea83a7e23b42d59f968241f18c114afd7c511886418db8e89679f8a35861e8c24e5a9
   languageName: node
   linkType: hard
 
@@ -3084,15 +3075,6 @@ __metadata:
   dependencies:
     package-json-type: ^1.0.3
   checksum: cb6ae7220f02e76f8a05bdb5572b2864c8686523c756aadbcd0f3aeab5099acd93eac1cba04a81e2cb02e5e07bd9569ec46565ba78bf1f6213cb2dc2476951f7
-  languageName: node
-  linkType: hard
-
-"@subql/types-core@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@subql/types-core@npm:0.7.0"
-  dependencies:
-    package-json-type: ^1.0.3
-  checksum: ba8d140333d315e80c28b44f29f56511302d0179001048e55ef2bbdded51deb7ddd37d77eee3d6fff1c18f2b944f2cd9f4e39da39e9f4bd9216d4e1b4bbf6378
   languageName: node
   linkType: hard
 

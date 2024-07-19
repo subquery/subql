@@ -39,10 +39,6 @@ export type EthereumProjectDsTemplate =
 
 export type SubqlProjectBlockFilter = EthereumBlockFilter & CronFilter;
 
-const NOT_SUPPORT = (name: string) => {
-  throw new Error(`Manifest specVersion ${name} is not supported`);
-};
-
 // This is the runtime type after we have mapped genesisHash to chainId and endpoint/dict have been provided when dealing with deployments
 type NetworkConfig = EthereumNetworkConfig & { chainId: string };
 
@@ -105,7 +101,9 @@ export class SubqueryProject implements ISubqueryProject {
         networkOverrides,
       );
     } else {
-      NOT_SUPPORT(manifest.specVersion);
+      throw new Error(
+        `Manifest specVersion ${manifest.specVersion} is not supported`,
+      );
     }
   }
 }

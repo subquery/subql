@@ -416,7 +416,7 @@ describe('Codegen spec', () => {
           },
         ],
       },
-    };
+    } as any;
 
     await expect(
       generateAbis([ds], PROJECT_PATH, undefined as any, undefined as any, undefined as any)

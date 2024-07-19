@@ -4,7 +4,8 @@
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "strict": true
   },
   "references": [{ "path": "../common-ethereum" }, { "path": "../types" }],
   "include": ["src/**/*"]

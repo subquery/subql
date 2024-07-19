@@ -34,7 +34,7 @@ import {
   LightEthereumLog,
 } from '@subql/types-ethereum';
 import { EthereumProjectDs } from '../configure/SubqueryProject';
-import { EthereumApi, EthereumApiService } from '../ethereum';
+import { EthereumApi } from '../ethereum';
 import {
   filterBlocksProcessor,
   filterLogsProcessor,

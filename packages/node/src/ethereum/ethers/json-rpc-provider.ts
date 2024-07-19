@@ -41,8 +41,8 @@ export class JsonRpcProvider extends BaseJsonRpcProvider {
 
     // We can expand this in the future to any call, but for now these
     // are the biggest wins and do not require any serializing parameters.
-    const cache = ['eth_chainId', 'eth_blockNumber'].indexOf(method) >= 0;
-    if (cache && this._cache[method]) {
+    const cache = ['eth_chainId', 'eth_blockNumber'].includes(method);
+    if (cache && !!this._cache[method]) {
       return this._cache[method];
     }
 
@@ -77,7 +77,7 @@ export class JsonRpcProvider extends BaseJsonRpcProvider {
     if (cache) {
       this._cache[method] = result;
       setTimeout(() => {
-        this._cache[method] = null;
+        delete this._cache[method];
       }, 0);
     }
 

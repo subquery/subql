@@ -81,7 +81,7 @@ describe('Eth Dictionary V1', () => {
         network: { chainId: '336', dictionary: 'https://foo.bar' } as any,
       } as any,
       new NodeConfig({} as any, true),
-      null,
+      '',
     );
 
     expect((dictionary as any).chainId).toBe(

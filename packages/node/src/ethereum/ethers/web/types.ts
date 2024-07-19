@@ -7,7 +7,7 @@ export type GetUrlResponse = {
   statusCode: number;
   statusMessage: string;
   headers: { [key: string]: string };
-  body: Uint8Array;
+  body: Uint8Array | null;
 };
 
 export type Options = {

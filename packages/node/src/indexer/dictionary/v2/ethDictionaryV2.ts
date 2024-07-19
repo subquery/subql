@@ -42,12 +42,14 @@ const MIN_FETCH_LIMIT = 200;
 const logger = getLogger('dictionary-v2');
 
 function extractOptionAddresses(
-  dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
+  dsOptions?: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
 ): string[] {
   const queryAddressLimit = yargsOptions.argv['query-address-limit'];
   const addressArray: string[] = [];
   if (Array.isArray(dsOptions)) {
-    const addresses = dsOptions.map((option) => option.address).filter(Boolean);
+    const addresses = dsOptions
+      .map((option) => option.address)
+      .filter((address): address is string => Boolean(address));
 
     if (addresses.length > queryAddressLimit) {
       logger.debug(
@@ -67,12 +69,12 @@ function extractOptionAddresses(
 
 function callFilterToDictionaryCondition(
   filter: EthereumTransactionFilter,
-  dsOptions: SubqlEthereumProcessorOptions,
+  dsOptions?: SubqlEthereumProcessorOptions,
 ): EthDictionaryTxConditions {
   const txConditions: EthDictionaryTxConditions = {};
-  const toArray = [];
-  const fromArray = [];
-  const funcArray = [];
+  const toArray: (string | null)[] = [];
+  const fromArray: string[] = [];
+  const funcArray: string[] = [];
 
   if (filter.from) {
     fromArray.push(filter.from.toLowerCase());
@@ -118,7 +120,7 @@ function callFilterToDictionaryCondition(
 
 function eventFilterToDictionaryCondition(
   filter: EthereumLogFilter,
-  dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
+  dsOptions?: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
 ): EthDictionaryLogConditions {
   const logConditions: EthDictionaryLogConditions = {};
   logConditions.address = extractOptionAddresses(dsOptions);
@@ -146,7 +148,7 @@ function eventFilterToDictionaryCondition(
 function sanitiseDictionaryConditions(
   dictionaryConditions: EthDictionaryV2QueryEntry,
 ): EthDictionaryV2QueryEntry {
-  if (!dictionaryConditions.logs.length) {
+  if (!dictionaryConditions.logs?.length) {
     delete dictionaryConditions.logs;
   } else {
     dictionaryConditions.logs = uniqBy(dictionaryConditions.logs, (log) =>
@@ -154,7 +156,7 @@ function sanitiseDictionaryConditions(
     );
   }
 
-  if (!dictionaryConditions.transactions.length) {
+  if (!dictionaryConditions.transactions?.length) {
     delete dictionaryConditions.transactions;
   } else {
     dictionaryConditions.transactions = uniqBy(
@@ -192,6 +194,7 @@ export function buildDictionaryV2QueryEntry(
             filter.to !== undefined ||
             filter.function !== undefined
           ) {
+            dictionaryConditions.transactions ??= [];
             dictionaryConditions.transactions.push(
               callFilterToDictionaryCondition(filter, ds.options),
             );
@@ -202,6 +205,7 @@ export function buildDictionaryV2QueryEntry(
         }
         case EthereumHandlerKind.Event: {
           const filter = handler.filter as EthereumLogFilter;
+          dictionaryConditions.logs ??= [];
           if (ds.groupedOptions) {
             dictionaryConditions.logs.push(
               eventFilterToDictionaryCondition(filter, ds.groupedOptions),
@@ -279,13 +283,15 @@ export class EthDictionaryV2 extends DictionaryV2<
       const blocks: IBlock<EthereumBlock>[] = (
         (data.blocks as RawEthBlock[]) || []
       ).map((b) => rawBlockToEthBlock(b, this.api));
+
+      if (!blocks.length) {
+        return undefined;
+      }
       return {
         batchBlocks: blocks,
-        lastBufferedHeight: blocks.length
-          ? blocks[blocks.length - 1].block.number
-          : undefined,
+        lastBufferedHeight: blocks[blocks.length - 1].block.number,
       };
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e, `Failed to handle block response}`);
       throw e;
     }

@@ -27,12 +27,12 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
   private failedBatchCount = 0;
   private batchSizeAdjustmentInterval = 10; // Adjust batch size after every 10 batches
 
-  _pendingBatchAggregator: NodeJS.Timer;
+  _pendingBatchAggregator: NodeJS.Timer | null = null;
   _pendingBatch: Array<{
     request: { method: string; params: Array<any>; id: number; jsonrpc: '2.0' };
     resolve: (result: any) => void;
     reject: (error: Error) => void;
-  }>;
+  }> | null = null;
 
   _chainIdCache: string | null = null;
 
@@ -93,7 +93,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
   private runRequests() {
     // Get teh current batch and clear it, so new requests
     // go into the next batch
-    const batch = this._pendingBatch;
+    const batch = this._pendingBatch ?? [];
     this._pendingBatch = null;
     this._pendingBatchAggregator = null;
 
@@ -189,7 +189,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
             inflightRequest.reject(error);
           } else {
             if (inflightRequest.request.method === 'eth_chainId') {
-              this._chainIdCache = payload.result;
+              this._chainIdCache = payload.result ?? null;
             }
             inflightRequest.resolve(payload.result);
           }

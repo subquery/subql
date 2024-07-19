@@ -78,7 +78,7 @@ export interface EthDictionaryLogConditions {
 }
 
 export interface EthDictionaryTxConditions {
-  to?: string[];
+  to?: (string | null)[];
   from?: string[];
   data?: string[];
 }

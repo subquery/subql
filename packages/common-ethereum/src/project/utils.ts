@@ -11,6 +11,8 @@ import {
   EthereumHandlerKind,
   SubqlRuntimeDatasource,
   SecondLayerHandlerProcessorArray,
+  SubqlCustomHandler,
+  SubqlMapping,
 } from '@subql/types-ethereum';
 import {fromBech32Address} from '@zilliqa-js/crypto';
 import {buildMessage, isEthereumAddress, ValidateBy, ValidationOptions} from 'class-validator';
@@ -39,7 +41,9 @@ export function isCallHandlerProcessor<E>(
   return hp.baseHandlerKind === EthereumHandlerKind.Call;
 }
 
-export function isCustomDs(ds: SubqlDatasource): ds is SubqlCustomDatasource<string> {
+export function isCustomDs<F extends SubqlMapping<SubqlCustomHandler>>(
+  ds: SubqlDatasource
+): ds is SubqlCustomDatasource<string, F> {
   return ds.kind !== EthereumDatasourceKind.Runtime && !!(ds as SubqlCustomDatasource<string>).processor;
 }
 

@@ -27,7 +27,8 @@ export class MetaService extends BaseMetaService {
   private lastReportedEnqueueBlocks = 0;
   private lastReportedFetchBlocks = 0;
   private lastReportedRpcCalls = 0;
-  private lastStatsReportedTs: Date;
+  private lastStatsReportedTs?: Date;
+  protected packageVersion = packageVersion;
 
   constructor(
     private nodeConfig: NodeConfig,
@@ -36,7 +37,6 @@ export class MetaService extends BaseMetaService {
     super(storeCacheService, nodeConfig);
   }
 
-  protected packageVersion = packageVersion;
   protected sdkVersion(): { name: string; version: string } {
     return { name: 'ethersSdkVersion', version: ethersSdkVersion };
   }
@@ -75,7 +75,7 @@ export class MetaService extends BaseMetaService {
 
   @Interval(10000)
   blockFilteringSpeed(): void {
-    if (!this.nodeConfig.profiler) {
+    if (!this.nodeConfig.profiler || !this.lastStatsReportedTs) {
       return;
     }
     const count = this.accEnqueueBlocks - this.lastReportedEnqueueBlocks;

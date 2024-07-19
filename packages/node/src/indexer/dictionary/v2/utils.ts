@@ -35,13 +35,11 @@ export function rawBlockToEthBlock(
       ...formatTransaction(tx, ethBlock),
       logs: ethBlock.logs.filter((l) => l.transactionHash === tx.hash),
       receipt: <R extends EthereumReceipt>(): Promise<R> =>
-        api
-          .getTransactionReceipt(tx.hash)
-          .then((r) => formatReceipt<R>(r, ethBlock)),
+        api.getTransactionReceipt(tx.hash).then((r) => formatReceipt<R>(r)),
     }));
 
     return formatBlockUtil(ethBlock);
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(
       `Convert raw block to Eth block failed at ${block.header.number},${e.message}`,
     );

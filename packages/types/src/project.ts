@@ -12,6 +12,7 @@ import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
   DsProcessor,
+  BaseCustomDataSource,
 } from '@subql/types-core';
 import {
   EthereumBlock,
@@ -236,16 +237,45 @@ export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandl
 
 export type SubqlDatasource = SubqlRuntimeDatasource | SubqlCustomDatasource;
 
-export type CustomDataSourceAsset = FileReference;
-
 export interface SubqlCustomDatasource<
   K extends string = string,
   M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
   O = any
-> extends ISubqlDatasource<M> {
+> extends BaseCustomDataSource<SubqlHandler, M> /*ISubqlDatasource<M>*/ {
+  /**
+   * The kind of the datasource, which is `ethereum/Runtime`.
+   * @type {K}
+   */
   kind: K;
-  assets: Map<string, CustomDataSourceAsset>;
+  /**
+   * Options to specify details about the contract and its interface
+   * @example
+   * options: {
+   *   abi: 'erc20',
+   *   address: '0x220866B1A2219f40e72f5c628B65D54268cA3A9D',
+   * }
+   * */
   options?: SubqlEthereumProcessorOptions;
+  /**
+   * ABI or contract artifact files that are used for decoding.
+   * These are used for codegen to generate handler inputs and contract interfaces
+   * @example
+   * assets: new Map([
+   *  ['erc721', { file: "./abis/erc721.json" }],
+   *  ['erc1155', { file: "./abis/erc1155.json" }],
+   * ])
+   * */
+  assets?: Map<string, FileReference>;
+  /**
+   * @example
+   * processor: {
+   *    file: './node_modules/@subql/frontier-evm-processor/dist/bundle.js',
+   *    options: {
+   *      abi: 'erc20',
+   *      address: '0x322E86852e492a7Ee17f28a78c663da38FB33bfb',
+   *    }
+   *  }
+   */
   processor: Processor<O>;
 }
 

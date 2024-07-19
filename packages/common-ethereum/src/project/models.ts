@@ -13,7 +13,6 @@ import {
   SubqlRuntimeHandler,
   SubqlRuntimeDatasource,
   SubqlCustomDatasource,
-  CustomDataSourceAsset,
   EthereumBlockFilter,
   SubqlBlockHandler,
   SubqlEventHandler,
@@ -29,7 +28,6 @@ import {
   IsString,
   IsObject,
   ValidateNested,
-  IsEthereumAddress,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
@@ -212,7 +210,7 @@ export class CustomDataSourceBase<K extends string, M extends SubqlMapping = Sub
   mapping!: M;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets!: Map<string, CustomDataSourceAsset>;
+  assets!: Map<string, FileReference>;
   @Type(() => FileReferenceImpl)
   @IsObject()
   processor!: FileReference;

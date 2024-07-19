@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -36,8 +37,11 @@ export class EthereumApiService extends ApiService<
   SafeEthProvider,
   IBlock<EthereumBlock>[] | IBlock<LightEthereumBlock>[]
 > {
-  private fetchBlocksFunction: FetchFunc;
-  private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
+  private fetchBlocksFunction?: FetchFunc;
+  private fetchBlocksBatches: GetFetchFunc = () => {
+    assert(this.fetchBlocksFunction, 'Fetch blocks function is not defined');
+    return this.fetchBlocksFunction;
+  };
   private nodeConfig: EthereumNodeConfig;
 
   constructor(
@@ -114,14 +118,19 @@ export class EthereumApiService extends ApiService<
       get: (target, prop, receiver) => {
         const originalMethod = target[prop as keyof SafeEthProvider];
         if (typeof originalMethod === 'function') {
-          return async (...args: any[]) => {
+          return async (
+            ...args: Parameters<typeof originalMethod>
+          ): Promise<ReturnType<typeof originalMethod>> => {
             let retries = 0;
             let currentApi = target;
-            let throwingError: Error;
+            let throwingError: Error | undefined;
 
             while (retries < maxRetries) {
               try {
-                return await originalMethod.apply(currentApi, args);
+                return await (originalMethod as Function).apply(
+                  currentApi,
+                  args,
+                );
               } catch (error: any) {
                 // other than retryErrorCodes, other errors does not have anything to do with network request, retrying would not change its outcome
                 if (!retryErrorCodes.includes(error?.code)) {
@@ -140,6 +149,9 @@ export class EthereumApiService extends ApiService<
             logger.error(
               `Maximum retries (${maxRetries}) exceeded for api at height ${height}`,
             );
+            if (!throwingError) {
+              throw new Error('Failed to make request, maximum retries failed');
+            }
             throw throwingError;
           };
         }
@@ -198,7 +210,7 @@ export class EthereumApiService extends ApiService<
         fetchFunc,
         'SubstrateUtil',
         'fetchBlocksBatches',
-      );
+      ) as FetchFunc;
     } else {
       this.fetchBlocksFunction = fetchFunc;
     }

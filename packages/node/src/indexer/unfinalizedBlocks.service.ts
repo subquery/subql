@@ -116,13 +116,16 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
       }
 
       // Get the new parent
+      if (!checkingHeader.parentHash) {
+        throw new Error('Unable to get parent hash for header');
+      }
       checkingHeader = await this.getHeaderForHash(checkingHeader.parentHash);
     }
 
     try {
       const poiHeader = await this.findFinalizedUsingPOI(checkingHeader);
       return poiHeader.blockHeight;
-    } catch (e) {
+    } catch (e: any) {
       if (e.message === POI_NOT_ENABLED_ERROR_MESSAGE) {
         return Math.max(
           0,

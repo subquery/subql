@@ -43,7 +43,7 @@ export function handleNumber(value: string | number): BigNumber {
   return BigNumber.from(value);
 }
 
-export function formatBlock(block: Record<string, any>): EthereumBlock {
+export function formatBlock(block: any): EthereumBlock {
   return {
     ...block,
     difficulty: handleNumber(block.difficulty).toBigInt(),
@@ -107,7 +107,7 @@ export function formatLog(
 export function formatTransaction(
   tx: Record<string, any>,
   block: EthereumBlock,
-): EthereumTransaction {
+): Omit<EthereumTransaction, 'receipt'> {
   return {
     ...(tx as Partial<EthereumTransaction>),
     from: handleAddress(tx.from),
@@ -130,12 +130,11 @@ export function formatTransaction(
     toJSON(): string {
       return JSON.stringify(omit(this, ['block', 'receipt', 'toJSON']));
     },
-  } as EthereumTransaction;
+  } as Omit<EthereumTransaction, 'receipt'>;
 }
 
 export function formatReceipt<R extends EthereumReceipt = EthereumReceipt>(
   receipt: Record<string, any>,
-  block: EthereumBlock,
 ): R {
   return {
     ...receipt,

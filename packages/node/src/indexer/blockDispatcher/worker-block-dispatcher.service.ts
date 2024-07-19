@@ -89,6 +89,6 @@ export class WorkerBlockDispatcherService
     worker: IndexerWorker,
     height: number,
   ): Promise<void> {
-    await worker.fetchBlock(height, null);
+    await worker.fetchBlock(height, 0 /* Unused with ethereum*/);
   }
 }

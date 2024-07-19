@@ -44,7 +44,7 @@ export function filterBlocksProcessor(
 
 export function filterTransactionsProcessor(
   transaction: EthereumTransaction,
-  filter: EthereumTransactionFilter,
+  filter?: EthereumTransactionFilter,
   address?: string,
 ): boolean {
   if (!filter) return true;

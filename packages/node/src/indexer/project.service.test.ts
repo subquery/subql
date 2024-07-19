@@ -24,18 +24,18 @@ describe('ProjectService', () => {
     const apiService = mockApiService();
 
     projectService = new ProjectService(
-      null,
+      null as any,
       apiService,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
+      null as any,
+      null as any,
+      null as any,
+      null as any,
+      null as any,
+      null as any,
       {} as any,
-      null,
-      null,
-      null,
+      null as any,
+      null as any,
+      null as any,
     );
   });
 

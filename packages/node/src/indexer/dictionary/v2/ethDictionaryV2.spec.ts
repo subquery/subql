@@ -99,6 +99,7 @@ const mockDs2: EthereumProjectDs[] = [
         },
       ],
     },
+    processor: { file: '' },
   },
 ];
 
@@ -113,7 +114,7 @@ const nodeConfig = new NodeConfig({
 function makeBlockHeightMap(mockDs: SubqlDatasource[]): BlockHeightMap<any> {
   const m = new Map<number, any>();
   mockDs.forEach((ds, index, dataSources) => {
-    m.set(ds.startBlock, dataSources.slice(0, index + 1));
+    m.set(ds.startBlock || 1, dataSources.slice(0, index + 1));
   });
   return new BlockHeightMap(m);
 }
@@ -276,7 +277,7 @@ describe('eth dictionary v2', () => {
 
     const log = logs.find((l) => l.logIndex === 184);
     expect(log).toBeDefined();
-    expect(log.transactionHash).toEqual(
+    expect(log!.transactionHash).toEqual(
       '0x5491f3f4b7ca6cc81f992a17e19bc9bafff408518c643c5a254de44b5a7b6d72',
     );
 
@@ -445,7 +446,7 @@ describe('buildDictionaryV2QueryEntry', () => {
 
     const queryEntry = buildDictionaryV2QueryEntry(ds);
     // Total 7 handlers were given, 1 is duplicate
-    expect(queryEntry.logs.length).toBe(6);
+    expect(queryEntry.logs!.length).toBe(6);
   });
 
   it('should unique QueryEntry for duplicate dataSources', () => {

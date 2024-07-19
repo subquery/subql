@@ -34,7 +34,7 @@ describe('JsonRpcBatchProvider', () => {
 
     // Execute the send method multiple times to simulate successful requests
     const requestCount = 20;
-    const promises = [];
+    const promises: Promise<any>[] = [];
     for (let i = 0; i < requestCount; i++) {
       const promise = batchProvider.send('eth_call', []);
       promises.push(promise);
@@ -57,7 +57,7 @@ describe('JsonRpcBatchProvider', () => {
     );
 
     // Execute the send method multiple times to simulate failed requests
-    const failedPromises = [];
+    const failedPromises: Promise<any>[] = [];
     for (let i = 0; i < requestCount + 10; i++) {
       const failedPromise = batchProvider.send('eth_call', []);
       failedPromises.push(failedPromise);

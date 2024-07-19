@@ -21,9 +21,7 @@ describe('CeloRPCProviders', () => {
     new CeloJsonRpcBatchProvider(HTTP_ENDPOINT),
   ];
   afterAll(async () => {
-    await Promise.all(
-      providers.map((p) => (p as WebSocketProvider)?.destroy?.()),
-    );
+    await Promise.all(providers.map((p) => (p as any)?.destroy?.()));
   });
 
   // This returns a value now, needs further investigation
