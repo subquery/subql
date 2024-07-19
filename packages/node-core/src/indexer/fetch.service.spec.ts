@@ -34,9 +34,6 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   getGenesisHash(): string {
     return genesisHash;
   }
-  async getFinalizedHeight(): Promise<number> {
-    return Promise.resolve(this.finalizedHeight);
-  }
   async getBestHeight(): Promise<number> {
     return Promise.resolve(this.bestHeight);
   }
@@ -74,7 +71,7 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
     this.projectService.getDataSourcesMap = jest.fn(() => blockHeightMap);
   }
 
-  protected async getFinalizedHeader(): Promise<Header> {
+  async getFinalizedHeader(): Promise<Header> {
     return Promise.resolve({blockHeight: this.finalizedHeight, blockHash: '0xxx', parentHash: '0xxx'});
   }
 }
@@ -338,7 +335,7 @@ describe('Fetch Service', () => {
   });
 
   it('checks chain heads at an interval', async () => {
-    const finalizedSpy = jest.spyOn(fetchService, 'getFinalizedHeight');
+    const finalizedSpy = jest.spyOn(fetchService, 'getFinalizedHeader');
     const bestSpy = jest.spyOn(fetchService, 'getBestHeight');
 
     await fetchService.init(1);
@@ -352,7 +349,11 @@ describe('Fetch Service', () => {
     expect(finalizedSpy).toHaveBeenCalledTimes(2);
     expect(bestSpy).toHaveBeenCalledTimes(2);
 
-    await expect(fetchService.getFinalizedHeight()).resolves.toBe(fetchService.finalizedHeight);
+    await expect(fetchService.getFinalizedHeader()).resolves.toEqual({
+      blockHeight: fetchService.finalizedHeight,
+      blockHash: '0xxx',
+      parentHash: '0xxx',
+    });
   });
 
   it('enqueues blocks WITHOUT dictionary', async () => {
