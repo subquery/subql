@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Provide a better error message when user increases project start height beyond indexed height (#2492)
+- Define new core modules to reduce duplicate code in nodes (#2491)
+
+### Fixed
+- "targetHeight" being updated out of sync with indexing, leading to it possibly being behind "lastProcessedHeight" (#2491)
 
 ## [11.0.0] - 2024-07-11
 ### Changed
