@@ -12,6 +12,7 @@ import {
   BaseFetchService,
   getModulos,
   Header,
+  StoreCacheService,
 } from '@subql/node-core';
 import { SubstrateDatasource, SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -44,6 +45,7 @@ export class FetchService extends BaseFetchService<
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
     private runtimeService: RuntimeService,
+    storeCacheService: StoreCacheService,
   ) {
     super(
       nodeConfig,
@@ -54,6 +56,7 @@ export class FetchService extends BaseFetchService<
       eventEmitter,
       schedulerRegistry,
       unfinalizedBlocksService,
+      storeCacheService,
     );
   }
 
