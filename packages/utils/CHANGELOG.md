@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update error log format to specify the name of the error instance where possible (#2492)
 
 ## [2.12.1] - 2024-07-09
 ### Changed
