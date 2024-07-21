@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {GraphQLModelsType, Json} from '@subql/utils';
-import {Sequelize, DataTypes} from '@subql/x-sequelize';
+import {GraphQLModelsType} from '@subql/utils';
+import {Sequelize, DataTypes, QueryTypes} from '@subql/x-sequelize';
 import {padStart} from 'lodash';
 import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../';
 import {CachedModel} from './cacheModel';
@@ -278,8 +278,6 @@ describe('cacheModel integration', () => {
     await sequelize.authenticate();
 
     schema = '"model-test-2"';
-    // await sequelize.dropSchema(schema, {logging: false});
-
     await sequelize.createSchema(schema, {});
 
     const modelType: GraphQLModelsType = {
@@ -335,8 +333,6 @@ describe('cacheModel integration', () => {
     await sequelize.close();
   });
 
-  const toBigInt = (amount: string | undefined | null): bigint => BigInt((amount || '').replace('n', ''));
-
   describe('cached data and db data compare', () => {
     it('bigint value in jsonb', async () => {
       cacheModel.set(
@@ -344,8 +340,7 @@ describe('cacheModel integration', () => {
         {
           id: `0x01`,
           selfStake: BigInt(1000000000000000000000n),
-          // TODO, need to update amount to "0x3635c9adc5dea00000" in the db
-          delegators: [{delegator: '0x02', amount: BigInt('0x3635c9adc5dea00000')}],
+          delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
         },
         1
       );
@@ -358,29 +353,13 @@ describe('cacheModel integration', () => {
       expect(res0).toEqual({
         delegators: [
           {
-            amount: '0x3635c9adc5dea00000',
+            amount: BigInt(1000000000000000000000n),
             delegator: '0x02',
           },
         ],
         id: '0x01',
         selfStake: BigInt(1000000000000000000000n),
       });
-
-      if (res0?.delegators) {
-        for (const d of res0.delegators) {
-          d.amount = toBigInt(d.amount.toString()) - BigInt(0);
-        }
-      }
-
-      // if(res0){
-      //   // console.log(JSON.stringify(res0))
-      //   cacheModel.set(
-      //     `0x01`,
-      //     res0,
-      //     1
-      //   );
-      //   await flush(2);
-      // }
 
       // Cache value
       const res1 = await cacheModel.get('0x01');
@@ -394,6 +373,30 @@ describe('cacheModel integration', () => {
         ],
         id: '0x01',
         selfStake: BigInt(1000000000000000000000n),
+      });
+
+      res1?.delegators.push({delegator: '0x03', amount: BigInt(9000000000000000000000n)});
+
+      cacheModel.set(`0x01`, res1!, 2);
+      await flush(3);
+      const res2 = await cacheModel.get('0x01');
+      console.log(JSON.stringify(res2));
+
+      // check actually stored with 0x hex in json in the db
+      const [rows] = await sequelize.query(`SELECT delegators FROM ${schema}."testModels" LIMIT 1;`, {
+        type: QueryTypes.SELECT,
+      });
+      expect(rows).toStrictEqual({
+        delegators: [
+          {
+            amount: '0x3635c9adc5dea00000',
+            delegator: '0x02',
+          },
+          {
+            amount: '0x1e7e4171bf4d3a00000',
+            delegator: '0x03',
+          },
+        ],
       });
     });
   });

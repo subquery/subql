@@ -14,6 +14,7 @@ import {
   GraphQLEntityField,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
+import {isArray} from 'lodash';
 import {enumNameToHash} from '../db';
 
 export interface EnumType {
@@ -58,8 +59,8 @@ export function getColumnOption(
   const type = field.isEnum
     ? `${enumType}${field.isArray ? '[]' : ''}`
     : field.isArray
-    ? getTypeByScalarName('Json')?.sequelizeType
-    : getTypeByScalarName(field.type)?.sequelizeType;
+      ? getTypeByScalarName('Json')?.sequelizeType
+      : getTypeByScalarName(field.type)?.sequelizeType;
 
   if (type === undefined) {
     throw new Error('Unable to get model type');
@@ -109,6 +110,43 @@ export function getColumnOption(
         this.setDataValue(field.name, setValue);
       } else {
         throw new Error(`input for Bytes type is only support unprefixed hex`);
+      }
+    };
+  }
+  if (field.isArray && field.jsonInterface) {
+    const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
+
+    columnOption.get = function () {
+      const arrayDataValue = this.getDataValue(field.name);
+      return arrayDataValue && field.jsonInterface
+        ? arrayDataValue.map((o: any) => {
+            if (bigIntFields && bigIntFields.length) {
+              for (const bigIntField of bigIntFields) {
+                o[bigIntField.name] = BigInt(o[bigIntField.name]);
+              }
+            }
+            return o;
+          })
+        : [];
+    };
+    columnOption.set = function (val: unknown) {
+      if (val === undefined || isNull(val)) {
+        this.setDataValue(field.name, null);
+      } else if (isArray(val)) {
+        if (val.length === 0) {
+          return [];
+        }
+        const setValue = val.map((v: any) => {
+          if (bigIntFields && bigIntFields.length) {
+            for (const bigIntField of bigIntFields) {
+              v[bigIntField.name] = `0x${v[bigIntField.name].toString(16)}`;
+            }
+          }
+          return v;
+        });
+        this.setDataValue(field.name, setValue);
+      } else {
+        throw new Error(`input for json ${field.jsonInterface?.name} array type is only support array`);
       }
     };
   }
