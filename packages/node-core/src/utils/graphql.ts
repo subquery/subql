@@ -12,9 +12,10 @@ import {
   isBuffer,
   isNull,
   GraphQLEntityField,
+  GraphQLJsonFieldType,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
-import {isArray} from 'lodash';
+import {isArray, isObject} from 'lodash';
 import {enumNameToHash} from '../db';
 
 export interface EnumType {
@@ -58,7 +59,7 @@ export function getColumnOption(
 
   const type = field.isEnum
     ? `${enumType}${field.isArray ? '[]' : ''}`
-    : field.isArray
+    : field.isArray || field.jsonInterface
       ? getTypeByScalarName('Json')?.sequelizeType
       : getTypeByScalarName(field.type)?.sequelizeType;
 
@@ -113,42 +114,79 @@ export function getColumnOption(
       }
     };
   }
-  if (field.isArray && field.jsonInterface) {
-    const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
-
+  if (field.jsonInterface) {
     columnOption.get = function () {
-      const arrayDataValue = this.getDataValue(field.name);
-      return arrayDataValue && field.jsonInterface
-        ? arrayDataValue.map((o: any) => {
-            if (bigIntFields && bigIntFields.length) {
-              for (const bigIntField of bigIntFields) {
-                o[bigIntField.name] = BigInt(o[bigIntField.name]);
-              }
-            }
-            return o;
-          })
-        : [];
+      const dataValue = this.getDataValue(field.name);
+
+      if (!dataValue || !field.jsonInterface) {
+        return field.isArray ? [] : null;
+      }
+      return field.isArray
+        ? dataValue.map((v: any) => processNestedJsonGet(field, v))
+        : processNestedJsonGet(field, dataValue);
     };
     columnOption.set = function (val: unknown) {
       if (val === undefined || isNull(val)) {
         this.setDataValue(field.name, null);
-      } else if (isArray(val)) {
-        if (val.length === 0) {
-          return [];
-        }
-        const setValue = val.map((v: any) => {
-          if (bigIntFields && bigIntFields.length) {
-            for (const bigIntField of bigIntFields) {
-              v[bigIntField.name] = `0x${v[bigIntField.name].toString(16)}`;
-            }
-          }
-          return v;
-        });
+        return;
+      }
+      if (isArray(val)) {
+        const setValue = val.length === 0 ? [] : val.map((v) => processNestedJsonSet(field, v));
         this.setDataValue(field.name, setValue);
+      } else if (isObject(val)) {
+        this.setDataValue(field.name, processNestedJsonSet(field, val));
       } else {
-        throw new Error(`input for json ${field.jsonInterface?.name} array type is only support array`);
+        throw new Error(`input for Json type is only support object or array, got type ${typeof val}`);
       }
     };
   }
   return columnOption;
+}
+
+function processNestedJsonGet(field: GraphQLEntityField | GraphQLJsonFieldType, value: any) {
+  const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
+  const nestJsonFields = field.jsonInterface?.fields.filter((f) => f.jsonInterface);
+
+  const processBigIntFields = (value: any) => {
+    if (bigIntFields && bigIntFields.length) {
+      for (const bigIntField of bigIntFields) {
+        value[bigIntField.name] = BigInt(value[bigIntField.name]);
+      }
+    }
+    return value;
+  };
+
+  if (nestJsonFields) {
+    for (const nestJsonField of nestJsonFields) {
+      if (nestJsonField.jsonInterface && value[nestJsonField.name]) {
+        value[nestJsonField.name] = processNestedJsonGet(nestJsonField, value[nestJsonField.name]);
+      }
+    }
+  }
+  return processBigIntFields(value);
+}
+
+function processNestedJsonSet(field: GraphQLEntityField | GraphQLJsonFieldType, value: any) {
+  const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
+  const nestJsonFields = field.jsonInterface?.fields.filter((f) => f.jsonInterface);
+
+  const processBigIntFields = (value: any) => {
+    if (bigIntFields && bigIntFields.length) {
+      for (const bigIntField of bigIntFields) {
+        value[bigIntField.name] = value[bigIntField.name].toString();
+      }
+    }
+    return value;
+  };
+
+  if (nestJsonFields && nestJsonFields.length) {
+    for (const nestJsonField of nestJsonFields) {
+      // have a nest field, and nest field is json type, also value is defined
+      if (nestJsonField.jsonInterface && value[nestJsonField.name]) {
+        value[nestJsonField.name] = processNestedJsonSet(nestJsonField, value[nestJsonField.name]);
+      }
+    }
+  }
+
+  return processBigIntFields(value);
 }

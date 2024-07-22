@@ -257,7 +257,13 @@ describe('cacheModel integration', () => {
   let sequelize: Sequelize;
   let schema: string;
   let model: any;
-  let cacheModel: CachedModel<{id: string; selfStake: bigint; delegators: DelegationFrom[]}>;
+  let cacheModel: CachedModel<{
+    id: string;
+    selfStake: bigint;
+    oneEntity: TestJson;
+    delegators: DelegationFrom[];
+    randomNArray?: number[];
+  }>;
 
   const flush = async (blockHeight: number) => {
     const tx = await sequelize.transaction();
@@ -265,9 +271,15 @@ describe('cacheModel integration', () => {
     await tx.commit();
   };
 
+  interface TestJson {
+    testItem: string;
+    amount: bigint;
+  }
+
   interface DelegationFrom {
     delegator: string;
     amount: bigint;
+    nested?: TestJson;
   }
 
   beforeAll(async () => {
@@ -298,6 +310,20 @@ describe('cacheModel integration', () => {
           isArray: false,
         },
         {
+          name: 'oneEntity',
+          type: 'TestJson',
+          nullable: false,
+          isEnum: false,
+          isArray: false,
+          jsonInterface: {
+            name: 'TestJson',
+            fields: [
+              {name: 'testItem', type: 'String', isArray: false, nullable: false},
+              {name: 'amount', type: 'BigInt', isArray: false, nullable: false},
+            ],
+          },
+        },
+        {
           name: 'delegators',
           type: 'DelegationFrom',
           nullable: false,
@@ -306,8 +332,28 @@ describe('cacheModel integration', () => {
             fields: [
               {name: 'delegator', type: 'String', isArray: false, nullable: false},
               {name: 'amount', type: 'BigInt', isArray: false, nullable: false},
+              {
+                name: 'nested',
+                type: 'Json',
+                isArray: false,
+                nullable: false,
+                jsonInterface: {
+                  name: 'TestJson',
+                  fields: [
+                    {name: 'testItem', type: 'String', isArray: false, nullable: false},
+                    {name: 'amount', type: 'BigInt', isArray: false, nullable: false},
+                  ],
+                },
+              },
             ],
           },
+          isEnum: false,
+          isArray: true,
+        },
+        {
+          name: 'radomNArray',
+          type: 'Int',
+          nullable: true,
           isEnum: false,
           isArray: true,
         },
@@ -329,7 +375,7 @@ describe('cacheModel integration', () => {
   });
 
   afterAll(async () => {
-    // await sequelize.dropSchema(schema, {logging: false});
+    await sequelize.dropSchema(schema, {logging: false});
     await sequelize.close();
   });
 
@@ -340,7 +386,9 @@ describe('cacheModel integration', () => {
         {
           id: `0x01`,
           selfStake: BigInt(1000000000000000000000n),
+          oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
           delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
+          randomNArray: [1, 2, 3, 4, 5],
         },
         1
       );
@@ -357,8 +405,10 @@ describe('cacheModel integration', () => {
             delegator: '0x02',
           },
         ],
+        oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
         id: '0x01',
         selfStake: BigInt(1000000000000000000000n),
+        randomNArray: [1, 2, 3, 4, 5],
       });
 
       // Cache value
@@ -372,9 +422,12 @@ describe('cacheModel integration', () => {
           },
         ],
         id: '0x01',
+        oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
         selfStake: BigInt(1000000000000000000000n),
+        randomNArray: [1, 2, 3, 4, 5],
       });
 
+      // Update the value
       res1?.delegators.push({delegator: '0x03', amount: BigInt(9000000000000000000000n)});
 
       cacheModel.set(`0x01`, res1!, 2);
@@ -382,19 +435,73 @@ describe('cacheModel integration', () => {
       const res2 = await cacheModel.get('0x01');
       console.log(JSON.stringify(res2));
 
-      // check actually stored with 0x hex in json in the db
-      const [rows] = await sequelize.query(`SELECT delegators FROM ${schema}."testModels" LIMIT 1;`, {
+      expect(res2).toEqual({
+        id: '0x01',
+        selfStake: BigInt(1000000000000000000000n),
+        oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
+        delegators: [
+          {delegator: '0x02', amount: BigInt(1000000000000000000000n)},
+          {delegator: '0x03', amount: BigInt(9000000000000000000000n)},
+        ],
+        randomNArray: [1, 2, 3, 4, 5],
+      });
+
+      // check actually stored bigint in json in the db
+      const [oneEntityRow] = await sequelize.query(`SELECT "oneEntity" FROM ${schema}."testModels" LIMIT 1;`, {
+        type: QueryTypes.SELECT,
+      });
+      expect(oneEntityRow).toStrictEqual({
+        oneEntity: {
+          amount: '8000000000000000000000',
+          testItem: 'test',
+        },
+      });
+
+      // check actually stored bigint in json Array in the db
+      const [rows] = await sequelize.query(`SELECT "delegators" FROM ${schema}."testModels" LIMIT 1;`, {
         type: QueryTypes.SELECT,
       });
       expect(rows).toStrictEqual({
         delegators: [
           {
-            amount: '0x3635c9adc5dea00000',
+            amount: '1000000000000000000000',
             delegator: '0x02',
           },
           {
-            amount: '0x1e7e4171bf4d3a00000',
+            amount: '9000000000000000000000',
             delegator: '0x03',
+          },
+        ],
+      });
+
+      // check nest jsonb value
+      res1?.delegators.push({
+        delegator: '0x04',
+        amount: BigInt(6000000000000000000000n),
+        nested: {testItem: 'test', amount: BigInt(6000000000000000000000n)},
+      });
+      cacheModel.set(`0x01`, res1!, 4);
+      await flush(5);
+      const [rows2] = await sequelize.query(`SELECT delegators FROM ${schema}."testModels" LIMIT 1;`, {
+        type: QueryTypes.SELECT,
+      });
+      expect(rows2).toStrictEqual({
+        delegators: [
+          {
+            amount: '1000000000000000000000',
+            delegator: '0x02',
+          },
+          {
+            amount: '9000000000000000000000',
+            delegator: '0x03',
+          },
+          {
+            amount: '6000000000000000000000',
+            delegator: '0x04',
+            nested: {
+              testItem: 'test',
+              amount: '6000000000000000000000', // We are expected nest json bigint also been handled
+            },
           },
         ],
       });
