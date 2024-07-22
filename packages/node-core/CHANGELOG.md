@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [12.0.0] - 2024-07-22
 ### Changed
 - Provide a better error message when user increases project start height beyond indexed height (#2492)
 - Define new core modules to reduce duplicate code in nodes (#2491)
@@ -768,7 +770,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/11.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/12.0.0...HEAD
+[12.0.0]: https://github.com/subquery/subql/compare/node-core/11.0.0...node-core/12.0.0
 [11.0.0]: https://github.com/subquery/subql/compare/node-core/10.10.2...node-core/11.0.0
 [10.10.2]: https://github.com/subquery/subql/compare/node-core/10.10.1...node-core/10.10.2
 [10.10.1]: https://github.com/subquery/subql/compare/node-core/10.10.0...node-core/10.10.1

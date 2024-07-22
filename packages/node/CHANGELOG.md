@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.9.0] - 2024-07-22
 ### Changed
 - Tidy up modules to match changes with node-core (#2491)
 
@@ -1261,7 +1263,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.8.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/4.9.0...HEAD
+[4.9.0]: https://github.com/subquery/subql/compare/node/4.8.2...node/4.9.0
 [4.8.2]: https://github.com/subquery/subql/compare/node/4.8.1...node/4.8.2
 [4.8.1]: https://github.com/subquery/subql/compare/node/4.8.0...node/4.8.1
 [4.8.0]: https://github.com/subquery/subql/compare/node/4.7.1...node/4.8.0
