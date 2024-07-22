@@ -16,7 +16,7 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-jest.setTimeout(100_000);
+jest.setTimeout(50_000);
 
 describe('cacheMetadata integration', () => {
   let sequelize: Sequelize;
@@ -362,7 +362,6 @@ describe('cacheModel integration', () => {
     };
     const modelAttributes = modelsTypeToModelAttributes(modelType, new Map(), schema);
 
-    // TODO create model
     const modelFactory = sequelize.define('testModel', modelAttributes, {timestamps: false, schema: schema});
     model = await modelFactory.sync().catch((e) => {
       console.log('error', e);

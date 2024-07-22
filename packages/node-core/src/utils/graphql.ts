@@ -122,8 +122,8 @@ export function getColumnOption(
         return field.isArray ? [] : null;
       }
       return field.isArray
-        ? dataValue.map((v: any) => processNestedJsonGet(field, v))
-        : processNestedJsonGet(field, dataValue);
+        ? dataValue.map((v: any) => processNestedJson(field, v, 'Get'))
+        : processNestedJson(field, dataValue, 'Get');
     };
     columnOption.set = function (val: unknown) {
       if (val === undefined || isNull(val)) {
@@ -131,10 +131,10 @@ export function getColumnOption(
         return;
       }
       if (isArray(val)) {
-        const setValue = val.length === 0 ? [] : val.map((v) => processNestedJsonSet(field, v));
+        const setValue = val.length === 0 ? [] : val.map((v) => processNestedJson(field, v, 'Set'));
         this.setDataValue(field.name, setValue);
       } else if (isObject(val)) {
-        this.setDataValue(field.name, processNestedJsonSet(field, val));
+        this.setDataValue(field.name, processNestedJson(field, val, 'Set'));
       } else {
         throw new Error(`input for Json type is only support object or array, got type ${typeof val}`);
       }
@@ -143,37 +143,28 @@ export function getColumnOption(
   return columnOption;
 }
 
-function processNestedJsonGet(field: GraphQLEntityField | GraphQLJsonFieldType, value: any) {
+type OperationType = 'Get' | 'Set';
+
+/***
+ * Process nested json set/get, output is same as input value type
+ * @param field
+ * @param value
+ * @param operationType
+ */
+function processNestedJson(
+  field: GraphQLEntityField | GraphQLJsonFieldType,
+  value: any,
+  operationType: OperationType
+): any {
+  // bigIntFields and nestJsonFields from this level in the entity/json
   const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
   const nestJsonFields = field.jsonInterface?.fields.filter((f) => f.jsonInterface);
 
   const processBigIntFields = (value: any) => {
     if (bigIntFields && bigIntFields.length) {
       for (const bigIntField of bigIntFields) {
-        value[bigIntField.name] = BigInt(value[bigIntField.name]);
-      }
-    }
-    return value;
-  };
-
-  if (nestJsonFields) {
-    for (const nestJsonField of nestJsonFields) {
-      if (nestJsonField.jsonInterface && value[nestJsonField.name]) {
-        value[nestJsonField.name] = processNestedJsonGet(nestJsonField, value[nestJsonField.name]);
-      }
-    }
-  }
-  return processBigIntFields(value);
-}
-
-function processNestedJsonSet(field: GraphQLEntityField | GraphQLJsonFieldType, value: any) {
-  const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
-  const nestJsonFields = field.jsonInterface?.fields.filter((f) => f.jsonInterface);
-
-  const processBigIntFields = (value: any) => {
-    if (bigIntFields && bigIntFields.length) {
-      for (const bigIntField of bigIntFields) {
-        value[bigIntField.name] = value[bigIntField.name].toString();
+        value[bigIntField.name] =
+          operationType === 'Get' ? BigInt(value[bigIntField.name]) : value[bigIntField.name].toString();
       }
     }
     return value;
@@ -183,7 +174,7 @@ function processNestedJsonSet(field: GraphQLEntityField | GraphQLJsonFieldType, 
     for (const nestJsonField of nestJsonFields) {
       // have a nest field, and nest field is json type, also value is defined
       if (nestJsonField.jsonInterface && value[nestJsonField.name]) {
-        value[nestJsonField.name] = processNestedJsonSet(nestJsonField, value[nestJsonField.name]);
+        value[nestJsonField.name] = processNestedJson(nestJsonField, value[nestJsonField.name], operationType);
       }
     }
   }
