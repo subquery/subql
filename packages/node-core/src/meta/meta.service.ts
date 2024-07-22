@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {OnEvent} from '@nestjs/event-emitter';
-import {Interval} from '@nestjs/schedule';
-import {NodeConfig} from '../configure';
 import {
   BestBlockPayload,
   EventPayload,
@@ -13,11 +11,31 @@ import {
   ProcessedBlockCountPayload,
   TargetBlockPayload,
 } from '../events';
-import {StoreCacheService} from '../indexer';
 
-const UPDATE_HEIGHT_INTERVAL = 5000;
+export type MetaServiceOptions = {
+  /**
+   * The version of the node from package.json
+   * @example
+   * "1.0.0
+   * */
+  version: string;
+  sdkVersion: {
+    /**
+     * The name of the sdk
+     * @example
+     * "@polkadot/api"
+     * */
+    name: string;
+    /**
+     * The semver of the skd package from package.json
+     * @example
+     * "1.0.0"
+     * */
+    version: string;
+  };
+};
 
-export abstract class BaseMetaService {
+export class MetaService {
   private currentProcessingHeight?: number;
   private currentProcessingTimestamp?: number;
   private bestHeight?: number;
@@ -29,26 +47,17 @@ export abstract class BaseMetaService {
   private lastProcessedTimestamp?: number;
   private processedBlockCount?: number;
 
-  constructor(private storeCacheService: StoreCacheService, config: NodeConfig) {
-    // TODO update UPDATE_HEIGHT_INTERVAL should be configureable based on config.storeFlushInterval * 1000 but need to use SchedulerRegistry for that
-  }
-
-  protected abstract packageVersion: string;
-
-  protected abstract sdkVersion(): {
-    name: string;
-    version: string;
-  };
+  constructor(private opts: MetaServiceOptions) {}
 
   getMeta() {
-    const {name: sdkName, version} = this.sdkVersion();
+    const {name: sdkName, version} = this.opts.sdkVersion;
 
     return {
       currentProcessingHeight: this.currentProcessingHeight,
       currentProcessingTimestamp: this.currentProcessingTimestamp,
       targetHeight: this.targetHeight,
       bestHeight: this.bestHeight,
-      indexerNodeVersion: this.packageVersion,
+      indexerNodeVersion: this.opts.version,
       lastProcessedHeight: this.lastProcessedHeight,
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
@@ -58,12 +67,6 @@ export abstract class BaseMetaService {
       [sdkName]: version,
       ...this.networkMeta,
     };
-  }
-
-  @Interval(UPDATE_HEIGHT_INTERVAL)
-  getTargetHeight(): void {
-    if (this.targetHeight === undefined) return;
-    this.storeCacheService.metadata.set('targetHeight', this.targetHeight);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2024-07-22
+### Changed
+- Update error log format to specify the name of the error instance where possible (#2492)
+
 ## [2.12.1] - 2024-07-09
 ### Changed
 - Changes to ts build settings (#2475)
@@ -155,7 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.12.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.13.0...HEAD
+[2.13.0]: https://github.com/subquery/subql/compare/utils/2.12.1...utils/2.13.0
 [2.12.1]: https://github.com/subquery/subql/compare/utils/2.12.0...utils/2.12.1
 [2.12.0]: https://github.com/subquery/subql/compare/utils/2.11.0...utils/2.12.0
 [2.11.0]: https://github.com/subquery/subql/compare/utils/2.10.0...utils/2.11.0

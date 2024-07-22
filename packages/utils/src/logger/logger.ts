@@ -22,7 +22,8 @@ export interface LoggerOption {
 
 function formatErrorString(err: unknown, stack = false): string {
   if (err instanceof Error) {
-    let formattedError = `${ctx.red('Error:')} ${ctx.yellow(err.message)}`;
+    const t = err.constructor.name ?? 'Error';
+    let formattedError = `${ctx.red(`${t}:`)} ${ctx.yellow(err.message)}`;
 
     if (stack) {
       formattedError += `\n${ctx.red('Stack:')} ${ctx.gray(err.stack)}`;

@@ -16,6 +16,7 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {getBlockHeight, mergeNumAndBlocks} from './dictionary/utils';
+import {StoreCacheService} from './storeCache';
 import {Header, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 
@@ -52,7 +53,8 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     protected dictionaryService: DictionaryService<DS, FB>,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
-    private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil
+    private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
+    private storeCacheService: StoreCacheService
   ) {}
 
   private get latestBestHeight(): number {
@@ -231,6 +233,9 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
         await delay(1);
         continue;
       }
+
+      // Update the target height, this happens here to stay in sync with the rest of indexing
+      this.storeCacheService.metadata.set('targetHeight', latestHeight);
 
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced
