@@ -92,6 +92,8 @@ export abstract class BaseProjectService<
   }
 
   async init(startHeight?: number): Promise<void> {
+    this.ensureTimezone();
+
     for await (const [, project] of this.projectUpgradeService.projects) {
       await project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
     }
@@ -155,6 +157,13 @@ export abstract class BaseProjectService<
 
     // Used to load assets into DS-processor, has to be done in any thread
     await this.dsProcessorService.validateProjectCustomDatasources(await this.getDataSources());
+  }
+
+  private ensureTimezone(): void {
+    const timezone = process.env.TZ;
+    if (!timezone || timezone.toLowerCase() !== 'utc') {
+      throw new Error('Environment Timezone is not set to UTC. This may cause issues with indexing or proof of index');
+    }
   }
 
   private async ensureProject(): Promise<string> {

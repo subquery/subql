@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Breaking change: Require indexing environment timezone set to UTC, avoid inconsistent result from cache and database (#2495)
+### Fixed
+- Fix handle bigint type in jsonb array, both get and set method will generate consistent result (#2495)
+
 ## [11.0.0] - 2024-07-11
 ### Changed
 - Create interval for flushing the cache, this is to support chains that only produce blocks with new transactions (#2485)
