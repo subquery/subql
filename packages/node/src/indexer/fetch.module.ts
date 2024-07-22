@@ -4,10 +4,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  PoiBenchmarkService,
-  IndexingBenchmarkService,
   StoreService,
-  PoiService,
   ApiService,
   NodeConfig,
   ConnectionPoolService,
@@ -16,8 +13,8 @@ import {
   IProjectUpgradeService,
   PoiSyncService,
   InMemoryCacheService,
-  SandboxService,
   MonitorService,
+  CoreModule,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from '../ethereum/api.connection';
@@ -35,10 +32,8 @@ import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
+  imports: [CoreModule],
   providers: [
-    InMemoryCacheService,
-    StoreService,
-    StoreCacheService,
     {
       provide: ApiService,
       useFactory: async (
@@ -64,8 +59,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ],
     },
     IndexerManager,
-    ConnectionPoolStateManager,
-    ConnectionPoolService,
     {
       provide: 'IBlockDispatcher',
       useFactory: (
@@ -132,22 +125,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ],
     },
     FetchService,
-    ConnectionPoolService,
-    IndexingBenchmarkService,
-    PoiBenchmarkService,
     EthDictionaryService,
-    SandboxService,
     DsProcessorService,
     DynamicDsService,
-    PoiService,
-    PoiSyncService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',
     },
-    MonitorService,
     UnfinalizedBlocksService,
   ],
-  exports: [StoreService, StoreCacheService, MonitorService, PoiService],
 })
 export class FetchModule {}

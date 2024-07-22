@@ -7,15 +7,9 @@ import {
   ApiService,
   ConnectionPoolService,
   WorkerDynamicDsService,
-  WorkerConnectionPoolStateManager,
-  ConnectionPoolStateManager,
   NodeConfig,
-  InMemoryCacheService,
-  WorkerInMemoryCacheService,
   WorkerUnfinalizedBlocksService,
-  SandboxService,
-  MonitorService,
-  WorkerMonitorService,
+  WorkerCoreModule,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { EthereumApiService } from '../../ethereum';
@@ -28,14 +22,9 @@ import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { WorkerService } from './worker.service';
 
 @Module({
+  imports: [WorkerCoreModule],
   providers: [
     IndexerManager,
-    {
-      provide: ConnectionPoolStateManager,
-      useFactory: () =>
-        new WorkerConnectionPoolStateManager((global as any).host),
-    },
-    ConnectionPoolService,
     {
       provide: ApiService,
       useFactory: async (
@@ -60,7 +49,6 @@ import { WorkerService } from './worker.service';
         NodeConfig,
       ],
     },
-    SandboxService,
     DsProcessorService,
     {
       provide: DynamicDsService,
@@ -76,14 +64,6 @@ import { WorkerService } from './worker.service';
         new WorkerUnfinalizedBlocksService((global as any).host),
     },
     WorkerService,
-    {
-      provide: MonitorService,
-      useFactory: () => new WorkerMonitorService((global as any).host),
-    },
-    {
-      provide: InMemoryCacheService,
-      useFactory: () => new WorkerInMemoryCacheService((global as any).host),
-    },
   ],
 })
 export class WorkerFetchModule {}

@@ -13,6 +13,7 @@ import {
   getModulos,
   getLogger,
   Header,
+  StoreCacheService,
 } from '@subql/node-core';
 import { EthereumBlock, SubqlDatasource } from '@subql/types-ethereum';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -47,6 +48,7 @@ export class FetchService extends BaseFetchService<
     unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
+    storeCacheService: StoreCacheService,
   ) {
     super(
       nodeConfig,
@@ -57,6 +59,7 @@ export class FetchService extends BaseFetchService<
       eventEmitter,
       schedulerRegistry,
       unfinalizedBlocksService,
+      storeCacheService,
     );
   }
 
