@@ -136,7 +136,7 @@ export function getColumnOption(
       } else if (isObject(val)) {
         this.setDataValue(field.name, processNestedJson(field, val, 'Set'));
       } else {
-        throw new Error(`input for Json type is only support object or array, got type ${typeof val}`);
+        throw new Error(`input for Json type only supports object or array, received type ${typeof val}`);
       }
     };
   }
