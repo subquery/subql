@@ -148,6 +148,7 @@ describe('StoreOperations with db', () => {
     await sequelize.close();
   });
 
+  // If this test failed, please check environment variables TZ is set to UTC
   it('check operation stack consistency with data fetched from db and cache', async () => {
     const operationStackDb = new StoreOperations(models);
     const operationStackCache = new StoreOperations(models);
@@ -169,6 +170,7 @@ describe('StoreOperations with db', () => {
     const rawCache = await (cacheModel as any).getCache.get('0x01');
 
     const entityDb = EntityClass.create<EraEntity>('EraEntity', rawDb, {} as Store);
+    expect(entityDb).toBeDefined();
     if (entityDb) {
       // Mock set end time
       entityDb.endTime = new Date('2024-02-24T02:38:51.000Z');
@@ -177,6 +179,7 @@ describe('StoreOperations with db', () => {
     }
 
     const entityCache = EntityClass.create<EraEntity>('EraEntity', rawCache, {} as Store);
+    expect(entityCache).toBeDefined();
     if (entityCache) {
       // Mock set end time
       entityCache.endTime = new Date('2024-02-24T02:38:51.000Z');
