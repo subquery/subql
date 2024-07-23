@@ -162,7 +162,9 @@ export abstract class BaseProjectService<
   private ensureTimezone(): void {
     const timezone = process.env.TZ;
     if (!timezone || timezone.toLowerCase() !== 'utc') {
-      throw new Error('Environment Timezone is not set to UTC. This may cause issues with indexing or proof of index');
+      throw new Error(
+        'Environment Timezone is not set to UTC. This may cause issues with indexing or proof of index\n Please try to set with "export TZ=UTC"'
+      );
     }
   }
 

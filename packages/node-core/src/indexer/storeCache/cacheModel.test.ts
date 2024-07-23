@@ -273,12 +273,12 @@ describe('cacheModel integration', () => {
 
   interface TestJson {
     testItem: string;
-    amount: bigint;
+    amount?: bigint;
   }
 
   interface DelegationFrom {
     delegator: string;
-    amount: bigint;
+    amount?: bigint;
     nested?: TestJson;
   }
 
@@ -331,7 +331,7 @@ describe('cacheModel integration', () => {
             name: 'DelegationFrom',
             fields: [
               {name: 'delegator', type: 'String', isArray: false, nullable: false},
-              {name: 'amount', type: 'BigInt', isArray: false, nullable: false},
+              {name: 'amount', type: 'BigInt', isArray: false, nullable: true},
               {
                 name: 'nested',
                 type: 'Json',
@@ -341,7 +341,7 @@ describe('cacheModel integration', () => {
                   name: 'TestJson',
                   fields: [
                     {name: 'testItem', type: 'String', isArray: false, nullable: false},
-                    {name: 'amount', type: 'BigInt', isArray: false, nullable: false},
+                    {name: 'amount', type: 'BigInt', isArray: false, nullable: true},
                   ],
                 },
               },
@@ -504,6 +504,29 @@ describe('cacheModel integration', () => {
           },
         ],
       });
+
+      // it should ignore the bigint value if it is undefined or null
+      const data0x02 = {
+        id: `0x02`,
+        selfStake: BigInt(1000000000000000000000n),
+        oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
+        delegators: [
+          {
+            delegator: '0x05',
+            amount: undefined,
+            nested: {testItem: 'test', amount: undefined},
+          },
+        ],
+        randomNArray: undefined,
+      };
+      cacheModel.set(`0x02`, data0x02, 6);
+      await flush(7);
+      const res5 = (
+        await cacheModel.model.findOne({
+          where: {id: '0x02'} as any,
+        })
+      )?.toJSON();
+      expect(res5?.delegators).toEqual(data0x02.delegators);
     });
   });
 });

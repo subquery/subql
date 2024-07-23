@@ -163,8 +163,11 @@ function processNestedJson(
   const processBigIntFields = (value: any) => {
     if (bigIntFields && bigIntFields.length) {
       for (const bigIntField of bigIntFields) {
-        value[bigIntField.name] =
-          operationType === 'Get' ? BigInt(value[bigIntField.name]) : value[bigIntField.name].toString();
+        // If null is passed, we should not convert it to BigInt
+        if (value[bigIntField.name] !== undefined && value[bigIntField.name] !== null) {
+          value[bigIntField.name] =
+            operationType === 'Get' ? BigInt(value[bigIntField.name]) : value[bigIntField.name].toString();
+        }
       }
     }
     return value;
