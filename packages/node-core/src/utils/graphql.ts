@@ -14,6 +14,7 @@ import {
   GraphQLEntityField,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
+import {isArray, isObject} from 'lodash';
 import {enumNameToHash} from '../db';
 
 export interface EnumType {
@@ -57,9 +58,9 @@ export function getColumnOption(
 
   const type = field.isEnum
     ? `${enumType}${field.isArray ? '[]' : ''}`
-    : field.isArray
-    ? getTypeByScalarName('Json')?.sequelizeType
-    : getTypeByScalarName(field.type)?.sequelizeType;
+    : field.isArray || field.jsonInterface
+      ? getTypeByScalarName('Json')?.sequelizeType
+      : getTypeByScalarName(field.type)?.sequelizeType;
 
   if (type === undefined) {
     throw new Error('Unable to get model type');
@@ -112,5 +113,50 @@ export function getColumnOption(
       }
     };
   }
+  if (field.jsonInterface) {
+    columnOption.get = function () {
+      const dataValue = this.getDataValue(field.name);
+
+      if (!dataValue || !field.jsonInterface) {
+        return field.isArray ? [] : null;
+      }
+      return field.isArray ? dataValue.map((v: any) => processGetJson(v)) : processGetJson(dataValue);
+    };
+    columnOption.set = function (val: unknown) {
+      if (val === undefined || isNull(val)) {
+        this.setDataValue(field.name, null);
+        return;
+      }
+      if (isArray(val)) {
+        const setValue = val.length === 0 ? [] : val.map((v) => processSetJson(v));
+        this.setDataValue(field.name, setValue);
+      } else if (isObject(val)) {
+        this.setDataValue(field.name, processSetJson(val));
+      } else {
+        throw new Error(`input for Json type only supports object or array, received type ${typeof val}`);
+      }
+    };
+  }
   return columnOption;
+}
+
+function processGetJson(data: any): any {
+  return JSON.parse(JSON.stringify(data), (key, value) => {
+    // regex to check if the value is a bigint string
+    if (typeof value === 'string' && /^-?\d+n$/.test(value)) {
+      return BigInt(value.slice(0, -1));
+    }
+    return value;
+  });
+}
+
+function processSetJson(data: any): any {
+  return JSON.parse(
+    JSON.stringify(data, (key, value) => {
+      if (typeof value === 'bigint') {
+        return `${value}n`;
+      }
+      return value;
+    })
+  );
 }
