@@ -439,7 +439,7 @@ describe('cacheModel integration', () => {
         selfStake: BigInt(1000000000000000000000n),
         oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
         delegators: [
-          {delegator: '0x02', amount: BigInt(1000000000000000000000n)},
+          {delegator: '0x02', amount: BigInt(1000000000000000000000n)}, // BigInt from hexed value
           {delegator: '0x03', amount: BigInt(9000000000000000000000n)},
         ],
         randomNArray: [1, 2, 3, 4, 5],
@@ -451,7 +451,7 @@ describe('cacheModel integration', () => {
       });
       expect(oneEntityRow).toStrictEqual({
         oneEntity: {
-          amount: '8000000000000000000000',
+          amount: '8000000000000000000000n',
           testItem: 'test',
         },
       });
@@ -463,11 +463,11 @@ describe('cacheModel integration', () => {
       expect(rows).toStrictEqual({
         delegators: [
           {
-            amount: '1000000000000000000000',
+            amount: '1000000000000000000000n',
             delegator: '0x02',
           },
           {
-            amount: '9000000000000000000000',
+            amount: '9000000000000000000000n',
             delegator: '0x03',
           },
         ],
@@ -487,19 +487,19 @@ describe('cacheModel integration', () => {
       expect(rows2).toStrictEqual({
         delegators: [
           {
-            amount: '1000000000000000000000',
+            amount: '1000000000000000000000n',
             delegator: '0x02',
           },
           {
-            amount: '9000000000000000000000',
+            amount: '9000000000000000000000n',
             delegator: '0x03',
           },
           {
-            amount: '6000000000000000000000',
+            amount: '6000000000000000000000n',
             delegator: '0x04',
             nested: {
               testItem: 'test',
-              amount: '6000000000000000000000', // We are expected nest json bigint also been handled
+              amount: '6000000000000000000000n', // We are expected nest json bigint also been handled
             },
           },
         ],
