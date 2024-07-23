@@ -439,7 +439,7 @@ describe('cacheModel integration', () => {
         selfStake: BigInt(1000000000000000000000n),
         oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
         delegators: [
-          {delegator: '0x02', amount: BigInt(1000000000000000000000n)}, // BigInt from hexed value
+          {delegator: '0x02', amount: BigInt(1000000000000000000000n)},
           {delegator: '0x03', amount: BigInt(9000000000000000000000n)},
         ],
         randomNArray: [1, 2, 3, 4, 5],

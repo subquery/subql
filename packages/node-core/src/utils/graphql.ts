@@ -12,7 +12,6 @@ import {
   isBuffer,
   isNull,
   GraphQLEntityField,
-  GraphQLJsonFieldType,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
 import {isArray, isObject} from 'lodash';
