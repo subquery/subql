@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { ProjectService } from '@subql/node-core';
 import {
   SubstrateBlockHandler,
   SubstrateCallHandler,
@@ -12,9 +13,8 @@ import {
 } from '@subql/types';
 import { DictionaryQueryEntry } from '@subql/types-core';
 import { FetchService } from './fetch.service';
-import { ProjectService } from './project.service';
 
-const projectService: ProjectService = {
+const projectService: ProjectService<SubstrateDatasource> = {
   getAllDataSources: () => {
     return [
       makeDs([{ ...blockHandler, filter: { modulo: 5 } }]),
@@ -60,7 +60,6 @@ describe('FetchSevice', () => {
 
   beforeEach(() => {
     fetchService = new FetchService(
-      null as any, // ApiService
       null as any, // NodeConfig
       projectService, // ProjectService
       null as any, // BlockDispatcher,
@@ -70,6 +69,7 @@ describe('FetchSevice', () => {
       null as any, // SchedulerRegistry
       null as any, // RuntimeService
       null as any, // StoreCacheService
+      null as any, // BlockchainService
     ) as any;
   });
 
