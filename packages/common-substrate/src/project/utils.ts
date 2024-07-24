@@ -38,6 +38,8 @@ export function isCustomDs<F extends SubstrateMapping<SubstrateCustomHandler>>(
   return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDatasource<string, F>).processor;
 }
 
-export function isRuntimeDs(ds: SubstrateDatasource): ds is SubstrateRuntimeDatasource {
+export function isRuntimeDs(
+  ds: SubstrateDatasource | BaseTemplateDataSource<SubstrateDatasource>
+): ds is SubstrateRuntimeDatasource {
   return ds.kind === SubstrateDatasourceKind.Runtime;
 }
