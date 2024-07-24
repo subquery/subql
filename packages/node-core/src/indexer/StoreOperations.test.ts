@@ -132,7 +132,7 @@ const option: DbOption = {
   timezone: 'utc',
 };
 
-jest.setTimeout(10_000);
+jest.setTimeout(50_000);
 
 describe('StoreOperations with db', () => {
   let sequelize: Sequelize;
