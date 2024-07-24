@@ -60,27 +60,27 @@ const nodeConfig = new NodeConfig({
 });
 
 function testSubqueryProject(): SubqueryProject {
-  return new SubqueryProject(
-    'test',
-    './',
-    {
+  return {
+    id: 'test',
+    root: './',
+    network: {
       endpoint: testNetwork.endpoint,
       // genesisHash:
       //   '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
       chainId:
         '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     },
-    [],
-    new GraphQLSchema({}),
-    [],
-    {
+    dataSources: [],
+    schema: new GraphQLSchema({}),
+    templates: [],
+    chainTypes: {
       types: testNetwork.types,
       typesAlias: testNetwork.typesAlias,
       typesBundle: testNetwork.typesBundle,
       typesChain: testNetwork.typesChain,
       typesSpec: testNetwork.typesSpec,
     },
-  );
+  } as unknown as SubqueryProject;
 }
 
 describe('ApiService', () => {

@@ -12,14 +12,14 @@ import { DsProcessorService } from './ds-processor.service';
 function getTestProject(
   extraDataSources: SubstrateCustomDatasource[],
 ): SubqueryProject {
-  return new SubqueryProject(
-    'test',
-    path.resolve(__dirname, '../../'),
-    {
+  return {
+    id: 'test',
+    root: path.resolve(__dirname, '../../'),
+    network: {
       chainId: '0x',
       endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
-    [
+    dataSources: [
       {
         kind: 'substrate/Jsonfy',
         processor: { file: 'test/jsonfy.js' },
@@ -30,9 +30,9 @@ function getTestProject(
       },
       ...extraDataSources,
     ] as any,
-    new GraphQLSchema({}),
-    [],
-  );
+    schema: new GraphQLSchema({}),
+    templates: [],
+  } as unknown as SubqueryProject;
 }
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',

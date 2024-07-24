@@ -22,7 +22,7 @@ import {
   SubstrateRuntimeDatasource,
 } from '@subql/types';
 import { Reader } from '@subql/types-core';
-import { SubqueryProject } from './SubqueryProject';
+import { createSubQueryProject } from './SubqueryProject';
 
 // eslint-disable-next-line jest/no-export
 export async function getProjectRoot(reader: Reader): Promise<string> {
@@ -72,7 +72,7 @@ describe('SubqueryProject', () => {
         },
       };
       const rawManifest = await reader.getProjectSchema();
-      const project = await SubqueryProject.create(
+      const project = await createSubQueryProject(
         projectDirV1_0_0,
         rawManifest,
         reader,
@@ -88,7 +88,7 @@ describe('SubqueryProject', () => {
     it('check processChainId', async () => {
       const reader = await ReaderFactory.create(projectDirV1_0_0);
       const rawManifest = await reader.getProjectSchema();
-      const project = await SubqueryProject.create(
+      const project = await createSubQueryProject(
         projectDirV1_0_0,
         rawManifest,
         reader,
@@ -105,7 +105,7 @@ describe('SubqueryProject', () => {
     it('check loadProjectTemplates', async () => {
       const reader0 = await ReaderFactory.create(templateProject);
       const templateRawManifest = await reader0.getProjectSchema();
-      const project = await SubqueryProject.create(
+      const project = await createSubQueryProject(
         templateProject,
         templateRawManifest,
         reader0,
@@ -116,7 +116,7 @@ describe('SubqueryProject', () => {
       );
       const reader1 = await ReaderFactory.create(projectDirV1_0_0);
       const rawManifest = await reader1.getProjectSchema();
-      const project_v1 = await SubqueryProject.create(
+      const project_v1 = await createSubQueryProject(
         projectDirV1_0_0,
         rawManifest,
         reader1,
@@ -136,7 +136,7 @@ describe('SubqueryProject', () => {
       { ipfs: IPFS_NODE_ENDPOINT },
     );
 
-    const project = await SubqueryProject.create(
+    const project = await createSubQueryProject(
       'ipfs://QmZYR6tpRYvmnKoUtugpwYfH9CpP7a8fYYcLVX3d7dph2j',
       await reader.getProjectSchema(),
       reader,
@@ -155,7 +155,7 @@ describe('SubqueryProject', () => {
       { ipfs: IPFS_NODE_ENDPOINT },
     );
 
-    const project = await SubqueryProject.create(
+    const project = await createSubQueryProject(
       'ipfs://QmRoosV27325uAeepKqaTEPFKjC3nk4rrKmZJSd7QXYKZQ',
       await reader.getProjectSchema(),
       reader,

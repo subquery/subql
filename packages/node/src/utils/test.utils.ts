@@ -14,7 +14,10 @@ import {
   registerApp,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import {
+  createSubQueryProject,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import { FetchModule } from '../indexer/fetch.module';
 
 const mockInstance = async (
@@ -37,7 +40,7 @@ const mockInstance = async (
   };
   return registerApp<SubqueryProject>(
     argv,
-    SubqueryProject.create.bind(SubqueryProject),
+    createSubQueryProject,
     jest.fn(),
     '',
   );
