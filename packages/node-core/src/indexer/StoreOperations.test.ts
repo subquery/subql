@@ -2,13 +2,24 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {CachedModel, DbOption, handledStringify, NodeConfig} from '@subql/node-core';
+import {CachedModel, DbOption, handledStringify, modelsTypeToModelAttributes, NodeConfig} from '@subql/node-core';
 import {Entity, FunctionPropertyNames, Store} from '@subql/types-core';
-import {Boolean, DateObj, Int, String, u8aToHex} from '@subql/utils';
+import {Boolean, GraphQLModelsType, Int, u8aToHex} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
 import {EntityClass} from './store/entity';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
+
+interface TestJson {
+  testItem: string;
+  amount?: bigint;
+}
+
+interface DelegationFrom {
+  delegator: string;
+  amount?: bigint;
+  nested?: TestJson;
+}
 
 type EraProps = Omit<EraEntity, NonNullable<FunctionPropertyNames<EraEntity>> | '_name'>;
 
@@ -24,6 +35,7 @@ class EraEntity implements Entity {
   forceNext?: boolean;
   createdBlock?: number;
   lastEvent?: string;
+  delegators?: DelegationFrom[];
 
   static create(record: EraProps): EraEntity {
     assert(typeof record.id === 'string', 'id must be provided');
@@ -33,7 +45,7 @@ class EraEntity implements Entity {
   }
 }
 
-const models = [
+const models: GraphQLModelsType[] = [
   {
     name: 'EraEntity',
     fields: [
@@ -79,6 +91,33 @@ const models = [
         nullable: true,
         isEnum: false,
       },
+      {
+        name: 'delegators',
+        type: 'Json',
+        nullable: false,
+        jsonInterface: {
+          name: 'DelegationFrom',
+          fields: [
+            {name: 'delegator', type: 'String', isArray: false, nullable: false},
+            {name: 'amount', type: 'BigInt', isArray: false, nullable: true},
+            {
+              name: 'nested',
+              type: 'Json',
+              isArray: false,
+              nullable: false,
+              jsonInterface: {
+                name: 'TestJson',
+                fields: [
+                  {name: 'testItem', type: 'String', isArray: false, nullable: false},
+                  {name: 'amount', type: 'BigInt', isArray: false, nullable: true},
+                ],
+              },
+            },
+          ],
+        },
+        isEnum: false,
+        isArray: true,
+      },
     ],
     indexes: <any[]>[],
   },
@@ -118,21 +157,9 @@ describe('StoreOperations with db', () => {
     schema = '"storeOp-test-1"';
     await sequelize.createSchema(schema, {});
 
-    const modelFactory = sequelize.define(
-      'eraEntity',
-      {
-        id: {
-          type: String.sequelizeType,
-          primaryKey: true,
-        },
-        startTime: {type: DateObj.sequelizeType},
-        endTime: {type: DateObj.sequelizeType, allowNull: true},
-        lastEvent: {type: String.sequelizeType, allowNull: true},
-        forceNext: {type: Boolean.sequelizeType, allowNull: true},
-        createdBlock: {type: Int.sequelizeType, allowNull: true},
-      },
-      {timestamps: false, schema: schema}
-    );
+    const modelAttributes = modelsTypeToModelAttributes(models[0], new Map(), schema);
+
+    const modelFactory = sequelize.define('eraEntity', modelAttributes, {timestamps: false, schema: schema});
     model = await modelFactory.sync().catch((e) => {
       console.log('error', e);
       throw e;
@@ -149,7 +176,7 @@ describe('StoreOperations with db', () => {
   });
 
   // If this test failed, please check environment variables TZ is set to UTC
-  it('check operation stack consistency with data fetched from db and cache', async () => {
+  it('Timestamp, check operation stack consistency with data fetched from db and cache', async () => {
     const operationStackDb = new StoreOperations(models);
     const operationStackCache = new StoreOperations(models);
 
@@ -183,6 +210,77 @@ describe('StoreOperations with db', () => {
     if (entityCache) {
       // Mock set end time
       entityCache.endTime = new Date('2024-02-24T02:38:51.000Z');
+      console.log(`cache data: ${handledStringify(entityCache)}`);
+      operationStackCache.put(OperationType.Set, 'EraEntity', entityCache);
+    }
+
+    operationStackDb.makeOperationMerkleTree();
+    expect(operationStackDb.getOperationLeafCount()).toBe(1);
+    const mRootDb = operationStackDb.getOperationMerkleRoot();
+
+    operationStackCache.makeOperationMerkleTree();
+    expect(operationStackCache.getOperationLeafCount()).toBe(1);
+    const mRootCache = operationStackCache.getOperationMerkleRoot();
+
+    console.log(`Db mmr Root in hex: ${u8aToHex(mRootDb)}`);
+
+    console.log(`Cache mmr Root in hex: ${u8aToHex(mRootCache)}`);
+
+    expect(mRootDb).toEqual(mRootCache);
+  });
+
+  it('JSONB array, check operation stack consistency with data fetched from db and cache', async () => {
+    const operationStackDb = new StoreOperations(models);
+    const operationStackCache = new StoreOperations(models);
+
+    cacheModel.set(
+      `0x03`,
+      {
+        id: `0x03`,
+        startTime: new Date('2024-02-14T02:38:51.000Z'),
+        forceNext: false,
+        createdBlock: 10544492,
+        delegators: [
+          {
+            delegator: '0x05',
+            amount: BigInt(8000000000000000000000n),
+            nested: {testItem: 'test', amount: undefined},
+          },
+          {
+            delegator: '0x06',
+            amount: undefined,
+            nested: {testItem: 'test', amount: BigInt(1000000000000000000000n)},
+          },
+        ],
+      },
+      1
+    );
+    await flush(2);
+
+    const rawDb = (await cacheModel.model.findOne({where: {id: '0x03'}}))?.toJSON();
+
+    const rawCache = await (cacheModel as any).getCache.get('0x03');
+
+    const entityDb = EntityClass.create<EraEntity>('EraEntity', rawDb, {} as Store);
+    expect(entityDb).toBeDefined();
+    if (entityDb) {
+      entityDb.delegators?.push({
+        delegator: '0x07',
+        amount: undefined,
+        nested: {testItem: 'test', amount: BigInt(3000000000000000000000n)},
+      });
+      console.log(`db data: ${handledStringify(entityDb)}`);
+      operationStackDb.put(OperationType.Set, 'EraEntity', entityDb);
+    }
+
+    const entityCache = EntityClass.create<EraEntity>('EraEntity', rawCache, {} as Store);
+    expect(entityCache).toBeDefined();
+    if (entityCache) {
+      entityCache.delegators?.push({
+        delegator: '0x07',
+        amount: undefined,
+        nested: {testItem: 'test', amount: BigInt(3000000000000000000000n)},
+      });
       console.log(`cache data: ${handledStringify(entityCache)}`);
       operationStackCache.put(OperationType.Set, 'EraEntity', entityCache);
     }
