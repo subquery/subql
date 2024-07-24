@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Not being able to select a custom repo when initializing a project (#2501)
 
+### Added
+- Subgraph graphql schema migration to the migrate command (#2499)
+
 ## [5.1.0] - 2024-07-11
 ### Changed
 - Use `IPFSHTTPClientLite` replace `IPFSHTTPClient` (#2480)
