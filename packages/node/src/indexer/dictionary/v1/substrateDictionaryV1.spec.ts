@@ -18,18 +18,18 @@ import { SubstrateDictionaryService } from '../substrateDictionary.service';
 import { buildDictionaryV1QueryEntries } from './substrateDictionaryV1';
 
 function testSubqueryProject(): SubqueryProject {
-  return new SubqueryProject(
-    'test',
-    './',
-    {
+  return {
+    id: 'test',
+    root: './',
+    network: {
       endpoint: '',
       chainId:
         '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     },
-    [],
-    new GraphQLSchema({}),
-    [],
-  );
+    dataSources: [],
+    schema: new GraphQLSchema({}),
+    templates: [],
+  } as unknown as SubqueryProject;
 }
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',

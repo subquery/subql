@@ -27,23 +27,23 @@ function testSubqueryProject(
   endpoint: string[],
   chainId: string,
 ): SubqueryProject {
-  return new SubqueryProject(
-    'test',
-    './',
-    {
+  return {
+    id: 'test',
+    root: './',
+    network: {
       endpoint,
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
       chainId: chainId,
     },
-    [],
-    new GraphQLSchema({}),
-    [],
-    {
+    dataSources: [],
+    schema: new GraphQLSchema({}),
+    templates: [],
+    chainTypes: {
       types: {
         TestType: 'u32',
       },
     },
-  );
+  } as unknown as SubqueryProject;
 }
 
 jest.setTimeout(90000);
@@ -452,29 +452,28 @@ describe('Load chain type hasher', () => {
         ConnectionPoolService,
         {
           provide: 'ISubqueryProject',
-          useFactory: () =>
-            new SubqueryProject(
-              'test',
-              './',
-              {
-                endpoint,
-                chainId: chainId,
-              },
-              [],
-              new GraphQLSchema({}),
-              [],
-              {
-                typesBundle: {
-                  spec: {
-                    gargantua: {
-                      // @ts-ignore, we allow it to be string here
-                      hasher: 'keccakAsU8a',
-                      types: [{ minmax: [0, undefined], types: {} }],
-                    },
+          useFactory: () => ({
+            id: 'test',
+            root: './',
+            network: {
+              endpoint,
+              chainId: chainId,
+            },
+            dataSources: [],
+            schema: new GraphQLSchema({}),
+            templates: [],
+            chainTypes: {
+              typesBundle: {
+                spec: {
+                  gargantua: {
+                    // @ts-ignore, we allow it to be string here
+                    hasher: 'keccakAsU8a',
+                    types: [{ minmax: [0, undefined], types: {} }],
                   },
                 },
               },
-            ),
+            },
+          }),
         },
         {
           provide: NodeConfig,

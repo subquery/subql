@@ -88,7 +88,7 @@ export async function getEnumDeprecated(sequelize: Sequelize, enumTypeNameDeprec
   return resultsDeprecated;
 }
 
-type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
+export type IsCustomDs<DS, CDS> = (x: DS | CDS) => x is CDS;
 // TODO remove this type, it would result in a breaking change though
 /**
  * @deprecated Please unwrap the datasource from this type
@@ -227,7 +227,7 @@ export async function initDbSchema(schema: string, storeService: StoreService): 
   await storeService.init(schema);
 }
 
-type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
+export type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource = BaseDataSource>(

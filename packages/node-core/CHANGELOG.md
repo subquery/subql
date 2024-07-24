@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Changed
 - Breaking change: Require indexing environment timezone set to UTC, avoid inconsistent result from cache and database (#2495)
+
 ### Fixed
 - Fix handle bigint type in jsonb array, both get and set method will generate consistent result (#2495)
 - Update with `@subql/utils`, fixed json and json array hashcode issue, improve poi consistency (#2495)
+### Added
+- SubqueryProject base from extracing common code (#2496)
+
 
 ## [12.0.0] - 2024-07-22
 ### Changed

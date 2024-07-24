@@ -1,34 +1,22 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import { Injectable } from '@nestjs/common';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { validateSemver } from '@subql/common';
 import {
   parseSubstrateProjectManifest,
-  ProjectManifestV1_0_0Impl,
   SubstrateBlockFilter,
   isRuntimeDs,
   SubstrateHandlerKind,
   isCustomDs,
 } from '@subql/common-substrate';
-import {
-  insertBlockFiltersCronSchedules,
-  loadProjectTemplates,
-  updateDataSourcesV1_0_0,
-  ISubqueryProject,
-  CronFilter,
-} from '@subql/node-core';
+import { CronFilter, BaseSubqueryProject } from '@subql/node-core';
 import {
   SubstrateDatasource,
   RuntimeDatasourceTemplate,
   CustomDatasourceTemplate,
   SubstrateNetworkConfig,
 } from '@subql/types';
-import { ParentProject, Reader, RunnerSpecs } from '@subql/types-core';
-import { buildSchemaFromString } from '@subql/utils';
-import { GraphQLSchema } from 'graphql';
+import { Reader } from '@subql/types-core';
 import { getChainTypes } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
@@ -40,152 +28,35 @@ export type SubqlProjectDsTemplate =
 
 export type SubqlProjectBlockFilter = SubstrateBlockFilter & CronFilter;
 
-const NOT_SUPPORT = (name: string) => {
-  throw new Error(`Manifest specVersion ${name} is not supported`);
-};
+export type SubqueryProject = BaseSubqueryProject<
+  SubstrateProjectDs,
+  SubqlProjectDsTemplate,
+  SubstrateNetworkConfig
+> & { chainTypes?: RegisteredTypes };
 
-@Injectable()
-export class SubqueryProject implements ISubqueryProject {
-  #dataSources: SubstrateProjectDs[];
-
-  constructor(
-    readonly id: string,
-    readonly root: string,
-    readonly network: SubstrateNetworkConfig,
-    dataSources: SubstrateProjectDs[],
-    readonly schema: GraphQLSchema,
-    readonly templates: SubqlProjectDsTemplate[],
-    readonly chainTypes?: RegisteredTypes,
-    readonly runner?: RunnerSpecs,
-    readonly parent?: ParentProject,
-  ) {
-    this.#dataSources = dataSources;
-  }
-
-  get dataSources(): SubstrateProjectDs[] {
-    return this.#dataSources;
-  }
-
-  async applyCronTimestamps(
-    getTimestamp: (height: number) => Promise<Date>,
-  ): Promise<void> {
-    this.#dataSources = await insertBlockFiltersCronSchedules(
-      this.dataSources,
-      getTimestamp,
-      isRuntimeDs,
-      SubstrateHandlerKind.Block,
-    );
-  }
-
-  static async create(
-    path: string,
-    rawManifest: unknown,
-    reader: Reader,
-    root: string, // If project local then directory otherwise temp directory
-    networkOverrides?: Partial<SubstrateNetworkConfig>,
-  ): Promise<SubqueryProject> {
-    // rawManifest and reader can be reused here.
-    // It has been pre-fetched and used for rebase manifest runner options with args
-    // in order to generate correct configs.
-
-    // But we still need reader here, because path can be remote or local
-    // and the `loadProjectManifest(projectPath)` only support local mode
-    assert(
-      rawManifest !== undefined,
-      new Error(`Get manifest from project path ${path} failed`),
-    );
-
-    const manifest = parseSubstrateProjectManifest(rawManifest);
-
-    if (!manifest.isV1_0_0) {
-      NOT_SUPPORT('<1.0.0');
-    }
-
-    return loadProjectFromManifestBase(
-      manifest.asV1_0_0,
-      reader,
-      path,
-      root,
-      networkOverrides,
-    );
-  }
-}
-
-function processChainId(network: any): SubstrateNetworkConfig {
-  if (network.chainId && network.genesisHash) {
-    throw new Error('Please only provide one of chainId and genesisHash');
-  } else if (network.genesisHash && !network.chainId) {
-    network.chainId = network.genesisHash;
-  }
-  delete network.genesisHash;
-  return network;
-}
-
-type SUPPORT_MANIFEST = ProjectManifestV1_0_0Impl;
-
-async function loadProjectFromManifestBase(
-  projectManifest: SUPPORT_MANIFEST,
-  reader: Reader,
+export async function createSubQueryProject(
   path: string,
-  root: string,
+  rawManifest: unknown,
+  reader: Reader,
+  root: string, // If project local then directory otherwise temp directory
   networkOverrides?: Partial<SubstrateNetworkConfig>,
 ): Promise<SubqueryProject> {
-  if (typeof projectManifest.network.endpoint === 'string') {
-    projectManifest.network.endpoint = [projectManifest.network.endpoint];
-  }
-
-  const network = processChainId({
-    ...projectManifest.network,
-    ...networkOverrides,
+  const project = await BaseSubqueryProject.create<SubqueryProject>({
+    parseManifest: (raw) => parseSubstrateProjectManifest(raw).asV1_0_0,
+    path,
+    rawManifest,
+    reader,
+    root,
+    nodeSemver: packageVersion,
+    blockHandlerKind: SubstrateHandlerKind.Block,
+    networkOverrides,
+    isRuntimeDs,
+    isCustomDs,
   });
 
-  assert(
-    network.endpoint,
-    new Error(
-      `Network endpoint must be provided for network. chainId="${network.chainId}"`,
-    ),
-  );
-
-  const schemaString: string = await reader.getFile(
-    projectManifest.schema.file,
-  );
-  assert(schemaString, 'Schema file is empty');
-  const schema = buildSchemaFromString(schemaString);
-
-  const chainTypes = projectManifest.network.chaintypes
-    ? await getChainTypes(reader, root, projectManifest.network.chaintypes.file)
+  project.chainTypes = project.network.chaintypes
+    ? await getChainTypes(reader, root, project.network.chaintypes.file)
     : undefined;
 
-  const dataSources = await updateDataSourcesV1_0_0(
-    projectManifest.dataSources,
-    reader,
-    root,
-    isCustomDs,
-  );
-
-  const templates = await loadProjectTemplates(
-    projectManifest.templates,
-    root,
-    reader,
-    isCustomDs,
-  );
-  const runner = projectManifest.runner;
-  assert(
-    validateSemver(packageVersion, runner.node.version),
-    new Error(
-      `Runner require node version ${runner.node.version}, current node ${packageVersion}`,
-    ),
-  );
-
-  return new SubqueryProject(
-    reader.root ? reader.root : path, //TODO, need to method to get project_id
-    root,
-    network,
-    dataSources,
-    schema,
-    templates,
-    chainTypes,
-    runner,
-    projectManifest.parent,
-  );
+  return project;
 }

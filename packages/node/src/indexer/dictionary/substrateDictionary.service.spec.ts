@@ -16,18 +16,18 @@ function testSubqueryProject(
   endpoint: string[],
   chainId: string,
 ): SubqueryProject {
-  return new SubqueryProject(
-    'test',
-    './',
-    {
+  return {
+    id: 'test',
+    root: './',
+    network: {
       endpoint,
       dictionary: ['http://mock-dictionary-v2'],
       chainId: chainId,
     },
-    [],
-    new GraphQLSchema({}),
-    [],
-  );
+    dataSources: [],
+    schema: new GraphQLSchema({}),
+    templates: [],
+  } as unknown as SubqueryProject;
 }
 
 // Mock jest and set the type
