@@ -17,14 +17,14 @@ import {
   createIndexerWorker as createIndexerWorkerCore,
   MonitorServiceInterface,
   IStoreModelProvider,
+  UnfinalizedBlocksService,
+  DynamicDsService,
 } from '@subql/node-core';
-import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
+import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../apiPromise.connection';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
-import { BlockContent } from '../types';
-import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
+import { BlockContent, LightBlockContent } from '../types';
 import { IIndexerWorker } from '../worker/worker';
 import { FetchBlockResponse } from '../worker/worker.service';
 
@@ -37,10 +37,9 @@ export class WorkerBlockDispatcherService
   extends WorkerBlockDispatcher<
     SubstrateDatasource,
     IndexerWorker,
-    SubstrateBlock
+    BlockContent | LightBlockContent
   >
-  implements OnApplicationShutdown
-{
+  implements OnApplicationShutdown {
   private _runtimeService?: RuntimeService;
 
   constructor(
@@ -55,8 +54,10 @@ export class WorkerBlockDispatcherService
     @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
-    dynamicDsService: DynamicDsService,
-    unfinalizedBlocksService: UnfinalizedBlocksService,
+    dynamicDsService: DynamicDsService<SubstrateDatasource>,
+    unfinalizedBlocksService: UnfinalizedBlocksService<
+      BlockContent | LightBlockContent
+    >,
     connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
     monitorService?: MonitorServiceInterface,
   ) {
@@ -96,17 +97,13 @@ export class WorkerBlockDispatcherService
     return this._runtimeService;
   }
 
-  private set runtimeService(runtimeService: RuntimeService) {
-    this._runtimeService = runtimeService;
-  }
-
   async init(
     onDynamicDsCreated: (height: number) => void,
     runtimeService?: RuntimeService,
   ): Promise<void> {
     await super.init(onDynamicDsCreated);
     // Sync workers runtime from main
-    if (runtimeService) this.runtimeService = runtimeService;
+    if (runtimeService) this._runtimeService = runtimeService;
     this.syncWorkerRuntimes();
   }
 

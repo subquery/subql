@@ -14,7 +14,13 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { NodeConfig, DictionaryV1, timeout, getLogger } from '@subql/node-core';
+import {
+  NodeConfig,
+  DictionaryV1,
+  timeout,
+  getLogger,
+  DsProcessorService,
+} from '@subql/node-core';
 import { SubstrateBlockFilter, SubstrateDatasource } from '@subql/types';
 import {
   DictionaryQueryCondition,
@@ -24,7 +30,6 @@ import { buildQuery, GqlNode, GqlQuery } from '@subql/utils';
 import { sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../../../utils/project';
-import { DsProcessorService } from '../../ds-processor.service';
 import { SpecVersion, SpecVersionDictionary } from '../types';
 
 type GetDsProcessor = DsProcessorService['getDsProcessor'];

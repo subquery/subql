@@ -14,28 +14,28 @@ import {
   CoreModule,
   IStoreModelProvider,
   ConnectionPoolService,
+  UnfinalizedBlocksService,
+  BlockDispatcher,
+  DsProcessorService,
+  ProjectService,
+  DynamicDsService,
 } from '@subql/node-core';
+import { SubstrateDatasource } from '@subql/types';
+import { BlockchainService } from '../blockchain.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
-import {
-  BlockDispatcherService,
-  WorkerBlockDispatcherService,
-} from './blockDispatcher';
+import { WorkerBlockDispatcherService } from './blockDispatcher';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
-import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
   imports: [CoreModule],
   providers: [
     {
-      provide: ApiService,
+      provide: 'APIService',
       useFactory: ApiService.init,
       inject: [
         'ISubqueryProject',
@@ -44,82 +44,96 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         NodeConfig,
       ],
     },
+    {
+      provide: RuntimeService, // TODO DOING this because of circular reference with dictionary service
+      useFactory: (apiService: ApiService) => new RuntimeService(apiService),
+      inject: ['APIService'],
+    },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
+    },
+    /* START: Move to node core */
+    DsProcessorService,
+    DynamicDsService,
+    {
+      provide: 'IUnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
+    },
+    {
+      useClass: ProjectService,
+      provide: 'IProjectService',
+    },
+    /* END: Move to node core */
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
-        projectService: ProjectService,
+        projectService: ProjectService<SubstrateDatasource>,
         projectUpgradeService: IProjectUpgradeService,
-        apiService: ApiService,
-        indexerManager: IndexerManager,
         cacheService: InMemoryCacheService,
         storeService: StoreService,
         storeModelProvider: IStoreModelProvider,
         poiSyncService: PoiSyncService,
         project: SubqueryProject,
-        dynamicDsService: DynamicDsService,
+        dynamicDsService: DynamicDsService<SubstrateDatasource>,
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
+        blockchainService: BlockchainService,
+        indexerManager: IndexerManager,
         monitorService?: MonitorService,
-      ) =>
-        nodeConfig.workers
+      ) => {
+        return nodeConfig.workers
           ? new WorkerBlockDispatcherService(
-              nodeConfig,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              cacheService,
-              storeService,
-              storeModelProvider,
-              poiSyncService,
-              project,
-              dynamicDsService,
-              unfinalizedBlocks,
-              connectionPoolState,
-              monitorService,
-            )
-          : new BlockDispatcherService(
-              apiService,
-              nodeConfig,
-              indexerManager,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              storeService,
-              storeModelProvider,
-              poiSyncService,
-              project,
-            ),
+            nodeConfig,
+            eventEmitter,
+            projectService,
+            projectUpgradeService,
+            cacheService,
+            storeService,
+            storeModelProvider,
+            poiSyncService,
+            project,
+            dynamicDsService,
+            unfinalizedBlocks,
+            connectionPoolState,
+            monitorService,
+          )
+          : new BlockDispatcher(
+            nodeConfig,
+            eventEmitter,
+            projectService,
+            projectUpgradeService,
+            storeService,
+            storeModelProvider,
+            poiSyncService,
+            project,
+            blockchainService,
+            indexerManager,
+          );
+      },
       inject: [
         NodeConfig,
         EventEmitter2,
         'IProjectService',
         'IProjectUpgradeService',
-        ApiService,
-        IndexerManager,
         InMemoryCacheService,
         StoreService,
         'IStoreModelProvider',
         PoiSyncService,
         'ISubqueryProject',
         DynamicDsService,
-        UnfinalizedBlocksService,
+        'IUnfinalizedBlocksService',
         ConnectionPoolStateManager,
+        'IBlockchainService',
+        IndexerManager,
         MonitorService,
       ],
     },
-    FetchService,
     SubstrateDictionaryService,
-    DsProcessorService,
-    DynamicDsService,
-    {
-      useClass: ProjectService,
-      provide: 'IProjectService',
-    },
-    UnfinalizedBlocksService,
-    RuntimeService,
+    FetchService,
   ],
 })
 export class FetchModule {}

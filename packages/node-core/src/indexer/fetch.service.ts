@@ -2,28 +2,28 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource} from '@subql/types-core';
-import {range} from 'lodash';
-import {NodeConfig} from '../configure';
-import {IndexerEvent} from '../events';
-import {getLogger} from '../logger';
-import {delay, filterBypassBlocks} from '../utils';
-import {IBlockDispatcher} from './blockDispatcher';
-import {mergeNumAndBlocksToNums} from './dictionary';
-import {DictionaryService} from './dictionary/dictionary.service';
-import {mergeNumAndBlocks} from './dictionary/utils';
-import {IStoreModelProvider} from './storeModelProvider';
-import {BypassBlocks, Header, IBlock, IProjectService} from './types';
-import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
+import { OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { BaseDataSource } from '@subql/types-core';
+import { range } from 'lodash';
+import { IBlockchainService } from '../blockchain.service';
+import { NodeConfig } from '../configure';
+import { IndexerEvent } from '../events';
+import { getLogger } from '../logger';
+import { delay, filterBypassBlocks, getModulos } from '../utils';
+import { IBlockDispatcher } from './blockDispatcher';
+import { mergeNumAndBlocksToNums } from './dictionary';
+import { DictionaryService } from './dictionary/dictionary.service';
+import { mergeNumAndBlocks } from './dictionary/utils';
+import { IStoreModelProvider } from './storeModelProvider';
+import { BypassBlocks, IBlock, IProjectService } from './types';
+import { IUnfinalizedBlocksServiceUtil } from './unfinalizedBlocks.service';
 
 const logger = getLogger('FetchService');
 
 export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
-  implements OnApplicationShutdown
-{
+  implements OnApplicationShutdown {
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
@@ -31,20 +31,11 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   #pendingFinalizedBlockHead?: Promise<void>;
   #pendingBestBlockHead?: Promise<void>;
 
-  // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
-  protected abstract getFinalizedHeader(): Promise<Header>;
-  protected abstract getBestHeight(): Promise<number>;
-
-  // The rough interval at which new blocks are produced
-  protected abstract getChainInterval(): Promise<number>;
-  // This return modulo numbers with given dataSources (number in the filters)
-  protected abstract getModulos(dataSources: DS[]): number[];
-
   protected abstract initBlockDispatcher(): Promise<void>;
 
   // Gets called just before the loop is started
   // Used by substrate to init runtime service and get runtime version data from the dictionary
-  protected abstract preLoopHook(data: {startHeight: number}): Promise<void>;
+  protected abstract preLoopHook(data: { startHeight: number }): Promise<void>;
 
   constructor(
     private nodeConfig: NodeConfig,
@@ -54,7 +45,8 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
     private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
-    private storeModelProvider: IStoreModelProvider
+    private storeModelProvider: IStoreModelProvider,
+    private blockchainSevice: IBlockchainService<DS>
   ) {}
 
   private get latestBestHeight(): number {
@@ -68,6 +60,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       return this._latestFinalizedHeight;
     }
     return this._latestFinalizedHeight ?? this.latestBestHeight;
+  }
+
+  protected getModulos(dataSources: DS[]): number[] {
+    return getModulos(dataSources, this.blockchainSevice.isCustomDs, this.blockchainSevice.blockHandlerKind);
   }
 
   onApplicationShutdown(): void {
@@ -95,7 +91,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   }
 
   async init(startHeight: number): Promise<void> {
-    const interval = await this.getChainInterval();
+    const interval = await this.blockchainSevice.getChainInterval();
 
     await Promise.all([this.memoGetFinalizedBlockHead(), this.memoGetBestBlockHead()]);
 
@@ -129,7 +125,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     this.updateDictionary();
     // Find one usable dictionary at start
 
-    await this.preLoopHook({startHeight});
+    await this.preLoopHook({ startHeight });
     await this.initBlockDispatcher();
 
     void this.startLoop(startHeight);
@@ -141,7 +137,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   async getFinalizedBlockHead(): Promise<void> {
     try {
-      const currentFinalizedHeader = await this.getFinalizedHeader();
+      const currentFinalizedHeader = await this.blockchainSevice.getFinalizedHeader();
       // Rpc could return finalized height below last finalized height due to unmatched nodes, and this could lead indexing stall
       // See how this could happen in https://gist.github.com/jiqiang90/ea640b07d298bca7cbeed4aee50776de
       if (
@@ -163,7 +159,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   async getBestBlockHead(): Promise<void> {
     try {
-      const currentBestHeight = await this.getBestHeight();
+      const currentBestHeight = await this.blockchainSevice.getBestHeight();
       if (this._latestBestHeight !== currentBestHeight) {
         this._latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
@@ -241,7 +237,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
             continue;
           }
           if (dictionary) {
-            const {batchBlocks, lastBufferedHeight} = dictionary;
+            const { batchBlocks, lastBufferedHeight } = dictionary;
             // the last block returned from batch should have max height in this batch
             const mergedBlocks = mergeNumAndBlocks(
               this.getModuloBlocks(startBlockHeight, lastBufferedHeight),
@@ -278,7 +274,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   // get all modulo numbers with a specific block ranges
   private getModuloBlocks(startHeight: number, endHeight: number): number[] {
     // Find relevant ds
-    const {endHeight: rangeEndHeight, value: relevantDS} = this.getRelevantDsDetails(startHeight);
+    const { endHeight: rangeEndHeight, value: relevantDS } = this.getRelevantDsDetails(startHeight);
     const moduloNumbers = this.getModulos(relevantDS);
     // no modulos in the filters been found in current ds
     if (!moduloNumbers.length) return [];
@@ -309,10 +305,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     return !!handlers.length && moduloNumbers.length === handlers.length;
   }
 
-  private getRelevantDsDetails(startBlockHeight: number): {endHeight: number | undefined; value: DS[]} {
+  private getRelevantDsDetails(startBlockHeight: number): { endHeight: number | undefined; value: DS[] } {
     const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
     assert(details, `Datasources not found for height ${startBlockHeight}`);
-    return {endHeight: details.endHeight, value: details.value};
+    return { endHeight: details.endHeight, value: details.value };
   }
 
   // Enqueue block sequentially
@@ -322,7 +318,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     latestHeight: number
   ): Promise<void> {
     // End height from current dataSource
-    const {endHeight, value: relevantDs} = this.getRelevantDsDetails(startBlockHeight);
+    const { endHeight, value: relevantDs } = this.getRelevantDsDetails(startBlockHeight);
     // Estimated range end height
     const estRangeEndHeight = Math.min(
       endHeight ?? Number.MAX_SAFE_INTEGER,

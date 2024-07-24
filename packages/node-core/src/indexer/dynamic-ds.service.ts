@@ -1,12 +1,15 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Transaction} from '@subql/x-sequelize';
-import {cloneDeep} from 'lodash';
-import {getLogger} from '../logger';
-import {exitWithError} from '../process';
-import {IMetadata} from './storeModelProvider';
-import {ISubqueryProject} from './types';
+import { Inject, Injectable } from '@nestjs/common';
+import { BaseDataSource } from '@subql/types-core';
+import { Transaction } from '@subql/x-sequelize';
+import { cloneDeep } from 'lodash';
+import { IBlockchainService } from '../blockchain.service';
+import { getLogger } from '../logger';
+import { exitWithError } from '../process';
+import { IMetadata } from './storeModelProvider';
+import { ISubqueryProject } from './types';
 
 const logger = getLogger('dynamic-ds');
 
@@ -24,16 +27,17 @@ export interface IDynamicDsService<DS> {
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
 }
 
-export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubqueryProject>
-  implements IDynamicDsService<DS>
-{
+@Injectable()
+export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P extends ISubqueryProject = ISubqueryProject>
+  implements IDynamicDsService<DS> {
   private _metadata?: IMetadata;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];
 
-  protected abstract getDatasource(params: DatasourceParams): Promise<DS>;
-
-  constructor(protected readonly project: P) {}
+  constructor(
+    @Inject('ISubqueryProject') private readonly project: P,
+    @Inject('IBlockchainService') private readonly blockchainService: IBlockchainService<DS>
+  ) {}
 
   async init(metadata: IMetadata): Promise<void> {
     this._metadata = metadata;
@@ -82,7 +86,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
 
       return ds;
     } catch (e: any) {
-      exitWithError(new Error(`Failed to create dynamic ds`, {cause: e}), logger);
+      exitWithError(new Error(`Failed to create dynamic ds`, { cause: e }), logger);
     }
   }
 
@@ -114,7 +118,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
    *
    * Inserts the startBlock into the template.
    * */
-  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & {startBlock?: number}>(
+  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & { startBlock?: number }>(
     templateName: string,
     startBlock?: number
   ): T {
@@ -122,7 +126,19 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
     if (!t) {
       throw new Error(`Unable to find matching template in project for name: "${templateName}"`);
     }
-    const {name, ...template} = cloneDeep(t);
-    return {...template, startBlock} as T;
+    const { name, ...template } = cloneDeep(t);
+    return { ...template, startBlock } as T;
+  }
+
+  private async getDatasource(params: DatasourceParams): Promise<DS> {
+    const dsObj = this.getTemplate<any /*TODO DS*/>(params.templateName, params.startBlock);
+
+    try {
+      await this.blockchainService.updateDynamicDs(params, dsObj);
+
+      return dsObj;
+    } catch (e) {
+      throw new Error(`Unable to create dynamic datasource.\n ${(e as any).message}`);
+    }
   }
 }

@@ -5,12 +5,14 @@ import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
-import { isCustomDs } from '@subql/common-substrate';
-import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
+import {
+  NodeConfig,
+  DictionaryService,
+  getLogger,
+  DsProcessorService,
+} from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
-import { DsProcessor } from '@subql/types-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
-import { DsProcessorService } from '../ds-processor.service';
 import { SpecVersion } from './types';
 import { SubstrateDictionaryV1 } from './v1';
 import { SubstrateDictionaryV2 } from './v2';

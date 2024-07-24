@@ -4,12 +4,16 @@
 import {Module} from '@nestjs/common';
 import {ConnectionPoolService} from '../connectionPool.service';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
+import {DynamicDsService} from '../dynamic-ds.service';
 import {InMemoryCacheService} from '../inMemoryCache.service';
 import {MonitorService} from '../monitor.service';
 import {SandboxService} from '../sandbox.service';
+import {UnfinalizedBlocksService} from '../unfinalizedBlocks.service';
 import {WorkerInMemoryCacheService} from './worker.cache.service';
 import {WorkerConnectionPoolStateManager} from './worker.connectionPoolState.manager';
+import {WorkerDynamicDsService} from './worker.dynamic-ds.service';
 import {WorkerMonitorService} from './worker.monitor.service';
+import {WorkerUnfinalizedBlocksService} from './worker.unfinalizedBlocks.service';
 
 @Module({
   providers: [
@@ -27,7 +31,22 @@ import {WorkerMonitorService} from './worker.monitor.service';
       provide: InMemoryCacheService,
       useFactory: () => new WorkerInMemoryCacheService((global as any).host),
     },
+    {
+      provide: 'IUnfinalizedBlocksService',
+      useFactory: () => new WorkerUnfinalizedBlocksService((global as any).host),
+    },
+    {
+      provide: DynamicDsService,
+      useFactory: () => new WorkerDynamicDsService((global as any).host),
+    },
   ],
-  exports: [ConnectionPoolService, SandboxService, MonitorService, InMemoryCacheService],
+  exports: [
+    ConnectionPoolService,
+    SandboxService,
+    MonitorService,
+    InMemoryCacheService,
+    'IUnfinalizedBlocksService',
+    DynamicDsService,
+  ],
 })
 export class WorkerCoreModule {}
