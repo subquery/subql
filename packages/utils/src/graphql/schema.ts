@@ -6,7 +6,7 @@ import {buildASTSchema, DocumentNode, extendSchema, GraphQLSchema, parse, Source
 import {directives} from './schema/directives';
 import {scalas} from './schema/scalas';
 
-function loadBaseSchema(): GraphQLSchema {
+export function loadBaseSchema(): GraphQLSchema {
   const schema = buildASTSchema(scalas);
   return extendSchema(schema, directives);
 }
