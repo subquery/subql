@@ -43,7 +43,6 @@ export async function migrateSchema(subgraphSchemaPath: string, subqlSchemaPath:
   );
 }
 
-// TODO work around readonly props
 export function migrateSchemaFromString(input: string): string {
   const src = new Source(input);
   const doc = parse(src);
