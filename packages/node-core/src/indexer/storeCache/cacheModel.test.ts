@@ -311,7 +311,7 @@ describe('cacheModel integration', () => {
         },
         {
           name: 'oneEntity',
-          type: 'TestJson',
+          type: 'Json',
           nullable: false,
           isEnum: false,
           isArray: false,
@@ -325,7 +325,7 @@ describe('cacheModel integration', () => {
         },
         {
           name: 'delegators',
-          type: 'DelegationFrom',
+          type: 'Json',
           nullable: false,
           jsonInterface: {
             name: 'DelegationFrom',

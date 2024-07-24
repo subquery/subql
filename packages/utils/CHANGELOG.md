@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix hashcode for Json and Json array, sorted keys before hashing
+
 ## [2.13.0] - 2024-07-22
 ### Changed
 - Update error log format to specify the name of the error instance where possible (#2492)
