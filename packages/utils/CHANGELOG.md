@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.1] - 2024-07-25
 ### Fixed
 - Fix hashcode for Json and Json array, sorted keys before hashing
 
@@ -162,7 +163,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.13.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.13.1...HEAD
+[2.13.1]: https://github.com/subquery/subql/compare/utils/2.13.0...utils/2.13.1
 [2.13.0]: https://github.com/subquery/subql/compare/utils/2.12.1...utils/2.13.0
 [2.12.1]: https://github.com/subquery/subql/compare/utils/2.12.0...utils/2.12.1
 [2.12.0]: https://github.com/subquery/subql/compare/utils/2.11.0...utils/2.12.0
