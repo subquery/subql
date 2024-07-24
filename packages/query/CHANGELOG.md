@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.14.0] - 2024-07-25
+## [2.13.3] - 2024-07-25
 ### Changed
 - Bump version with `@subql/common` and `@subql/utils` (#2498)
 
@@ -338,8 +338,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.14.0...HEAD
-[2.14.0]: https://github.com/subquery/subql/compare/query/2.13.2...query/2.14.0
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.13.3...HEAD
+[2.13.3]: https://github.com/subquery/subql/compare/query/2.13.2...query/2.13.3
 [2.13.2]: https://github.com/subquery/subql/compare/query/2.13.1...query/2.13.2
 [2.13.1]: https://github.com/subquery/subql/compare/query/2.13.0...query/2.13.1
 [2.13.0]: https://github.com/subquery/subql/compare/query/2.12.1...query/2.13.0

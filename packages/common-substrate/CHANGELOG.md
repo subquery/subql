@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [4.2.0] - 2024-07-25
+## [4.1.1] - 2024-07-25
 ### Changed
 - Bump version with `@subql/common`
 - input type updated in `isRuntimeDs` (#2496)
@@ -177,8 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.2.0...HEAD
-[4.2.0]: https://github.com/subquery/subql/compare/common-substrate/4.1.0...common-substrate/4.2.0
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.1.1...HEAD
+[4.1.1]: https://github.com/subquery/subql/compare/common-substrate/4.1.0...common-substrate/4.1.1
 [4.1.0]: https://github.com/subquery/subql/compare/common-substrate/4.0.1...common-substrate/4.1.0
 [4.0.1]: https://github.com/subquery/subql/compare/common-substrate/4.0.0...common-substrate/4.0.1
 [4.0.0]: https://github.com/subquery/subql/compare/common-substrate/3.8.1...common-substrate/4.0.0
