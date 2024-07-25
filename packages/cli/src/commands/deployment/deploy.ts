@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {select, input} from '@inquirer/prompts';
 import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
-import cli from 'cli-ux';
-import inquirer from 'inquirer';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {
   DefaultDeployFlags,
@@ -19,7 +18,7 @@ import {
   splitEndpoints,
 } from '../../controller/deploy-controller';
 import {V3DeploymentIndexerType} from '../../types';
-import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
+import {addV, checkToken, valueOrPrompt} from '../../utils';
 
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
@@ -52,14 +51,14 @@ export default class Deploy extends Command {
         throw new Error(chalk.red('Please ensure a valid is passed using --endpoint flag'));
       }
 
-      flags.endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', undefined, undefined, true);
+      flags.endpoint = await input({message: 'Enter endpoint', required: true});
     }
 
     if (!flags.dict) {
       assert(validator.chainId, 'Please set chainId in your project');
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults && !validateDictEndpoint) {
-        flags.dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, undefined, false);
+        flags.dict = await input({message: 'Enter dictionary', default: validateDictEndpoint});
       } else {
         flags.dict = validateDictEndpoint;
       }
@@ -68,23 +67,13 @@ export default class Deploy extends Command {
     if (!flags.indexerVersion) {
       assert(validator.manifestRunner, 'Please set manifestRunner in your project');
       try {
-        const indexerVersions = await imageVersions(
+        flags.indexerVersion = await promptImageVersion(
           validator.manifestRunner.node.name,
           validator.manifestRunner.node.version,
+          flags.useDefaults,
           authToken,
-          ROOT_API_URL_PROD
+          'Enter indexer version'
         );
-        if (!flags.useDefaults) {
-          flags.indexerVersion = await promptWithDefaultValues(
-            inquirer,
-            'Enter indexer version',
-            undefined,
-            indexerVersions,
-            true
-          );
-        } else {
-          flags.indexerVersion = indexerVersions[0];
-        }
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
@@ -92,24 +81,13 @@ export default class Deploy extends Command {
     if (!flags.queryVersion) {
       assert(validator.manifestRunner, 'Please set manifestRunner in your project');
       try {
-        const queryVersions = await imageVersions(
+        flags.queryVersion = await promptImageVersion(
           validator.manifestRunner.query.name,
           validator.manifestRunner.query.version,
+          flags.useDefaults,
           authToken,
-          ROOT_API_URL_PROD
+          'Enter query version'
         );
-        if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(
-            inquirer,
-            'Enter query version',
-            undefined,
-            queryVersions,
-            true
-          );
-          flags.queryVersion = response;
-        } else {
-          flags.queryVersion = queryVersions[0];
-        }
       } catch (e) {
         throw new Error(chalk.bgRedBright('Query version is required'));
       }
@@ -139,5 +117,23 @@ export default class Deploy extends Command {
       projectName: flags.projectName,
       queryVersion: flags.queryVersion,
     });
+  }
+}
+
+export async function promptImageVersion(
+  runner: string,
+  version: string,
+  useDefaults: boolean,
+  authToken: string,
+  message: string
+): Promise<string> {
+  const versions = await imageVersions(runner, version, authToken, ROOT_API_URL_PROD);
+  if (!useDefaults) {
+    return select({
+      message,
+      choices: versions.map((v) => ({value: v})),
+    });
+  } else {
+    return versions[0];
   }
 }

@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {select} from '@inquirer/prompts';
 import {Command, Flags} from '@oclif/core';
-import * as inquirer from 'inquirer';
 import Delete from './delete';
 import Deploy from './deploy';
 import Promote from './promote';
@@ -31,16 +31,10 @@ export default class Deployment extends Command {
     let userOptions: DeploymentOption;
 
     if (!option) {
-      const response = await inquirer.prompt([
-        {
-          name: 'deploymentOptions',
-          message: 'Select an deployment option',
-          type: 'list',
-          choices: [{name: 'deploy'}, {name: 'promote'}, {name: 'delete'}],
-        },
-      ]);
-
-      userOptions = response.deploymentOptions;
+      userOptions = await select({
+        message: 'Select an deployment option',
+        choices: [{value: 'deploy'}, {value: 'promote'}, {value: 'delete'}],
+      });
     } else {
       userOptions = option as DeploymentOption;
     }
