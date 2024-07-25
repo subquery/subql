@@ -171,17 +171,17 @@ describe('CLI codegen:generate', () => {
       },
     });
   });
+
   it('prepareInputFragments, should return all fragments, if user passes --events="*"', async () => {
     const result = await prepareInputFragments('event', '*', eventFragments, abiName);
     expect(result).toStrictEqual(abiInterface.events);
   });
+
   it('prepareInputFragments, no method passed, should prompt through inquirer', async () => {
     // when using ejs, jest spyOn does not work on inquirer
-    const inquirer = require('inquirer');
+    const inquirer = require('@inquirer/prompts');
 
-    const promptSpy = jest.spyOn(inquirer, 'prompt').mockResolvedValue({
-      event: ['Approval(address,address,uint256)'],
-    });
+    const promptSpy = jest.spyOn(inquirer, 'checkbox').mockResolvedValue(['Approval(address,address,uint256)']);
 
     const emptyStringPassed = await prepareInputFragments('event', '', eventFragments, abiName);
     expect(promptSpy).toHaveBeenCalledTimes(1);
@@ -189,6 +189,7 @@ describe('CLI codegen:generate', () => {
 
     expect(emptyStringPassed).toStrictEqual(undefinedPassed);
   });
+
   it('prepareInputFragments, --functions="transferFrom", should return matching fragment method (cased insensitive)', async () => {
     const result = await prepareInputFragments<FunctionFragment>(
       'function',
