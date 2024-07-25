@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Enable ts strict mode
 - Update to latest `@subql/node-core` (#330)
+- Use Subquery Project code from node core (#331)
 
 ## [4.7.3] - 2024-07-16
 ### Fixed
