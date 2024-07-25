@@ -118,7 +118,7 @@ export function getColumnOption(
       const dataValue = this.getDataValue(field.name);
 
       if (!dataValue || !field.jsonInterface) {
-        return field.isArray ? [] : null;
+        return null;
       }
       return field.isArray ? dataValue.map((v: any) => processGetJson(v)) : processGetJson(dataValue);
     };

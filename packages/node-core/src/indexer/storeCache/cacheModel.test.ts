@@ -351,7 +351,7 @@ describe('cacheModel integration', () => {
           isArray: true,
         },
         {
-          name: 'radomNArray',
+          name: 'randomNArray',
           type: 'Int',
           nullable: true,
           isEnum: false,
@@ -392,6 +392,9 @@ describe('cacheModel integration', () => {
         1
       );
       await flush(2);
+
+      // force clear get cache
+      (cacheModel as any).getCache.clear();
 
       // Db value
       const res0 = await cacheModel.get('0x01');
@@ -527,6 +530,42 @@ describe('cacheModel integration', () => {
         })
       )?.toJSON();
       expect(res5?.delegators).toEqual(data0x02.delegators);
+    });
+
+    it('empty array test, compare db result with cache data', async () => {
+      cacheModel.set(
+        `0x09`,
+        {
+          id: `0x09`,
+          selfStake: BigInt(1000000000000000000000n),
+          oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
+          delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
+          randomNArray: undefined,
+        },
+        1
+      );
+      await flush(2);
+
+      // Cache value 1, before cache is cleared
+      const resCache1 = await cacheModel.get('0x09');
+      expect(resCache1?.randomNArray).toBeUndefined();
+
+      // force clear get cache
+      (cacheModel as any).getCache.clear();
+
+      // Db value
+      const res0 = await cacheModel.get('0x09');
+      expect(res0?.randomNArray).toBe(null);
+
+      // Cache value 2, after cache is set from db value
+      const resCache2 = await cacheModel.get('0x09');
+      expect(resCache2?.randomNArray).toBe(null);
+
+      // We are expecting DB value and get cache value to be the same
+      expect(res0).toEqual(resCache2);
+
+      // We are expecting DB value and set cache value can be difference, field value can be undefined and null
+      expect(res0).not.toEqual(resCache1);
     });
   });
 });
