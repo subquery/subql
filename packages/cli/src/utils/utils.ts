@@ -18,7 +18,6 @@ import {
 } from '@subql/common';
 import axios from 'axios';
 import ejs from 'ejs';
-// import inquirer, {Inquirer} from 'inquirer';
 import JSON5 from 'json5';
 import rimraf from 'rimraf';
 import {ACCESS_TOKEN_PATH} from '../constants';
@@ -52,27 +51,6 @@ export function addV<T extends string | undefined>(str: T): T {
   }
   return str;
 }
-
-// export async function promptWithDefaultValues(
-//   promptType: Inquirer | typeof ux,
-//   msg: string,
-//   defaultValue?: string,
-//   choices?: string[],
-//   required?: boolean
-// ): Promise<string> {
-//   const promptValue =
-//     promptType === inquirer
-//       ? (
-//           await promptType.prompt({
-//             name: 'runnerVersions',
-//             message: msg,
-//             type: 'list',
-//             choices: choices,
-//           })
-//         ).runnerVersions
-//       : await promptType.prompt(msg, {default: defaultValue, required: required});
-//   return promptValue;
-// }
 
 export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promise<string> {
   const reqInput = () => input({message: 'Token cannot be found, Enter token', required: true});
