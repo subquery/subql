@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Subgraph Graphql Schema migration correctly migrates a schema 1`] = `
+""""The Example entity has an example of various fields"""
+type ExampleEntity @entity @fullText(fields: ["optionalString", "requiredString", "optionalStringList"], language: "english") {
+  """The id is required and a unique identifier of the entity"""
+  id: ID!
+  optionalBoolean: Boolean
+  requiredBoolean: Boolean!
+  optionalBooleanList: [Boolean!]
+  requiredBooleanList: [Boolean!]!
+  optionalString: String
+  requiredString: String!
+  optionalStringList: [String!]
+  requiredStringList: [String!]!
+  optionalBytes: Bytes
+  requiredBytes: Bytes!
+  optionalBytesList: [Bytes!]
+  requiredBytesList: [Bytes!]!
+  optionalInt: Int
+  requiredInt: Int!
+  optionalIntList: [Int!]
+  requiredIntList: [Int!]!
+  optionalInt8: Int
+  requiredInt8: Int!
+  optionalInt8List: [Int!]
+  requiredInt8List: [Int!]!
+  optionalBigInt: BigInt
+  requiredBigInt: BigInt!
+  optionalBigIntList: [BigInt!]
+  requiredBigIntList: [BigInt!]!
+  optionalBigDecimal: BigDecimal
+  requiredBigDecimal: BigDecimal!
+  optionalBigDecimalList: [BigDecimal!]
+  requiredBigDecimalList: [BigDecimal!]!
+  optionalTimestamp: Date
+  requiredTimestamp: Date!
+  optionalTimestampList: [Date!]
+  requiredTimestampList: [Date!]!
+  optionalReference: OtherEntity
+  requiredReference: OtherEntity!
+  optionalReferenceList: [OtherEntity!] @derivedFrom(field: "<replace-me>")
+  requiredReferenceList: [OtherEntity!]! @derivedFrom(field: "<replace-me>")
+  derivedEntity: [FooEntity!]! @derivedFrom(field: "example")
+  derivedEntity2: [FooEntity!]! @derivedFrom(field: "example")
+}
+
+type OtherEntity @entity {
+  id: ID!
+}
+
+type FooEntity @entity {
+  id: ID!
+  example: ExampleEntity!
+}
+"
+`;

@@ -5,12 +5,12 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
+import {search, confirm, input} from '@inquirer/prompts';
 import {Args, Command, Flags} from '@oclif/core';
 import {NETWORK_FAMILY} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
-import * as inquirer from 'inquirer';
 import {
   installDependencies,
   cloneProjectTemplate,
@@ -26,19 +26,12 @@ import {
 import {ProjectSpecBase} from '../types';
 import {resolveToAbsolutePath} from '../utils';
 import Generate from './codegen/generate';
-inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 // Helper function for fuzzy search on prompt input
-function filterInput(arr: string[]) {
-  return (_: string, input: string) => {
-    input = input || '';
-    return new Promise((resolve) => {
-      resolve(
-        fuzzy.filter(input, arr).map((el) => {
-          return el.original;
-        })
-      );
-    });
+function filterInput<T>(arr: T[]) {
+  return (input: string | undefined, opt: {signal: any}): Promise<ReadonlyArray<{value: T}>> => {
+    input ??= '';
+    return Promise.resolve(fuzzy.filter(input, arr).map((r) => ({value: r.original})));
   };
 }
 
@@ -96,19 +89,12 @@ export default class Init extends Command {
 
     //Family selection
     const families = networkTemplates.map(({name}) => name);
-    const networkFamily: NETWORK_FAMILY = await inquirer
-      .prompt([
-        {
-          name: 'familyResponse',
-          message: 'Select a network family',
-          type: 'autocomplete',
-          searchText: '',
-          emptyText: 'Network family not found',
-          pageSize: 20,
-          source: filterInput(families),
-        },
-      ])
-      .then(({familyResponse}) => familyResponse);
+
+    const networkFamily = await search<NETWORK_FAMILY>({
+      message: 'Select a network family',
+      source: filterInput<NETWORK_FAMILY>(families as NETWORK_FAMILY[]),
+      pageSize: 20,
+    });
 
     // if network family is of ethereum, then should prompt them an abiPath
     const selectedFamily = networkTemplates.find((family) => family.name === networkFamily);
@@ -117,19 +103,11 @@ export default class Init extends Command {
     // Network selection
     const networkStrArr = selectedFamily.networks.map((n) => n.name);
 
-    const network: string = await inquirer
-      .prompt([
-        {
-          name: 'networkResponse',
-          message: 'Select a network',
-          type: 'autocomplete',
-          searchText: '',
-          emptyText: 'Network not found',
-          pageSize: 20,
-          source: filterInput(networkStrArr),
-        },
-      ])
-      .then(({networkResponse}) => networkResponse);
+    const network = await search<string>({
+      message: 'Select a network',
+      source: filterInput(networkStrArr),
+      pageSize: 20,
+    });
 
     const selectedNetwork = selectedFamily.networks.find((v) => network === v.name);
     assert(selectedNetwork, 'No network selected');
@@ -143,39 +121,40 @@ export default class Init extends Command {
       ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
     );
     templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
-    await inquirer
-      .prompt([
-        {
-          name: 'templateDisplay',
-          message: 'Select a template project',
-          type: 'autocomplete',
-          searchText: '',
-          emptyText: 'Template not found',
-          source: filterInput(templateDisplays),
-        },
-      ])
-      .then(async ({templateDisplay}) => {
-        const templateName = (templateDisplay as string).split(' ')[0];
-        if (templateName === 'Other') {
-          await this.cloneCustomRepo(project, projectPath, location);
-        } else {
-          selectedProject = candidateProjects.find((project) => project.name === templateName);
-        }
+
+    const templateDisplay = await search<string>({
+      message: 'Select a template project',
+      source: filterInput(templateDisplays),
+      pageSize: 20,
+    });
+
+    const templateName = (templateDisplay as string).split(' ')[0];
+    if (templateName === 'Other') {
+      const url = await input({
+        message: 'Enter a git repo URL',
+        required: true,
       });
+
+      selectedProject = {
+        remote: url,
+        name: templateName,
+        path: '',
+        description: '',
+      };
+    } else {
+      selectedProject = candidateProjects.find((project) => project.name === templateName);
+    }
+
     assert(selectedProject, 'No project selected');
     const projectPath: string = await cloneProjectTemplate(location, project.name, selectedProject);
 
     await this.setupProject(project, projectPath, flags);
 
     if (await validateEthereumProjectManifest(projectPath)) {
-      const {loadAbi} = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'loadAbi',
-          message: 'Do you want to generate scaffolding from an existing contract abi?',
-          default: false,
-        },
-      ]);
+      const loadAbi = await confirm({
+        message: 'Do you want to generate scaffolding from an existing contract abi?',
+        default: false,
+      });
 
       if (loadAbi) {
         await this.createProjectScaffold(projectPath);
@@ -223,30 +202,18 @@ export default class Init extends Command {
   async createProjectScaffold(projectPath: string): Promise<void> {
     await prepareProjectScaffold(projectPath);
 
-    const {abiFilePath} = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'abiFilePath',
-        message: 'Path to ABI',
-      },
-    ]);
+    const abiFilePath = await input({
+      message: 'Path to ABI',
+    });
 
-    const {contractAddress} = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'contractAddress',
-        message: 'Please provide a contract address (optional)',
-      },
-    ]);
+    const contractAddress = await input({
+      message: 'Please provide a contract address (optional)',
+    });
 
-    const {startBlock} = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'startBlock',
-        message: 'Please provide startBlock when the contract was deployed or first used',
-        default: 1,
-      },
-    ]);
+    const startBlock = await input({
+      message: 'Please provide startBlock when the contract was deployed or first used',
+      default: '1',
+    });
 
     const cleanedContractAddress = contractAddress.replace(/[`'"]/g, '');
 

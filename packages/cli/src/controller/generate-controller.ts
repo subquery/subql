@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
+import {checkbox} from '@inquirer/prompts';
 import {NETWORK_FAMILY} from '@subql/common';
 import type {
   EthereumDatasourceKind,
@@ -14,7 +15,6 @@ import type {
   SubqlRuntimeHandler,
 } from '@subql/types-ethereum';
 import chalk from 'chalk';
-import * as inquirer from 'inquirer';
 import {difference, pickBy, upperFirst} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
 import {SelectedMethod, UserInput} from '../commands/codegen/generate';
@@ -88,13 +88,10 @@ export async function promptSelectables<T extends ConstructorFragment | Fragment
   availableMethods: Record<string, T>
 ): Promise<Record<string, T>> {
   const selectedMethods: Record<string, T> = {};
-  const chosenFn = await inquirer.prompt({
-    name: method,
+  const choseArray = await checkbox<string>({
     message: `Select ${method}`,
-    type: 'checkbox',
-    choices: Object.keys(availableMethods),
+    choices: Object.keys(availableMethods).map((key) => ({value: key})),
   });
-  const choseArray = chosenFn[method] as string[];
   choseArray.forEach((choice: string) => {
     selectedMethods[choice] = availableMethods[choice];
   });

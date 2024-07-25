@@ -94,7 +94,7 @@ const models: GraphQLModelsType[] = [
       {
         name: 'delegators',
         type: 'Json',
-        nullable: false,
+        nullable: true,
         jsonInterface: {
           name: 'DelegationFrom',
           fields: [
@@ -221,6 +221,9 @@ describe('StoreOperations with db', () => {
     operationStackCache.makeOperationMerkleTree();
     expect(operationStackCache.getOperationLeafCount()).toBe(1);
     const mRootCache = operationStackCache.getOperationMerkleRoot();
+
+    expect(entityCache?.delegators).toBeUndefined();
+    expect(entityDb?.delegators).toBe(null);
 
     console.log(`Db mmr Root in hex: ${u8aToHex(mRootDb)}`);
 
