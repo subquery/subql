@@ -6,6 +6,7 @@ import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
+import {input} from '@inquirer/prompts';
 import {
   DEFAULT_ENV,
   DEFAULT_ENV_DEVELOP,
@@ -16,9 +17,8 @@ import {
   DEFAULT_TS_MANIFEST,
 } from '@subql/common';
 import axios from 'axios';
-import cli, {ux} from 'cli-ux';
 import ejs from 'ejs';
-import inquirer, {Inquirer} from 'inquirer';
+// import inquirer, {Inquirer} from 'inquirer';
 import JSON5 from 'json5';
 import rimraf from 'rimraf';
 import {ACCESS_TOKEN_PATH} from '../constants';
@@ -29,10 +29,17 @@ export async function delay(sec: number): Promise<void> {
   });
 }
 
-export async function valueOrPrompt<T>(value: T, msg: string, error: string): Promise<NonNullable<T>> {
+export async function valueOrPrompt(
+  value: string | undefined,
+  msg: string,
+  error: string
+): Promise<NonNullable<string>> {
   if (value) return value;
   try {
-    return await cli.prompt(msg);
+    return await input({
+      message: msg,
+      required: true,
+    });
   } catch (e) {
     throw new Error(error);
   }
@@ -46,42 +53,44 @@ export function addV<T extends string | undefined>(str: T): T {
   return str;
 }
 
-export async function promptWithDefaultValues(
-  promptType: Inquirer | typeof ux,
-  msg: string,
-  defaultValue?: string,
-  choices?: string[],
-  required?: boolean
-): Promise<string> {
-  const promptValue =
-    promptType === inquirer
-      ? (
-          await promptType.prompt({
-            name: 'runnerVersions',
-            message: msg,
-            type: 'list',
-            choices: choices,
-          })
-        ).runnerVersions
-      : await promptType.prompt(msg, {default: defaultValue, required: required});
-  return promptValue;
-}
+// export async function promptWithDefaultValues(
+//   promptType: Inquirer | typeof ux,
+//   msg: string,
+//   defaultValue?: string,
+//   choices?: string[],
+//   required?: boolean
+// ): Promise<string> {
+//   const promptValue =
+//     promptType === inquirer
+//       ? (
+//           await promptType.prompt({
+//             name: 'runnerVersions',
+//             message: msg,
+//             type: 'list',
+//             choices: choices,
+//           })
+//         ).runnerVersions
+//       : await promptType.prompt(msg, {default: defaultValue, required: required});
+//   return promptValue;
+// }
 
 export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promise<string> {
+  const reqInput = () => input({message: 'Token cannot be found, Enter token', required: true});
+
   const envToken = process.env.SUBQL_ACCESS_TOKEN;
   if (envToken) return envToken;
   if (existsSync(token_path)) {
     try {
       const authToken = readFileSync(token_path, 'utf8');
       if (!authToken) {
-        return await cli.prompt('Token cannot be found, Enter token');
+        return await reqInput();
       }
       return authToken.trim();
     } catch (e) {
-      return cli.prompt('Token cannot be found, Enter token');
+      return reqInput();
     }
   } else {
-    return cli.prompt('Token cannot be found, Enter token');
+    return reqInput();
   }
 }
 

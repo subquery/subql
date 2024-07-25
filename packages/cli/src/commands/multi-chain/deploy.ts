@@ -4,11 +4,11 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {input} from '@inquirer/prompts';
 import {Command, Flags} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
-import inquirer from 'inquirer';
 import YAML from 'yaml';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {
@@ -16,7 +16,6 @@ import {
   dictionaryEndpoints,
   executeProjectDeployment,
   generateDeploymentChain,
-  imageVersions,
   ipfsCID_validate,
   processEndpoints,
   projectsInfo,
@@ -24,7 +23,8 @@ import {
 } from '../../controller/deploy-controller';
 import {getDirectoryCid, uploadToIpfs} from '../../controller/publish-controller';
 import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
-import {addV, checkToken, promptWithDefaultValues, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
+import {addV, checkToken, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
+import {promptImageVersion} from '../deployment/deploy';
 
 export default class MultiChainDeploy extends Command {
   static description = 'Multi-chain deployment to hosted service';
@@ -84,23 +84,13 @@ export default class MultiChainDeploy extends Command {
 
     if (!flags.queryVersion) {
       try {
-        const queryAvailableVersions = await imageVersions(
+        flags.queryVersion = await promptImageVersion(
           multichainManifestObject.query.name,
           multichainManifestObject.query.version,
+          flags.useDefaults,
           authToken,
-          ROOT_API_URL_PROD
+          'Enter query version'
         );
-        if (!flags.useDefaults) {
-          flags.queryVersion = await promptWithDefaultValues(
-            inquirer,
-            `Enter query version`,
-            undefined,
-            queryAvailableVersions,
-            true
-          );
-        } else {
-          flags.queryVersion = queryAvailableVersions[0];
-        }
       } catch (e) {
         throw new Error(chalk.bgRedBright('Query version is required'));
       }
@@ -118,25 +108,15 @@ export default class MultiChainDeploy extends Command {
 
       assert(validator.chainId, 'Please set chainId in your project');
       if (!indexerVersions[validator.chainId]) {
+        assert(validator.manifestRunner, 'Please set manifestRunner in your project');
         try {
-          assert(validator.manifestRunner, 'Please set manifestRunner in your project');
-          const indexerAvailableVersions = await imageVersions(
+          indexerVersions[validator.chainId] = await promptImageVersion(
             validator.manifestRunner.node.name,
             validator.manifestRunner.node.version,
+            flags.useDefaults,
             authToken,
-            ROOT_API_URL_PROD
+            `Enter indexer version for ${multichainProjectPath}`
           );
-          if (!flags.useDefaults) {
-            indexerVersions[validator.chainId] = await promptWithDefaultValues(
-              inquirer,
-              `Enter indexer version for ${multichainProjectPath}`,
-              undefined,
-              indexerAvailableVersions,
-              true
-            );
-          } else {
-            indexerVersions[validator.chainId] = indexerAvailableVersions[0];
-          }
         } catch (e) {
           throw new Error(chalk.bgRedBright('Indexer version is required'), {cause: e});
         }
@@ -153,25 +133,19 @@ export default class MultiChainDeploy extends Command {
           );
         }
 
-        endpoints[validator.chainId] = await promptWithDefaultValues(
-          cli,
-          `Enter endpoint for ${multichainProjectPath}`,
-          undefined,
-          undefined,
-          true
-        );
+        endpoints[validator.chainId] = await input({
+          message: `Enter endpoint for ${multichainProjectPath}`,
+          required: true,
+        });
       }
 
       if (!dictionaries[validator.chainId]) {
         const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
         if (!flags.useDefaults && !validateDictEndpoint) {
-          dictionaries[validator.chainId] = await promptWithDefaultValues(
-            cli,
-            `Enter dictionary for ${multichainProjectPath}`,
-            validateDictEndpoint,
-            undefined,
-            false
-          );
+          dictionaries[validator.chainId] = await input({
+            message: `Enter dictionary for ${multichainProjectPath}`,
+            required: false,
+          });
         } else if (validateDictEndpoint) {
           dictionaries[validator.chainId] = validateDictEndpoint;
         }
