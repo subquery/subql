@@ -70,6 +70,7 @@ describe('Subgraph Graphql Schema migration', () => {
       requiredReferenceList: [OtherEntity!]!
 
       derivedEntity: [FooEntity!]! @derivedFrom(field: "example")
+      derivedEntity2: [FooEntity!]!
     }
 
     type OtherEntity @entity(immutable: true, timeseries: true) {

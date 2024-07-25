@@ -16,6 +16,7 @@ import {
   DefinitionNode,
   DirectiveNode,
   ListValueNode,
+  FieldDefinitionNode,
 } from 'graphql';
 
 // Extra schema definitions used by the graph
@@ -42,6 +43,9 @@ export async function migrateSchema(subgraphSchemaPath: string, subqlSchemaPath:
     `* schema.graphql has been migrated. If there are any issues see our documentation for more details https://academy.subquery.network/build/graphql.html`
   );
 }
+
+// This is the scalars available to Subquery projects.
+const subqlScalars = new Set(['String', 'Int', 'Boolean', 'ID', 'Date', 'Bytes', 'Float', 'BigInt', 'BigDecimal']);
 
 export function migrateSchemaFromString(input: string): string {
   const src = new Source(input);
@@ -83,8 +87,12 @@ export function migrateSchemaFromString(input: string): string {
             if (type.name.value === 'Timestamp') {
               (type.name as any).value = 'Date';
             }
+
+            convertRelations(doc.definitions, definition, field, type);
+
             return type;
           });
+
           return field;
         });
 
@@ -150,7 +158,53 @@ function convertFulltextDirective(directive: DirectiveNode, definitions: readonl
   if (!entity) throw new Error(`Unable to find entity ${entityName.value} for fulltext search`);
 
   // Add the fulltext directive to the entity
+  (entity.directives as any) ??= [];
   (entity.directives as any).push(makeFulltextDirective(fieldNames.map((f) => (f as any).value)));
+}
+
+// Some relations are handled differently to the Graph, add the necessary directive here
+function convertRelations(
+  definitions: readonly DefinitionNode[],
+  definition: ObjectTypeDefinitionNode,
+  field: FieldDefinitionNode,
+  type: NamedTypeNode
+) {
+  // This scalars check is a best effort to find types that are relations
+  if (!subqlScalars.has(type.name.value)) {
+    if (!field.directives?.find((d) => d.name.value === 'derivedFrom') && isListType(field.type)) {
+      // Find the referenced entity
+      const entity = findEntity(definitions, type.name.value);
+      if (!entity) {
+        throw new Error(`Cannot find entity referenced by field ${field.name.value} on type ${definition.name.value}`);
+      }
+
+      // Only care if its an entity. i.e. not a JSON type
+      if (entity.directives?.find((d) => d.name.value === 'entity')) {
+        // Try to find a field with the same name as the type
+        let name = '';
+        const matches = entity.fields?.filter((field) => isFieldOfType(field.type, definition.name.value));
+
+        if (matches?.length === 1) {
+          name = matches?.[0]?.name.value;
+        } else {
+          if (!matches?.length) {
+            console.warn(
+              `Unable to find a lookup on ${entity.name.value} for "${definition.name.value}.${field.name.value}". You will need to manually set the "field" property`
+            );
+          } else {
+            console.warn(
+              `Found multiple matches of ${entity.name.value} for "${definition.name.value}.${field.name.value}". You will need to manually set the "field" property`
+            );
+          }
+          name = '<replace-me>';
+        }
+
+        // Add the necessary directive
+        (field.directives as any) ??= [];
+        (field.directives as any).push(makeDerivedFromDirective(name));
+      }
+    }
+  }
 }
 
 // Drills down to the inner type and runs the modFn on it, this runs in place
@@ -159,6 +213,26 @@ function modifyTypeNode(type: TypeNode, modFn: (innerType: NamedTypeNode) => Nam
     return modifyTypeNode(type.type, modFn);
   }
   return modFn(type);
+}
+
+function isListType(type: TypeNode): boolean {
+  if (type.kind === Kind.LIST_TYPE) {
+    return true;
+  }
+
+  if (type.kind === Kind.NON_NULL_TYPE) {
+    return isListType(type.type);
+  }
+
+  return false;
+}
+
+// Finds the underlying type ignoring nullability
+function isFieldOfType(type: TypeNode, desired: string): boolean {
+  if (type.kind === Kind.NON_NULL_TYPE) {
+    return isFieldOfType(type.type, desired);
+  }
+  return type.kind !== Kind.LIST_TYPE && type.name.value === desired;
 }
 
 function findEntity(definitions: readonly DefinitionNode[], name: string): ObjectTypeDefinitionNode | undefined {
@@ -199,6 +273,29 @@ function makeFulltextDirective(fields: string[], language = 'english'): Directiv
         value: {
           kind: Kind.STRING,
           value: language,
+        },
+      },
+    ],
+  } satisfies DirectiveNode;
+}
+
+function makeDerivedFromDirective(field: string): DirectiveNode {
+  return {
+    kind: Kind.DIRECTIVE,
+    name: {
+      kind: Kind.NAME,
+      value: 'derivedFrom',
+    },
+    arguments: [
+      {
+        kind: Kind.ARGUMENT,
+        name: {
+          kind: Kind.NAME,
+          value: 'field',
+        },
+        value: {
+          kind: Kind.STRING,
+          value: field,
         },
       },
     ],

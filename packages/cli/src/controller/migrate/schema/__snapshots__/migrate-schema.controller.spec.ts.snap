@@ -39,9 +39,10 @@ type ExampleEntity @entity @fullText(fields: ["optionalString", "requiredString"
   requiredTimestampList: [Date!]!
   optionalReference: OtherEntity
   requiredReference: OtherEntity!
-  optionalReferenceList: [OtherEntity!]
-  requiredReferenceList: [OtherEntity!]!
+  optionalReferenceList: [OtherEntity!] @derivedFrom(field: "<replace-me>")
+  requiredReferenceList: [OtherEntity!]! @derivedFrom(field: "<replace-me>")
   derivedEntity: [FooEntity!]! @derivedFrom(field: "example")
+  derivedEntity2: [FooEntity!]! @derivedFrom(field: "example")
 }
 
 type OtherEntity @entity {
