@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.1] - 2024-07-25
+### Changed
+- Bump version with `@subql/utils`
+
 ## [4.1.0] - 2024-07-11
 ### Added
 - Add `IPFSHTTPClientLite` to replace original `IPFSHTTPClient` in order to reduce dependencies (#2480)
@@ -388,7 +392,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/4.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/4.1.1...HEAD
+[4.1.1]: https://github.com/subquery/subql/compare/common/4.1.0...common/4.1.1
 [4.1.0]: https://github.com/subquery/subql/compare/common/4.0.1...common/4.1.0
 [4.0.1]: https://github.com/subquery/subql/compare/common/4.0.0...common/4.0.1
 [4.0.0]: https://github.com/subquery/subql/compare/common/3.9.0...common/4.0.0

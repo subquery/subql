@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Subgraph graphql schema migration to the migrate command (#2499)
 
+## [5.1.1] - 2024-07-25
+### Changed
+- Bump versions with `@subql/common` and `@subql/utils` (#2498)
+
 ## [5.1.0] - 2024-07-11
 ### Changed
 - Use `IPFSHTTPClientLite` replace `IPFSHTTPClient` (#2480)
@@ -640,7 +644,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.1.1...HEAD
+[5.1.1]: https://github.com/subquery/subql/compare/cli/5.1.0...cli/5.1.1
 [5.1.0]: https://github.com/subquery/subql/compare/cli/5.0.1...cli/5.1.0
 [5.0.1]: https://github.com/subquery/subql/compare/cli/5.0.0...cli/5.0.1
 [5.0.0]: https://github.com/subquery/subql/compare/cli/4.15.0...cli/5.0.0

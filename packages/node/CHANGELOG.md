@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.0.0] - 2024-07-25
 ### Changed
+- Breaking change: Update with `@subql/node-core`, require indexing environment timezone set to UTC (#2495)
 - Update SubqueryProject to use code from node-core (#2496)
+### Fixed
+- Bump with `@subql/node-core`, fixed various issues causing poi inconsistency (#2497)
 
 ## [4.9.0] - 2024-07-22
 ### Changed
@@ -1265,7 +1270,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/4.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.0.0...HEAD
+[5.0.0]: https://github.com/subquery/subql/compare/node/4.9.0...node/5.0.0
 [4.9.0]: https://github.com/subquery/subql/compare/node/4.8.2...node/4.9.0
 [4.8.2]: https://github.com/subquery/subql/compare/node/4.8.1...node/4.8.2
 [4.8.1]: https://github.com/subquery/subql/compare/node/4.8.0...node/4.8.1
