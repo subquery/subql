@@ -151,7 +151,7 @@ function processGetJson(field: GraphQLEntityField | GraphQLJsonFieldType, value:
   const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
   const nestJsonFields = field.jsonInterface?.fields.filter((f) => f.jsonInterface);
   const processBigIntFields = (value: any) => {
-    if (bigIntFields && bigIntFields.length) {
+    if (bigIntFields) {
       for (const bigIntField of bigIntFields) {
         // If null is passed, we should not convert it to BigInt
         if (value[bigIntField.name] !== undefined && value[bigIntField.name] !== null) {
