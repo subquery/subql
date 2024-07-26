@@ -161,7 +161,7 @@ function processGetJson(field: GraphQLEntityField | GraphQLJsonFieldType, value:
     }
     return value;
   };
-  if (nestJsonFields && nestJsonFields.length) {
+  if (nestJsonFields) {
     for (const nestJsonField of nestJsonFields) {
       // have a nest field, and nest field is json type, also value is defined
       if (nestJsonField.jsonInterface && value[nestJsonField.name]) {
