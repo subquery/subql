@@ -3,7 +3,7 @@
 
 import {GraphQLModelsType} from '@subql/utils';
 import {Sequelize, DataTypes, QueryTypes} from '@subql/x-sequelize';
-import {padStart} from 'lodash';
+import {cloneDeep, padStart} from 'lodash';
 import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../';
 import {CachedModel} from './cacheModel';
 
@@ -378,20 +378,24 @@ describe('cacheModel integration', () => {
     await sequelize.close();
   });
 
+  async function setDefaultData(id: string, height: number, data?: any): Promise<void> {
+    cacheModel.set(
+      id,
+      data ?? {
+        id,
+        selfStake: BigInt(1000000000000000000000n),
+        oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
+        delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
+        randomNArray: [1, 2, 3, 4, 5],
+      },
+      height
+    );
+    await flush(height + 1);
+  }
+
   describe('cached data and db data compare', () => {
     it('bigint value in jsonb', async () => {
-      cacheModel.set(
-        `0x01`,
-        {
-          id: `0x01`,
-          selfStake: BigInt(1000000000000000000000n),
-          oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
-          delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
-          randomNArray: [1, 2, 3, 4, 5],
-        },
-        1
-      );
-      await flush(2);
+      await setDefaultData('0x01', 1);
 
       // force clear get cache
       (cacheModel as any).getCache.clear();
@@ -533,18 +537,13 @@ describe('cacheModel integration', () => {
     });
 
     it('empty array test, compare db result with cache data', async () => {
-      cacheModel.set(
-        `0x09`,
-        {
-          id: `0x09`,
-          selfStake: BigInt(1000000000000000000000n),
-          oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
-          delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
-          randomNArray: undefined,
-        },
-        1
-      );
-      await flush(2);
+      await setDefaultData('0x09', 1, {
+        id: '0x09',
+        selfStake: BigInt(1000000000000000000000n),
+        oneEntity: {testItem: 'test', amount: BigInt(8000000000000000000000n)},
+        delegators: [{delegator: '0x02', amount: BigInt(1000000000000000000000n)}],
+        randomNArray: undefined,
+      });
 
       // Cache value 1, before cache is cleared
       const resCache1 = await cacheModel.get('0x09');
@@ -566,6 +565,23 @@ describe('cacheModel integration', () => {
 
       // We are expecting DB value and set cache value can be difference, field value can be undefined and null
       expect(res0).not.toEqual(resCache1);
+    });
+
+    it('get and update, without save, get again should not be updated value', async () => {
+      await setDefaultData(`0x10`, 1);
+
+      // Db value
+      const res0 = await cacheModel.get('0x10');
+      const copiedRes0 = cloneDeep(res0);
+
+      // Update the value
+      res0?.delegators.push({delegator: '0x11', amount: BigInt(9000000000000000000000n)});
+
+      // Get it again
+      const res1 = await cacheModel.get('0x10');
+
+      // should be same before updated
+      expect(res1).toEqual(copiedRes0);
     });
   });
 });
