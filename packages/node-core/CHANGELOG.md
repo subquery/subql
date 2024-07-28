@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed get and set data not been deepCloned and data is not mutable
+- Improved get bigInt type from json type
+
 ## [13.0.0] - 2024-07-25
 ### Changed
 - Breaking change: Require indexing environment timezone set to UTC, avoid inconsistent result from cache and database (#2495)

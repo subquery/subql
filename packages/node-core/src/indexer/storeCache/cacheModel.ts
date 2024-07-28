@@ -45,7 +45,7 @@ export class CachedModel<
     T extends {id: string; __block_range?: (number | null)[] | Fn} = {
       id: string;
       __block_range?: (number | null)[] | Fn;
-    }
+    },
   >
   extends Cacheable
   implements ICachedModel<T>, ICachedModelControl
@@ -93,7 +93,7 @@ export class CachedModel<
         !latestSetRecord.removed &&
         this.removeCache[id].removedAtBlock <= latestSetRecord.startHeight
       ) {
-        return latestSetRecord.data;
+        return cloneDeep(latestSetRecord.data);
       }
       return;
     }
@@ -117,7 +117,7 @@ export class CachedModel<
           this.getCache.set(id, record);
         }
       }
-      return record;
+      return cloneDeep(record);
     }
 
     return cloneDeep(this.getCache.get(id));
@@ -219,10 +219,11 @@ export class CachedModel<
     if (this.setCache[id] === undefined) {
       this.setCache[id] = new SetValueModel();
     }
-    this.setCache[id].set(data, blockHeight, this.getNextStoreOperationIndex());
+    const copiedData = cloneDeep(data);
+    this.setCache[id].set(copiedData, blockHeight, this.getNextStoreOperationIndex());
     // Experimental, this means getCache keeps duplicate data from setCache,
     // we can remove this once memory is too full.
-    this.getCache.set(id, data);
+    this.getCache.set(id, copiedData);
     // Handle remove cache, when removed data been created again
     if (this.removeCache[id] && this.removeCache[id].removedAtBlock === blockHeight) {
       delete this.removeCache[id];
@@ -350,15 +351,22 @@ export class CachedModel<
     }
   }
 
-  private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {
-    return {
-      removeRecords: Object.entries(this.removeCache).reduce((acc, [key, value]) => {
-        if (value.removedAtBlock <= blockHeight) {
+  private filterRemoveRecordByHeight(blockHeight: number, lessEqt: boolean): Record<string, RemoveValue> {
+    return Object.entries(this.removeCache).reduce(
+      (acc, [key, value]) => {
+        if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
           acc[key] = value;
         }
 
         return acc;
-      }, {} as Record<string, RemoveValue>),
+      },
+      {} as Record<string, RemoveValue>
+    );
+  }
+
+  private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {
+    return {
+      removeRecords: this.filterRemoveRecordByHeight(blockHeight, true),
       setRecords: Object.entries(this.setCache).reduce((acc, [key, value]) => {
         const newValue = value.fromBelowHeight(blockHeight + 1);
         if (newValue.getValues().length) {
@@ -422,13 +430,7 @@ export class CachedModel<
       return acc;
     }, {} as SetData<T>);
 
-    this.removeCache = Object.entries(this.removeCache).reduce((acc, [key, value]) => {
-      if (value.removedAtBlock > blockHeight) {
-        newCounter++;
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, RemoveValue>);
+    this.removeCache = this.filterRemoveRecordByHeight(blockHeight, false);
 
     this.flushableRecordCounter = newCounter;
   }

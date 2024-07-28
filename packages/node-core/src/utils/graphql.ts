@@ -12,6 +12,7 @@ import {
   isBuffer,
   isNull,
   GraphQLEntityField,
+  GraphQLJsonFieldType,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
 import {isArray, isObject} from 'lodash';
@@ -120,7 +121,7 @@ export function getColumnOption(
       if (!dataValue || !field.jsonInterface) {
         return null;
       }
-      return field.isArray ? dataValue.map((v: any) => processGetJson(v)) : processGetJson(dataValue);
+      return field.isArray ? dataValue.map((v: any) => processGetJson(field, v)) : processGetJson(field, dataValue);
     };
     columnOption.set = function (val: unknown) {
       if (val === undefined || isNull(val)) {
@@ -140,14 +141,35 @@ export function getColumnOption(
   return columnOption;
 }
 
-function processGetJson(data: any): any {
-  return JSON.parse(JSON.stringify(data), (key, value) => {
-    // regex to check if the value is a bigint string
-    if (typeof value === 'string' && /^-?\d+n$/.test(value)) {
-      return BigInt(value.slice(0, -1));
+/***
+ * Process nested json get, output is same as input value type
+ * @param field
+ * @param value
+ */
+function processGetJson(field: GraphQLEntityField | GraphQLJsonFieldType, value: any): any {
+  // bigIntFields and nestJsonFields from this level in the entity/json
+  const bigIntFields = field.jsonInterface?.fields.filter((f) => f.type === 'BigInt');
+  const nestJsonFields = field.jsonInterface?.fields.filter((f) => f.jsonInterface);
+  const processBigIntFields = (value: any) => {
+    if (bigIntFields) {
+      for (const bigIntField of bigIntFields) {
+        // If null is passed, we should not convert it to BigInt
+        if (value[bigIntField.name] !== undefined && value[bigIntField.name] !== null) {
+          value[bigIntField.name] = BigInt(value[bigIntField.name].slice(0, -1));
+        }
+      }
     }
     return value;
-  });
+  };
+  if (nestJsonFields) {
+    for (const nestJsonField of nestJsonFields) {
+      // have a nest field, and nest field is json type, also value is defined
+      if (nestJsonField.jsonInterface && value[nestJsonField.name]) {
+        value[nestJsonField.name] = processGetJson(nestJsonField, value[nestJsonField.name]);
+      }
+    }
+  }
+  return processBigIntFields(value);
 }
 
 function processSetJson(data: any): any {
