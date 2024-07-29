@@ -36,8 +36,7 @@ RUN mkdir -p .monitor && \
 # Make the user not ROOT
 USER 1000
 # Fix timezone to UTC
-ENV TZ ='UTC'
-
+ENV TZ=utc
 
 # Set Entry point and command
 ENTRYPOINT ["/sbin/tini", "--", "/bin/run"]
