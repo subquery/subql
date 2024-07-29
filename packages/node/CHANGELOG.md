@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Fixed api didn't reload new deployment chainTypes when project upgraded (#2505)
+- Fixed api not reloading new deployment chainTypes when project upgrades (#2505)
 
 ## [5.0.1] - 2024-07-29
 ### Fixed
