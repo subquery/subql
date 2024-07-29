@@ -6,11 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2024-07-29
+### Fixed
+- Docker images not having TZ set to UTC (#333)
+- Bump `@subql/node-core` with fixes for data consitstency issue (#333)
+
 ## [5.0.0] - 2024-07-26
 ### Changed
 - Enable ts strict mode
 - Use Subquery Project code from node core (#331)
 - Breaking change: Update to latest `@subql/node-core`, require indexing environment timezone set to UTC (#330)
+
 ### Fixed
 - Bump with `@subql/node-core`, fixed various issues causing poi inconsistency (#2497)
 
@@ -526,7 +532,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.1...HEAD
+[5.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.0...node-ethereum/5.0.1
 [5.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.3...node-ethereum/5.0.0
 [4.7.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.2...node-ethereum/4.7.3
 [4.7.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.1...node-ethereum/4.7.2
