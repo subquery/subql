@@ -251,4 +251,11 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
     this.lastCacheFlushTime = Date.now();
     await this.handleConnectionStateChange();
   }
+
+  async updateChainTypes(newChainTypes: unknown): Promise<void> {
+    logger.info(`Network chain types updated!`);
+    for (const endpoint in this.allApi) {
+      await this.allApi[endpoint].updateChainTypes?.(newChainTypes);
+    }
+  }
 }

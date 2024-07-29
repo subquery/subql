@@ -128,12 +128,12 @@ describe('ProjectService', () => {
   });
 
   it('reload chainTypes when project changed, on init', async () => {
-    const spyOnApiReloadChainTypes = jest.spyOn(apiService, 'reloadChainTypes');
+    const spyOnApiUpdateChainTypes = jest.spyOn(apiService, 'updateChainTypes');
     // mock last processed height
     (service as any).getLastProcessedHeight = jest.fn().mockResolvedValue(4);
 
     await service.init(5);
 
-    expect(spyOnApiReloadChainTypes).toHaveBeenCalledTimes(1);
+    expect(spyOnApiUpdateChainTypes).toHaveBeenCalledTimes(1);
   });
 });

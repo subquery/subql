@@ -160,18 +160,11 @@ export class ApiService
   }
 
   async init(): Promise<ApiService> {
-    await this.load();
-    return this;
-  }
-
-  async load(newChainTypes?: unknown): Promise<void> {
     overrideConsoleWarn();
     let chainTypes: RegisteredTypes | undefined;
     let network: SubstrateNetworkConfig;
     try {
-      chainTypes = await updateChainTypesHasher(
-        newChainTypes ?? this.project.chainTypes,
-      );
+      chainTypes = await updateChainTypesHasher(this.project.chainTypes);
       network = this.project.network;
 
       if (this.nodeConfig.primaryNetworkEndpoint) {
@@ -213,10 +206,16 @@ export class ApiService
         });
       },
     );
+    return this;
   }
 
-  updateBlockFetching(): void {
-    const onlyEventHandlers = isOnlyEventHandlers(this.project);
+  async updateChainTypes(newChainTypes: unknown): Promise<void> {
+    const chainTypes = await updateChainTypesHasher(newChainTypes);
+    await this.connectionPoolService.updateChainTypes(chainTypes);
+  }
+
+  updateBlockFetching(project?: SubqueryProject): void {
+    const onlyEventHandlers = isOnlyEventHandlers(project ?? this.project);
     const skipTransactions =
       this.nodeConfig.skipTransactions && onlyEventHandlers;
 

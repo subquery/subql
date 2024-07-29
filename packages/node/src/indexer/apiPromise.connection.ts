@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
@@ -46,6 +45,7 @@ export class ApiPromiseConnection
   private constructor(
     public unsafeApi: ApiPromise,
     private fetchBlocksBatches: GetFetchFunc,
+    private endpoint: string,
   ) {
     this.networkMeta = {
       chain: unsafeApi.runtimeChain.toString(),
@@ -59,6 +59,14 @@ export class ApiPromiseConnection
     fetchBlocksBatches: GetFetchFunc,
     args: { chainTypes?: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
+    const api = await this.createApiPromise(endpoint, args);
+    return new ApiPromiseConnection(api, fetchBlocksBatches, endpoint);
+  }
+
+  static async createApiPromise(
+    endpoint: string,
+    args: { chainTypes?: RegisteredTypes },
+  ): Promise<ApiPromise> {
     let provider: ProviderInterface;
     let throwOnConnect = false;
 
@@ -83,8 +91,8 @@ export class ApiPromiseConnection
       noInitWarn: true,
       ...args.chainTypes,
     };
-    const api = await ApiPromise.create(apiOption);
-    return new ApiPromiseConnection(api, fetchBlocksBatches);
+
+    return ApiPromise.create(apiOption);
   }
 
   safeApi(height: number): ApiAt {
@@ -121,6 +129,14 @@ export class ApiPromiseConnection
 
   async apiDisconnect(): Promise<void> {
     await this.unsafeApi.disconnect();
+  }
+
+  async updateRegisteredChainTypes(chainTypes: RegisteredTypes): Promise<void> {
+    this.unsafeApi = await ApiPromiseConnection.createApiPromise(
+      this.endpoint,
+      { chainTypes },
+    );
+    await this.apiConnect();
   }
 
   handleError = ApiPromiseConnection.handleError;

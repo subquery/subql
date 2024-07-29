@@ -25,6 +25,7 @@ export interface IApiConnectionSpecific<A = any, SA = any, B extends Array<any> 
   handleError(error: Error): ApiConnectionError;
   apiConnect(): Promise<void>;
   apiDisconnect(): Promise<void>;
+  updateChainTypes?(chainTypes: unknown): Promise<void>;
 }
 
 export abstract class ApiService<
@@ -80,19 +81,6 @@ export abstract class ApiService<
   get unsafeApi(): A {
     const apiInstance = this.connectionPoolService.api;
     return apiInstance.unsafeApi;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  protected async load(chainTypes?: unknown): Promise<void> {
-    // Implement in this way rather than abstract class, so it not break other network
-    throw new Error('this should be implement with network api service');
-  }
-
-  async reloadChainTypes(chainTypes: unknown): Promise<void> {
-    // close any existing connections
-    await this.connectionPoolService.onApplicationShutdown();
-    logger.info(`Reload chainTypes`);
-    await this.load(chainTypes);
   }
 
   async createConnections(
