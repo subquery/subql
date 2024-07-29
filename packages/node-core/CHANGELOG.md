@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed project upgrade missing reload network chainTypes when `onProjectChange` (#2505)
+
 ## [13.0.0] - 2024-07-25
 ### Changed
 - Breaking change: Require indexing environment timezone set to UTC, avoid inconsistent result from cache and database (#2495)

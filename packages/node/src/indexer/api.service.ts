@@ -160,11 +160,24 @@ export class ApiService
   }
 
   async init(): Promise<ApiService> {
+    return this.load();
+  }
+
+  async reloadChainTypes(chainTypes: unknown): Promise<void> {
+    // close any existing connections
+    await this.connectionPoolService.onApplicationShutdown();
+    logger.info(`Reload chainTypes`);
+    await this.load(chainTypes);
+  }
+
+  private async load(newChainTypes?: unknown): Promise<ApiService> {
     overrideConsoleWarn();
     let chainTypes: RegisteredTypes | undefined;
     let network: SubstrateNetworkConfig;
     try {
-      chainTypes = await updateChainTypesHasher(this.project.chainTypes);
+      chainTypes = await updateChainTypesHasher(
+        newChainTypes ?? this.project.chainTypes,
+      );
       network = this.project.network;
 
       if (this.nodeConfig.primaryNetworkEndpoint) {

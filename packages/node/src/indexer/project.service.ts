@@ -74,7 +74,8 @@ export class ProjectService extends BaseProjectService<
     return getTimestamp(block);
   }
 
-  protected onProjectChange(project: SubqueryProject): void | Promise<void> {
+  protected async onProjectChange(project: SubqueryProject): Promise<void> {
+    await this.apiService.reloadChainTypes(project.chainTypes);
     this.apiService.updateBlockFetching();
   }
 }

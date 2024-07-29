@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed api didn't reload new deployment chainTypes when project upgraded (#2505)
+- Fixed default Timezone to UTC in dockerfile and package.json (#2505)
+
 ## [5.0.0] - 2024-07-25
 ### Changed
 - Breaking change: Update with `@subql/node-core`, require indexing environment timezone set to UTC (#2495)

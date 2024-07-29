@@ -1,6 +1,5 @@
 # Build stage
 FROM node:18-alpine as builder
-ENV TZ ='UTC'
 # Set working directory
 WORKDIR /app
 
@@ -36,6 +35,9 @@ RUN mkdir -p .monitor && \
 
 # Make the user not ROOT
 USER 1000
+# Fix timezone to UTC
+ENV TZ ='UTC'
+
 
 # Set Entry point and command
 ENTRYPOINT ["/sbin/tini", "--", "/bin/run"]
