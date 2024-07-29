@@ -1,0 +1,61 @@
+{
+  "name": "@subql/query-subgraph",
+  "version": "0.0.1",
+  "description": "",
+  "bin": {
+    "subql-query": "./bin/run"
+  },
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "rm -rf dist && tsc -b",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nodemon",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"query/\""
+  },
+  "author": "Yoozo",
+  "main": "dist/index.js",
+  "license": "GPL-3.0",
+  "files": [
+    "/dist",
+    "/bin"
+  ],
+  "dependencies": {
+    "@nestjs/common": "^9.4.0",
+    "@nestjs/core": "^9.4.0",
+    "@nestjs/platform-express": "^9.4.0",
+    "apollo-server-express": "^3.12.0",
+    "compression": "^1.7.4",
+    "express-pino-logger": "^6.0.0",
+    "lodash": "^4.17.21",
+    "pg": "^8.7.1",
+    "pg-tsquery": "^8.4.2",
+    "postgraphile": "beta",
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^3.0.2",
+    "rxjs": "^7.5.2",
+    "subscriptions-transport-ws": "^0.11.0",
+    "yargs": "^16.2.0"
+  },
+  "devDependencies": {
+    "@nestjs/schematics": "^9.2.0",
+    "@nestjs/testing": "^9.4.0",
+    "@types/compression": "^1",
+    "@types/express": "^4.17.13",
+    "@types/express-pino-logger": "^4.0.3",
+    "@types/jest": "^27.4.0",
+    "@types/lodash": "^4.14.178",
+    "@types/rimraf": "^3.0.2",
+    "@types/yargs": "^16.0.4",
+    "nodemon": "^2.0.15"
+  }
+}
