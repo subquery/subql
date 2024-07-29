@@ -49,7 +49,6 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
 
   async onApplicationShutdown(): Promise<void> {
     await Promise.all(Object.values(this.allApi).map((api) => api?.apiDisconnect()));
-    this.allApi = {};
   }
 
   async addToConnections(api: T, endpoint: string): Promise<void> {

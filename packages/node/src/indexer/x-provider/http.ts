@@ -54,7 +54,7 @@ export class HttpProvider implements ProviderInterface {
 
   readonly #stats: ProviderStats;
 
-  readonly ctx: ReturnType<typeof context>;
+  readonly #ctx: ReturnType<typeof context>;
 
   /**
    * @param {string} endpoint The endpoint url starting with http://
@@ -69,7 +69,7 @@ export class HttpProvider implements ProviderInterface {
       );
     }
 
-    this.ctx = context({
+    this.#ctx = context({
       http1: {
         keepAlive: true,
         maxSockets: 10,
@@ -119,7 +119,7 @@ export class HttpProvider implements ProviderInterface {
    */
   async disconnect(): Promise<void> {
     // noop
-    await this.ctx.disconnectAll();
+    await this.#ctx.disconnectAll();
   }
 
   /**
@@ -193,7 +193,7 @@ export class HttpProvider implements ProviderInterface {
     this.#stats.total.bytesSent += body.length;
 
     try {
-      const response = await this.ctx.fetch(this.#endpoint, {
+      const response = await this.#ctx.fetch(this.#endpoint, {
         body,
         headers: {
           Accept: 'application/json',
