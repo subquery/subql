@@ -160,17 +160,11 @@ export class ApiService
   }
 
   async init(): Promise<ApiService> {
-    return this.load();
+    await this.load();
+    return this;
   }
 
-  async reloadChainTypes(chainTypes: unknown): Promise<void> {
-    // close any existing connections
-    await this.connectionPoolService.onApplicationShutdown();
-    logger.info(`Reload chainTypes`);
-    await this.load(chainTypes);
-  }
-
-  private async load(newChainTypes?: unknown): Promise<ApiService> {
+  async load(newChainTypes?: unknown): Promise<void> {
     overrideConsoleWarn();
     let chainTypes: RegisteredTypes | undefined;
     let network: SubstrateNetworkConfig;
@@ -219,8 +213,6 @@ export class ApiService
         });
       },
     );
-
-    return this;
   }
 
   updateBlockFetching(): void {
