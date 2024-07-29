@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed project upgrade missing reload network chainTypes when `onProjectChange` (#2505)
+- Fixed get and set data not been deepCloned and data is not mutable
+- Improved get bigInt type from json type
 
 ## [13.0.0] - 2024-07-25
 ### Changed
