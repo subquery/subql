@@ -4,6 +4,7 @@
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import {
+  BaseProjectService,
   ConnectionPoolService,
   ConnectionPoolStateManager,
   NodeConfig,
@@ -50,6 +51,44 @@ function testSubqueryProject(): SubqueryProject {
   } as unknown as SubqueryProject;
 }
 
+// @ts-ignore
+class TestProjectService extends BaseProjectService<any, any> {
+  packageVersion = '1.0.0';
+
+  async init(startHeight?: number): Promise<void> {
+    await (this as any).initUpgradeService(5);
+  }
+
+  async getBlockTimestamp(height: number): Promise<Date> {
+    return Promise.resolve(new Date());
+  }
+
+  async onProjectChange(project: any): Promise<void> {
+    await this.apiService.updateChainTypes();
+    this.apiService.updateBlockFetching();
+  }
+
+  get schema(): string {
+    return 'mock-schema';
+  }
+
+  async getLastProcessedHeight(): Promise<number> {
+    return Promise.resolve(4);
+  }
+
+  async ensureMetadata(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  async initDbSchema(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  async initUnfinalized(): Promise<any | undefined> {
+    return Promise.resolve(undefined);
+  }
+}
+
 const demoProjects = [
   testSubqueryProject(),
   {
@@ -70,7 +109,7 @@ const demoProjects = [
 jest.setTimeout(50_000);
 
 describe('ProjectService', () => {
-  let projectService: ProjectService;
+  let projectService: TestProjectService;
   let apiService: ApiService;
   let projectUpgradeService: ProjectUpgradeService<SubqueryProject>;
 
@@ -102,7 +141,7 @@ describe('ProjectService', () => {
         {
           provide: ProjectService,
           useFactory: (apiService: ApiService, project: SubqueryProject) =>
-            new ProjectService(
+            new TestProjectService(
               {
                 validateProjectCustomDatasources: jest.fn(),
               } as unknown as DsProcessorService,
@@ -159,23 +198,10 @@ describe('ProjectService', () => {
       .fn()
       .mockReturnValue(5);
     projectService = module.get(ProjectService);
-    // Mock db related returns
-    (projectService as any).ensureProject = jest
-      .fn()
-      .mockResolvedValue('mock-schema');
-    (projectService as any).ensureMetadata = jest.fn();
-    (projectService as any).initDbSchema = jest.fn();
-    (projectService as any).initUnfinalizedInternal = jest
-      .fn()
-      .mockResolvedValue(undefined);
   });
 
   it('reload chainTypes when project changed, on init', async () => {
     const spyOnApiUpdateChainTypes = jest.spyOn(apiService, 'updateChainTypes');
-    // mock last processed height
-    (projectService as any).getLastProcessedHeight = jest
-      .fn()
-      .mockResolvedValue(4);
 
     // When init, api use old chain types
     expect((apiService.api as any)._options.types).toStrictEqual({
