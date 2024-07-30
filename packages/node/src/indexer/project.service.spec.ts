@@ -54,7 +54,7 @@ const demoProjects = [
   testSubqueryProject(),
   {
     parent: {
-      utilBlock: 5,
+      untilBlock: 4,
       reference: '0',
     },
     ...testSubqueryProject(),
@@ -72,11 +72,17 @@ jest.setTimeout(100_000);
 describe('ProjectService', () => {
   let projectService: ProjectService;
   let apiService: ApiService;
+  let projectUpgradeService: ProjectUpgradeService<SubqueryProject>;
+
+  jest
+    .spyOn(ProjectUpgradeService as any, 'rewindableCheck')
+    .mockImplementation(() => true);
 
   beforeEach(async () => {
     const projectUpgrade = await ProjectUpgradeService.create(
       demoProjects[1],
       (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
+      1,
     );
 
     const p = upgradableSubqueryProject(projectUpgrade);
@@ -95,7 +101,7 @@ describe('ProjectService', () => {
         },
         {
           provide: ProjectService,
-          useFactory: (apiService: ApiService) =>
+          useFactory: (apiService: ApiService, project: SubqueryProject) =>
             new ProjectService(
               {
                 validateProjectCustomDatasources: jest.fn(),
@@ -104,11 +110,15 @@ describe('ProjectService', () => {
               null as unknown as any,
               null as unknown as any,
               { query: jest.fn() } as unknown as any,
-              demoProjects[1],
+              project,
               projectUpgrade,
               {
                 initCoreTables: jest.fn(),
-                storeCache: { metadata: {}, flushCache: jest.fn() },
+                storeCache: {
+                  metadata: {},
+                  flushCache: jest.fn(),
+                  _flushCache: { bind: jest.fn() },
+                },
               } as unknown as any,
               { unsafe: false } as unknown as NodeConfig,
               {
@@ -118,7 +128,7 @@ describe('ProjectService', () => {
               null as unknown as any,
               null as unknown as any,
             ),
-          inject: [ApiService],
+          inject: [ApiService, 'ISubqueryProject'],
         },
         EventEmitter2,
         ApiService,
@@ -134,13 +144,20 @@ describe('ProjectService', () => {
     await app.init();
     apiService = app.get(ApiService);
     await apiService.init();
-    const projectUpgradeService = app.get(
+    projectUpgradeService = app.get(
       ProjectUpgradeService,
     ) as ProjectUpgradeService<SubqueryProject>;
 
-    (projectUpgradeService as any).init = jest.fn();
     (projectUpgradeService as any).updateIndexedDeployments = jest.fn();
-
+    (projectUpgradeService as any).getDeploymentsMetadata = jest
+      .fn()
+      .mockResolvedValue({ 1: 'project1', 4: 'project4' } as Record<
+        number,
+        string
+      >);
+    (projectUpgradeService as any).validateIndexedData = jest
+      .fn()
+      .mockReturnValue(5);
     projectService = module.get(ProjectService);
     // Mock db related returns
     (projectService as any).ensureProject = jest
@@ -160,11 +177,16 @@ describe('ProjectService', () => {
       .fn()
       .mockResolvedValue(4);
 
+    // When init, api use old chain types
     expect((apiService.api as any)._options.types).toStrictEqual({
       TestType: 'u32',
     });
 
     await projectService.init(5);
+
+    // During preprocess, it should trigger update chain types
+
+    await projectUpgradeService.setCurrentHeight(5);
 
     expect((projectService as any).apiService.api._options.types).toStrictEqual(
       { TestType: 'u32', DispatchErrorModule: 'DispatchErrorModuleU8' },
