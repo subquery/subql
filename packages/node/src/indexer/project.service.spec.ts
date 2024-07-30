@@ -67,7 +67,7 @@ const demoProjects = [
   },
 ] as SubqueryProject[];
 
-jest.setTimeout(100_000);
+jest.setTimeout(50_000);
 
 describe('ProjectService', () => {
   let projectService: ProjectService;
