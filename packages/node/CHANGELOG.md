@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.2] - 2024-07-31
 ### Fixed
 - Fixed api not reloading new deployment chainTypes when project upgrades (#2505)
 
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Breaking change: Update with `@subql/node-core`, require indexing environment timezone set to UTC (#2495)
 - Update SubqueryProject to use code from node-core (#2496)
+
 ### Fixed
 - Bump with `@subql/node-core`, fixed various issues causing poi inconsistency (#2497)
 
@@ -1278,7 +1280,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.0.2...HEAD
+[5.0.2]: https://github.com/subquery/subql/compare/node/5.0.1...node/5.0.2
 [5.0.1]: https://github.com/subquery/subql/compare/node/5.0.0...node/5.0.1
 [5.0.0]: https://github.com/subquery/subql/compare/node/4.9.0...node/5.0.0
 [4.9.0]: https://github.com/subquery/subql/compare/node/4.8.2...node/4.9.0
