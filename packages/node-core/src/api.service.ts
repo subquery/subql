@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {ProjectNetworkConfig} from '@subql/types-core';
+import {IEndpointConfig, ProjectNetworkConfig} from '@subql/types-core';
 import {ApiConnectionError, ApiErrorType, MetadataMismatchError} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
 import {ConnectionPoolService} from './indexer';
@@ -33,6 +33,7 @@ export abstract class ApiService<
   SA = any,
   B extends Array<any> = any[],
   Connection extends IApiConnectionSpecific<A, SA, B> = IApiConnectionSpecific<A, SA, B>,
+  EndpointConfig extends IEndpointConfig = IEndpointConfig,
 > implements IApi<A, SA, B>
 {
   constructor(
@@ -85,17 +86,30 @@ export abstract class ApiService<
 
   async createConnections(
     network: ProjectNetworkConfig & {chainId: string},
-    createConnection: (endpoint: string) => Promise<Connection>,
+    createConnection: (endpoint: string, config: EndpointConfig) => Promise<Connection>,
     /* Used to monitor the state of the connection */
     postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
   ): Promise<void> {
     const endpointToApiIndex: Record<string, Connection> = {};
 
-    const failedConnections: Map<number, string> = new Map();
+    const failedConnections: Map<number, [string, EndpointConfig]> = new Map();
 
-    const connectionPromises = (network.endpoint as string[]).map(async (endpoint, i) => {
+    const endpoints = network.endpoint as Record<string, EndpointConfig>;
+
+    if (Array.isArray(endpoints) || typeof endpoints === 'string') {
+      throw new Error(`Endpoints have not been converted into the endpoint config format`);
+    }
+
+    const connectionPromises = Object.entries(endpoints).map(async ([endpoint, config], i) => {
       try {
-        const connection = await this.performConnection(createConnection, network, i, endpoint, postConnectedHook);
+        const connection = await this.performConnection(
+          createConnection,
+          network,
+          i,
+          endpoint,
+          config,
+          postConnectedHook
+        );
 
         void this.connectionPoolService.addToConnections(connection, endpoint);
       } catch (e) {
@@ -104,7 +118,7 @@ export abstract class ApiService<
 
         // Don't reconnect if connection is for wrong network
         if (!(e instanceof MetadataMismatchError)) {
-          failedConnections.set(i, endpoint);
+          failedConnections.set(i, [endpoint, config]);
         }
 
         throw e;
@@ -114,25 +128,26 @@ export abstract class ApiService<
     try {
       await Promise.any(connectionPromises);
     } catch (e) {
-      throw new Error('All endpoints failed to initialize. Please add healthier endpoints');
+      throw new Error('All endpoints failed to initialize. Please add healthier endpoints', {cause: e});
     }
 
     void Promise.allSettled(connectionPromises).then((res) => {
       // Retry failed connections in the background
-      for (const [index, endpoint] of failedConnections) {
-        this.retryConnection(createConnection, network, index, endpoint, postConnectedHook);
+      for (const [index, [endpoint, config]] of failedConnections) {
+        this.retryConnection(createConnection, network, index, endpoint, config, postConnectedHook);
       }
     });
   }
 
   private async performConnection(
-    createConnection: (endpoint: string) => Promise<Connection>,
+    createConnection: (endpoint: string, config: EndpointConfig) => Promise<Connection>,
     network: ProjectNetworkConfig & {chainId: string},
     index: number,
     endpoint: string,
+    config: EndpointConfig,
     postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
   ): Promise<Connection> {
-    const connection = await createConnection(endpoint);
+    const connection = await createConnection(endpoint, config);
 
     this.assertChainId(network, connection);
     if (!this._networkMeta) {
@@ -152,16 +167,11 @@ export abstract class ApiService<
     return connection;
   }
 
-  retryConnection(
-    createConnection: (endpoint: string) => Promise<Connection>,
-    network: ProjectNetworkConfig & {chainId: string},
-    index: number,
-    endpoint: string,
-    postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
-  ): void {
+  retryConnection(...args: Parameters<ApiService<A, SA, B, Connection, EndpointConfig>['performConnection']>): void {
+    const endpoint = args[3];
     this.connectionRetrys[endpoint] = backoffRetry(async () => {
       try {
-        const connection = await this.performConnection(createConnection, network, index, endpoint, postConnectedHook);
+        const connection = await this.performConnection(...args);
 
         // Replace null connection with the new connection
         await this.connectionPoolService.updateConnection(connection, endpoint);

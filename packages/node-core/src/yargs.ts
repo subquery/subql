@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import yargs from 'yargs';
+import yargs, {example} from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import {initLogger} from './logger';
 
@@ -32,7 +32,7 @@ type YargsOptions<RootO extends Record<string, yargs.Options>, RunO extends Reco
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function yargsBuilder<
   RootO extends Record<string, yargs.Options> = Record<string, never>,
-  RunO extends Record<string, yargs.Options> = Record<string, never>
+  RunO extends Record<string, yargs.Options> = Record<string, never>,
 >(options: YargsOptions<RootO, RunO>) {
   return (
     yargs(hideBin(process.argv))
@@ -134,6 +134,20 @@ export function yargsBuilder<
                 demandOption: false,
                 type: 'string',
                 describe: 'Primary blockchain endpoint, used as the first choice for connections.',
+              },
+              'network-endpoint-config': {
+                demandOption: false,
+                type: 'string',
+                describe: 'A json encoded string of a network endpoint configuration',
+
+                // example: JSON.stringify({ headers: { 'api-key': '<your-api-key>'}})
+              },
+              'primary-network-endpoint-config': {
+                demandOption: false,
+                type: 'string',
+
+                describe: 'Same as the network-endpoint.config but for the primary network endpoint',
+                // example: JSON.stringify({ headers: { 'api-key': '<your-api-key>'}})
               },
               'output-fmt': {
                 demandOption: false,

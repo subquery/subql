@@ -16,6 +16,7 @@ import {
   IApiConnectionSpecific,
   IBlock,
 } from '@subql/node-core';
+import { IEndpointConfig } from '@subql/types-core';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent, LightBlockContent } from './types';
 import { createCachedProvider } from './x-provider/cachedProvider';
@@ -58,12 +59,14 @@ export class ApiPromiseConnection
     endpoint: string,
     fetchBlocksBatches: GetFetchFunc,
     args: { chainTypes?: RegisteredTypes },
+    config: IEndpointConfig,
   ): Promise<ApiPromiseConnection> {
     let provider: ProviderInterface;
     let throwOnConnect = false;
 
     const headers = {
       'User-Agent': `SubQuery-Node ${packageVersion}`,
+      ...config.headers,
     };
 
     if (endpoint.startsWith('ws')) {

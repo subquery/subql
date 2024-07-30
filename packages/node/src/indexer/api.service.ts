@@ -29,6 +29,7 @@ import {
   exitWithError,
 } from '@subql/node-core';
 import { SubstrateNetworkConfig } from '@subql/types';
+import { IEndpointConfig } from '@subql/types-core';
 import { SubstrateNodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isOnlyEventHandlers } from '../utils/project';
@@ -109,7 +110,8 @@ export class ApiService
     ApiPromise,
     ApiAt,
     IBlock<BlockContent>[] | IBlock<LightBlockContent>[],
-    ApiPromiseConnection
+    ApiPromiseConnection,
+    IEndpointConfig
   >
   implements OnApplicationShutdown
 {
@@ -168,9 +170,9 @@ export class ApiService
       network = this.project.network;
 
       if (this.nodeConfig.primaryNetworkEndpoint) {
-        (network.endpoint as string[]).push(
-          this.nodeConfig.primaryNetworkEndpoint,
-        );
+        const [endpoint, config] = this.nodeConfig.primaryNetworkEndpoint;
+        (network.endpoint as Record<string, IEndpointConfig>)[endpoint] =
+          config;
       }
     } catch (e) {
       exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
@@ -183,10 +185,15 @@ export class ApiService
     await this.createConnections(
       network,
       //createConnection
-      (endpoint) =>
-        ApiPromiseConnection.create(endpoint, this.fetchBlocksBatches, {
-          chainTypes,
-        }),
+      (endpoint, config) =>
+        ApiPromiseConnection.create(
+          endpoint,
+          this.fetchBlocksBatches,
+          {
+            chainTypes,
+          },
+          config,
+        ),
       //postConnectedHook
       (connection: ApiPromiseConnection, endpoint: string, index: number) => {
         const api = connection.unsafeApi;
@@ -368,7 +375,7 @@ export class ApiService
     heights: number[],
     overallSpecVer?: number,
     numAttempts = MAX_RECONNECT_ATTEMPTS,
-  ): Promise<IBlock<LightBlockContent>[]> {
+  ): Promise<IBlock<LightBlockContent>[] | IBlock<BlockContent>[]> {
     return this.retryFetch(async () => {
       // Get the latest fetch function from the provider
       const apiInstance = this.connectionPoolService.api;

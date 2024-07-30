@@ -12,7 +12,7 @@ import {BaseDataSource, BaseTemplateDataSource, ParentProject, RunnerSpecs} from
 export interface CommonSubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
-  T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>
+  T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>,
 > {
   /**
    * The repository of your SubQuery project.
@@ -128,6 +128,12 @@ export interface IProjectManifest<D> {
   validate(): void;
 }
 
+/* Define specific behaviour for rate limits*/
+export interface IEndpointConfig {
+  /* Headers to be supplied with the requests to the endpoint */
+  headers?: Record<string, string>;
+}
+
 /**
  * Represents the network configuration for a project.
  * @interface
@@ -141,9 +147,9 @@ export interface ProjectNetworkConfig {
    * Public nodes may be rate limited, which can affect indexing speed
    * When developing your project we suggest adding a private API key
    *
-   * @type {string | string[]}
+   * @type {string | string[] | Record<string, IEndpointConfig> }
    */
-  endpoint: string | string[];
+  endpoint: string | string[] | Record<string, IEndpointConfig>;
 
   /**
    * The SubQuery network dictionary endpoint (optional).

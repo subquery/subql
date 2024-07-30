@@ -12,6 +12,7 @@ import {
   NodeConfig,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
+import { IEndpointConfig } from '@subql/types-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { wrapBlock } from '../utils/substrate';
@@ -24,7 +25,7 @@ const TEST_BLOCKHASH =
   '0x70070f6c1ad5b9ce3d0a09e94086e22b8d4f08a18491183de96614706bf59600'; // kusama #6721189
 
 function testSubqueryProject(
-  endpoint: string[],
+  endpoint: Record<string, IEndpointConfig>,
   chainId: string,
 ): SubqueryProject {
   return {
@@ -64,7 +65,7 @@ describe('ApiService', () => {
         ConnectionPoolService,
         {
           provide: 'ISubqueryProject',
-          useFactory: () => testSubqueryProject([endpoint], chainId),
+          useFactory: () => testSubqueryProject({ endpoint: {} }, chainId),
         },
         {
           provide: NodeConfig,

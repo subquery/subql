@@ -59,7 +59,7 @@ jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
+  networkEndpoint: { 'wss://polkadot.api.onfinality.io/public-ws': {} },
 });
 
 function testSubqueryProject_1(): SubqueryProject {

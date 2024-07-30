@@ -280,7 +280,7 @@ export async function loadProjectTemplates<T extends BaseTemplateDataSource>(
   templates: T[] | undefined,
   root: string,
   reader: Reader,
-  isCustomDs: IsCustomDs<T, Omit<T & BaseCustomDataSource, keyof TemplateBase>>
+  isCustomDs: IsCustomDs<T, T & BaseCustomDataSource>
 ): Promise<T[]> {
   if (!templates || !templates.length) {
     return [];

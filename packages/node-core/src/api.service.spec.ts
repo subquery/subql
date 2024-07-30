@@ -3,17 +3,18 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {delay} from '@subql/common';
-import {ProjectNetworkConfig} from '@subql/types-core';
+import {IEndpointConfig, ProjectNetworkConfig} from '@subql/types-core';
 import {ApiService, IApiConnectionSpecific} from './api.service';
 import {NodeConfig} from './configure';
 import {ConnectionPoolService, ConnectionPoolStateManager} from './indexer';
 
 class TestApiService extends ApiService {
   retryConnection(
-    createConnection: (endpoint: string) => Promise<IApiConnectionSpecific>,
+    createConnection: (endpoint: string, config: IEndpointConfig) => Promise<IApiConnectionSpecific>,
     network: ProjectNetworkConfig & {chainId: string},
     index: number,
     endpoint: string,
+    config: IEndpointConfig,
     postConnectedHook?: ((connection: IApiConnectionSpecific, endpoint: string, index: number) => void) | undefined
   ): void {
     /* No Op to avoid creating intervals/timeouts in tests*/
