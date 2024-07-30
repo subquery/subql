@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed api not reloading new deployment chainTypes when project upgrades (#2505)
+
 ## [5.0.1] - 2024-07-29
 ### Fixed
 - Fixed default Timezone to UTC in dockerfile and package.json (#2505)
@@ -15,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Breaking change: Update with `@subql/node-core`, require indexing environment timezone set to UTC (#2495)
 - Update SubqueryProject to use code from node-core (#2496)
-
 ### Fixed
 - Bump with `@subql/node-core`, fixed various issues causing poi inconsistency (#2497)
 

@@ -74,7 +74,9 @@ export class ProjectService extends BaseProjectService<
     return getTimestamp(block);
   }
 
-  protected onProjectChange(project: SubqueryProject): void | Promise<void> {
+  protected async onProjectChange(project: SubqueryProject): Promise<void> {
+    // Only network with chainTypes require to reload
+    await this.apiService.updateChainTypes();
     this.apiService.updateBlockFetching();
   }
 }

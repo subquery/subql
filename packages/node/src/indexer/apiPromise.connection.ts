@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiOptions } from '@polkadot/api/types';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
@@ -83,6 +83,7 @@ export class ApiPromiseConnection
       noInitWarn: true,
       ...args.chainTypes,
     };
+
     const api = await ApiPromise.create(apiOption);
     return new ApiPromiseConnection(api, fetchBlocksBatches);
   }
@@ -121,6 +122,16 @@ export class ApiPromiseConnection
 
   async apiDisconnect(): Promise<void> {
     await this.unsafeApi.disconnect();
+  }
+
+  async updateChainTypes(chainTypes: RegisteredTypes): Promise<void> {
+    // Typeof Decorate<'promise' | 'rxjs'>, but we need to access this private method
+    const currentApiOptions = (this.unsafeApi as any)._options as ApiOptions;
+    const apiOption = {
+      ...currentApiOptions,
+      ...chainTypes,
+    };
+    this.unsafeApi = await ApiPromise.create(apiOption);
   }
 
   handleError = ApiPromiseConnection.handleError;

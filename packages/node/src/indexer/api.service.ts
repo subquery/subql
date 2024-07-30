@@ -206,8 +206,12 @@ export class ApiService
         });
       },
     );
-
     return this;
+  }
+
+  async updateChainTypes(): Promise<void> {
+    const chainTypes = await updateChainTypesHasher(this.project.chainTypes);
+    await this.connectionPoolService.updateChainTypes(chainTypes);
   }
 
   updateBlockFetching(): void {

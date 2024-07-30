@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed project upgrade missing reload network chainTypes when `onProjectChange` (#2505)
+
 ## [13.0.1] - 2024-07-29
 ### Fixed
 - Fixed get and set data not been deepCloned and data is not mutable
