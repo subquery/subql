@@ -76,7 +76,7 @@ export class ProjectService extends BaseProjectService<
 
   protected async onProjectChange(project: SubqueryProject): Promise<void> {
     // Only network with chainTypes require to reload
-    await this.apiService.updateChainTypes(project.chainTypes);
-    this.apiService.updateBlockFetching(project);
+    await this.apiService.updateChainTypes();
+    this.apiService.updateBlockFetching();
   }
 }

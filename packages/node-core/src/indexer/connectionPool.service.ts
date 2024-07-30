@@ -252,9 +252,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
   }
 
   async updateChainTypes(newChainTypes: unknown): Promise<void> {
-    logger.info(`Network chain types updated!`);
     for (const endpoint in this.allApi) {
       await this.allApi[endpoint].updateChainTypes?.(newChainTypes);
     }
+    logger.info(`Network chain types updated!`);
   }
 }

@@ -209,13 +209,13 @@ export class ApiService
     return this;
   }
 
-  async updateChainTypes(newChainTypes: unknown): Promise<void> {
-    const chainTypes = await updateChainTypesHasher(newChainTypes);
+  async updateChainTypes(): Promise<void> {
+    const chainTypes = await updateChainTypesHasher(this.project.chainTypes);
     await this.connectionPoolService.updateChainTypes(chainTypes);
   }
 
-  updateBlockFetching(project?: SubqueryProject): void {
-    const onlyEventHandlers = isOnlyEventHandlers(project ?? this.project);
+  updateBlockFetching(): void {
+    const onlyEventHandlers = isOnlyEventHandlers(this.project);
     const skipTransactions =
       this.nodeConfig.skipTransactions && onlyEventHandlers;
 

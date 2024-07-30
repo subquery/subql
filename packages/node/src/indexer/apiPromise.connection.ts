@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiOptions } from '@polkadot/api/types';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
@@ -131,12 +132,14 @@ export class ApiPromiseConnection
     await this.unsafeApi.disconnect();
   }
 
-  async updateRegisteredChainTypes(chainTypes: RegisteredTypes): Promise<void> {
-    this.unsafeApi = await ApiPromiseConnection.createApiPromise(
-      this.endpoint,
-      { chainTypes },
-    );
-    await this.apiConnect();
+  async updateChainTypes(chainTypes: RegisteredTypes): Promise<void> {
+    // Typeof Decorate<'promise' | 'rxjs'>, but we need to access this private method
+    const currentApiOptions = (this.unsafeApi as any)._options as ApiOptions;
+    const apiOption = {
+      ...currentApiOptions,
+      ...chainTypes,
+    };
+    this.unsafeApi = await ApiPromise.create(apiOption);
   }
 
   handleError = ApiPromiseConnection.handleError;
