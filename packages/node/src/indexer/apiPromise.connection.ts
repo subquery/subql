@@ -59,14 +59,6 @@ export class ApiPromiseConnection
     fetchBlocksBatches: GetFetchFunc,
     args: { chainTypes?: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
-    const api = await this.createApiPromise(endpoint, args);
-    return new ApiPromiseConnection(api, fetchBlocksBatches);
-  }
-
-  static async createApiPromise(
-    endpoint: string,
-    args: { chainTypes?: RegisteredTypes },
-  ): Promise<ApiPromise> {
     let provider: ProviderInterface;
     let throwOnConnect = false;
 
@@ -92,7 +84,8 @@ export class ApiPromiseConnection
       ...args.chainTypes,
     };
 
-    return ApiPromise.create(apiOption);
+    const api = await ApiPromise.create(apiOption);
+    return new ApiPromiseConnection(api, fetchBlocksBatches);
   }
 
   safeApi(height: number): ApiAt {
