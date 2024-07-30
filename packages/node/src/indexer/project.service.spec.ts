@@ -1,28 +1,23 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
+import { Test } from '@nestjs/testing';
 import {
+  BaseProjectService,
   ConnectionPoolService,
   ConnectionPoolStateManager,
   NodeConfig,
   ProjectUpgradeService,
+  upgradableSubqueryProject,
 } from '@subql/node-core';
 import { SubstrateDatasourceKind, SubstrateHandlerKind } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { ApiPromiseConnection } from './apiPromise.connection';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
-
-const nodeConfig = new NodeConfig({
-  subquery: 'test',
-  subqueryName: 'test',
-  networkEndpoint: ['https://polkadot.api.onfinality.io/public'],
-  dictionaryTimeout: 10,
-});
 
 function testSubqueryProject(): SubqueryProject {
   return {
@@ -56,83 +51,172 @@ function testSubqueryProject(): SubqueryProject {
   } as unknown as SubqueryProject;
 }
 
+// @ts-ignore
+class TestProjectService extends BaseProjectService<any, any> {
+  packageVersion = '1.0.0';
+
+  async init(startHeight?: number): Promise<void> {
+    await (this as any).initUpgradeService(5);
+  }
+
+  async getBlockTimestamp(height: number): Promise<Date> {
+    return Promise.resolve(new Date());
+  }
+
+  async onProjectChange(project: any): Promise<void> {
+    await this.apiService.updateChainTypes();
+    this.apiService.updateBlockFetching();
+  }
+
+  get schema(): string {
+    return 'mock-schema';
+  }
+
+  async getLastProcessedHeight(): Promise<number> {
+    return Promise.resolve(4);
+  }
+
+  async ensureMetadata(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  async initDbSchema(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  async initUnfinalized(): Promise<any | undefined> {
+    return Promise.resolve(undefined);
+  }
+}
+
 const demoProjects = [
   testSubqueryProject(),
   {
     parent: {
-      utilBlock: 5,
+      untilBlock: 4,
       reference: '0',
     },
     ...testSubqueryProject(),
+    chainTypes: {
+      types: {
+        TestType: 'u32',
+        DispatchErrorModule: 'DispatchErrorModuleU8',
+      },
+    },
   },
 ] as SubqueryProject[];
 
-jest.setTimeout(10_000);
+jest.setTimeout(50_000);
 
 describe('ProjectService', () => {
-  let service: ProjectService;
+  let projectService: TestProjectService;
+  let apiService: ApiService;
+  let projectUpgradeService: ProjectUpgradeService<SubqueryProject>;
 
-  const apiService = new ApiService(
-    demoProjects[0],
-    new ConnectionPoolService<ApiPromiseConnection>(
-      nodeConfig,
-      new ConnectionPoolStateManager(),
-    ),
-    new EventEmitter2(),
-    nodeConfig,
-  );
+  jest
+    .spyOn(ProjectUpgradeService as any, 'rewindableCheck')
+    .mockImplementation(() => true);
 
   beforeEach(async () => {
-    // Api service init at bootstrap
-    await apiService.init();
-
-    const projectUpgradeService = await ProjectUpgradeService.create(
-      demoProjects[0],
+    const projectUpgrade = await ProjectUpgradeService.create(
+      demoProjects[1],
       (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
       1,
     );
 
-    (projectUpgradeService as any).init = jest.fn();
+    const p = upgradableSubqueryProject(projectUpgrade);
+
+    const module = await Test.createTestingModule({
+      providers: [
+        ConnectionPoolStateManager,
+        ConnectionPoolService,
+        {
+          provide: 'ISubqueryProject',
+          useFactory: () => p,
+        },
+        {
+          provide: NodeConfig,
+          useFactory: () => ({}),
+        },
+        {
+          provide: ProjectService,
+          useFactory: (apiService: ApiService, project: SubqueryProject) =>
+            new TestProjectService(
+              {
+                validateProjectCustomDatasources: jest.fn(),
+              } as unknown as DsProcessorService,
+              apiService,
+              null as unknown as any,
+              null as unknown as any,
+              { query: jest.fn() } as unknown as any,
+              project,
+              projectUpgrade,
+              {
+                initCoreTables: jest.fn(),
+                storeCache: {
+                  metadata: {},
+                  flushCache: jest.fn(),
+                  _flushCache: { bind: jest.fn() },
+                },
+              } as unknown as any,
+              { unsafe: false } as unknown as NodeConfig,
+              {
+                getDynamicDatasources: jest.fn().mockResolvedValue([]),
+                init: jest.fn(),
+              } as unknown as DynamicDsService,
+              null as unknown as any,
+              null as unknown as any,
+            ),
+          inject: [ApiService, 'ISubqueryProject'],
+        },
+        EventEmitter2,
+        ApiService,
+        {
+          provide: ProjectUpgradeService,
+          useValue: projectUpgrade,
+        },
+      ],
+      imports: [EventEmitterModule.forRoot()],
+    }).compile();
+
+    const app = module.createNestApplication();
+    await app.init();
+    apiService = app.get(ApiService);
+    await apiService.init();
+    projectUpgradeService = app.get(
+      ProjectUpgradeService,
+    ) as ProjectUpgradeService<SubqueryProject>;
+
     (projectUpgradeService as any).updateIndexedDeployments = jest.fn();
-
-    service = new ProjectService(
-      {
-        validateProjectCustomDatasources: jest.fn(),
-      } as unknown as DsProcessorService,
-      apiService,
-      null as unknown as any,
-      null as unknown as any,
-      { query: jest.fn() } as unknown as any,
-      demoProjects[0],
-      projectUpgradeService,
-      {
-        initCoreTables: jest.fn(),
-        storeCache: { metadata: {}, flushCache: jest.fn() },
-      } as unknown as any,
-      { unsafe: false } as unknown as NodeConfig,
-      {
-        getDynamicDatasources: jest.fn().mockResolvedValue([]),
-        init: jest.fn(),
-      } as unknown as DynamicDsService,
-      null as unknown as any,
-      null as unknown as any,
-    );
-
-    // Mock db related returns
-    (service as any).ensureProject = jest.fn().mockResolvedValue('mock-schema');
-    (service as any).ensureMetadata = jest.fn();
-    (service as any).initDbSchema = jest.fn();
-    (service as any).initUnfinalizedInternal = jest
+    (projectUpgradeService as any).getDeploymentsMetadata = jest
       .fn()
-      .mockResolvedValue(undefined);
+      .mockResolvedValue({ 1: 'project1', 4: 'project4' } as Record<
+        number,
+        string
+      >);
+    (projectUpgradeService as any).validateIndexedData = jest
+      .fn()
+      .mockReturnValue(5);
+    projectService = module.get(ProjectService);
   });
 
   it('reload chainTypes when project changed, on init', async () => {
     const spyOnApiUpdateChainTypes = jest.spyOn(apiService, 'updateChainTypes');
-    // mock last processed height
-    (service as any).getLastProcessedHeight = jest.fn().mockResolvedValue(4);
 
-    await service.init(5);
+    // When init, api use old chain types
+    expect((apiService.api as any)._options.types).toStrictEqual({
+      TestType: 'u32',
+    });
+
+    await projectService.init(5);
+
+    // During preprocess, it should trigger update chain types
+
+    await projectUpgradeService.setCurrentHeight(5);
+
+    expect((projectService as any).apiService.api._options.types).toStrictEqual(
+      { TestType: 'u32', DispatchErrorModule: 'DispatchErrorModuleU8' },
+    );
 
     expect(spyOnApiUpdateChainTypes).toHaveBeenCalledTimes(1);
   });
