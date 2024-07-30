@@ -46,7 +46,6 @@ export class ApiPromiseConnection
   private constructor(
     public unsafeApi: ApiPromise,
     private fetchBlocksBatches: GetFetchFunc,
-    private endpoint: string,
   ) {
     this.networkMeta = {
       chain: unsafeApi.runtimeChain.toString(),
@@ -61,7 +60,7 @@ export class ApiPromiseConnection
     args: { chainTypes?: RegisteredTypes },
   ): Promise<ApiPromiseConnection> {
     const api = await this.createApiPromise(endpoint, args);
-    return new ApiPromiseConnection(api, fetchBlocksBatches, endpoint);
+    return new ApiPromiseConnection(api, fetchBlocksBatches);
   }
 
   static async createApiPromise(
