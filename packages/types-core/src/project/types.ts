@@ -138,7 +138,7 @@ export interface IEndpointConfig {
  * Represents the network configuration for a project.
  * @interface
  */
-export interface ProjectNetworkConfig {
+export interface ProjectNetworkConfig<EndpointConfig extends IEndpointConfig = IEndpointConfig> {
   /**
    * The endpoint(s) for the network connection, which can be a single string or an array of strings.
    *
@@ -149,7 +149,7 @@ export interface ProjectNetworkConfig {
    *
    * @type {string | string[] | Record<string, IEndpointConfig> }
    */
-  endpoint: string | string[] | Record<string, IEndpointConfig>;
+  endpoint: string | string[] | Record<string, EndpointConfig>;
 
   /**
    * The SubQuery network dictionary endpoint (optional).

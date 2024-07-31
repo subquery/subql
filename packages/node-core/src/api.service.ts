@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {normalizeNetworkEndpoints} from '@subql/common';
 import {IEndpointConfig, ProjectNetworkConfig} from '@subql/types-core';
 import {ApiConnectionError, ApiErrorType, MetadataMismatchError} from './api.connection.error';
 import {IndexerEvent, NetworkMetadataPayload} from './events';
@@ -85,7 +86,7 @@ export abstract class ApiService<
   }
 
   async createConnections(
-    network: ProjectNetworkConfig & {chainId: string},
+    network: ProjectNetworkConfig<EndpointConfig> & {chainId: string},
     createConnection: (endpoint: string, config: EndpointConfig) => Promise<Connection>,
     /* Used to monitor the state of the connection */
     postConnectedHook?: (connection: Connection, endpoint: string, index: number) => void
@@ -94,11 +95,7 @@ export abstract class ApiService<
 
     const failedConnections: Map<number, [string, EndpointConfig]> = new Map();
 
-    const endpoints = network.endpoint as Record<string, EndpointConfig>;
-
-    if (Array.isArray(endpoints) || typeof endpoints === 'string') {
-      throw new Error(`Endpoints have not been converted into the endpoint config format`);
-    }
+    const endpoints = normalizeNetworkEndpoints<EndpointConfig>(network.endpoint);
 
     const connectionPromises = Object.entries(endpoints).map(async ([endpoint, config], i) => {
       try {
