@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support for endpoint configs (#2511)
+
 ## [13.0.2] - 2024-07-31
 ### Fixed
 - Fixed project upgrade missing reload network chainTypes when `onProjectChange` (#2505)
