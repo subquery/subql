@@ -16,7 +16,7 @@ const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb492
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
+  networkEndpoint: {'wss://polkadot.api.onfinality.io/public-ws': {}},
   dictionaryTimeout: 10,
 });
 // Need longer timeout

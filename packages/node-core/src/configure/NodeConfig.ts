@@ -4,7 +4,8 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {getFileContent, loadFromJsonOrYaml} from '@subql/common';
+import {getFileContent, loadFromJsonOrYaml, normalizeNetworkEndpoints} from '@subql/common';
+import {IEndpointConfig} from '@subql/types-core';
 import {last} from 'lodash';
 import {LevelWithSilent} from 'pino';
 import {getLogger} from '../logger';
@@ -21,8 +22,8 @@ export interface IConfig {
   readonly blockTime: number;
   readonly debug?: string;
   readonly preferRange: boolean;
-  readonly networkEndpoint?: string[];
-  readonly primaryNetworkEndpoint?: string;
+  readonly networkEndpoint?: Record<string, IEndpointConfig>;
+  readonly primaryNetworkEndpoint?: [string, IEndpointConfig];
   readonly networkDictionary?: string[];
   readonly dictionaryRegistry: string;
   readonly outputFmt?: 'json';
@@ -133,14 +134,18 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.batchSize;
   }
 
-  get networkEndpoints(): string[] | undefined {
-    return typeof this._config.networkEndpoint === 'string'
-      ? [this._config.networkEndpoint]
-      : this._config.networkEndpoint;
+  get networkEndpoints(): Record<string, IEndpointConfig> | undefined {
+    return normalizeNetworkEndpoints(
+      this._config.networkEndpoint as string | string[] | Record<string, IEndpointConfig>
+    );
   }
 
-  get primaryNetworkEndpoint(): string | undefined {
+  get primaryNetworkEndpoint(): [string, IEndpointConfig] | undefined {
     return this._config.primaryNetworkEndpoint;
+    // if (!this._config.primaryNetworkEndpoint) {
+    //   return undefined;
+    // }
+    // return [this._config.primaryNetworkEndpoint, {}];
   }
 
   get networkDictionaries(): string[] | undefined | false {

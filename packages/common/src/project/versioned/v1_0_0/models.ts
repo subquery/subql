@@ -4,6 +4,7 @@
 import {
   BlockFilter,
   CommonSubqueryProject,
+  IEndpointConfig,
   IProjectNetworkConfig,
   NodeOptions,
   NodeSpec,
@@ -26,8 +27,9 @@ import {
   IsNotEmpty,
   Allow,
   ValidateIf,
+  IsPositive,
 } from 'class-validator';
-import {SemverVersionValidator} from '../../utils';
+import {IsNetworkEndpoint, SemverVersionValidator} from '../../utils';
 import {FileType} from '../base';
 
 export class RunnerQueryBaseModel implements QuerySpec {
@@ -139,10 +141,16 @@ export class CommonRunnerSpecsImpl implements RunnerSpecs {
   query!: QuerySpec;
 }
 
-export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfig {
-  @IsString({each: true})
+export class CommonEndpointConfig implements IEndpointConfig {
   @IsOptional()
-  endpoint!: string | string[];
+  // Class validator doesn't have any way of validating records
+  headers?: Record<string, string>;
+}
+
+export class CommonProjectNetworkV1_0_0<C = any> implements IProjectNetworkConfig {
+  @IsOptional()
+  @IsNetworkEndpoint(CommonEndpointConfig)
+  endpoint!: string | string[] | Record<string, CommonEndpointConfig>;
   @IsString({each: true})
   @IsOptional()
   dictionary!: string | string[];
