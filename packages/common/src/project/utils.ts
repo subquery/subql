@@ -310,6 +310,11 @@ export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointC
       {} as Record<string, T>
     );
   }
+
+  for (const key in input) {
+    // Yaml can make this null so we ensure it exists
+    input[key] = input[key] ?? {};
+  }
   return input;
 }
 

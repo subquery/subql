@@ -86,7 +86,6 @@ export class ApiPromiseConnection
       noInitWarn: true,
       ...args.chainTypes,
     };
-
     const api = await ApiPromise.create(apiOption);
     return new ApiPromiseConnection(api, fetchBlocksBatches);
   }

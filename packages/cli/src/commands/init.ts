@@ -199,6 +199,7 @@ export default class Init extends Command {
     }
     this.log(`${project.name} is ready`);
   }
+
   async createProjectScaffold(projectPath: string): Promise<void> {
     await prepareProjectScaffold(projectPath);
 
