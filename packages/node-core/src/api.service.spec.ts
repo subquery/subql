@@ -34,7 +34,7 @@ describe('ApiService', () => {
   it('should throw creating connections if all endpoints are invalid', async () => {
     await expect(
       apiService.createConnections(
-        {chainId: 'test', endpoint: ['fail', 'fail']} as any,
+        {chainId: 'test', endpoint: {fail: {}, fail2: {}}} as any,
         (endpoint) => Promise.resolve({networkMeta: {chain: endpoint}} as any) // Fail meta validation
       )
     ).rejects.toThrow();
@@ -43,7 +43,7 @@ describe('ApiService', () => {
   it('should succeed creating connections if one endpoint is invalid', async () => {
     await expect(
       apiService.createConnections(
-        {chainId: 'test', endpoint: ['test', 'fail']} as any,
+        {chainId: 'test', endpoint: {test: {}, fail: {}}} as any,
         (endpoint) => Promise.resolve({networkMeta: {chain: endpoint}} as any) // Fail meta validation
       )
     ).resolves.not.toThrow();

@@ -65,7 +65,7 @@ describe('ApiService', () => {
         ConnectionPoolService,
         {
           provide: 'ISubqueryProject',
-          useFactory: () => testSubqueryProject({ endpoint: {} }, chainId),
+          useFactory: () => testSubqueryProject({ [endpoint]: {} }, chainId),
         },
         {
           provide: NodeConfig,
