@@ -95,7 +95,7 @@ describe('Codegen can generate schema', () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest');
     await codegen(projectPath, ['project-duplicate-enum.yaml']);
 
-    const fooFile = await fs.promises.readFile(`${projectPath}/src/types/models/foo.ts`, 'utf8');
+    const fooFile = await fs.promises.readFile(`${projectPath}/src/types/models/Foo.ts`, 'utf8');
 
     expect(fooFile).toContain(
       `import {
