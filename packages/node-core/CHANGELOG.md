@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.0.2] - 2024-07-31
 ### Fixed
 - Fixed project upgrade missing reload network chainTypes when `onProjectChange` (#2505)
 
@@ -789,7 +790,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/13.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/13.0.2...HEAD
+[13.0.2]: https://github.com/subquery/subql/compare/node-core/13.0.1...node-core/13.0.2
 [13.0.1]: https://github.com/subquery/subql/compare/node-core/13.0.0...node-core/13.0.1
 [13.0.0]: https://github.com/subquery/subql/compare/node-core/12.0.0...node-core/13.0.0
 [12.0.0]: https://github.com/subquery/subql/compare/node-core/11.0.0...node-core/12.0.0
