@@ -9,7 +9,7 @@ import {createMultiChainTestProject, createTestProject} from '../createProject.f
 import {getDirectoryCid, uploadToIpfs} from './publish-controller';
 
 // Replace/Update your access token when test locally
-const testAuth = process.env.SUBQL_ACCESS_TOKEN!;
+const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST!;
 
 jest.setTimeout(300_000); // 300s
 describe('Cli publish', () => {
