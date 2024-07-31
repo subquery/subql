@@ -146,8 +146,9 @@ export function filterBlock(
   if (!filter) return block;
   if (!filterBlockModulo(block, filter)) return;
   if (
+    block.timestamp &&
     !filterBlockTimestamp(
-      block.timestamp?.getTime() ?? undefined,
+      block.timestamp.getTime(),
       filter as SubqlProjectBlockFilter,
     )
   ) {
