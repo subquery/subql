@@ -444,7 +444,7 @@ describe('Load chain type hasher', () => {
   });
 
   const prepareApiService = async (
-    endpoint = ['wss://hyperbridge-paseo-rpc.blockops.network'],
+    endpoint = { 'wss://hyperbridge-paseo-rpc.blockops.network': {} },
     chainId = '0x5388faf792c5232566d21493929b32c1f20a9c2b03e95615eefec2aa26d64b73',
   ): Promise<ApiService> => {
     const module = await Test.createTestingModule({
