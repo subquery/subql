@@ -91,7 +91,8 @@ export interface CommonSubqueryProject<
  * @interface
  * @extends {ProjectNetworkConfig}
  */
-export interface IProjectNetworkConfig extends ProjectNetworkConfig {
+export interface IProjectNetworkConfig<EndpointConfig extends IEndpointConfig = IEndpointConfig>
+  extends ProjectNetworkConfig<EndpointConfig> {
   /**
    * The unique identity of the chain.
    *
