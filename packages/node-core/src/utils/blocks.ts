@@ -47,7 +47,9 @@ export type CronFilter = {
   };
 };
 
-export function filterBlockTimestamp(blockTimestamp: number, filter: CronFilter): boolean {
+export function filterBlockTimestamp(blockTimestamp: number | undefined, filter: CronFilter): boolean {
+  // If block blockTimestamp is not available, return true, so it should be processed
+  if (!blockTimestamp) return true;
   if (!filter?.cronSchedule) {
     return true;
   }

@@ -59,7 +59,9 @@ export function wrapBlock(
   });
 }
 
-export function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
+export function getTimestamp({
+  block: { extrinsics },
+}: SignedBlock): Date | undefined {
   for (const e of extrinsics) {
     const {
       method: { method, section },
@@ -72,7 +74,8 @@ export function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
       return date;
     }
   }
-  throw new Error('timestamp not found');
+  // For network that doesn't use timestamp-set, return undefined
+  return undefined;
 }
 
 export function wrapExtrinsics(
@@ -144,7 +147,7 @@ export function filterBlock(
   if (!filterBlockModulo(block, filter)) return;
   if (
     !filterBlockTimestamp(
-      block.timestamp.getTime(),
+      block.timestamp?.getTime() ?? undefined,
       filter as SubqlProjectBlockFilter,
     )
   ) {
