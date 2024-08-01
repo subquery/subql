@@ -240,7 +240,7 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
     dataSources.map(async (ds) => {
       if (isRuntimeDs(ds)) {
         const startBlock = ds.startBlock ?? 1;
-        let timestampReference: Date | undefined;
+        let timestampReference: Date;
 
         ds.mapping.handlers = await Promise.all(
           ds.mapping.handlers.map(async (handler) => {
@@ -249,7 +249,9 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
                 if (!timestampReference) {
                   const blockTimestamp = await getBlockTimestamp(startBlock);
                   if (!blockTimestamp) {
-                    logger.warn(`Failed to get block timestamp for block ${startBlock}`);
+                    throw new Error(
+                      `Could not apply cronSchedule, failed to get block timestamp for block ${startBlock}`
+                    );
                   } else {
                     timestampReference = blockTimestamp;
                   }

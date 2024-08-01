@@ -9,11 +9,12 @@ import {
   fetchBlocksBatches,
   filterExtrinsic,
   getBlockByHeight,
+  getTimestamp,
 } from './substrate';
 
 const ENDPOINT_POLKADOT = 'wss://rpc.polkadot.io';
 const ENDPOINT_KARURA = 'wss://karura-rpc-0.aca-api.network';
-
+const ENDPOINT_SHIDEN = 'wss://rpc.shiden.astar.network';
 jest.setTimeout(100000);
 
 describe('substrate utils', () => {
@@ -91,6 +92,14 @@ describe('substrate utils', () => {
     const api = await ApiPromise.create({ provider });
 
     expect(await getBlockByHeight(api, 50710)).toBeTruthy();
+    await api.disconnect();
+  });
+
+  it('return undefined if no timestamp set extrinsic', async () => {
+    const provider = new WsProvider(ENDPOINT_SHIDEN);
+    const api = await ApiPromise.create({ provider });
+    const block1 = await getBlockByHeight(api, 1);
+    expect(getTimestamp(block1)).toBeUndefined();
     await api.disconnect();
   });
 });

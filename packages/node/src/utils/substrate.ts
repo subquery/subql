@@ -75,6 +75,7 @@ export function getTimestamp({
     }
   }
   // For network that doesn't use timestamp-set, return undefined
+  // See test `return undefined if no timestamp set extrinsic`
   return undefined;
 }
 
