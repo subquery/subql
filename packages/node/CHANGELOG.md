@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.1.0] - 2024-08-02
 ### Added
 - Suport for network endpoint config providing the ability to set headers and rpc batch sizes (#334)
 
@@ -534,7 +536,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.0...HEAD
+[5.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.1...node-ethereum/5.1.0
 [5.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.0...node-ethereum/5.0.1
 [5.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.3...node-ethereum/5.0.0
 [4.7.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/4.7.2...node-ethereum/4.7.3
