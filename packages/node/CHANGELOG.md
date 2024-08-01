@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support endpoint configs and specifying headers for network endpoints (#2511)
 
+### Fixed
+- Fixed timestamp can be undefined in some network blocks, it should return undefined (#2513)
+
 ## [5.0.2] - 2024-07-31
 ### Fixed
 - Fixed api not reloading new deployment chainTypes when project upgrades (#2505)

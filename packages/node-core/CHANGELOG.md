@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - A more useful error message when failing to require modules from the VM (#2512)
-
-### Added
 - Support for endpoint configs (#2511)
+
+### Fixed
+- Handle when block timestamp can be undefined (#2513)
 
 ## [13.0.2] - 2024-07-31
 ### Fixed
