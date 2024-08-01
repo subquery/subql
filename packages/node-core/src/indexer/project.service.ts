@@ -41,7 +41,7 @@ export abstract class BaseProjectService<
   private _blockOffset?: number;
 
   protected abstract packageVersion: string;
-  protected abstract getBlockTimestamp(height: number): Promise<Date>;
+  protected abstract getBlockTimestamp(height: number): Promise<Date | undefined>;
   protected abstract onProjectChange(project: ISubqueryProject<IProjectNetworkConfig, DS>): void | Promise<void>;
 
   constructor(

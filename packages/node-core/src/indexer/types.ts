@@ -16,10 +16,10 @@ export interface ISubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
   T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>,
-  C = unknown
+  C = unknown,
 > extends Omit<CommonSubqueryProject<N, DS, T>, 'schema' | 'version' | 'name' | 'specVersion' | 'description'> {
   readonly schema: GraphQLSchema;
-  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date>) => Promise<void>;
+  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date | undefined>) => Promise<void>;
   readonly id: string;
   chainTypes?: C; // The chainTypes after loaded
   readonly root: string;

@@ -69,7 +69,7 @@ export class ProjectService extends BaseProjectService<
     return super.init(startHeight);
   }
 
-  protected async getBlockTimestamp(height: number): Promise<Date> {
+  protected async getBlockTimestamp(height: number): Promise<Date | undefined> {
     const block = await getBlockByHeight(this.apiService.api, height);
     return getTimestamp(block);
   }
