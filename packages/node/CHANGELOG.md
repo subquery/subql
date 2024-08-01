@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2024-08-01
 ### Added
 - Support endpoint configs and specifying headers for network endpoints (#2511)
 
@@ -1286,7 +1287,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.1.0...HEAD
+[5.1.0]: https://github.com/subquery/subql/compare/node/5.0.2...node/5.1.0
 [5.0.2]: https://github.com/subquery/subql/compare/node/5.0.1...node/5.0.2
 [5.0.1]: https://github.com/subquery/subql/compare/node/5.0.0...node/5.0.1
 [5.0.0]: https://github.com/subquery/subql/compare/node/4.9.0...node/5.0.0
