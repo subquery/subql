@@ -3,7 +3,10 @@
 
 import {
   BaseDeploymentV1_0_0,
+  CommonEndpointConfig,
+  CommonProjectNetworkV1_0_0,
   FileType,
+  IsNetworkEndpoint,
   ParentProjectModel,
   ProjectManifestBaseImpl,
   RunnerNodeImpl,
@@ -13,6 +16,7 @@ import {BaseMapping, NodeSpec, RunnerSpecs, QuerySpec, ParentProject} from '@sub
 import {
   CustomDatasourceTemplate,
   EthereumProjectManifestV1_0_0,
+  IEthereumEndpointConfig,
   RuntimeDatasourceTemplate,
   SubqlCustomDatasource,
   SubqlMapping,
@@ -26,6 +30,7 @@ import {
   IsNotEmpty,
   IsObject,
   IsOptional,
+  IsPositive,
   IsString,
   ValidateNested,
   validateSync,
@@ -94,21 +99,21 @@ export class ProjectNetworkDeploymentV1_0_0 {
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
   chainId!: string;
-  @ValidateNested()
-  @Type(() => FileType)
-  @IsOptional()
-  chaintypes?: FileType;
   @IsOptional()
   @IsArray()
   bypassBlocks?: (number | `${number}-${number}`)[];
 }
 
-export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
-  @IsString({each: true})
-  endpoint!: string | string[];
-  @IsString()
+export class EthereumEndpointConfig extends CommonEndpointConfig implements IEthereumEndpointConfig {
   @IsOptional()
-  dictionary?: string;
+  @IsPositive()
+  batchSize?: number;
+}
+
+export class ProjectNetworkV1_0_0 extends CommonProjectNetworkV1_0_0<void> {
+  @IsOptional()
+  @IsNetworkEndpoint(EthereumEndpointConfig)
+  endpoint: string | string[] | Record<string, CommonEndpointConfig> = {};
 }
 
 export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {

@@ -2942,7 +2942,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": ^4.1.0
+    "@subql/common": dev
     "@subql/types-ethereum": "workspace:*"
     "@typechain/ethers-v5": ^11.1.1
     "@types/ejs": ^3.1.2
@@ -2963,11 +2963,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:4.1.1":
-  version: 4.1.1
-  resolution: "@subql/common@npm:4.1.1"
+"@subql/common@npm:4.1.2-0, @subql/common@npm:dev":
+  version: 4.1.2-0
+  resolution: "@subql/common@npm:4.1.2-0"
   dependencies:
-    "@subql/types-core": 0.10.0
+    "@subql/types-core": 0.10.1-0
     axios: ^0.28.0
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
@@ -2976,36 +2976,19 @@ __metadata:
     reflect-metadata: ^0.1.13
     semver: ^7.5.2
     update-notifier: 5.1.0
-  checksum: 2f578678b5af8190639ada7e2f22401b3ca7b7c7cab1bfdeb5860365c14e6c6a8724b02c95f1f8fedfcc01205d02d3de45cd486e2c3ee10ff5f898f973d6e0dc
+  checksum: 4b2be7cc1f7a588b2e34f574e018ba8abe48e54e13c2e1c946e01320aff72f6ca0735661f8f724d024ab0adaaa8fc4ae676c005f0fc6fd95e47bf7659585a818
   languageName: node
   linkType: hard
 
-"@subql/common@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@subql/common@npm:4.1.0"
-  dependencies:
-    "@subql/types-core": 0.10.0
-    axios: ^0.28.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 8beac982f53ad99efb9a5725d73768f945a4fb52ff50222c3db047e4143013a9e716c0cb63d561dd8ae40fa2f0a8ceb472516d6e3fc2beb58ee888361a7798a7
-  languageName: node
-  linkType: hard
-
-"@subql/node-core@npm:^13.0.1":
-  version: 13.0.1
-  resolution: "@subql/node-core@npm:13.0.1"
+"@subql/node-core@npm:dev":
+  version: 13.0.3-0
+  resolution: "@subql/node-core@npm:13.0.3-0"
   dependencies:
     "@apollo/client": ^3.8.8
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/common": 4.1.1
+    "@subql/common": 4.1.2-0
     "@subql/testing": 2.2.1
     "@subql/types": 3.9.0
     "@subql/utils": 2.13.1
@@ -3026,7 +3009,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 6946a95cd4ec14c9d1a00ecb830a8d92174923db85b89ba340c76afa5fa96bc07c83f6051dbd87ccb65085f43093437ebd2e24ee9de4285a576f84f5e5e5cda3
+  checksum: d8c15daf56770a4dc2c96c7687a6754fc2790095e55052b71c0d5b174ed38452ec7cd4cf0f159cd759e43f99fd7e657db670b17b04a87a5a1f3824385facf4cf
   languageName: node
   linkType: hard
 
@@ -3042,7 +3025,7 @@ __metadata:
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^13.0.1
+    "@subql/node-core": dev
     "@subql/testing": ^2.2.1
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -3077,12 +3060,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:0.10.0, @subql/types-core@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@subql/types-core@npm:0.10.0"
+"@subql/types-core@npm:0.10.1-0, @subql/types-core@npm:dev":
+  version: 0.10.1-0
+  resolution: "@subql/types-core@npm:0.10.1-0"
   dependencies:
     package-json-type: ^1.0.3
-  checksum: 952e25f69daa8b11a8949588c67df0e2d8f95660d8b963d00343c7e5e9788390dde05f76a890e7e366392fa6cf878f0c12be3b9f4fb270e967a7d722b3743fb3
+  checksum: eebd3a7f7e1ff563eaf2d9f0c6608aa799155bc457367585d5e38bb016afd4b5775b1b8bbd3ffd72d2b4393aaf43c568fd04872856e7a7056f7bcc454d5918e8
   languageName: node
   linkType: hard
 
@@ -3101,7 +3084,7 @@ __metadata:
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
     "@ethersproject/providers": ^5.7.2
-    "@subql/types-core": ^0.10.0
+    "@subql/types-core": dev
   languageName: unknown
   linkType: soft
 

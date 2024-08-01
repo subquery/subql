@@ -107,7 +107,7 @@ const nodeConfig = new NodeConfig({
   subquery: 'eth-starter',
   subqueryName: 'eth-starter',
   dictionaryTimeout: 10,
-  networkEndpoint: [HTTP_ENDPOINT],
+  networkEndpoint: { [HTTP_ENDPOINT]: {} },
   networkDictionary: [DEFAULT_DICTIONARY],
 });
 
