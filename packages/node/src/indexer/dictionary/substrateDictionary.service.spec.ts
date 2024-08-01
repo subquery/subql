@@ -41,7 +41,7 @@ describe('Substrate Dictionary service', function () {
     const nodeConfig = new NodeConfig({
       subquery: 'dictionaryService',
       subqueryName: 'asdf',
-      networkEndpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
+      networkEndpoint: { 'wss://polkadot.api.onfinality.io/public-ws': {} },
       dictionaryTimeout: 10,
       networkDictionary: ['http://mock-dictionary-v2'],
       dictionaryRegistry: 'false',

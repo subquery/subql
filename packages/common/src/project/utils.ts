@@ -4,9 +4,17 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {BaseDataSource, FileReference, MultichainProjectManifest, ProjectRootAndManifest} from '@subql/types-core';
+import {
+  BaseDataSource,
+  FileReference,
+  IEndpointConfig,
+  MultichainProjectManifest,
+  ProjectRootAndManifest,
+} from '@subql/types-core';
+import {ClassConstructor, plainToInstance} from 'class-transformer';
 import {
   registerDecorator,
+  validate,
   validateSync,
   ValidationArguments,
   ValidationOptions,
@@ -19,6 +27,7 @@ import Pino from 'pino';
 import {lt, prerelease, satisfies, valid, validRange} from 'semver';
 import updateNotifier, {Package} from 'update-notifier';
 import {RUNNER_ERROR_REGEX} from '../constants';
+import {CommonEndpointConfig} from './versioned';
 
 export const DEFAULT_MULTICHAIN_MANIFEST = 'subquery-multichain.yaml';
 export const DEFAULT_MULTICHAIN_TS_MANIFEST = 'subquery-multichain.ts';
@@ -224,7 +233,7 @@ export function extensionIsYamlOrJSON(ext: string): boolean {
 }
 
 export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
+  return function (object: object, propertyName: string): void {
     registerDecorator({
       name: 'forbidNonWhitelisted',
       target: object.constructor,
@@ -246,6 +255,67 @@ export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOp
       },
     });
   };
+}
+
+export function IsNetworkEndpoint<T extends object>(cls: ClassConstructor<T>, validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string): void {
+    registerDecorator({
+      name: 'IsNetworkEndpoint',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: {message: 'Invalid network endpoint'},
+      validator: {
+        validate(value: string | string[] | Record<string, CommonEndpointConfig>, args: ValidationArguments) {
+          if (typeof value === 'string') {
+            return true;
+          }
+          if (Array.isArray(value)) {
+            return value.every((v) => typeof v === 'string');
+          }
+          if (typeof value === 'object') {
+            return (
+              Object.keys(value).every((v) => typeof v === 'string') &&
+              Object.values(value).every((v) => {
+                const instance = plainToInstance(cls, v);
+                const errors = validateSync(instance);
+                return errors === undefined || !errors.length;
+              })
+            );
+          }
+          return false;
+        },
+      },
+    });
+  };
+}
+
+// Overload the function so that if input is undefineable then output is undefineable
+export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointConfig>(
+  input: string | string[] | Record<string, T>,
+  defaultConfig?: T
+): Record<string, T>;
+export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointConfig>(
+  input: string | string[] | Record<string, T> | undefined,
+  defaultConfig: T
+): Record<string, T> | undefined {
+  if (typeof input === 'string') {
+    return {[input]: defaultConfig ?? {}};
+  } else if (Array.isArray(input)) {
+    return input.reduce(
+      (acc, endpoint) => {
+        acc[endpoint] = defaultConfig ?? {};
+        return acc;
+      },
+      {} as Record<string, T>
+    );
+  }
+
+  for (const key in input) {
+    // Yaml can make this null so we ensure it exists
+    input[key] = input[key] ?? {};
+  }
+  return input;
 }
 
 export function notifyUpdates(pjson: Package, logger: Pino.Logger): void {

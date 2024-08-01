@@ -29,7 +29,7 @@ jest.mock('@polkadot/api', () => {
 });
 
 const testNetwork = {
-  endpoint: ['ws://kusama.api.onfinality.io/public-ws'],
+  endpoint: { 'ws://kusama.api.onfinality.io/public-ws': {} },
   types: {
     TestType: 'u32',
   },
@@ -55,7 +55,7 @@ const testNetwork = {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: ['https://polkadot.api.onfinality.io/public'],
+  networkEndpoint: { 'https://polkadot.api.onfinality.io/public': {} },
   dictionaryTimeout: 10,
 });
 
@@ -109,9 +109,13 @@ describe('ApiService', () => {
     );
     await apiService.init();
     const { version } = require('../../package.json');
-    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint[0], 2500, {
-      'User-Agent': `SubQuery-Node ${version}`,
-    });
+    expect(WsProvider).toHaveBeenCalledWith(
+      Object.keys(testNetwork.endpoint)[0],
+      2500,
+      {
+        'User-Agent': `SubQuery-Node ${version}`,
+      },
+    );
     expect(createSpy).toHaveBeenCalledWith({
       provider: expect.anything(),
       throwOnConnect: expect.anything(),

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {CommonProjectManifestV1_0_0Impl, validateSemver} from '@subql/common';
+import {CommonProjectManifestV1_0_0Impl, normalizeNetworkEndpoints, validateSemver} from '@subql/common';
 import {
   BaseCustomDataSource,
   BaseDataSource,
@@ -79,9 +79,9 @@ export class BaseSubqueryProject<
       throw new NotSupportedError('<1.0.0', manifest.specVersion);
     }
 
-    if (typeof manifest.network.endpoint === 'string') {
-      manifest.network.endpoint = [manifest.network.endpoint];
-    }
+    // Convert endpoints to the latest format
+
+    manifest.network.endpoint = normalizeNetworkEndpoints(manifest.network.endpoint);
 
     const network = processChainId({
       ...manifest.network,

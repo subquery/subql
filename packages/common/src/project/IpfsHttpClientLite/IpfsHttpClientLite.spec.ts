@@ -5,7 +5,7 @@ import {u8aConcat} from '@polkadot/util';
 import {IPFS_NODE_ENDPOINT, IPFS_WRITE_ENDPOINT} from '../../constants';
 import {IPFSHTTPClientLite} from './IPFSHTTPClientLite';
 
-const testAuth = process.env.SUBQL_ACCESS_TOKEN!;
+const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST!;
 
 describe('IPFSClient Lite', () => {
   let readClient: IPFSHTTPClientLite;

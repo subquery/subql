@@ -6,7 +6,7 @@ import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir, NETWORK_FAMILY} from '@subql/common';
-import {ProjectManifestV1_0_0} from '@subql/types-core';
+import {ProjectManifestV1_0_0, ProjectNetworkConfig} from '@subql/types-core';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
 import rimraf from 'rimraf';
@@ -142,7 +142,7 @@ export async function cloneProjectTemplate(
 export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
-  let endpoint: string | string[];
+  let endpoint: ProjectNetworkConfig['endpoint'];
   const defaultTsPath = defaultTSManifestPath(projectPath);
   const defaultYamlPath = defaultYamlManifestPath(projectPath);
 

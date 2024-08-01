@@ -77,7 +77,7 @@ describe('Dictionary service', function () {
     const nodeConfig = new NodeConfig({
       subquery: 'dictionaryService',
       subqueryName: 'asdf',
-      networkEndpoint: ['wss://eth.api.onfinality.io/public-ws'],
+      networkEndpoint: {'wss://eth.api.onfinality.io/public-ws': {}},
       dictionaryTimeout: 10,
       networkDictionary: [...dictionaryV1Endpoints, ...dictionaryV2Endpoints],
     });
