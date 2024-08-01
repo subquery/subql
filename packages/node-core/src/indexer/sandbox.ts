@@ -8,7 +8,7 @@ import {Cache, Store} from '@subql/types-core';
 import {levelFilter} from '@subql/utils';
 import {last, merge} from 'lodash';
 import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
-import {NodeVM, NodeVMOptions, VMScript} from 'vm2';
+import {NodeVM, NodeVMOptions, VMError, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {timeout} from '../utils';
@@ -76,11 +76,22 @@ export class Sandbox extends NodeVM {
   }
 
   async runTimeout<T = unknown>(duration: number): Promise<T> {
-    return timeout(
-      this.run(this.script),
-      duration,
-      `Sandbox execution timeout in ${duration} seconds. Please increase --timeout`
-    );
+    try {
+      return await timeout(
+        this.run(this.script),
+        duration,
+        `Sandbox execution timeout in ${duration} seconds. Please increase --timeout`
+      );
+    } catch (e) {
+      const msgPart = 'Cannot find module ';
+      if (e instanceof VMError && e.message.includes(msgPart)) {
+        throw new Error(
+          `Unable to resolve module ${e.message.replace(msgPart, '')}. To resolve this you can either:\n\tNarrow your import. e.g Instead of "import { BigNumber } from 'ethers'" you can use "import {BigNumber} from '@ethersproject/bignumber';"\n\tEnable the --unsafe flag.`,
+          {cause: e}
+        );
+      }
+      throw e;
+    }
   }
 
   protected async convertStack(stackTrace: string | undefined): Promise<string | undefined> {
