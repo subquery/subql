@@ -13,9 +13,11 @@ import {
   IBlock,
   exitWithError,
 } from '@subql/node-core';
+import { IEndpointConfig } from '@subql/types-core';
 import {
   EthereumBlock,
   EthereumNetworkConfig,
+  IEthereumEndpointConfig,
   LightEthereumBlock,
 } from '@subql/types-ethereum';
 import { EthereumNodeConfig } from '../configure/NodeConfig';
@@ -35,7 +37,9 @@ const logger = getLogger('api');
 export class EthereumApiService extends ApiService<
   EthereumApi,
   SafeEthProvider,
-  IBlock<EthereumBlock>[] | IBlock<LightEthereumBlock>[]
+  IBlock<EthereumBlock>[] | IBlock<LightEthereumBlock>[],
+  EthereumApiConnection,
+  IEthereumEndpointConfig
 > {
   private fetchBlocksFunction?: FetchFunc;
   private fetchBlocksBatches: GetFetchFunc = () => {
@@ -64,21 +68,19 @@ export class EthereumApiService extends ApiService<
       exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
-    const endpoints = Array.isArray(network.endpoint)
-      ? network.endpoint
-      : [network.endpoint];
-
     if (this.nodeConfig.primaryNetworkEndpoint) {
-      endpoints.push(this.nodeConfig.primaryNetworkEndpoint);
+      const [endpoint, config] = this.nodeConfig.primaryNetworkEndpoint;
+      (network.endpoint as Record<string, IEndpointConfig>)[endpoint] = config;
     }
 
-    await this.createConnections(network, (endpoint) =>
+    await this.createConnections(network, (endpoint, config) =>
       EthereumApiConnection.create(
         endpoint,
         this.nodeConfig.blockConfirmations,
         this.fetchBlocksBatches,
         this.eventEmitter,
         this.nodeConfig.unfinalizedBlocks,
+        config,
       ),
     );
 

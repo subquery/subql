@@ -13,6 +13,7 @@ import {
   SecondLayerHandlerProcessor_1_0_0,
   DsProcessor,
   BaseCustomDataSource,
+  IEndpointConfig,
 } from '@subql/types-core';
 import {
   EthereumBlock,
@@ -308,11 +309,18 @@ export type SubqlDatasourceProcessor<
   >
 > = DsProcessor<DS, P, ApiWrapper>;
 
+export interface IEthereumEndpointConfig extends IEndpointConfig {
+  /**
+   *  The JSON RPC batch size, if this is set to 0 it will not use batch requests
+   * */
+  batchSize?: number;
+}
+
 /**
  * Represents a Ethereum subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.
  * @type {IProjectNetworkConfig}
  */
-export type EthereumNetworkConfig = IProjectNetworkConfig;
+export type EthereumNetworkConfig = IProjectNetworkConfig<IEthereumEndpointConfig>;
 
 /**
  * Represents a Ethereum project configuration based on the CommonSubqueryProject template.

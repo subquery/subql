@@ -13,7 +13,11 @@ import {
   IApiConnectionSpecific,
   IBlock,
 } from '@subql/node-core';
-import { EthereumBlock, LightEthereumBlock } from '@subql/types-ethereum';
+import {
+  EthereumBlock,
+  IEthereumEndpointConfig,
+  LightEthereumBlock,
+} from '@subql/types-ethereum';
 import { EthereumApi } from './api.ethereum';
 import SafeEthProvider from './safe-api';
 
@@ -54,12 +58,14 @@ export class EthereumApiConnection
     fetchBlocksBatches: GetFetchFunc,
     eventEmitter: EventEmitter2,
     unfinalizedBlocks: boolean,
+    config?: IEthereumEndpointConfig,
   ): Promise<EthereumApiConnection> {
     const api = new EthereumApi(
       endpoint,
       blockConfirmations,
       eventEmitter,
       unfinalizedBlocks,
+      config,
     );
 
     await api.init();

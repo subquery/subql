@@ -23,6 +23,7 @@ import {
   SubqlRuntimeDatasource,
   LightEthereumBlock,
   LightEthereumLog,
+  IEthereumEndpointConfig,
 } from '@subql/types-ethereum';
 import CacheableLookup from 'cacheable-lookup';
 import { hexDataSlice, hexValue } from 'ethers/lib/utils';
@@ -119,6 +120,7 @@ export class EthereumApi implements ApiWrapper {
     private blockConfirmations: number,
     private eventEmitter: EventEmitter2,
     private unfinalizedBlocks = false,
+    private config?: IEthereumEndpointConfig,
   ) {
     const { hostname, protocol, searchParams } = new URL(endpoint);
 
@@ -130,6 +132,7 @@ export class EthereumApi implements ApiWrapper {
         url: this.endpoint,
         headers: {
           'User-Agent': `Subquery-Node ${packageVersion}`,
+          ...config?.headers,
         },
         allowGzip: true,
         throttleLimit: 5,
@@ -141,6 +144,7 @@ export class EthereumApi implements ApiWrapper {
       });
       this.client = new (OPFormatterMixin(JsonRpcBatchProvider))(connection);
       this.nonBatchClient = new (OPFormatterMixin(JsonRpcProvider))(connection);
+      this.applyBatchSize(config?.batchSize);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
       this.client = new (OPFormatterMixin(WebSocketProvider))(this.endpoint);
     } else {
@@ -155,6 +159,17 @@ export class EthereumApi implements ApiWrapper {
     return this._genesisBlock;
   }
 
+  private applyBatchSize(batchSize?: number): void {
+    if (batchSize === null || batchSize === undefined) return;
+
+    if (batchSize <= 0 && !!this.nonBatchClient) {
+      logger.info('Endpoint config batch size is 0, not using batch requests');
+      this.client = this.nonBatchClient;
+      return;
+    }
+    (this.client as JsonRpcBatchProvider).setBatchSize(batchSize);
+  }
+
   async init(): Promise<void> {
     this.injectClient();
 
@@ -167,6 +182,7 @@ export class EthereumApi implements ApiWrapper {
       } else {
         this.client = new CeloJsonRpcBatchProvider(this.client.connection);
         this.nonBatchClient = new CeloJsonRpcProvider(this.client.connection);
+        this.applyBatchSize(this.config?.batchSize);
       }
     }
 
