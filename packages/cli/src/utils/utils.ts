@@ -5,7 +5,6 @@ import assert from 'assert';
 import fs, {existsSync, readFileSync} from 'fs';
 import os from 'os';
 import path from 'path';
-import {promisify} from 'util';
 import {input} from '@inquirer/prompts';
 import {
   DEFAULT_ENV,
@@ -19,7 +18,7 @@ import {
 import axios from 'axios';
 import ejs from 'ejs';
 import JSON5 from 'json5';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {ACCESS_TOKEN_PATH} from '../constants';
 
 export async function delay(sec: number): Promise<void> {
@@ -91,7 +90,7 @@ export async function renderTemplate(templatePath: string, outputPath: string, t
 
 export async function prepareDirPath(path: string, recreate: boolean): Promise<void> {
   try {
-    await promisify(rimraf)(path);
+    await rimraf(path);
     if (recreate) {
       await fs.promises.mkdir(path, {recursive: true});
     }

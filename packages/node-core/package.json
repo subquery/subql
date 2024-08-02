@@ -20,7 +20,7 @@
     "yargs.js"
   ],
   "dependencies": {
-    "@apollo/client": "^3.8.8",
+    "@apollo/client": "^3.11.2",
     "@nestjs/common": "^9.4.0",
     "@nestjs/event-emitter": "^2.0.0",
     "@nestjs/schedule": "^3.0.1",
@@ -29,24 +29,20 @@
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
     "@willsoto/nestjs-prometheus": "^5.4.0",
-    "async-lock": "^1.4.0",
-    "async-mutex": "^0.4.0",
+    "async-mutex": "^0.5.0",
     "cron-converter": "^2.0.1",
     "cross-fetch": "^3.1.6",
-    "csv-stringify": "^6.4.5",
-    "dayjs": "^1.10.7",
+    "csv-stringify": "^6.5.1",
+    "dayjs": "^1.11.12",
     "lodash": "^4.17.21",
     "lru-cache": "10.1.0",
     "merkle-tools": "^1.4.1",
-    "pg": "^8.11.5",
-    "prom-client": "^14.0.1",
+    "pg": "^8.12.0",
+    "prom-client": "^15.1.3",
     "source-map": "^0.7.4",
-    "tar": "^6.2.1",
+    "tar": "^7.4.3",
     "toposort-class": "^1.0.1",
     "vm2": "^3.9.19",
-    "yargs": "^16.2.0"
-  },
-  "devDependencies": {
-    "@types/async-lock": "^1"
+    "yargs": "^17.7.2"
   }
 }

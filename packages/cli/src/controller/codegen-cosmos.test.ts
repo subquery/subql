@@ -3,13 +3,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import {promisify} from 'util';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {projectCodegen} from '@subql/common-cosmos';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import type {CosmosDatasource, CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/types-cosmos';
 import {upperFirst} from 'lodash';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {prepareDirPath, renderTemplate} from '../utils';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
@@ -28,7 +27,7 @@ jest.setTimeout(30000);
 
 describe('Able to generate cosmos types from protobuf', () => {
   afterEach(async () => {
-    await promisify(rimraf)(path.join(__dirname, '../../test/protoTest1/src'));
+    await rimraf(path.join(__dirname, '../../test/protoTest1/src'));
   });
 
   const manifest = loadFromJsonOrYaml(path.join(PROJECT_PATH, 'project.yaml')) as ProjectManifestV1_0_0<

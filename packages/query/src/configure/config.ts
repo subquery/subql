@@ -6,7 +6,7 @@ import {get} from 'lodash';
 export class Config {
   constructor(private readonly store: Record<never, never>) {}
 
-  get<T>(key: string, defaultValue?: T): T {
+  get<T>(key: string, defaultValue?: T): T | undefined {
     return (process.env[key.toUpperCase()] as unknown as T) ?? get(this.store, key, defaultValue);
   }
 }

@@ -11,14 +11,12 @@ import {
   BaseDataSource,
   BaseTemplateDataSource,
   Reader,
-  TemplateBase,
 } from '@subql/types-core';
-import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {stringToArray, getSchedule} from 'cron-converter';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
-import {ISubqueryProject, StoreService} from '../indexer';
+import {StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 

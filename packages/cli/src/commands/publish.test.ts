@@ -3,8 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {promisify} from 'util';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {createTestProject} from '../createProject.fixtures';
 import Publish from './publish';
 
@@ -19,7 +18,7 @@ describe('Intergration test - Publish', () => {
   afterAll(async () => {
     try {
       if (!projectDir) return;
-      await promisify(rimraf)(projectDir);
+      await rimraf(projectDir);
     } catch (e) {
       console.warn('Failed to clean up tmp dir after test', e);
     }

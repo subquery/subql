@@ -4,8 +4,7 @@
 
 import {PgEntity, SQL} from '@subql/x-graphile-build-pg';
 import type {Plugin} from 'graphile-build';
-import type {QueryBuilder} from 'graphile-build-pg';
-import type {PgAttribute, PgClass, PgConstraint} from '@subql/x-graphile-build-pg';
+import type {PgAttribute, PgClass, PgConstraint, QueryBuilder} from '@subql/x-graphile-build-pg';
 import {ConnectionFilterResolver} from 'postgraphile-plugin-connection-filter/dist/PgConnectionArgFilterPlugin';
 import {
   buildWhereConditionBackward,

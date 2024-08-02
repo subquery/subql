@@ -4,12 +4,11 @@
 import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
-import {promisify} from 'util';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir, NETWORK_FAMILY} from '@subql/common';
 import {ProjectManifestV1_0_0, ProjectNetworkConfig} from '@subql/types-core';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
 import {BASE_TEMPLATE_URl, CAPTURE_CHAIN_ID_REG, CHAIN_ID_REG, ENDPOINT_REG} from '../constants';
@@ -179,7 +178,7 @@ export async function prepare(projectPath: string, project: ProjectSpecBase): Pr
     throw new Error('Failed to prepare read or write package.json while preparing the project');
   }
   try {
-    await promisify(rimraf)(`${projectPath}/.git`);
+    await rimraf(`${projectPath}/.git`);
   } catch (e) {
     throw new Error('Failed to remove .git from template project');
   }
