@@ -15,14 +15,10 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@subql/common": "workspace:*",
-    "@subql/types": "workspace:*",
-    "reflect-metadata": "^0.1.14"
+    "@subql/types": "workspace:*"
   },
   "peerDependencies": {
     "class-transformer": "*",
     "class-validator": "*"
-  },
-  "devDependencies": {
-    "@types/bn.js": "5.1.5"
   }
 }

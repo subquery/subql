@@ -6,7 +6,7 @@ import path from 'path';
 import {Reader} from '@subql/types-core';
 import axios, {AxiosInstance, AxiosResponse} from 'axios';
 import yaml from 'js-yaml';
-import {IPackageJson} from 'package-json-type';
+import type {IPackageJson} from 'package-json-type';
 import {DEFAULT_MANIFEST} from '../utils';
 
 export class GithubReader implements Reader {

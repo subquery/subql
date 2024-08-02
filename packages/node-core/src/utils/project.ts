@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {DEFAULT_PORT, findAvailablePort, GithubReader, IPFSReader, LocalReader} from '@subql/common';
+import {DEFAULT_PORT, GithubReader, IPFSReader, LocalReader} from '@subql/common';
 import {
   BaseAssetsDataSource,
   BaseCustomDataSource,
@@ -12,6 +12,7 @@ import {
   BaseTemplateDataSource,
   Reader,
 } from '@subql/types-core';
+import {findAvailablePort} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {stringToArray, getSchedule} from 'cron-converter';
 import tar from 'tar';

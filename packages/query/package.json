@@ -30,10 +30,10 @@
     "/bin"
   ],
   "dependencies": {
-    "@graphile-contrib/pg-many-to-many": "^1.0.1",
+    "@graphile-contrib/pg-many-to-many": "^1.0.2",
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
-    "@graphile/pg-aggregates": "^0.1.0",
-    "@graphile/pg-pubsub": "^4.12.2",
+    "@graphile/pg-aggregates": "^0.1.1",
+    "@graphile/pg-pubsub": "^4.13.0",
     "@nestjs/common": "^9.4.0",
     "@nestjs/core": "^9.4.0",
     "@nestjs/platform-express": "^9.4.0",
@@ -53,9 +53,6 @@
     "pino-http": "^10.2.0",
     "postgraphile": "^4.13.0",
     "postgraphile-plugin-connection-filter": "^2.2.2",
-    "reflect-metadata": "^0.1.14",
-    "rimraf": "^5.0.10",
-    "rxjs": "^7.5.2",
     "subscriptions-transport-ws": "^0.11.0",
     "yargs": "^17.7.2"
   },
