@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `findAvailablePort` function, it now lives in `@subql/utils` (#2518)
 
+### Changed
+- Update dependencies (#2518)
+
 ## [5.0.0] - 2024-08-01
 ### Added
 - New type for endpoint to allow specifying endpoint options (#2511)

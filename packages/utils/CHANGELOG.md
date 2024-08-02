@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `findAvailablePort` function from common package (#2518)
 
+### Changed
+- Update dependencies (#2518)
+
 ## [2.13.1] - 2024-07-25
 ### Fixed
 - Fix hashcode for Json and Json array, sorted keys before hashing
