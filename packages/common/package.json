@@ -21,7 +21,7 @@
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.14",
     "semver": "^7.6.3",
-    "update-notifier": "7.2.0"
+    "update-notifier": "^5.1.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

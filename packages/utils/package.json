@@ -22,10 +22,11 @@
     "graphql": "^15.8.0",
     "graphql-tag": "^2.12.6",
     "lodash": "^4.17.21",
-    "pino": "^9.3.2",
+    "pino": "^6.13.3",
     "rotating-file-stream": "^3.2.3"
   },
   "devDependencies": {
-    "@types/detect-port": "^1.3.5"
+    "@types/detect-port": "^1.3.5",
+    "@types/pino": "^6.3.12"
   }
 }

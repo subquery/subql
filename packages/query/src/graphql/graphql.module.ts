@@ -16,10 +16,10 @@ import {
 import {ApolloServer, UserInputError} from 'apollo-server-express';
 import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
+import PinoLogger from 'express-pino-logger';
 import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {set} from 'lodash';
 import {Pool} from 'pg';
-import PinoLogger from 'pino-http';
 import {makePluginHook} from 'postgraphile';
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';

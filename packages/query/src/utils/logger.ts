@@ -4,7 +4,6 @@
 import {LoggerService} from '@nestjs/common';
 import {Logger} from '@subql/utils';
 import Pino from 'pino';
-import type {Options} from 'pino-http';
 import {argv} from '../yargs';
 
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
@@ -55,6 +54,6 @@ export const PinoConfig = {
     },
   },
   autoLogging: {
-    ignore: (req) => req.url?.includes('/.well-known/apollo/server-health') ?? false,
+    ignorePaths: ['/.well-known/apollo/server-health'],
   },
-} satisfies Options;
+};

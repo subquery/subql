@@ -27,7 +27,7 @@
     "ts-node": "^10.9.2",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
-    "update-notifier": "7.2.0",
+    "update-notifier": "^5.1.0",
     "webpack": "^5.93.0",
     "webpack-merge": "^6.0.1",
     "websocket": "^1.0.35",
