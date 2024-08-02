@@ -16,7 +16,7 @@ import {
 import {ApolloServer, UserInputError} from 'apollo-server-express';
 import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
-import ExpressPinoLogger from 'express-pino-logger';
+import PinoLogger from 'express-pino-logger';
 import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {set} from 'lodash';
 import {Pool} from 'pg';
@@ -131,7 +131,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const app = this.httpAdapterHost.httpAdapter.getInstance();
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
-    const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
+    const schemaName = this.config.get<string>('name');
+    if (!schemaName) throw new Error('Unable to get schema name from config');
+
+    const dbSchema = await this.projectService.getProjectSchema(schemaName);
     let options: PostGraphileCoreOptions = {
       replaceAllPlugins: plugins,
       subscriptions: true,
@@ -206,7 +209,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       SubscriptionServer.create({schema, execute, subscribe}, {server: httpServer, path: '/'});
     }
 
-    app.use(ExpressPinoLogger(PinoConfig));
+    app.use(PinoLogger(PinoConfig));
     app.use(limitBatchedQueries);
     app.use(compression());
 

@@ -2,8 +2,7 @@
 
 /* INFO: This file has been modified from https://github.com/graphile-contrib/postgraphile-plugin-connection-filter to support historical queries */
 import {SQL} from '@subql/x-graphile-build-pg';
-import type {PgEntity, PgAttribute, PgClass, PgConstraint} from '@subql/x-graphile-build-pg';
-import type {QueryBuilder} from 'graphile-build-pg';
+import type {PgEntity, PgAttribute, PgClass, PgConstraint, QueryBuilder} from '@subql/x-graphile-build-pg';
 import type {Plugin} from 'graphile-build';
 import {ConnectionFilterResolver} from 'postgraphile-plugin-connection-filter/dist/PgConnectionArgFilterPlugin';
 import {makeRangeQuery, hasBlockRange} from './utils';

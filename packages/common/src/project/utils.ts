@@ -14,14 +14,12 @@ import {
 import {ClassConstructor, plainToInstance} from 'class-transformer';
 import {
   registerDecorator,
-  validate,
   validateSync,
   ValidationArguments,
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import detectPort from 'detect-port';
 import * as yaml from 'js-yaml';
 import Pino from 'pino';
 import {lt, prerelease, satisfies, valid, validRange} from 'semver';
@@ -44,7 +42,7 @@ export function isFileReference(value: any): value is FileReference {
 }
 
 // Input manifest here, we might need to handler other error later on
-export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger) {
+export function handleCreateSubqueryProjectError(err: Error, pjson: any, rawManifest: any, logger: Pino.Logger): void {
   if (JSON.stringify(err.message).includes(RUNNER_ERROR_REGEX)) {
     logger.error(`Failed to init project, required runner is ${rawManifest.runner.node.name}, got ${pjson.name}`);
   } else {
@@ -57,21 +55,6 @@ export async function makeTempDir(): Promise<string> {
   const tmpDir = os.tmpdir();
   const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
   return tempPath;
-}
-
-export async function findAvailablePort(startPort: number, range = 10): Promise<number | null> {
-  for (let port = startPort; port <= startPort + range; port++) {
-    try {
-      const _port = await detectPort(port);
-      if (_port === port) {
-        return port;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-
-  return null;
 }
 
 export function getProjectRootAndManifest(subquery: string): ProjectRootAndManifest {
@@ -302,13 +285,10 @@ export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointC
   if (typeof input === 'string') {
     return {[input]: defaultConfig ?? {}};
   } else if (Array.isArray(input)) {
-    return input.reduce(
-      (acc, endpoint) => {
-        acc[endpoint] = defaultConfig ?? {};
-        return acc;
-      },
-      {} as Record<string, T>
-    );
+    return input.reduce((acc, endpoint) => {
+      acc[endpoint] = defaultConfig ?? {};
+      return acc;
+    }, {} as Record<string, T>);
   }
 
   for (const key in input) {

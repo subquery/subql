@@ -3,16 +3,14 @@
 
 import fs from 'fs';
 import path from 'path';
-import {promisify} from 'util';
-
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {codegen} from './codegen-controller';
 
 jest.setTimeout(30000);
 
 describe('Codegen can generate schema', () => {
   afterEach(async () => {
-    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest/src'));
+    await rimraf(path.join(__dirname, '../../test/schemaTest/src'));
   });
 
   it('codegen with correct schema should pass', async () => {

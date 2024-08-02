@@ -15,7 +15,7 @@
   "files": [
     "/dist"
   ],
-  "dependencies": {
+  "devDependencies": {
     "package-json-type": "^1.0.3"
   }
 }

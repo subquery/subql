@@ -6,14 +6,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {Reader} from '@subql/types-core';
 import yaml from 'js-yaml';
-import {IPackageJson} from 'package-json-type';
+import type {IPackageJson} from 'package-json-type';
 import {extensionIsYamlOrJSON} from '../../project';
 
 export class LocalReader implements Reader {
-  constructor(
-    private readonly projectPath: string,
-    private readonly manifestPath: string
-  ) {}
+  constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
 
   get root(): string {
     return path.resolve(this.projectPath);

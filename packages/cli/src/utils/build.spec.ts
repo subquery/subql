@@ -5,7 +5,7 @@ import {existsSync, readFileSync, writeFileSync} from 'fs';
 import path from 'path';
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {buildManifestFromLocation} from './build';
 
 describe('Manifest generation', () => {

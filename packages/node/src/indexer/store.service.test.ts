@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { promisify } from 'util';
 import { INestApplication } from '@nestjs/common';
 import {
   createNotifyTrigger,
@@ -11,7 +10,7 @@ import {
   getTriggers,
 } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
-import rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import { prepareApp } from '../utils/test.utils';
 import { ApiService } from './api.service';
 import { ProjectService } from './project.service';
@@ -46,7 +45,7 @@ describe('Store service integration test', () => {
   });
 
   afterAll(async () => {
-    await promisify(rimraf)(tempDir);
+    await rimraf(tempDir);
   });
 
   it('Correct db sync on historical project', async () => {

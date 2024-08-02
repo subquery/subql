@@ -1,10 +1,9 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {promisify} from 'util';
 import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseProjectManifest} from '@subql/common-substrate';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {createMultiChainTestProject, createTestProject} from '../createProject.fixtures';
 import {getDirectoryCid, uploadToIpfs} from './publish-controller';
 
@@ -26,7 +25,7 @@ describe('Cli publish', () => {
   afterAll(async () => {
     try {
       if (!projectDir) return;
-      await promisify(rimraf)(projectDir);
+      await rimraf(projectDir);
     } catch (e) {
       console.warn('Failed to clean up tmp dir after test', e);
     }

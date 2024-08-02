@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NestFactory} from '@nestjs/core';
-import {findAvailablePort, notifyUpdates} from '@subql/common';
+import {notifyUpdates} from '@subql/common';
+import {findAvailablePort} from '@subql/utils';
 import {AppModule} from './app.module';
 import {getLogger, NestLogger} from './utils/logger';
 import {getYargsOption} from './yargs';

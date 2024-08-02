@@ -3,8 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {promisify} from 'util';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {CsvStoreService} from './csvStore.service';
 
 describe('csv Store Service', () => {
@@ -15,7 +14,7 @@ describe('csv Store Service', () => {
   });
 
   afterAll(async () => {
-    await promisify(rimraf)(csvDirPath);
+    await rimraf(csvDirPath);
   });
   it('Able to export to csv with correct output, No duplicated headers', async () => {
     const csvFilePath1 = path.join(csvDirPath, 'Test.csv');

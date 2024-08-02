@@ -68,9 +68,4 @@ export class NestLogger implements LoggerService {
     if (!this.debugLevel) return;
     this.logger.debug(message);
   }
-
-  verbose(message: any): void {
-    if (!this.debugLevel) return;
-    this.logger.verbose(message);
-  }
 }

@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import {codegen, processFields, validateEntityName} from './codegen-controller';
 
 jest.mock('fs', () => {

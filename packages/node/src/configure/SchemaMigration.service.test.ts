@@ -1,11 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { promisify } from 'util';
 import { INestApplication } from '@nestjs/common';
 import { DbOption, StoreCacheService } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
-import rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import { ApiService } from '../indexer/api.service';
 import { ProjectService } from '../indexer/project.service';
 import { prepareApp } from '../utils/test.utils';
@@ -41,7 +40,7 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterAll(async () => {
-    await promisify(rimraf)(tempDir);
+    await rimraf(tempDir);
     await sequelize?.close();
   });
 
