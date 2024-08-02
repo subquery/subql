@@ -1,0 +1,9 @@
+undecided:
+  - "@subql/common"
+  - "@subql/common-substrate"
+  - "@subql/node"
+  - "@subql/node-core"
+  - "@subql/query"
+  - "@subql/types"
+  - "@subql/types-core"
+  - "@subql/utils"
