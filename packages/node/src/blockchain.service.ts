@@ -1,13 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import {
   DatasourceParams,
   Header,
-  IBaseIndexerWorker,
   IBlock,
   IBlockchainService,
   mainThreadOnly,
