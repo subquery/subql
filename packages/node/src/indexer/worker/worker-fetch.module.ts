@@ -39,7 +39,12 @@ import { WorkerService } from './worker.service';
       provide: 'IProjectService',
       useClass: ProjectService,
     },
-    WorkerRuntimeService,
+    // This is alised so it satisfies the BlockchainService, other services are updated to reflect this
+    // TODO find a way to remove the alias, currently theres no common interface between worker and non-worker
+    {
+      provide: 'RuntimeService',
+      useClass: WorkerRuntimeService,
+    },
     {
       provide: 'IBlockchainService',
       useClass: BlockchainService,
