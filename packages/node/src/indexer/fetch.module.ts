@@ -1,6 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import path from 'path';
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -19,17 +20,19 @@ import {
   DsProcessorService,
   ProjectService,
   DynamicDsService,
+  WorkerBlockDispatcher,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { BlockchainService } from '../blockchain.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
-import { WorkerBlockDispatcherService } from './blockDispatcher';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { RuntimeService } from './runtime/runtimeService';
+import { BlockContent, LightBlockContent } from './types';
+import { IIndexerWorker } from './worker/worker';
 
 @Module({
   imports: [CoreModule],
@@ -45,7 +48,7 @@ import { RuntimeService } from './runtime/runtimeService';
       ],
     },
     {
-      provide: RuntimeService, // TODO DOING this because of circular reference with dictionary service
+      provide: 'RuntimeService', // TODO DOING this because of circular reference with dictionary service
       useFactory: (apiService: ApiService) => new RuntimeService(apiService),
       inject: ['APIService'],
     },
@@ -86,19 +89,27 @@ import { RuntimeService } from './runtime/runtimeService';
         monitorService?: MonitorService,
       ) => {
         return nodeConfig.workers
-          ? new WorkerBlockDispatcherService(
+          ? new WorkerBlockDispatcher<
+            SubstrateDatasource,
+            IIndexerWorker,
+            BlockContent | LightBlockContent,
+            ApiPromiseConnection
+          >(
             nodeConfig,
             eventEmitter,
             projectService,
             projectUpgradeService,
-            cacheService,
             storeService,
             storeModelProvider,
+            cacheService,
             poiSyncService,
-            project,
             dynamicDsService,
             unfinalizedBlocks,
             connectionPoolState,
+            project,
+            blockchainService,
+            path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
+            ['syncRuntimeService', 'getSpecFromMap'],
             monitorService,
           )
           : new BlockDispatcher(

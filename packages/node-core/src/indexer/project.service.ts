@@ -8,7 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BaseDataSource, IProjectNetworkConfig } from '@subql/types-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { IApi } from '../api.service';
-import { IBlockchainService } from '../blockchain.service';
+import { ICoreBlockchainService } from '../blockchain.service';
 import { IProjectUpgradeService, NodeConfig } from '../configure';
 import { IndexerEvent } from '../events';
 import { getLogger } from '../logger';
@@ -36,7 +36,7 @@ class NotInitError extends Error {
 export class ProjectService<
   DS extends BaseDataSource = BaseDataSource,
   API extends IApi = IApi,
-  UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>,
+  UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>
 > implements IProjectService<DS> {
   private _schema?: string;
   private _startHeight?: number;
@@ -55,7 +55,7 @@ export class ProjectService<
     private readonly dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
     @Inject('IUnfinalizedBlocksService') private readonly unfinalizedBlockService: UnfinalizedBlocksService,
-    @Inject('IBlockchainService') private blockchainService: IBlockchainService<DS>
+    @Inject('IBlockchainService') private blockchainService: ICoreBlockchainService<DS>
   ) {
     if (this.nodeConfig.unfinalizedBlocks && this.nodeConfig.allowSchemaMigration) {
       throw new Error('Unfinalized Blocks and Schema Migration cannot be enabled at the same time');

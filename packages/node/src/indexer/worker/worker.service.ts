@@ -35,6 +35,7 @@ export class WorkerService extends BaseWorkerService<
   constructor(
     @Inject('APIService') private apiService: ApiService,
     private indexerManager: IndexerManager,
+    @Inject('RuntimeService')
     private workerRuntimeService: WorkerRuntimeService,
     @Inject('IProjectService')
     projectService: IProjectService<SubstrateDatasource>,

@@ -10,6 +10,7 @@ import { DatasourceParams, DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { Header, IBlock, ISubqueryProject } from './types';
 import { METADATA_LAST_FINALIZED_PROCESSED_KEY, METADATA_UNFINALIZED_BLOCKS_KEY, UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import { IBaseIndexerWorker } from './worker';
 
 class TestProjectService extends ProjectService<any, any> {
   packageVersion = '1.0.0';
@@ -33,6 +34,11 @@ class TestBlockchainService implements IBlockchainService {
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   fetchBlocks(blockNums: number[]): Promise<IBlock<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  fetchBlockWorker(worker: IBaseIndexerWorker, blockNum: number, context: { workers: IBaseIndexerWorker[]; }): Promise<Header> {
     throw new Error('Method not implemented.');
   }
 

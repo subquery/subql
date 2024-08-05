@@ -7,6 +7,7 @@ import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import {
   DatasourceParams,
   Header,
+  IBaseIndexerWorker,
   IBlock,
   IBlockchainService,
   mainThreadOnly,
@@ -31,6 +32,7 @@ import {
   isFullBlock,
   LightBlockContent,
 } from './indexer/types';
+import { IIndexerWorker } from './indexer/worker/worker';
 import {
   calcInterval,
   getBlockByHeight,
@@ -56,12 +58,12 @@ export class BlockchainService
     SubqueryProject,
     ApiAt,
     LightBlockContent,
-    BlockContent
+    BlockContent,
+    IIndexerWorker
   > {
   constructor(
     @Inject('APIService') private apiService: ApiService,
-    @Inject(isMainThread ? RuntimeService : 'Null')
-    private runtimeService: RuntimeService,
+    @Inject('RuntimeService') private runtimeService: RuntimeService,
   ) {}
 
   isCustomDs = isCustomDs;
@@ -69,6 +71,7 @@ export class BlockchainService
   blockHandlerKind = SubstrateHandlerKind.Block;
   packageVersion = packageVersion;
 
+  @mainThreadOnly()
   async fetchBlocks(
     blockNums: number[],
   ): Promise<IBlock<BlockContent>[] | IBlock<LightBlockContent>[]> {
@@ -82,6 +85,29 @@ export class BlockchainService
       blockNums,
       specChanged ? undefined : this.runtimeService.parentSpecVersion,
     );
+  }
+
+  async fetchBlockWorker(
+    worker: IIndexerWorker,
+    height: number,
+    context: { workers: IIndexerWorker[] },
+  ): Promise<Header> {
+    // get SpecVersion from main runtime service
+    const { blockSpecVersion, syncedDictionary } =
+      await this.runtimeService.getSpecVersion(height);
+
+    // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
+    if (syncedDictionary) {
+      context.workers.map((w) =>
+        w.syncRuntimeService(
+          this.runtimeService.specVersionMap,
+          this.runtimeService.latestFinalizedHeight,
+        ),
+      );
+    }
+
+    // const start = new Date();
+    return worker.fetchBlock(height, blockSpecVersion);
   }
 
   async onProjectChange(project: SubqueryProject): Promise<void> {
@@ -102,8 +128,9 @@ export class BlockchainService
   async getFinalizedHeader(): Promise<Header> {
     const finalizedHash =
       await this.apiService.unsafeApi.rpc.chain.getFinalizedHead();
-    const finalizedHeader =
-      await this.apiService.unsafeApi.rpc.chain.getHeader(finalizedHash);
+    const finalizedHeader = await this.apiService.unsafeApi.rpc.chain.getHeader(
+      finalizedHash,
+    );
     return substrateHeaderToHeader(finalizedHeader);
   }
 
