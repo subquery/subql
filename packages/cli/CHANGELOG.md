@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.2.0] - 2024-08-05
 ### Changed
 - Update inquirer dependencies (#2501)
 - Improve endpoint type to be based on core type (#2511)
@@ -646,7 +648,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.2.0...HEAD
+[5.2.0]: https://github.com/subquery/subql/compare/cli/5.1.1...cli/5.2.0
 [5.1.1]: https://github.com/subquery/subql/compare/cli/5.1.0...cli/5.1.1
 [5.1.0]: https://github.com/subquery/subql/compare/cli/5.0.1...cli/5.1.0
 [5.0.1]: https://github.com/subquery/subql/compare/cli/5.0.0...cli/5.0.1

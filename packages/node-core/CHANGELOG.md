@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [14.1.0] - 2024-08-05
 ### Changed
 - Update dependencies (#2518)
 
@@ -800,7 +802,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/14.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/14.1.0...HEAD
+[14.1.0]: https://github.com/subquery/subql/compare/node-core/14.0.0...node-core/14.1.0
 [14.0.0]: https://github.com/subquery/subql/compare/node-core/13.0.2...node-core/14.0.0
 [13.0.2]: https://github.com/subquery/subql/compare/node-core/13.0.1...node-core/13.0.2
 [13.0.1]: https://github.com/subquery/subql/compare/node-core/13.0.0...node-core/13.0.1
