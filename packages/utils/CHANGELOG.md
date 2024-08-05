@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.14.0] - 2024-08-05
 ### Added
 - `findAvailablePort` function from common package (#2518)
 
@@ -168,7 +170,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.13.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.14.0...HEAD
+[2.14.0]: https://github.com/subquery/subql/compare/utils/2.13.1...utils/2.14.0
 [2.13.1]: https://github.com/subquery/subql/compare/utils/2.13.0...utils/2.13.1
 [2.13.0]: https://github.com/subquery/subql/compare/utils/2.12.1...utils/2.13.0
 [2.12.1]: https://github.com/subquery/subql/compare/utils/2.12.0...utils/2.12.1

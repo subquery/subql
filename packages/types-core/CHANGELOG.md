@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-08-05
+### Changed
+- Update dependencies (#2518)
+
 ## [1.0.0] - 2024-08-01
 ### Added
 - New endpoint type to allow specifying endpoint config (#2511)
@@ -62,7 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/1.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/1.1.0...HEAD
+[1.1.0]: https://github.com/subquery/subql/compare/types-core/1.0.0...types-core/1.1.0
 [1.0.0]: https://github.com/subquery/subql/compare/types-core/0.10.0...types-core/1.0.0
 [0.10.0]: https://github.com/subquery/subql/compare/types-core/0.9.1...types-core/0.10.0
 [0.9.1]: https://github.com/subquery/subql/compare/types-core/0.9.0...types-core/0.9.1
