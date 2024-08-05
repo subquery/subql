@@ -3,7 +3,7 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry } from '@subql/types-core';
+import { BaseCustomDataSource, BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry } from '@subql/types-core';
 import {
   UnfinalizedBlocksService,
   BlockDispatcher,
@@ -14,38 +14,26 @@ import {
   IProjectService,
   NodeConfig,
   IBlockchainService,
+  ISubqueryProject,
+  DatasourceParams,
+  IBaseIndexerWorker,
+  BypassBlocks,
 } from '../';
 import { BlockHeightMap } from '../utils/blockHeightMap';
 import { DictionaryService } from './dictionary/dictionary.service';
-import { BaseFetchService } from './fetch.service';
+import { FetchService } from './fetch.service';
 
 const CHAIN_INTERVAL = 100; // 100ms
-const genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher<any>, any> {
-  finalizedHeight = 1000;
-  bestHeight = 20;
+class TestFetchService extends FetchService<BaseDataSource, IBlockDispatcher<any>, any> {
+  setBypassBlocks(blocks: BypassBlocks) {
+    this.projectService.bypassBlocks = blocks;
+  }
 
   protected buildDictionaryQueryEntries(
     dataSources: BaseDataSource<BaseHandler<any>, BaseMapping<BaseHandler<any>>>[]
   ): DictionaryQueryEntry[] {
     return [];
-  }
-  getGenesisHash(): string {
-    return genesisHash;
-  }
-  async getBestHeight(): Promise<number> {
-    return Promise.resolve(this.bestHeight);
-  }
-  protected async getChainInterval(): Promise<number> {
-    return Promise.resolve(CHAIN_INTERVAL);
-  }
-
-  protected async initBlockDispatcher(): Promise<void> {
-    return Promise.resolve();
-  }
-  async preLoopHook(data: { startHeight: number }): Promise<void> {
-    return Promise.resolve();
   }
 
   protected getModulos(dataSources: BaseDataSource[]): number[] {
@@ -70,14 +58,74 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   mockDsMap(blockHeightMap: BlockHeightMap<any>): void {
     this.projectService.getDataSourcesMap = jest.fn(() => blockHeightMap);
   }
+}
 
+class TestBlockchainService implements IBlockchainService {
+  finalizedHeight = 1000;
+  bestHeight = 20;
+  blockHandlerKind = '';
+  packageVersion = '1.0.0';
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  fetchBlocks(blockNums: number[]): Promise<IBlock<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  fetchBlockWorker(
+    worker: IBaseIndexerWorker,
+    blockNum: number,
+    context: { workers: IBaseIndexerWorker[] }
+  ): Promise<Header> {
+    throw new Error('Method not implemented.');
+  }
   async getFinalizedHeader(): Promise<Header> {
     return Promise.resolve({
       blockHeight: this.finalizedHeight,
       blockHash: '0xxx',
       parentHash: '0xxx',
-      timestamp: new Date(),
+      timestamp: new Date()
     });
+  }
+  async getBestHeight(): Promise<number> {
+    return Promise.resolve(this.bestHeight);
+  }
+  async getChainInterval(): Promise<number> {
+    return Promise.resolve(CHAIN_INTERVAL);
+  }
+  getBlockSize(block: IBlock): number {
+    throw new Error('Not implemented');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getHeaderForHash(hash: string): Promise<Header> {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getHeaderForHeight(height: number): Promise<Header> {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  updateDynamicDs(
+    params: DatasourceParams,
+    template: BaseDataSource | (BaseCustomDataSource & BaseDataSource)
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  isCustomDs(x: BaseDataSource | (BaseCustomDataSource & BaseDataSource)): x is BaseCustomDataSource {
+    throw new Error('Method not implemented.');
+  }
+  isRuntimeDs(x: BaseDataSource | (BaseCustomDataSource & BaseDataSource)): x is BaseDataSource {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getSafeApi(block: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  onProjectChange(project: ISubqueryProject): Promise<void> | void {
+    throw new Error('Method not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getBlockTimestamp(height: number): Promise<Date | undefined> {
+    throw new Error('Method not implemented.');
   }
 }
 
@@ -144,6 +192,7 @@ const getDictionaryService = () =>
 
 const getBlockDispatcher = () => {
   const inst = {
+    init: (fn: any) => Promise.resolve(),
     latestBufferedHeight: 0,
     batchSize: 10,
     freeSize: 10,
@@ -165,7 +214,7 @@ describe('Fetch Service', () => {
   let dictionaryService: DictionaryService<any, any>;
   let dataSources: BaseDataSource[];
   let unfinalizedBlocksService: UnfinalizedBlocksService<any>;
-  let blockchainService: IBlockchainService;
+  let blockchainService: TestBlockchainService;
 
   let spyOnEnqueueSequential: jest.SpyInstance<
     void | Promise<void>,
@@ -201,6 +250,10 @@ describe('Fetch Service', () => {
 
     blockDispatcher = getBlockDispatcher();
     dictionaryService = getDictionaryService();
+    blockchainService = new TestBlockchainService();
+    unfinalizedBlocksService = {
+      registerFinalizedBlock: jest.fn(),
+    } as unknown as UnfinalizedBlocksService;
 
     fetchService = new TestFetchService(
       nodeConfig,
@@ -273,14 +326,6 @@ describe('Fetch Service', () => {
     jest.clearAllMocks();
   });
 
-  it('calls the preHookLoop when init is called', async () => {
-    const preHookLoopSpy = jest.spyOn(fetchService, 'preLoopHook');
-
-    await fetchService.init(1);
-
-    expect(preHookLoopSpy).toHaveBeenCalled();
-  });
-
   it('adds bypassBlocks for empty datasources', async () => {
     fetchService.mockDsMap(
       new BlockHeightMap(
@@ -335,8 +380,8 @@ describe('Fetch Service', () => {
   });
 
   it('checks chain heads at an interval', async () => {
-    const finalizedSpy = jest.spyOn(fetchService, 'getFinalizedHeader');
-    const bestSpy = jest.spyOn(fetchService, 'getBestHeight');
+    const finalizedSpy = jest.spyOn(blockchainService, 'getFinalizedHeader');
+    const bestSpy = jest.spyOn(blockchainService, 'getBestHeight');
 
     await fetchService.init(1);
 
@@ -349,8 +394,8 @@ describe('Fetch Service', () => {
     expect(finalizedSpy).toHaveBeenCalledTimes(2);
     expect(bestSpy).toHaveBeenCalledTimes(2);
 
-    await expect(fetchService.getFinalizedHeader()).resolves.toMatchObject({
-      blockHeight: fetchService.finalizedHeight,
+    await expect(blockchainService.getFinalizedHeader()).resolves.toMatchObject({
+      blockHeight: blockchainService.finalizedHeight,
       blockHash: '0xxx',
       parentHash: '0xxx',
     });
@@ -513,7 +558,7 @@ describe('Fetch Service', () => {
 
   it('update the LatestBufferHeight when modulo blocks full synced', async () => {
     fetchService.mockGetModulos([20]);
-    fetchService.finalizedHeight = 55;
+    blockchainService.finalizedHeight = 55;
 
     // simulate we have synced to block 50, and modulo is 20, next block to handle suppose be 60,80,100...
     // we will still enqueue 55 to update LatestBufferHeight
@@ -614,7 +659,7 @@ describe('Fetch Service', () => {
   });
 
   it('skips bypassBlocks', async () => {
-    (fetchService as any).networkConfig.bypassBlocks = [3];
+    fetchService.setBypassBlocks([3]);
 
     await fetchService.init(1);
 
@@ -625,7 +670,7 @@ describe('Fetch Service', () => {
 
   it('transforms bypassBlocks', async () => {
     // Set a range so on init its transformed
-    (fetchService as any).networkConfig.bypassBlocks = ['2-5'];
+    fetchService.setBypassBlocks(['2-5']);
 
     await fetchService.init(1);
 
@@ -661,7 +706,7 @@ describe('Fetch Service', () => {
 
     const FINALIZED_HEIGHT = 10;
 
-    fetchService.finalizedHeight = FINALIZED_HEIGHT;
+    blockchainService.finalizedHeight = FINALIZED_HEIGHT;
     // change query end
     (dictionaryService as any).getDictionary(1).getQueryEndBlock = () => 10;
 
@@ -694,7 +739,7 @@ describe('Fetch Service', () => {
     (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
       return undefined;
     };
-    fetchService.bestHeight = 500;
+    blockchainService.bestHeight = 500;
     const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
     await fetchService.init(10);
     expect(dictionarySpy).toHaveBeenCalledTimes(1);
@@ -708,7 +753,7 @@ describe('Fetch Service', () => {
     (fetchService as any).dictionaryService.scopedDictionaryEntries = () => {
       return undefined;
     };
-    fetchService.bestHeight = 500;
+    blockchainService.bestHeight = 500;
     const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
     await fetchService.init(490);
     expect(dictionarySpy).toHaveBeenCalledTimes(0);
@@ -735,7 +780,7 @@ describe('Fetch Service', () => {
       });
     };
 
-    fetchService.bestHeight = 1000;
+    blockchainService.bestHeight = 1000;
     const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
 
     // first enqueue

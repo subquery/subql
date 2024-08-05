@@ -21,6 +21,8 @@ import {
   ProjectService,
   DynamicDsService,
   WorkerBlockDispatcher,
+  FetchService,
+  DictionaryService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { BlockchainService } from '../blockchain.service';
@@ -28,7 +30,6 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
-import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent, LightBlockContent } from './types';
@@ -143,7 +144,10 @@ import { IIndexerWorker } from './worker/worker';
         MonitorService,
       ],
     },
-    SubstrateDictionaryService,
+    {
+      provide: DictionaryService,
+      useClass: SubstrateDictionaryService,
+    },
     FetchService,
   ],
 })
