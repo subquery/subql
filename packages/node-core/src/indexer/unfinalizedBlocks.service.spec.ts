@@ -88,7 +88,7 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   afterEach(() => {
-    (unfinalizedBlocksService as unknown as any).unfinalizedBlocks = {};
+    (unfinalizedBlocksService as unknown as any)._unfinalizedBlocks = {};
   });
 
   it('can set finalized block', () => {
