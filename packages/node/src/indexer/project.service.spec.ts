@@ -11,13 +11,14 @@ import {
   ProjectUpgradeService,
   upgradableSubqueryProject,
   DsProcessorService,
-  DynamicDsService
+  DynamicDsService,
 } from '@subql/node-core';
 import { SubstrateDatasourceKind, SubstrateHandlerKind } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { BlockchainService } from '../blockchain.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { RuntimeService } from './runtime/runtimeService';
 
 function testSubqueryProject(): SubqueryProject {
   return {
@@ -140,7 +141,11 @@ describe('ProjectService', () => {
         },
         {
           provide: ProjectService,
-          useFactory: (apiService: ApiService, project: SubqueryProject, blockchainService: BlockchainService) =>
+          useFactory: (
+            apiService: ApiService,
+            project: SubqueryProject,
+            blockchainService: BlockchainService,
+          ) =>
             new TestProjectService(
               {
                 validateProjectCustomDatasources: jest.fn(),
@@ -166,9 +171,9 @@ describe('ProjectService', () => {
               } as unknown as DynamicDsService,
               null as unknown as any,
               null as unknown as any,
-              blockchainService
+              blockchainService,
             ),
-          inject: ['APIService', 'ISubqueryProject', BlockchainService,],
+          inject: ['APIService', 'ISubqueryProject', 'IBlockchainService'],
         },
         EventEmitter2,
         {
@@ -181,9 +186,14 @@ describe('ProjectService', () => {
           useValue: projectUpgrade,
         },
         {
+          provide: 'RuntimeService',
+          useFactory: (apiService) => new RuntimeService(apiService),
+          inject: ['APIService'],
+        },
+        {
           provide: 'IBlockchainService',
           useClass: BlockchainService,
-        }
+        },
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();

@@ -7,9 +7,9 @@ import { LRUCache } from 'lru-cache';
 const MAX_CACHE_SIZE = 200;
 const CACHE_TTL = 60 * 1000;
 
-export function createCachedProvider(
-  provider: ProviderInterface,
-): ProviderInterface {
+export function createCachedProvider<
+  P extends ProviderInterface = ProviderInterface,
+>(provider: P): P {
   const cacheMap = new LRUCache<string, Promise<any>>({
     max: MAX_CACHE_SIZE,
     ttl: CACHE_TTL,
