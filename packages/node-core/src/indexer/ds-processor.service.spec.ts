@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
-import { isCustomDs } from '@subql/common-substrate';
-import { NodeConfig, DsProcessorService } from '@subql/node-core';
-import { SubstrateCustomDatasource, SubstrateDatasource } from '@subql/types';
-import { GraphQLSchema } from 'graphql';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import {BaseCustomDataSource, BaseDataSource} from '@subql/types-core';
+import {GraphQLSchema} from 'graphql';
+import {NodeConfig} from '../configure';
+import {DsProcessorService} from './ds-processor.service';
+import {ISubqueryProject} from './types';
 
-function getTestProject(
-  extraDataSources: SubstrateCustomDatasource[],
-): SubqueryProject {
+function getTestProject(extraDataSources: BaseCustomDataSource[]): ISubqueryProject {
   return {
     id: 'test',
     root: path.resolve(__dirname, '../../'),
@@ -21,46 +19,44 @@ function getTestProject(
     dataSources: [
       {
         kind: 'substrate/Jsonfy',
-        processor: { file: 'test/jsonfy.js' },
+        processor: {file: 'test/jsonfy.js'},
         startBlock: 1,
         mapping: {
-          handlers: [{ handler: 'testSandbox', kind: 'substrate/JsonfyEvent' }],
+          handlers: [{handler: 'testSandbox', kind: 'substrate/JsonfyEvent'}],
         },
       },
       ...extraDataSources,
     ] as any,
     schema: new GraphQLSchema({}),
     templates: [],
-  } as unknown as SubqueryProject;
+  } as unknown as ISubqueryProject;
 }
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
 });
 
+function isCustomDs(ds: BaseDataSource): ds is BaseCustomDataSource {
+  return ds.kind.startsWith('substrate/');
+}
+
 describe('DsProcessorService', () => {
-  let service: DsProcessorService<SubstrateDatasource>;
-  let project: SubqueryProject;
+  let service: DsProcessorService<BaseDataSource>;
+  let project: ISubqueryProject;
 
   beforeEach(() => {
     project = getTestProject([]);
-    service = new DsProcessorService(
-      project,
-      { isCustomDs } as any,
-      nodeConfig,
-    );
+    service = new DsProcessorService(project, {isCustomDs} as any, nodeConfig);
   });
 
   it('can validate custom ds', async () => {
-    await expect(
-      service.validateProjectCustomDatasources(project.dataSources),
-    ).resolves.not.toThrow();
+    await expect(service.validateProjectCustomDatasources(project.dataSources)).resolves.not.toThrow();
   });
 
   it('can catch an invalid datasource kind', async () => {
-    const badDs: SubstrateCustomDatasource<string, any> = {
+    const badDs: BaseCustomDataSource = {
       kind: 'substrate/invalid',
-      processor: { file: 'contract-processors/dist/jsonfy.js' },
+      processor: {file: 'contract-processors/dist/jsonfy.js'},
       assets: new Map([]),
       mapping: {
         file: '',
@@ -69,15 +65,9 @@ describe('DsProcessorService', () => {
     };
 
     project = getTestProject([badDs]);
-    service = new DsProcessorService(
-      project,
-      { isCustomDs } as any,
-      nodeConfig,
-    );
+    service = new DsProcessorService(project, {isCustomDs} as any, nodeConfig);
 
-    await expect(
-      service.validateProjectCustomDatasources(project.dataSources),
-    ).rejects.toThrow();
+    await expect(service.validateProjectCustomDatasources(project.dataSources)).rejects.toThrow();
   });
 
   it('can run a custom ds processor', () => {
