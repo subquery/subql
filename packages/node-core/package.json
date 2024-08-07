@@ -43,6 +43,9 @@
     "tar": "^7.4.3",
     "toposort-class": "^1.0.1",
     "vm2": "^3.9.19",
-    "yargs": "^17.7.2"
+    "yargs": "^16.2.0"
+  },
+  "devDependencies": {
+    "@types/yargs": "^16.0.9"
   }
 }
