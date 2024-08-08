@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update dependencies (#2518)
 
+### Added
+- add support for null ordering in 'order by' query (#2387)
+
 ## [2.13.3] - 2024-07-25
 ### Changed
 - Bump version with `@subql/common` and `@subql/utils` (#2498)

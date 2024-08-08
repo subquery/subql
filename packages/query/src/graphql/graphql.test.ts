@@ -243,4 +243,67 @@ describe('GraphqlModule', () => {
     expect(aggregate.min.totalReserve).toEqual('1');
     expect(aggregate.max.totalReserve).toEqual('20000000000000000000000');
   });
+
+  // github issue #2387 : orderBy with orderByNull
+  it('PgOrderByUnique plugin correctly orders NULL values using orderByNull param', async () => {
+    await pool.query(`
+      INSERT INTO "${dbSchema}"."pool_snapshots" ("id", "pool_id", "block_number", "total_reserve") VALUES
+      ('1', '1', 15921, NULL),
+      ('2', '2', 8743, NULL),
+      ('3', '3', 87, '100'),
+      ('4', '4', 13288, '200')
+    `);
+
+    const server = await createApolloServer();
+
+    // Query with orderBy desc and orderByNull (NULLS_LAST)
+    const GET_SNAPSHOTS_NULLS_LAST = gql`
+      query {
+        poolSnapshots(orderBy: TOTAL_RESERVE_DESC, orderByNull: NULLS_LAST) {
+          nodes {
+            id
+            totalReserve
+          }
+        }
+      }
+    `;
+
+    const resultsOrderByNullsLast = await server.executeOperation({query: GET_SNAPSHOTS_NULLS_LAST});
+    expect(resultsOrderByNullsLast.errors).toBeUndefined();
+
+    const snapshotsNullsLast = resultsOrderByNullsLast.data?.poolSnapshots.nodes;
+
+    // Verify that NULL values appear last
+    expect(snapshotsNullsLast).toEqual([
+      {id: '4', totalReserve: '200'},
+      {id: '3', totalReserve: '100'},
+      {id: '1', totalReserve: null},
+      {id: '2', totalReserve: null},
+    ]);
+
+    // Query with orderBy desc and orderByNull (NULLS_FIRST)
+    const GET_SNAPSHOTS_NULLS_FIRST = gql`
+      query {
+        poolSnapshots(orderBy: TOTAL_RESERVE_DESC, orderByNull: NULLS_FIRST) {
+          nodes {
+            id
+            totalReserve
+          }
+        }
+      }
+    `;
+
+    const resultsOrderByNullsFirst = await server.executeOperation({query: GET_SNAPSHOTS_NULLS_FIRST});
+    expect(resultsOrderByNullsFirst.errors).toBeUndefined();
+
+    const snapshotsNullsFirst = resultsOrderByNullsFirst.data?.poolSnapshots.nodes;
+
+    // Verify that NULL values appear first
+    expect(snapshotsNullsFirst).toEqual([
+      {id: '1', totalReserve: null},
+      {id: '2', totalReserve: null},
+      {id: '4', totalReserve: '200'},
+      {id: '3', totalReserve: '100'},
+    ]);
+  });
 });
