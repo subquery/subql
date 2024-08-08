@@ -30,6 +30,7 @@ describe('CLI create project and delete project', () => {
       org!,
       subtitle,
       logoURl,
+      1,
       projectName,
       testAuth!,
       repository,

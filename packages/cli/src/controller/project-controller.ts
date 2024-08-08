@@ -17,6 +17,7 @@ export async function createProject(
   organization: string,
   subtitle: string,
   logoUrl: string,
+  project_type: number,
   project_name: string,
   authToken: string,
   gitRepository: string,
@@ -42,6 +43,7 @@ export async function createProject(
         name: project_name,
         subtitle: subtitle,
         dedicateDBKey: dedicateDB,
+        type: project_type,
       },
     });
     return res.data as unknown as CreateProjectResponse;

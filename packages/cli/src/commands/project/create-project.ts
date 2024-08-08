@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import {Command, Flags} from '@oclif/core';
 import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
 import {createProject} from '../../controller/project-controller';
@@ -19,12 +20,21 @@ export default class Create_project extends Command {
     description: Flags.string({description: 'Enter description', default: '', required: false}),
     apiVersion: Flags.string({description: 'Enter api version', default: '2', required: false}),
     dedicatedDB: Flags.string({description: 'Enter dedicated DataBase', required: false}),
+    projectType: Flags.string({
+      description: 'Enter project type [subquery|subgraph]',
+      default: 'subquery',
+      required: false,
+    }),
   };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Create_project);
 
     let {gitRepo, org, projectName} = flags;
+    assert(
+      ['subquery'].includes(flags.projectType),
+      'Invalid project type, only "subquery" is supported. Please deploy Subgraphs through the website.'
+    );
     const authToken = await checkToken();
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
@@ -35,6 +45,7 @@ export default class Create_project extends Command {
       org,
       flags.subtitle,
       flags.logoURL,
+      flags.projectType === 'subquery' ? 1 : 3,
       projectName,
       authToken,
       gitRepo,
