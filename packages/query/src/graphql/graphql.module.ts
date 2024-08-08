@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {setInterval} from 'timers';
 import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
@@ -127,6 +128,18 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  private setupKeepAlive(pgClient) {
+    setInterval(() => {
+      (async () => {
+        try {
+          await pgClient.query('SELECT 1');
+        } catch (err) {
+          getLogger('db').error('Schema listener client keep-alive query failed: ', err);
+        }
+      })();
+    }, this.config.get('sl-keep-alive-interval'));
+  }
+
   private async createServer() {
     const app = this.httpAdapterHost.httpAdapter.getInstance();
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
@@ -164,6 +177,14 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       try {
         const pgClient = await this.pgPool.connect();
         await pgClient.query(`LISTEN "${hashName(dbSchema, 'schema_channel', '_metadata')}"`);
+
+        // Set up a keep-alive interval to prevent the connection from being killed
+        this.setupKeepAlive(pgClient);
+
+        pgClient.on('error', (err: Error) => {
+          getLogger('db').error('PostgreSQL schema listener client error: ', err);
+          process.exit(1);
+        });
 
         pgClient.on('notification', (msg) => {
           if (msg.payload === 'schema_updated') {
