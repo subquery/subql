@@ -13,10 +13,14 @@ import {debugPgClient} from './x-postgraphile/debugClient';
 async function ensurePool(poolConfig: PoolConfig): Promise<Pool> {
   const pgPool = new Pool(poolConfig);
   try {
-    await pgPool.connect();
+    const pgClient = await pgPool.connect();
+    // Release the client back to the pool as it's no longer needed
+    pgClient.release();
   } catch (e: any) {
     if (JSON.stringify(e.message).includes(CONNECTION_SSL_ERROR_REGEX)) {
       poolConfig.ssl = undefined;
+      // end the pool and recreate it without ssl
+      await pgPool.end();
       return ensurePool(poolConfig);
     }
   }
