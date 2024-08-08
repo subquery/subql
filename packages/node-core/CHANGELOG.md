@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - revert yargs version as it was returning a promise
+- DS Processor types not being able to distinguish input and filter types (#2522)
 
 ## [14.1.0] - 2024-08-05
 ### Changed
