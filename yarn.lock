@@ -6847,6 +6847,7 @@ __metadata:
     "@subql/testing": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
+    "@types/yargs": ^16.0.9
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-mutex: ^0.5.0
     cron-converter: ^2.0.1
@@ -6862,7 +6863,7 @@ __metadata:
     tar: ^7.4.3
     toposort-class: ^1.0.1
     vm2: ^3.9.19
-    yargs: ^17.7.2
+    yargs: ^16.2.0
   languageName: unknown
   linkType: soft
 
@@ -6886,14 +6887,12 @@ __metadata:
     "@types/express": ^4.17.21
     "@types/jest": ^27.5.2
     "@types/lodash": ^4.17.7
-    "@types/yargs": ^16.0.4
     dotenv: ^16.4.5
     fetch-h2: 3.0.2
     lodash: ^4.17.21
     nodemon: ^3.1.4
     reflect-metadata: ^0.1.14
     rimraf: ^6.0.1
-    yargs: ^17.7.2
   peerDependencies:
     "@apollo/client": ^3.7.16
   bin:
@@ -6923,7 +6922,7 @@ __metadata:
     "@types/express-pino-logger": ^4.0.5
     "@types/jest": ^27.5.2
     "@types/lodash": ^4.17.7
-    "@types/yargs": ^16.0.4
+    "@types/yargs": ^16.0.9
     apollo-server-express: ^3.12.0
     compression: ^1.7.4
     express-pino-logger: ^6.0.0
@@ -6938,7 +6937,7 @@ __metadata:
     postgraphile: ^4.13.0
     postgraphile-plugin-connection-filter: ^2.2.2
     subscriptions-transport-ws: ^0.11.0
-    yargs: ^17.7.2
+    yargs: ^16.2.0
   bin:
     subql-query: ./bin/run
   languageName: unknown
@@ -8140,12 +8139,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yargs@npm:^16.0.4":
-  version: 16.0.4
-  resolution: "@types/yargs@npm:16.0.4"
+"@types/yargs@npm:^16.0.9":
+  version: 16.0.9
+  resolution: "@types/yargs@npm:16.0.9"
   dependencies:
     "@types/yargs-parser": "*"
-  checksum: caa21d2c957592fe2184a8368c8cbe5a82a6c2e2f2893722e489f842dc5963293d2f3120bc06fe3933d60a3a0d1e2eb269649fd6b1947fe1820f8841ba611dd9
+  checksum: 00d9276ed4e0f17a78c1ed57f644a8c14061959bd5bfab113d57f082ea4b663ba97f71b89371304a34a2dba5061e9ae4523e357e577ba61834d661f82c223bf8
   languageName: node
   linkType: hard
 
@@ -10615,6 +10614,17 @@ __metadata:
   version: 4.1.0
   resolution: "cli-width@npm:4.1.0"
   checksum: 0a79cff2dbf89ef530bcd54c713703ba94461457b11e5634bd024c78796ed21401e32349c004995954e06f442d82609287e7aabf6a5f02c919a1cf3b9b6854ff
+  languageName: node
+  linkType: hard
+
+"cliui@npm:^7.0.2":
+  version: 7.0.4
+  resolution: "cliui@npm:7.0.4"
+  dependencies:
+    string-width: ^4.2.0
+    strip-ansi: ^6.0.0
+    wrap-ansi: ^7.0.0
+  checksum: ce2e8f578a4813806788ac399b9e866297740eecd4ad1823c27fd344d78b22c5f8597d548adbcc46f0573e43e21e751f39446c5a5e804a12aace402b7a315d7f
   languageName: node
   linkType: hard
 
@@ -22863,10 +22873,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"yargs-parser@npm:^20.2.2":
+  version: 20.2.9
+  resolution: "yargs-parser@npm:20.2.9"
+  checksum: 8bb69015f2b0ff9e17b2c8e6bfe224ab463dd00ca211eece72a4cd8a906224d2703fb8a326d36fdd0e68701e201b2a60ed7cf81ce0fd9b3799f9fe7745977ae3
+  languageName: node
+  linkType: hard
+
 "yargs-parser@npm:^21.0.1, yargs-parser@npm:^21.1.1":
   version: 21.1.1
   resolution: "yargs-parser@npm:21.1.1"
   checksum: ed2d96a616a9e3e1cc7d204c62ecc61f7aaab633dcbfab2c6df50f7f87b393993fe6640d017759fe112d0cb1e0119f2b4150a87305cc873fd90831c6a58ccf1c
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^16.2.0":
+  version: 16.2.0
+  resolution: "yargs@npm:16.2.0"
+  dependencies:
+    cliui: ^7.0.2
+    escalade: ^3.1.1
+    get-caller-file: ^2.0.5
+    require-directory: ^2.1.1
+    string-width: ^4.2.0
+    y18n: ^5.0.5
+    yargs-parser: ^20.2.2
+  checksum: b14afbb51e3251a204d81937c86a7e9d4bdbf9a2bcee38226c900d00f522969ab675703bee2a6f99f8e20103f608382936034e64d921b74df82b63c07c5e8f59
   languageName: node
   linkType: hard
 

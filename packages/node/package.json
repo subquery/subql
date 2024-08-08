@@ -32,8 +32,7 @@
     "@subql/utils": "workspace:*",
     "fetch-h2": "3.0.2",
     "lodash": "^4.17.21",
-    "reflect-metadata": "^0.1.14",
-    "yargs": "^17.7.2"
+    "reflect-metadata": "^0.1.14"
   },
   "peerDependencies": {
     "@apollo/client": "^3.7.16"
@@ -44,7 +43,6 @@
     "@types/express": "^4.17.21",
     "@types/jest": "^27.5.2",
     "@types/lodash": "^4.17.7",
-    "@types/yargs": "^16.0.4",
     "dotenv": "^16.4.5",
     "nodemon": "^3.1.4",
     "rimraf": "^6.0.1"
