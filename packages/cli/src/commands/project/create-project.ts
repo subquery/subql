@@ -32,8 +32,8 @@ export default class Create_project extends Command {
 
     let {gitRepo, org, projectName} = flags;
     assert(
-      ['subquery', 'subgraph'].includes(flags.projectType),
-      'Invalid project type, Only support subQuery and subgraph'
+      ['subquery'].includes(flags.projectType),
+      'Invalid project type, only "subquery" is supported. Please deploy Subgraphs through the website.'
     );
     const authToken = await checkToken();
 
