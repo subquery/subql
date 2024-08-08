@@ -80,6 +80,7 @@ describe.skip('CLI deploy, delete, promote', () => {
         org,
         subtitle,
         logoURl,
+        1,
         projectName,
         testAuth,
         repository,
