@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 import {Inject} from '@nestjs/common';
 import {
-  HandlerInputMap,
   BaseCustomDataSource,
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
@@ -22,48 +21,51 @@ import {ISubqueryProject} from './types';
 const logger = getLogger('ds-sandbox');
 
 function isSecondLayerHandlerProcessor_0_0_0<
-  IM extends HandlerInputMap,
-  K extends keyof IM,
+  InputKinds extends string | symbol,
+  HandlerInput extends Record<InputKinds, any>,
+  BaseHandlerFilters extends Record<InputKinds, any>,
   F extends Record<string, unknown>,
   E,
   API,
   DS extends BaseCustomDataSource = BaseCustomDataSource
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API>
-    | SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API>
-): processor is SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API> {
+    | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
+    | SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
+): processor is SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API> {
   // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
   return processor.specVersion === undefined;
 }
 
 function isSecondLayerHandlerProcessor_1_0_0<
-  IM extends HandlerInputMap,
-  K extends keyof IM,
+  InputKinds extends string | symbol,
+  HandlerInput extends Record<InputKinds, any>,
+  BaseHandlerFilters extends Record<InputKinds, any>,
   F extends Record<string, unknown>,
   E,
   API,
   DS extends BaseCustomDataSource = BaseCustomDataSource
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API>
-    | SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API>
-): processor is SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API> {
+    | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
+    | SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
+): processor is SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API> {
   return processor.specVersion === '1.0.0';
 }
 
 export function asSecondLayerHandlerProcessor_1_0_0<
-  IM extends HandlerInputMap,
-  K extends keyof IM,
+  InputKinds extends string | symbol,
+  HandlerInput extends Record<InputKinds, any>,
+  BaseHandlerFilters extends Record<InputKinds, any>,
   F extends Record<string, unknown>,
   E,
   API,
   DS extends BaseCustomDataSource = BaseCustomDataSource
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<IM, K, F, E, DS, API>
-    | SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API>
-): SecondLayerHandlerProcessor_1_0_0<IM, K, F, E, DS, API> {
+    | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
+    | SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
+): SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API> {
   if (isSecondLayerHandlerProcessor_1_0_0(processor)) {
     return processor;
   }
