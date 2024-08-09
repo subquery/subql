@@ -125,7 +125,7 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
         return null;
       };
 
-      addArgDataGenerator(function connectionOrderBy({orderBy: rawOrderBy}: any) {
+      addArgDataGenerator(function connectionOrderBy({orderBy: rawOrderBy, orderByNull}: any) {
         const orderBy = rawOrderBy ? (Array.isArray(rawOrderBy) ? rawOrderBy : [rawOrderBy]) : null;
         return {
           pgCursorPrefix: cursorPrefixFromOrderBy(orderBy),
@@ -144,9 +144,13 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
                   const nullsFirst =
                     specNullsFirst !== null
                       ? specNullsFirst
-                      : orderByNullsLast !== null
-                        ? !orderByNullsLast
-                        : undefined;
+                      : orderByNull === 'NULLS_FIRST'
+                        ? true
+                        : orderByNull === 'NULLS_LAST'
+                          ? false
+                          : orderByNullsLast !== null
+                            ? !orderByNullsLast
+                            : undefined;
                   queryBuilder.orderBy(expr, ascending, nullsFirst);
                 });
 
@@ -166,12 +170,42 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
             description: build.wrapDescription(`The method to use when ordering \`${tableTypeName}\`.`, 'arg'),
             type: new GraphQLList(new GraphQLNonNull(TableOrderByType)),
           },
+          orderByNull: {
+            description: 'Specify ordering of null values (NULLS_FIRST or NULLS_LAST).',
+            type: getTypeByName('NullOrder'),
+          },
         },
-        `Adding 'orderBy' argument to field '${fieldName}' of '${Self.name}'`
+        `Adding 'orderBy' and 'orderByNull' arguments to field '${fieldName}' of '${Self.name}'`
       );
     },
     ['PgConnectionArgOrderBy']
   );
+
+  // Define the NullOrder enum
+  builder.hook('build', (build) => {
+    const {
+      graphql: {GraphQLEnumType},
+    } = build;
+
+    build.addType(
+      new GraphQLEnumType({
+        name: 'NullOrder',
+        description: 'Options for ordering null values in a specific direction.',
+        values: {
+          NULLS_FIRST: {
+            description: 'Order null values first.',
+            value: 'NULLS_FIRST',
+          },
+          NULLS_LAST: {
+            description: 'Order null values last.',
+            value: 'NULLS_LAST',
+          },
+        },
+      })
+    );
+
+    return build;
+  });
 };
 
 export default PgConnectionArgOrderBy;
