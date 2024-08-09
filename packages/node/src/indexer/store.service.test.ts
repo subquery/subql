@@ -8,12 +8,11 @@ import {
   DbOption,
   getFunctions,
   getTriggers,
+  ProjectService,
 } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import { rimraf } from 'rimraf';
 import { prepareApp } from '../utils/test.utils';
-import { ApiService } from './api.service';
-import { ProjectService } from './project.service';
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
@@ -56,9 +55,6 @@ describe('Store service integration test', () => {
     app = await prepareApp(schemaName, cid, false);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -155,9 +151,6 @@ AND table_name = 'positions';
     app = await prepareApp(schemaName, cid, true);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -225,9 +218,6 @@ ORDER BY
     app = await prepareApp(schemaName, cid, true);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -269,9 +259,6 @@ WHERE
     app = await prepareApp(schemaName, cid, true);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -328,9 +315,6 @@ ORDER BY t.typname, e.enumsortorder;`,
     app = await prepareApp(schemaName, cid, false, false);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;

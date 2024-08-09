@@ -2,14 +2,27 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {OnApplicationShutdown} from '@nestjs/common';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {BaseDataSource} from '@subql/types-core';
 import {last} from 'lodash';
+import {IApiConnectionSpecific} from '../../api.service';
+import {IBlockchainService} from '../../blockchain.service';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {IBlock, PoiSyncService} from '../../indexer';
+import {
+  ConnectionPoolStateManager,
+  createIndexerWorker,
+  DynamicDsService,
+  IBaseIndexerWorker,
+  IBlock,
+  InMemoryCacheService,
+  PoiSyncService,
+  TerminateableWorker,
+  UnfinalizedBlocksService,
+} from '../../indexer';
 import {getLogger} from '../../logger';
 import {monitorWrite} from '../../process';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
@@ -22,15 +35,6 @@ import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
-type Worker = {
-  processBlock: (height: number) => Promise<any>;
-  getStatus: () => Promise<any>;
-  getMemoryLeft: () => Promise<number>;
-  getBlocksLoaded: () => Promise<number>;
-  waitForWorkerBatchSize: (heapSizeInBytes: number) => Promise<void>;
-  terminate: () => Promise<number>;
-};
-
 function initAutoQueue<T>(
   workers: number | undefined,
   batchSize: number,
@@ -41,27 +45,39 @@ function initAutoQueue<T>(
   return new AutoQueue(workers * batchSize * 2, 1, timeout, name);
 }
 
-export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
-  extends BaseBlockDispatcher<AutoQueue<void>, DS, B>
+@Injectable()
+export class WorkerBlockDispatcher<
+    DS extends BaseDataSource = BaseDataSource,
+    Worker extends IBaseIndexerWorker = IBaseIndexerWorker,
+    Block = any,
+    ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific
+  >
+  extends BaseBlockDispatcher<AutoQueue<void>, DS, Block>
   implements OnApplicationShutdown
 {
-  protected workers: W[] = [];
+  protected workers: TerminateableWorker<Worker>[] = [];
   private numWorkers: number;
   private isShutdown = false;
   private currentWorkerIndex = 0;
 
-  protected abstract fetchBlock(worker: W, height: number): Promise<void>;
+  private createWorker: () => Promise<TerminateableWorker<Worker>>;
 
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    projectService: IProjectService<DS>,
-    projectUpgradeService: IProjectUpgradeService,
+    @Inject('IProjectService') projectService: IProjectService<DS>,
+    @Inject('IProjectUpgradeService') projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
+    cacheService: InMemoryCacheService,
     poiSyncService: PoiSyncService,
-    project: ISubqueryProject,
-    private createIndexerWorker: () => Promise<W>,
+    dynamicDsService: DynamicDsService<DS>,
+    unfinalizedBlocksService: UnfinalizedBlocksService<Block>,
+    connectionPoolState: ConnectionPoolStateManager<ApiConn>,
+    @Inject('ISubqueryProject') project: ISubqueryProject,
+    @Inject('IBlockchainService') private blockchainService: IBlockchainService<DS>,
+    workerPath: string,
+    workerFns: Parameters<typeof createIndexerWorker<Worker, ApiConn, Block, DS>>[1],
     monitorService?: MonitorServiceInterface
   ) {
     super(
@@ -76,13 +92,27 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       poiSyncService,
       monitorService
     );
+
+    this.createWorker = () =>
+      createIndexerWorker<Worker, ApiConn, Block, DS>(
+        workerPath,
+        workerFns,
+        storeService.getStore(),
+        cacheService.getCache(),
+        dynamicDsService,
+        unfinalizedBlocksService,
+        connectionPoolState,
+        project.root,
+        projectService.startHeight,
+        monitorService
+      );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.numWorkers = nodeConfig.workers!;
   }
 
   async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
-    this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createIndexerWorker()));
+    this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createWorker()));
     return super.init(onDynamicDsCreated);
   }
 
@@ -96,7 +126,8 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       await Promise.all(this.workers.map((w) => w.terminate()));
     }
   }
-  async enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): Promise<void> {
+
+  async enqueueBlocks(heights: (IBlock<Block> | number)[], latestBufferHeight?: number): Promise<void> {
     assert(
       heights.every((h) => typeof h === 'number'),
       'Worker block dispatcher only supports enqueuing numbers, not blocks.'
@@ -147,7 +178,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
     await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
 
-    const pendingBlock = this.fetchBlock(worker, height);
+    const pendingBlock = this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers});
 
     const processBlock = async () => {
       try {

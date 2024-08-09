@@ -72,16 +72,23 @@ describe('ApiService', () => {
           useFactory: () => ({}),
         },
         EventEmitter2,
-        ApiService,
+        {
+          provide: ApiService,
+          useFactory: ApiService.create,
+          inject: [
+            'ISubqueryProject',
+            ConnectionPoolService,
+            EventEmitter2,
+            NodeConfig,
+          ],
+        },
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
-    const apiService = app.get(ApiService);
-    await apiService.init();
-    return apiService;
+    return app.get(ApiService);
   };
 
   it('can instantiate api', async () => {
@@ -481,16 +488,23 @@ describe('Load chain type hasher', () => {
           useFactory: () => ({}),
         },
         EventEmitter2,
-        ApiService,
+        {
+          provide: ApiService,
+          useFactory: ApiService.create,
+          inject: [
+            'ISubqueryProject',
+            ConnectionPoolService,
+            EventEmitter2,
+            NodeConfig,
+          ],
+        },
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
-    const apiService = app.get(ApiService);
-    await apiService.init();
-    return apiService;
+    return app.get(ApiService);
   };
 
   it('should use new hasher function, types hasher string should be replaced with function', async () => {

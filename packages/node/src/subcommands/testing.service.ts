@@ -9,13 +9,10 @@ import {
   TestingService as BaseTestingService,
   NestLogger,
   TestRunner,
-  IBlock,
+  ProjectService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from '../indexer/api.service';
-import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
 import { ApiAt, BlockContent, LightBlockContent } from '../indexer/types';
 import { TestingModule } from './testing.module';
 
@@ -49,30 +46,8 @@ export class TestingService extends BaseTestingService<
     await testContext.init();
 
     const projectService: ProjectService = testContext.get('IProjectService');
-    const apiService = testContext.get(ApiService);
-
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await apiService.init();
     await projectService.init();
 
     return [testContext.close.bind(testContext), testContext.get(TestRunner)];
-  }
-
-  async indexBlock(
-    block: IBlock<BlockContent | LightBlockContent>,
-    handler: string,
-    indexerManager: IndexerManager,
-    apiService: ApiService,
-  ): Promise<void> {
-    const runtimeVersion =
-      await apiService.unsafeApi.rpc.state.getRuntimeVersion(
-        block.getHeader().blockHash,
-      );
-
-    await indexerManager.indexBlock(
-      block,
-      this.getDsWithHandler(handler),
-      runtimeVersion,
-    );
   }
 }

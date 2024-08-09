@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NodeConfig} from '../configure';
-import {BaseDsProcessorService} from './ds-processor.service';
+import {DsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
-import {BaseProjectService} from './project.service';
+import {ProjectService} from './project.service';
 import {ISubqueryProject} from './types';
 
-class TestProjectService extends BaseProjectService<any, any> {
+class TestProjectService extends ProjectService<any, any> {
   packageVersion = '1.0.0';
 
   async getBlockTimestamp(height: number): Promise<Date> {
@@ -24,7 +24,7 @@ describe('BaseProjectService', () => {
 
   beforeEach(() => {
     service = new TestProjectService(
-      null as unknown as BaseDsProcessorService,
+      null as unknown as DsProcessorService,
       null as unknown as any,
       null as unknown as any,
       null as unknown as any,
@@ -35,7 +35,8 @@ describe('BaseProjectService', () => {
       {unsafe: false} as unknown as NodeConfig,
       {getDynamicDatasources: jest.fn()} as unknown as DynamicDsService<any>,
       null as unknown as any,
-      null as unknown as any
+      null as unknown as any,
+      null as any //Blockchain Service
     );
   });
 

@@ -3,59 +3,50 @@
 
 import assert from 'assert';
 import util from 'util';
-import {OnApplicationShutdown} from '@nestjs/common';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import {range, without} from 'lodash';
+import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {cleanedBatchBlocks, delay, transformBypassBlocks, waitForBatchSize} from '../utils';
+import {cleanedBatchBlocks, delay, getModulos, transformBypassBlocks, waitForBatchSize} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {getBlockHeight, mergeNumAndBlocks} from './dictionary/utils';
 import {StoreCacheService} from './storeCache';
-import {Header, IBlock, IProjectService} from './types';
+import {IBlock, IProjectService, ISubqueryProject} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 
 const logger = getLogger('FetchService');
 
-export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
+@Injectable()
+export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
   implements OnApplicationShutdown
 {
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
   private bypassBlocks: number[] = [];
-
-  // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
-  protected abstract getFinalizedHeader(): Promise<Header>;
-  protected abstract getBestHeight(): Promise<number>;
-
-  // The rough interval at which new blocks are produced
-  protected abstract getChainInterval(): Promise<number>;
-  // This return modulo numbers with given dataSources (number in the filters)
-  protected abstract getModulos(dataSources: DS[]): number[];
-
-  protected abstract initBlockDispatcher(): Promise<void>;
-
-  // Gets called just before the loop is started
-  // Used by substrate to init runtime service and get runtime version data from the dictionary
-  protected abstract preLoopHook(data: {startHeight: number}): Promise<void>;
+  private networkConfig: IProjectNetworkConfig;
 
   constructor(
     private nodeConfig: NodeConfig,
-    protected projectService: IProjectService<DS>,
-    protected networkConfig: IProjectNetworkConfig,
-    protected blockDispatcher: B,
+    @Inject('IProjectService') protected projectService: IProjectService<DS>,
+    @Inject('ISubqueryProject') project: ISubqueryProject,
+    @Inject('IBlockDispatcher') protected blockDispatcher: B,
     protected dictionaryService: DictionaryService<DS, FB>,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
-    private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
-    private storeCacheService: StoreCacheService
-  ) {}
+    @Inject('IUnfinalizedBlocksService') private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
+    private storeCacheService: StoreCacheService,
+    @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>
+  ) {
+    this.networkConfig = project.network;
+  }
 
   private get latestBestHeight(): number {
     assert(this._latestBestHeight, new Error('Latest Best Height is not available'));
@@ -65,6 +56,10 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   private get latestFinalizedHeight(): number {
     assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not available'));
     return this._latestFinalizedHeight;
+  }
+
+  protected getModulos(dataSources: DS[]): number[] {
+    return getModulos(dataSources, this.blockchainSevice.isCustomDs, this.blockchainSevice.blockHandlerKind);
   }
 
   onApplicationShutdown(): void {
@@ -102,7 +97,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     }
 
     this.updateBypassBlocksFromDatasources();
-    const interval = await this.getChainInterval();
+    const interval = await this.blockchainSevice.getChainInterval();
 
     await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
 
@@ -136,8 +131,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     this.updateDictionary();
     // Find one usable dictionary at start
 
-    await this.preLoopHook({startHeight});
-    await this.initBlockDispatcher();
+    await this.blockDispatcher.init(this.resetForNewDs.bind(this));
 
     void this.startLoop(startHeight);
   }
@@ -148,7 +142,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   async getFinalizedBlockHead(): Promise<void> {
     try {
-      const currentFinalizedHeader = await this.getFinalizedHeader();
+      const currentFinalizedHeader = await this.blockchainSevice.getFinalizedHeader();
       // Rpc could return finalized height below last finalized height due to unmatched nodes, and this could lead indexing stall
       // See how this could happen in https://gist.github.com/jiqiang90/ea640b07d298bca7cbeed4aee50776de
       if (
@@ -170,7 +164,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
   async getBestBlockHead(): Promise<void> {
     try {
-      const currentBestHeight = await this.getBestHeight();
+      const currentBestHeight = await this.blockchainSevice.getBestHeight();
       if (this._latestBestHeight !== currentBestHeight) {
         this._latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
@@ -240,7 +234,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced
       if (startBlockHeight < this.latestBestHeight - scaledBatchSize) {
-        // if (startBlockHeight < this.latestFinalizedHeight) {
         try {
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,

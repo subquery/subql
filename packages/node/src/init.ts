@@ -7,12 +7,13 @@ import {
   exitWithError,
   getLogger,
   getValidPort,
+  IBlockchainService,
   NestLogger,
+  ProjectService,
+  FetchService,
 } from '@subql/node-core';
 import { AppModule } from './app.module';
-import { ApiService } from './indexer/api.service';
-import { FetchService } from './indexer/fetch.service';
-import { ProjectService } from './indexer/project.service';
+import { RuntimeService } from './indexer/runtime/runtimeService';
 import { yargsOptions } from './yargs';
 
 const pjson = require('../package.json');
@@ -34,12 +35,17 @@ export async function bootstrap(): Promise<void> {
 
     const projectService: ProjectService = app.get('IProjectService');
     const fetchService = app.get(FetchService);
-    const apiService = app.get(ApiService);
+    const runtimeService: RuntimeService = app.get('RuntimeService');
+    const blockchainService: IBlockchainService = app.get('IBlockchainService');
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
-    await apiService.init();
     await projectService.init();
-    await fetchService.init(projectService.startHeight);
+
+    const startHeight = projectService.startHeight;
+    const { blockHeight: finalizedHeight } =
+      await blockchainService.getFinalizedHeader();
+    await runtimeService.init(startHeight, finalizedHeight);
+    await fetchService.init(startHeight);
 
     app.enableShutdownHooks();
 

@@ -2,14 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {IBlockchainService} from '../../blockchain.service';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
+import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
+import {DynamicDsService} from '../dynamic-ds.service';
+import {InMemoryCacheService} from '../inMemoryCache.service';
 import {PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
+import {UnfinalizedBlocksService} from '../unfinalizedBlocks.service';
 import {WorkerBlockDispatcher} from './worker-block-dispatcher';
 
-class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any, any> {
+class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any, any, any> {
   async fetchBlock(worker: any, height: number): Promise<void> {
     return Promise.resolve();
   }
@@ -19,7 +24,7 @@ class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any, any> {
   }
 }
 describe('WorkerBlockDispatcher', () => {
-  let dispatcher: WorkerBlockDispatcher<any, any, any>;
+  let dispatcher: WorkerBlockDispatcher<any, any, any, any>;
 
   // Mock workers
   const mockWorkers = [
@@ -36,9 +41,15 @@ describe('WorkerBlockDispatcher', () => {
       null as unknown as IProjectUpgradeService,
       null as unknown as StoreService,
       null as unknown as StoreCacheService,
+      null as unknown as InMemoryCacheService,
       null as unknown as PoiSyncService,
+      null as unknown as DynamicDsService,
+      null as unknown as UnfinalizedBlocksService<any>,
+      null as unknown as ConnectionPoolStateManager<any>,
       null as unknown as ISubqueryProject,
-      null as unknown as () => Promise<any>
+      null as unknown as IBlockchainService<any>,
+      '',
+      []
     );
     (dispatcher as any).workers = mockWorkers;
   });
