@@ -20,7 +20,7 @@ import {NextFunction, Request, Response} from 'express';
 import PinoLogger from 'express-pino-logger';
 import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {set} from 'lodash';
-import {Pool} from 'pg';
+import {Pool, PoolClient} from 'pg';
 import {makePluginHook} from 'postgraphile';
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
@@ -128,9 +128,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private setupKeepAlive(pgClient) {
+  private setupKeepAlive(pgClient: PoolClient) {
     setInterval(() => {
-      (async () => {
+      void (async () => {
         try {
           await pgClient.query('SELECT 1');
         } catch (err) {
