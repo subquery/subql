@@ -151,6 +151,12 @@ export function getYargsOption() {
         type: 'boolean',
         default: false,
       },
+      'sl-keep-alive-interval': {
+        demandOption: false,
+        describe: 'Schema listener keep-alive interval in milliseconds',
+        type: 'number',
+        default: 180000,
+      },
     });
 }
 

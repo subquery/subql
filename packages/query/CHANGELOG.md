@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Revert yargs version
 
+### Changed
+- Update how idle psql pool connections are handled (#2520)
+
 ## [2.14.0] - 2024-08-05
 ### Changed
 - Update dependencies (#2518)
