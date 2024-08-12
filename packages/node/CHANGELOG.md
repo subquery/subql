@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.2.1] - 2024-08-12
 ### Fixed
 - Subcommands not working because of yargs dependency
 
@@ -1293,7 +1295,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.1...HEAD
+[5.2.1]: https://github.com/subquery/subql/compare/node/5.2.0...node/5.2.1
 [5.2.0]: https://github.com/subquery/subql/compare/node/5.1.0...node/5.2.0
 [5.1.0]: https://github.com/subquery/subql/compare/node/5.0.2...node/5.1.0
 [5.0.2]: https://github.com/subquery/subql/compare/node/5.0.1...node/5.0.2
