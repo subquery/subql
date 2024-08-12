@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ## [5.2.1] - 2024-08-12
 ### Changed
 - Default deployment type to SubQuery when deploying to the managed service (#2523).
