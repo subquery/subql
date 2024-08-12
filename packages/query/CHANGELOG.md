@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.14.1] - 2024-08-12
 ### Fixed
 - Revert yargs version
 
@@ -347,7 +349,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.14.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.14.1...HEAD
+[2.14.1]: https://github.com/subquery/subql/compare/query/2.14.0...query/2.14.1
 [2.14.0]: https://github.com/subquery/subql/compare/query/2.13.3...query/2.14.0
 [2.13.3]: https://github.com/subquery/subql/compare/query/2.13.2...query/2.13.3
 [2.13.2]: https://github.com/subquery/subql/compare/query/2.13.1...query/2.13.2
