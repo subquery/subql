@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {rimraf} from 'rimraf';
-import {codegen} from './codegen-controller';
+import {codegen, generateModels} from './codegen-controller';
 
 jest.setTimeout(30000);
 
@@ -95,10 +95,23 @@ describe('Codegen can generate schema', () => {
 
     const fooFile = await fs.promises.readFile(`${projectPath}/src/types/models/Foo.ts`, 'utf8');
 
+    const fooFile2 = await fs.promises.readFile(`${projectPath}/src/types/models/index.ts`, 'utf8');
+    console.log(fooFile2);
+    expect(fooFile2).toContain(` `);
     expect(fooFile).toContain(
       `import {
     Bar,
 } from '../enums';`
     );
+  });
+
+  // github issue #2211
+  it('codegen file should import model files with correct case-sensitive names', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest');
+    await codegen(projectPath, ['project-case-sensitive-import-entity.yaml']);
+
+    const codegenFile = await fs.promises.readFile(`${projectPath}/src/types/models/index.ts`, 'utf8');
+
+    expect(codegenFile).toContain(`export {ExampleField} from "./ExampleField"`);
   });
 });

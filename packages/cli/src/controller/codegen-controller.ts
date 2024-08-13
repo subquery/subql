@@ -326,7 +326,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
     }
     console.log(`* Schema ${className} generated !`);
   }
-  const classNames = extractEntities.models.map((entity) => entity.name);
+  const classNames = extractEntities.models.map((entity) => upperFirst(entity.name));
   if (classNames.length !== 0) {
     try {
       await renderTemplate(MODELS_INDEX_TEMPLATE_PATH, path.join(projectPath, MODEL_ROOT_DIR, `index.ts`), {
