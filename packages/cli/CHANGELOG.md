@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Added
+- fix case sensitive import for schema entities in codegen (#2211)
 
 ## [5.2.1] - 2024-08-12
 ### Changed

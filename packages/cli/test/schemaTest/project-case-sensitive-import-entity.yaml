@@ -1,0 +1,23 @@
+specVersion: '1.0.0'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
+schema:
+  file: './camelcaseEntityName.graphql'
+runner:
+  node:
+    name: '@subql/node'
+    version: '>=3.0.1'
+  query:
+    name: '@subql/query'
+    version: '*'
+network:
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+
+dataSources:
+  - name: main
+    kind: substrate/Runtime
+    startBlock: 1
+    mapping:
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
