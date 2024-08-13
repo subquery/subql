@@ -5,7 +5,7 @@ import assert from 'assert';
 import {existsSync, lstatSync, readFileSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import glob from 'glob';
+import {globSync} from 'glob';
 import {runWebpack} from '../../controller/build-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
@@ -50,12 +50,12 @@ export default class Build extends Command {
       let buildEntries: Record<string, string> = {
         index: defaultEntry,
       };
-      glob.sync(path.join(directory, 'src/test/**/*.test.ts')).forEach((testFile) => {
+      globSync(path.join(directory, 'src/test/**/*.test.ts')).forEach((testFile) => {
         const testName = path.basename(testFile).replace('.ts', '');
         buildEntries[`test/${testName}`] = testFile;
       });
 
-      glob.sync(path.join(directory, 'src/tests/**/*.test.ts')).forEach((testFile) => {
+      globSync(path.join(directory, 'src/tests/**/*.test.ts')).forEach((testFile) => {
         const testName = path.basename(testFile).replace('.ts', '');
         buildEntries[`tests/${testName}`] = testFile;
       });
