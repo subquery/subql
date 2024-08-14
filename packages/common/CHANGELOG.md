@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] - 2024-08-13
+### Added
+- Update polkadot/api library
 
 ## [5.1.0] - 2024-08-05
 ### Removed
@@ -404,7 +407,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.1.0...HEAD
+[Unreleased]: https://github.com/stepanLav/subql/compare/v5.1.1...HEAD
+[5.1.1]: https://github.com/stepanLav/subql/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/subquery/subql/compare/common/5.0.0...common/5.1.0
 [5.0.0]: https://github.com/subquery/subql/compare/common/4.1.1...common/5.0.0
 [4.1.1]: https://github.com/subquery/subql/compare/common/4.1.0...common/4.1.1

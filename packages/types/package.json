@@ -23,6 +23,6 @@
     "@polkadot/api": "^12"
   },
   "devDependencies": {
-    "@polkadot/api": "^12.2.3"
+    "@polkadot/api": "^12.3.1"
   }
 }

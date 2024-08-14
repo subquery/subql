@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.11.2] - 2024-08-13
+### Added
+- Update polkadot/api library
 
 ## [3.11.1] - 2024-08-12
 ### Fixed
@@ -264,7 +267,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/3.11.1...HEAD
+[Unreleased]: https://github.com/stepanLav/subql/compare/v3.11.2...HEAD
+[3.11.2]: https://github.com/stepanLav/subql/compare/v3.11.1...v3.11.2
 [3.11.1]: https://github.com/subquery/subql/compare/types/3.11.0...types/3.11.1
 [3.11.0]: https://github.com/subquery/subql/compare/types/3.10.0...types/3.11.0
 [3.10.0]: https://github.com/subquery/subql/compare/types/3.9.0...types/3.10.0
