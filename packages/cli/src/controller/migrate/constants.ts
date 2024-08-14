@@ -11,6 +11,7 @@ export const networkConverters: Partial<Record<NETWORK_FAMILY, NetworkUtils>> = 
 
 export const graphToSubqlNetworkFamily: Record<string, NETWORK_FAMILY> = {
   'ethereum/contract': NETWORK_FAMILY.ethereum,
+  ethereum: NETWORK_FAMILY.ethereum,
   // Add more mappings here as needed
 };
 
