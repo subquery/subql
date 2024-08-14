@@ -170,6 +170,7 @@ module.exports = {
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   testPathIgnorePatterns: [
     '.*\\.fixtures\\.ts$',
+    'packages/cli/test/build/src/test/mappingHandler.test.ts',
     "/node_modules/"
   ],
 

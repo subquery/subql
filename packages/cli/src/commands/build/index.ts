@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {existsSync, lstatSync, readFileSync} from 'fs';
+import {existsSync, lstatSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import glob from 'glob';
-import {runWebpack} from '../../controller/build-controller';
+import {getBuildEntries, runWebpack} from '../../controller/build-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
 export default class Build extends Command {
@@ -41,41 +40,9 @@ export default class Build extends Command {
         );
       }
 
-      // Get the output location from the project package.json main field
-      const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
-
-      const defaultEntry = path.join(directory, 'src/index.ts');
+      const buildEntries = getBuildEntries(directory);
       const outputDir = path.resolve(directory, flags.output ?? 'dist');
 
-      let buildEntries: Record<string, string> = {
-        index: defaultEntry,
-      };
-      glob.sync(path.join(directory, 'src/test/**/*.test.ts')).forEach((testFile) => {
-        const testName = path.basename(testFile).replace('.ts', '');
-        buildEntries[`test/${testName}`] = testFile;
-      });
-
-      glob.sync(path.join(directory, 'src/tests/**/*.test.ts')).forEach((testFile) => {
-        const testName = path.basename(testFile).replace('.ts', '');
-        buildEntries[`tests/${testName}`] = testFile;
-      });
-
-      if (pjson.exports && typeof pjson.exports !== 'string') {
-        buildEntries = Object.entries(pjson.exports as Record<string, string>).reduce(
-          (acc, [key, value]) => {
-            acc[key] = path.resolve(directory, value);
-            return acc;
-          },
-          {...buildEntries}
-        );
-      }
-
-      for (const i in buildEntries) {
-        if (typeof buildEntries[i] !== 'string') {
-          this.warn(`Ignoring entry ${i} from build.`);
-          delete buildEntries[i];
-        }
-      }
       await runWebpack(buildEntries, directory, outputDir, isDev, true);
       if (!flags.silent) {
         this.log('Building and packing code ...');
