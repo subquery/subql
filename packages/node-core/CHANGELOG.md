@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [14.1.2] - 2024-08-13
+## [14.1.2] - 2024-08-14
 ### Added
 - Update polkadot/api library
 
@@ -811,8 +811,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/stepanLav/subql/compare/v14.1.2...HEAD
-[14.1.2]: https://github.com/stepanLav/subql/compare/v14.1.1...v14.1.2
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/14.1.2...HEAD
+[14.1.2]: https://github.com/subquery/subql/compare/node-core/14.1.1...node-core/14.1.2
 [14.1.1]: https://github.com/subquery/subql/compare/node-core/14.1.0...node-core/14.1.1
 [14.1.0]: https://github.com/subquery/subql/compare/node-core/14.0.0...node-core/14.1.0
 [14.0.0]: https://github.com/subquery/subql/compare/node-core/13.0.2...node-core/14.0.0
