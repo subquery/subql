@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.2.2] - 2024-08-14
 ### Added
 - fix case sensitive import for schema entities in codegen (#2211)
+
 ### Fixed
 - Glob sync issue (#2534)
 
@@ -656,7 +659,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.2.2...HEAD
+[5.2.2]: https://github.com/subquery/subql/compare/cli/5.2.1...cli/5.2.2
 [5.2.1]: https://github.com/subquery/subql/compare/cli/5.2.0...cli/5.2.1
 [5.2.0]: https://github.com/subquery/subql/compare/cli/5.1.1...cli/5.2.0
 [5.1.1]: https://github.com/subquery/subql/compare/cli/5.1.0...cli/5.1.1
