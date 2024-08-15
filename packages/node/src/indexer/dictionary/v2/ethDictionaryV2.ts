@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { BigNumber } from '@ethersproject/bignumber';
 import {
   NodeConfig,
   DictionaryV2,
@@ -285,7 +286,10 @@ export class EthDictionaryV2 extends DictionaryV2<
       ).map((b) => rawBlockToEthBlock(b, this.api));
 
       if (!blocks.length) {
-        return undefined;
+        return {
+          batchBlocks: [],
+          lastBufferedHeight: undefined, // This will get set to the request end block in the base class.
+        } as any;
       }
       return {
         batchBlocks: blocks,

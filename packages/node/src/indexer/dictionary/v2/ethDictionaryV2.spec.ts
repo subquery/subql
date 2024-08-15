@@ -284,6 +284,38 @@ describe('eth dictionary v2', () => {
     // Uncomment this when not null filter supported
     // expect(logs.filter(l => !l.topics[3]).length).toEqual(6) // There are 6 events with no topic3
   }, 100000);
+
+  it('returns a lastBufferedHeight if there are no block results', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      assets: new Map(),
+      options: {
+        abi: 'erc20',
+        address: '0x30baa3ba9d7089fd8d020a994db75d14cf7ec83b',
+      },
+      startBlock: 18723210,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleLog',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address, address, uint256)'],
+            },
+          },
+        ],
+      },
+    };
+
+    const dsMap = makeBlockHeightMap([ds]);
+    ethDictionaryV2.updateQueriesMap(dsMap);
+
+    const res = await ethDictionaryV2.getData(18723210, 18733210, 100);
+
+    expect(res?.batchBlocks.length).toEqual(0);
+    expect(res?.lastBufferedHeight).toEqual(18733210);
+  });
 });
 
 describe('buildDictionaryV2QueryEntry', () => {
