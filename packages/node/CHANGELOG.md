@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Empty dictionary v2 response resulting in all blocks within that range being indexed (#336)
 
+### Changed
+- Update `@subql/node-core` (#337)
+
 ## [5.1.0] - 2024-08-02
 ### Added
 - Suport for network endpoint config providing the ability to set headers and rpc batch sizes (#334)
