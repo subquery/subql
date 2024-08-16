@@ -1,0 +1,3 @@
+undecided:
+  - "@subql/common-ethereum"
+  - "@subql/types-ethereum"
