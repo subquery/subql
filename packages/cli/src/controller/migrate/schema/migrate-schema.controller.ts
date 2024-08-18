@@ -87,7 +87,13 @@ export function migrateSchemaFromString(input: string): string {
             if (type.name.value === 'Timestamp') {
               (type.name as any).value = 'Date';
             }
-
+            // Follow type difference in here https://academy.subquery.network/indexer/build/graph-migration.html#differences-in-the-graphql-schema
+            if (type.name.value === 'BigDecimal') {
+              (type.name as any).value = 'Float';
+            }
+            if (type.name.value === 'Bytes') {
+              (type.name as any).value = 'String';
+            }
             convertRelations(doc.definitions, definition, field, type);
 
             return type;

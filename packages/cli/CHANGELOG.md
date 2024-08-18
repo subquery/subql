@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix migrate schema missing conversion for `Bytes` and `BigDecimal` type (#2538)
+
 ## [5.2.3] - 2024-08-14
 ### Fixed
 - Supports subgraph migration `kind: ethereum`.
