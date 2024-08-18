@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {rimraf} from 'rimraf';
-import {codegen, generateModels} from './codegen-controller';
+import {codegen} from './codegen-controller';
 
 jest.setTimeout(30000);
 
@@ -95,9 +95,6 @@ describe('Codegen can generate schema', () => {
 
     const fooFile = await fs.promises.readFile(`${projectPath}/src/types/models/Foo.ts`, 'utf8');
 
-    const fooFile2 = await fs.promises.readFile(`${projectPath}/src/types/models/index.ts`, 'utf8');
-    console.log(fooFile2);
-    expect(fooFile2).toContain(` `);
     expect(fooFile).toContain(
       `import {
     Bar,
