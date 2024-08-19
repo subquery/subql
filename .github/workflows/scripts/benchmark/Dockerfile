@@ -24,8 +24,7 @@ COPY . .
 COPY benchmarking.sh /app/benchmarking.sh
 RUN chmod +x /app/benchmarking.sh
 
-# Make the user not ROOT
-USER 1000
+
 ENV TZ=utc
 
 # Set the entrypoint to the script
