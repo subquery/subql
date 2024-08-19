@@ -92,6 +92,7 @@ const OrderByAggregatesPlugin: Plugin = (builder) => {
           );
         });
 
+        // todo: investigate if queryBuilder.context.args?.blockRange check is needed here
         if (queryBuilder.context.args?.blockHeight && supportsHistorical) {
           conditions.push(makeRangeQuery(tableAlias, queryBuilder.context.args.blockHeight, sql));
         }
