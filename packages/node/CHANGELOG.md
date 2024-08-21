@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.12.1] - 2024-08-21
 ### Fixed
 - Bump version with `@subql/common-stellar`, fix `OperationFilter` issue (#80)
 
@@ -140,7 +141,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.1...HEAD
+[3.12.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.0...node-stellar/3.12.1
 [3.12.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.2...node-stellar/3.12.0
 [3.11.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.1...node-stellar/3.11.2
 [3.11.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.0...node-stellar/3.11.1
