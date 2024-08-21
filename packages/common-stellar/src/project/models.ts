@@ -51,7 +51,7 @@ export class OperationFilter implements StellarOperationFilter {
 
   @IsOptional()
   @IsString()
-  source_account?: string;
+  sourceAccount?: string;
 }
 
 export class EffectFilter implements StellarEffectFilter {

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix `forbidNonWhitelisted` throw error due to `sourceAccount` in `OperationFilter` is in correct format (#80)
+
 ## [4.0.0] - 2024-07-03
 ### Added
 - Add alias `parseProjectManifest`, also follow type of `INetworkCommonModule` (#77)

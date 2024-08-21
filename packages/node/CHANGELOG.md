@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Bump version with `@subql/common-stellar`, fix `OperationFilter` issue (#80)
+
 ## [3.12.0] - 2024-07-03
 ### Changed
 - Bump version with `@subql/common-stellar`, sync with `@subql/node-core`, add admin module
