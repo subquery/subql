@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Flags} from '@oclif/core';
-import {FlagInput} from '@oclif/core/lib/interfaces/parser';
+import {FlagInput, OptionFlag} from '@oclif/core/lib/interfaces/parser';
 import axios, {Axios} from 'axios';
 import chalk from 'chalk';
 import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../constants';
@@ -18,6 +18,7 @@ import {
   GenerateDeploymentChainInterface,
   DeploymentFlagsInterface,
   MultichainDataFieldType,
+  DeploymentType,
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
@@ -40,7 +41,7 @@ export async function createDeployment(
   authToken: string,
   ipfsCID: string,
   queryImageVersion: string,
-  type: string,
+  type: DeploymentType,
   query: QueryAdvancedOpts,
   chains: V3DeploymentIndexerType[],
   url: string
@@ -54,7 +55,7 @@ export async function createDeployment(
         queryImageVersion: queryImageVersion,
         queryAdvancedSettings: {query},
         chains,
-      } as V3DeploymentInput
+      } satisfies V3DeploymentInput
     );
     return res.data.deployment;
   } catch (e) {
@@ -123,7 +124,7 @@ export async function projectsInfo(
   const key = `${org}/${projectName}`;
   try {
     const res = await getAxiosInstance(url, authToken).get<ProjectDataType[]>(
-      `subqueries/${buildProjectKey(org, projectName)}/deployments`
+      `v3/subqueries/${buildProjectKey(org, projectName)}/deployments`
     );
     const info = res.data.find((element) => element.projectKey === `${key}` && element.type === type);
     assert(info, `Project ${key} not found`);
@@ -234,7 +235,11 @@ export const DefaultDeployFlags = {
   projectName: Flags.string({description: 'Enter project name'}),
   // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
-  type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+  type: Flags.string({
+    options: ['stage', 'primary'],
+    default: DEFAULT_DEPLOYMENT_TYPE,
+    required: false,
+  }) as OptionFlag<DeploymentType>,
   indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
   queryVersion: Flags.string({description: 'Enter query-version', required: false}),
   dict: Flags.string({description: 'Enter dictionary', required: false}),
