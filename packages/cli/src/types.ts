@@ -64,9 +64,6 @@ export interface ValidateDataType {
 export interface CreateProject {
   key: string;
   name: string;
-  // org: string;
-  // projectName: string;
-  // ipfs: string;
   subtitle?: string;
   description?: string;
   logoUrl?: string;

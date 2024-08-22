@@ -49,20 +49,6 @@ export default class Create_project extends Command {
       type: flags.projectType === 'subquery' ? 1 : 3,
     }).catch((e) => this.error(e));
 
-    // const result = await createProject(
-    //   org,
-    //   flags.subtitle,
-    //   flags.logoURL,
-    //   flags.projectType === 'subquery' ? 1 : 3,
-    //   projectName,
-    //   authToken,
-    //   gitRepo,
-    //   flags.description,
-    //   flags.apiVersion,
-    //   flags.dedicatedDB,
-    //   ROOT_API_URL_PROD
-    // ).catch((e) => this.error(e));
-
     const [account, name] = result.key.split('/');
     this.log(`Successfully created project: ${result.key}
     \nProject Url: ${BASE_PROJECT_URL}/orgs/${account}/projects/${name}/deployments`);

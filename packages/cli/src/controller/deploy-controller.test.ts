@@ -92,8 +92,6 @@ describe('CLI deploy, delete, promote', () => {
       console.warn('Project already exists, these tests could be being run in parallel');
       return;
     }
-    console.log('XXXXX', project);
-
     await createProject(ROOT_API_URL_PROD, testAuth, {
       apiVersion: 'v3',
       key: `${org}/${projectName}`,
@@ -104,24 +102,10 @@ describe('CLI deploy, delete, promote', () => {
       tag: [],
       type: 1,
     });
-
-    // console.log('XXXXX222 Getting project 2')
-    // const project2 = await getProject(ROOT_API_URL_PROD, testAuth, `${org}/${projectName}`);
-    // console.log('XXXXX222', project2)
   });
 
   afterAll(async () => {
     try {
-      console.log('XXXXX222 Getting project 2');
-      const project2 = await getProject(
-        ROOT_API_URL_PROD,
-        testAuth,
-        `${projectSpec.org}/${projectSpec.projectName}`
-      ).catch((e) => {
-        console.log('Failed to get proect 2');
-        return undefined;
-      });
-      console.log('XXXXX222', project2);
       await deleteProject(testAuth, projectSpec.org, projectSpec.projectName, ROOT_API_URL_PROD);
     } catch (e) {
       console.warn('Failed to delete project', e);
