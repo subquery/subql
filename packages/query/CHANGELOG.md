@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.15.1] - 2024-08-23
+### Fixed
+- Missing rxjs dependency
+
 ## [2.15.0] - 2024-08-23
 ### Added
 - Support for null ordering (#2526)
@@ -356,7 +360,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.15.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.15.1...HEAD
+[2.15.1]: https://github.com/subquery/subql/compare/query/2.15.0...query/2.15.1
 [2.15.0]: https://github.com/subquery/subql/compare/query/2.14.1...query/2.15.0
 [2.14.1]: https://github.com/subquery/subql/compare/query/2.14.0...query/2.14.1
 [2.14.0]: https://github.com/subquery/subql/compare/query/2.13.3...query/2.14.0
