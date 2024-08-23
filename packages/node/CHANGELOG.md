@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.3] - 2024-08-23
+### Fixed
+- Revert rimraf version
+
 ## [5.2.2] - 2024-08-14
 ### Added
 - Update polkadot/api library
@@ -1299,7 +1303,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.3...HEAD
+[5.2.3]: https://github.com/subquery/subql/compare/node/5.2.2...node/5.2.3
 [5.2.2]: https://github.com/subquery/subql/compare/node/5.2.1...node/5.2.2
 [5.2.1]: https://github.com/subquery/subql/compare/node/5.2.0...node/5.2.1
 [5.2.0]: https://github.com/subquery/subql/compare/node/5.1.0...node/5.2.0
