@@ -1,6 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+// import rxjs from 'rxjs'; This is a reminder that rxjs is a peer dependency of @nestjs/common
+
 import {NestFactory} from '@nestjs/core';
 import {notifyUpdates} from '@subql/common';
 import {findAvailablePort} from '@subql/utils';

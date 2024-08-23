@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "2.15.0",
+  "version": "2.15.1",
   "description": "",
   "bin": {
     "subql-query": "./bin/run"
@@ -53,6 +53,7 @@
     "pg-tsquery": "^8.4.2",
     "postgraphile": "^4.13.0",
     "postgraphile-plugin-connection-filter": "^2.2.2",
+    "rxjs": "^7.1.0",
     "subscriptions-transport-ws": "^0.11.0",
     "yargs": "^16.2.0"
   },
