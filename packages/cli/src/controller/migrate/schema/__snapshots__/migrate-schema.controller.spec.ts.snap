@@ -13,10 +13,10 @@ type ExampleEntity @entity @fullText(fields: ["optionalString", "requiredString"
   requiredString: String!
   optionalStringList: [String!]
   requiredStringList: [String!]!
-  optionalBytes: Bytes
-  requiredBytes: Bytes!
-  optionalBytesList: [Bytes!]
-  requiredBytesList: [Bytes!]!
+  optionalBytes: String
+  requiredBytes: String!
+  optionalBytesList: [String!]
+  requiredBytesList: [String!]!
   optionalInt: Int
   requiredInt: Int!
   optionalIntList: [Int!]
@@ -29,10 +29,10 @@ type ExampleEntity @entity @fullText(fields: ["optionalString", "requiredString"
   requiredBigInt: BigInt!
   optionalBigIntList: [BigInt!]
   requiredBigIntList: [BigInt!]!
-  optionalBigDecimal: BigDecimal
-  requiredBigDecimal: BigDecimal!
-  optionalBigDecimalList: [BigDecimal!]
-  requiredBigDecimalList: [BigDecimal!]!
+  optionalBigDecimal: Float
+  requiredBigDecimal: Float!
+  optionalBigDecimalList: [Float!]
+  requiredBigDecimalList: [Float!]!
   optionalTimestamp: Date
   requiredTimestamp: Date!
   optionalTimestampList: [Date!]
