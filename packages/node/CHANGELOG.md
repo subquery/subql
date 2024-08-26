@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.1.2] - 2024-08-27
 ### Changed
 - Use constant for filter `!null` value (#341)
 
@@ -545,7 +547,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.2...HEAD
+[5.1.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.1...node-ethereum/5.1.2
 [5.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.0...node-ethereum/5.1.1
 [5.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.1...node-ethereum/5.1.0
 [5.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.0...node-ethereum/5.0.1
