@@ -1,7 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { filterBlockTimestamp, getLogger } from '@subql/node-core';
+import { NOT_NULL_FILTER } from '@subql/common-ethereum';
+import { filterBlockTimestamp } from '@subql/node-core';
 import {
   EthereumBlock,
   EthereumTransactionFilter,
@@ -19,8 +20,6 @@ import {
   hexStringEq,
   stringNormalizedEq,
 } from '../utils/string';
-
-const logger = getLogger('block.ethereum');
 
 export function filterBlocksProcessor(
   block: EthereumBlock,
@@ -105,7 +104,7 @@ export function filterLogsProcessor(
         return false;
       }
 
-      if (topic === '!null') {
+      if (topic === NOT_NULL_FILTER) {
         return true;
       }
 

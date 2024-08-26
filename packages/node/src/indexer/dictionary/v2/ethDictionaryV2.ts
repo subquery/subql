@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { BigNumber } from '@ethersproject/bignumber';
+import { NOT_NULL_FILTER } from '@subql/common-ethereum';
 import {
   NodeConfig,
   DictionaryV2,
@@ -136,7 +137,7 @@ function eventFilterToDictionaryCondition(
       if (!logConditions[field]) {
         logConditions[field] = [];
       }
-      if (topic === '!null') {
+      if (topic === NOT_NULL_FILTER) {
         logConditions[field] = []; // TODO, check if !null
       } else {
         logConditions[field].push(eventToTopic(topic));

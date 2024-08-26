@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { NOT_NULL_FILTER } from '@subql/common-ethereum';
 import { NodeConfig, DictionaryV1, getLogger } from '@subql/node-core';
 import {
   DictionaryQueryCondition,
@@ -81,7 +82,7 @@ function eventFilterToQueryEntry(
       }
       const field = `topics${i}`;
 
-      if (topic === '!null') {
+      if (topic === NOT_NULL_FILTER) {
         conditions.push({
           field,
           value: false as any, // TODO update types to allow boolean

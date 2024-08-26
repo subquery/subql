@@ -3,6 +3,7 @@
 
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NOT_NULL_FILTER } from '@subql/common-ethereum';
 import {
   EthereumBlock,
   EthereumDatasourceKind,
@@ -159,7 +160,7 @@ describe('Api.ethereum', () => {
         '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
         undefined,
         undefined,
-        '!null',
+        NOT_NULL_FILTER,
       ],
     };
 

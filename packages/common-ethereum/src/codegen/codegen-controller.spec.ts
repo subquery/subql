@@ -8,6 +8,7 @@ import {EthereumDatasourceKind, EthereumHandlerKind, SubqlRuntimeDatasource} fro
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
+import {NOT_NULL_FILTER} from '../project/utils';
 import {
   AbiInterface,
   generateAbis,
@@ -350,6 +351,47 @@ describe('Codegen spec', () => {
     await expect(
       generateAbis([ds], PROJECT_PATH, undefined as any, undefined as any, undefined as any)
     ).rejects.toThrow(/Topic: "NotExist\(address a\)" not found in erc20 contract interface/);
+  });
+
+  it('validates abi with !null filter', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'erc20',
+        address: '',
+      },
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address a,address b,uint256 c)', undefined, undefined, NOT_NULL_FILTER],
+            },
+          },
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(address a,address b,uint256 c)', undefined, undefined, null],
+            },
+          },
+        ],
+      },
+    };
+
+    await expect(
+      generateAbis(
+        [ds],
+        PROJECT_PATH,
+        (p) => Promise.resolve(),
+        (v) => v as any,
+        () => Promise.resolve()
+      )
+    ).resolves.not.toThrow();
   });
 
   it('doesnt validate if datasource has no abi option set', async () => {

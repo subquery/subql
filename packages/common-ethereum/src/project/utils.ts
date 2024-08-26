@@ -21,6 +21,8 @@ import {Interface} from 'ethers/lib/utils';
 // Todo, this aligns with cli/src/generate-controller, but we should move this to common in next version
 export const DEFAULT_ABI_DIR = '/abis';
 
+export const NOT_NULL_FILTER = '!null';
+
 type DefaultFilter = Record<string, unknown>;
 
 export function isBlockHandlerProcessor<E>(

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { NOT_NULL_FILTER } from '@subql/common-ethereum';
 import {
   BlockHeightMap,
   DictionaryResponse,
@@ -235,7 +236,7 @@ describe('eth dictionary v2', () => {
                 'Transfer(address, address, uint256)',
                 undefined,
                 undefined,
-                '!null',
+                NOT_NULL_FILTER,
               ],
             },
           },
@@ -339,7 +340,7 @@ describe('buildDictionaryV2QueryEntry', () => {
                 'Transfer(address, address, uint256)',
                 undefined,
                 undefined,
-                '!null',
+                NOT_NULL_FILTER,
               ],
             },
           },

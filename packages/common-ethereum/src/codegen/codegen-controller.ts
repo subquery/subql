@@ -9,7 +9,7 @@ import {FileReference} from '@subql/types-core';
 import {EthereumHandlerKind, SubqlRuntimeDatasource} from '@subql/types-ethereum';
 import {Data} from 'ejs';
 import {runTypeChain, glob, parseContractPath} from 'typechain';
-import {isCustomDs, isRuntimeDs} from '../project';
+import {isCustomDs, isRuntimeDs, NOT_NULL_FILTER} from '../project';
 import {CUSTOM_EVM_HANDLERS} from './constants';
 import {loadReadAbi} from './utils';
 
@@ -81,7 +81,7 @@ function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string)
         if (!mappingHandler.filter.topics || !mappingHandler.filter.topics.length) continue;
 
         const notMatch = mappingHandler.filter.topics.find(
-          (topic) => topic && !abiEvents.includes(EventFragment.fromString(topic).format())
+          (topic) => topic && topic !== NOT_NULL_FILTER && !abiEvents.includes(EventFragment.fromString(topic).format())
         );
 
         if (notMatch) topicIssues.push(notMatch);
