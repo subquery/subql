@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-stellar",
-  "version": "3.5.1-0",
+  "version": "3.6.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql-stellar",
   "repository": "github:subquery/subql-stellar",
@@ -19,6 +19,5 @@
   "dependencies": {
     "@stellar/stellar-sdk": "^12.2.0",
     "@subql/types-core": "^1.1.1"
-  },
-  "stableVersion": "3.5.0"
+  }
 }

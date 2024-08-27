@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2024-08-27
 ### Added
-- Suport for network endpoint config (#82)
-### Changed 
+- Support for network endpoint config (#82)
+
+### Changed
 - Enable ts strict (#82)
 - Bump `stellar-sdk` version (#82)
 
@@ -52,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use @subql/types-core (#18)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.6.0...HEAD
+[3.6.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.5.0...types-stellar/3.6.0
 [3.5.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.4.0...types-stellar/3.5.0
 [3.4.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.3.1...types-stellar/3.4.0
 [3.3.1]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.3.0...types-stellar/3.3.1

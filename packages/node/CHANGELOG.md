@@ -6,15 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-08-27
 ### Added
-- Suport for network endpoint config providing the ability to set headers and rpc batch sizes  (#82)
+- Support for network endpoint config providing the ability to set headers and rpc batch sizes  (#82)
+
 ### Changed
 - Enable ts strict mode (#82)
 - Use Subquery Project code from node core (#82)
 - Breaking change: Update to latest `@subql/node-core`, require indexing environment timezone set to UTC (#82)
+
 ### Fixed
-- fix admin api `dbSize` issue 
-- fixed various issues causing poi inconsistency 
+- fix admin api `dbSize` issue
+- fixed various issues causing poi inconsistency
 
 ## [3.12.1] - 2024-08-21
 ### Fixed
@@ -151,7 +154,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.0.0...HEAD
+[4.0.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.1...node-stellar/4.0.0
 [3.12.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.12.0...node-stellar/3.12.1
 [3.12.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.2...node-stellar/3.12.0
 [3.11.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/3.11.1...node-stellar/3.11.2

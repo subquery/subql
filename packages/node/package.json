@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-stellar",
-  "version": "3.12.2-0",
+  "version": "4.0.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -56,6 +56,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "3.12.1"
+  ]
 }

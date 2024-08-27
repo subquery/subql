@@ -6,11 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-08-27
 ### Changed
 - Update `@subql/common` (#82)
-- - Enable ts strict (#82)
+- Enable ts strict (#82)
+
 ### Added
-- Suport for network endpoint config (#82)
+- Support for network endpoint config (#82)
 
 ## [4.0.1] - 2024-08-21
 ### Fixed
@@ -68,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.0.1...common-stellar/4.1.0
 [4.0.1]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.0.0...common-stellar/4.0.1
 [4.0.0]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.5.0...common-stellar/4.0.0
 [3.5.0]: https://github.com/subquery/subql-stellar/compare/common-stellar/3.4.1...common-stellar/3.5.0
