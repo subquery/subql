@@ -24,15 +24,15 @@
     "@nestjs/event-emitter": "^2.0.0",
     "@nestjs/platform-express": "^9.4.0",
     "@nestjs/schedule": "^3.0.1",
+    "@stellar/stellar-sdk": "^12.2.0",
     "@subql/common-stellar": "workspace:*",
-    "@subql/node-core": "10.10.0",
-    "@subql/testing": "^2.0.0",
+    "@subql/node-core": "^14.1.2",
+    "@subql/testing": "^2.2.0",
     "@subql/types-stellar": "workspace:*",
     "lodash": "^4.17.21",
     "pg": "^8.11.5",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "stellar-sdk": "^11.2.2",
     "yargs": "^16.2.0"
   },
   "peerDependencies": {

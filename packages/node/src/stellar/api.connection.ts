@@ -13,7 +13,10 @@ import {
   LargeResponseError,
   IBlock,
 } from '@subql/node-core';
-import { StellarBlockWrapper } from '@subql/types-stellar';
+import {
+  StellarBlockWrapper,
+  IStellarEndpointConfig,
+} from '@subql/types-stellar';
 import { StellarApi } from './api.stellar';
 import SafeStellarProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
@@ -49,8 +52,9 @@ export class StellarApiConnection
     fetchBlockBatches: FetchFunc,
     eventEmitter: EventEmitter2,
     soroban?: SorobanServer,
+    config?: IStellarEndpointConfig,
   ): Promise<StellarApiConnection> {
-    const api = new StellarApi(endpoint, eventEmitter, soroban);
+    const api = new StellarApi(endpoint, eventEmitter, soroban, config);
 
     await api.init();
 
@@ -59,7 +63,7 @@ export class StellarApiConnection
 
   safeApi(height: number): SafeStellarProvider {
     //safe api not implemented
-    return new SafeStellarProvider(null, height);
+    throw new Error(`Not Implemented`);
   }
 
   async apiConnect(): Promise<void> {

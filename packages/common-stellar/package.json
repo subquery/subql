@@ -14,12 +14,12 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/common": "^4.0.0",
+    "@stellar/stellar-sdk": "^12.2.0",
+    "@subql/common": "^5.1.1",
     "@subql/types-stellar": "workspace:*",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
-    "reflect-metadata": "^0.1.13",
-    "stellar-sdk": "^11.2.0"
+    "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {
     "class-transformer": "*",

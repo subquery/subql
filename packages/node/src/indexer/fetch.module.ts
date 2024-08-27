@@ -4,10 +4,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  PoiBenchmarkService,
-  IndexingBenchmarkService,
   StoreService,
-  PoiService,
   PoiSyncService,
   ApiService,
   ConnectionPoolService,
@@ -19,6 +16,7 @@ import {
   InMemoryCacheService,
   SandboxService,
   MonitorService,
+  CoreModule,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiConnection } from '../stellar/api.connection';
@@ -36,10 +34,8 @@ import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
+  imports: [CoreModule],
   providers: [
-    InMemoryCacheService,
-    StoreService,
-    StoreCacheService,
     {
       provide: ApiService,
       useFactory: async (
@@ -47,12 +43,13 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         projectUpgradeService: ProjectUpgradeService,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
         const apiService = new StellarApiService(
           project,
-          projectUpgradeService,
           connectionPoolService,
           eventEmitter,
+          nodeConfig,
         );
         await apiService.init();
         return apiService;
@@ -62,11 +59,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         'IProjectUpgradeService',
         ConnectionPoolService,
         EventEmitter2,
+        NodeConfig,
       ],
     },
     IndexerManager,
-    ConnectionPoolService,
-    ConnectionPoolStateManager,
     {
       provide: 'IBlockDispatcher',
       useFactory: (
@@ -133,21 +129,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ],
     },
     FetchService,
-    IndexingBenchmarkService,
-    PoiBenchmarkService,
     StellarDictionaryService,
-    SandboxService,
     DsProcessorService,
     DynamicDsService,
-    PoiService,
-    PoiSyncService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',
     },
     UnfinalizedBlocksService,
-    MonitorService,
   ],
-  exports: [StoreService, StoreCacheService, MonitorService, PoiService],
 })
 export class FetchModule {}

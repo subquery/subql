@@ -1,7 +1,9 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import assert from 'assert';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Horizon } from '@stellar/stellar-sdk';
 import { getLogger, IBlock } from '@subql/node-core';
 import {
   ApiWrapper,
@@ -11,9 +13,9 @@ import {
   StellarEffect,
   StellarOperation,
   StellarTransaction,
+  IStellarEndpointConfig,
 } from '@subql/types-stellar';
 import { cloneDeep } from 'lodash';
-import { Server, ServerApi } from 'stellar-sdk/lib/horizon';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
@@ -29,13 +31,13 @@ export class StellarApi implements ApiWrapper {
   //private client: Server;
   private stellarClient: StellarServer;
 
-  private chainId: string;
-  private name: string;
+  private chainId?: string;
 
   constructor(
     private endpoint: string,
     private eventEmitter: EventEmitter2,
-    private sorobanClient?: SorobanServer,
+    private _sorobanClient?: SorobanServer,
+    private config?: IStellarEndpointConfig,
   ) {
     const { hostname, protocol, searchParams } = new URL(this.endpoint);
 
@@ -43,8 +45,11 @@ export class StellarApi implements ApiWrapper {
 
     logger.info(`Api host: ${hostname}, method: ${protocolStr}`);
     if (protocolStr === 'https' || protocolStr === 'http') {
-      const options: Server.Options = {
+      const options: Horizon.Server.Options = {
         allowHttp: protocolStr === 'http',
+        headers: {
+          ...config?.headers,
+        },
       };
 
       this.stellarClient = new StellarServer(endpoint, options);
@@ -60,7 +65,12 @@ export class StellarApi implements ApiWrapper {
     //this.genesisHash = genesisLedger.hash;
   }
 
-  async getFinalizedBlock(): Promise<ServerApi.LedgerRecord> {
+  get sorobanClient(): SorobanServer {
+    assert(this._sorobanClient, 'Soraban client is not initialized');
+    return this._sorobanClient;
+  }
+
+  async getFinalizedBlock(): Promise<Horizon.ServerApi.LedgerRecord> {
     return (await this.stellarClient.ledgers().order('desc').call()).records[0];
   }
 
@@ -73,14 +83,17 @@ export class StellarApi implements ApiWrapper {
   }
 
   getRuntimeChain(): string {
-    return this.name;
+    assert(this.chainId, 'Api has not been initialised');
+    return this.chainId;
   }
 
   getChainId(): string {
+    assert(this.chainId, 'Api has not been initialised');
     return this.chainId;
   }
 
   getGenesisHash(): string {
+    assert(this.chainId, 'Api has not been initialised');
     return this.chainId;
   }
 
@@ -90,8 +103,8 @@ export class StellarApi implements ApiWrapper {
 
   private async fetchTransactionsForLedger(
     sequence: number,
-  ): Promise<ServerApi.TransactionRecord[]> {
-    const txs: ServerApi.TransactionRecord[] = [];
+  ): Promise<Horizon.ServerApi.TransactionRecord[]> {
+    const txs: Horizon.ServerApi.TransactionRecord[] = [];
     let txsPage = await this.api.transactions().forLedger(sequence).call();
     while (txsPage.records.length !== 0) {
       txs.push(...txsPage.records);
@@ -103,8 +116,8 @@ export class StellarApi implements ApiWrapper {
 
   private async fetchOperationsForLedger(
     sequence: number,
-  ): Promise<ServerApi.OperationRecord[]> {
-    const operations: ServerApi.OperationRecord[] = [];
+  ): Promise<Horizon.ServerApi.OperationRecord[]> {
+    const operations: Horizon.ServerApi.OperationRecord[] = [];
     let operationsPage = await this.api.operations().forLedger(sequence).call();
     while (operationsPage.records.length !== 0) {
       operations.push(...operationsPage.records);
@@ -116,8 +129,8 @@ export class StellarApi implements ApiWrapper {
 
   private async fetchEffectsForLedger(
     sequence: number,
-  ): Promise<ServerApi.EffectRecord[]> {
-    const effects: ServerApi.EffectRecord[] = [];
+  ): Promise<Horizon.ServerApi.EffectRecord[]> {
+    const effects: Horizon.ServerApi.EffectRecord[] = [];
     let effectsPage = await this.api.effects().forLedger(sequence).call();
     while (effectsPage.records.length !== 0) {
       effects.push(...effectsPage.records);
@@ -171,7 +184,7 @@ export class StellarApi implements ApiWrapper {
 
   private wrapEffectsForOperation(
     operationIndex: number,
-    effectsForSequence: ServerApi.EffectRecord[],
+    effectsForSequence: Horizon.ServerApi.EffectRecord[],
   ): StellarEffect[] {
     return effectsForSequence
       .filter((effect) => this.getOperationIndex(effect.id) === operationIndex)
@@ -187,8 +200,8 @@ export class StellarApi implements ApiWrapper {
     transactionId: string,
     applicationOrder: number,
     sequence: number,
-    operationsForSequence: ServerApi.OperationRecord[],
-    effectsForSequence: ServerApi.EffectRecord[],
+    operationsForSequence: Horizon.ServerApi.OperationRecord[],
+    effectsForSequence: Horizon.ServerApi.EffectRecord[],
     eventsForSequence: SorobanEvent[],
   ): StellarOperation[] {
     const operations = operationsForSequence.filter(
@@ -224,9 +237,9 @@ export class StellarApi implements ApiWrapper {
 
   private wrapTransactionsForLedger(
     sequence: number,
-    transactions: ServerApi.TransactionRecord[],
-    operationsForSequence: ServerApi.OperationRecord[],
-    effectsForSequence: ServerApi.EffectRecord[],
+    transactions: Horizon.ServerApi.TransactionRecord[],
+    operationsForSequence: Horizon.ServerApi.OperationRecord[],
+    effectsForSequence: Horizon.ServerApi.EffectRecord[],
     eventsForSequence: SorobanEvent[],
   ): StellarTransaction[] {
     return transactions.map((tx, index) => {
@@ -292,7 +305,7 @@ export class StellarApi implements ApiWrapper {
     if (this.sorobanClient && hasInvokeHostFunctionOp) {
       try {
         eventsForSequence = await this.getAndWrapEvents(sequence);
-      } catch (e) {
+      } catch (e: any) {
         if (e.message === 'start is after newest ledger') {
           const latestLedger = (await this.sorobanClient.getLatestLedger())
             .sequence;
@@ -314,7 +327,7 @@ export class StellarApi implements ApiWrapper {
     }
 
     const wrappedLedger: StellarBlock = {
-      ...(ledger as unknown as ServerApi.LedgerRecord),
+      ...(ledger as unknown as Horizon.ServerApi.LedgerRecord),
       transactions: [] as StellarTransaction[],
       operations: [] as StellarOperation[],
       effects: [] as StellarEffect[],
@@ -374,13 +387,13 @@ export class StellarApi implements ApiWrapper {
     return ledgers;
   }
 
-  get api(): Server {
+  get api(): Horizon.Server {
     return this.stellarClient;
   }
 
   getSafeApi(blockHeight: number): SafeStellarProvider {
     //safe api not implemented yet
-    return new SafeStellarProvider(null, blockHeight);
+    return new SafeStellarProvider(this.sorobanClient, blockHeight);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

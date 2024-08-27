@@ -93,8 +93,6 @@ export class WorkerBlockDispatcherService
     worker: IndexerWorker,
     height: number,
   ): Promise<void> {
-    const start = new Date();
-    await worker.fetchBlock(height, null);
-    const end = new Date();
+    await worker.fetchBlock(height, 0 /* Unused with stellar*/);
   }
 }

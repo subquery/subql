@@ -54,7 +54,7 @@ const logger = getLogger('indexer');
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
   StellarApi,
-  SafeStellarProvider,
+  SafeStellarProvider | null,
   StellarBlockWrapper,
   ApiService,
   SubqlStellarDataSource,
@@ -69,7 +69,7 @@ export class IndexerManager extends BaseIndexerManager<
   constructor(
     apiService: ApiService,
     nodeConfig: NodeConfig,
-    sandboxService: SandboxService<SafeStellarProvider, StellarApi>,
+    sandboxService: SandboxService<SafeStellarProvider | null, StellarApi>,
     dsProcessorService: DsProcessorService,
     dynamicDsService: DynamicDsService,
     unfinalizedBlocksService: UnfinalizedBlocksService,
@@ -105,7 +105,7 @@ export class IndexerManager extends BaseIndexerManager<
   // eslint-disable-next-line @typescript-eslint/require-await
   private async getApi(
     block: StellarBlockWrapper,
-  ): Promise<SafeStellarProvider> {
+  ): Promise<SafeStellarProvider | null> {
     // return this.apiService.safeApi(block.block.sequence);
     return null;
   }

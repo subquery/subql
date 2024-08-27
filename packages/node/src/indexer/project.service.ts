@@ -4,6 +4,7 @@
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Horizon } from '@stellar/stellar-sdk';
 import {
   PoiService,
   PoiSyncService,
@@ -16,7 +17,6 @@ import {
 } from '@subql/node-core';
 import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { Sequelize } from '@subql/x-sequelize';
-import { ServerApi } from 'stellar-sdk/lib/horizon';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
 import SafeStellarProvider from '../stellar/safe-api';
@@ -77,7 +77,9 @@ export class ProjectService extends BaseProjectService<
       .ledger(height)
       .call();
 
-    return new Date((block as unknown as ServerApi.LedgerRecord).closed_at); // TODO test and make sure its in MS not S
+    return new Date(
+      (block as unknown as Horizon.ServerApi.LedgerRecord).closed_at,
+    ); // TODO test and make sure its in MS not S
   }
 
   protected onProjectChange(project: SubqueryProject): void | Promise<void> {

@@ -11,11 +11,13 @@ import {
   BaseFetchService,
   ApiService,
   getModulos,
+  Header,
+  StoreCacheService,
 } from '@subql/node-core';
 import { StellarBlock, SubqlDatasource } from '@subql/types-stellar';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
-import { blockToHeader, calcInterval } from '../stellar/utils.stellar';
+import { calcInterval, stellarBlockToHeader } from '../stellar/utils.stellar';
 import { IStellarBlockDispatcher } from './blockDispatcher';
 import { StellarDictionaryService } from './dictionary';
 import { ProjectService } from './project.service';
@@ -39,9 +41,10 @@ export class FetchService extends BaseFetchService<
     @Inject('IBlockDispatcher')
     blockDispatcher: IStellarBlockDispatcher,
     dictionaryService: StellarDictionaryService,
-    private unfinalizedBlocksService: UnfinalizedBlocksService,
+    unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
+    storeCacheService: StoreCacheService,
   ) {
     super(
       nodeConfig,
@@ -51,6 +54,8 @@ export class FetchService extends BaseFetchService<
       dictionaryService,
       eventEmitter,
       schedulerRegistry,
+      unfinalizedBlocksService,
+      storeCacheService,
     );
   }
 
@@ -58,13 +63,9 @@ export class FetchService extends BaseFetchService<
     return this.apiService.unsafeApi;
   }
 
-  protected async getFinalizedHeight(): Promise<number> {
-    const sequence = await this.api.getFinalizedBlockHeight();
-
-    const header = blockToHeader(sequence);
-
-    this.unfinalizedBlocksService.registerFinalizedBlock(header);
-    return header.blockHeight;
+  protected async getFinalizedHeader(): Promise<Header> {
+    const block = await this.api.getFinalizedBlock();
+    return stellarBlockToHeader(block);
   }
 
   protected async getBestHeight(): Promise<number> {

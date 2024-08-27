@@ -1,14 +1,21 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { Horizon } from '@stellar/stellar-sdk';
 import { Header, IBlock } from '@subql/node-core';
-import { ApiWrapper, StellarBlockWrapper } from '@subql/types-stellar';
+import {
+  ApiWrapper,
+  StellarBlock,
+  StellarBlockWrapper,
+} from '@subql/types-stellar';
 
-export function blockToHeader(blockHeight: number): Header {
+export function stellarBlockToHeader(
+  block: StellarBlock | Horizon.ServerApi.LedgerRecord,
+): Header {
   return {
-    blockHeight: blockHeight,
-    blockHash: blockHeight.toString(),
-    parentHash: (blockHeight - 1).toString(),
+    blockHeight: block.sequence,
+    blockHash: block.hash.toString(),
+    parentHash: block.prev_hash.toString(),
   };
 }
 
@@ -17,7 +24,7 @@ export function formatBlockUtil<
 >(block: B): IBlock<B> {
   return {
     block,
-    getHeader: () => blockToHeader(block.block.sequence),
+    getHeader: () => stellarBlockToHeader(block.block),
   };
 }
 

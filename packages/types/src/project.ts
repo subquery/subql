@@ -14,6 +14,8 @@ import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
   DsProcessor,
+  BaseCustomDataSource,
+  IEndpointConfig,
 } from '@subql/types-core';
 import {ApiWrapper} from './interfaces';
 import {
@@ -83,6 +85,15 @@ export type StellarRuntimeHandlerInputMap = {
   [StellarHandlerKind.Operation]: StellarOperation;
   [StellarHandlerKind.Effects]: StellarEffect;
   [StellarHandlerKind.Event]: SorobanEvent;
+};
+
+type StellarRuntimeFilterMap = {
+  [StellarHandlerKind.Block]: StellarBlockFilter;
+  [StellarHandlerKind.Transaction]: StellarTransactionFilter;
+  [StellarHandlerKind.SorobanTransaction]: StellarTransactionFilter;
+  [StellarHandlerKind.Effects]: StellarEffectFilter;
+  [StellarHandlerKind.Operation]: StellarOperationFilter;
+  [StellarHandlerKind.Event]: SorobanEventFilter;
 };
 
 /**
@@ -261,28 +272,25 @@ export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandl
 
 export type SubqlDatasource = SubqlRuntimeDatasource | SubqlCustomDatasource;
 
-export type CustomDataSourceAsset = FileReference;
-
 export interface SubqlCustomDatasource<
   K extends string = string,
   M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
   O = any
-> extends ISubqlDatasource<M> {
+> extends BaseCustomDataSource<SubqlHandler, M> {
   kind: K;
-  assets: Map<string, CustomDataSourceAsset>;
+  assets?: Map<string, FileReference>;
   options?: SubqlStellarProcessorOptions;
   processor: Processor<O>;
 }
 
 export type SecondLayerHandlerProcessor<
   K extends StellarHandlerKind,
-  F extends Record<string, unknown>,
+  F extends Record<string, unknown>, // EthereumRuntimeFilterMap?
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > =
-  | SecondLayerHandlerProcessor_0_0_0<StellarRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>
-  | SecondLayerHandlerProcessor_1_0_0<StellarRuntimeHandlerInputMap, K, F, E, DS, ApiWrapper>;
-
+  | SecondLayerHandlerProcessor_0_0_0<K, StellarRuntimeHandlerInputMap, StellarRuntimeFilterMap, F, E, DS, ApiWrapper>
+  | SecondLayerHandlerProcessor_1_0_0<K, StellarRuntimeHandlerInputMap, StellarRuntimeFilterMap, F, E, DS, ApiWrapper>;
 export type SecondLayerHandlerProcessorArray<
   K extends string,
   F extends Record<string, unknown>,
@@ -293,7 +301,8 @@ export type SecondLayerHandlerProcessorArray<
   | SecondLayerHandlerProcessor<StellarHandlerKind.Transaction, F, T, DS>
   | SecondLayerHandlerProcessor<StellarHandlerKind.SorobanTransaction, F, T, DS>
   | SecondLayerHandlerProcessor<StellarHandlerKind.Operation, F, T, DS>
-  | SecondLayerHandlerProcessor<StellarHandlerKind.Effects, F, T, DS>;
+  | SecondLayerHandlerProcessor<StellarHandlerKind.Effects, F, T, DS>
+  | SecondLayerHandlerProcessor<StellarHandlerKind.Event, F, T, DS>;
 
 export type SubqlDatasourceProcessor<
   K extends string,
@@ -305,11 +314,18 @@ export type SubqlDatasourceProcessor<
   >
 > = DsProcessor<DS, P, ApiWrapper>;
 
+export interface IStellarEndpointConfig extends IEndpointConfig {
+  /**
+   *  The JSON RPC batch size, if this is set to 0 it will not use batch requests
+   * */
+  batchSize?: number;
+}
+
 /**
  * Represents a Stellar subquery network configuration, which is based on the CommonSubqueryNetworkConfig template.
  * @type {IProjectNetworkConfig}
  */
-export type StellarNetworkConfig = IProjectNetworkConfig & {
+export type StellarNetworkConfig = IProjectNetworkConfig<IStellarEndpointConfig> & {
   sorobanEndpoint?: string;
 };
 

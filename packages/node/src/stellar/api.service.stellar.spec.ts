@@ -4,11 +4,11 @@
 import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
+import { scValToNative } from '@stellar/stellar-sdk';
 import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
 import { ConnectionPoolStateManager } from '@subql/node-core/dist';
 import { GraphQLSchema } from 'graphql';
 import { range, some } from 'lodash';
-import { scValToNative } from 'stellar-sdk';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiService } from './api.service.stellar';
 import { StellarApi } from './api.stellar';
@@ -162,11 +162,11 @@ describe.skip('testnet StellarApiService', () => {
     expect(blocks).toBeDefined();
 
     const block228236 = blocks[0];
-    const transferEvent = block228236.block.events.find(
+    const transferEvent = block228236.block.events?.find(
       (e) => e.id === '0000980266155778048-0000000001',
     );
 
-    const [sys, from, to] = transferEvent.topic;
+    const [sys, from, to] = transferEvent!.topic;
     const decodedFrom = scValToNative(from).toString();
     const decodedTo = scValToNative(to).toString();
 

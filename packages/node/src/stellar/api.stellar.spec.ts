@@ -72,7 +72,7 @@ describe('StellarApi', () => {
 
   it('should get runtime chain', () => {
     const runtimeChain = stellarApi.getRuntimeChain();
-    expect(runtimeChain).toEqual((stellarApi as any).name);
+    expect(runtimeChain).toEqual((stellarApi as any).chainId);
   });
 
   it('should return chainId for genesis hash', () => {
@@ -94,7 +94,7 @@ describe('StellarApi', () => {
       { type: { toString: () => 'invoke_host_function' } },
     ]);
     await expect((stellarApi as any).fetchAndWrapLedger(100)).rejects.toThrow(
-      /Not Found/,
+      /(Gone|Not Found)/,
     );
   });
 });

@@ -16,6 +16,7 @@ import {
   StoreService,
   TestRunner,
   SandboxService,
+  NodeConfig,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -50,15 +51,15 @@ import { TestingService } from './testing.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        projectUpgradeService: ProjectUpgradeService,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
         const apiService = new StellarApiService(
           project,
-          projectUpgradeService,
           connectionPoolService,
           eventEmitter,
+          nodeConfig,
         );
         await apiService.init();
         return apiService;
@@ -68,6 +69,7 @@ import { TestingService } from './testing.service';
         'IProjectUpgradeService',
         ConnectionPoolService,
         EventEmitter2,
+        NodeConfig,
       ],
     },
     TestRunner,

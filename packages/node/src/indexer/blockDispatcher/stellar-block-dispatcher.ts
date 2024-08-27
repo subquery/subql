@@ -6,5 +6,7 @@ import { StellarBlock } from '@subql/types-stellar';
 
 export interface IStellarBlockDispatcher
   extends IBlockDispatcher<StellarBlock> {
-  init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
+  init(
+    onDynamicDsCreated: (height: number) => void | Promise<void>,
+  ): Promise<void>;
 }

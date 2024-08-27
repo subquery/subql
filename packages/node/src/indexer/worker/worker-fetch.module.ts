@@ -5,18 +5,12 @@ import { isMainThread } from 'worker_threads';
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  ApiService,
+  WorkerCoreModule,
   ConnectionPoolService,
   WorkerDynamicDsService,
-  ConnectionPoolStateManager,
-  WorkerConnectionPoolStateManager,
-  ProjectUpgradeService,
-  InMemoryCacheService,
-  WorkerInMemoryCacheService,
-  SandboxService,
+  NodeConfig,
   WorkerUnfinalizedBlocksService,
-  MonitorService,
-  WorkerMonitorService,
+  ApiService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { StellarApiService } from '../../stellar';
@@ -29,31 +23,22 @@ import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { WorkerService } from './worker.service';
 
 @Module({
+  imports: [WorkerCoreModule],
   providers: [
     IndexerManager,
-    {
-      provide: ConnectionPoolStateManager,
-      useFactory: () => {
-        if (isMainThread) {
-          throw new Error('Expected to be worker thread');
-        }
-        return new WorkerConnectionPoolStateManager((global as any).host);
-      },
-    },
-    ConnectionPoolService,
     {
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        projectUpgradeService: ProjectUpgradeService,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
         const apiService = new StellarApiService(
           project,
-          projectUpgradeService,
           connectionPoolService,
           eventEmitter,
+          nodeConfig,
         );
         await apiService.init();
         return apiService;
@@ -65,7 +50,6 @@ import { WorkerService } from './worker.service';
         EventEmitter2,
       ],
     },
-    SandboxService,
     DsProcessorService,
     {
       provide: DynamicDsService,
@@ -89,14 +73,6 @@ import { WorkerService } from './worker.service';
         }
         return new WorkerUnfinalizedBlocksService((global as any).host);
       },
-    },
-    {
-      provide: MonitorService,
-      useFactory: () => new WorkerMonitorService((global as any).host),
-    },
-    {
-      provide: InMemoryCacheService,
-      useFactory: () => new WorkerInMemoryCacheService((global as any).host),
     },
   ],
 })

@@ -41,7 +41,7 @@ export class StellarProjectManifestVersioned implements IStellarProjectManifest 
     return this._impl as ProjectManifestV1_0_0Impl;
   }
 
-  toDeployment(): string | undefined {
+  toDeployment(): string {
     return this._impl.deployment.toYaml();
   }
 
@@ -61,11 +61,11 @@ export class StellarProjectManifestVersioned implements IStellarProjectManifest 
     return this._impl.specVersion;
   }
 
-  get description(): string {
+  get description(): string | undefined {
     return this._impl.description;
   }
 
-  get repository(): string {
+  get repository(): string | undefined {
     return this._impl.repository;
   }
 }

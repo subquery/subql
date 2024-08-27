@@ -21,18 +21,8 @@ import {
   SubqlRuntimeDatasource,
 } from '@subql/types-stellar';
 import {plainToInstance, Transform, TransformFnParams, Type} from 'class-transformer';
-import {
-  Equals,
-  IsArray,
-  IsIn,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-  validateSync,
-} from 'class-validator';
-import {CustomDataSourceBase, StellarMapping, RuntimeDataSourceBase} from '../../models';
+import {Equals, IsArray, IsIn, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {SubqlStellarDataSource, SubqlRuntimeHandler} from '../../types';
 
 const Stellar_NODE_NAME = `@subql/node-stellar`;
@@ -64,30 +54,30 @@ export class StellarCustomDataSourceImpl<K extends string = string, M extends Ba
 
 export class RuntimeDatasourceTemplateImpl extends StellarRuntimeDataSourceImpl implements RuntimeDatasourceTemplate {
   @IsString()
-  name: string;
+  name!: string;
 }
 
 export class CustomDatasourceTemplateImpl extends StellarCustomDataSourceImpl implements CustomDatasourceTemplate {
   @IsString()
-  name: string;
+  name!: string;
 }
 
 export class StellarRunnerSpecsImpl implements RunnerSpecs {
   @IsObject()
   @ValidateNested()
   @Type(() => StellarRunnerNodeImpl)
-  node: NodeSpec;
+  node!: NodeSpec;
   @IsObject()
   @ValidateNested()
   @Type(() => RunnerQueryBaseModel)
-  query: QuerySpec;
+  query!: QuerySpec;
 }
 
 export class ProjectNetworkDeploymentV1_0_0 {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
-  chainId: string;
+  chainId!: string;
 
   @IsOptional()
   @IsArray()
@@ -109,11 +99,11 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
   })
   @ValidateNested()
   @Type(() => ProjectNetworkDeploymentV1_0_0)
-  network: ProjectNetworkDeploymentV1_0_0;
+  network!: ProjectNetworkDeploymentV1_0_0;
   @IsObject()
   @ValidateNested()
   @Type(() => StellarRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
   @IsArray()
   @ValidateNested()
   @Type(() => StellarCustomDataSourceImpl, {
@@ -123,7 +113,7 @@ export class DeploymentV1_0_0 extends BaseDeploymentV1_0_0 {
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubqlRuntimeDatasource | SubqlCustomDatasource)[];
+  dataSources!: (SubqlRuntimeDatasource | SubqlCustomDatasource)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -154,16 +144,16 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: SubqlStellarDataSource[];
+  dataSources!: SubqlStellarDataSource[];
   @Type(() => StellarProjectNetwork)
-  network: StellarProjectNetwork;
+  network!: StellarProjectNetwork;
   @IsString()
-  name: string;
+  name!: string;
   @IsString()
-  version: string;
+  version!: string;
   @ValidateNested()
   @Type(() => FileType)
-  schema: FileType;
+  schema!: FileType;
   @IsOptional()
   @IsArray()
   @ValidateNested()
@@ -178,7 +168,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @IsObject()
   @ValidateNested()
   @Type(() => StellarRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  runner!: RunnerSpecs;
 
   @IsOptional()
   @IsObject()

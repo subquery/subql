@@ -1,12 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SorobanRpc, Contract, xdr} from 'stellar-sdk';
-import {HorizonApi, ServerApi} from 'stellar-sdk/lib/horizon';
-import {BaseEffectRecord} from 'stellar-sdk/lib/horizon/types/effects';
+import {Contract, xdr, Horizon} from '@stellar/stellar-sdk';
 import {BlockWrapper} from '../interfaces';
 
-export type StellarBlock = Omit<ServerApi.LedgerRecord, 'effects' | 'operations' | 'self' | 'transactions'> & {
+export type StellarBlock = Omit<Horizon.ServerApi.LedgerRecord, 'effects' | 'operations' | 'self' | 'transactions'> & {
   effects: StellarEffect[];
   operations: StellarOperation[];
   transactions: StellarTransaction[];
@@ -14,29 +12,30 @@ export type StellarBlock = Omit<ServerApi.LedgerRecord, 'effects' | 'operations'
 };
 
 export type StellarTransaction = Omit<
-  ServerApi.TransactionRecord,
+  Horizon.ServerApi.TransactionRecord,
   'effects' | 'ledger' | 'operations' | 'precedes' | 'self' | 'succeeds'
 > & {
   effects: StellarEffect[];
-  ledger: StellarBlock;
+  ledger: StellarBlock | null;
   operations: StellarOperation[];
   events: SorobanEvent[];
 };
 
-export type StellarOperation<T extends HorizonApi.BaseOperationResponse = ServerApi.OperationRecord> = Omit<
-  T,
-  'self' | 'succeeds' | 'precedes' | 'effects' | 'transaction'
-> & {
-  effects: StellarEffect[];
-  transaction: StellarTransaction;
-  ledger: StellarBlock;
-  events: SorobanEvent[];
-};
+export type StellarOperation<T extends Horizon.HorizonApi.BaseOperationResponse = Horizon.ServerApi.OperationRecord> =
+  Omit<T, 'self' | 'succeeds' | 'precedes' | 'effects' | 'transaction'> & {
+    effects: StellarEffect[];
+    transaction: StellarTransaction | null;
+    ledger: StellarBlock | null;
+    events: SorobanEvent[];
+  };
 
-export type StellarEffect<T extends BaseEffectRecord = ServerApi.EffectRecord> = Omit<T, 'operation'> & {
-  operation: StellarOperation;
-  transaction: StellarTransaction;
-  ledger: StellarBlock;
+export type StellarEffect<T extends Horizon.ServerApi.EffectRecord = Horizon.ServerApi.EffectRecord> = Omit<
+  T,
+  'operation'
+> & {
+  operation: StellarOperation | null;
+  transaction: StellarTransaction | null;
+  ledger: StellarBlock | null;
 };
 // COPIED FROM SOROBAN, due to no longer export
 export interface SorobanRpcEventResponse extends SorobanRpcBaseEventResponse {
@@ -44,24 +43,22 @@ export interface SorobanRpcEventResponse extends SorobanRpcBaseEventResponse {
   topic: xdr.ScVal[];
   value: xdr.ScVal;
 }
+export type EventType = 'contract' | 'system' | 'diagnostic';
 
 interface SorobanRpcBaseEventResponse {
   id: string;
-  type: SorobanRpc.Api.EventType;
+  type: EventType;
   ledger: number;
   ledgerClosedAt: string;
   pagingToken: string;
   inSuccessfulContractCall: boolean;
+  txHash: string;
 }
 
 export type SorobanEvent = Omit<SorobanRpcEventResponse, 'ledger'> & {
-  value: {
-    xdr: string;
-    decoded?: string;
-  };
-  ledger: StellarBlock;
-  transaction: StellarTransaction;
-  operation: StellarOperation;
+  ledger: StellarBlock | null;
+  transaction: StellarTransaction | null;
+  operation: StellarOperation | null;
 };
 
 export interface StellarBlockFilter {
@@ -74,7 +71,7 @@ export interface StellarTransactionFilter {
 }
 
 export interface StellarOperationFilter {
-  type?: HorizonApi.OperationResponseType;
+  type?: Horizon.HorizonApi.OperationResponseType;
   sourceAccount?: string;
 }
 

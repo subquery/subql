@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import { nativeToScVal, Contract, xdr, Horizon } from '@stellar/stellar-sdk';
 import {
   StellarBlock,
   StellarBlockFilter,
@@ -13,8 +14,6 @@ import {
   StellarTransaction,
   StellarTransactionFilter,
 } from '@subql/types-stellar';
-import { nativeToScVal, Contract } from 'stellar-sdk';
-import { HorizonApi } from 'stellar-sdk/lib/horizon';
 import { StellarBlockWrapped } from './block.stellar';
 
 const testAddress = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
@@ -82,7 +81,7 @@ describe('StellarBlockWrapped', () => {
       } as unknown as StellarOperation;
       const filter: StellarOperationFilter = {
         sourceAccount: 'account2',
-        type: HorizonApi.OperationResponseType.createAccount,
+        type: 'create_account' as Horizon.HorizonApi.OperationResponseType,
       };
 
       const result = StellarBlockWrapped.filterOperationProcessor(
@@ -96,11 +95,11 @@ describe('StellarBlockWrapped', () => {
     it('should pass when source_account and type filter conditions are fulfilled', () => {
       const operation: StellarOperation = {
         source_account: 'account1',
-        type: HorizonApi.OperationResponseType.createAccount,
+        type: Horizon.HorizonApi.OperationResponseType.createAccount,
       } as unknown as StellarOperation;
       const filter: StellarOperationFilter = {
         sourceAccount: 'account1',
-        type: HorizonApi.OperationResponseType.createAccount,
+        type: Horizon.HorizonApi.OperationResponseType.createAccount,
       };
 
       const result = StellarBlockWrapped.filterOperationProcessor(
@@ -176,17 +175,18 @@ describe('StellarBlockWrapped', () => {
     const topic2 = nativeToScVal('topic2');
 
     const mockEvent: SorobanEvent = {
-      type: undefined,
+      txHash: '',
+      type: 'contract',
       ledger: null,
       transaction: null,
       operation: null,
-      ledgerClosedAt: null,
+      ledgerClosedAt: '',
       contractId: new Contract(testAddress),
-      id: null,
-      pagingToken: null,
-      inSuccessfulContractCall: null,
+      id: 'mockId',
+      pagingToken: '',
+      inSuccessfulContractCall: true,
       topic: [topic1, topic2],
-      value: null,
+      value: {} as xdr.ScVal,
     };
 
     const mockEventFilterValid: SorobanEventFilter = {
@@ -237,7 +237,7 @@ describe('StellarBlockWrapped', () => {
     });
 
     it('should pass filter - skip null topics', function () {
-      mockEventFilterValid.topics = [null, 'topic2'];
+      mockEventFilterValid.topics = ['', 'topic2'];
       expect(
         StellarBlockWrapped.filterEventProcessor(
           mockEvent,

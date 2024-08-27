@@ -14,8 +14,14 @@ import {
   ProjectUpgradeService,
   IBlock,
   exitWithError,
+  NodeConfig,
 } from '@subql/node-core';
-import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
+import { IEndpointConfig } from '@subql/types-core';
+import {
+  StellarBlockWrapper,
+  SubqlDatasource,
+  IStellarEndpointConfig,
+} from '@subql/types-stellar';
 import {
   SubqueryProject,
   dsHasSorobanEventHandler,
@@ -31,16 +37,19 @@ const logger = getLogger('api');
 export class StellarApiService extends ApiService<
   StellarApi,
   SafeStellarProvider,
-  IBlock<StellarBlockWrapper>[]
+  IBlock<StellarBlockWrapper>[],
+  StellarApiConnection,
+  IStellarEndpointConfig
 > {
+  private nodeConfig: NodeConfig;
   constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
-    @Inject('IProjectUpgradeService')
-    private projectUpgradeService: ProjectUpgradeService,
     connectionPoolService: ConnectionPoolService<StellarApiConnection>,
     eventEmitter: EventEmitter2,
+    nodeConfig: NodeConfig,
   ) {
     super(connectionPoolService, eventEmitter);
+    this.nodeConfig = nodeConfig;
   }
 
   async init(): Promise<StellarApiService> {
@@ -51,12 +60,12 @@ export class StellarApiService extends ApiService<
       exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
-    const sorobanEndpoint: string | undefined =
-      network.sorobanEndpoint ??
-      (
-        this.projectUpgradeService.getProject(Number.MAX_SAFE_INTEGER)
-          .network as StellarProjectNetwork
-      ).soroban;
+    if (this.nodeConfig.primaryNetworkEndpoint) {
+      const [endpoint, config] = this.nodeConfig.primaryNetworkEndpoint;
+      (network.endpoint as Record<string, IEndpointConfig>)[endpoint] = config;
+    }
+
+    const sorobanEndpoint: string | undefined = network.sorobanEndpoint;
 
     if (!network.sorobanEndpoint && sorobanEndpoint) {
       //update sorobanEndpoint from parent project
@@ -79,12 +88,13 @@ export class StellarApiService extends ApiService<
       ? new SorobanServer(sorobanEndpoint)
       : undefined;
 
-    await this.createConnections(network, (endpoint) =>
+    await this.createConnections(network, (endpoint, config) =>
       StellarApiConnection.create(
         endpoint,
         this.fetchBlockBatches,
         this.eventEmitter,
         sorobanClient,
+        config,
       ),
     );
 
@@ -102,15 +112,17 @@ export class StellarApiService extends ApiService<
       get: (target, prop, receiver) => {
         const originalMethod = target[prop as keyof SafeStellarProvider];
         if (typeof originalMethod === 'function') {
-          return async (...args: any[]) => {
+          return async (
+            ...args: any[]
+          ): Promise<ReturnType<typeof originalMethod>> => {
             let retries = 0;
             let currentApi = target;
-            let throwingError: Error;
+            let throwingError: Error | undefined;
 
             while (retries < maxRetries) {
               try {
                 return await originalMethod.apply(currentApi, args);
-              } catch (error) {
+              } catch (error: any) {
                 logger.warn(
                   `Request failed with api at height ${height} (retry ${retries}): ${error.message}`,
                 );
@@ -123,6 +135,9 @@ export class StellarApiService extends ApiService<
             logger.error(
               `Maximum retries (${maxRetries}) exceeded for api at height ${height}`,
             );
+            if (!throwingError) {
+              throw new Error('Failed to make request, maximum retries failed');
+            }
             throw throwingError;
           };
         }

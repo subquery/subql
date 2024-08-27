@@ -45,7 +45,7 @@ export class StellarDictionaryService extends DictionaryService<
         const dictionaryV1 = await StellarDictionaryV1.create(
           this.project,
           this.nodeConfig,
-          this.dsProcessorService.getDsProcessor.bind(this),
+          this.dsProcessorService.getDsProcessor.bind(this.dsProcessorService),
           endpoint,
         );
         dictionariesV1.push(dictionaryV1);
@@ -65,12 +65,5 @@ export class StellarDictionaryService extends DictionaryService<
     protected dsProcessorService: DsProcessorService,
   ) {
     super(project.network.chainId, nodeConfig, eventEmitter);
-  }
-
-  private getV1Dictionary(): StellarDictionaryV1 | undefined {
-    // TODO this needs to be removed once Stellar supports V2 dictionaries
-    return this._dictionaries[
-      this._currentDictionaryIndex
-    ] as StellarDictionaryV1;
   }
 }

@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Horizon} from '@stellar/stellar-sdk';
 import {BaseDataSource, forbidNonWhitelisted, ProcessorImpl} from '@subql/common';
 import {Processor, FileReference} from '@subql/types-core';
 import {
@@ -13,7 +14,6 @@ import {
   SubqlRuntimeHandler,
   SubqlRuntimeDatasource,
   SubqlCustomDatasource,
-  CustomDataSourceAsset,
   StellarBlockFilter,
   StellarTransactionFilter,
   StellarOperationFilter,
@@ -27,7 +27,6 @@ import {
 } from '@subql/types-stellar';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
-import {HorizonApi} from 'stellar-sdk/lib/horizon';
 import {SubqlStellarProcessorOptions} from './types';
 
 export class BlockFilter implements StellarBlockFilter {
@@ -47,7 +46,7 @@ export class TransactionFilter implements StellarTransactionFilter {
 
 export class OperationFilter implements StellarOperationFilter {
   @IsOptional()
-  type: HorizonApi.OperationResponseType;
+  type!: Horizon.HorizonApi.OperationResponseType;
 
   @IsOptional()
   @IsString()
@@ -70,9 +69,9 @@ export class BlockHandler implements SubqlBlockHandler {
   @Type(() => BlockFilter)
   filter?: BlockFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Block]})
-  kind: StellarHandlerKind.Block;
+  kind!: StellarHandlerKind.Block;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class TransactionHandler implements SubqlTransactionHandler {
@@ -82,9 +81,9 @@ export class TransactionHandler implements SubqlTransactionHandler {
   @Type(() => TransactionFilter)
   filter?: TransactionFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Transaction]})
-  kind: StellarHandlerKind.Transaction;
+  kind!: StellarHandlerKind.Transaction;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class SorobanTransactionHandler implements SubqlSorobanTransactionHandler {
@@ -94,9 +93,9 @@ export class SorobanTransactionHandler implements SubqlSorobanTransactionHandler
   @Type(() => TransactionFilter)
   filter?: TransactionFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.SorobanTransaction]})
-  kind: StellarHandlerKind.SorobanTransaction;
+  kind!: StellarHandlerKind.SorobanTransaction;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class OperationHandler implements SubqlOperationHandler {
@@ -106,9 +105,9 @@ export class OperationHandler implements SubqlOperationHandler {
   @Type(() => OperationFilter)
   filter?: OperationFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Operation]})
-  kind: StellarHandlerKind.Operation;
+  kind!: StellarHandlerKind.Operation;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class EffectHandler implements SubqlEffectHandler {
@@ -118,9 +117,9 @@ export class EffectHandler implements SubqlEffectHandler {
   @Type(() => EffectFilter)
   filter?: EffectFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Effects]})
-  kind: StellarHandlerKind.Effects;
+  kind!: StellarHandlerKind.Effects;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class EventFilter implements SorobanEventFilter {
@@ -139,16 +138,16 @@ export class EventHandler implements SubqlEventHandler {
   @Type(() => EventFilter)
   filter?: SorobanEventFilter;
   @IsEnum(StellarHandlerKind, {groups: [StellarHandlerKind.Event]})
-  kind: StellarHandlerKind.Event;
+  kind!: StellarHandlerKind.Event;
   @IsString()
-  handler: string;
+  handler!: string;
 }
 
 export class CustomHandler implements SubqlCustomHandler {
   @IsString()
-  kind: string;
+  kind!: string;
   @IsString()
-  handler: string;
+  handler!: string;
   @IsObject()
   @IsOptional()
   filter?: Record<string, unknown>;
@@ -178,18 +177,18 @@ export class StellarMapping implements SubqlMapping {
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubqlHandler[];
+  handlers!: SubqlHandler[];
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
-  handlers: CustomHandler[];
+  handlers!: CustomHandler[];
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class StellarProcessorOptions implements SubqlStellarProcessorOptions {
@@ -208,10 +207,10 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
   @IsEnum(StellarDatasourceKind, {
     groups: [StellarDatasourceKind.Runtime],
   })
-  kind: StellarDatasourceKind.Runtime;
+  kind!: StellarDatasourceKind.Runtime;
   @Type(() => StellarMapping)
   @ValidateNested()
-  mapping: M;
+  mapping!: M;
   @IsOptional()
   assets?: Map<string, FileReference>;
   @IsOptional()
@@ -222,7 +221,7 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>>
 
 export class FileReferenceImpl implements FileReference {
   @IsString()
-  file: string;
+  file!: string;
 }
 
 export class CustomDataSourceBase<K extends string, M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>, O = any>
@@ -230,19 +229,19 @@ export class CustomDataSourceBase<K extends string, M extends SubqlMapping = Sub
   implements SubqlCustomDatasource<K, M, O>
 {
   @IsString()
-  kind: K;
+  kind!: K;
   @Type(() => CustomMapping)
   @ValidateNested()
-  mapping: M;
+  mapping!: M;
   @IsOptional()
   @IsInt()
   startBlock?: number = undefined;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: Map<string, CustomDataSourceAsset>;
+  assets!: Map<string, FileReference>;
   @Type(() => ProcessorImpl)
   @IsObject()
-  processor: Processor<O>;
+  processor!: Processor<O>;
   @IsOptional()
   @ValidateNested()
   options?: StellarProcessorOptions;

@@ -23,7 +23,8 @@
       "@subql/types-stellar": ["packages/types/src"],
       "@subql/types-stellar/*": ["packages/types/src/*"]
     },
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true
   },
   "references": [
     {"path": "packages/common-stellar"},

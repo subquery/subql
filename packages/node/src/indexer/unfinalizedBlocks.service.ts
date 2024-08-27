@@ -12,7 +12,7 @@ import {
   mainThreadOnly,
 } from '@subql/node-core';
 import { BlockWrapper } from '@subql/types-stellar';
-import { blockToHeader } from '../stellar/utils.stellar';
+import { stellarBlockToHeader } from '../stellar/utils.stellar';
 
 const logger = getLogger('unfinalized');
 
@@ -28,8 +28,8 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
 
   @mainThreadOnly()
   protected async getFinalizedHead(): Promise<Header> {
-    const finalizedHeight = await this.apiService.api.getFinalizedBlockHeight();
-    return blockToHeader(finalizedHeight);
+    const finalizedBlock = await this.apiService.api.getFinalizedBlock();
+    return stellarBlockToHeader(finalizedBlock);
   }
 
   @mainThreadOnly()
@@ -39,6 +39,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
 
   @mainThreadOnly()
   protected async getHeaderForHeight(height: number): Promise<Header> {
-    return Promise.resolve(blockToHeader(height));
+    const block = (await this.apiService.api.fetchBlocks([height]))[0];
+    return stellarBlockToHeader(block);
   }
 }
