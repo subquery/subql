@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.1.3] - 2024-08-28
 ### Fixed
 - Dictionary grouping optimisation regression (#344)
 - Dictionary query not being used if address specified but no other filters (#344)
@@ -550,7 +552,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.3...HEAD
+[5.1.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.2...node-ethereum/5.1.3
 [5.1.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.1...node-ethereum/5.1.2
 [5.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.0...node-ethereum/5.1.1
 [5.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.0.1...node-ethereum/5.1.0
