@@ -7,7 +7,7 @@ import {
   SubqlRuntimeDatasource,
 } from '@subql/types-ethereum';
 import { EthereumProjectDsTemplate } from '../../configure/SubqueryProject';
-import { ethFilterDs } from './utils';
+import { groupedDataSources } from './utils';
 
 describe('Dictionary utils', () => {
   it('can filter eth ds with multiple dynamic ds/templates', () => {
@@ -80,12 +80,31 @@ describe('Dictionary utils', () => {
     // Runtime + ERC721 + ERC721 + ERC1155
     expect(dataSources.length).toBe(4);
 
-    const filteredDs = ethFilterDs(dataSources);
-    // Runtime + ERC721 (groupedOptions) + ERC1155
-    expect(filteredDs.length).toBe(3);
-    expect((filteredDs[1] as any).groupedOptions).toStrictEqual([
-      { address: 'address1' },
-      { address: 'address2' },
+    const grouped = groupedDataSources(dataSources);
+
+    expect(grouped).toEqual([
+      [
+        {
+          handler: 'handleDyanmicDs',
+          kind: 'ethereum/LogHandler',
+          filter: {
+            topics: [
+              'TransferSingle(address, address, address, uint256, uint256)',
+            ],
+          },
+        },
+        [undefined, 'address3'],
+      ],
+      [
+        {
+          handler: 'handleERC721',
+          kind: 'ethereum/LogHandler',
+          filter: {
+            topics: ['Transfer(address, address, uint256)'],
+          },
+        },
+        ['address1', 'address2'],
+      ],
     ]);
   });
 });

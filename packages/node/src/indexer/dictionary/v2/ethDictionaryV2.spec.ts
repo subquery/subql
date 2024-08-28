@@ -22,7 +22,6 @@ import {
   SubqueryProject,
 } from '../../../configure/SubqueryProject';
 import { EthereumApi } from '../../../ethereum';
-import { ethFilterDs } from '../utils';
 import {
   buildDictionaryV2QueryEntry,
   EthDictionaryV2,
@@ -396,6 +395,45 @@ describe('buildDictionaryV2QueryEntry', () => {
     });
   });
 
+  it('Creates a valid filter with a single event handler that has 0 filters but a contract address', () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      assets: new Map(),
+      options: {
+        abi: 'erc20',
+        address: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+      },
+      startBlock: 1,
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransfer',
+            kind: EthereumHandlerKind.Event,
+          },
+          {
+            handler: 'handleTransfer',
+            kind: EthereumHandlerKind.Call,
+          },
+        ],
+      },
+    };
+    const result = buildDictionaryV2QueryEntry([ds]);
+
+    expect(result).toEqual({
+      transactions: [
+        {
+          to: ['0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'],
+        },
+      ],
+      logs: [
+        {
+          address: ['0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'],
+        },
+      ],
+    });
+  });
+
   it('build query entries for multiple ds', () => {
     const ds: SubqlRuntimeDatasource[] = [
       {
@@ -557,7 +595,7 @@ describe('buildDictionaryV2QueryEntry', () => {
       (tmp.options.address = `0x${i}`), ds.push(tmp);
     }
 
-    const result = buildDictionaryV2QueryEntry(ethFilterDs(ds));
+    const result = buildDictionaryV2QueryEntry(ds);
 
     expect(result).toEqual({
       logs: [
@@ -591,7 +629,7 @@ describe('buildDictionaryV2QueryEntry', () => {
       (tmp.options.address = `0x${i}`), ds.push(tmp);
     }
 
-    const result = buildDictionaryV2QueryEntry(ethFilterDs(ds));
+    const result = buildDictionaryV2QueryEntry(ds);
 
     expect(result).toEqual({
       logs: [

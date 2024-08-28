@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { BigNumber } from '@ethersproject/bignumber';
 import { NOT_NULL_FILTER } from '@subql/common-ethereum';
 import {
   NodeConfig,
@@ -17,7 +16,6 @@ import {
   EthereumLogFilter,
   EthereumTransactionFilter,
   SubqlDatasource,
-  SubqlEthereumProcessorOptions,
 } from '@subql/types-ethereum';
 import { uniqBy } from 'lodash';
 import { EthereumNodeConfig } from '../../../configure/NodeConfig';
@@ -29,8 +27,7 @@ import {
 import { EthereumApi } from '../../../ethereum';
 import { eventToTopic, functionToSighash } from '../../../utils/string';
 import { yargsOptions } from '../../../yargs';
-import { ethFilterDs } from '../utils';
-import { GroupedEthereumProjectDs } from '../v1';
+import { groupedDataSources, validAddresses } from '../utils';
 import {
   RawEthBlock,
   EthDictionaryV2QueryEntry,
@@ -43,42 +40,32 @@ const MIN_FETCH_LIMIT = 200;
 
 const logger = getLogger('dictionary-v2');
 
-function extractOptionAddresses(
-  dsOptions?: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
-): string[] {
+function applyAddresses(
+  addresses?: (string | undefined | null)[],
+): string[] | undefined {
   const queryAddressLimit = yargsOptions.argv['query-address-limit'];
-  const addressArray: string[] = [];
-  if (Array.isArray(dsOptions)) {
-    const addresses = dsOptions
-      .map((option) => option.address)
-      .filter((address): address is string => Boolean(address));
-
-    if (addresses.length > queryAddressLimit) {
-      logger.debug(
-        `Addresses length: ${addresses.length} is exceeding limit: ${queryAddressLimit}. Consider increasing this value with the flag --query-address-limit  `,
-      );
-    }
-    if (addresses.length !== 0 && addresses.length <= queryAddressLimit) {
-      addressArray.push(...addresses);
-    }
-  } else {
-    if (dsOptions?.address) {
-      addressArray.push(dsOptions.address.toLowerCase());
-    }
+  if (
+    !addresses ||
+    !addresses.length ||
+    addresses.length > queryAddressLimit ||
+    addresses.filter((v) => !v).length // DONT use find because 'undefined' and 'null' as falsey
+  ) {
+    return [];
   }
-  return addressArray;
+
+  return validAddresses(addresses).map((a) => a.toLowerCase());
 }
 
 function callFilterToDictionaryCondition(
-  filter: EthereumTransactionFilter,
-  dsOptions?: SubqlEthereumProcessorOptions,
+  filter?: EthereumTransactionFilter,
+  addresses?: (string | undefined | null)[],
 ): EthDictionaryTxConditions {
   const txConditions: EthDictionaryTxConditions = {};
   const toArray: (string | null)[] = [];
   const fromArray: string[] = [];
   const funcArray: string[] = [];
 
-  if (filter.from) {
+  if (filter?.from) {
     fromArray.push(filter.from.toLowerCase());
   }
 
@@ -90,11 +77,11 @@ function callFilterToDictionaryCondition(
     }
   };
 
-  const optionsAddresses = extractOptionAddresses(dsOptions);
-  if (!optionsAddresses.length) {
-    assignTo(filter.to);
+  const optionsAddresses = applyAddresses(addresses);
+  if (!optionsAddresses?.length) {
+    assignTo(filter?.to);
   } else {
-    if (filter.to || filter.to === null) {
+    if (filter?.to || filter?.to === null) {
       logger.warn(
         `TransactionFilter 'to' conflicts with 'address' in data source options, using data source option`,
       );
@@ -102,7 +89,7 @@ function callFilterToDictionaryCondition(
     optionsAddresses.forEach(assignTo);
   }
 
-  if (filter.function) {
+  if (filter?.function) {
     funcArray.push(functionToSighash(filter.function));
   }
 
@@ -121,12 +108,12 @@ function callFilterToDictionaryCondition(
 }
 
 function eventFilterToDictionaryCondition(
-  filter: EthereumLogFilter,
-  dsOptions?: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
+  filter?: EthereumLogFilter,
+  addresses?: (string | undefined | null)[],
 ): EthDictionaryLogConditions {
   const logConditions: EthDictionaryLogConditions = {};
-  logConditions.address = extractOptionAddresses(dsOptions);
-  if (filter.topics) {
+  logConditions.address = applyAddresses(addresses);
+  if (filter?.topics) {
     for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
       const topic = filter.topics[i];
       if (!topic) {
@@ -171,58 +158,52 @@ function sanitiseDictionaryConditions(
 }
 
 export function buildDictionaryV2QueryEntry(
-  dataSources: GroupedEthereumProjectDs[],
+  dataSources: EthereumProjectDs[],
 ): EthDictionaryV2QueryEntry {
   const dictionaryConditions: EthDictionaryV2QueryEntry = {
     logs: [],
     transactions: [],
   };
 
-  for (const ds of dataSources) {
-    for (const handler of ds.mapping.handlers) {
-      // No filters, cant use dictionary
-      if (!handler.filter) return {};
+  const groupedHandlers = groupedDataSources(dataSources);
+  for (const [handler, addresses] of groupedHandlers) {
+    // No filters, cant use dictionary
+    if (!handler.filter && !addresses?.length) return {};
 
-      switch (handler.kind) {
-        case EthereumHandlerKind.Block:
-          if (handler.filter.modulo === undefined) {
-            return {};
-          }
-          break;
-        case EthereumHandlerKind.Call: {
-          const filter = handler.filter as EthereumTransactionFilter;
-          if (
-            filter.from !== undefined ||
-            filter.to !== undefined ||
-            filter.function !== undefined
-          ) {
-            dictionaryConditions.transactions ??= [];
-            dictionaryConditions.transactions.push(
-              callFilterToDictionaryCondition(filter, ds.options),
-            );
-          } else {
-            // do nothing;
-          }
-          break;
+    switch (handler.kind) {
+      case EthereumHandlerKind.Block:
+        if (handler.filter?.modulo === undefined) {
+          return {};
         }
-        case EthereumHandlerKind.Event: {
-          const filter = handler.filter as EthereumLogFilter;
-          dictionaryConditions.logs ??= [];
-          if (ds.groupedOptions) {
-            dictionaryConditions.logs.push(
-              eventFilterToDictionaryCondition(filter, ds.groupedOptions),
-            );
-          } else if (ds.options?.address || filter.topics) {
-            dictionaryConditions.logs.push(
-              eventFilterToDictionaryCondition(filter, ds.options),
-            );
-          } else {
-            // do nothing;
-          }
-          break;
+        break;
+      case EthereumHandlerKind.Call: {
+        if (
+          (handler.filter &&
+            Object.values(handler.filter).filter((v) => v !== undefined)
+              .length) ||
+          validAddresses(addresses).length
+        ) {
+          dictionaryConditions.transactions ??= [];
+          dictionaryConditions.transactions.push(
+            callFilterToDictionaryCondition(handler.filter, addresses),
+          );
         }
-        default:
+        break;
       }
+      case EthereumHandlerKind.Event: {
+        if (
+          handler.filter?.topics?.length ||
+          validAddresses(addresses).length
+        ) {
+          dictionaryConditions.logs ??= [];
+          dictionaryConditions.logs.push(
+            eventFilterToDictionaryCondition(handler.filter, addresses),
+          );
+        }
+
+        break;
+      }
+      default:
     }
   }
 
@@ -261,8 +242,7 @@ export class EthDictionaryV2 extends DictionaryV2<
   buildDictionaryQueryEntries(
     dataSources: (EthereumProjectDs | EthereumProjectDsTemplate)[],
   ): EthDictionaryV2QueryEntry {
-    const filteredDs = ethFilterDs(dataSources);
-    return buildDictionaryV2QueryEntry(filteredDs);
+    return buildDictionaryV2QueryEntry(dataSources);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

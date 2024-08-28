@@ -336,6 +336,55 @@ describe('buildDictionaryV1QueryEntries', () => {
       ]);
     });
 
+    it('Creates a valid filter with a single event handler that has 0 filters but a contract address', () => {
+      const ds: SubqlRuntimeDatasource = {
+        kind: EthereumDatasourceKind.Runtime,
+        assets: new Map(),
+        options: {
+          abi: 'erc20',
+          address: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+        },
+        startBlock: 1,
+        mapping: {
+          file: '',
+          handlers: [
+            {
+              handler: 'handleTransfer',
+              kind: EthereumHandlerKind.Event,
+            },
+            {
+              handler: 'handleTransfer',
+              kind: EthereumHandlerKind.Call,
+            },
+          ],
+        },
+      };
+
+      const result = buildDictionaryV1QueryEntries([ds]);
+      expect(result).toEqual([
+        {
+          entity: 'evmLogs',
+          conditions: [
+            {
+              field: 'address',
+              matcher: 'equalTo',
+              value: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+            },
+          ],
+        },
+        {
+          entity: 'evmTransactions',
+          conditions: [
+            {
+              field: 'to',
+              matcher: 'equalTo',
+              value: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+            },
+          ],
+        },
+      ]);
+    });
+
     it('builds a filter when theres a block handler with modulo filter', () => {
       const ds: SubqlRuntimeDatasource = {
         kind: EthereumDatasourceKind.Runtime,
@@ -433,7 +482,7 @@ describe('buildDictionaryV1QueryEntries', () => {
               kind: EthereumHandlerKind.Event,
               filter: {
                 topics: [
-                  'TransferSingle(address, address, address, uint256, uint256)',
+                  'TransferMultiple(address, address, address, uint256, uint256)',
                 ],
               },
             },
@@ -458,7 +507,7 @@ describe('buildDictionaryV1QueryEntries', () => {
               field: 'topics0',
               matcher: 'equalTo',
               value:
-                '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+                '0xeb9b7dd0d144caae51d14067d0d112bc1839fbf62e856fca78f6b4d9bfb51962',
             },
           ],
           entity: 'evmLogs',
@@ -467,24 +516,8 @@ describe('buildDictionaryV1QueryEntries', () => {
           conditions: [
             {
               field: 'address',
-              matcher: 'equalTo',
-              value: 'address1',
-            },
-            {
-              field: 'topics0',
-              matcher: 'equalTo',
-              value:
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-            },
-          ],
-          entity: 'evmLogs',
-        },
-        {
-          conditions: [
-            {
-              field: 'address',
-              matcher: 'equalTo',
-              value: 'address2',
+              matcher: 'in',
+              value: ['address1', 'address2'],
             },
             {
               field: 'topics0',
@@ -507,6 +540,30 @@ describe('buildDictionaryV1QueryEntries', () => {
               matcher: 'equalTo',
               value:
                 '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+            },
+          ],
+          entity: 'evmLogs',
+        },
+      ]);
+    });
+
+    it('Drops the address if multiple datasources have the same filters, but one without an address', () => {
+      const duplicateDataSources = [
+        { ...mockTempDs[0], options: { address: 'address1' } },
+        { ...mockTempDs[0], options: { address: 'address2' } },
+        { ...mockTempDs[0], options: { address: undefined } },
+      ] as SubqlRuntimeDatasource[];
+
+      const queryEntry = buildDictionaryV1QueryEntries(duplicateDataSources);
+
+      expect(queryEntry).toEqual([
+        {
+          conditions: [
+            {
+              field: 'topics0',
+              matcher: 'equalTo',
+              value:
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             },
           ],
           entity: 'evmLogs',
