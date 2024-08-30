@@ -14,12 +14,13 @@ import {
 } from '@subql/types-core';
 import {findAvailablePort} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
-import {stringToArray, getSchedule} from 'cron-converter';
+import {stringToArray, getSchedule, Schedule} from 'cron-converter';
 import tar from 'tar';
 import {NodeConfig} from '../configure/NodeConfig';
 import {StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
+import {CronFilter} from './blocks';
 
 const logger = getLogger('Project-Utils');
 
@@ -263,13 +264,13 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
                   throw new Error(`Invalid Cron string: ${handler.filter.timestamp}`);
                 }
 
-                const schedule = getSchedule(cronArr, timestampReference);
+                const schedule = getSchedule(cronArr, timestampReference, 'utc');
                 handler.filter.cronSchedule = {
                   schedule: schedule,
                   get next() {
-                    return Date.parse(this.schedule.next().format());
+                    return (this.schedule as Schedule).next().toMillis();
                   },
-                };
+                } satisfies CronFilter['cronSchedule'];
               }
             }
             return handler;
