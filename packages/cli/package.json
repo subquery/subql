@@ -29,7 +29,7 @@
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
     "update-notifier": "^5.1.0",
-    "webpack": "^5.93.0",
+    "webpack": "^5.94.0",
     "webpack-merge": "^6.0.1",
     "websocket": "^1.0.35",
     "yaml": "^2.5.0",
