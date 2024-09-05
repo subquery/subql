@@ -17,7 +17,7 @@ export class IPFSReader implements Reader {
   private ipfs: IPFSHTTPClientLite;
   private cache: Record<string, Promise<string>> = {};
 
-  constructor(private readonly cid: string, gateway?: string) {
+  constructor(readonly cid: string, gateway?: string) {
     if (!CIDv0.test(cid) && !CIDv1.test(cid)) {
       throw new Error('IPFS project path CID is not valid');
     }
