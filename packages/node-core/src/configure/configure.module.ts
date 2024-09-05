@@ -1,7 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {handleCreateSubqueryProjectError, LocalReader, makeTempDir, ReaderFactory} from '@subql/common';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import {handleCreateSubqueryProjectError, IPFSReader, LocalReader, makeTempDir, ReaderFactory} from '@subql/common';
 import {IEndpointConfig, Reader} from '@subql/types-core';
 import {camelCase, isNil, omitBy} from 'lodash';
 import {ISubqueryProject} from '../indexer';
@@ -64,13 +67,10 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
         value = [value];
       }
       if (Array.isArray(value)) {
-        value = value.reduce(
-          (acc, endpoint, index) => {
-            acc[endpoint] = endpointConfig[index] ?? {};
-            return acc;
-          },
-          {} as Record<string, IEndpointConfig>
-        );
+        value = value.reduce((acc, endpoint, index) => {
+          acc[endpoint] = endpointConfig[index] ?? {};
+          return acc;
+        }, {} as Record<string, IEndpointConfig>);
       }
     }
     if (key === 'primary-network-endpoint') {
@@ -95,7 +95,17 @@ let rootDir: string;
 async function getCachedRoot(reader: Reader, configRoot?: string): Promise<string> {
   if (reader instanceof LocalReader) return reader.root;
 
+  // Case for in workers when the parent has decided the directory
   if (configRoot) return configRoot;
+
+  // Allows reusing the same directory on restarts when project is run from ipfs, this can stop duplicating files in the tmp dir
+  if (reader instanceof IPFSReader) {
+    rootDir = path.resolve(os.tmpdir(), reader.cid);
+    if (!fs.existsSync(rootDir)) {
+      await fs.promises.mkdir(rootDir);
+    }
+    return rootDir;
+  }
 
   if (!rootDir) {
     rootDir = await makeTempDir();
