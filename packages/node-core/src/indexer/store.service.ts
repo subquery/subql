@@ -26,7 +26,7 @@ import {
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {camelCaseObjectKey} from '../utils';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
 import {CacheMetadataModel} from './storeCache';
@@ -440,7 +440,7 @@ group by
           (upperFirst(camelCase(indexField.entityName)) === entity || indexField.entityName === entity) &&
           // We add this because in some case upperFirst and camelCase will not match with entity name,
           // see test entity name like `MinerIP`
-          camelCase(indexField.fieldName) === camelCase(field)
+          camelCase(indexField.fieldName) === customCamelCaseGraphqlKey(field)
       ) > -1
     );
   }
@@ -450,7 +450,7 @@ group by
       this.modelIndexedFields.findIndex(
         (indexField) =>
           upperFirst(camelCase(indexField.entityName)) === entity &&
-          camelCase(indexField.fieldName) === camelCase(field) &&
+          camelCase(indexField.fieldName) === customCamelCaseGraphqlKey(field) &&
           // With historical indexes are not unique
           (this.historical || indexField.isUnique)
       ) > -1

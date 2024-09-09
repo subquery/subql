@@ -71,6 +71,11 @@ describe('Store Service', () => {
     expect(storeService.isIndexed('Transfer', 'accountToId')).toEqual(true);
     expect(storeService.isIndexed('Transfer', 'accountToId2')).toEqual(false);
     expect(storeService.isIndexed('Transfer2', 'accountToId')).toEqual(false);
+
+    expect(storeService.isIndexed('Transfer', 'AccountToId')).toEqual(true);
+    expect(storeService.isIndexed('Transfer', 'accountToID')).toEqual(true);
+    expect(storeService.isIndexed('Transfer', 'accountTo_ID')).toEqual(true);
+    expect(storeService.isIndexed('Transfer', 'accountTo_Id')).toEqual(true);
   });
 
   it('isIndexedHistorical support snake case', () => {
@@ -104,5 +109,12 @@ describe('Store Service', () => {
     expect(storeService.isIndexedHistorical('Transfer2', 'accountToId')).toEqual(false);
 
     expect(storeService.isIndexedHistorical('Transfer', 'not_index_id')).toEqual(false);
+
+    expect(storeService.isIndexedHistorical('Transfer', 'not_index_id')).toEqual(false);
+
+    expect(storeService.isIndexed('Transfer', 'AccountToId')).toEqual(true);
+    expect(storeService.isIndexed('Transfer', 'accountToID')).toEqual(true);
+    expect(storeService.isIndexed('Transfer', 'accountTo_ID')).toEqual(true);
+    expect(storeService.isIndexed('Transfer', 'accountTo_Id')).toEqual(true);
   });
 });
