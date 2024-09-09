@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Reuse the same temp dir when project is from IPFS (#2551)
 
+### Fixed
+- GraphQL field support for consecutive uppercase letters.
+
 ## [14.1.3] - 2024-08-30
 ### Fixed
 - Fixed Corn filter (#2547)
