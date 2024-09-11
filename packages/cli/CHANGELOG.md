@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.2.5] - 2024-09-09
+## [5.2.6] - 2024-09-09
 ### Changed
 - Bump webpack from 5.93.0 to 5.94.0
 
@@ -671,8 +671,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.2.5...HEAD
-[5.2.5]: https://github.com/subquery/subql/compare/cli/5.2.4...cli/5.2.5
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.2.6...HEAD
+[5.2.6]: https://github.com/subquery/subql/compare/cli/5.2.4...cli/5.2.6
 [5.2.4]: https://github.com/subquery/subql/compare/cli/5.2.3...cli/5.2.4
 [5.2.3]: https://github.com/subquery/subql/compare/cli/5.2.2...cli/5.2.3
 [5.2.2]: https://github.com/subquery/subql/compare/cli/5.2.1...cli/5.2.2
