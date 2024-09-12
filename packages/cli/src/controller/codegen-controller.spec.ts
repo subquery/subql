@@ -49,12 +49,12 @@ describe('Codegen can generate schema (mocked)', () => {
         'TypeNotSupported',
         [
           // Ignoring to test unsupported scalar type
-          // @ts-ignore
           {
             name: 'notSupported',
             type: 'UnsupportedScalar',
             nullable: false,
             isArray: false,
+            isEnum: false,
           },
         ],
         []
