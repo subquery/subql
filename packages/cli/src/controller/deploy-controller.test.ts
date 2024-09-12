@@ -201,7 +201,7 @@ describe('CLI deploy, delete, promote', () => {
     );
     const updatedInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_PROD, type);
 
-    expect(updatedInfo.id).toBe(initProjectInfo.id);
-    expect(updatedInfo.version).not.toEqual(deployOutput.version);
+    expect(updatedInfo!.id).toBe(initProjectInfo!.id);
+    expect(updatedInfo!.version).not.toEqual(deployOutput.version);
   });
 });

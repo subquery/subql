@@ -114,8 +114,8 @@ export interface ProjectDataType {
   queryUrl: string;
   configuration: {
     config: {
-      query: {};
-      indexer: {};
+      query: unknown;
+      indexer: unknown;
     };
   };
   role: string;
@@ -158,7 +158,7 @@ export interface ProjectDeploymentInterface {
   org: string;
   projectName: string;
   chains: V3DeploymentIndexerType[];
-  projectInfo: ProjectDataType;
+  projectInfo?: ProjectDataType;
   flags: DeploymentFlagsInterface;
   ipfsCID: string;
   queryVersion: string;

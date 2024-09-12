@@ -4,17 +4,15 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {URL} from 'url';
 import {search, confirm, input} from '@inquirer/prompts';
 import {Args, Command, Flags} from '@oclif/core';
 import {NETWORK_FAMILY} from '@subql/common';
 import chalk from 'chalk';
-import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
+import ora from 'ora';
 import {
   installDependencies,
   cloneProjectTemplate,
-  cloneProjectGit,
   readDefaults,
   prepare,
   prepareProjectScaffold,
@@ -29,31 +27,10 @@ import Generate from './codegen/generate';
 
 // Helper function for fuzzy search on prompt input
 function filterInput<T>(arr: T[]) {
-  return (input: string | undefined, opt: {signal: any}): Promise<ReadonlyArray<{value: T}>> => {
+  return (input: string | undefined): Promise<ReadonlyArray<{value: T}>> => {
     input ??= '';
     return Promise.resolve(fuzzy.filter(input, arr).map((r) => ({value: r.original})));
   };
-}
-
-async function promptValidRemoteAndBranch(): Promise<string[]> {
-  let isValid = false;
-  let remote: string | undefined;
-  while (!isValid) {
-    try {
-      remote = (await cli.prompt('Custom template git remote', {
-        required: true,
-      })) as string;
-      new URL(remote);
-      isValid = true;
-    } catch (e) {
-      console.log(`Not a valid git remote URL: '${remote}', try again`);
-      continue;
-    }
-  }
-  const branch = await cli.prompt('Custom template git branch', {
-    required: true,
-  });
-  return [remote, branch];
 }
 
 export default class Init extends Command {
@@ -80,7 +57,11 @@ export default class Init extends Command {
     const project = {} as ProjectSpecBase;
     project.name = args.projectName
       ? args.projectName
-      : await cli.prompt('Project name', {default: 'subql-starter', required: true});
+      : await input({
+          message: 'Project name',
+          default: 'subql-starter',
+          required: true,
+        });
     if (fs.existsSync(path.join(location, `${project.name}`))) {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
@@ -162,16 +143,16 @@ export default class Init extends Command {
     }
   }
 
-  async cloneCustomRepo(project: ProjectSpecBase, projectPath: string, location: string): Promise<void> {
-    const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
-    projectPath = await cloneProjectGit(location, project.name, gitRemote, gitBranch);
-  }
-
-  async setupProject(project: ProjectSpecBase, projectPath: string, flags: any): Promise<void> {
+  async setupProject(
+    project: ProjectSpecBase,
+    projectPath: string,
+    flags: {npm: boolean; 'install-dependencies': boolean}
+  ): Promise<void> {
     const [defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(projectPath);
 
     project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
-    const userInput = await cli.prompt('RPC endpoint:', {
+    const userInput = await input({
+      message: 'RPC endpoint:',
       default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
       required: false,
     });
@@ -179,23 +160,22 @@ export default class Init extends Command {
       (project.endpoint as string[]).push(userInput);
     }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
-    project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
-    project.description = await cli
-      .prompt('Description', {
-        required: false,
-        default: descriptionHint,
-      })
-      .then((description) => {
-        return description === descriptionHint ? defaultDescription : description;
-      });
+    project.author = await input({message: 'Author', required: true, default: defaultAuthor});
+    project.description = await input({
+      message: 'Description',
+      required: false,
+      default: descriptionHint,
+    }).then((description) => {
+      return description === descriptionHint ? defaultDescription : description;
+    });
 
-    cli.action.start('Preparing project');
+    const spinner = ora('Preparing project').start();
     await prepare(projectPath, project);
-    cli.action.stop();
+    spinner.stop();
     if (flags['install-dependencies']) {
-      cli.action.start('Installing dependencies');
+      const spinner = ora('Installing dependencies').start();
       installDependencies(projectPath, flags.npm);
-      cli.action.stop();
+      spinner.stop();
     }
     this.log(`${project.name} is ready`);
   }

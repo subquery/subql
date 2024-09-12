@@ -8,7 +8,7 @@ import {input} from '@inquirer/prompts';
 import {Command, Flags} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import chalk from 'chalk';
-import cli from 'cli-ux';
+import ora from 'ora';
 import YAML from 'yaml';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {
@@ -22,7 +22,7 @@ import {
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
 import {getDirectoryCid, uploadToIpfs} from '../../controller/publish-controller';
-import {MultichainDataFieldType, V3DeploymentIndexerType} from '../../types';
+import {V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, resolveToAbsolutePath, valueOrPrompt} from '../../utils';
 import {promptImageVersion} from '../deployment/deploy';
 
@@ -59,14 +59,14 @@ export default class MultiChainDeploy extends Command {
     multichainManifestPath = path.join(project.root, multichainManifestPath);
     const multichainManifestObject = YAML.parse(fs.readFileSync(multichainManifestPath, 'utf8'));
 
-    cli.action.start('Uploading project to IPFS');
+    const spinner = ora('Uploading project to IPFS').start();
     const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
       (e) => {
-        cli.action.stop();
+        spinner.fail(e.message);
         this.error(e);
       }
     );
-    cli.action.stop('DONE');
+    spinner.succeed('Uploaded project to IPFS');
 
     flags.org = await valueOrPrompt(flags.org, 'Enter organisation', 'Organisation is required');
     flags.projectName = await valueOrPrompt(flags.projectName, 'Enter project name', 'Project name is required');
@@ -78,9 +78,9 @@ export default class MultiChainDeploy extends Command {
     const projectInfo = await projectsInfo(authToken, flags.org, flags.projectName, ROOT_API_URL_PROD, flags.type);
     const chains: V3DeploymentIndexerType[] = [];
 
-    const endpoints: MultichainDataFieldType = splitMultichainDataFields(flags.endpoint);
-    const dictionaries: MultichainDataFieldType = splitMultichainDataFields(flags.dict);
-    const indexerVersions: MultichainDataFieldType = splitMultichainDataFields(flags.indexerVersion);
+    const endpoints = splitMultichainDataFields(flags.endpoint);
+    const dictionaries = splitMultichainDataFields(flags.dict);
+    const indexerVersions = splitMultichainDataFields(flags.indexerVersion);
 
     if (!flags.queryVersion) {
       try {

@@ -120,15 +120,14 @@ export async function projectsInfo(
   projectName: string,
   url: string,
   type: string
-): Promise<ProjectDataType> {
+): Promise<ProjectDataType | undefined> {
   const key = `${org}/${projectName}`;
   try {
     const res = await getAxiosInstance(url, authToken).get<ProjectDataType[]>(
       `v3/subqueries/${buildProjectKey(org, projectName)}/deployments`
     );
-    const info = res.data.find((element) => element.projectKey === `${key}` && element.type === type);
-    assert(info, `Project ${key} not found`);
-    return info;
+
+    return res.data.find((element) => element.projectKey === `${key}` && element.type === type);
   } catch (e) {
     throw errorHandle(e, 'Failed to get projects:');
   }
@@ -331,7 +330,7 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
     );
     data.log(`Project: ${data.projectName} has been re-deployed`);
   } else {
-    const deploymentOutput: DeploymentDataType = await createDeployment(
+    const deploymentOutput = await createDeployment(
       data.org,
       data.projectName,
       data.authToken,
@@ -341,23 +340,21 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       generateAdvancedQueryOptions(data.flags),
       data.chains,
       ROOT_API_URL_PROD
-    ).catch((e) => {
-      throw e;
-    });
+    );
 
     if (deploymentOutput) {
       data.log(`Project: ${deploymentOutput.projectKey}
-      \nStatus: ${chalk.blue(deploymentOutput.status)}
-      \nDeploymentID: ${deploymentOutput.id}
-      \nDeployment Type: ${deploymentOutput.type}
-      \nIndexer version: ${deploymentOutput.indexerImage}
-      \nQuery version: ${deploymentOutput.queryImage}
-      \nEndpoint: ${deploymentOutput.endpoint}
-      \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
-      \nQuery URL: ${deploymentOutput.queryUrl}
-      \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
-      \nAdvanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
-      \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
+Status: ${chalk.blue(deploymentOutput.status)}
+DeploymentID: ${deploymentOutput.id}
+Deployment Type: ${deploymentOutput.type}
+Indexer version: ${deploymentOutput.indexerImage}
+Query version: ${deploymentOutput.queryImage}
+Endpoint: ${deploymentOutput.endpoint}
+Dictionary Endpoint: ${deploymentOutput.dictEndpoint}
+Query URL: ${deploymentOutput.queryUrl}
+Project URL: ${BASE_PROJECT_URL}/org/${data.org}/project/${data.projectName}
+Advanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
+Advanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
       `);
     }
     return deploymentOutput;
