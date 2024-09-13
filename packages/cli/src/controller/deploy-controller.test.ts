@@ -10,9 +10,7 @@ import {
   deleteDeployment,
   deploymentStatus,
   ipfsCID_validate,
-  dictionaryEndpoints,
   imageVersions,
-  processEndpoints,
   updateDeployment,
   projectsInfo,
 } from './deploy-controller';
@@ -52,11 +50,9 @@ async function deployTestProject(
   );
 
   const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
-  const dictEndpoint = processEndpoints(await dictionaryEndpoints(url), validator.chainId!)!;
 
   const project: V3DeploymentIndexerType = {
     cid: ipfs,
-    dictEndpoint,
     endpoint,
     indexerImageVersion: indexerV[0],
     indexerAdvancedSettings: {
@@ -164,7 +160,6 @@ describe('CLI deploy, delete, promote', () => {
     const initProjectInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_PROD, type);
 
     const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
-    const dict = await dictionaryEndpoints(ROOT_API_URL_PROD);
     const indexerV = await imageVersions(
       validator.manifestRunner!.node.name,
       validator.manifestRunner!.node.version,
@@ -180,7 +175,6 @@ describe('CLI deploy, delete, promote', () => {
 
     const project = {
       cid: ipfs,
-      dictEndpoint: processEndpoints(dict, validator.chainId!) ?? '',
       endpoint,
       indexerImageVersion: indexerV[0],
       indexerAdvancedSettings: {

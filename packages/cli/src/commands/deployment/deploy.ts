@@ -8,12 +8,10 @@ import chalk from 'chalk';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {
   DefaultDeployFlags,
-  dictionaryEndpoints,
   executeProjectDeployment,
   generateDeploymentChain,
   imageVersions,
   ipfsCID_validate,
-  processEndpoints,
   projectsInfo,
   splitEndpoints,
 } from '../../controller/deploy-controller';
@@ -52,16 +50,6 @@ export default class Deploy extends Command {
       }
 
       flags.endpoint = await input({message: 'Enter endpoint', required: true});
-    }
-
-    if (!flags.dict) {
-      assert(validator.chainId, 'Please set chainId in your project');
-      const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
-      if (!flags.useDefaults && !validateDictEndpoint) {
-        flags.dict = await input({message: 'Enter dictionary', default: validateDictEndpoint});
-      } else {
-        flags.dict = validateDictEndpoint;
-      }
     }
 
     if (!flags.indexerVersion) {

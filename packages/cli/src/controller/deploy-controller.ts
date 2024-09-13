@@ -178,20 +178,6 @@ export async function ipfsCID_validate(
   }
 }
 
-export async function dictionaryEndpoints(url: string): Promise<EndpointType[]> {
-  try {
-    const res = await getAxiosInstance(url).get<EndpointType[]>(`subqueries/dictionaries`);
-
-    return res.data;
-  } catch (e) {
-    throw errorHandle(e, 'Failed to get dictionary endpoint:');
-  }
-}
-
-export function processEndpoints(endpoints: EndpointType[], chainId: string): string | undefined {
-  return endpoints.find((endpoint: EndpointType) => endpoint.chainId === chainId)?.endpoint;
-}
-
 export async function imageVersions(name: string, version: string, authToken: string, url: string): Promise<string[]> {
   try {
     const res = await getAxiosInstance(url, authToken).get<string[]>(

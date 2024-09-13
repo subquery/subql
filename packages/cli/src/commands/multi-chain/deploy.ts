@@ -13,11 +13,9 @@ import YAML from 'yaml';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {
   DefaultDeployFlags,
-  dictionaryEndpoints,
   executeProjectDeployment,
   generateDeploymentChain,
   ipfsCID_validate,
-  processEndpoints,
   projectsInfo,
   splitMultichainDataFields,
 } from '../../controller/deploy-controller';
@@ -137,18 +135,6 @@ export default class MultiChainDeploy extends Command {
           message: `Enter endpoint for ${multichainProjectPath}`,
           required: true,
         });
-      }
-
-      if (!dictionaries[validator.chainId]) {
-        const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
-        if (!flags.useDefaults && !validateDictEndpoint) {
-          dictionaries[validator.chainId] = await input({
-            message: `Enter dictionary for ${multichainProjectPath}`,
-            required: false,
-          });
-        } else if (validateDictEndpoint) {
-          dictionaries[validator.chainId] = validateDictEndpoint;
-        }
       }
 
       chains.push(
