@@ -1,19 +1,17 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ROOT_API_URL_DEV} from '../constants';
+import {ROOT_API_URL_PROD} from '../constants';
 import {delay} from '../utils';
 import {createProject, deleteProject} from './project-controller';
 
 const projectSpec = {
   org: process.env.SUBQL_ORG_TEST,
   projectName: 'mocked_project',
-  repository: 'https://github.com/bz888/test-deployment-2',
   ipfs: 'QmaVh8DGzuRCJZ5zYEDxXQsXYqP9HihjjeuxNNteSDq8xX',
   subtitle: '',
   description: '',
-  logoURl: '',
-  apiVersion: '2',
+  logoUrl: '',
 };
 
 // Replace/Update your access token when test locally
@@ -25,22 +23,19 @@ const testIf = (condition: boolean, ...args: Parameters<typeof it>) =>
 jest.setTimeout(120000);
 describe('CLI create project and delete project', () => {
   testIf(!!testAuth, 'Create project and delete', async () => {
-    const {apiVersion, description, logoURl, org, projectName, repository, subtitle} = projectSpec;
-    const create_project = await createProject(
-      org!,
+    const {description, logoUrl, org, projectName, subtitle} = projectSpec;
+    const create_project = await createProject(ROOT_API_URL_PROD, testAuth!, {
+      key: `${org}/${projectName}`,
       subtitle,
-      logoURl,
-      1,
-      projectName,
-      testAuth!,
-      repository,
+      logoUrl,
+      type: 1,
+      name: projectName,
       description,
-      apiVersion,
-      undefined,
-      ROOT_API_URL_DEV
-    );
+      apiVersion: 'v2',
+      tag: [],
+    });
     await delay(10);
-    const delete_project = await deleteProject(testAuth!, org!, projectName, ROOT_API_URL_DEV);
+    const delete_project = await deleteProject(testAuth!, org!, projectName, ROOT_API_URL_PROD);
     // eslint-disable-next-line jest/no-standalone-expect
     expect(create_project.key).toMatch(`${process.env.SUBQL_ORG_TEST}/mocked_project`);
     // eslint-disable-next-line jest/no-standalone-expect

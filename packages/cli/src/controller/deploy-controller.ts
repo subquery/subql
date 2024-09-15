@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Flags} from '@oclif/core';
-import {FlagInput} from '@oclif/core/lib/interfaces/parser';
+import {FlagInput, OptionFlag} from '@oclif/core/lib/interfaces/parser';
 import axios, {Axios} from 'axios';
 import chalk from 'chalk';
 import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../constants';
@@ -18,6 +18,7 @@ import {
   GenerateDeploymentChainInterface,
   DeploymentFlagsInterface,
   MultichainDataFieldType,
+  DeploymentType,
 } from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
@@ -40,7 +41,7 @@ export async function createDeployment(
   authToken: string,
   ipfsCID: string,
   queryImageVersion: string,
-  type: string,
+  type: DeploymentType,
   query: QueryAdvancedOpts,
   chains: V3DeploymentIndexerType[],
   url: string
@@ -54,7 +55,7 @@ export async function createDeployment(
         queryImageVersion: queryImageVersion,
         queryAdvancedSettings: {query},
         chains,
-      } as V3DeploymentInput
+      } satisfies V3DeploymentInput
     );
     return res.data.deployment;
   } catch (e) {
@@ -119,15 +120,14 @@ export async function projectsInfo(
   projectName: string,
   url: string,
   type: string
-): Promise<ProjectDataType> {
+): Promise<ProjectDataType | undefined> {
   const key = `${org}/${projectName}`;
   try {
     const res = await getAxiosInstance(url, authToken).get<ProjectDataType[]>(
-      `subqueries/${buildProjectKey(org, projectName)}/deployments`
+      `v3/subqueries/${buildProjectKey(org, projectName)}/deployments`
     );
-    const info = res.data.find((element) => element.projectKey === `${key}` && element.type === type);
-    assert(info, `Project ${key} not found`);
-    return info;
+
+    return res.data.find((element) => element.projectKey === `${key}` && element.type === type);
   } catch (e) {
     throw errorHandle(e, 'Failed to get projects:');
   }
@@ -178,20 +178,6 @@ export async function ipfsCID_validate(
   }
 }
 
-export async function dictionaryEndpoints(url: string): Promise<EndpointType[]> {
-  try {
-    const res = await getAxiosInstance(url).get<EndpointType[]>(`subqueries/dictionaries`);
-
-    return res.data;
-  } catch (e) {
-    throw errorHandle(e, 'Failed to get dictionary endpoint:');
-  }
-}
-
-export function processEndpoints(endpoints: EndpointType[], chainId: string): string | undefined {
-  return endpoints.find((endpoint: EndpointType) => endpoint.chainId === chainId)?.endpoint;
-}
-
 export async function imageVersions(name: string, version: string, authToken: string, url: string): Promise<string[]> {
   try {
     const res = await getAxiosInstance(url, authToken).get<string[]>(
@@ -234,7 +220,11 @@ export const DefaultDeployFlags = {
   projectName: Flags.string({description: 'Enter project name'}),
   // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
-  type: Flags.string({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+  type: Flags.string({
+    options: ['stage', 'primary'],
+    default: DEFAULT_DEPLOYMENT_TYPE,
+    required: false,
+  }) as OptionFlag<DeploymentType>,
   indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
   queryVersion: Flags.string({description: 'Enter query-version', required: false}),
   dict: Flags.string({description: 'Enter dictionary', required: false}),
@@ -326,7 +316,7 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
     );
     data.log(`Project: ${data.projectName} has been re-deployed`);
   } else {
-    const deploymentOutput: DeploymentDataType = await createDeployment(
+    const deploymentOutput = await createDeployment(
       data.org,
       data.projectName,
       data.authToken,
@@ -336,23 +326,21 @@ export async function executeProjectDeployment(data: ProjectDeploymentInterface)
       generateAdvancedQueryOptions(data.flags),
       data.chains,
       ROOT_API_URL_PROD
-    ).catch((e) => {
-      throw e;
-    });
+    );
 
     if (deploymentOutput) {
       data.log(`Project: ${deploymentOutput.projectKey}
-      \nStatus: ${chalk.blue(deploymentOutput.status)}
-      \nDeploymentID: ${deploymentOutput.id}
-      \nDeployment Type: ${deploymentOutput.type}
-      \nIndexer version: ${deploymentOutput.indexerImage}
-      \nQuery version: ${deploymentOutput.queryImage}
-      \nEndpoint: ${deploymentOutput.endpoint}
-      \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
-      \nQuery URL: ${deploymentOutput.queryUrl}
-      \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
-      \nAdvanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
-      \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
+Status: ${chalk.blue(deploymentOutput.status)}
+DeploymentID: ${deploymentOutput.id}
+Deployment Type: ${deploymentOutput.type}
+Indexer version: ${deploymentOutput.indexerImage}
+Query version: ${deploymentOutput.queryImage}
+Endpoint: ${deploymentOutput.endpoint}
+Dictionary Endpoint: ${deploymentOutput.dictEndpoint}
+Query URL: ${deploymentOutput.queryUrl}
+Project URL: ${BASE_PROJECT_URL}/org/${data.org}/project/${data.projectName}
+Advanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
+Advanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
       `);
     }
     return deploymentOutput;

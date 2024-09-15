@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import {DEFAULT_MULTICHAIN_MANIFEST, getProjectRootAndManifest, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';

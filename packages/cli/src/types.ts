@@ -61,16 +61,17 @@ export interface ValidateDataType {
   errorMessage?: string;
 }
 
-export interface DeploymentSpec {
-  org: string;
-  projectName: string;
-  repository: string;
-  ipfs: string;
-  subtitle: string;
-  description: string;
-  logoURl: string;
-  apiVersion: string;
-  type: string;
+export interface CreateProject {
+  key: string;
+  name: string;
+  subtitle?: string;
+  description?: string;
+  logoUrl?: string;
+  apiVersion: 'v2' | 'v3';
+  type: 1 | 2 | 3; // MS | NETWORK | SUBGRAPH
+  tag: string[];
+  hide?: boolean;
+  dedicateDBKey?: string;
 }
 export interface DeploymentDataType {
   projectKey: string;
@@ -113,8 +114,8 @@ export interface ProjectDataType {
   queryUrl: string;
   configuration: {
     config: {
-      query: {};
-      indexer: {};
+      query: unknown;
+      indexer: unknown;
     };
   };
   role: string;
@@ -122,9 +123,11 @@ export interface ProjectDataType {
   apiVersion: string;
 }
 
+export type DeploymentType = 'primary' | 'stage';
+
 export interface V3DeploymentInput {
   cid: string;
-  type: 'primary' | 'stage';
+  type: DeploymentType;
   queryImageVersion: string;
   queryAdvancedSettings: {
     query: QueryAdvancedOpts;
@@ -155,7 +158,7 @@ export interface ProjectDeploymentInterface {
   org: string;
   projectName: string;
   chains: V3DeploymentIndexerType[];
-  projectInfo: ProjectDataType;
+  projectInfo?: ProjectDataType;
   flags: DeploymentFlagsInterface;
   ipfsCID: string;
   queryVersion: string;
@@ -167,7 +170,7 @@ export interface DeploymentFlagsInterface {
   ipfs?: string;
   org?: string;
   projectName?: string;
-  type: string;
+  type: DeploymentType;
   indexerVersion?: string;
   queryVersion?: string;
   dict?: string;

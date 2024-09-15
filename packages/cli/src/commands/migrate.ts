@@ -4,9 +4,9 @@
 import assert from 'assert';
 import fs, {lstatSync} from 'fs';
 import path from 'path';
+import {input} from '@inquirer/prompts';
 import {Command, Flags} from '@oclif/core';
 import {makeTempDir} from '@subql/common';
-import cli from 'cli-ux';
 import git from 'simple-git';
 import {
   DEFAULT_SUBGRAPH_MANIFEST,
@@ -41,8 +41,8 @@ export default class Migrate extends Command {
     const {flags} = await this.parse(Migrate);
     const {file, gitSubDirectory, output} = flags;
 
-    const subgraphPath = file ?? (await cli.prompt('Subgraph project path, local or git', {required: true}));
-    const subqlPath = output ?? (await cli.prompt('SubQuery project path, local or git', {required: true}));
+    const subgraphPath = file ?? (await input({message: 'Subgraph project path, local or git', required: true}));
+    const subqlPath = output ?? (await input({message: 'SubQuery project path, local or git', required: true}));
 
     const gitMatch = extractGitInfo(subgraphPath);
     // will return false if directory not exist

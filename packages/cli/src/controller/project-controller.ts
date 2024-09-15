@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import axios from 'axios';
+import {CreateProject, ProjectDataType} from '../types';
 import {errorHandle} from '../utils';
 
 interface CreateProjectResponse {
@@ -13,18 +14,32 @@ export const suffixFormat = (value: string) => {
     .replace(/\s+/g, '-')
     .toLowerCase();
 };
+
+export async function getProject(url: string, authToken: string, key: string): Promise<ProjectDataType | undefined> {
+  try {
+    const res = await axios<ProjectDataType>({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      method: 'get',
+      url: `/subqueries/${key}`,
+      baseURL: url,
+    });
+    return res.data as unknown as ProjectDataType;
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      return undefined;
+    }
+
+    console.log('ERRROR', e);
+    throw errorHandle(e, 'Failed to get project:');
+  }
+}
+
 export async function createProject(
-  organization: string,
-  subtitle: string,
-  logoUrl: string,
-  project_type: number,
-  project_name: string,
+  url: string,
   authToken: string,
-  gitRepository: string,
-  description: string,
-  apiVersion: string,
-  dedicateDB: string | undefined,
-  url: string
+  body: CreateProject
 ): Promise<CreateProjectResponse> {
   try {
     const res = await axios<CreateProjectResponse>({
@@ -35,15 +50,8 @@ export async function createProject(
       url: 'subqueries',
       baseURL: url,
       data: {
-        apiVersion: `v${apiVersion}`,
-        description: description,
-        gitRepository: gitRepository,
-        key: `${organization}/${suffixFormat(project_name)}`,
-        logoUrl: logoUrl,
-        name: project_name,
-        subtitle: subtitle,
-        dedicateDBKey: dedicateDB,
-        type: project_type,
+        gitRepository: '', // Deprecated
+        ...body,
       },
     });
     return res.data as unknown as CreateProjectResponse;
