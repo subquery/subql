@@ -1,15 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
   isEventHandlerProcessor,
-  isCustomDs,
-  isRuntimeDs,
   SubstrateCustomDataSource,
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerInputMap,
@@ -21,23 +18,28 @@ import {
   IndexerSandbox,
   ProcessBlockResponse,
   BaseIndexerManager,
+  DsProcessorService,
   IBlock,
+  UnfinalizedBlocksService,
+  IBlockchainService,
+  DynamicDsService,
 } from '@subql/node-core';
 import {
   LightSubstrateEvent,
   SubstrateBlock,
   SubstrateBlockFilter,
+  SubstrateCustomDatasource,
   SubstrateDatasource,
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { SubstrateProjectDs } from '../configure/SubqueryProject';
+import {
+  SubqueryProject,
+  SubstrateProjectDs,
+} from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService as SubstrateApiService } from './api.service';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
@@ -51,16 +53,28 @@ export class IndexerManager extends BaseIndexerManager<
   typeof ProcessorTypeMap,
   SubstrateRuntimeHandlerInputMap
 > {
-  protected isRuntimeDs = isRuntimeDs;
-  protected isCustomDs = isCustomDs;
-
   constructor(
-    apiService: SubstrateApiService,
+    @Inject('APIService') apiService: SubstrateApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService<ApiAt, ApiPromise>,
-    dsProcessorService: DsProcessorService,
-    dynamicDsService: DynamicDsService,
-    unfinalizedBlocksService: UnfinalizedBlocksService,
+    dsProcessorService: DsProcessorService<
+      SubstrateDatasource,
+      SubstrateCustomDatasource
+    >,
+    dynamicDsService: DynamicDsService<SubstrateDatasource>,
+    @Inject('IUnfinalizedBlocksService')
+    unfinalizedBlocksService: UnfinalizedBlocksService<
+      BlockContent | LightBlockContent
+    >,
+    @Inject('IBlockchainService')
+    blockchainService: IBlockchainService<
+      SubstrateDatasource,
+      SubstrateCustomDatasource,
+      SubqueryProject,
+      ApiAt,
+      LightBlockContent,
+      BlockContent
+    >,
   ) {
     super(
       apiService,
@@ -71,6 +85,7 @@ export class IndexerManager extends BaseIndexerManager<
       unfinalizedBlocksService,
       FilterTypeMap,
       ProcessorTypeMap,
+      blockchainService,
     );
   }
 
@@ -78,21 +93,9 @@ export class IndexerManager extends BaseIndexerManager<
   async indexBlock(
     block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
-    runtimeVersion?: RuntimeVersion,
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
-      this.getApi(block.block, runtimeVersion),
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  private async getApi(
-    block: LightBlockContent | BlockContent,
-    runtimeVersion?: RuntimeVersion,
-  ): Promise<ApiAt> {
-    return this.apiService.getPatchedApi(
-      block.block.block.header,
-      runtimeVersion,
+      this.blockchainService.getSafeApi(block.block),
     );
   }
 
@@ -103,16 +106,28 @@ export class IndexerManager extends BaseIndexerManager<
   ): Promise<void> {
     if (isFullBlock(blockContent)) {
       const { block, events, extrinsics } = blockContent;
-      await this.indexBlockContent(block, dataSources, getVM);
+      await this.indexContent(SubstrateHandlerKind.Block)(
+        block,
+        dataSources,
+        getVM,
+      );
 
       // Run initialization events
       const initEvents = events.filter((evt) => evt.phase.isInitialization);
       for (const event of initEvents) {
-        await this.indexEvent(event, dataSources, getVM);
+        await this.indexContent(SubstrateHandlerKind.Event)(
+          event,
+          dataSources,
+          getVM,
+        );
       }
 
       for (const extrinsic of extrinsics) {
-        await this.indexExtrinsic(extrinsic, dataSources, getVM);
+        await this.indexContent(SubstrateHandlerKind.Call)(
+          extrinsic,
+          dataSources,
+          getVM,
+        );
 
         // Process extrinsic events
         const extrinsicEvents = events
@@ -120,50 +135,50 @@ export class IndexerManager extends BaseIndexerManager<
           .sort((a, b) => a.idx - b.idx);
 
         for (const event of extrinsicEvents) {
-          await this.indexEvent(event, dataSources, getVM);
+          await this.indexContent(SubstrateHandlerKind.Event)(
+            event,
+            dataSources,
+            getVM,
+          );
         }
       }
 
       // Run finalization events
       const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
       for (const event of finalizeEvents) {
-        await this.indexEvent(event, dataSources, getVM);
+        await this.indexContent(SubstrateHandlerKind.Event)(
+          event,
+          dataSources,
+          getVM,
+        );
       }
     } else {
       for (const event of blockContent.events) {
-        await this.indexEvent(event, dataSources, getVM);
+        await this.indexContent(SubstrateHandlerKind.Event)(
+          event,
+          dataSources,
+          getVM,
+        );
       }
     }
   }
 
-  private async indexBlockContent(
-    block: SubstrateBlock,
+  private indexContent(
+    kind: SubstrateHandlerKind,
+  ): (
+    content:
+      | SubstrateBlock
+      | SubstrateExtrinsic
+      | SubstrateEvent
+      | LightSubstrateEvent,
     dataSources: SubstrateProjectDs[],
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM);
-    }
-  }
-
-  private async indexExtrinsic(
-    extrinsic: SubstrateExtrinsic,
-    dataSources: SubstrateProjectDs[],
-    getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM);
-    }
-  }
-
-  private async indexEvent(
-    event: SubstrateEvent | LightSubstrateEvent,
-    dataSources: SubstrateProjectDs[],
-    getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
-  ): Promise<void> {
-    for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM);
-    }
+  ) => Promise<void> {
+    return async (content, dataSources, getVM) => {
+      for (const ds of dataSources) {
+        await this.indexData(kind, content, ds, getVM);
+      }
+    };
   }
 
   protected async prepareFilteredData<T = any>(

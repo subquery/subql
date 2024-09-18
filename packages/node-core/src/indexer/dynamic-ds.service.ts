@@ -1,7 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Inject, Injectable} from '@nestjs/common';
+import {BaseDataSource} from '@subql/types-core';
 import {cloneDeep} from 'lodash';
+import {IBlockchainService} from '../blockchain.service';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {CacheMetadataModel} from './storeCache/cacheMetadata';
@@ -23,16 +26,18 @@ export interface IDynamicDsService<DS> {
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
 }
 
-export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubqueryProject>
+@Injectable()
+export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P extends ISubqueryProject = ISubqueryProject>
   implements IDynamicDsService<DS>
 {
   private _metadata?: CacheMetadataModel;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];
 
-  protected abstract getDatasource(params: DatasourceParams): Promise<DS>;
-
-  constructor(protected readonly project: P) {}
+  constructor(
+    @Inject('ISubqueryProject') private readonly project: P,
+    @Inject('IBlockchainService') private readonly blockchainService: IBlockchainService<DS>
+  ) {}
 
   async init(metadata: CacheMetadataModel): Promise<void> {
     this._metadata = metadata;
@@ -123,5 +128,17 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
     }
     const {name, ...template} = cloneDeep(t);
     return {...template, startBlock} as T;
+  }
+
+  private async getDatasource(params: DatasourceParams): Promise<DS> {
+    const dsObj = this.getTemplate<any /*TODO DS*/>(params.templateName, params.startBlock);
+
+    try {
+      await this.blockchainService.updateDynamicDs(params, dsObj);
+
+      return dsObj;
+    } catch (e) {
+      throw new Error(`Unable to create dynamic datasource.\n ${(e as any).message}`);
+    }
   }
 }

@@ -1,13 +1,17 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {BaseDataSource} from '@subql/types-core';
+import {IBlockchainService} from '../blockchain.service';
 import {DatasourceParams, DynamicDsService} from './dynamic-ds.service';
 import {CacheMetadataModel} from './storeCache';
 import {ISubqueryProject} from './types';
 
-class TestDynamicDsService extends DynamicDsService<DatasourceParams, ISubqueryProject> {
-  protected async getDatasource(params: DatasourceParams): Promise<DatasourceParams> {
-    return Promise.resolve(params);
+class TestDynamicDsService extends DynamicDsService<BaseDataSource, ISubqueryProject> {
+  constructor(project: ISubqueryProject) {
+    super(project, {
+      updateDynamicDs: () => Promise.resolve(undefined), // Return the same value
+    } as unknown as IBlockchainService);
   }
 
   getTemplate<T extends Omit<NonNullable<ISubqueryProject['templates']>[number], 'name'> & {startBlock?: number}>(

@@ -122,7 +122,7 @@ export class ApiService
 
   private nodeConfig: SubstrateNodeConfig;
 
-  constructor(
+  private constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     eventEmitter: EventEmitter2,
@@ -134,34 +134,7 @@ export class ApiService
     this.updateBlockFetching();
   }
 
-  private get fetchBlocksFunction(): FetchFunc {
-    assert(this._fetchBlocksFunction, 'fetchBlocksFunction not initialized');
-    return this._fetchBlocksFunction;
-  }
-
-  private get currentBlockHash(): string {
-    assert(this._currentBlockHash, 'currentBlockHash not initialized');
-    return this._currentBlockHash;
-  }
-
-  private set currentBlockHash(value: string) {
-    this._currentBlockHash = value;
-  }
-
-  private get currentBlockNumber(): number {
-    assert(this._currentBlockNumber, 'currentBlockNumber not initialized');
-    return this._currentBlockNumber;
-  }
-
-  private set currentBlockNumber(value: number) {
-    this._currentBlockNumber = value;
-  }
-
-  async onApplicationShutdown(): Promise<void> {
-    await this.connectionPoolService.onApplicationShutdown();
-  }
-
-  async init(): Promise<ApiService> {
+  private async init(): Promise<ApiService> {
     overrideConsoleWarn();
     let chainTypes: RegisteredTypes | undefined;
     let network: SubstrateNetworkConfig;
@@ -221,6 +194,42 @@ export class ApiService
     await this.connectionPoolService.updateChainTypes(chainTypes);
   }
 
+  static async create(
+    @Inject('ISubqueryProject') project: SubqueryProject,
+    connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
+    eventEmitter: EventEmitter2,
+    nodeConfig: NodeConfig,
+  ): Promise<ApiService> {
+    const apiService = new ApiService(
+      project,
+      connectionPoolService,
+      eventEmitter,
+      nodeConfig,
+    );
+
+    await apiService.init();
+    return apiService;
+  }
+
+  private get fetchBlocksFunction(): FetchFunc {
+    assert(this._fetchBlocksFunction, 'fetchBlocksFunction not initialized');
+    return this._fetchBlocksFunction;
+  }
+
+  private get currentBlockHash(): string {
+    assert(this._currentBlockHash, 'currentBlockHash not initialized');
+    return this._currentBlockHash;
+  }
+
+  private get currentBlockNumber(): number {
+    assert(this._currentBlockNumber, 'currentBlockNumber not initialized');
+    return this._currentBlockNumber;
+  }
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.connectionPoolService.onApplicationShutdown();
+  }
+
   updateBlockFetching(): void {
     const onlyEventHandlers = isOnlyEventHandlers(this.project);
     const skipTransactions =
@@ -269,8 +278,8 @@ export class ApiService
     header: Header,
     runtimeVersion?: RuntimeVersion,
   ): Promise<ApiAt> {
-    this.currentBlockHash = header.hash.toString();
-    this.currentBlockNumber = header.number.toNumber();
+    this._currentBlockHash = header.hash.toString();
+    this._currentBlockNumber = header.number.toNumber();
 
     const api = this.api;
     const apiAt = (await api.at(

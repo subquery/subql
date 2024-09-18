@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {Inject, Injectable} from '@nestjs/common';
 import {isEqual, last} from 'lodash';
+import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
 import {Header, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
@@ -36,32 +38,20 @@ export interface IUnfinalizedBlocksServiceUtil {
   registerFinalizedBlock(header: Header): void;
 }
 
-export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlocksService<B> {
+@Injectable()
+export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksService<B> {
   private _unfinalizedBlocks?: UnfinalizedBlocks;
   private _finalizedHeader?: Header;
   protected lastCheckedBlockHeight?: number;
 
-  // protected abstract blockToHeader(block: B): Header;
-  protected abstract getFinalizedHead(): Promise<Header>;
-  protected abstract getHeaderForHash(hash: string): Promise<Header>;
-  protected abstract getHeaderForHeight(height: number): Promise<Header>;
-
   @mainThreadOnly()
-  protected blockToHeader(block: IBlock<B>): Header {
+  private blockToHeader(block: IBlock<B>): Header {
     return block.getHeader();
-  }
-
-  private set unfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks) {
-    this._unfinalizedBlocks = unfinalizedBlocks;
   }
 
   protected get unfinalizedBlocks(): UnfinalizedBlocks {
     assert(this._unfinalizedBlocks !== undefined, new Error('Unfinalized blocks service has not been initialized'));
     return this._unfinalizedBlocks;
-  }
-
-  private set finalizedHeader(finalizedHeader: Header) {
-    this._finalizedHeader = finalizedHeader;
   }
 
   protected get finalizedHeader(): Header {
@@ -71,15 +61,16 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   constructor(
     protected readonly nodeConfig: NodeConfig,
-    protected readonly storeCache: StoreCacheService
+    protected readonly storeCache: StoreCacheService,
+    @Inject('IBlockchainService') private blockchainService: IBlockchainService
   ) {}
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
 
-    this.unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
+    this._unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
-    this.finalizedHeader = await this.getFinalizedHead();
+    this._finalizedHeader = await this.blockchainService.getFinalizedHeader();
 
     if (this.unfinalizedBlocks.length) {
       logger.info('Processing unfinalized blocks');
@@ -130,7 +121,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     if (this.finalizedHeader && this.finalizedBlockNumber >= header.blockHeight) {
       return;
     }
-    this.finalizedHeader = header;
+    this._finalizedHeader = header;
   }
 
   private registerUnfinalizedBlock(header: Header): void {
@@ -160,7 +151,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   // remove any records less and equal than input finalized blockHeight
   private removeFinalized(blockHeight: number): void {
-    this.unfinalizedBlocks = this.unfinalizedBlocks.filter(({blockHeight: height}) => height > blockHeight);
+    this._unfinalizedBlocks = this.unfinalizedBlocks.filter(({blockHeight: height}) => height > blockHeight);
   }
 
   // find closest record from block heights
@@ -197,14 +188,14 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
        * If we're off by a large number of blocks we can optimise by getting the block hash directly
        */
       if (header.blockHeight - lastVerifiableBlock.blockHeight > UNFINALIZED_THRESHOLD) {
-        header = await this.getHeaderForHeight(lastVerifiableBlock.blockHeight);
+        header = await this.blockchainService.getHeaderForHeight(lastVerifiableBlock.blockHeight);
       } else {
         while (lastVerifiableBlock.blockHeight !== header.blockHeight) {
           assert(
             header.parentHash,
             'When iterate back parent hashes to find matching height, we expect parentHash to be exist'
           );
-          header = await this.getHeaderForHash(header.parentHash);
+          header = await this.blockchainService.getHeaderForHash(header.parentHash);
         }
       }
 
@@ -234,7 +225,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
       // Get the new parent
       assert(checkingHeader.parentHash, 'Expect checking header parentHash to be exist');
-      checkingHeader = await this.getHeaderForHash(checkingHeader.parentHash);
+      checkingHeader = await this.blockchainService.getHeaderForHash(checkingHeader.parentHash);
     }
 
     return this.lastCheckedBlockHeight;
@@ -259,7 +250,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
       // Work backwards to find a block on chain that matches POI
       for (const indexedBlock of indexedBlocks) {
-        const chainHeader = await this.getHeaderForHeight(indexedBlock.id);
+        const chainHeader = await this.blockchainService.getHeaderForHeight(indexedBlock.id);
 
         // Need to convert to PoiBlock to encode block hash to Uint8Array properly
         const testPoiBlock = PoiBlock.create(
@@ -292,7 +283,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   resetUnfinalizedBlocks(): void {
     this.storeCache.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, '[]');
-    this.unfinalizedBlocks = [];
+    this._unfinalizedBlocks = [];
   }
 
   resetLastFinalizedVerifiedHeight(): void {

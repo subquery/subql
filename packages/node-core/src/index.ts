@@ -17,3 +17,4 @@ export * from './indexer';
 export * from './subcommands';
 export * from './yargs';
 export * from './admin';
+export * from './blockchain.service';

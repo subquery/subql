@@ -5,6 +5,8 @@ import {getHeapStatistics} from 'v8';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {BaseDataSource} from '@subql/types-core';
+import {IBlockchainService} from '../../blockchain.service';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
@@ -15,8 +17,8 @@ import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
-import {IProjectService, ISubqueryProject} from '../types';
-import {BaseBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
+import {IIndexerManager, IProjectService, ISubqueryProject} from '../types';
+import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -25,7 +27,7 @@ type BatchBlockFetcher<B> = (heights: number[]) => Promise<IBlock<B>[]>;
 /**
  * @description Intended to behave the same as WorkerBlockDispatcherService but doesn't use worker threads or any parallel processing
  */
-export abstract class BlockDispatcher<B, DS>
+export class BlockDispatcher<B, DS extends BaseDataSource>
   extends BaseBlockDispatcher<Queue<IBlock<B> | number>, DS, B>
   implements OnApplicationShutdown
 {
@@ -37,8 +39,6 @@ export abstract class BlockDispatcher<B, DS>
   private fetching = false;
   private isShutdown = false;
 
-  protected abstract indexBlock(block: IBlock<B>): Promise<ProcessBlockResponse>;
-
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
@@ -48,7 +48,8 @@ export abstract class BlockDispatcher<B, DS>
     storeCacheService: StoreCacheService,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
-    fetchBlocksBatches: BatchBlockFetcher<B>
+    blockchainService: IBlockchainService<DS>,
+    private indexerManager: IIndexerManager<B, DS>
   ) {
     super(
       nodeConfig,
@@ -64,9 +65,13 @@ export abstract class BlockDispatcher<B, DS>
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch');
     if (this.nodeConfig.profiler) {
-      this.fetchBlocksBatches = profilerWrap(fetchBlocksBatches, 'BlockDispatcher', 'fetchBlocksBatches');
+      this.fetchBlocksBatches = profilerWrap(
+        blockchainService.fetchBlocks.bind(blockchainService),
+        'BlockDispatcher',
+        'fetchBlocksBatches'
+      );
     } else {
-      this.fetchBlocksBatches = fetchBlocksBatches;
+      this.fetchBlocksBatches = blockchainService.fetchBlocks.bind(blockchainService);
     }
   }
 
@@ -164,7 +169,10 @@ export abstract class BlockDispatcher<B, DS>
                   await this.preProcessBlock(blockHeight);
                   monitorWrite(`Processing from main thread`);
                   // Inject runtimeVersion here to enhance api.at preparation
-                  const processBlockResponse = await this.indexBlock(block);
+                  const processBlockResponse = await this.indexerManager.indexBlock(
+                    block,
+                    await this.projectService.getDataSources(block.getHeader().blockHeight)
+                  );
                   await this.postProcessBlock(blockHeight, processBlockResponse);
                   //set block to null for garbage collection
                   (block as any) = null;
