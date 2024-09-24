@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `Runner.query` support `@subql/query-subgraph` option
+
 ## [5.1.2] - 2024-09-09
 ### Changed
 - Expose CID on IPFS Reader (#2551)

@@ -28,12 +28,13 @@ import {
   Allow,
   ValidateIf,
   IsPositive,
+  IsIn,
 } from 'class-validator';
 import {IsNetworkEndpoint, SemverVersionValidator} from '../../utils';
 import {FileType} from '../base';
 
 export class RunnerQueryBaseModel implements QuerySpec {
-  @Equals('@subql/query')
+  @IsIn(['@subql/query', '@subql/query-subgraph'])
   name!: string;
   @IsString()
   @Validate(SemverVersionValidator)
