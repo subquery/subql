@@ -4,7 +4,7 @@
 import {IProjectNetworkConfig} from '@subql/types-core';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
-import {CommonProjectNetworkV1_0_0} from './models';
+import {CommonProjectNetworkV1_0_0, CommonRunnerSpecsImpl} from './models';
 
 describe('Validating base v1_0_0 model', () => {
   it('correctly validates the various endpoint structures in a network config', () => {
@@ -71,5 +71,52 @@ describe('Validating base v1_0_0 model', () => {
     expect(() => validate(bad2)).toThrow();
     expect(() => validate(bad3)).toThrow();
     expect(() => validate(bad4)).toThrow();
+  });
+
+  it('validates manifest Runner', () => {
+    function validate(raw: unknown) {
+      const projectManifest = plainToClass<CommonRunnerSpecsImpl, unknown>(CommonRunnerSpecsImpl, raw);
+      const errors = validateSync(projectManifest, {whitelist: true});
+
+      if (errors.length) {
+        throw new Error(errors.map((e) => e.value).join('\n'));
+      }
+    }
+
+    const normalRunner: unknown = {
+      node: {
+        name: '@subql/node',
+        version: '>=3.0.1',
+      },
+      query: {
+        name: '@subql/query',
+        version: '*',
+      },
+    };
+
+    const notExistQueryRunner: unknown = {
+      node: {
+        name: '@subql/node',
+        version: '>=3.0.1',
+      },
+      query: {
+        name: '@subql/not-exist',
+        version: '*',
+      },
+    };
+    const subgraphQueryRunner: unknown = {
+      node: {
+        name: '@subql/node',
+        version: '>=3.0.1',
+      },
+      query: {
+        name: '@subql/query-subgraph',
+        version: '*',
+      },
+    };
+
+    expect(() => validate(normalRunner)).not.toThrow();
+    expect(() => validate(notExistQueryRunner)).toThrow();
+    expect(() => validate(subgraphQueryRunner)).not.toThrow();
   });
 });
