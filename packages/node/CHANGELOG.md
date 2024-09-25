@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.6] - 2024-09-25
+### Changed
+- Bump common, Added manifest support for query-subgraph.
+
 ## [5.2.5] - 2024-09-09
 ### Changed
 - Update Dependency `node-core`
@@ -1307,7 +1311,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.6...HEAD
+[5.2.5]: https://github.com/subquery/subql/compare/node/5.2.5...node/5.2.6
 [5.2.5]: https://github.com/subquery/subql/compare/node/5.2.3...node/5.2.5
 [5.2.3]: https://github.com/subquery/subql/compare/node/5.2.2...node/5.2.3
 [5.2.2]: https://github.com/subquery/subql/compare/node/5.2.1...node/5.2.2

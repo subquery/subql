@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.15.2] - 2024-09-25
+### Changed
+- Bump common, Added manifest support for query-subgraph.
+
 ## [2.15.1] - 2024-08-23
 ### Fixed
 - Missing rxjs dependency
@@ -360,7 +364,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.15.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.15.2...HEAD
+[2.15.1]: https://github.com/subquery/subql/compare/query/2.15.1...query/2.15.2
 [2.15.1]: https://github.com/subquery/subql/compare/query/2.15.0...query/2.15.1
 [2.15.0]: https://github.com/subquery/subql/compare/query/2.14.1...query/2.15.0
 [2.14.1]: https://github.com/subquery/subql/compare/query/2.14.0...query/2.14.1
