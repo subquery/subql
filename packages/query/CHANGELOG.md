@@ -365,7 +365,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update query publish and docker build process
 
 [Unreleased]: https://github.com/subquery/subql/compare/query/2.15.2...HEAD
-[2.15.1]: https://github.com/subquery/subql/compare/query/2.15.1...query/2.15.2
+[2.15.2]: https://github.com/subquery/subql/compare/query/2.15.1...query/2.15.2
 [2.15.1]: https://github.com/subquery/subql/compare/query/2.15.0...query/2.15.1
 [2.15.0]: https://github.com/subquery/subql/compare/query/2.14.1...query/2.15.0
 [2.14.1]: https://github.com/subquery/subql/compare/query/2.14.0...query/2.14.1

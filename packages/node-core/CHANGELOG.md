@@ -827,7 +827,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
 [Unreleased]: https://github.com/subquery/subql/compare/node-core/14.1.5...HEAD
-[14.1.4]: https://github.com/subquery/subql/compare/node-core/14.1.4...node-core/14.1.5
+[14.1.5]: https://github.com/subquery/subql/compare/node-core/14.1.4...node-core/14.1.5
 [14.1.4]: https://github.com/subquery/subql/compare/node-core/14.1.3...node-core/14.1.4
 [14.1.3]: https://github.com/subquery/subql/compare/node-core/14.1.2...node-core/14.1.3
 [14.1.2]: https://github.com/subquery/subql/compare/node-core/14.1.1...node-core/14.1.2
