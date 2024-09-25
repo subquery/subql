@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "5.1.3",
+  "version": "5.1.4",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^2.0.0",
     "@nestjs/platform-express": "^9.4.0",
     "@nestjs/schedule": "^3.0.1",
-    "@subql/common": "^5.1.1",
+    "@subql/common": "^5.1.3",
     "@subql/common-ethereum": "workspace:*",
     "@subql/node-core": "^14.1.2",
     "@subql/testing": "^2.2.1",

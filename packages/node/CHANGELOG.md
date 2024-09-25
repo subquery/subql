@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.4] - 2024-09-25
+### Changed
+- Bump common, Added manifest support for query-subgraph.
+
 ## [5.1.3] - 2024-08-28
 ### Fixed
 - Dictionary grouping optimisation regression (#344)
@@ -552,7 +556,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.4...HEAD
+[5.1.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.3...node-ethereum/5.1.4
 [5.1.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.2...node-ethereum/5.1.3
 [5.1.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.1...node-ethereum/5.1.2
 [5.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.0...node-ethereum/5.1.1
