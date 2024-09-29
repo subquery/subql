@@ -5,7 +5,7 @@ import assert from 'assert';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {BaseDataSource} from '@subql/types-core';
 import {range} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
@@ -27,7 +27,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
-  // private bypassBlocks: number[] = [];
 
   // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
   protected abstract getFinalizedHeader(): Promise<Header>;
@@ -47,7 +46,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   constructor(
     private nodeConfig: NodeConfig,
     protected projectService: IProjectService<DS>,
-    protected networkConfig: IProjectNetworkConfig,
     protected blockDispatcher: B,
     protected dictionaryService: DictionaryService<DS, FB>,
     private eventEmitter: EventEmitter2,

@@ -3,7 +3,7 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry, IProjectNetworkConfig} from '@subql/types-core';
+import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry} from '@subql/types-core';
 import {range} from 'lodash';
 import {
   BaseUnfinalizedBlocksService,
@@ -83,11 +83,6 @@ const nodeConfig = new NodeConfig({
   networkDictionary: [''],
 });
 
-const getNetworkConfig = () =>
-  ({
-    dictionary: 'https://example.com',
-  }) as IProjectNetworkConfig;
-
 const mockDs: BaseDataSource = {
   kind: 'mock/DataSource',
   startBlock: 1,
@@ -140,7 +135,7 @@ const getDictionaryService = () =>
     initDictionaries: () => {
       /* TODO */
     },
-  }) as any as DictionaryService<any, any>;
+  } as any as DictionaryService<any, any>);
 
 const getBlockDispatcher = () => {
   const inst = {
@@ -164,9 +159,9 @@ describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher<any>;
   let dictionaryService: DictionaryService<any, any>;
-  let networkConfig: IProjectNetworkConfig;
   let dataSources: BaseDataSource[];
   let unfinalizedBlocksService: BaseUnfinalizedBlocksService<any>;
+  let projectService: IProjectService<any>;
 
   let spyOnEnqueueSequential: jest.SpyInstance<
     void | Promise<void>,
@@ -183,7 +178,7 @@ describe('Fetch Service', () => {
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
 
-    const projectService = {
+    projectService = {
       getStartBlockFromDataSources: jest.fn(() => Math.min(...dataSources.map((ds) => ds.startBlock ?? 0))),
       getAllDataSources: jest.fn(() => dataSources),
       getDataSourcesMap: jest.fn(() => {
@@ -197,16 +192,15 @@ describe('Fetch Service', () => {
         });
         return new BlockHeightMap(x);
       }),
+      bypassBlocks: [],
     } as any as IProjectService<any>;
 
     blockDispatcher = getBlockDispatcher();
     dictionaryService = getDictionaryService();
-    networkConfig = getNetworkConfig();
 
     fetchService = new TestFetchService(
       nodeConfig,
       projectService,
-      networkConfig,
       blockDispatcher,
       dictionaryService,
       eventEmitter,
@@ -331,7 +325,8 @@ describe('Fetch Service', () => {
     );
 
     await fetchService.init(1);
-    expect((fetchService as any).bypassBlocks).toEqual(range(301, 500));
+
+    expect((fetchService as any).getDatasourceBypassBlocks()).toEqual([`301-500`]);
   });
 
   it('checks chain heads at an interval', async () => {
@@ -614,7 +609,7 @@ describe('Fetch Service', () => {
   });
 
   it('skips bypassBlocks', async () => {
-    (fetchService as any).networkConfig.bypassBlocks = [3];
+    projectService.bypassBlocks = [3];
 
     await fetchService.init(1);
 
@@ -625,7 +620,7 @@ describe('Fetch Service', () => {
 
   it('transforms bypassBlocks', async () => {
     // Set a range so on init its transformed
-    (fetchService as any).networkConfig.bypassBlocks = ['2-5'];
+    projectService.bypassBlocks = ['2-5'];
 
     await fetchService.init(1);
 
