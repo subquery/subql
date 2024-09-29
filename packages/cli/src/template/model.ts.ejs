@@ -7,7 +7,7 @@ import { <% props.importJsonInterfaces.forEach(function(interface){ %>
 <% }); %>} from '../interfaces';
 <% } %>
 <%if (props.importEnums.length !== 0) { %>
-import { <% props.importEnums.forEach(function(e){ %>
+import {<% props.importEnums.forEach(function(e){ %>
     <%= e %>,
 <% }); %>} from '../enums';<% } %>
 
