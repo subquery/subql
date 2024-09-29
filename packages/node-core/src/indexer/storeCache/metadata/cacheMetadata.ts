@@ -2,20 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {Transaction} from '@subql/x-sequelize';
-import {hasValue} from '../../utils';
-import {DatasourceParams} from '../dynamic-ds.service';
-import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
-import {Cacheable} from './cacheable';
-import {ICachedModelControl} from './types';
+import { Transaction } from '@subql/x-sequelize';
+import { hasValue } from '../../../utils';
+import { DatasourceParams } from '../../dynamic-ds.service';
+import { Metadata, MetadataKeys, MetadataRepo } from '../../entities';
+import { Cacheable } from '../cacheable';
+import { ICachedModelControl } from '../types';
+import { IMetadata } from './metadata';
+import { MetadataKey, incrementKeys, IncrementalMetadataKey, INCREMENT_QUERY, APPEND_DS_QUERY } from './utils';
 
-type MetadataKey = keyof MetadataKeys;
-const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
-type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
+// type MetadataKey = keyof MetadataKeys;
+// const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
+// type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
 
 const specialKeys: MetadataKey[] = [...incrementKeys, 'dynamicDatasources'];
 
-export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
+export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
@@ -112,14 +114,8 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
     await this.model.sequelize.query(
-      `
-          INSERT INTO ${schemaTable} (key, value, "createdAt", "updatedAt")
-          VALUES ('${key}', '0'::jsonb, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON CONFLICT (key) DO
-          UPDATE SET value = (COALESCE(${schemaTable}.value->>0)::int + '${amount}')::text::jsonb,
-            "updatedAt" = CURRENT_TIMESTAMP
-          WHERE ${schemaTable}.key = '${key}';`,
-      tx && {transaction: tx}
+      INCREMENT_QUERY(schemaTable, key, amount),
+      tx && { transaction: tx }
     );
   }
 
@@ -128,21 +124,9 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    const VALUE = '"value"';
-
-    const makeSet = (item: DatasourceParams, value: string, index = 1): string =>
-      `jsonb_set(${value}, array[(jsonb_array_length(${VALUE}) + ${index})::text], '${JSON.stringify(
-        item
-      )}'::jsonb, true)`;
-
     await this.model.sequelize.query(
-      `
-      UPDATE ${schemaTable}
-      SET ${VALUE} = ${items.reduce((acc, item, index) => makeSet(item, acc, index + 1), VALUE)},
-        "updatedAt" = CURRENT_TIMESTAMP
-      WHERE ${schemaTable}.key = 'dynamicDatasources';
-    `,
-      tx && {transaction: tx}
+      APPEND_DS_QUERY(schemaTable, items),
+      tx && { transaction: tx }
     );
   }
 
@@ -158,7 +142,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
              **/
             const val = this.setCache[key];
             if (val !== undefined) {
-              await this.model.bulkCreate([{key, value: val}], {transaction: tx, updateOnDuplicate: ['key', 'value']});
+              await this.model.bulkCreate([{ key, value: val }], { transaction: tx, updateOnDuplicate: ['key', 'value'] });
             } else if (this.datasourceUpdates.length) {
               await this.appendDynamicDatasources(this.datasourceUpdates, tx);
             }
@@ -185,7 +169,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
   async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
       .filter(([key]) => !specialKeys.includes(key as MetadataKey))
-      .map(([key, value]) => ({key, value} as Metadata));
+      .map(([key, value]) => ({ key, value } as Metadata));
 
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {
@@ -203,13 +187,13 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
         updateOnDuplicate: ['key', 'value'],
       }),
       this.handleSpecialKeys(tx),
-      this.model.destroy({where: {key: this.removeCache}}),
+      this.model.destroy({ where: { key: this.removeCache } }),
     ]);
   }
 
   // This is current only use for migrate Poi
   // If concurrent change to cache, please add mutex if needed
-  bulkRemove<K extends MetadataKey>(keys: K[]): void {
+  async bulkRemove<K extends MetadataKey>(keys: K[], tx: Transaction): Promise<void> {
     this.removeCache.push(...keys);
     for (const key of keys) {
       delete this.setCache[key];
@@ -228,8 +212,8 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
       newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
       this.flushableRecordCounter = 1;
     }
-    this.setCache = {...newSetCache};
-    this.getCache = {...newSetCache};
+    this.setCache = { ...newSetCache };
+    this.getCache = { ...newSetCache };
     this.datasourceUpdates = [];
   }
 }

@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {Injectable} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
-import {DatabaseError, Deferrable, ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
-import {sum} from 'lodash';
-import {NodeConfig} from '../../configure';
-import {IndexerEvent} from '../../events';
-import {getLogger} from '../../logger';
-import {exitWithError} from '../../process';
-import {profiler} from '../../profiler';
-import {MetadataRepo, PoiRepo} from '../entities';
-import {BaseCacheService} from './baseCache.service';
-import {CacheMetadataModel} from './cacheMetadata';
-import {CachedModel} from './cacheModel';
-import {CachePoiModel} from './cachePoi';
-import {CsvStoreService} from './csvStore.service';
-import {Exporter, ICachedModel, ICachedModelControl} from './types';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { DatabaseError, Deferrable, ModelStatic, Sequelize, Transaction } from '@subql/x-sequelize';
+import { sum } from 'lodash';
+import { NodeConfig } from '../../configure';
+import { IndexerEvent } from '../../events';
+import { getLogger } from '../../logger';
+import { exitWithError } from '../../process';
+import { profiler } from '../../profiler';
+import { MetadataRepo, PoiRepo } from '../entities';
+import { BaseCacheService } from './baseCache.service';
+import { CachedModel } from './cacheModel';
+import { CachePoiModel } from './cachePoi';
+import { CsvStoreService } from './csvStore.service';
+import { CacheMetadataModel } from './metadata';
+import { Exporter, ICachedModel, ICachedModelControl } from './types';
 
 const logger = getLogger('StoreCacheService');
 
@@ -119,7 +119,7 @@ export class StoreCacheService extends BaseCacheService {
     await Promise.all(this.exports.map((f) => f.shutdown()));
   }
 
-  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void {
+  updateModels({ modifiedModels, removedModels }: { modifiedModels: ModelStatic<any>[]; removedModels: string[] }): void {
     modifiedModels.forEach((m) => {
       this.cachedModels[m.name] = this.createModel(m.name);
     });

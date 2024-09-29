@@ -1,11 +1,11 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {cloneDeep} from 'lodash';
-import {getLogger} from '../logger';
-import {exitWithError} from '../process';
-import {CacheMetadataModel} from './storeCache/cacheMetadata';
-import {ISubqueryProject} from './types';
+import { cloneDeep } from 'lodash';
+import { getLogger } from '../logger';
+import { exitWithError } from '../process';
+import { CacheMetadataModel } from './storeCache';
+import { ISubqueryProject } from './types';
 
 const logger = getLogger('dynamic-ds');
 
@@ -24,8 +24,7 @@ export interface IDynamicDsService<DS> {
 }
 
 export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubqueryProject>
-  implements IDynamicDsService<DS>
-{
+  implements IDynamicDsService<DS> {
   private _metadata?: CacheMetadataModel;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];
@@ -81,7 +80,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
 
       return ds;
     } catch (e: any) {
-      exitWithError(new Error(`Failed to create dynamic ds`, {cause: e}), logger);
+      exitWithError(new Error(`Failed to create dynamic ds`, { cause: e }), logger);
     }
   }
 
@@ -113,7 +112,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
    *
    * Inserts the startBlock into the template.
    * */
-  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & {startBlock?: number}>(
+  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & { startBlock?: number }>(
     templateName: string,
     startBlock?: number
   ): T {
@@ -121,7 +120,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
     if (!t) {
       throw new Error(`Unable to find matching template in project for name: "${templateName}"`);
     }
-    const {name, ...template} = cloneDeep(t);
-    return {...template, startBlock} as T;
+    const { name, ...template } = cloneDeep(t);
+    return { ...template, startBlock } as T;
   }
 }
