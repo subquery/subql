@@ -32,6 +32,7 @@ export function filterBlockTimestamp(blockTimestamp: number, filter: CronFilter)
 
 /**
  * Takes a list of blocks or block numbers to be enqueued and indexed and removes any based on the bypassBlocks
+ * TODO this could further be optimised by returning the end of a block range to fast forward to.
  * */
 export function filterBypassBlocks<B = any>(
   enqueuedBlocks: (IBlock<B> | number)[],
@@ -48,7 +49,7 @@ export function filterBypassBlocks<B = any>(
 function inBypassBlocks(bypassBlocks: BypassBlocks, blockNum: number): boolean {
   return bypassBlocks.some((bypassEntry) => {
     if (typeof bypassEntry === 'number') return bypassEntry === blockNum;
-    const splitRange = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
-    return blockNum >= splitRange[0] && blockNum <= splitRange[1];
+    const [start, end] = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
+    return blockNum >= start && blockNum <= end;
   });
 }

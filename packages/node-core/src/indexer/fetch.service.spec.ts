@@ -624,9 +624,6 @@ describe('Fetch Service', () => {
 
     await fetchService.init(1);
 
-    // This doesn't work as they get removed after that height is processed
-    // expect((fetchService as any).bypassBlocks).toEqual([2, 3, 4, 5]);
-
     // Note the batch size is smaller because we exclude from the initial batch size
     expect(enqueueBlocksSpy).toHaveBeenCalledWith([1, 6, 7, 8, 9, 10], 10);
   });
