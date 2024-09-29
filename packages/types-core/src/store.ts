@@ -20,8 +20,11 @@ export interface Entity {
 }
 
 export type GetOptions<T> = {
+  /**
+   * The number of items to return, if this exceeds the query-limit flag it will throw
+   * */
+  limit: number;
   offset?: number;
-  limit?: number;
   orderBy?: keyof T;
   orderDirection?: 'ASC' | 'DESC';
 };
@@ -33,11 +36,11 @@ export interface Store {
    *
    * ⚠️ This function will first search cache data followed by DB data. Please consider this when using order and offset options.⚠️
    * */
-  getByFields<T extends Entity>(entity: string, filter: FieldsExpression<T>[], options?: GetOptions<T>): Promise<T[]>;
+  getByFields<T extends Entity>(entity: string, filter: FieldsExpression<T>[], options: GetOptions<T>): Promise<T[]>;
   /**
    * This is an alias for getByFields with a single filter
    * */
-  getByField(entity: string, field: string, value: any, options?: GetOptions<Entity>): Promise<Entity[]>;
+  getByField<T extends Entity>(entity: string, field: keyof T, value: any, options: GetOptions<T>): Promise<T[]>;
   /**
    * This is an alias for getByField with limit set to 1
    * */

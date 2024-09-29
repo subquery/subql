@@ -4,15 +4,12 @@
 import assert from 'assert';
 import {Store as IStore, Entity, FieldsExpression, GetOptions} from '@subql/types-core';
 import {NodeConfig} from '../../configure';
-import {getLogger} from '../../logger';
 import {monitorWrite} from '../../process';
 import {handledStringify} from '../../utils';
 import {StoreCacheService} from '../storeCache';
 import {StoreOperations} from '../StoreOperations';
 import {OperationType} from '../types';
 import {EntityClass} from './entity';
-
-const logger = getLogger('Store');
 
 /* A context is provided to allow it to be updated by the owner of the class instance */
 type Context = {
@@ -34,17 +31,9 @@ export class Store implements IStore {
     this.#context = context;
   }
 
-  #queryLimitCheck(storeMethod: string, entity: string, options?: GetOptions<any>) {
-    if (options) {
-      if (options.limit && this.#config.queryLimit < options.limit) {
-        logger.warn(
-          `store ${storeMethod} for entity ${entity} with ${options.limit} records exceeds config limit ${
-            this.#config.queryLimit
-          }. Will use ${this.#config.queryLimit} as the limit.`
-        );
-      }
-
-      options.limit = options.limit ? Math.min(options.limit, this.#config.queryLimit) : this.#config.queryLimit;
+  #queryLimitCheck(storeMethod: string, entity: string, options: GetOptions<any>) {
+    if (options.limit > this.#config.queryLimit) {
+      throw new Error(`Query limit exceeds the maximum allowed value of ${this.#config.queryLimit}`);
     }
   }
 
@@ -62,7 +51,7 @@ export class Store implements IStore {
     entity: string,
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
-    options: GetOptions<T> = {}
+    options: GetOptions<T>
   ): Promise<T[]> {
     try {
       const indexed = this.#context.isIndexed(entity, String(field));
@@ -81,7 +70,7 @@ export class Store implements IStore {
   async getByFields<T extends Entity>(
     entity: string,
     filter: FieldsExpression<T>[],
-    options?: GetOptions<T>
+    options: GetOptions<T>
   ): Promise<T[]> {
     try {
       // Check that the fields are indexed
