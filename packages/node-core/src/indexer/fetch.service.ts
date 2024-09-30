@@ -359,7 +359,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       const currentDS = datasources.get(currentHeight);
       // If the value for the current height is an empty array, then it's a gap
       if (currentDS?.length === 0) {
-        bypassBlocks.push(`${currentHeight}-${nextHeight}`);
+        bypassBlocks.push(`${currentHeight}-${nextHeight - 1}`);
       }
     }
     return bypassBlocks;
