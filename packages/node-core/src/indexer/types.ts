@@ -16,7 +16,7 @@ export interface ISubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
   T extends BaseTemplateDataSource<DS> = BaseTemplateDataSource<DS>,
-  C = unknown,
+  C = unknown
 > extends Omit<CommonSubqueryProject<N, DS, T>, 'schema' | 'version' | 'name' | 'specVersion' | 'description'> {
   readonly schema: GraphQLSchema;
   applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date | undefined>) => Promise<void>;
@@ -43,6 +43,7 @@ export interface IIndexerManager<B, DS> {
 export interface IProjectService<DS> {
   blockOffset: number | undefined;
   startHeight: number;
+  bypassBlocks: BypassBlocks;
   reindex(lastCorrectHeight: number): Promise<void>;
   /**
    * This is used everywhere but within indexing blocks, see comment on getDataSources for more info
@@ -68,3 +69,5 @@ export type Header = {
   blockHash: string;
   parentHash: string | undefined;
 };
+
+export type BypassBlocks = (number | `${number}-${number}`)[];

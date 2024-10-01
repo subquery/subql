@@ -2,41 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Schedule} from 'cron-converter';
-import {chunk, flatten, isNumber, range, uniq, without} from 'lodash';
 import {getBlockHeight} from '../indexer/dictionary';
-import {IBlock} from '../indexer/types';
+import {BypassBlocks, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
-
-export function cleanedBatchBlocks<FB>(
-  bypassBlocks: number[],
-  currentBlockBatch: (IBlock<FB> | number)[]
-): (IBlock<FB> | number)[] {
-  // Use suggested work around to avoid Maximum call stack size exceeded issue when large numbers of transformedBlocks
-  // https://github.com/lodash/lodash/issues/5552
-  const transformedBlocks = transformBypassBlocks(bypassBlocks);
-  let result = currentBlockBatch;
-  chunk(transformedBlocks, 10000).forEach((chunk) => {
-    result = without(
-      result.map((r) => getBlockHeight(r)),
-      ...chunk
-    );
-  });
-  return result;
-}
-
-export function transformBypassBlocks(bypassBlocks: (number | string)[]): number[] {
-  if (!bypassBlocks?.length) return [];
-
-  return uniq(
-    flatten(
-      bypassBlocks.map((bypassEntry) => {
-        if (isNumber(bypassEntry)) return [bypassEntry];
-        const splitRange = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
-        return range(splitRange[0], splitRange[1] + 1);
-      })
-    )
-  );
-}
 
 const logger = getLogger('timestamp-filter');
 
@@ -60,4 +28,28 @@ export function filterBlockTimestamp(blockTimestamp: number, filter: CronFilter)
     filter.cronSchedule.schedule.prev();
     return false;
   }
+}
+
+/**
+ * Takes a list of blocks or block numbers to be enqueued and indexed and removes any based on the bypassBlocks
+ * TODO this could further be optimised by returning the end of a block range to fast forward to.
+ * */
+export function filterBypassBlocks<B = any>(
+  enqueuedBlocks: (IBlock<B> | number)[],
+  bypassBlocks?: BypassBlocks
+): (IBlock<B> | number)[] {
+  if (!bypassBlocks?.length) return enqueuedBlocks;
+
+  return enqueuedBlocks.filter((b) => {
+    if (typeof b === 'number') !inBypassBlocks(bypassBlocks, b);
+    return !inBypassBlocks(bypassBlocks, getBlockHeight(b));
+  });
+}
+
+function inBypassBlocks(bypassBlocks: BypassBlocks, blockNum: number): boolean {
+  return bypassBlocks.some((bypassEntry) => {
+    if (typeof bypassEntry === 'number') return bypassEntry === blockNum;
+    const [start, end] = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
+    return blockNum >= start && blockNum <= end;
+  });
 }

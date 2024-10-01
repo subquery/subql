@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Issues with setting a large block range for bypass blocks (#2566)
 
 ## [5.2.6] - 2024-09-25
 ### Changed

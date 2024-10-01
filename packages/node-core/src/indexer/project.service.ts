@@ -19,7 +19,7 @@ import {MetadataKeys} from './entities';
 import {PoiSyncService} from './poi';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {ISubqueryProject, IProjectService} from './types';
+import {ISubqueryProject, IProjectService, BypassBlocks} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('Project');
@@ -33,7 +33,7 @@ class NotInitError extends Error {
 export abstract class BaseProjectService<
   API extends IApi,
   DS extends BaseDataSource,
-  UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>,
+  UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>
 > implements IProjectService<DS>
 {
   private _schema?: string;
@@ -81,6 +81,10 @@ export abstract class BaseProjectService<
 
   get blockOffset(): number | undefined {
     return this._blockOffset;
+  }
+
+  get bypassBlocks(): BypassBlocks {
+    return this.project.network.bypassBlocks ?? [];
   }
 
   protected get isHistorical(): boolean {
