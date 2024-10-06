@@ -6,8 +6,9 @@ import {delay} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
 import {range} from 'lodash';
 import {NodeConfig} from '../../configure';
-import {MetadataFactory, PlainPoiModel, PoiFactory, ProofOfIndex} from '../../indexer';
+import {MetadataFactory, PoiFactory, ProofOfIndex} from '../../indexer';
 import {Queue} from '../../utils';
+import {PlainPoiModel} from '../storeCache/poi';
 import {ISubqueryProject} from '../types';
 import {PoiSyncService} from './poiSync.service';
 

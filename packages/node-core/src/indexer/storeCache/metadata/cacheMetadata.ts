@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Transaction } from '@subql/x-sequelize';
-import { hasValue } from '../../../utils';
-import { DatasourceParams } from '../../dynamic-ds.service';
-import { Metadata, MetadataKeys, MetadataRepo } from '../../entities';
-import { Cacheable } from '../cacheable';
-import { ICachedModelControl } from '../types';
-import { IMetadata } from './metadata';
-import { MetadataKey, incrementKeys, IncrementalMetadataKey, INCREMENT_QUERY, APPEND_DS_QUERY } from './utils';
+import {Transaction} from '@subql/x-sequelize';
+import {hasValue} from '../../../utils';
+import {DatasourceParams} from '../../dynamic-ds.service';
+import {Metadata, MetadataKeys, MetadataRepo} from '../../entities';
+import {Cacheable} from '../cacheable';
+import {ICachedModelControl} from '../types';
+import {IMetadata} from './metadata';
+import {MetadataKey, incrementKeys, IncrementalMetadataKey, INCREMENT_QUERY, APPEND_DS_QUERY} from './utils';
 
 // type MetadataKey = keyof MetadataKeys;
 // const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
@@ -85,7 +85,8 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
     return result;
   }
 
-  set<K extends MetadataKey>(key: K, value: MetadataKeys[K]): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async set<K extends MetadataKey>(key: K, value: MetadataKeys[K], tx?: Transaction): Promise<void> {
     if (this.setCache[key] === undefined) {
       this.flushableRecordCounter += 1;
     }
@@ -96,15 +97,18 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
     }
   }
 
-  setBulk(metadata: Metadata[]): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async setBulk(metadata: Metadata[]): Promise<void> {
     metadata.map((m) => this.set(m.key, m.value));
   }
 
-  setIncrement(key: IncrementalMetadataKey, amount = 1): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async setIncrement(key: IncrementalMetadataKey, amount = 1): Promise<void> {
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
-  setNewDynamicDatasource(item: DatasourceParams): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async setNewDynamicDatasource(item: DatasourceParams): Promise<void> {
     this.datasourceUpdates.push(item);
   }
 
@@ -113,10 +117,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    await this.model.sequelize.query(
-      INCREMENT_QUERY(schemaTable, key, amount),
-      tx && { transaction: tx }
-    );
+    await this.model.sequelize.query(INCREMENT_QUERY(schemaTable, key, amount), tx && {transaction: tx});
   }
 
   private async appendDynamicDatasources(items: DatasourceParams[], tx?: Transaction): Promise<void> {
@@ -124,10 +125,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    await this.model.sequelize.query(
-      APPEND_DS_QUERY(schemaTable, items),
-      tx && { transaction: tx }
-    );
+    await this.model.sequelize.query(APPEND_DS_QUERY(schemaTable, items), tx && {transaction: tx});
   }
 
   private async handleSpecialKeys(tx?: Transaction): Promise<void> {
@@ -142,7 +140,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
              **/
             const val = this.setCache[key];
             if (val !== undefined) {
-              await this.model.bulkCreate([{ key, value: val }], { transaction: tx, updateOnDuplicate: ['key', 'value'] });
+              await this.model.bulkCreate([{key, value: val}], {transaction: tx, updateOnDuplicate: ['key', 'value']});
             } else if (this.datasourceUpdates.length) {
               await this.appendDynamicDatasources(this.datasourceUpdates, tx);
             }
@@ -169,7 +167,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
   async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
       .filter(([key]) => !specialKeys.includes(key as MetadataKey))
-      .map(([key, value]) => ({ key, value } as Metadata));
+      .map(([key, value]) => ({key, value} as Metadata));
 
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {
@@ -187,13 +185,14 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
         updateOnDuplicate: ['key', 'value'],
       }),
       this.handleSpecialKeys(tx),
-      this.model.destroy({ where: { key: this.removeCache } }),
+      this.model.destroy({where: {key: this.removeCache}}),
     ]);
   }
 
   // This is current only use for migrate Poi
   // If concurrent change to cache, please add mutex if needed
-  async bulkRemove<K extends MetadataKey>(keys: K[], tx: Transaction): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async bulkRemove<K extends MetadataKey>(keys: K[], tx?: Transaction): Promise<void> {
     this.removeCache.push(...keys);
     for (const key of keys) {
       delete this.setCache[key];
@@ -212,8 +211,8 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
       newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
       this.flushableRecordCounter = 1;
     }
-    this.setCache = { ...newSetCache };
-    this.getCache = { ...newSetCache };
+    this.setCache = {...newSetCache};
+    this.getCache = {...newSetCache};
     this.datasourceUpdates = [];
   }
 }

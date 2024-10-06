@@ -2,24 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {FieldOperators, FieldsExpression, GetOptions} from '@subql/types-core';
+import {FieldsExpression, GetOptions} from '@subql/types-core';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
-import {Fn} from '@subql/x-sequelize/types/utils';
 import {flatten, uniq, cloneDeep, orderBy, unionBy} from 'lodash';
-import {NodeConfig} from '../../configure';
-import {Cacheable} from './cacheable';
-import {CsvStoreService} from './csvStore.service';
-import {SetValueModel} from './setValueModel';
-import {
-  ICachedModelControl,
-  RemoveValue,
-  SetData,
-  ICachedModel,
-  GetData,
-  FilteredHeightRecords,
-  SetValue,
-  Exporter,
-} from './types';
+import {NodeConfig} from '../../../configure';
+import {Cacheable} from '../cacheable';
+import {CsvStoreService} from '../csvStore.service';
+import {SetValueModel} from '../setValueModel';
+import {ICachedModelControl, RemoveValue, SetData, GetData, FilteredHeightRecords, SetValue, Exporter} from '../types';
+import {BaseEntity, IModel} from './model';
+import {getFullOptions, operatorsMap} from './utils';
 
 const getCacheOptions = {
   max: 500, // default value
@@ -27,28 +19,9 @@ const getCacheOptions = {
   updateAgeOnGet: true, // we want to keep most used record in cache longer
 };
 
-const operatorsMap: Record<FieldOperators, any> = {
-  '=': Op.eq,
-  '!=': Op.ne,
-  in: Op.in,
-  '!in': Op.notIn,
-};
-
-const defaultOptions: Required<GetOptions<{id: string}>> = {
-  offset: 0,
-  limit: 100,
-  orderBy: 'id',
-  orderDirection: 'ASC',
-};
-
-export class CachedModel<
-    T extends {id: string; __block_range?: (number | null)[] | Fn} = {
-      id: string;
-      __block_range?: (number | null)[] | Fn;
-    },
-  >
+export class CachedModel<T extends BaseEntity = BaseEntity>
   extends Cacheable
-  implements ICachedModel<T>, ICachedModelControl
+  implements IModel<T>, ICachedModelControl
 {
   // Null value indicates its not defined in the db
   private getCache: GetData<T>;
@@ -138,7 +111,7 @@ export class CachedModel<
    * There is also no way to flush data here,
    * flushing will only flush data before the current block so its still required to consider the setCache
    * */
-  async getByFields(filters: FieldsExpression<T>[], options: GetOptions<T> = defaultOptions): Promise<T[]> {
+  async getByFields(filters: FieldsExpression<T>[], options?: GetOptions<T>): Promise<T[]> {
     filters.forEach(([field, operator]) => {
       assert(
         operatorsMap[operator],
@@ -152,10 +125,7 @@ export class CachedModel<
     // If projects use inefficient store methods, thats on them.
 
     // Ensure we have all the options
-    const fullOptions: Required<GetOptions<T>> = {
-      ...defaultOptions,
-      ...options,
-    };
+    const fullOptions = getFullOptions(options);
 
     await this.mutex.waitForUnlock();
 
@@ -170,7 +140,7 @@ export class CachedModel<
       .map((value) => value.getLatest()?.data)
       .map((value) => cloneDeep(value)) as T[];
 
-    const offsetCacheData = cacheData.slice(options.offset);
+    const offsetCacheData = cacheData.slice(fullOptions.offset);
 
     // Return early if cache covers all the data
     if (offsetCacheData.length > fullOptions.limit) {
@@ -198,24 +168,25 @@ export class CachedModel<
     return combined;
   }
 
-  async getByField(
-    field: keyof T,
-    value: T[keyof T] | T[keyof T][],
-    options: GetOptions<T> = defaultOptions
-  ): Promise<T[]> {
-    return this.getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
-  }
+  // async getByField(
+  //   field: keyof T,
+  //   value: T[keyof T] | T[keyof T][],
+  //   options: GetOptions<T> = defaultOptions
+  // ): Promise<T[]> {
+  //   return this.getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
+  // }
 
-  async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
-    const [res] = await this.getByField(field, value, {
-      ...defaultOptions,
-      limit: 1,
-    });
+  // async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
+  //   const [res] = await this.getByField(field, value, {
+  //     ...defaultOptions,
+  //     limit: 1,
+  //   });
 
-    return res;
-  }
+  //   return res;
+  // }
 
-  set(id: string, data: T, blockHeight: number): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async set(id: string, data: T, blockHeight: number): Promise<void> {
     if (this.setCache[id] === undefined) {
       this.setCache[id] = new SetValueModel();
     }
@@ -231,23 +202,24 @@ export class CachedModel<
     this.flushableRecordCounter += 1;
   }
 
-  bulkCreate(data: T[], blockHeight: number): void {
+  async bulkCreate(data: T[], blockHeight: number): Promise<void> {
     for (const entity of data) {
-      this.set(entity.id, entity, blockHeight);
+      await this.set(entity.id, entity, blockHeight);
     }
   }
 
-  bulkUpdate(data: T[], blockHeight: number, fields?: string[] | undefined): void {
+  async bulkUpdate(data: T[], blockHeight: number, fields?: string[]): Promise<void> {
     //TODO, remove fields
     if (fields) {
       throw new Error(`Currently not supported: update by fields`);
     }
     for (const entity of data) {
-      this.set(entity.id, entity, blockHeight);
+      await this.set(entity.id, entity, blockHeight);
     }
   }
 
-  remove(id: string, blockHeight: number): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async remove(id: string, blockHeight: number): Promise<void> {
     // we don't need to check whether id is already removed,
     // because it could be removed->create-> removed again,
     // the operationIndex should always be the latest operation
@@ -266,8 +238,8 @@ export class CachedModel<
     }
   }
 
-  bulkRemove(ids: string[], blockHeight: number): void {
-    ids.map((id) => this.remove(id, blockHeight));
+  async bulkRemove(ids: string[], blockHeight: number): Promise<void> {
+    await Promise.all(ids.map((id) => this.remove(id, blockHeight)));
   }
 
   get isFlushable(): boolean {
@@ -352,16 +324,13 @@ export class CachedModel<
   }
 
   private filterRemoveRecordByHeight(blockHeight: number, lessEqt: boolean): Record<string, RemoveValue> {
-    return Object.entries(this.removeCache).reduce(
-      (acc, [key, value]) => {
-        if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
-          acc[key] = value;
-        }
+    return Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+      if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
+        acc[key] = value;
+      }
 
-        return acc;
-      },
-      {} as Record<string, RemoveValue>
-    );
+      return acc;
+    }, {} as Record<string, RemoveValue>);
   }
 
   private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {

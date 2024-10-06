@@ -6,9 +6,12 @@ import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {delay} from '../../utils';
+import {BaseEntity} from './model';
 import {StoreCacheService} from './storeCache.service';
 
 const eventEmitter = new EventEmitter2();
+
+type TestEntity = BaseEntity & {field1: string};
 
 jest.mock('@subql/x-sequelize', () => {
   const mSequelize = {
@@ -72,10 +75,10 @@ describe('Store Cache Service historical', () => {
   });
 
   it('could set cache for multiple entities, also get from it', async () => {
-    const entity1Model = storeService.getModel('entity1');
-    const entity2Model = storeService.getModel('entity2');
+    const entity1Model = storeService.getModel<TestEntity>('entity1');
+    const entity2Model = storeService.getModel<TestEntity>('entity2');
 
-    entity1Model.set(
+    await entity1Model.set(
       'entity1_id_0x01',
       {
         id: 'entity1_id_0x01',
@@ -83,7 +86,7 @@ describe('Store Cache Service historical', () => {
       },
       1
     );
-    entity2Model.set(
+    await entity2Model.set(
       'entity2_id_0x02',
       {
         id: 'entity2_id_0x02',
@@ -102,9 +105,9 @@ describe('Store Cache Service historical', () => {
 
   // TODO move this test to cacheModel
   it('set at different block height, will create historical records', async () => {
-    const appleModel = storeService.getModel('apple');
+    const appleModel = storeService.getModel<TestEntity>('apple');
 
-    appleModel.set(
+    await appleModel.set(
       'apple-01',
       {
         id: 'apple-01',
@@ -113,10 +116,10 @@ describe('Store Cache Service historical', () => {
       1
     );
 
-    const appleEntity_b1 = (await appleModel.get('apple-01')) as any;
-    expect(appleEntity_b1.field1).toBe('set apple at block 1');
+    const appleEntity_b1 = await appleModel.get('apple-01');
+    expect(appleEntity_b1!.field1).toBe('set apple at block 1');
     // Add new record, should create historical records for same id entity
-    appleModel.set(
+    await appleModel.set(
       'apple-01',
       {
         id: 'apple-01',
@@ -152,11 +155,11 @@ describe('Store Cache flush with order', () => {
     storeService.init(false, true, {} as any, undefined);
   });
 
-  it('when set/remove multiple model entities, operation index should added to record in sequential order', () => {
-    const entity1Model = storeService.getModel('entity1');
-    const entity2Model = storeService.getModel('entity2');
+  it('when set/remove multiple model entities, operation index should added to record in sequential order', async () => {
+    const entity1Model = storeService.getModel<TestEntity>('entity1');
+    const entity2Model = storeService.getModel<TestEntity>('entity2');
 
-    entity1Model.set(
+    await entity1Model.set(
       'entity1_id_0x01',
       {
         id: 'entity1_id_0x01',
@@ -164,7 +167,7 @@ describe('Store Cache flush with order', () => {
       },
       1
     );
-    entity2Model.set(
+    await entity2Model.set(
       'entity2_id_0x02',
       {
         id: 'entity2_id_0x02',
@@ -172,7 +175,7 @@ describe('Store Cache flush with order', () => {
       },
       2
     );
-    entity1Model.remove('entity1_id_0x01', 3);
+    await entity1Model.bulkRemove(['entity1_id_0x01'], 3);
     const entity1 = (storeService as any).cachedModels.entity1;
     expect(entity1.removeCache.entity1_id_0x01.operationIndex).toBe(3);
   });
@@ -190,10 +193,10 @@ describe('Store Cache flush with non-historical', () => {
   });
 
   it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
-    const entity1Model = storeService.getModel('entity1');
+    const entity1Model = storeService.getModel<TestEntity>('entity1');
 
     //create Id 1
-    entity1Model.set(
+    await entity1Model.set(
       'entity1_id_0x01',
       {
         id: 'entity1_id_0x01',
@@ -202,11 +205,11 @@ describe('Store Cache flush with non-historical', () => {
       1
     );
     // remove Id 1 and 2
-    entity1Model.remove('entity1_id_0x02', 2);
-    entity1Model.remove('entity1_id_0x01', 3);
+    await entity1Model.bulkRemove(['entity1_id_0x02'], 2);
+    await entity1Model.bulkRemove(['entity1_id_0x01'], 3);
 
     // recreate id 1 again
-    entity1Model.set(
+    await entity1Model.set(
       'entity1_id_0x01',
       {
         id: 'entity1_id_0x01',
@@ -248,10 +251,10 @@ describe('Store cache upper threshold', () => {
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {
-    const entity1Model = storeService.getModel('entity1');
+    const entity1Model = storeService.getModel<TestEntity>('entity1');
 
     for (let i = 0; i < 5; i++) {
-      entity1Model.set(
+      await entity1Model.set(
         `entity1_id_0x0${i}`,
         {
           id: `entity1_id_0x0${i}`,
@@ -270,10 +273,10 @@ describe('Store cache upper threshold', () => {
   });
 
   it('waits for flushing when threshold is met', async () => {
-    const entity1Model = storeService.getModel('entity1');
+    const entity1Model = storeService.getModel<TestEntity>('entity1');
 
     for (let i = 0; i < 15; i++) {
-      entity1Model.set(
+      await entity1Model.set(
         `entity1_id_0x0${i}`,
         {
           id: `entity1_id_0x0${i}`,

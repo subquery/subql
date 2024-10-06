@@ -4,12 +4,14 @@
 import {DEFAULT_FETCH_RANGE} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
 import {Op, Transaction} from '@subql/x-sequelize';
-import {BlockRangeDtoInterface} from '../../admin';
-import {PoiRepo, ProofOfIndex} from '../entities';
+import {BlockRangeDtoInterface} from '../../../admin';
+import {PoiRepo, ProofOfIndex} from '../../entities';
 
-export interface PoiInterface {
-  model: PoiRepo;
-  bulkUpsert(proofs: ProofOfIndex[], tx?: Transaction): Promise<void> | void;
+export const POI_ENTITY_NAME = '_poi';
+
+export interface IPoi {
+  model: PoiRepo; // TODO remove
+  bulkUpsert(proofs: ProofOfIndex[], tx?: Transaction): Promise<void>;
   /**
    * Gets the 100 blocks <= to the start height where there is an operation.
    * This can be used to determine the last blocks that had data to index.
@@ -19,14 +21,14 @@ export interface PoiInterface {
 
 // When using cockroach db, poi id is store in bigint format, and sequelize toJSON() can not convert id correctly (to string)
 // This will ensure after toJSON Poi id converted to number
-export function ensureProofOfIndexId(poi: ProofOfIndex): ProofOfIndex {
+function ensureProofOfIndexId(poi: ProofOfIndex): ProofOfIndex {
   if (typeof poi?.id === 'string') {
     poi.id = Number(poi.id);
   }
   return poi;
 }
 
-export class PlainPoiModel implements PoiInterface {
+export class PlainPoiModel implements IPoi {
   constructor(readonly model: PoiRepo) {}
 
   async getFirst(): Promise<ProofOfIndex | undefined> {

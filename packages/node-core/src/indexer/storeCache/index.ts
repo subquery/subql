@@ -3,5 +3,6 @@
 
 export * from './storeCache.service';
 export * from './types';
-export * from './cacheModel';
+export * from './model';
 export * from './metadata';
+export * from './storeModel.service';

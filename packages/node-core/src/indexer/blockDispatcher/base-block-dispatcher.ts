@@ -5,17 +5,18 @@ import assert from 'assert';
 
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@subql/utils';
+import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
 import {getLogger} from '../../logger';
-import {exitWithError, monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
+import {monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
 import {IQueue, mainThreadOnly} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
-import {StoreCacheService} from '../storeCache';
-import {CachePoiModel} from '../storeCache/cachePoi';
+import {IStoreModelService} from '../storeCache';
+import {IPoi} from '../storeCache/poi';
 import {IBlock, IProjectService, ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
@@ -63,7 +64,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected storeService: StoreService,
-    private storeCacheService: StoreCacheService,
+    private storeModelService: IStoreModelService,
     private poiSyncService: PoiSyncService,
     protected monitorService?: MonitorServiceInterface
   ) {
@@ -75,7 +76,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
     this._onDynamicDsCreated = onDynamicDsCreated;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.setProcessedBlockCount((await this.storeCacheService.metadata.find('processedBlockCount', 0))!);
+    this.setProcessedBlockCount((await this.storeModelService.metadata.find('processedBlockCount', 0))!);
   }
 
   get queueSize(): number {
@@ -198,10 +199,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         throw e;
       }
     } else {
-      this.updateStoreMetadata(height);
+      await this.updateStoreMetadata(height, undefined, this.storeService.transaction);
 
       const operationHash = this.storeService.getOperationMerkleRoot();
-      this.createPOI(height, blockHash, operationHash);
+      await this.createPOI(height, blockHash, operationHash, this.storeService.transaction);
 
       if (dynamicDsCreated) {
         this.onDynamicDsCreated(height);
@@ -215,21 +216,38 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       this.setLatestProcessedHeight(height);
     }
 
-    if (this.nodeConfig.storeCacheAsync) {
-      // Flush all completed block data and don't wait
-      await this.storeCacheService.flushAndWaitForCapacity(false)?.catch((e) => {
-        exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);
-      });
-    } else {
-      // Flush all data from cache and wait
-      await this.storeCacheService.flushCache(false);
-    }
+    await this.storeModelService.applyPendingChanges(height, !this.projectService.hasDataSourcesAfterHeight(height));
 
-    if (!this.projectService.hasDataSourcesAfterHeight(height)) {
-      const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-      await this.storeCacheService.flushCache(false);
-      exitWithError(msg, logger, 0);
-    }
+    // if (this.storeModelService instanceof StoreCacheService) {
+    //   if (this.nodeConfig.storeCacheAsync) {
+    //     // Flush all completed block data and don't wait
+    //     await this.storeModelService.flushAndWaitForCapacity(false)?.catch((e) => {
+    //       exitWithError(new Error(`Flushing cache failed`, { cause: e }), logger);
+    //     });
+    //   } else {
+    //     // Flush all data from cache and wait
+    //     await this.storeModelService.flushCache(false);
+    //   }
+
+    //   if (!this.projectService.hasDataSourcesAfterHeight(height)) {
+    //     const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
+    //     await this.storeModelService.flushCache(false);
+    //     exitWithError(msg, logger, 0);
+    //   }
+    // } else if (this.storeModelService instanceof PlainStoreModelService) {
+    //   const tx = this.storeService.transaction;
+    //   if (!tx) {
+    //     exitWithError(new Error('Transaction not found'), logger, 1);
+    //   }
+    //   await tx.commit();
+
+    //   if (!this.projectService.hasDataSourcesAfterHeight(height)) {
+    //     const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
+    //     exitWithError(msg, logger, 0);
+    //   }
+    // } else {
+    //   exitWithError(new Error('Unknown store model service'), logger, 1);
+    // }
   }
 
   @OnEvent(AdminEvent.rewindTarget)
@@ -258,7 +276,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
    * @param operationHash
    * @private
    */
-  private createPOI(height: number, blockHash: string, operationHash: Uint8Array): void {
+  private async createPOI(
+    height: number,
+    blockHash: string,
+    operationHash: Uint8Array,
+    tx?: Transaction
+  ): Promise<void> {
     if (!this.nodeConfig.proofOfIndex) {
       return;
     }
@@ -268,8 +291,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
     const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
     // This is the first creation of POI
-    this.poi.bulkUpsert([poiBlock]);
-    this.storeCacheService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}]);
+    await this.poi.bulkUpsert([poiBlock], tx);
+    await this.storeModelService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}], tx);
     this.eventEmitter.emit(PoiEvent.PoiTarget, {
       height,
       timestamp: Date.now(),
@@ -277,21 +300,24 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   @mainThreadOnly()
-  private updateStoreMetadata(height: number, updateProcessed = true): void {
-    const meta = this.storeCacheService.metadata;
+  private async updateStoreMetadata(height: number, updateProcessed = true, tx?: Transaction): Promise<void> {
+    const meta = this.storeModelService.metadata;
     // Update store metadata
-    meta.setBulk([
-      {key: 'lastProcessedHeight', value: height},
-      {key: 'lastProcessedTimestamp', value: Date.now()},
-    ]);
+    await meta.setBulk(
+      [
+        {key: 'lastProcessedHeight', value: height},
+        {key: 'lastProcessedTimestamp', value: Date.now()},
+      ],
+      tx
+    );
     // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
     if (updateProcessed) {
-      meta.setIncrement('processedBlockCount');
+      await meta.setIncrement('processedBlockCount', undefined, tx);
     }
   }
 
-  private get poi(): CachePoiModel {
-    const poi = this.storeCacheService.poi;
+  private get poi(): IPoi {
+    const poi = this.storeModelService.poi;
     if (!poi) {
       throw new Error('Poi service expected poi repo but it was not found');
     }

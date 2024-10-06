@@ -69,7 +69,7 @@ describe('DynamicDsService', () => {
     const meta = mockMetadata([testParam1, testParam2, testParam3, testParam4]);
     await service.init(meta);
 
-    await service.resetDynamicDatasource(2);
+    await service.resetDynamicDatasource(2, null as any);
 
     await expect(meta.find('dynamicDatasources')).resolves.toEqual([testParam1, testParam2]);
     await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
@@ -79,7 +79,7 @@ describe('DynamicDsService', () => {
     const meta = mockMetadata([testParam1, testParam2]);
     await service.init(meta);
 
-    meta.set('dynamicDatasources', [testParam1, testParam2, testParam3, testParam4]);
+    await meta.set('dynamicDatasources', [testParam1, testParam2, testParam3, testParam4]);
 
     await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
     await expect(service.getDynamicDatasources(true)).resolves.toEqual([

@@ -151,7 +151,7 @@ describe('UnfinalizedBlocksService', () => {
 
     // After this the call stack is something like:
     // indexerManager -> blockDispatcher -> project -> project -> reindex -> blockDispatcher.resetUnfinalizedBlocks
-    unfinalizedBlocksService.resetUnfinalizedBlocks();
+    await unfinalizedBlocksService.resetUnfinalizedBlocks();
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
   });
@@ -251,7 +251,7 @@ describe('UnfinalizedBlocksService', () => {
 
     storeCache.init(true, false, {} as any, undefined);
 
-    storeCache.metadata.set(
+    await storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,
       JSON.stringify(<Header[]>[
         {blockHeight: 90, blockHash: '0xabcd'},
@@ -259,7 +259,7 @@ describe('UnfinalizedBlocksService', () => {
         {blockHeight: 92, blockHash: '0xabc92'},
       ])
     );
-    storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 90);
+    await storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 90);
     const unfinalizedBlocksService2 = new UnfinalizedBlocksService({unfinalizedBlocks: false} as any, storeCache);
 
     const reindex = jest.fn().mockReturnValue(Promise.resolve());

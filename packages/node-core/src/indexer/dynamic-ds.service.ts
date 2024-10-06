@@ -1,11 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { cloneDeep } from 'lodash';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { CacheMetadataModel } from './storeCache';
-import { ISubqueryProject } from './types';
+import {Transaction} from '@subql/x-sequelize';
+import {cloneDeep} from 'lodash';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {IMetadata} from './storeCache';
+import {ISubqueryProject} from './types';
 
 const logger = getLogger('dynamic-ds');
 
@@ -24,8 +25,9 @@ export interface IDynamicDsService<DS> {
 }
 
 export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubqueryProject>
-  implements IDynamicDsService<DS> {
-  private _metadata?: CacheMetadataModel;
+  implements IDynamicDsService<DS>
+{
+  private _metadata?: IMetadata;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];
 
@@ -33,7 +35,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
 
   constructor(protected readonly project: P) {}
 
-  async init(metadata: CacheMetadataModel): Promise<void> {
+  async init(metadata: IMetadata): Promise<void> {
     this._metadata = metadata;
 
     await this.getDynamicDatasources(true);
@@ -46,7 +48,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
     return this._datasources;
   }
 
-  private get metadata(): CacheMetadataModel {
+  private get metadata(): IMetadata {
     if (!this._metadata) {
       throw new Error('DynamicDsService has not been initialized');
     }
@@ -57,19 +59,19 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
    * remove dynamic ds that is created after this height
    * @param targetHeight this height is exclusive
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async resetDynamicDatasource(targetHeight: number): Promise<void> {
+  async resetDynamicDatasource(targetHeight: number, tx: Transaction): Promise<void> {
     if (this._datasourceParams && this._datasourceParams.length !== 0) {
       const filteredDs = this._datasourceParams.filter((ds) => ds.startBlock <= targetHeight);
-      this.metadata.set(METADATA_KEY, filteredDs);
+      await this.metadata.set(METADATA_KEY, filteredDs, tx);
       await this.loadDynamicDatasources(filteredDs);
     }
   }
 
-  async createDynamicDatasource(params: DatasourceParams): Promise<DS> {
+  // TODO make tx required
+  async createDynamicDatasource(params: DatasourceParams, tx?: Transaction): Promise<DS> {
     try {
       const ds = await this.getDatasource(params);
-      this.metadata.setNewDynamicDatasource(params);
+      await this.metadata.setNewDynamicDatasource(params, tx);
 
       logger.info(`Created new dynamic datasource from template: "${params.templateName}"`);
 
@@ -80,7 +82,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
 
       return ds;
     } catch (e: any) {
-      exitWithError(new Error(`Failed to create dynamic ds`, { cause: e }), logger);
+      exitWithError(new Error(`Failed to create dynamic ds`, {cause: e}), logger);
     }
   }
 
@@ -112,7 +114,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
    *
    * Inserts the startBlock into the template.
    * */
-  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & { startBlock?: number }>(
+  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & {startBlock?: number}>(
     templateName: string,
     startBlock?: number
   ): T {
@@ -120,7 +122,7 @@ export abstract class DynamicDsService<DS, P extends ISubqueryProject = ISubquer
     if (!t) {
       throw new Error(`Unable to find matching template in project for name: "${templateName}"`);
     }
-    const { name, ...template } = cloneDeep(t);
-    return { ...template, startBlock } as T;
+    const {name, ...template} = cloneDeep(t);
+    return {...template, startBlock} as T;
   }
 }

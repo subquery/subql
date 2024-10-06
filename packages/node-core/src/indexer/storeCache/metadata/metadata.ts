@@ -1,13 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from "assert";
-import { hasValue } from "@subql/node-core/utils";
-import { Op, Transaction } from '@subql/x-sequelize';
-import { DatasourceParams } from "../../dynamic-ds.service";
-import { Metadata, MetadataKeys, MetadataRepo } from "../../entities";
-import { APPEND_DS_QUERY, INCREMENT_QUERY } from "./utils";
-
+import assert from 'assert';
+import {hasValue} from '@subql/node-core/utils';
+import {Op, Transaction} from '@subql/x-sequelize';
+import {DatasourceParams} from '../../dynamic-ds.service';
+import {Metadata, MetadataKeys, MetadataRepo} from '../../entities';
+import {APPEND_DS_QUERY, INCREMENT_QUERY} from './utils';
 
 export type MetadataKey = keyof MetadataKeys;
 export const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
@@ -25,19 +24,13 @@ export interface IMetadata {
   bulkRemove<K extends MetadataKey>(keys: K[], tx?: Transaction): Promise<void>;
 }
 
-
-
 export class MetadataModel implements IMetadata {
-
   constructor(readonly model: MetadataRepo) {}
-
 
   async find<K extends MetadataKey>(key: K, fallback?: MetadataKeys[K]): Promise<MetadataKeys[K] | undefined> {
     const record = await this.model.findByPk(key);
 
-    return hasValue(record)
-      ? record.toJSON().value as MetadataKeys[K]
-      : fallback;
+    return hasValue(record) ? (record.toJSON().value as MetadataKeys[K]) : fallback;
   }
 
   async findMany<K extends MetadataKey>(keys: readonly K[]): Promise<Partial<MetadataKeys>> {
@@ -54,11 +47,11 @@ export class MetadataModel implements IMetadata {
   }
 
   async set<K extends MetadataKey>(key: K, value: MetadataKeys[K], tx?: Transaction): Promise<void> {
-    throw new Error("Method not implemented.");
+    return this.setBulk([{key, value}], tx);
   }
 
   async setBulk(metadata: Metadata[], tx?: Transaction): Promise<void> {
-    throw new Error("Method not implemented.");
+    await this.model.bulkCreate(metadata, {transaction: tx});
   }
 
   async setIncrement(key: IncrementalMetadataKey, amount = 1, tx?: Transaction): Promise<void> {
@@ -67,10 +60,7 @@ export class MetadataModel implements IMetadata {
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
     assert(incrementKeys.includes(key), `Key ${key} is not incrementable`);
 
-    await this.model.sequelize.query(
-      INCREMENT_QUERY(schemaTable, key, amount),
-      tx && { transaction: tx }
-    );
+    await this.model.sequelize.query(INCREMENT_QUERY(schemaTable, key, amount), tx && {transaction: tx});
   }
 
   async setNewDynamicDatasource(item: DatasourceParams, tx?: Transaction): Promise<void> {
@@ -78,16 +68,13 @@ export class MetadataModel implements IMetadata {
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    await this.model.sequelize.query(
-      APPEND_DS_QUERY(schemaTable, [item]),
-      tx && { transaction: tx },
-    );
+    await this.model.sequelize.query(APPEND_DS_QUERY(schemaTable, [item]), tx && {transaction: tx});
   }
 
   async bulkRemove<K extends MetadataKey>(keys: K[], tx: Transaction): Promise<void> {
     await this.model.destroy({
-      where: { key: { [Op.in]: keys } },
-      transaction: tx
+      where: {key: {[Op.in]: keys}},
+      transaction: tx,
     });
   }
 }

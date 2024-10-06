@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {Transaction} from '@subql/x-sequelize';
 import {isEqual, last} from 'lodash';
 import {NodeConfig} from '../configure';
 import {Header, IBlock} from '../indexer/types';
@@ -27,8 +28,8 @@ export interface IUnfinalizedBlocksService<B> extends IUnfinalizedBlocksServiceU
   init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined>;
   processUnfinalizedBlocks(block: IBlock<B> | undefined): Promise<number | undefined>;
   processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined>;
-  resetUnfinalizedBlocks(): void;
-  resetLastFinalizedVerifiedHeight(): void;
+  resetUnfinalizedBlocks(tx?: Transaction): Promise<void>;
+  resetLastFinalizedVerifiedHeight(tx?: Transaction): Promise<void>;
   getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks>;
 }
 
@@ -69,10 +70,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return this._finalizedHeader;
   }
 
-  constructor(
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly storeCache: StoreCacheService
-  ) {}
+  constructor(protected readonly nodeConfig: NodeConfig, protected readonly storeCache: StoreCacheService) {}
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
@@ -94,8 +92,8 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
         logger.info(`Successful rewind to block ${rewindHeight}!`);
         return rewindHeight;
       } else {
-        this.resetUnfinalizedBlocks();
-        this.resetLastFinalizedVerifiedHeight();
+        await this.resetUnfinalizedBlocks();
+        await this.resetLastFinalizedVerifiedHeight();
       }
     }
   }
@@ -106,14 +104,14 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   async processUnfinalizedBlockHeader(header?: Header): Promise<number | undefined> {
     if (header) {
-      this.registerUnfinalizedBlock(header);
+      await this.registerUnfinalizedBlock(header);
     }
 
     const forkedHeader = await this.hasForked();
 
     if (!forkedHeader) {
       // Remove blocks that are now confirmed finalized
-      this.deleteFinalizedBlock();
+      await this.deleteFinalizedBlock();
     } else {
       // Get the last unfinalized block that is now finalized
       return this.getLastCorrectFinalizedBlock(forkedHeader);
@@ -133,7 +131,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     this.finalizedHeader = header;
   }
 
-  private registerUnfinalizedBlock(header: Header): void {
+  private async registerUnfinalizedBlock(header: Header): Promise<void> {
     if (header.blockHeight <= this.finalizedBlockNumber) return;
 
     // Ensure order
@@ -146,14 +144,14 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     }
 
     this.unfinalizedBlocks.push(header);
-    this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
+    await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
   }
 
-  private deleteFinalizedBlock(): void {
+  private async deleteFinalizedBlock(): Promise<void> {
     if (this.lastCheckedBlockHeight !== undefined && this.lastCheckedBlockHeight < this.finalizedBlockNumber) {
       this.removeFinalized(this.finalizedBlockNumber);
-      this.saveLastFinalizedVerifiedHeight(this.finalizedBlockNumber);
-      this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
+      await this.saveLastFinalizedVerifiedHeight(this.finalizedBlockNumber);
+      await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
     }
     this.lastCheckedBlockHeight = this.finalizedBlockNumber;
   }
@@ -282,21 +280,21 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     throw new Error('Unable to find a POI block with matching block hash');
   }
 
-  private saveUnfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks): void {
+  private async saveUnfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks): Promise<void> {
     return this.storeCache.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, JSON.stringify(unfinalizedBlocks));
   }
 
-  private saveLastFinalizedVerifiedHeight(height: number): void {
+  private async saveLastFinalizedVerifiedHeight(height: number): Promise<void> {
     return this.storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, height);
   }
 
-  resetUnfinalizedBlocks(): void {
-    this.storeCache.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, '[]');
+  async resetUnfinalizedBlocks(tx?: Transaction): Promise<void> {
+    await this.storeCache.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, '[]', tx);
     this.unfinalizedBlocks = [];
   }
 
-  resetLastFinalizedVerifiedHeight(): void {
-    return this.storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, null as any);
+  async resetLastFinalizedVerifiedHeight(tx?: Transaction): Promise<void> {
+    return this.storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, null as any, tx);
   }
 
   //string should be jsonb object

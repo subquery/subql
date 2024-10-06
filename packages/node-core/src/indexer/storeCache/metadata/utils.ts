@@ -1,15 +1,16 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { DatasourceParams } from "../../dynamic-ds.service";
-import { MetadataKeys } from "../../entities";
+import {DatasourceParams} from '../../dynamic-ds.service';
+import {MetadataKeys} from '../../entities';
 
 export type MetadataKey = keyof MetadataKeys;
 export const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
 export type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
 
+export const METADATA_ENTITY_NAME = '_metadata';
 
-type SchemaTable = string | { tableName: string, schema: string, delimiter: string };
+type SchemaTable = string | {tableName: string; schema: string; delimiter: string};
 
 export function INCREMENT_QUERY(schemaTable: SchemaTable, key: MetadataKey, amount = 1): string {
   return `INSERT INTO ${schemaTable} (key, value, "createdAt", "updatedAt")
@@ -17,7 +18,7 @@ export function INCREMENT_QUERY(schemaTable: SchemaTable, key: MetadataKey, amou
     ON CONFLICT (key) DO
   UPDATE SET value = (COALESCE(${schemaTable}.value->>0)::int + '${amount}')::text::jsonb,
     "updatedAt" = CURRENT_TIMESTAMP
-  WHERE ${schemaTable}.key = '${key}';`
+  WHERE ${schemaTable}.key = '${key}';`;
 }
 
 export function APPEND_DS_QUERY(schemaTable: SchemaTable, items: DatasourceParams[]): string {
