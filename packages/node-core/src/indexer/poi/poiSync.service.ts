@@ -14,9 +14,9 @@ import {exitWithError} from '../../process';
 import {hasValue, Queue} from '../../utils';
 import {Metadata, MetadataFactory, MetadataRepo} from '../entities';
 import {PoiFactory, ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
+import {PlainPoiModel} from '../storeCache/poi';
 import {ISubqueryProject} from '../types';
 import {PoiBlock} from './PoiBlock';
-import {PlainPoiModel} from './poiModel';
 
 const GENESIS_PARENT_HASH = hexToU8a('0x00');
 const logger = getLogger('PoiSyncService');

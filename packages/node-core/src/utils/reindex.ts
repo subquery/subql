@@ -74,9 +74,9 @@ export async function reindex(
 
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight),
+        unfinalizedBlockService.resetUnfinalizedBlocks(transaction), // TODO: may not needed for nonfinalized chains
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(transaction), // TODO: may not needed for nonfinalized chains
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all

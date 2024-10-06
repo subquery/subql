@@ -6,9 +6,14 @@ import Pino from 'pino';
 import {getLogger} from '../../logger';
 import {profiler} from '../../profiler';
 import {timeout} from '../../utils/promise';
+import {BaseStoreModelService} from './baseStoreModel.service';
+import {ICachedModelControl} from './types';
 
 @Injectable()
-export abstract class BaseCacheService implements BeforeApplicationShutdown {
+export abstract class BaseCacheService
+  extends BaseStoreModelService<ICachedModelControl>
+  implements BeforeApplicationShutdown
+{
   private pendingFlush?: Promise<void>;
   private queuedFlush?: Promise<void>;
   protected logger: Pino.Logger;
@@ -20,6 +25,7 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   abstract flushExportStores(): Promise<void>;
 
   protected constructor(loggerName: string) {
+    super();
     this.logger = getLogger(loggerName);
   }
 

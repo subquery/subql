@@ -115,7 +115,7 @@ export class SchemaMigrationService {
     const sortedAddedModels = alignModelOrder<GraphQLModelsType[]>(sortedSchemaModels, addedModels);
     const sortedModifiedModels = alignModelOrder<ModifiedModels>(sortedSchemaModels, modifiedModels);
 
-    await this.flushCache(true);
+    await this.storeService.storeCache._flushCache(true);
     const migrationAction = await Migration.create(
       this.sequelize,
       this.storeService,

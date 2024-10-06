@@ -9,9 +9,8 @@ import {sqlIterator} from '../../db';
 import {getLogger} from '../../logger';
 import {PoiRepo} from '../entities';
 import {ProofOfIndex, ProofOfIndexHuman, SyncedProofOfIndex} from '../entities/Poi.entity';
-import {PlainPoiModel} from '../poi';
-import {StoreCacheService} from '../storeCache';
-import {CachePoiModel} from '../storeCache/cachePoi';
+import {IStoreModelService} from '../storeCache';
+import {IPoi, CachePoiModel, PlainPoiModel} from '../storeCache/poi';
 
 const logger = getLogger('PoiService');
 
@@ -25,10 +24,7 @@ export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
   private _poiRepo?: CachePoiModel;
 
-  constructor(
-    protected readonly nodeConfig: NodeConfig,
-    private storeCache: StoreCacheService
-  ) {}
+  constructor(protected readonly nodeConfig: NodeConfig, private storeCache: IStoreModelService) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
@@ -94,7 +90,7 @@ export class PoiService implements OnApplicationShutdown {
       });
 
       // Drop previous keys in metadata
-      this.storeCache.metadata.bulkRemove(['blockOffset', 'latestPoiWithMmr', 'lastPoiHeight']);
+      await this.storeCache.metadata.bulkRemove(['blockOffset', 'latestPoiWithMmr', 'lastPoiHeight']);
 
       const queries: string[] = [];
 
@@ -176,12 +172,12 @@ export class PoiService implements OnApplicationShutdown {
       // This indicates reindex height is less than genesis poi height
       // And genesis poi has been remove from `batchDeletePoi`
       if (!genesisPoi) {
-        this.storeCache.metadata.bulkRemove(['latestSyncedPoiHeight']);
+        await this.storeCache.metadata.bulkRemove(['latestSyncedPoiHeight'], transaction);
       } else {
-        this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight);
+        await this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight, transaction);
       }
     }
-    this.storeCache.metadata.bulkRemove(['lastCreatedPoiHeight']);
+    await this.storeCache.metadata.bulkRemove(['lastCreatedPoiHeight'], transaction);
   }
 }
 
@@ -192,9 +188,8 @@ async function batchDeletePoi(
   targetBlockHeight: number,
   batchSize = 10000
 ): Promise<void> {
-  let completed = false;
   // eslint-disable-next-line no-constant-condition
-  while (!completed) {
+  while (true) {
     try {
       const recordsToDelete = await model.findAll({
         transaction,
@@ -207,7 +202,6 @@ async function batchDeletePoi(
       });
       if (recordsToDelete.length === 0) {
         break;
-        completed = true;
       }
       logger.debug(`Found Poi recordsToDelete ${recordsToDelete.length}`);
       if (recordsToDelete.length) {
