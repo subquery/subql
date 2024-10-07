@@ -2,7 +2,7 @@
 import {Entity, FunctionPropertyNames, FieldsExpression, GetOptions } from "@subql/types-core";
 import assert from 'assert';
 <%if (props.importJsonInterfaces.length !== 0) { %>
-import {<% props.importJsonInterfaces.forEach(function(interface){ %>
+import { <% props.importJsonInterfaces.forEach(function(interface){ %>
     <%= interface %>,
 <% }); %>} from '../interfaces';
 <% } %>
@@ -11,7 +11,7 @@ import {<% props.importEnums.forEach(function(e){ %>
     <%= e %>,
 <% }); %>} from '../enums';<% } %>
 
-export type <%= props.className %>Props = Omit<<%=props.className %>, NonNullable<FunctionPropertyNames<<%=props.className %>>>| '_name'>;
+export type <%= props.className %>Props = Omit<<%=props.className %>, NonNullable<FunctionPropertyNames<<%=props.className %>>> | '_name'>;
 
 export class <%= props.className %> implements Entity {
 
@@ -30,18 +30,18 @@ export class <%= props.className %> implements Entity {
         return '<%=props.entityName %>';
     }
 
-    async save(): Promise<void>{
+    async save(): Promise<void> {
         let id = this.id;
         assert(id !== null, "Cannot save <%=props.className %> entity without an ID");
         await store.set('<%=props.entityName %>', id.toString(), this);
     }
 
-    static async remove(id:string): Promise<void>{
+    static async remove(id: string): Promise<void> {
         assert(id !== null, "Cannot remove <%=props.className %> entity without an ID");
         await store.remove('<%=props.entityName %>', id.toString());
     }
 
-    static async get(id:string): Promise<<%=props.className %> | undefined>{
+    static async get(id: string): Promise<<%=props.className %> | undefined> {
         assert((id !== null && id !== undefined), "Cannot get <%=props.className %> entity without an ID");
         const record = await store.get('<%=props.entityName %>', id.toString());
         if (record) {
@@ -51,17 +51,21 @@ export class <%= props.className %> implements Entity {
         }
     }
 <% props.indexedFields.forEach(function(field){ %>
-    static async getBy<%=helper.upperFirst(field.name) %>(<%=field.name %>: <%=field.type %>): Promise<<%=props.className %><%=field.unique ? '' : '[]' %> | undefined>{
-      <% if (field.unique) {%>
-      const record = await store.getOneByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
-      if (record) {
-          return this.create(record as <%= props.className %>Props);
-      } else {
-          return;
-      }
-      <% } else { %>const records = await store.getByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
-      return records.map(record => this.create(record as <%= props.className %>Props));<% }%>
+    <% if (field.unique) {%>
+
+    static async getBy<%=helper.upperFirst(field.name) %>(<%=field.name %>: <%=field.type %>): Promise<<%=props.className %> | undefined> {
+        const record = await store.getOneByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
+        if (record) {
+            return this.create(record as <%= props.className %>Props);
+        } else {
+            return;
+        }
     }
+    <% } else { %>static async getBy<%=helper.upperFirst(field.name) %>(<%=field.name %>: <%=field.type %>, options: GetOptions<<%=props.className %>>): Promise<<%=props.className %>[]> {
+        const records = await store.getByField<<%=props.className %>>('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>, options);
+        return records.map(record => this.create(record as <%= props.className %>Props));
+    }
+    <% }%>
 <% }); %>
 
     /**
@@ -69,8 +73,8 @@ export class <%= props.className %> implements Entity {
      *
      * ⚠️ This function will first search cache data followed by DB data. Please consider this when using order and offset options.⚠️
      * */
-    static async getByFields(filter: FieldsExpression<<%= props.className %>Props>[], options?: GetOptions<<%= props.className %>Props>): Promise<<%=props.className %>[]> {
-        const records = await store.getByFields('<%=props.entityName %>', filter, options);
+    static async getByFields(filter: FieldsExpression<<%= props.className %>Props>[], options: GetOptions<<%= props.className %>Props>): Promise<<%=props.className %>[]> {
+        const records = await store.getByFields<<%=props.className %>>('<%=props.entityName %>', filter, options);
         return records.map(record => this.create(record as <%= props.className %>Props));
     }
 
