@@ -45,7 +45,7 @@ export class CachedModel<
     T extends {id: string; __block_range?: (number | null)[] | Fn} = {
       id: string;
       __block_range?: (number | null)[] | Fn;
-    },
+    }
   >
   extends Cacheable
   implements ICachedModel<T>, ICachedModelControl
@@ -352,16 +352,13 @@ export class CachedModel<
   }
 
   private filterRemoveRecordByHeight(blockHeight: number, lessEqt: boolean): Record<string, RemoveValue> {
-    return Object.entries(this.removeCache).reduce(
-      (acc, [key, value]) => {
-        if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
-          acc[key] = value;
-        }
+    return Object.entries(this.removeCache).reduce((acc, [key, value]) => {
+      if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
+        acc[key] = value;
+      }
 
-        return acc;
-      },
-      {} as Record<string, RemoveValue>
-    );
+      return acc;
+    }, {} as Record<string, RemoveValue>);
   }
 
   private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {
