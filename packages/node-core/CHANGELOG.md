@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Issues with setting a large block range for bypass blocks (#2566)
+- Test runner not setting lastProcessedHeight leading to data not being flushed (#2569)
 
 ## [14.1.5] - 2024-09-25
 ### Changed

@@ -6,6 +6,11 @@ import {TestRunner} from './test.runner';
 
 jest.mock('@subql/x-sequelize');
 
+const mockStoreCache = {
+  flushCache: jest.fn().mockResolvedValue(undefined),
+  metadata: {set: jest.fn()},
+};
+
 describe('TestRunner', () => {
   let testRunner: TestRunner<any, any, any, any>;
   let sequelizeMock: jest.Mocked<Sequelize>;
@@ -22,7 +27,7 @@ describe('TestRunner', () => {
     storeServiceMock = {
       setBlockHeight: jest.fn(),
       getStore: jest.fn().mockReturnValue({}),
-      storeCache: {flushCache: jest.fn().mockResolvedValue(undefined)},
+      storeCache: mockStoreCache,
     };
 
     sandboxMock = {
@@ -83,7 +88,7 @@ describe('TestRunner', () => {
     (testRunner as any).storeService = {
       getStore: () => storeMock,
       setBlockHeight: jest.fn(),
-      storeCache: {flushCache: jest.fn().mockResolvedValue(undefined)},
+      storeCache: mockStoreCache,
     } as any;
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
@@ -118,7 +123,7 @@ describe('TestRunner', () => {
     (testRunner as any).storeService = {
       getStore: () => storeMock,
       setBlockHeight: jest.fn(),
-      storeCache: {flushCache: jest.fn().mockResolvedValue(undefined)},
+      storeCache: mockStoreCache,
     } as any;
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
@@ -175,7 +180,7 @@ describe('TestRunner', () => {
     (testRunner as any).storeService = {
       getStore: () => storeMock,
       setBlockHeight: jest.fn(),
-      storeCache: {flushCache: jest.fn().mockResolvedValue(undefined)},
+      storeCache: mockStoreCache,
     } as any;
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);

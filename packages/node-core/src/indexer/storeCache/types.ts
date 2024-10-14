@@ -24,7 +24,7 @@ export interface ICachedModelControl {
   isFlushable: boolean;
   hasAssociations?: boolean;
   flushableRecordCounter: number;
-  flush(tx: Transaction, blockHeight?: number): Promise<void>;
+  flush(tx: Transaction, blockHeight: number): Promise<void>;
   flushOperation?(i: number, tx: Transaction): Promise<void>;
   /**
    *

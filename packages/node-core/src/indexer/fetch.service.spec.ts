@@ -326,7 +326,7 @@ describe('Fetch Service', () => {
 
     await fetchService.init(1);
 
-    expect((fetchService as any).getDatasourceBypassBlocks()).toEqual([`301-500`]);
+    expect((fetchService as any).getDatasourceBypassBlocks()).toEqual([`301-499`]);
   });
 
   it('checks chain heads at an interval', async () => {

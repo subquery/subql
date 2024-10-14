@@ -57,6 +57,8 @@ export class TestRunner<A, SA, B, DS> {
       const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
 
       this.storeService.setBlockHeight(test.blockHeight);
+      // Ensure a block height is set so that data is flushed correctly
+      this.storeService.storeCache.metadata.set('lastProcessedHeight', test.blockHeight - 1);
       const store = this.storeService.getStore();
       sandbox.freeze(store, 'store');
 
@@ -110,7 +112,9 @@ export class TestRunner<A, SA, B, DS> {
                 return value;
               };
               failedAttributes.push(
-                `\t\tattribute: "${attr}":\n\t\t\texpected: "${fmtValue(expectedAttr)}"\n\t\t\tactual:   "${fmtValue(actualAttr)}"\n`
+                `\t\tattribute: "${attr}":\n\t\t\texpected: "${fmtValue(expectedAttr)}"\n\t\t\tactual:   "${fmtValue(
+                  actualAttr
+                )}"\n`
               );
             }
           });
