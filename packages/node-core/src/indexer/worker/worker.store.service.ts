@@ -1,14 +1,23 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Store, FieldsExpression, GetOptions} from '@subql/types-core';
+import {Store, FieldsExpression, GetOptions, Entity} from '@subql/types-core';
 import {unwrapProxyArgs} from './utils';
 
 export type HostStore = {
   // This matches the store interface
   storeGet: (entity: string, id: string) => Promise<any | null>;
-  storeGetByField: (entity: string, field: string, value: any, options?: GetOptions<any>) => Promise<any[]>;
-  storeGetByFields: (entity: string, filter: FieldsExpression<any>[], options?: GetOptions<any>) => Promise<any[]>;
+  storeGetByField: <T extends Entity>(
+    entity: string,
+    field: keyof T,
+    value: any,
+    options: GetOptions<T>
+  ) => Promise<T[]>;
+  storeGetByFields: <T extends Entity>(
+    entity: string,
+    filter: FieldsExpression<T>[],
+    options: GetOptions<T>
+  ) => Promise<T[]>;
   storeGetOneByField: (entity: string, field: string, value: any) => Promise<any | null>;
   storeSet: (entity: string, id: string, data: any) => Promise<void>;
   storeBulkCreate: (entity: string, data: any[]) => Promise<void>;
@@ -48,8 +57,8 @@ export const hostStoreToStore = (host: HostStore): Store => {
 export function storeHostFunctions(store: Store): HostStore {
   return {
     storeGet: store.get.bind(store),
-    storeGetByField: store.getByField.bind(store),
-    storeGetByFields: store.getByFields.bind(store),
+    storeGetByField: store.getByField.bind<any>(store),
+    storeGetByFields: store.getByFields.bind<any>(store),
     storeGetOneByField: store.getOneByField.bind(store),
     storeSet: store.set.bind(store),
     storeBulkCreate: store.bulkCreate.bind(store),
