@@ -91,7 +91,7 @@ export abstract class BaseProjectService<
     return this.storeService.historical;
   }
 
-  private async getExistingProjectSchema(): Promise<string | undefined> {
+  protected async getExistingProjectSchema(): Promise<string | undefined> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
@@ -136,14 +136,13 @@ export abstract class BaseProjectService<
         void this.poiSyncService.syncPoi(undefined);
       }
 
+      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
       // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
       const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
       if (reindexedUnfinalized !== undefined) {
         this._startHeight = reindexedUnfinalized;
       }
-
-      const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
 
       if (reindexedUpgrade !== undefined) {
         this._startHeight = reindexedUpgrade;
