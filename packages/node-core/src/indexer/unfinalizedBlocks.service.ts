@@ -69,10 +69,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return this._finalizedHeader;
   }
 
-  constructor(
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly storeCache: StoreCacheService
-  ) {}
+  constructor(protected readonly nodeConfig: NodeConfig, protected readonly storeCache: StoreCacheService) {}
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
