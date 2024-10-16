@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issues with setting a large block range for bypass blocks (#2566)
 - Test runner not setting lastProcessedHeight leading to data not being flushed (#2569)
 - Unable to rewind unfinalized blocks on startup (#2570)
+- Store `getByFields` returning removed cache data (#2571)
+
 ### Changed
 - Throw error when store getByField(s) options.limit exceeds queryLimit option (#2567)
 
