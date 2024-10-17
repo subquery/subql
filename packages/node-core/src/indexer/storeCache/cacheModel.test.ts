@@ -373,12 +373,28 @@ describe('cacheModel integration', () => {
     cacheModel = new CachedModel(model, false, new NodeConfig({} as any), () => i++);
   });
 
+  it('behaves as expected with removals', async () => {
+    // Create data but dont flush, this puts it in the cache
+    await setDefaultData('0x01', 1, undefined, false);
+
+    // Remove the data, this could happen at any block > 1 but before flushing.
+    cacheModel.remove('0x01', 1);
+
+    // The result should be undefined as it will be marked as removed
+    const res0 = await cacheModel.get('0x01');
+    expect(res0).toBeUndefined();
+
+    // The data will still be in the set cache but it should not be included in the result
+    const res = await cacheModel.getByFields([], {offset: 0, limit: 10, orderBy: 'selfStake', orderDirection: 'ASC'});
+    expect(res).toEqual([]);
+  });
+
   afterAll(async () => {
     await sequelize.dropSchema(schema, {logging: false});
     await sequelize.close();
   });
 
-  async function setDefaultData(id: string, height: number, data?: any): Promise<void> {
+  async function setDefaultData(id: string, height: number, data?: any, flushData = true): Promise<void> {
     cacheModel.set(
       id,
       data ?? {
@@ -390,7 +406,9 @@ describe('cacheModel integration', () => {
       },
       height
     );
-    await flush(height + 1);
+    if (flushData) {
+      await flush(height + 1);
+    }
   }
 
   describe('cached data and db data compare', () => {

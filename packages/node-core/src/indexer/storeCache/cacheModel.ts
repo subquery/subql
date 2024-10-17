@@ -166,6 +166,7 @@ export class CachedModel<
       [(value: SetValueModel<T>) => value.getLatest()?.data?.[fullOptions.orderBy]],
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
     )
+      .filter((value) => !value.getLatest()?.removed) // Ensure the data has not been marked for removal
       .filter((value) => value.matchesFields(filters)) // This filters out any removed/undefined
       .map((value) => value.getLatest()?.data)
       .map((value) => cloneDeep(value)) as T[];
@@ -216,9 +217,10 @@ export class CachedModel<
   }
 
   set(id: string, data: T, blockHeight: number): void {
-    if (this.setCache[id] === undefined) {
-      this.setCache[id] = new SetValueModel();
+    if (data === undefined || data === null) {
+      throw new Error('Cannot set undefined or null data. If you wish to remove data, use remove()');
     }
+    this.setCache[id] ??= new SetValueModel();
     const copiedData = cloneDeep(data);
     this.setCache[id].set(copiedData, blockHeight, this.getNextStoreOperationIndex());
     // Experimental, this means getCache keeps duplicate data from setCache,
