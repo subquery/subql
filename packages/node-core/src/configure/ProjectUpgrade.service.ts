@@ -121,13 +121,20 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   private onProjectUpgrade?: OnProjectUpgradeCallback<P>;
   private migrationService?: SchemaMigrationService;
 
-  private constructor(private _projects: BlockHeightMap<P>, currentHeight: number, private _isRewindable = true) {
+  private constructor(
+    private _projects: BlockHeightMap<P>,
+    currentHeight: number,
+    private _isRewindable = true
+  ) {
     logger.info(
       `Projects: ${JSON.stringify(
-        [..._projects.getAll().entries()].reduce((acc, curr) => {
-          acc[curr[0]] = curr[1].id;
-          return acc;
-        }, {} as Record<number, string>),
+        [..._projects.getAll().entries()].reduce(
+          (acc, curr) => {
+            acc[curr[0]] = curr[1].id;
+            return acc;
+          },
+          {} as Record<number, string>
+        ),
         undefined,
         2
       )}`
@@ -150,16 +157,10 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       return;
     }
     this.#initialized = true;
-    this.#storeCache = storeService.storeCache;
+    this.#storeCache = storeService.storeModel;
     this.config = config;
 
-    this.migrationService = new SchemaMigrationService(
-      sequelize,
-      storeService,
-      storeService.storeCache._flushCache.bind(storeService.storeCache),
-      schema,
-      config
-    );
+    this.migrationService = new SchemaMigrationService(sequelize, storeService, schema, config);
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 

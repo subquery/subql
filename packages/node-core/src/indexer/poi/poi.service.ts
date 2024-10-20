@@ -22,9 +22,12 @@ const logger = getLogger('PoiService');
 @Injectable()
 export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
-  private _poiRepo?: CachePoiModel;
+  private _poiRepo?: IPoi;
 
-  constructor(protected readonly nodeConfig: NodeConfig, private storeCache: IStoreModelService) {}
+  constructor(
+    protected readonly nodeConfig: NodeConfig,
+    private storeCache: IStoreModelService
+  ) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
@@ -40,7 +43,7 @@ export class PoiService implements OnApplicationShutdown {
     };
   }
 
-  get poiRepo(): CachePoiModel {
+  get poiRepo(): IPoi {
     if (!this._poiRepo) {
       throw new Error(`No poi repo inited`);
     }
@@ -48,7 +51,12 @@ export class PoiService implements OnApplicationShutdown {
   }
 
   get plainPoiRepo(): PlainPoiModel {
-    return this.poiRepo.plainPoiModel;
+    if (this.poiRepo instanceof CachePoiModel) {
+      return this.poiRepo.plainPoiModel;
+    } else if (this.poiRepo instanceof PlainPoiModel) {
+      return this.poiRepo;
+    }
+    throw new Error(`No plainPoiRepo repo inited`);
   }
 
   /**

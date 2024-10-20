@@ -79,7 +79,7 @@ export class StoreService {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    readonly storeCache: IStoreModelService,
+    readonly storeModel: IStoreModelService,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 
@@ -125,7 +125,7 @@ export class StoreService {
       this._lastTimeDbSizeChecked = Date.now();
       return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
     } else {
-      return this.storeCache.metadata.find('dbSize').then((cachedDbSize) => {
+      return this.storeModel.metadata.find('dbSize').then((cachedDbSize) => {
         if (cachedDbSize !== undefined) {
           return cachedDbSize;
         } else {
@@ -177,9 +177,9 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
+    this.storeModel.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
 
-    this._metadataModel = this.storeCache.metadata;
+    this._metadataModel = this.storeModel.metadata;
 
     await this.initHotSchemaReloadQueries(schema);
 
@@ -199,13 +199,7 @@ export class StoreService {
       On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
       every start up is a migration
        */
-      const schemaMigrationService = new SchemaMigrationService(
-        this.sequelize,
-        this,
-        this.storeCache._flushCache.bind(this.storeCache),
-        schema,
-        this.config
-      );
+      const schemaMigrationService = new SchemaMigrationService(this.sequelize, this, schema, this.config);
 
       await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
 
@@ -330,10 +324,13 @@ export class StoreService {
           {type: QueryTypes.SELECT}
         );
 
-        const store = res.reduce(function (total, current) {
-          total[current.key] = current.value;
-          return total;
-        }, {} as {[key: string]: string | boolean});
+        const store = res.reduce(
+          function (total, current) {
+            total[current.key] = current.value;
+            return total;
+          },
+          {} as {[key: string]: string | boolean}
+        );
 
         const useHistorical =
           store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);
@@ -476,7 +473,7 @@ group by
   }
 
   getStore(): Store {
-    return new Store(this.config, this.storeCache, this);
+    return new Store(this.config, this.storeModel, this);
   }
 }
 

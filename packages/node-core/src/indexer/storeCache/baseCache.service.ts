@@ -30,7 +30,7 @@ export abstract class BaseCacheService
   }
 
   @profiler()
-  async flushCache(forceFlush?: boolean): Promise<void> {
+  async flushData(forceFlush?: boolean): Promise<void> {
     const flushCacheGuarded = async (forceFlush?: boolean): Promise<void> => {
       // When we force flush, this will ensure not interrupt current block flushing,
       // Force flush will continue after last block flush tx committed.
@@ -55,12 +55,12 @@ export abstract class BaseCacheService
     return this.queuedFlush;
   }
 
-  async resetCache(): Promise<void> {
+  async resetData(): Promise<void> {
     await this._resetCache();
   }
 
   async beforeApplicationShutdown(): Promise<void> {
-    await timeout(this.flushCache(true), 60, 'Before shutdown flush cache timeout');
+    await timeout(this.flushData(true), 60, 'Before shutdown flush cache timeout');
     this.logger.info(`Force flush cache successful!`);
     await this.flushExportStores();
     this.logger.info(`Force flush exports successful!`);

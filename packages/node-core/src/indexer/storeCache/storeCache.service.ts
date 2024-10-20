@@ -54,7 +54,7 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelSe
       this.schedulerRegistry.addInterval(
         'storeFlushInterval',
         setInterval(() => {
-          this.flushCache(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
+          this.flushData(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
         }, this.config.storeFlushInterval * 1000)
       );
     }
@@ -177,7 +177,7 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelSe
   async flushAndWaitForCapacity(forceFlush?: boolean): Promise<void> {
     const flushableRecords = this.flushableRecords;
 
-    const pendingFlush = this.flushCache(forceFlush);
+    const pendingFlush = this.flushData(forceFlush);
 
     if (flushableRecords >= this.cacheUpperLimit) {
       await pendingFlush;
@@ -205,12 +205,12 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelSe
       });
     } else {
       // Flush all data from cache and wait
-      await this.flushCache(false);
+      await this.flushData(false);
     }
 
     if (dataSourcesCompleted) {
       const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-      await this.flushCache(false);
+      await this.flushData(false);
       exitWithError(msg, logger, 0);
     }
   }

@@ -22,7 +22,10 @@ export class HealthService {
   private healthTimeout: number;
   private indexerHealthy?: boolean;
 
-  constructor(protected nodeConfig: NodeConfig, private storeService: StoreService) {
+  constructor(
+    protected nodeConfig: NodeConfig,
+    private storeService: StoreService
+  ) {
     this.healthTimeout = Math.max(DEFAULT_TIMEOUT, this.nodeConfig.timeout * 1000);
     this.blockTime = Math.max(DEFAULT_BLOCK_TIME, this.nodeConfig.blockTime);
   }
@@ -39,7 +42,7 @@ export class HealthService {
     }
 
     if (healthy !== this.indexerHealthy) {
-      await this.storeService.storeCache.metadata.set('indexerHealthy', healthy);
+      await this.storeService.storeModel.metadata.set('indexerHealthy', healthy);
       this.indexerHealthy = healthy;
     }
   }

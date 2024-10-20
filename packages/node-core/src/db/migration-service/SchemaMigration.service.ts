@@ -29,7 +29,6 @@ export class SchemaMigrationService {
   constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
-    private flushCache: (flushAll?: boolean) => Promise<void>,
     private dbSchema: string,
     private config: NodeConfig,
     private dbType: SUPPORT_DB = SUPPORT_DB.postgres
@@ -115,7 +114,7 @@ export class SchemaMigrationService {
     const sortedAddedModels = alignModelOrder<GraphQLModelsType[]>(sortedSchemaModels, addedModels);
     const sortedModifiedModels = alignModelOrder<ModifiedModels>(sortedSchemaModels, modifiedModels);
 
-    await this.storeService.storeCache._flushCache(true);
+    await this.storeService.storeModel.flushData?.(true);
     const migrationAction = await Migration.create(
       this.sequelize,
       this.storeService,
@@ -184,10 +183,10 @@ export class SchemaMigrationService {
       const modelChanges = await migrationAction.run(transaction);
 
       // Update any relevant application state so the right models are used
-      this.storeService.storeCache.updateModels(modelChanges);
+      this.storeService.storeModel.updateModels(modelChanges);
       await this.storeService.updateModels(this.dbSchema, getAllEntitiesRelations(nextSchema));
 
-      await this.flushCache();
+      await this.storeService.storeModel.flushData?.(true);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
       throw e;

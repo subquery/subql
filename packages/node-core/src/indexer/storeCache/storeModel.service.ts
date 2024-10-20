@@ -5,6 +5,7 @@ import {Sequelize, ModelStatic} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
+import {MetadataRepo, PoiRepo} from '../entities';
 import {StoreService} from '../store.service';
 import {BaseStoreModelService} from './baseStoreModel.service';
 import {CsvStoreService} from './csvStore.service';
@@ -19,6 +20,8 @@ export interface IStoreModelService {
   poi: IPoi | null;
   metadata: IMetadata;
 
+  init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void;
+
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 
   // addExporter(entity: string, exporterStore: CsvStoreService): void;
@@ -26,12 +29,20 @@ export interface IStoreModelService {
   applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void>;
 
   updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
+
+  resetData?(): Promise<void>;
+
+  flushData?(forceFlush?: boolean): Promise<void>;
 }
 
 const logger = getLogger('PlainStoreModelService');
 
 export class PlainStoreModelService extends BaseStoreModelService implements IStoreModelService {
-  constructor(private sequelize: Sequelize, private config: NodeConfig, private storeService: StoreService) {
+  constructor(
+    private sequelize: Sequelize,
+    private config: NodeConfig,
+    private storeService: StoreService
+  ) {
     super();
   }
 

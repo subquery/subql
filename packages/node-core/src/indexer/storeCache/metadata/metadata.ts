@@ -22,6 +22,8 @@ export interface IMetadata {
   setNewDynamicDatasource(item: DatasourceParams, tx?: Transaction): Promise<void>;
 
   bulkRemove<K extends MetadataKey>(keys: K[], tx?: Transaction): Promise<void>;
+
+  flush?(tx: Transaction, blockHeight: number): Promise<void>;
 }
 
 export class MetadataModel implements IMetadata {

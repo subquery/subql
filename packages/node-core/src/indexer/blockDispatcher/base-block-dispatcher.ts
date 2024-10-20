@@ -218,7 +218,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
     await this.storeModelService.applyPendingChanges(height, !this.projectService.hasDataSourcesAfterHeight(height));
 
-    // if (this.storeModelService instanceof StoreCacheService) {
+    // if (this.storeModelService instanceof StorCeacheService) {
     //   if (this.nodeConfig.storeCacheAsync) {
     //     // Flush all completed block data and don't wait
     //     await this.storeModelService.flushAndWaitForCapacity(false)?.catch((e) => {

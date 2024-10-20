@@ -51,7 +51,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     }
     await initDbSchema(schema, this.storeService);
 
-    this._metadataRepo = this.storeService.storeCache.metadata;
+    this._metadataRepo = this.storeService.storeModel.metadata;
 
     await this.dynamicDsService.init(this.metadataRepo);
 
@@ -119,7 +119,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.nodeConfig.proofOfIndex ? this.poiService : undefined,
       this.forceCleanService
     );
-    await this.storeService.storeCache.flushCache(true);
+    await this.storeService.storeModel.flushData?.(true);
     monitorWrite(`- Reindex completed`);
   }
 }

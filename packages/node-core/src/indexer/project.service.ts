@@ -106,7 +106,7 @@ export abstract class BaseProjectService<
       await this.storeService.initCoreTables(this._schema);
       await this.ensureMetadata();
       // DynamicDsService is dependent on metadata so we need to ensure it exists first
-      await this.dynamicDsService.init(this.storeService.storeCache.metadata);
+      await this.dynamicDsService.init(this.storeService.storeModel.metadata);
 
       /**
        * WARNING: The order of the following steps is very important.
@@ -146,7 +146,7 @@ export abstract class BaseProjectService<
       }
 
       // Flush any pending operations to set up DB
-      await this.storeService.storeCache.flushCache(true);
+      await this.storeService.storeModel.flushData?.(true);
     } else {
       assert(startHeight, 'ProjectService must be initalized with a start height in workers');
       this.projectUpgradeService.initWorker(startHeight, this.handleProjectChange.bind(this));
@@ -195,7 +195,7 @@ export abstract class BaseProjectService<
   }
 
   private async ensureMetadata(): Promise<void> {
-    const metadata = this.storeService.storeCache.metadata;
+    const metadata = this.storeService.storeModel.metadata;
 
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.apiService.networkMeta);
 
@@ -269,7 +269,7 @@ export abstract class BaseProjectService<
   }
 
   protected async getLastProcessedHeight(): Promise<number | undefined> {
-    return this.storeService.storeCache.metadata.find('lastProcessedHeight');
+    return this.storeService.storeModel.metadata.find('lastProcessedHeight');
   }
 
   private async nextProcessHeight(): Promise<number | undefined> {

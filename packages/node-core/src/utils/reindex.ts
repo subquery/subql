@@ -56,12 +56,13 @@ export async function reindex(
     if (!forceCleanService) {
       exitWithError(`ForceCleanService not provided, cannot force clean`, logger);
     }
-    await storeService.storeCache.resetCache();
+    // if DB need rollback? no, because forceCleanService will take care of it
+    await storeService.storeModel.resetData?.();
     await forceCleanService?.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
-    await storeService.storeCache.flushCache(true);
-    await storeService.storeCache.resetCache();
+    await storeService.storeModel.flushData?.(true);
+    await storeService.storeModel.resetData?.();
     const transaction = await sequelize.transaction();
     try {
       /*
@@ -80,7 +81,7 @@ export async function reindex(
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all
-      await storeService.storeCache.metadata.flush(transaction, targetBlockHeight);
+      await storeService.storeModel.metadata.flush?.(transaction, targetBlockHeight);
 
       await transaction.commit();
       logger.info('Reindex Success');

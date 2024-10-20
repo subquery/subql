@@ -27,12 +27,12 @@ type Context = {
 export class Store implements IStore {
   /* These need to explicily be private using JS style private properties in order to not leak these in the sandbox */
   #config: NodeConfig;
-  #storeCache: IStoreModelService;
+  #storeModel: IStoreModelService;
   #context: Context;
 
-  constructor(config: NodeConfig, storeCache: IStoreModelService, context: Context) {
+  constructor(config: NodeConfig, storeModel: IStoreModelService, context: Context) {
     this.#config = config;
-    this.#storeCache = storeCache;
+    this.#storeModel = storeModel;
     this.#context = context;
   }
 
@@ -52,7 +52,7 @@ export class Store implements IStore {
 
   async get<T extends Entity>(entity: string, id: string): Promise<T | undefined> {
     try {
-      const raw = await this.#storeCache.getModel<T>(entity).get(id);
+      const raw = await this.#storeModel.getModel<T>(entity).get(id);
       monitorWrite(`-- [Store][get] Entity ${entity} ID ${id}, data: ${handledStringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
@@ -72,7 +72,7 @@ export class Store implements IStore {
 
       this.#queryLimitCheck('getByField', entity, options);
 
-      const raw = await this.#storeCache
+      const raw = await this.#storeModel
         .getModel<T>(entity)
         .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
       monitorWrite(`-- [Store][getByField] Entity ${entity}, data: ${handledStringify(raw)}`);
@@ -98,7 +98,7 @@ export class Store implements IStore {
 
       this.#queryLimitCheck('getByFields', entity, options);
 
-      const raw = await this.#storeCache.getModel<T>(entity).getByFields(filter, options);
+      const raw = await this.#storeModel.getModel<T>(entity).getByFields(filter, options);
       monitorWrite(`-- [Store][getByFields] Entity ${entity}, data: ${handledStringify(raw)}`);
       return raw.map((v) => EntityClass.create<T>(entity, v, this)) as T[];
     } catch (e) {
@@ -110,7 +110,7 @@ export class Store implements IStore {
     try {
       const indexed = this.#context.isIndexedHistorical(entity, field as string);
       assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
-      const [raw] = await this.#storeCache
+      const [raw] = await this.#storeModel
         .getModel<T>(entity)
         .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], {limit: 1});
       monitorWrite(`-- [Store][getOneByField] Entity ${entity}, data: ${handledStringify(raw)}`);
@@ -122,7 +122,7 @@ export class Store implements IStore {
 
   async set(entity: string, _id: string, data: Entity): Promise<void> {
     try {
-      await this.#storeCache.getModel(entity).set(_id, data, this.#context.blockHeight, this.#context.transaction);
+      await this.#storeModel.getModel(entity).set(_id, data, this.#context.blockHeight, this.#context.transaction);
       monitorWrite(
         `-- [Store][set] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${handledStringify(data)}`
       );
@@ -134,7 +134,7 @@ export class Store implements IStore {
 
   async bulkCreate(entity: string, data: Entity[]): Promise<void> {
     try {
-      await this.#storeCache.getModel(entity).bulkCreate(data, this.#context.blockHeight, this.#context.transaction);
+      await this.#storeModel.getModel(entity).bulkCreate(data, this.#context.blockHeight, this.#context.transaction);
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
@@ -148,7 +148,7 @@ export class Store implements IStore {
 
   async bulkUpdate(entity: string, data: Entity[], fields?: string[]): Promise<void> {
     try {
-      await this.#storeCache
+      await this.#storeModel
         .getModel(entity)
         .bulkUpdate(data, this.#context.blockHeight, fields, this.#context.transaction);
       for (const item of data) {
@@ -164,7 +164,7 @@ export class Store implements IStore {
 
   async remove(entity: string, id: string): Promise<void> {
     try {
-      await this.#storeCache.getModel(entity).bulkRemove([id], this.#context.blockHeight, this.#context.transaction);
+      await this.#storeModel.getModel(entity).bulkRemove([id], this.#context.blockHeight, this.#context.transaction);
       this.#context.operationStack?.put(OperationType.Remove, entity, id);
       monitorWrite(`-- [Store][remove] Entity ${entity}, height: ${this.#context.blockHeight}, id: ${id}`);
     } catch (e) {
@@ -174,7 +174,7 @@ export class Store implements IStore {
 
   async bulkRemove(entity: string, ids: string[]): Promise<void> {
     try {
-      await this.#storeCache.getModel(entity).bulkRemove(ids, this.#context.blockHeight, this.#context.transaction);
+      await this.#storeModel.getModel(entity).bulkRemove(ids, this.#context.blockHeight, this.#context.transaction);
 
       for (const id of ids) {
         this.#context.operationStack?.put(OperationType.Remove, entity, id);
