@@ -173,7 +173,6 @@ export class StoreCacheService extends BaseCacheService {
     try {
       // Get the block height of all data we want to flush up to
       const blockHeight = await this.metadata.find('lastProcessedHeight');
-      assert(blockHeight !== undefined, 'Cannot flush cache without lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
       if (this._useCockroachDb) {

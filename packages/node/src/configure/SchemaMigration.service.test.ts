@@ -40,7 +40,9 @@ describe('SchemaMigration integration tests', () => {
   });
 
   afterAll(async () => {
-    await rimraf(tempDir);
+    if (tempDir) {
+      await rimraf(tempDir);
+    }
     await sequelize?.close();
   });
 
