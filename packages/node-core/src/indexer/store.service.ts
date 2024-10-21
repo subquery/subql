@@ -38,7 +38,8 @@ import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
-import {IMetadata, IStoreModelService} from './storeCache';
+import {ICachedModelControl, IMetadata, IModel, IStoreModelService} from './storeCache';
+import {BaseStoreModelService} from './storeCache/baseStoreModel.service';
 import {StoreOperations} from './StoreOperations';
 import {ISubqueryProject} from './types';
 
@@ -79,7 +80,7 @@ export class StoreService {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    readonly storeModel: IStoreModelService,
+    readonly storeModel: BaseStoreModelService<ICachedModelControl | IModel<any>>,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 

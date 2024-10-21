@@ -56,6 +56,7 @@ export interface IConfig {
   readonly csvOutDir?: string;
   readonly monitorOutDir: string;
   readonly monitorFileSize?: number;
+  readonly cacheDisable?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -326,6 +327,10 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     // If user passed though yarg, we will record monitor file by this size, no matter poi or not
     // if user didn't pass through yarg, we will record monitor file by this default size only when poi is enabled
     return this._config.monitorFileSize ?? this._config.proofOfIndex ? defaultMonitorFileSize : 0;
+  }
+
+  get cacheDisable(): boolean {
+    return this._config.cacheDisable || false;
   }
 
   merge(config: Partial<IConfig>): this {

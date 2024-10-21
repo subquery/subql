@@ -20,8 +20,6 @@ export interface IStoreModelService {
   poi: IPoi | null;
   metadata: IMetadata;
 
-  init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void;
-
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 
   // addExporter(entity: string, exporterStore: CsvStoreService): void;
@@ -29,10 +27,6 @@ export interface IStoreModelService {
   applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void>;
 
   updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
-
-  resetData?(): Promise<void>;
-
-  flushData?(forceFlush?: boolean): Promise<void>;
 }
 
 const logger = getLogger('PlainStoreModelService');
