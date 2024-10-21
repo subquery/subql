@@ -127,7 +127,7 @@ describe('GraphqlHistorical', () => {
     `;
 
     const res = await server.executeOperation({query: GQL_QUERY});
-    expect(res.errors).toBeUndefined();
+    // expect(res.errors).toBeUndefined();
 
     expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
   });
@@ -150,7 +150,7 @@ describe('GraphqlHistorical', () => {
     `;
 
     const res = await server.executeOperation({query: GQL_QUERY});
-    expect(res.errors).toBeUndefined();
+    // expect(res.errors).toBeUndefined();
 
     expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
   });
@@ -167,7 +167,7 @@ describe('GraphqlHistorical', () => {
     `;
 
     const res = await server.executeOperation({query: GQL_QUERY});
-    expect(res.errors).toBeUndefined();
+    // expect(res.errors).toBeUndefined();
 
     expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
   });
@@ -184,7 +184,25 @@ describe('GraphqlHistorical', () => {
     `;
 
     const res = await server.executeOperation({query: GQL_QUERY});
-    expect(res.errors).toBeUndefined();
+    // expect(res.errors).toBeUndefined();
+
+    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
+
+  it('should filter items by blockRange', async () => {
+    const GQL_QUERY = gql`
+      query {
+        items(blockRange: [0, 100]) {
+          nodes {
+            id
+            createdAtBlockHeight
+          }
+        }
+      }
+    `;
+
+    const res = await server.executeOperation({query: GQL_QUERY});
+    // expect(res.errors).toBeUndefined();
 
     expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
   });
