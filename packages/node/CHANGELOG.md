@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump `@subql/node-core` dependency (#347)
+
 ## [5.1.4] - 2024-09-25
 ### Changed
 - Bump common, Added manifest support for query-subgraph.
