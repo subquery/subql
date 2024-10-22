@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.5] - 2024-10-22
 ### Changed
 - Bump `@subql/node-core` dependency (#347)
 
@@ -559,7 +560,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.4...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.5...HEAD
+[5.1.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.4...node-ethereum/5.1.5
 [5.1.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.3...node-ethereum/5.1.4
 [5.1.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.2...node-ethereum/5.1.3
 [5.1.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.1...node-ethereum/5.1.2
