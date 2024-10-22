@@ -15,7 +15,6 @@ import {
   StoreCacheService,
 } from '@subql/node-core';
 import { StellarBlock, SubqlDatasource } from '@subql/types-stellar';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApi } from '../stellar';
 import { calcInterval, stellarBlockToHeader } from '../stellar/utils.stellar';
 import { IStellarBlockDispatcher } from './blockDispatcher';
@@ -37,7 +36,6 @@ export class FetchService extends BaseFetchService<
     private apiService: ApiService,
     nodeConfig: NodeConfig,
     @Inject('IProjectService') projectService: ProjectService,
-    @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: IStellarBlockDispatcher,
     dictionaryService: StellarDictionaryService,
@@ -49,7 +47,6 @@ export class FetchService extends BaseFetchService<
     super(
       nodeConfig,
       projectService,
-      project.network,
       blockDispatcher,
       dictionaryService,
       eventEmitter,

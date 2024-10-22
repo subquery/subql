@@ -2626,7 +2626,7 @@ __metadata:
   resolution: "@subql/common-stellar@workspace:packages/common-stellar"
   dependencies:
     "@stellar/stellar-sdk": ^12.2.0
-    "@subql/common": ^5.1.1
+    "@subql/common": ^5.1.3
     "@subql/types-stellar": "workspace:*"
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
@@ -2639,9 +2639,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:5.1.1, @subql/common@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "@subql/common@npm:5.1.1"
+"@subql/common@npm:5.1.3, @subql/common@npm:^5.1.3":
+  version: 5.1.3
+  resolution: "@subql/common@npm:5.1.3"
   dependencies:
     "@subql/types-core": 1.1.1
     axios: ^0.28.0
@@ -2651,19 +2651,19 @@ __metadata:
     reflect-metadata: ^0.1.14
     semver: ^7.6.3
     update-notifier: ^5.1.0
-  checksum: 7e8eeb5bb0242c178df8f68d38f078799d896837bd260804abcdf44eaa8b2ea1f28823d611d3b1a271e5216d0fc1b4a764a417ad9ac83b5c061e9761cc838ffc
+  checksum: 8946cca78246460c5a9474548b3e83e276fe29e80b4c654213f43ef5c4a4b2f7f4f06c8e124d6b91855084e4afeef0059df33aa8cd7d372c4586b51cc437dbd3
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^14.1.2":
-  version: 14.1.2
-  resolution: "@subql/node-core@npm:14.1.2"
+"@subql/node-core@npm:^14.1.6":
+  version: 14.1.6
+  resolution: "@subql/node-core@npm:14.1.6"
   dependencies:
     "@apollo/client": ^3.11.2
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/common": 5.1.1
+    "@subql/common": 5.1.3
     "@subql/testing": 2.2.1
     "@subql/types": 3.11.2
     "@subql/utils": 2.14.0
@@ -2683,7 +2683,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 6d56fcf203f9d0a54aafd519ed1ba526b23aa798850f2dfc984ded8f5fed4cc17d778f8ba6684e823236da5b2356dad4e6c75ba767101febeeeb2ced80e86c8b
+  checksum: c0096e2567ed3a2aeb09e26a4044e1647948dad583eea07c4f261078ed1001593bd0276ab7a430f711b9ba92a929d333bb206ab624b68ddb55bf7847eba94a74
   languageName: node
   linkType: hard
 
@@ -2699,8 +2699,9 @@ __metadata:
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
     "@stellar/stellar-sdk": ^12.2.0
+    "@subql/common": ^5.1.3
     "@subql/common-stellar": "workspace:*"
-    "@subql/node-core": ^14.1.2
+    "@subql/node-core": ^14.1.6
     "@subql/testing": ^2.2.0
     "@subql/types-stellar": "workspace:*"
     "@types/express": ^4.17.13
@@ -2732,7 +2733,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:1.1.1, @subql/types-core@npm:^1.1.1":
+"@subql/types-core@npm:1.1.1":
   version: 1.1.1
   resolution: "@subql/types-core@npm:1.1.1"
   checksum: d804ba8f9a9a8bbce36e98ef3dd03e33602495e96ca8e04438c38b6631de102772b5f209de17d78657bcacc9c91f9af02dabd68edb8e6e24a2ca6e681e4636fc
@@ -2748,12 +2749,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-core@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@subql/types-core@npm:2.0.0"
+  checksum: cb32c8f1eed13eabee65fb9dd0b4b64435ca18e820f640bd29a3e3a0d4c58692df1163fbc66c2dd29b52faab60b4bd895518c5aad63ec81ade5c250bf580619c
+  languageName: node
+  linkType: hard
+
 "@subql/types-stellar@workspace:*, @subql/types-stellar@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types-stellar@workspace:packages/types"
   dependencies:
     "@stellar/stellar-sdk": ^12.2.0
-    "@subql/types-core": ^1.1.1
+    "@subql/types-core": ^2.0.0
   languageName: unknown
   linkType: soft
 

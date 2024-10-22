@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Bump `@subql/common` and `@subql/node-core` dependency (#85)
+
 ## [4.0.0] - 2024-08-27
 ### Added
 - Support for network endpoint config providing the ability to set headers and rpc batch sizes  (#82)
