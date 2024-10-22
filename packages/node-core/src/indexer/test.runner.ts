@@ -68,7 +68,7 @@ export class TestRunner<A, SA, B, DS> {
 
       try {
         await indexBlock(block, test.handler, this.indexerManager, this.apiService);
-        await this.storeService.storeModel.flushData?.(true);
+        await this.storeService.modelProvider.flushData(true);
       } catch (e: any) {
         logger.warn(`Test: ${test.name} field due to runtime error`, e);
         this.failedTestSummary = {
@@ -132,7 +132,7 @@ export class TestRunner<A, SA, B, DS> {
         }
       }
 
-      await this.storeService.storeModel.flushData?.(true);
+      await this.storeService.modelProvider.flushData(true);
       logger.info(
         `Test: ${test.name} completed with ${chalk.green(`${this.passedTests} passed`)} and ${chalk.red(
           `${this.failedTests} failed`

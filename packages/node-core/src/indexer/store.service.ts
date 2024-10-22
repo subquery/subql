@@ -80,7 +80,7 @@ export class StoreService {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    readonly storeModel: BaseStoreModelService<ICachedModelControl | IModel<any>>,
+    readonly modelProvider: BaseStoreModelService<ICachedModelControl | IModel<any>>,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 
@@ -126,7 +126,7 @@ export class StoreService {
       this._lastTimeDbSizeChecked = Date.now();
       return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
     } else {
-      return this.storeModel.metadata.find('dbSize').then((cachedDbSize) => {
+      return this.modelProvider.metadata.find('dbSize').then((cachedDbSize) => {
         if (cachedDbSize !== undefined) {
           return cachedDbSize;
         } else {
@@ -178,9 +178,9 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    this.storeModel.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
+    this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
 
-    this._metadataModel = this.storeModel.metadata;
+    this._metadataModel = this.modelProvider.metadata;
 
     await this.initHotSchemaReloadQueries(schema);
 
@@ -474,7 +474,7 @@ group by
   }
 
   getStore(): Store {
-    return new Store(this.config, this.storeModel, this);
+    return new Store(this.config, this.modelProvider, this);
   }
 }
 

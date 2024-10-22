@@ -51,10 +51,13 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements IStoreMo
     removedModels.forEach((r) => delete this.cachedModels[r]);
   }
 
-  resetData() {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async resetData() {
     logger.info('No need to resetData');
   }
-  flushData(forceFlush?: boolean) {
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async flushData(forceFlush?: boolean) {
     logger.info('No need to flushData');
   }
 }

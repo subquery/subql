@@ -42,7 +42,7 @@ export class HealthService {
     }
 
     if (healthy !== this.indexerHealthy) {
-      await this.storeService.storeModel.metadata.set('indexerHealthy', healthy);
+      await this.storeService.modelProvider.metadata.set('indexerHealthy', healthy);
       this.indexerHealthy = healthy;
     }
   }

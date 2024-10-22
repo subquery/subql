@@ -114,7 +114,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   #currentHeight: number;
   #currentProject: P;
 
-  #storeCache?: IStoreModelService;
+  #modelProvider?: IStoreModelService;
   #initialized = false;
 
   private config?: NodeConfig;
@@ -157,7 +157,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       return;
     }
     this.#initialized = true;
-    this.#storeCache = storeService.storeModel;
+    this.#modelProvider = storeService.modelProvider;
     this.config = config;
 
     this.migrationService = new SchemaMigrationService(sequelize, storeService, schema, config);
@@ -211,8 +211,11 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   }
 
   private get metadata(): IMetadata {
-    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
-    return this.#storeCache.metadata;
+    assert(
+      this.#modelProvider?.metadata,
+      'Project Upgrades service has not been initialized, unable to update metadata'
+    );
+    return this.#modelProvider.metadata;
   }
 
   async rewind(
