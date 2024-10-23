@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.3.2] - 2024-10-23
+### Changed
+- Bump version with `@subql/common`
+
 ## [4.3.1] - 2024-09-25
 ### Changed
 - Bump common, Added manifest support for query-subgraph.
@@ -189,7 +193,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.3.2...HEAD
+[4.3.2]: https://github.com/subquery/subql/compare/common-substrate/4.3.1...common-substrate/4.3.2
 [4.3.1]: https://github.com/subquery/subql/compare/common-substrate/4.3.0...common-substrate/4.3.1
 [4.3.0]: https://github.com/subquery/subql/compare/common-substrate/4.2.0...common-substrate/4.3.0
 [4.2.0]: https://github.com/subquery/subql/compare/common-substrate/4.1.1...common-substrate/4.2.0
