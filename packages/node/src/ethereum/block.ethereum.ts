@@ -120,7 +120,7 @@ export function isFullBlock(block: BlockContent): block is EthereumBlock {
   // Light etherum block just contains transaction hashes for transactions.
   // If the block has no transactions then both types would be the same
 
-  if (block.transactions.length && block.logs.length) {
+  if (block.transactions.length) {
     return typeof (block as EthereumBlock).transactions[0] !== 'string';
   }
   return false;

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- When there is no log data for fullBlock, it is determined as lightBlock. (#350)
+
 ## [5.1.6] - 2024-10-23
 ### Changed
 - Bump `@subql/common` dependency
