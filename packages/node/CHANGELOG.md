@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.7] - 2024-10-24
 ### Fixed
 - When there is no log data for fullBlock, it is determined as lightBlock. (#350)
 
@@ -567,7 +568,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.6...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.7...HEAD
+[5.1.7]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.6...node-ethereum/5.1.7
 [5.1.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.5...node-ethereum/5.1.6
 [5.1.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.4...node-ethereum/5.1.5
 [5.1.4]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.3...node-ethereum/5.1.4
