@@ -19,13 +19,16 @@ import {CacheMetadataModel} from './metadata';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {CachedModel} from './model';
 import {CachePoiModel, POI_ENTITY_NAME} from './poi';
-import {IStoreModelService} from './storeModel.service';
-import {Exporter, ICachedModelControl} from './types';
+import {Exporter, ICachedModelControl, IStoreModelProvider, FlushPolicy} from './types';
 
 const logger = getLogger('StoreCacheService');
 
+export function isCachePolicy(modelProvider: IStoreModelProvider): modelProvider is StoreCacheService {
+  return modelProvider.flushPolicy === FlushPolicy.Cache;
+}
+
 @Injectable()
-export class StoreCacheService extends BaseCacheService implements IStoreModelService {
+export class StoreCacheService extends BaseCacheService implements IStoreModelProvider {
   private readonly storeCacheThreshold: number;
   private readonly cacheUpperLimit: number;
   private _storeOperationIndex = 0;
@@ -45,6 +48,10 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelSe
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
       exitWithError('Store cache threshold must be less than the store cache upper limit', logger);
     }
+  }
+
+  get flushPolicy() {
+    return FlushPolicy.Cache;
   }
 
   init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void {

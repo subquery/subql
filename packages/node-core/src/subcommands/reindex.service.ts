@@ -6,7 +6,14 @@ import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig, ProjectUpgradeService} from '../configure';
-import {IUnfinalizedBlocksService, StoreService, ISubqueryProject, PoiService, IMetadata} from '../indexer';
+import {
+  IUnfinalizedBlocksService,
+  StoreService,
+  ISubqueryProject,
+  PoiService,
+  IMetadata,
+  isCachePolicy,
+} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
@@ -119,7 +126,10 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.nodeConfig.proofOfIndex ? this.poiService : undefined,
       this.forceCleanService
     );
-    await this.storeService.modelProvider.flushData(true);
+
+    if (isCachePolicy(this.storeService.modelProvider)) {
+      await this.storeService.modelProvider.flushData(true);
+    }
     monitorWrite(`- Reindex completed`);
   }
 }

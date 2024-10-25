@@ -9,7 +9,7 @@ import {sqlIterator} from '../../db';
 import {getLogger} from '../../logger';
 import {PoiRepo} from '../entities';
 import {ProofOfIndex, ProofOfIndexHuman, SyncedProofOfIndex} from '../entities/Poi.entity';
-import {IStoreModelService} from '../storeCache';
+import {IStoreModelProvider} from '../storeCache';
 import {IPoi, CachePoiModel, PlainPoiModel} from '../storeCache/poi';
 
 const logger = getLogger('PoiService');
@@ -26,7 +26,7 @@ export class PoiService implements OnApplicationShutdown {
 
   constructor(
     protected readonly nodeConfig: NodeConfig,
-    private storeCache: IStoreModelService
+    private storeCache: IStoreModelProvider
   ) {}
 
   onApplicationShutdown(): void {

@@ -15,7 +15,7 @@ import {monitorWrite} from '../../process';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
-import {IStoreModelService, StoreCacheService} from '../storeCache';
+import {IStoreModelProvider, StoreCacheService} from '../storeCache';
 import {ISubqueryProject, IProjectService} from '../types';
 import {isBlockUnavailableError} from '../worker/utils';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
@@ -58,7 +58,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     projectService: IProjectService<DS>,
     projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,
-    storeModelService: IStoreModelService,
+    storeModelService: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     private createIndexerWorker: () => Promise<W>,

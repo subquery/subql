@@ -7,14 +7,7 @@ import {ParentProject} from '@subql/types-core';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
 import {SchemaMigrationService} from '../db';
-import {
-  CacheMetadataModel,
-  IMetadata,
-  IStoreModelService,
-  ISubqueryProject,
-  StoreCacheService,
-  StoreService,
-} from '../indexer';
+import {IMetadata, IStoreModelProvider, ISubqueryProject, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
 import {getStartHeight, mainThreadOnly} from '../utils';
@@ -114,7 +107,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   #currentHeight: number;
   #currentProject: P;
 
-  #modelProvider?: IStoreModelService;
+  #modelProvider?: IStoreModelProvider;
   #initialized = false;
 
   private config?: NodeConfig;

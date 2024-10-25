@@ -3,9 +3,7 @@
 
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
-import {CacheMetadataModel, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
-import {BaseStoreModelService} from '../indexer/storeCache/baseStoreModel.service';
-import {IStoreModelService} from '../indexer/storeCache/storeModel.service';
+import {CacheMetadataModel, IStoreModelProvider, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
@@ -291,7 +289,7 @@ describe('Project Upgrades', () => {
   describe('Upgradable subquery project', () => {
     let upgradeService: ProjectUpgradeService<ISubqueryProject>;
     let project: ISubqueryProject & IProjectUpgradeService<ISubqueryProject>;
-    let storeCache: BaseStoreModelService<any>;
+    let storeCache: IStoreModelProvider;
 
     beforeEach(async () => {
       storeCache = new StoreCacheService({} as any, {} as any, {} as any, new SchedulerRegistry());

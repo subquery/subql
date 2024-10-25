@@ -8,7 +8,7 @@ import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {monitorWrite} from '../../process';
 import {handledStringify} from '../../utils';
-import {IStoreModelService} from '../storeCache';
+import {IStoreModelProvider} from '../storeCache';
 import {StoreOperations} from '../StoreOperations';
 import {OperationType} from '../types';
 import {EntityClass} from './entity';
@@ -27,10 +27,10 @@ type Context = {
 export class Store implements IStore {
   /* These need to explicily be private using JS style private properties in order to not leak these in the sandbox */
   #config: NodeConfig;
-  #modelProvider: IStoreModelService;
+  #modelProvider: IStoreModelProvider;
   #context: Context;
 
-  constructor(config: NodeConfig, modelProvider: IStoreModelService, context: Context) {
+  constructor(config: NodeConfig, modelProvider: IStoreModelProvider, context: Context) {
     this.#config = config;
     this.#modelProvider = modelProvider;
     this.#context = context;

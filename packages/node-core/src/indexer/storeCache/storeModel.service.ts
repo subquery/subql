@@ -1,43 +1,33 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Sequelize, ModelStatic} from '@subql/x-sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
-import {MetadataRepo, PoiRepo} from '../entities';
 import {StoreService} from '../store.service';
 import {BaseStoreModelService} from './baseStoreModel.service';
 import {CsvStoreService} from './csvStore.service';
-import {IMetadata} from './metadata';
 import {MetadataModel} from './metadata/metadata';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
-import {BaseEntity, IModel} from './model';
+import {IModel} from './model';
 import {PlainModel} from './model/model';
-import {IPoi, PlainPoiModel, POI_ENTITY_NAME} from './poi';
-
-export interface IStoreModelService {
-  poi: IPoi | null;
-  metadata: IMetadata;
-
-  getModel<T extends BaseEntity>(entity: string): IModel<T>;
-
-  // addExporter(entity: string, exporterStore: CsvStoreService): void;
-
-  applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void>;
-
-  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
-}
+import {PlainPoiModel, POI_ENTITY_NAME} from './poi';
+import {IStoreModelProvider, FlushPolicy} from './types';
 
 const logger = getLogger('PlainStoreModelService');
 
-export class PlainStoreModelService extends BaseStoreModelService implements IStoreModelService {
+export class PlainStoreModelService extends BaseStoreModelService implements IStoreModelProvider {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
     private storeService: StoreService
   ) {
     super();
+  }
+
+  get flushPolicy() {
+    return FlushPolicy.RealTime;
   }
 
   get metadata(): MetadataModel {

@@ -3,7 +3,14 @@
 
 import {Sequelize} from '@subql/x-sequelize';
 import {IProjectUpgradeService} from '../configure';
-import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
+import {
+  DynamicDsService,
+  IUnfinalizedBlocksService,
+  StoreService,
+  PoiService,
+  ISubqueryProject,
+  isCachePolicy,
+} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {ForceCleanService} from '../subcommands/forceClean.service';
@@ -57,12 +64,16 @@ export async function reindex(
       exitWithError(`ForceCleanService not provided, cannot force clean`, logger);
     }
     // if DB need rollback? no, because forceCleanService will take care of it
-    await storeService.modelProvider.resetData();
+    if (isCachePolicy(storeService.modelProvider)) {
+      await storeService.modelProvider.resetData();
+    }
     await forceCleanService?.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
-    await storeService.modelProvider.flushData(true);
-    await storeService.modelProvider.resetData();
+    if (isCachePolicy(storeService.modelProvider)) {
+      await storeService.modelProvider.flushData(true);
+      await storeService.modelProvider.resetData();
+    }
     const transaction = await sequelize.transaction();
     try {
       /*

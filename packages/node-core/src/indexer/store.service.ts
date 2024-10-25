@@ -38,8 +38,7 @@ import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
-import {ICachedModelControl, IMetadata, IModel, IStoreModelService} from './storeCache';
-import {BaseStoreModelService} from './storeCache/baseStoreModel.service';
+import {IMetadata, isCachePolicy, IStoreModelProvider} from './storeCache';
 import {StoreOperations} from './StoreOperations';
 import {ISubqueryProject} from './types';
 
@@ -80,7 +79,7 @@ export class StoreService {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    readonly modelProvider: BaseStoreModelService<ICachedModelControl | IModel<any>>,
+    readonly modelProvider: IStoreModelProvider,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 
@@ -178,7 +177,9 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
+    if (isCachePolicy(this.modelProvider)) {
+      this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
+    }
 
     this._metadataModel = this.modelProvider.metadata;
 

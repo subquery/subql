@@ -15,7 +15,7 @@ import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
-import {IStoreModelService} from '../storeCache';
+import {IStoreModelProvider} from '../storeCache';
 import {IPoi} from '../storeCache/poi';
 import {IBlock, IProjectService, ISubqueryProject} from '../types';
 
@@ -64,7 +64,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected storeService: StoreService,
-    private storeModelService: IStoreModelService,
+    private storeModelService: IStoreModelProvider,
     private poiSyncService: PoiSyncService,
     protected monitorService?: MonitorServiceInterface
   ) {

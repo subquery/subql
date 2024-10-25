@@ -1,11 +1,31 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Transaction} from '@subql/x-sequelize';
+import {ENUM, ModelStatic, Transaction} from '@subql/x-sequelize';
 import {LRUCache} from 'lru-cache';
+import {IMetadata} from './metadata';
+import {BaseEntity, IModel} from './model';
+import {IPoi} from './poi';
 import {SetValueModel} from './setValueModel';
 
 export type HistoricalModel = {__block_range: any};
+export enum FlushPolicy {
+  RealTime = 'realTime',
+  Cache = 'cached',
+}
+export interface IStoreModelProvider {
+  poi: IPoi | null;
+  metadata: IMetadata;
+  flushPolicy: FlushPolicy;
+
+  getModel<T extends BaseEntity>(entity: string): IModel<T>;
+
+  // addExporter(entity: string, exporterStore: CsvStoreService): void;
+
+  applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void>;
+
+  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
+}
 
 export interface ICachedModelControl {
   isFlushable: boolean;

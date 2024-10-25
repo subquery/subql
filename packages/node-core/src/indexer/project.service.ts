@@ -19,6 +19,7 @@ import {MetadataKeys} from './entities';
 import {PoiSyncService} from './poi';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
+import {isCachePolicy} from './storeCache';
 import {ISubqueryProject, IProjectService} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
@@ -146,7 +147,9 @@ export abstract class BaseProjectService<
       }
 
       // Flush any pending operations to set up DB
-      await this.storeService.modelProvider.flushData(true);
+      if (isCachePolicy(this.storeService.modelProvider)) {
+        await this.storeService.modelProvider.flushData(true);
+      }
     } else {
       assert(startHeight, 'ProjectService must be initalized with a start height in workers');
       this.projectUpgradeService.initWorker(startHeight, this.handleProjectChange.bind(this));
