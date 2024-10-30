@@ -6,7 +6,7 @@ import path from 'path';
 import {GithubReader} from './github-reader';
 import {IPFSReader} from './ipfs-reader';
 import {LocalReader} from './local-reader';
-import {ReaderFactory} from './reader';
+import {isGithubReader, isIPFSReader, isLocalReader, ReaderFactory} from './reader';
 
 const tarPath = path.join(__dirname, '/../../../test/mockedSubqueryProject.tgz');
 
@@ -14,26 +14,26 @@ describe('ReaderFactory', () => {
   it('should return the Github Reader', async () => {
     const url = 'https://github.com/subquery/subql-starter';
     const reader = await ReaderFactory.create(url);
-    expect(reader instanceof GithubReader).toBeTruthy();
+    expect(isGithubReader(reader)).toBeTruthy();
   });
 
   it('should return the Local Reader', async () => {
     const loc = path.join(__dirname, '../../../fixtures');
     const reader = await ReaderFactory.create(loc);
-    expect(reader instanceof LocalReader).toBeTruthy();
+    expect(isLocalReader(reader)).toBeTruthy();
   });
 
   it('should return the IPFS Reader for a CID v0', async () => {
     const loc = 'ipfs://QmYyCCSaHLpPvZmex5ExHGdW7mavKYeiixVEyvNGwD1LLw';
     const reader = await ReaderFactory.create(loc, {});
 
-    expect(reader instanceof IPFSReader).toBeTruthy();
+    expect(isIPFSReader(reader)).toBeTruthy();
   });
 
   it('should return the IPFS Reader for a CID v1', async () => {
     const loc = 'ipfs://bafybeie56fq7db5adfyt3afqwhje6pq2m77gn5ik6pg75bioger6kzjn6a';
     const reader = await ReaderFactory.create(loc, {});
-    expect(reader instanceof IPFSReader).toBeTruthy();
+    expect(isIPFSReader(reader)).toBeTruthy();
   });
 
   it.skip('should support archive files', async () => {

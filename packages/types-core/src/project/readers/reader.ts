@@ -7,9 +7,15 @@ export type ReaderOptions = {
   ipfs?: string;
 };
 
+export enum ReaderType {
+  Local,
+  IPFS,
+  Github,
+}
 export interface Reader {
   getProjectSchema(): Promise<unknown>;
   getPkg(): Promise<IPackageJson>;
   getFile(file: string): Promise<string>;
   root: string | undefined;
+  type: ReaderType;
 }

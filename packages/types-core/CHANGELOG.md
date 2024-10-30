@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Inaccurate type checking in the Reader type. 
+
 ## [2.0.0] - 2024-10-21
 ### Changed
 - Update store interface making options.limit required on getByField(s) methods (#2567)

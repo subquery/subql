@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { LocalReader, loadFromJsonOrYaml } from '@subql/common';
+import { LocalReader, isLocalReader, loadFromJsonOrYaml } from '@subql/common';
 import {
   ChainTypes,
   parseChainTypes,
@@ -42,7 +42,7 @@ export async function getChainTypes(
 ): Promise<ChainTypes> {
   // If the project is load from local, we will direct load them
   let raw: unknown;
-  if (reader instanceof LocalReader) {
+  if (isLocalReader(reader)) {
     raw = loadChainTypes(file, root);
   } else {
     // If it is stored in ipfs or other resources, we will use the corresponding reader to read the file

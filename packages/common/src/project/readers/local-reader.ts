@@ -4,13 +4,17 @@
 import assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Reader} from '@subql/types-core';
+import {Reader, ReaderType} from '@subql/types-core';
 import yaml from 'js-yaml';
 import type {IPackageJson} from 'package-json-type';
 import {extensionIsYamlOrJSON} from '../../project';
 
 export class LocalReader implements Reader {
-  constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
+  type = ReaderType.Local;
+  constructor(
+    private readonly projectPath: string,
+    private readonly manifestPath: string
+  ) {}
 
   get root(): string {
     return path.resolve(this.projectPath);

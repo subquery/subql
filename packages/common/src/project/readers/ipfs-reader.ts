@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {u8aConcat} from '@polkadot/util';
-import {Reader} from '@subql/types-core';
+import {Reader, ReaderType} from '@subql/types-core';
 import yaml from 'js-yaml';
 import type {IPackageJson} from 'package-json-type';
 import {IPFS_NODE_ENDPOINT} from '../../constants';
@@ -16,8 +16,12 @@ const CIDv1 = new RegExp(
 export class IPFSReader implements Reader {
   private ipfs: IPFSHTTPClientLite;
   private cache: Record<string, Promise<string>> = {};
+  type = ReaderType.IPFS;
 
-  constructor(readonly cid: string, gateway?: string) {
+  constructor(
+    readonly cid: string,
+    gateway?: string
+  ) {
     if (!CIDv0.test(cid) && !CIDv1.test(cid)) {
       throw new Error('IPFS project path CID is not valid');
     }

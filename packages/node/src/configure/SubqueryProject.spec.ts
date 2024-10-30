@@ -11,6 +11,9 @@ import {
   LocalReader,
   makeTempDir,
   ReaderFactory,
+  isLocalReader,
+  isIPFSReader,
+  isGithubReader,
 } from '@subql/common';
 import {
   SubstrateCustomDataSourceImpl,
@@ -21,13 +24,13 @@ import {
   SubstrateCustomDatasource,
   SubstrateRuntimeDatasource,
 } from '@subql/types';
-import { Reader } from '@subql/types-core';
+import { Reader, ReaderType } from '@subql/types-core';
 import { createSubQueryProject } from './SubqueryProject';
 
 // eslint-disable-next-line jest/no-export
 export async function getProjectRoot(reader: Reader): Promise<string> {
-  if (reader instanceof LocalReader) return reader.root;
-  if (reader instanceof IPFSReader || reader instanceof GithubReader) {
+  if (isLocalReader(reader)) return reader.root;
+  if (isIPFSReader(reader) || isGithubReader(reader)) {
     return makeTempDir();
   }
   throw new Error('Un-known reader type');

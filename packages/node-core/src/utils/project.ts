@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {DEFAULT_PORT, GithubReader, IPFSReader, LocalReader} from '@subql/common';
+import {DEFAULT_PORT, isGithubReader, isIPFSReader, isLocalReader} from '@subql/common';
 import {
   BaseAssetsDataSource,
   BaseCustomDataSource,
@@ -132,7 +132,7 @@ export async function updateDataSourcesV1_0_0<DS extends BaseDataSource, CDS ext
       if (isAssetsDs(dataSource) && dataSource.assets) {
         for (const [, asset] of dataSource.assets.entries()) {
           // Only need to resolve path for local file
-          if (reader instanceof LocalReader) {
+          if (isLocalReader(reader)) {
             asset.file = path.resolve(root, asset.file);
           } else {
             asset.file = await fetchAndSaveFile(reader, root, asset.file, '');
@@ -164,15 +164,15 @@ export async function updateDataSourcesEntry(
   root: string,
   script: string
 ): Promise<string> {
-  if (reader instanceof LocalReader) return file;
-  else if (reader instanceof IPFSReader || reader instanceof GithubReader) {
+  if (isLocalReader(reader)) return file;
+  else if (isIPFSReader(reader) || isGithubReader(reader)) {
     return saveFile(reader, root, file, script);
   }
   throw new Error('Un-known reader type');
 }
 
 export async function updateProcessor(reader: Reader, root: string, file: string): Promise<string> {
-  if (reader instanceof LocalReader) {
+  if (isLocalReader(reader)) {
     return path.resolve(root, file);
   } else {
     return fetchAndSaveFile(reader, root, file);
@@ -180,7 +180,7 @@ export async function updateProcessor(reader: Reader, root: string, file: string
 }
 
 export async function fetchAndSaveFile(reader: Reader, root: string, file: string, ext = 'js'): Promise<string> {
-  if (!(reader instanceof IPFSReader || reader instanceof GithubReader)) {
+  if (!(isIPFSReader(reader) || isGithubReader(reader))) {
     throw new Error('Only IPFS and Github readers can save remote files');
   }
   const res = await reader.getFile(file);
@@ -191,7 +191,7 @@ export async function fetchAndSaveFile(reader: Reader, root: string, file: strin
 }
 
 export async function saveFile(reader: Reader, root: string, file: string, data: string, ext = 'js'): Promise<string> {
-  if (!(reader instanceof IPFSReader || reader instanceof GithubReader)) {
+  if (!(isIPFSReader(reader) || isGithubReader(reader))) {
     throw new Error('Only IPFS and Github readers can save remote files');
   }
   const resolved = path.resolve(root, file.replace('ipfs://', ''));

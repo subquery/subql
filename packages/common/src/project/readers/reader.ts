@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {Reader, ReaderOptions} from '@subql/types-core';
+import {Reader, ReaderOptions, ReaderType} from '@subql/types-core';
 import {IPFS_REGEX} from '../../constants';
 import {getProjectRootAndManifest} from '../../project';
 import {GithubReader} from './github-reader';
@@ -35,4 +35,14 @@ export class ReaderFactory {
 
     throw new Error(`unknown location: ${location}`);
   }
+}
+
+export function isLocalReader(reader: Reader): reader is LocalReader {
+  return reader.type === ReaderType.Local;
+}
+export function isIPFSReader(reader: Reader): reader is IPFSReader {
+  return reader.type === ReaderType.IPFS;
+}
+export function isGithubReader(reader: Reader): reader is GithubReader {
+  return reader.type === ReaderType.Github;
 }

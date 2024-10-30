@@ -3,7 +3,7 @@
 
 import {assert} from 'console';
 import path from 'path';
-import {Reader} from '@subql/types-core';
+import {Reader, ReaderType} from '@subql/types-core';
 import axios, {AxiosInstance, AxiosResponse} from 'axios';
 import yaml from 'js-yaml';
 import type {IPackageJson} from 'package-json-type';
@@ -12,7 +12,7 @@ import {DEFAULT_MANIFEST} from '../utils';
 export class GithubReader implements Reader {
   private readonly api: AxiosInstance;
   private defaultBranch?: string;
-
+  type = ReaderType.Github;
   constructor(private readonly key: string) {
     this.api = axios.create({
       baseURL: `https://raw.githubusercontent.com/${key}`,

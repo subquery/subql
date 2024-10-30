@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Inaccurate type checking in the Reader type. 
+
 ## [14.1.6] - 2024-10-21
 ### Fixed
 - Issues with setting a large block range for bypass blocks (#2566)

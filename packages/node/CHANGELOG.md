@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Inaccurate type checking in the Reader type. 
+
 ## [5.2.8] - 2024-10-23
 ### Changed
 - Bump `@subql/common-substrate` dependency
