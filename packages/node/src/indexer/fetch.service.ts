@@ -15,7 +15,6 @@ import {
   StoreCacheService,
 } from '@subql/node-core';
 import { SubstrateDatasource, SubstrateBlock } from '@subql/types';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, substrateHeaderToHeader } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
@@ -37,7 +36,6 @@ export class FetchService extends BaseFetchService<
     private apiService: ApiService,
     nodeConfig: NodeConfig,
     @Inject('IProjectService') projectService: ProjectService,
-    @Inject('ISubqueryProject') project: SubqueryProject,
     @Inject('IBlockDispatcher')
     blockDispatcher: ISubstrateBlockDispatcher,
     dictionaryService: SubstrateDictionaryService,
@@ -50,7 +48,6 @@ export class FetchService extends BaseFetchService<
     super(
       nodeConfig,
       projectService,
-      project.network,
       blockDispatcher,
       dictionaryService,
       eventEmitter,

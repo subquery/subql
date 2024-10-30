@@ -229,6 +229,11 @@ describe('cacheModel', () => {
       testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++);
     });
 
+    it('throws when trying to set undefined', () => {
+      expect(() => testModel.set('0x01', undefined as any, 1)).toThrow();
+      expect(() => testModel.set('0x01', null as any, 1)).toThrow();
+    });
+
     // it should keep same behavior as hook we used
     it('when get data after flushed, it should exclude block range', async () => {
       const spyDbGet = jest.spyOn(testModel.model, 'findOne');

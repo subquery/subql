@@ -26,7 +26,6 @@ describe('FetchService', () => {
       apiService, // ApiService
       null as any, // NodeConfig
       null as any, // ProjectService
-      {} as any, // Project
       null as any, // BlockDispatcher,
       null as any, // DictionaryService
       {

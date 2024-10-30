@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.0] - 2024-10-21
+### Changed
+- Improve codegen error messages (#2567)
+- Update codegen to match changes to store interface making options.limit required on getByField(s) methods (#2567)
+
 ## [5.2.8] - 2024-09-25
 ### Changed
 - Bump common, Added manifest support for query-subgraph.
@@ -682,7 +687,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.2.8...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.3.0...HEAD
+[5.3.0]: https://github.com/subquery/subql/compare/cli/5.2.8...cli/5.3.0
 [5.2.8]: https://github.com/subquery/subql/compare/cli/5.2.7...cli/5.2.8
 [5.2.7]: https://github.com/subquery/subql/compare/cli/5.2.6...cli/5.2.7
 [5.2.6]: https://github.com/subquery/subql/compare/cli/5.2.4...cli/5.2.6

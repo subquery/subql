@@ -136,6 +136,7 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
       [(value: SetValueModel<T>) => value.getLatest()?.data?.[fullOptions.orderBy]],
       [fullOptions.orderDirection.toLowerCase() as 'asc' | 'desc']
     )
+      .filter((value) => !value.getLatest()?.removed) // Ensure the data has not been marked for removal
       .filter((value) => value.matchesFields(filters)) // This filters out any removed/undefined
       .map((value) => value.getLatest()?.data)
       .map((value) => cloneDeep(value)) as T[];
@@ -187,9 +188,10 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async set(id: string, data: T, blockHeight: number): Promise<void> {
-    if (this.setCache[id] === undefined) {
-      this.setCache[id] = new SetValueModel();
+    if (data === undefined || data === null) {
+      throw new Error('Cannot set undefined or null data. If you wish to remove data, use remove()');
     }
+    this.setCache[id] ??= new SetValueModel();
     const copiedData = cloneDeep(data);
     this.setCache[id].set(copiedData, blockHeight, this.getNextStoreOperationIndex());
     // Experimental, this means getCache keeps duplicate data from setCache,
@@ -324,13 +326,16 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
   }
 
   private filterRemoveRecordByHeight(blockHeight: number, lessEqt: boolean): Record<string, RemoveValue> {
-    return Object.entries(this.removeCache).reduce((acc, [key, value]) => {
-      if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
-        acc[key] = value;
-      }
+    return Object.entries(this.removeCache).reduce(
+      (acc, [key, value]) => {
+        if (lessEqt ? value.removedAtBlock <= blockHeight : value.removedAtBlock > blockHeight) {
+          acc[key] = value;
+        }
 
-      return acc;
-    }, {} as Record<string, RemoveValue>);
+        return acc;
+      },
+      {} as Record<string, RemoveValue>
+    );
   }
 
   private filterRecordsWithHeight(blockHeight: number): FilteredHeightRecords<T> {

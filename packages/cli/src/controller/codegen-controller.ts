@@ -91,7 +91,7 @@ export async function generateJsonInterfaces(projectPath: string, schema: string
       await renderTemplate(INTERFACE_TEMPLATE_PATH, path.join(typesDir, `interfaces.ts`), interfaceTemplate);
       exportTypes.interfaces = true;
     } catch (e) {
-      throw new Error(`When render json interfaces having problems.`);
+      throw new Error(`Codegen failed for json interface.`, {cause: e});
     }
   }
 }
@@ -116,7 +116,7 @@ export async function generateEnums(projectPath: string, schema: string): Promis
       await renderTemplate(ENUM_TEMPLATE_PATH, path.join(typesDir, `enums.ts`), enumsTemplate);
       exportTypes.enums = true;
     } catch (e) {
-      throw new Error(`When render enums having problems.`);
+      throw new Error(`Codegen failed for enums.`, {cause: e});
     }
   }
 }
@@ -262,7 +262,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
         },
       });
     } catch (e) {
-      throw new Error(`When render index in types having problems.`);
+      throw new Error(`Codegen failed for indexes.`, {cause: e});
     }
     console.log(`* Types index generated !`);
   }
@@ -322,7 +322,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
       );
     } catch (e) {
       console.error(e);
-      throw new Error(`When render entity ${className} to schema having problems.`);
+      throw new Error(`Codegen failed for entity ${className}.`, {cause: e});
     }
     console.log(`* Schema ${className} generated !`);
   }
@@ -339,7 +339,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
       });
       exportTypes.models = true;
     } catch (e) {
-      throw new Error(`When render index in models having problems.`);
+      throw new Error(`Failed to codgen for model indexes.`, {cause: e});
     }
     console.log(`* Models index generated !`);
   }
