@@ -127,4 +127,8 @@ describe('ConnectionPoolService', () => {
       expect(handleApiDisconnectsSpy).toHaveBeenCalledTimes(1);
     }, 15000);
   });
+
+  // describe('The endpoint with rate limiting.', () => {
+  //   it('should handle all nodes being rate limited', async () => {});
+  // });
 });

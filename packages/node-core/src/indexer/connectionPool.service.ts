@@ -104,9 +104,9 @@ export class ConnectionPoolService<T extends IApiConnectionSpecific<any, any, an
             try {
               // Check if the endpoint is rate-limited
               if (await this.poolStateManager.getFieldValue(endpoint, 'rateLimited')) {
-                logger.info('throtling on ratelimited endpoint');
-                const backoffDelay = await this.poolStateManager.getFieldValue(endpoint, 'backoffDelay');
-                await delay(backoffDelay / 1000);
+                const rateLimitDelay = await this.poolStateManager.getFieldValue(endpoint, 'rateLimitDelay');
+                logger.info(`throtling on ratelimited endpoint ${rateLimitDelay / 1000}s`);
+                await delay(rateLimitDelay / 1000);
               }
 
               const start = Date.now();

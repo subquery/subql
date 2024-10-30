@@ -78,4 +78,6 @@ describe('ConnectionPoolStateManager', function () {
     const score2 = (connectionPoolStateManager as any).calculatePerformanceScore(2, 0);
     expect(score1).toBeGreaterThan(score2);
   });
+
+  // it('handleApiError', async function () {});
 });
