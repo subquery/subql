@@ -11,7 +11,7 @@ import {exitWithError} from '../process';
 import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
-import {StoreCacheService} from './storeCache';
+import {IStoreModelProvider} from './storeCache';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -70,7 +70,10 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return this._finalizedHeader;
   }
 
-  constructor(protected readonly nodeConfig: NodeConfig, protected readonly storeCache: StoreCacheService) {}
+  constructor(
+    protected readonly nodeConfig: NodeConfig,
+    protected readonly storeModelProvider: IStoreModelProvider
+  ) {}
 
   async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
@@ -240,7 +243,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   // Finds the last POI that had a correct block hash, this is used with the Eth sdk
   protected async findFinalizedUsingPOI(header: Header): Promise<Header> {
-    const poiModel = this.storeCache.poi;
+    const poiModel = this.storeModelProvider.poi;
     if (!poiModel) {
       throw new Error(POI_NOT_ENABLED_ERROR_MESSAGE);
     }
@@ -281,25 +284,25 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   }
 
   private async saveUnfinalizedBlocks(unfinalizedBlocks: UnfinalizedBlocks): Promise<void> {
-    return this.storeCache.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, JSON.stringify(unfinalizedBlocks));
+    return this.storeModelProvider.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, JSON.stringify(unfinalizedBlocks));
   }
 
   private async saveLastFinalizedVerifiedHeight(height: number): Promise<void> {
-    return this.storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, height);
+    return this.storeModelProvider.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, height);
   }
 
   async resetUnfinalizedBlocks(tx?: Transaction): Promise<void> {
-    await this.storeCache.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, '[]', tx);
+    await this.storeModelProvider.metadata.set(METADATA_UNFINALIZED_BLOCKS_KEY, '[]', tx);
     this.unfinalizedBlocks = [];
   }
 
   async resetLastFinalizedVerifiedHeight(tx?: Transaction): Promise<void> {
-    return this.storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, null as any, tx);
+    return this.storeModelProvider.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, null as any, tx);
   }
 
   //string should be jsonb object
   async getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks> {
-    const val = await this.storeCache.metadata.find(METADATA_UNFINALIZED_BLOCKS_KEY);
+    const val = await this.storeModelProvider.metadata.find(METADATA_UNFINALIZED_BLOCKS_KEY);
     if (val) {
       return JSON.parse(val) as UnfinalizedBlocks;
     }
@@ -307,6 +310,6 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   }
 
   async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
-    return this.storeCache.metadata.find(METADATA_LAST_FINALIZED_PROCESSED_KEY);
+    return this.storeModelProvider.metadata.find(METADATA_LAST_FINALIZED_PROCESSED_KEY);
   }
 }

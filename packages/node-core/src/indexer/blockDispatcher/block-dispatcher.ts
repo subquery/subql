@@ -14,7 +14,7 @@ import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {StoreService} from '../store.service';
-import {StoreCacheService} from '../storeCache';
+import {IStoreModelProvider} from '../storeCache';
 import {IProjectService, ISubqueryProject} from '../types';
 import {BaseBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
 
@@ -45,7 +45,7 @@ export abstract class BlockDispatcher<B, DS>
     projectService: IProjectService<DS>,
     projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,
-    storeCacheService: StoreCacheService,
+    storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     fetchBlocksBatches: BatchBlockFetcher<B>
@@ -58,7 +58,7 @@ export abstract class BlockDispatcher<B, DS>
       projectUpgradeService,
       new Queue(nodeConfig.batchSize * 3),
       storeService,
-      storeCacheService,
+      storeModelProvider,
       poiSyncService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');

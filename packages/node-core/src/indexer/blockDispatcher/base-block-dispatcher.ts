@@ -64,7 +64,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected storeService: StoreService,
-    private storeModelService: IStoreModelProvider,
+    private storeModelProvider: IStoreModelProvider,
     private poiSyncService: PoiSyncService,
     protected monitorService?: MonitorServiceInterface
   ) {
@@ -76,7 +76,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
     this._onDynamicDsCreated = onDynamicDsCreated;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.setProcessedBlockCount((await this.storeModelService.metadata.find('processedBlockCount', 0))!);
+    this.setProcessedBlockCount((await this.storeModelProvider.metadata.find('processedBlockCount', 0))!);
   }
 
   get queueSize(): number {
@@ -216,7 +216,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       this.setLatestProcessedHeight(height);
     }
 
-    await this.storeModelService.applyPendingChanges(height, !this.projectService.hasDataSourcesAfterHeight(height));
+    await this.storeModelProvider.applyPendingChanges(height, !this.projectService.hasDataSourcesAfterHeight(height));
 
     // if (this.storeModelService instanceof StorCeacheService) {
     //   if (this.nodeConfig.storeCacheAsync) {
@@ -292,7 +292,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
     // This is the first creation of POI
     await this.poi.bulkUpsert([poiBlock], tx);
-    await this.storeModelService.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}], tx);
+    await this.storeModelProvider.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}], tx);
     this.eventEmitter.emit(PoiEvent.PoiTarget, {
       height,
       timestamp: Date.now(),
@@ -301,7 +301,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
   @mainThreadOnly()
   private async updateStoreMetadata(height: number, updateProcessed = true, tx?: Transaction): Promise<void> {
-    const meta = this.storeModelService.metadata;
+    const meta = this.storeModelProvider.metadata;
     // Update store metadata
     await meta.setBulk(
       [
@@ -317,7 +317,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   private get poi(): IPoi {
-    const poi = this.storeModelService.poi;
+    const poi = this.storeModelProvider.poi;
     if (!poi) {
       throw new Error('Poi service expected poi repo but it was not found');
     }

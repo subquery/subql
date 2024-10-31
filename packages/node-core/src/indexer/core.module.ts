@@ -15,8 +15,7 @@ import {MonitorService} from './monitor.service';
 import {PoiService, PoiSyncService} from './poi';
 import {SandboxService} from './sandbox.service';
 import {StoreService} from './store.service';
-import {PlainStoreModelService, StoreCacheService} from './storeCache';
-import {BaseStoreModelService} from './storeCache/baseStoreModel.service';
+import {IStoreModelProvider, PlainStoreModelService, StoreCacheService} from './storeCache';
 
 @Module({
   providers: [
@@ -31,14 +30,14 @@ import {BaseStoreModelService} from './storeCache/baseStoreModel.service';
     PoiSyncService,
     StoreService,
     {
-      provide: BaseStoreModelService,
+      provide: 'IStoreModelProvider',
       useFactory: (
         storeService: StoreService,
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         schedulerRegistry: SchedulerRegistry,
         sequelize: Sequelize
-      ): BaseStoreModelService<any> => {
+      ): IStoreModelProvider => {
         return nodeConfig.cacheDisable
           ? new PlainStoreModelService(sequelize, nodeConfig, storeService)
           : new StoreCacheService(sequelize, nodeConfig, eventEmitter, schedulerRegistry);
@@ -56,7 +55,7 @@ import {BaseStoreModelService} from './storeCache/baseStoreModel.service';
     PoiService,
     PoiSyncService,
     StoreService,
-    BaseStoreModelService,
+    'IStoreModelProvider',
     InMemoryCacheService,
   ],
 })
