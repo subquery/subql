@@ -14,7 +14,7 @@ import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
 import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
 import {StoreService} from '../store.service';
-import {IStoreModelProvider} from '../storeCache';
+import {IStoreModelProvider} from '../storeModelProvider';
 import {IProjectService, ISubqueryProject} from '../types';
 import {BaseBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
 

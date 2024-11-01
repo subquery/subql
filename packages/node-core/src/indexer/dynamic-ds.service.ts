@@ -5,7 +5,7 @@ import {Transaction} from '@subql/x-sequelize';
 import {cloneDeep} from 'lodash';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {IMetadata} from './storeCache';
+import {IMetadata} from './storeModelProvider';
 import {ISubqueryProject} from './types';
 
 const logger = getLogger('dynamic-ds');

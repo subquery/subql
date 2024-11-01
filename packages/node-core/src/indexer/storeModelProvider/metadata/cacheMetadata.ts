@@ -167,7 +167,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
   async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
       .filter(([key]) => !specialKeys.includes(key as MetadataKey))
-      .map(([key, value]) => ({key, value} as Metadata));
+      .map(([key, value]) => ({key, value}) as Metadata);
 
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {

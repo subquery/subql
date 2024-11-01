@@ -15,7 +15,7 @@ import {monitorWrite} from '../../process';
 import {AutoQueue, isTaskFlushedError} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
-import {IStoreModelProvider} from '../storeCache';
+import {IStoreModelProvider} from '../storeModelProvider';
 import {ISubqueryProject, IProjectService} from '../types';
 import {isBlockUnavailableError} from '../worker/utils';
 import {BaseBlockDispatcher} from './base-block-dispatcher';

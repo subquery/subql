@@ -15,7 +15,7 @@ import {MonitorService} from './monitor.service';
 import {PoiService, PoiSyncService} from './poi';
 import {SandboxService} from './sandbox.service';
 import {StoreService} from './store.service';
-import {IStoreModelProvider, PlainStoreModelService, StoreCacheService} from './storeCache';
+import {IStoreModelProvider, PlainStoreModelService, StoreCacheService} from './storeModelProvider';
 
 @Module({
   providers: [

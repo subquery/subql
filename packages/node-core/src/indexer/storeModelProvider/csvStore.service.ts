@@ -14,7 +14,10 @@ export class CsvStoreService implements Exporter {
   private stringifyStream: Stringifier;
   private readonly writeStream: fs.WriteStream;
 
-  constructor(private modelName: string, private outputPath: string) {
+  constructor(
+    private modelName: string,
+    private outputPath: string
+  ) {
     this.writeStream = fs.createWriteStream(this.getCsvFilePath(), {flags: 'a'});
 
     this.stringifyStream = stringify({header: !this.fileExist}).on('error', (err) => {

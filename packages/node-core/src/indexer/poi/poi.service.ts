@@ -9,8 +9,8 @@ import {sqlIterator} from '../../db';
 import {getLogger} from '../../logger';
 import {PoiRepo} from '../entities';
 import {ProofOfIndex, ProofOfIndexHuman, SyncedProofOfIndex} from '../entities/Poi.entity';
-import {IStoreModelProvider} from '../storeCache';
-import {IPoi, CachePoiModel, PlainPoiModel} from '../storeCache/poi';
+import {IStoreModelProvider} from '../storeModelProvider';
+import {IPoi, CachePoiModel, PlainPoiModel} from '../storeModelProvider/poi';
 
 const logger = getLogger('PoiService');
 

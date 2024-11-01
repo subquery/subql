@@ -11,7 +11,7 @@ import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
-import {isCachePolicy} from './storeCache';
+import {isCachePolicy} from './storeModelProvider';
 import {IBlock, IIndexerManager} from './types';
 
 const logger = getLogger('test-runner');

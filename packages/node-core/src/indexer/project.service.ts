@@ -19,7 +19,7 @@ import {MetadataKeys} from './entities';
 import {PoiSyncService} from './poi';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {isCachePolicy} from './storeCache';
+import {isCachePolicy} from './storeModelProvider';
 import {ISubqueryProject, IProjectService, BypassBlocks} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 

@@ -15,8 +15,8 @@ import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
-import {IStoreModelProvider} from '../storeCache';
-import {IPoi} from '../storeCache/poi';
+import {IStoreModelProvider} from '../storeModelProvider';
+import {IPoi} from '../storeModelProvider/poi';
 import {IBlock, IProjectService, ISubqueryProject} from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');

@@ -7,7 +7,7 @@ import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {monitorWrite} from '../../process';
 import {handledStringify} from '../../utils';
-import {IStoreModelProvider} from '../storeCache';
+import {IStoreModelProvider} from '../storeModelProvider';
 import {StoreOperations} from '../StoreOperations';
 import {OperationType} from '../types';
 import {EntityClass} from './entity';

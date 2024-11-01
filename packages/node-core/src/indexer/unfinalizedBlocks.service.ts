@@ -11,7 +11,7 @@ import {exitWithError} from '../process';
 import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
-import {IStoreModelProvider} from './storeCache';
+import {IStoreModelProvider} from './storeModelProvider';
 
 const logger = getLogger('UnfinalizedBlocks');
 

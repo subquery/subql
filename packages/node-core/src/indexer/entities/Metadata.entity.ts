@@ -39,10 +39,10 @@ export interface Metadata {
   value: MetadataKeys[keyof MetadataKeys];
 }
 
-export interface MetadataModel extends Model<Metadata>, Metadata {}
+interface MetadataEntity extends Model<Metadata>, Metadata {}
 
 export type MetadataRepo = typeof Model & {
-  new (values?: unknown, options?: BuildOptions): MetadataModel;
+  new (values?: unknown, options?: BuildOptions): MetadataEntity;
 };
 
 async function checkSchemaMetadata(sequelize: Sequelize, schema: string, chainId: string): Promise<boolean> {

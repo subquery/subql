@@ -38,7 +38,7 @@ import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
-import {IMetadata, isCachePolicy, IStoreModelProvider} from './storeCache';
+import {IMetadata, isCachePolicy, IStoreModelProvider} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
 import {ISubqueryProject} from './types';
 

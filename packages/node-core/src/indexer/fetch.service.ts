@@ -15,7 +15,7 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
-import {IStoreModelProvider} from './storeCache';
+import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, Header, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 

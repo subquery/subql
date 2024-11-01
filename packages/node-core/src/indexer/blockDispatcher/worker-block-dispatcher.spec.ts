@@ -5,7 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {IProjectUpgradeService, NodeConfig} from '../../configure';
 import {PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
-import {StoreCacheService} from '../storeCache';
+import {StoreCacheService} from '../storeModelProvider';
 import {IProjectService, ISubqueryProject} from '../types';
 import {WorkerBlockDispatcher} from './worker-block-dispatcher';
 

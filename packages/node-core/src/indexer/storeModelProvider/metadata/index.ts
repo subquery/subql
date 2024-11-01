@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './cacheMetadata';
-export { IMetadata } from './metadata';
+export {IMetadata} from './metadata';

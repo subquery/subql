@@ -5,7 +5,7 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {Header, IBlock} from '../indexer';
-import {StoreCacheService, CacheMetadataModel} from './storeCache';
+import {StoreCacheService, CacheMetadataModel} from './storeModelProvider';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,

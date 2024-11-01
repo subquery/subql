@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {DatasourceParams, DynamicDsService} from './dynamic-ds.service';
-import {CacheMetadataModel} from './storeCache';
+import {CacheMetadataModel} from './storeModelProvider';
 import {ISubqueryProject} from './types';
 
 class TestDynamicDsService extends DynamicDsService<DatasourceParams, ISubqueryProject> {

@@ -21,7 +21,10 @@ export interface IModel<T extends BaseEntity> {
 }
 
 export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> {
-  constructor(readonly model: ModelStatic<Model<T, T>>, private readonly historical = true) {}
+  constructor(
+    readonly model: ModelStatic<Model<T, T>>,
+    private readonly historical = true
+  ) {}
 
   async get(id: string): Promise<T | undefined> {
     const record = await this.model.findOne({

@@ -4,7 +4,7 @@
 import {GraphQLModelsType} from '@subql/utils';
 import {Sequelize, DataTypes, QueryTypes} from '@subql/x-sequelize';
 import {cloneDeep, padStart} from 'lodash';
-import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../../';
+import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../..';
 import {CachedModel} from './cacheModel';
 
 const option: DbOption = {

@@ -14,7 +14,7 @@ import {exitWithError} from '../../process';
 import {hasValue, Queue} from '../../utils';
 import {Metadata, MetadataFactory, MetadataRepo} from '../entities';
 import {PoiFactory, ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
-import {PlainPoiModel} from '../storeCache/poi';
+import {PlainPoiModel} from '../storeModelProvider/poi';
 import {ISubqueryProject} from '../types';
 import {PoiBlock} from './PoiBlock';
 

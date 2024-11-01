@@ -23,4 +23,4 @@ export const getFullOptions = <T>(options?: GetOptions<T>): Required<GetOptions<
   ({
     ...(defaultOptions as GetOptions<T>),
     ...options,
-  } as Required<GetOptions<T>>);
+  }) as Required<GetOptions<T>>;

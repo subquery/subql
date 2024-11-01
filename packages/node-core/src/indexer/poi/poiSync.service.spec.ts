@@ -8,7 +8,7 @@ import {range} from 'lodash';
 import {NodeConfig} from '../../configure';
 import {MetadataFactory, PoiFactory, ProofOfIndex} from '../../indexer';
 import {Queue} from '../../utils';
-import {PlainPoiModel} from '../storeCache/poi';
+import {PlainPoiModel} from '../storeModelProvider/poi';
 import {ISubqueryProject} from '../types';
 import {PoiSyncService} from './poiSync.service';
 

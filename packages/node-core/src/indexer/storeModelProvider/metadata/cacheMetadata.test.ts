@@ -1,10 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Sequelize } from '@subql/x-sequelize';
-import { MetadataFactory, MetadataKeys, MetadataRepo } from '../../';
-import { DbOption } from '../../../';
-import { CacheMetadataModel } from './cacheMetadata';
+import {Sequelize} from '@subql/x-sequelize';
+import {MetadataFactory, MetadataKeys, MetadataRepo} from '../..';
+import {DbOption} from '../../..';
+import {CacheMetadataModel} from './cacheMetadata';
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
@@ -49,7 +49,7 @@ describe('cacheMetadata integration', () => {
   };
 
   afterAll(async () => {
-    await sequelize.dropSchema(schema, { logging: false });
+    await sequelize.dropSchema(schema, {logging: false});
     await sequelize.close();
   });
 
@@ -70,18 +70,18 @@ describe('cacheMetadata integration', () => {
   describe('dynamicDatasources', () => {
     beforeEach(async () => {
       // Ensure value exits so we can update it
-      await metaDataRepo.bulkCreate([{ key: 'dynamicDatasources', value: [] }], { updateOnDuplicate: ['key', 'value'] });
+      await metaDataRepo.bulkCreate([{key: 'dynamicDatasources', value: []}], {updateOnDuplicate: ['key', 'value']});
     });
 
     it('Appends dynamicDatasources correctly', async () => {
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'foo', startBlock: 1 });
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'bar', startBlock: 2 });
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'baz', startBlock: 3 });
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'bar', startBlock: 2});
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'baz', startBlock: 3});
 
       const expected = [
-        { templateName: 'foo', startBlock: 1 },
-        { templateName: 'bar', startBlock: 2 },
-        { templateName: 'baz', startBlock: 3 },
+        {templateName: 'foo', startBlock: 1},
+        {templateName: 'bar', startBlock: 2},
+        {templateName: 'baz', startBlock: 3},
       ];
 
       await flush();
@@ -94,40 +94,40 @@ describe('cacheMetadata integration', () => {
     });
 
     it('Allows overriding all dynamicDatasources', async () => {
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'foo', startBlock: 1 });
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
 
-      cacheMetadataModel.set('dynamicDatasources', [{ templateName: 'bar', startBlock: 2 }]);
+      cacheMetadataModel.set('dynamicDatasources', [{templateName: 'bar', startBlock: 2}]);
 
       await flush();
 
       const v = await queryMeta('dynamicDatasources');
-      expect(v).toEqual([{ templateName: 'bar', startBlock: 2 }]);
+      expect(v).toEqual([{templateName: 'bar', startBlock: 2}]);
     });
 
     it('Caches the dynamicDatasources correctly after using set', async () => {
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'foo', startBlock: 1 });
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
       await flush();
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
-      expect(cacheV).toEqual([{ templateName: 'foo', startBlock: 1 }]);
+      expect(cacheV).toEqual([{templateName: 'foo', startBlock: 1}]);
 
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'bar', startBlock: 2 });
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'bar', startBlock: 2});
       // await flush();
 
       const cacheV2 = await cacheMetadataModel.find('dynamicDatasources');
       expect(cacheV2).toEqual([
-        { templateName: 'foo', startBlock: 1 },
-        { templateName: 'bar', startBlock: 2 },
+        {templateName: 'foo', startBlock: 1},
+        {templateName: 'bar', startBlock: 2},
       ]);
     });
 
     it('Uses the correct cache values when using new and set', async () => {
-      cacheMetadataModel.setNewDynamicDatasource({ templateName: 'foo', startBlock: 1 });
+      cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
 
-      cacheMetadataModel.set('dynamicDatasources', [{ templateName: 'bar', startBlock: 2 }]);
+      cacheMetadataModel.set('dynamicDatasources', [{templateName: 'bar', startBlock: 2}]);
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
-      expect(cacheV).toEqual([{ templateName: 'bar', startBlock: 2 }]);
+      expect(cacheV).toEqual([{templateName: 'bar', startBlock: 2}]);
     });
   });
 });

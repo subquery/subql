@@ -8,7 +8,7 @@ import {delay} from '@subql/common';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {ProofOfIndex} from '../entities/Poi.entity';
-import {StoreCacheService} from '../storeCache';
+import {StoreCacheService} from '../storeModelProvider';
 import {PoiService} from './poi.service';
 
 jest.mock('@subql/x-sequelize', () => {
