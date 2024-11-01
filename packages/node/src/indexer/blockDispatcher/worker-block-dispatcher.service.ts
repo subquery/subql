@@ -8,7 +8,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
   StoreService,
-  StoreCacheService,
   IProjectService,
   WorkerBlockDispatcher,
   ConnectionPoolStateManager,
@@ -17,6 +16,7 @@ import {
   InMemoryCacheService,
   createIndexerWorker as createIndexerWorkerCore,
   MonitorServiceInterface,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -51,7 +51,7 @@ export class WorkerBlockDispatcherService
     projectUpgadeService: IProjectUpgradeService,
     cacheService: InMemoryCacheService,
     storeService: StoreService,
-    storeCacheService: StoreCacheService,
+    storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
@@ -65,7 +65,7 @@ export class WorkerBlockDispatcherService
       projectService,
       projectUpgadeService,
       storeService,
-      storeCacheService,
+      storeModelProvider,
       poiSyncService,
       project,
       () =>

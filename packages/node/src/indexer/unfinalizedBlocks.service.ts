@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common';
 import {
   BaseUnfinalizedBlocksService,
   Header,
+  IStoreModelProvider,
   mainThreadOnly,
   NodeConfig,
-  StoreCacheService,
 } from '@subql/node-core';
 import { substrateHeaderToHeader } from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -20,9 +20,9 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
   constructor(
     private readonly apiService: ApiService,
     nodeConfig: NodeConfig,
-    storeCache: StoreCacheService,
+    storeModelProvider: IStoreModelProvider,
   ) {
-    super(nodeConfig, storeCache);
+    super(nodeConfig, storeModelProvider);
   }
 
   @mainThreadOnly()

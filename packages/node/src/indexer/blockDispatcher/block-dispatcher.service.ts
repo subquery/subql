@@ -6,7 +6,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  StoreCacheService,
   StoreService,
   IProjectService,
   BlockDispatcher,
@@ -14,6 +13,7 @@ import {
   IProjectUpgradeService,
   PoiSyncService,
   IBlock,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -42,7 +42,7 @@ export class BlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,
-    storeCacheService: StoreCacheService,
+    storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
   ) {
@@ -52,7 +52,7 @@ export class BlockDispatcherService
       projectService,
       projectUpgradeService,
       storeService,
-      storeCacheService,
+      storeModelProvider,
       poiSyncService,
       project,
       async (
