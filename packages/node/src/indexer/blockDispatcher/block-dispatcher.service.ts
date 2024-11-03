@@ -42,7 +42,7 @@ export class BlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,
-    storeModelProvider: IStoreModelProvider,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
   ) {

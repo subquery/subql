@@ -22,7 +22,7 @@ export interface IStoreModelProvider {
 
   // addExporter(entity: string, exporterStore: CsvStoreService): void;
 
-  applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void>;
+  applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx?: Transaction): Promise<void>;
 
   updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
 }

@@ -1,7 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Sequelize} from '@subql/x-sequelize';
+import {Injectable} from '@nestjs/common';
+import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
@@ -17,11 +18,11 @@ import {IStoreModelProvider, FlushPolicy} from './types';
 
 const logger = getLogger('PlainStoreModelService');
 
+@Injectable()
 export class PlainStoreModelService extends BaseStoreModelService implements IStoreModelProvider {
   constructor(
     private sequelize: Sequelize,
-    private config: NodeConfig,
-    private storeService: StoreService
+    private config: NodeConfig
   ) {
     super();
   }
@@ -70,8 +71,7 @@ export class PlainStoreModelService extends BaseStoreModelService implements ISt
     throw new Error('Not implemented');
   }
 
-  async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
-    const tx = this.storeService.transaction;
+  async applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx: Transaction): Promise<void> {
     if (!tx) {
       exitWithError(new Error('Transaction not found'), logger, 1);
     }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {Inject} from '@nestjs/common';
 import {Store as IStore, Entity, FieldsExpression, GetOptions} from '@subql/types-core';
 import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
@@ -27,7 +28,7 @@ export class Store implements IStore {
   #modelProvider: IStoreModelProvider;
   #context: Context;
 
-  constructor(config: NodeConfig, modelProvider: IStoreModelProvider, context: Context) {
+  constructor(config: NodeConfig, @Inject('IStoreModelProvider') modelProvider: IStoreModelProvider, context: Context) {
     this.#config = config;
     this.#modelProvider = modelProvider;
     this.#context = context;

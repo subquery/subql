@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {u8aToHex} from '@subql/utils';
 import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
@@ -26,7 +26,7 @@ export class PoiService implements OnApplicationShutdown {
 
   constructor(
     protected readonly nodeConfig: NodeConfig,
-    private storeCache: IStoreModelProvider
+    @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider
   ) {}
 
   onApplicationShutdown(): void {
@@ -65,11 +65,11 @@ export class PoiService implements OnApplicationShutdown {
    * @param schema
    */
   async init(schema: string): Promise<void> {
-    this._poiRepo = this.storeCache.poi ?? undefined;
+    this._poiRepo = this.storeModelProvider.poi ?? undefined;
     if (!this._poiRepo) {
       return;
     }
-    const latestSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
+    const latestSyncedPoiHeight = await this.storeModelProvider.metadata.find('latestSyncedPoiHeight');
     if (latestSyncedPoiHeight === undefined) {
       await this.migratePoi(schema);
     }
@@ -98,7 +98,7 @@ export class PoiService implements OnApplicationShutdown {
       });
 
       // Drop previous keys in metadata
-      await this.storeCache.metadata.bulkRemove(['blockOffset', 'latestPoiWithMmr', 'lastPoiHeight']);
+      await this.storeModelProvider.metadata.bulkRemove(['blockOffset', 'latestPoiWithMmr', 'lastPoiHeight']);
 
       const queries: string[] = [];
 
@@ -170,7 +170,7 @@ export class PoiService implements OnApplicationShutdown {
 
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     await batchDeletePoi(this.poiRepo.model, transaction, targetBlockHeight);
-    const lastSyncedPoiHeight = await this.storeCache.metadata.find('latestSyncedPoiHeight');
+    const lastSyncedPoiHeight = await this.storeModelProvider.metadata.find('latestSyncedPoiHeight');
 
     if (lastSyncedPoiHeight !== undefined && lastSyncedPoiHeight > targetBlockHeight) {
       const genesisPoi = await this.poiRepo.model.findOne({
@@ -180,12 +180,12 @@ export class PoiService implements OnApplicationShutdown {
       // This indicates reindex height is less than genesis poi height
       // And genesis poi has been remove from `batchDeletePoi`
       if (!genesisPoi) {
-        await this.storeCache.metadata.bulkRemove(['latestSyncedPoiHeight'], transaction);
+        await this.storeModelProvider.metadata.bulkRemove(['latestSyncedPoiHeight'], transaction);
       } else {
-        await this.storeCache.metadata.set('latestSyncedPoiHeight', targetBlockHeight, transaction);
+        await this.storeModelProvider.metadata.set('latestSyncedPoiHeight', targetBlockHeight, transaction);
       }
     }
-    await this.storeCache.metadata.bulkRemove(['lastCreatedPoiHeight'], transaction);
+    await this.storeModelProvider.metadata.bulkRemove(['lastCreatedPoiHeight'], transaction);
   }
 }
 

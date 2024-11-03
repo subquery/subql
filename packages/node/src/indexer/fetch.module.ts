@@ -92,7 +92,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         IndexerManager,
         InMemoryCacheService,
         StoreService,
-        StoreCacheService,
+        'IStoreModelProvider',
         PoiSyncService,
         'ISubqueryProject',
         DynamicDsService,

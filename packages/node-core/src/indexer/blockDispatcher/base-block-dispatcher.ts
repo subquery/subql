@@ -158,7 +158,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   @mainThreadOnly()
   protected async preProcessBlock(height: number): Promise<void> {
     monitorCreateBlockStart(height);
-    this.storeService.setBlockHeight(height);
+    await this.storeService.setBlockHeight(height);
 
     await this.projectUpgradeService.setCurrentHeight(height);
 
@@ -216,7 +216,11 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       this.setLatestProcessedHeight(height);
     }
 
-    await this.storeModelProvider.applyPendingChanges(height, !this.projectService.hasDataSourcesAfterHeight(height));
+    await this.storeModelProvider.applyPendingChanges(
+      height,
+      !this.projectService.hasDataSourcesAfterHeight(height),
+      this.storeService.transaction
+    );
 
     // if (this.storeModelService instanceof StorCeacheService) {
     //   if (this.nodeConfig.storeCacheAsync) {

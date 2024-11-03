@@ -32,17 +32,16 @@ import {IStoreModelProvider, PlainStoreModelService, StoreCacheService} from './
     {
       provide: 'IStoreModelProvider',
       useFactory: (
-        storeService: StoreService,
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         schedulerRegistry: SchedulerRegistry,
         sequelize: Sequelize
       ): IStoreModelProvider => {
         return nodeConfig.cacheDisable
-          ? new PlainStoreModelService(sequelize, nodeConfig, storeService)
+          ? new PlainStoreModelService(sequelize, nodeConfig)
           : new StoreCacheService(sequelize, nodeConfig, eventEmitter, schedulerRegistry);
       },
-      inject: [Sequelize, NodeConfig, EventEmitter2, SchedulerRegistry, StoreService],
+      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
     },
     AdminListener,
   ],

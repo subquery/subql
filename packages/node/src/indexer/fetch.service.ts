@@ -43,7 +43,7 @@ export class FetchService extends BaseFetchService<
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
     private runtimeService: RuntimeService,
-    storeModelProvider: IStoreModelProvider,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
     super(
       nodeConfig,

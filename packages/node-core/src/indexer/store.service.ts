@@ -79,7 +79,7 @@ export class StoreService {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    readonly modelProvider: IStoreModelProvider,
+    @Inject('IStoreModelProvider') readonly modelProvider: IStoreModelProvider,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 
@@ -358,11 +358,13 @@ export class StoreService {
   async setBlockHeight(blockHeight: number): Promise<void> {
     this._blockHeight = blockHeight;
 
-    // TODO do we need to set hooks for block height?
-    this.#transaction = await this.sequelize.transaction({
-      deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),
-    });
-    this.#transaction.afterCommit(() => (this.#transaction = undefined));
+    if (!this.#transaction) {
+      // TODO do we need to set hooks for block height?
+      this.#transaction = await this.sequelize.transaction({
+        deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),
+      });
+      this.#transaction.afterCommit(() => (this.#transaction = undefined));
+    }
 
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
