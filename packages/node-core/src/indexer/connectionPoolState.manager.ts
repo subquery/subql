@@ -10,8 +10,6 @@ import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {errorTypeToScoreAdjustment} from './connectionPool.service';
 
-const RETRY_DELAY = 60 * 1000;
-const MAX_RETRY_DELAY = 60 * RETRY_DELAY;
 const MAX_FAILURES = 5;
 const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
@@ -286,8 +284,16 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   }
 
   private calculateNextDelay(poolItem: ConnectionPoolItem<T>): number {
-    // Exponential backoff using failure count, Start with RETRY_DELAY and double on each failure, MAX_RETRY_DELAY is the maximum delay
-    return Math.min(RETRY_DELAY * Math.pow(2, poolItem.failureCount - 1), MAX_RETRY_DELAY);
+    const delayRule = [10, 20, 40, 80, 160, 320];
+    let delayTime = 0;
+    if (poolItem.failureCount < 1) {
+      delayTime = 0;
+    } else if (poolItem.failureCount >= 1 && poolItem.failureCount <= delayRule.length) {
+      delayTime = delayRule[poolItem.failureCount - 1];
+    } else {
+      delayTime = delayRule[delayRule.length - 1];
+    }
+    return delayTime * 1000;
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {
