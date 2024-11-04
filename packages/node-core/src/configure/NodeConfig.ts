@@ -329,7 +329,7 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.monitorFileSize ?? this._config.proofOfIndex ? defaultMonitorFileSize : 0;
   }
 
-  get cacheDisable(): boolean {
+  get enableCache(): boolean {
     return this._config.enableCache ?? true;
   }
 

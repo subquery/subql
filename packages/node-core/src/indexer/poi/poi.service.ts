@@ -24,10 +24,7 @@ export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
   private _poiRepo?: IPoi;
 
-  constructor(
-    protected readonly nodeConfig: NodeConfig,
-    @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider
-  ) {}
+  constructor(@Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;

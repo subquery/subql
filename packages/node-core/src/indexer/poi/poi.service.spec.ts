@@ -72,11 +72,7 @@ describe('PoiService', () => {
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PoiService,
-        {provide: NodeConfig, useValue: nodeConfig},
-        {provide: StoreCacheService, useValue: storeCache},
-      ],
+      providers: [PoiService, {provide: 'IStoreModelProvider', useValue: storeCache}],
     }).compile();
 
     service = module.get<PoiService>(PoiService);
