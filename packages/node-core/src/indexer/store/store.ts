@@ -28,7 +28,7 @@ export class Store implements IStore {
   #modelProvider: IStoreModelProvider;
   #context: Context;
 
-  constructor(config: NodeConfig, @Inject('IStoreModelProvider') modelProvider: IStoreModelProvider, context: Context) {
+  constructor(config: NodeConfig, modelProvider: IStoreModelProvider, context: Context) {
     this.#config = config;
     this.#modelProvider = modelProvider;
     this.#context = context;

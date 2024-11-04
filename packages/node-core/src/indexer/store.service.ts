@@ -38,7 +38,7 @@ import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
-import {IMetadata, isCachePolicy, IStoreModelProvider} from './storeModelProvider';
+import {IMetadata, IStoreModelProvider, StoreCacheService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
 import {ISubqueryProject} from './types';
 
@@ -177,7 +177,7 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    if (isCachePolicy(this.modelProvider)) {
+    if (this.modelProvider instanceof StoreCacheService) {
       this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
     }
 

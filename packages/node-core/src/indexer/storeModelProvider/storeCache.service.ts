@@ -23,10 +23,6 @@ import {Exporter, ICachedModelControl, IStoreModelProvider, FlushPolicy} from '.
 
 const logger = getLogger('StoreCacheService');
 
-export function isCachePolicy(modelProvider: IStoreModelProvider): modelProvider is StoreCacheService {
-  return modelProvider.flushPolicy === FlushPolicy.Cache;
-}
-
 @Injectable()
 export class StoreCacheService extends BaseCacheService implements IStoreModelProvider {
   private readonly storeCacheThreshold: number;
@@ -48,10 +44,6 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
       exitWithError('Store cache threshold must be less than the store cache upper limit', logger);
     }
-  }
-
-  get flushPolicy() {
-    return FlushPolicy.Cache;
   }
 
   init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void {

@@ -56,7 +56,7 @@ export interface IConfig {
   readonly csvOutDir?: string;
   readonly monitorOutDir: string;
   readonly monitorFileSize?: number;
-  readonly cacheDisable?: boolean;
+  readonly enableCache?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -330,7 +330,7 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
   }
 
   get cacheDisable(): boolean {
-    return this._config.cacheDisable || false;
+    return this._config.enableCache ?? true;
   }
 
   merge(config: Partial<IConfig>): this {

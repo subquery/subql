@@ -19,7 +19,7 @@ import {MetadataKeys} from './entities';
 import {PoiSyncService} from './poi';
 import {PoiService} from './poi/poi.service';
 import {StoreService} from './store.service';
-import {isCachePolicy} from './storeModelProvider';
+import {StoreCacheService} from './storeModelProvider';
 import {ISubqueryProject, IProjectService, BypassBlocks} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
@@ -150,7 +150,7 @@ export abstract class BaseProjectService<
       }
 
       // Flush any pending operations to set up DB
-      if (isCachePolicy(this.storeService.modelProvider)) {
+      if (this.storeService.modelProvider instanceof StoreCacheService) {
         await this.storeService.modelProvider.flushData(true);
       }
     } else {

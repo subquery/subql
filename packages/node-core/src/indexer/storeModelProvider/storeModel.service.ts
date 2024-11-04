@@ -27,10 +27,6 @@ export class PlainStoreModelService extends BaseStoreModelService implements ISt
     super();
   }
 
-  get flushPolicy() {
-    return FlushPolicy.RealTime;
-  }
-
   get metadata(): MetadataModel {
     if (!this.cachedModels[METADATA_ENTITY_NAME]) {
       if (!this.metadataRepo) {

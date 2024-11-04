@@ -12,7 +12,7 @@ import {
   ISubqueryProject,
   PoiService,
   IMetadata,
-  isCachePolicy,
+  StoreCacheService,
 } from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
@@ -127,7 +127,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.forceCleanService
     );
 
-    if (isCachePolicy(this.storeService.modelProvider)) {
+    if (this.storeService.modelProvider instanceof StoreCacheService) {
       await this.storeService.modelProvider.flushData(true);
     }
     monitorWrite(`- Reindex completed`);

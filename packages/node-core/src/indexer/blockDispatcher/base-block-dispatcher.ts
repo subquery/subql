@@ -221,37 +221,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
       !this.projectService.hasDataSourcesAfterHeight(height),
       this.storeService.transaction
     );
-
-    // if (this.storeModelService instanceof StorCeacheService) {
-    //   if (this.nodeConfig.storeCacheAsync) {
-    //     // Flush all completed block data and don't wait
-    //     await this.storeModelService.flushAndWaitForCapacity(false)?.catch((e) => {
-    //       exitWithError(new Error(`Flushing cache failed`, { cause: e }), logger);
-    //     });
-    //   } else {
-    //     // Flush all data from cache and wait
-    //     await this.storeModelService.flushCache(false);
-    //   }
-
-    //   if (!this.projectService.hasDataSourcesAfterHeight(height)) {
-    //     const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-    //     await this.storeModelService.flushCache(false);
-    //     exitWithError(msg, logger, 0);
-    //   }
-    // } else if (this.storeModelService instanceof PlainStoreModelService) {
-    //   const tx = this.storeService.transaction;
-    //   if (!tx) {
-    //     exitWithError(new Error('Transaction not found'), logger, 1);
-    //   }
-    //   await tx.commit();
-
-    //   if (!this.projectService.hasDataSourcesAfterHeight(height)) {
-    //     const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-    //     exitWithError(msg, logger, 0);
-    //   }
-    // } else {
-    //   exitWithError(new Error('Unknown store model service'), logger, 1);
-    // }
   }
 
   @OnEvent(AdminEvent.rewindTarget)

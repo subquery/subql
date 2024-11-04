@@ -6,7 +6,7 @@ import {getAllEntitiesRelations, GraphQLModelsType, GraphQLRelationsType} from '
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {NodeConfig} from '../../configure';
-import {isCachePolicy, StoreService} from '../../indexer';
+import {StoreCacheService, StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {sortModels} from '../sync-helper';
 import {Migration} from './migration';
@@ -114,7 +114,7 @@ export class SchemaMigrationService {
     const sortedAddedModels = alignModelOrder<GraphQLModelsType[]>(sortedSchemaModels, addedModels);
     const sortedModifiedModels = alignModelOrder<ModifiedModels>(sortedSchemaModels, modifiedModels);
 
-    if (isCachePolicy(this.storeService.modelProvider)) {
+    if (this.storeService.modelProvider instanceof StoreCacheService) {
       await this.storeService.modelProvider.flushData(true);
     }
     const migrationAction = await Migration.create(
@@ -188,7 +188,7 @@ export class SchemaMigrationService {
       this.storeService.modelProvider.updateModels(modelChanges);
       await this.storeService.updateModels(this.dbSchema, getAllEntitiesRelations(nextSchema));
 
-      if (isCachePolicy(this.storeService.modelProvider)) {
+      if (this.storeService.modelProvider instanceof StoreCacheService) {
         await this.storeService.modelProvider.flushData(true);
       }
     } catch (e: any) {

@@ -16,7 +16,6 @@ export enum FlushPolicy {
 export interface IStoreModelProvider {
   poi: IPoi | null;
   metadata: IMetadata;
-  flushPolicy: FlushPolicy;
 
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 
