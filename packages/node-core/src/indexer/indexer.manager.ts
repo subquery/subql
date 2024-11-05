@@ -191,7 +191,7 @@ export abstract class BaseIndexerManager<
 
         const parsedData = await this.prepareFilteredData(kind, data, ds);
 
-        monitorWrite(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
+        monitorWrite(() => `- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         this.nodeConfig.profiler
           ? await profilerWrap(
               vm.securedExec.bind(vm),
@@ -210,7 +210,7 @@ export abstract class BaseIndexerManager<
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vm = vm! ?? (await getVM(ds));
-        monitorWrite(`- Handler: ${handler.handler}, args:${handledStringify(data)}`);
+        monitorWrite(() => `- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }
     }

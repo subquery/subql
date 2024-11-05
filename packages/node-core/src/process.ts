@@ -17,20 +17,15 @@ export function exitWithError(error: Error | string, logger?: Pino.Logger, code 
   process.exit(code);
 }
 
-export function monitorWrite(blockData: string): void {
-  if (monitorService) {
-    monitorService.write(blockData);
-  }
+// Function argument is to allow for lazy evauluation only if monitor service is enabled
+export function monitorWrite(blockData: string | (() => string)): void {
+  monitorService?.write(blockData);
 }
 
 export function monitorCreateBlockStart(blockNumber: number): void {
-  if (monitorService) {
-    monitorService.createBlockStart(blockNumber);
-  }
+  monitorService?.createBlockStart(blockNumber);
 }
 
 export function monitorCreateBlockFork(blockNumber: number): void {
-  if (monitorService) {
-    monitorService.createBlockFork(blockNumber);
-  }
+  monitorService?.createBlockFork(blockNumber);
 }
