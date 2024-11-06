@@ -128,7 +128,7 @@ describe('ConnectionPoolService', () => {
     }, 15000);
   });
 
-  describe('Rate limit endpoint delay 20s', () => {
+  describe('Rate limit endpoint delay', () => {
     it('call delay', async () => {
       const logger = getLogger('connection-pool');
       const consoleSpy = jest.spyOn(logger, 'info');
@@ -149,7 +149,7 @@ describe('ConnectionPoolService', () => {
 
       await connectionPoolService.api.fetchBlocks([34365]);
 
-      expect(consoleSpy).toHaveBeenCalledWith('throtling on ratelimited endpoint 20s');
+      expect(consoleSpy).toHaveBeenCalledWith('throtling on ratelimited endpoint 10s');
       consoleSpy.mockRestore();
     }, 30000);
   });
