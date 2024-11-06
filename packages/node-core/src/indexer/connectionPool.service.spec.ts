@@ -127,4 +127,30 @@ describe('ConnectionPoolService', () => {
       expect(handleApiDisconnectsSpy).toHaveBeenCalledTimes(1);
     }, 15000);
   });
+
+  describe('Rate limit endpoint delay 20s', () => {
+    it('call delay', async () => {
+      const logger = getLogger('connection-pool');
+      const consoleSpy = jest.spyOn(logger, 'info');
+
+      await connectionPoolService.addToConnections(mockApiConnection, TEST_URL);
+      await connectionPoolService.addToConnections(mockApiConnection, `${TEST_URL}/2`);
+      await connectionPoolService.handleApiError(TEST_URL, {
+        name: 'timeout',
+        errorType: ApiErrorType.Timeout,
+        message: 'timeout error',
+      });
+      await connectionPoolService.handleApiError(`${TEST_URL}/2`, {
+        name: 'DefaultError',
+        errorType: ApiErrorType.Default,
+        message: 'Default error',
+      });
+      await (connectionPoolService as any).flushResultCache();
+
+      await connectionPoolService.api.fetchBlocks([34365]);
+
+      expect(consoleSpy).toHaveBeenCalledWith('throtling on ratelimited endpoint 20s');
+      consoleSpy.mockRestore();
+    }, 30000);
+  });
 });

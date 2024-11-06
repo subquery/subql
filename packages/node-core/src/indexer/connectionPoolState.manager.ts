@@ -24,6 +24,7 @@ export interface ConnectionPoolItem<T> {
   backoffDelay: number;
   failureCount: number;
   rateLimited: boolean;
+  rateLimitDelay: number;
   failed: boolean;
   lastRequestTime: number;
   connected: boolean;
@@ -74,6 +75,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       endpoint,
       backoffDelay: 0,
       rateLimited: false,
+      rateLimitDelay: 0,
       failed: false,
       connected: true,
       lastRequestTime: 0,
@@ -200,6 +202,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
     this.pool[endpoint].timeoutId = setTimeout(() => {
       this.pool[endpoint].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
       this.pool[endpoint].rateLimited = false;
+      this.pool[endpoint].rateLimitDelay = 0;
       this.pool[endpoint].failed = false;
       this.pool[endpoint].timeoutId = undefined; // Clear the timeout ID
 
@@ -258,6 +261,7 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
       case ApiErrorType.RateLimit: {
         // The “rateLimited” status will be selected when no endpoints are available, so we should avoid setting a large delay.
         this.pool[endpoint].rateLimited = true;
+        this.pool[endpoint].rateLimitDelay = RATE_LIMIT_DELAY;
         break;
       }
       case ApiErrorType.Default: {
