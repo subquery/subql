@@ -35,7 +35,7 @@ interface FileStat {
 }
 
 export interface MonitorServiceInterface {
-  write(blockData: string): void;
+  write(blockData: string | (() => string)): void;
   createBlockFork(blockHeight: number): void;
   createBlockStart(blockHeight: number): void;
 }
@@ -212,16 +212,16 @@ export class MonitorService implements MonitorServiceInterface {
 
   /**
    * Write block record data to file
-   * @param blockData
+   * @param blockData string or function that returns a string, this allows lazy interpolation for any heavy stringification
    */
-  write(blockData: string): void {
+  write(blockData: string | (() => string)): void {
     if (this.monitorFileSize <= 0) {
       return;
     }
     this.checkAndSwitchFile();
-    const escapedBlockData = blockData.replace(/\n/g, '\\n');
+    const escapedBlockData = (typeof blockData === 'string' ? blockData : blockData()).replace(/\n/g, '\\n');
     fs.appendFileSync(this.getFilePath(this.currentFile), `${escapedBlockData}\n`);
-    this.currentFileSize += Buffer.byteLength(blockData) + 1; // + 1 for the new line
+    this.currentFileSize += Buffer.byteLength(escapedBlockData) + 1; // + 1 for the new line
     this.currentFileLastLine += 1;
   }
 
