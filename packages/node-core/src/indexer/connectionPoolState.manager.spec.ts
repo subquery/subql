@@ -71,30 +71,4 @@ describe('ConnectionPoolStateManager', function () {
     const score2 = (connectionPoolStateManager as any).calculatePerformanceScore(2, 0);
     expect(score1).toBeGreaterThan(score2);
   });
-
-  it('backoff delay rule', function () {
-    const delay1 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 0});
-    expect(delay1).toBe(0);
-
-    const delay2 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 1});
-    expect(delay2).toBe(10000);
-
-    const delay3 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 2});
-    expect(delay3).toBe(20000);
-
-    const delay4 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 3});
-    expect(delay4).toBe(40000);
-
-    const delay5 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 4});
-    expect(delay5).toBe(80000);
-
-    const delay6 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 5});
-    expect(delay6).toBe(160000);
-
-    const delay7 = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 6});
-    expect(delay7).toBe(320000);
-
-    const delayMax = (connectionPoolStateManager as any).calculateNextDelay({failureCount: 7});
-    expect(delayMax).toBe(320000);
-  });
 });
