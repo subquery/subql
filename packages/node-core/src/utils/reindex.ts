@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Sequelize} from '@subql/x-sequelize';
-import {IProjectUpgradeService} from '../configure';
+import { Sequelize } from '@subql/x-sequelize';
+import { IProjectUpgradeService } from '../configure';
 import {
   DynamicDsService,
   IUnfinalizedBlocksService,
@@ -12,10 +12,12 @@ import {
   StoreCacheService,
   cacheProviderFlushData,
   cacheProviderResetData,
+  Header,
 } from '../indexer';
-import {getLogger} from '../logger';
-import {exitWithError} from '../process';
-import {ForceCleanService} from '../subcommands/forceClean.service';
+import { getLogger } from '../logger';
+import { exitWithError } from '../process';
+import { ForceCleanService } from '../subcommands/forceClean.service';
+import { getHistoricalUnit } from './blocks';
 
 const logger = getLogger('Reindex');
 
@@ -40,8 +42,8 @@ const logger = getLogger('Reindex');
  */
 export async function reindex(
   startHeight: number,
-  targetBlockHeight: number,
-  lastProcessedHeight: number,
+  targetBlockHeader: Header,
+  lastProcessed: { height: number; timestamp?: number },
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
@@ -50,17 +52,20 @@ export async function reindex(
   poiService?: PoiService,
   forceCleanService?: ForceCleanService
 ): Promise<void> {
-  if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
+  const lastUnit = storeService.historical === 'timestamp' ? lastProcessed.timestamp : lastProcessed.height;
+  const targetUnit = getHistoricalUnit(storeService.historical, targetBlockHeader);
+
+  if (!lastUnit || lastUnit < targetUnit) {
     logger.warn(
-      `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`
+      `Skipping reindexing to ${storeService.historical} ${targetUnit}: current indexing height ${lastUnit} is behind requested ${storeService.historical}`
     );
     return;
   }
 
   // if startHeight is greater than the targetHeight, just force clean
-  if (targetBlockHeight < startHeight) {
+  if (targetBlockHeader.blockHeight < startHeight) {
     logger.info(
-      `targetHeight: ${targetBlockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
+      `targetHeight: ${targetBlockHeader.blockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
     if (!forceCleanService) {
       exitWithError(`ForceCleanService not provided, cannot force clean`, logger);
@@ -69,7 +74,7 @@ export async function reindex(
     await cacheProviderResetData(storeService.modelProvider);
     await forceCleanService?.forceClean();
   } else {
-    logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
     await cacheProviderFlushData(storeService.modelProvider, true);
     await cacheProviderResetData(storeService.modelProvider);
     if (storeService.modelProvider instanceof StoreCacheService) {
@@ -84,17 +89,22 @@ export async function reindex(
        2.1 On start, projectUpgrade rewind will sync the sequelize models
        2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
     */
-      await projectUpgradeService.rewind(targetBlockHeight, lastProcessedHeight, transaction, storeService);
+      await projectUpgradeService.rewind(
+        targetBlockHeader.blockHeight,
+        lastProcessed.height,
+        transaction,
+        storeService
+      );
 
       await Promise.all([
-        storeService.rewind(targetBlockHeight, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(transaction), // TODO: may not needed for nonfinalized chains
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(transaction), // TODO: may not needed for nonfinalized chains
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
-        poiService?.rewind(targetBlockHeight, transaction),
+        storeService.rewind(targetBlockHeader, transaction),
+        unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
+        dynamicDsService.resetDynamicDatasource(targetBlockHeader.blockHeight, transaction),
+        poiService?.rewind(targetBlockHeader.blockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all
-      await storeService.modelProvider.metadata.flush?.(transaction, targetBlockHeight);
+      await storeService.modelProvider.metadata.flush?.(transaction, targetUnit);
 
       await transaction.commit();
       logger.info('Reindex Success');

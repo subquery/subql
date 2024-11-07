@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 // import { Header } from '@polkadot/types/interfaces';
-import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
-import {Header, IBlock} from '../indexer';
-import {StoreCacheService, CacheMetadataModel} from './storeModelProvider';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { Header, IBlock } from '../indexer';
+import { StoreCacheService, CacheMetadataModel } from './storeModelProvider';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,
@@ -22,6 +22,7 @@ class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<IBlock<any>>
       blockHeight: 91,
       blockHash: `0xabc91f`,
       parentHash: `0xabc90f`,
+      timestamp: new Date(),
     });
   }
 
@@ -31,6 +32,7 @@ class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<IBlock<any>>
       blockHeight: num,
       blockHash: hash,
       parentHash: `0xabc${num - 1}f`,
+      timestamp: new Date(),
     });
   }
 
@@ -39,6 +41,7 @@ class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<IBlock<any>>
       blockHeight: height,
       blockHash: `0xabc${height}f`,
       parentHash: `0xabc${height - 1}f`,
+      timestamp: new Date(),
     });
   }
 }
@@ -46,8 +49,8 @@ class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<IBlock<any>>
 function getMockMetadata(): any {
   const data: Record<string, any> = {};
   return {
-    upsert: ({key, value}: any) => (data[key] = value),
-    findOne: ({where: {key}}: any) => ({value: data[key]}),
+    upsert: ({ key, value }: any) => (data[key] = value),
+    findOne: ({ where: { key } }: any) => ({ value: data[key] }),
     findByPk: (key: string) => data[key],
     find: (key: string) => data[key],
   } as any;
@@ -62,7 +65,7 @@ function mockStoreCache(): StoreCacheService {
 function mockBlock(height: number, hash: string, parentHash?: string): IBlock<any> {
   return {
     getHeader: () => {
-      return {blockHeight: height, parentHash: parentHash ?? '', blockHash: hash};
+      return { blockHeight: height, parentHash: parentHash ?? '', blockHash: hash, timestamp: new Date() };
     },
     block: {
       header: {
@@ -78,7 +81,7 @@ describe('UnfinalizedBlocksService', () => {
   let unfinalizedBlocksService: UnfinalizedBlocksService;
 
   beforeEach(async () => {
-    unfinalizedBlocksService = new UnfinalizedBlocksService({unfinalizedBlocks: true} as any, mockStoreCache());
+    unfinalizedBlocksService = new UnfinalizedBlocksService({ unfinalizedBlocks: true } as any, mockStoreCache());
 
     await unfinalizedBlocksService.init(() => Promise.resolve());
   });
@@ -244,23 +247,23 @@ describe('UnfinalizedBlocksService', () => {
   it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
     const storeCache = new StoreCacheService(
       null as any,
-      {storeCacheThreshold: 300} as any,
+      { storeCacheThreshold: 300 } as any,
       new EventEmitter2(),
       new SchedulerRegistry()
     );
 
-    storeCache.init(true, false, {} as any, undefined);
+    storeCache.init('height', {} as any, undefined);
 
     await storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,
       JSON.stringify(<Header[]>[
-        {blockHeight: 90, blockHash: '0xabcd'},
-        {blockHeight: 91, blockHash: '0xabc91'},
-        {blockHeight: 92, blockHash: '0xabc92'},
+        { blockHeight: 90, blockHash: '0xabcd' },
+        { blockHeight: 91, blockHash: '0xabc91' },
+        { blockHeight: 92, blockHash: '0xabc92' },
       ])
     );
     await storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 90);
-    const unfinalizedBlocksService2 = new UnfinalizedBlocksService({unfinalizedBlocks: false} as any, storeCache);
+    const unfinalizedBlocksService2 = new UnfinalizedBlocksService({ unfinalizedBlocks: false } as any, storeCache);
 
     const reindex = jest.fn().mockReturnValue(Promise.resolve());
 

@@ -7,7 +7,7 @@ import {mergeNumAndBlocks, mergeNumAndBlocksToNums} from './utils';
 function mockIblock(n: number): IBlock<{height: number; hash: string}> {
   return {
     getHeader: () => {
-      return {blockHeight: n, parentHash: `0x${n - 1}`, blockHash: `0x${n}`};
+      return {blockHeight: n, parentHash: `0x${n - 1}`, blockHash: `0x${n}`, timestamp: new Date()};
     },
     block: {height: n, hash: `0x${n}`},
   };
@@ -56,7 +56,7 @@ it('mergeNumAndBlocksToNums, turn all blocks into number', () => {
   function mockIblock(n: number): IBlock<{height: number; hash: string}> {
     return {
       getHeader: () => {
-        return {blockHeight: n, parentHash: `0x${n - 1}`, blockHash: `0x${n}`};
+        return {blockHeight: n, parentHash: `0x${n - 1}`, blockHash: `0x${n}`, timestamp: new Date()};
       },
       block: {height: n, hash: `0x${n}`},
     };

@@ -3,7 +3,7 @@
 
 import {Schedule} from 'cron-converter';
 import {getBlockHeight} from '../indexer/dictionary';
-import {BypassBlocks, IBlock} from '../indexer/types';
+import {BypassBlocks, Header, HistoricalMode, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
 
 const logger = getLogger('timestamp-filter');
@@ -52,4 +52,15 @@ function inBypassBlocks(bypassBlocks: BypassBlocks, blockNum: number): boolean {
     const [start, end] = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
     return blockNum >= start && blockNum <= end;
   });
+}
+
+export function getHistoricalUnit(mode: HistoricalMode, header: Header): number {
+  if (mode === 'timestamp') {
+    if (!header.timestamp) {
+      throw new Error('Timestamp missing on current block header');
+    }
+    return header.timestamp.getTime();
+  }
+
+  return header.blockHeight;
 }

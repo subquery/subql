@@ -8,6 +8,7 @@ import {getFileContent, loadFromJsonOrYaml, normalizeNetworkEndpoints} from '@su
 import {IEndpointConfig} from '@subql/types-core';
 import {last} from 'lodash';
 import {LevelWithSilent} from 'pino';
+import {HistoricalMode} from '../indexer';
 import {getLogger} from '../logger';
 import {assign} from '../utils/object';
 
@@ -38,7 +39,7 @@ export interface IConfig {
   readonly profiler?: boolean;
   readonly unsafe?: boolean;
   readonly subscription: boolean;
-  readonly disableHistorical: boolean;
+  readonly historical: HistoricalMode;
   readonly multiChain: boolean;
   readonly reindex?: number;
   readonly unfinalizedBlocks?: boolean;
@@ -75,7 +76,7 @@ const DEFAULT_CONFIG = {
   dictionaryQuerySize: 10000,
   profiler: false,
   subscription: false,
-  disableHistorical: false,
+  historical: 'height',
   multiChain: false,
   unfinalizedBlocks: false,
   storeCacheThreshold: 1000,
@@ -257,8 +258,8 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     return this._config.subscription;
   }
 
-  get disableHistorical(): boolean {
-    return this._isTest ? true : this._config.disableHistorical;
+  get historical(): HistoricalMode {
+    return this._isTest ? false : this._config.historical;
   }
 
   get multiChain(): boolean {
@@ -326,7 +327,7 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     const defaultMonitorFileSize = 200;
     // If user passed though yarg, we will record monitor file by this size, no matter poi or not
     // if user didn't pass through yarg, we will record monitor file by this default size only when poi is enabled
-    return this._config.monitorFileSize ?? this._config.proofOfIndex ? defaultMonitorFileSize : 0;
+    return (this._config.monitorFileSize ?? this._config.proofOfIndex) ? defaultMonitorFileSize : 0;
   }
 
   get enableCache(): boolean {

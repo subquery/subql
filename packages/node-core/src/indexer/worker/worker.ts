@@ -13,6 +13,7 @@ import {ProcessBlockResponse} from '../blockDispatcher';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {IDynamicDsService} from '../dynamic-ds.service';
 import {MonitorServiceInterface} from '../monitor.service';
+import {Header} from '../types';
 import {IUnfinalizedBlocksService} from '../unfinalizedBlocks.service';
 import {hostMonitorKeys, monitorHostFunctions} from '../worker';
 import {WorkerHost, Worker, AsyncMethods} from './worker.builder';
@@ -29,15 +30,15 @@ import {HostUnfinalizedBlocks, hostUnfinalizedBlocksKeys} from './worker.unfinal
 
 export type DefaultWorkerFunctions<
   ApiConnection /* ApiPromiseConnection*/,
-  DS extends BaseDataSource = BaseDataSource
+  DS extends BaseDataSource = BaseDataSource,
 > = HostCache & HostStore & HostDynamicDS<DS> & HostUnfinalizedBlocks & HostConnectionPoolState<ApiConnection>;
 
 let workerApp: INestApplication;
-let workerService: BaseWorkerService<any, any>;
+let workerService: BaseWorkerService<any, Header>;
 
 const logger = getLogger(`worker #${threadId}`);
 
-export function initWorkerServices(worker: INestApplication, service: BaseWorkerService<any, any>): void {
+export function initWorkerServices(worker: INestApplication, service: typeof workerService): void {
   if (workerApp) {
     logger.warn('Worker already initialised');
     return;
@@ -51,7 +52,7 @@ export function getWorkerApp(): INestApplication {
   return workerApp;
 }
 
-export function getWorkerService<S extends BaseWorkerService<any, any>>(): S {
+export function getWorkerService<S extends typeof workerService>(): S {
   assert(workerService, 'Worker Not initialised');
   return workerService as S;
 }
@@ -79,9 +80,9 @@ async function getStatus(): Promise<WorkerStatusResponse> {
   };
 }
 
-async function fetchBlock(height: number, specVersion: number): Promise<unknown /*FetchBlockResponse*/> {
+async function fetchBlock<R extends Header /*FetchBlockResponse*/>(height: number, specVersion: number): Promise<R> {
   assert(workerService, 'Worker Not initialised');
-  return workerService.fetchBlock(height, {specVersion});
+  return (workerService as unknown as BaseWorkerService<any, R>).fetchBlock(height, {specVersion});
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -142,7 +143,7 @@ export function createWorkerHost<
   T extends AsyncMethods,
   H extends AsyncMethods & {initWorker: (height?: number) => Promise<void>},
   ApiConnection /* ApiPromiseConnection*/,
-  DS extends BaseDataSource = BaseDataSource
+  DS extends BaseDataSource = BaseDataSource,
 >(extraWorkerFns: (keyof T)[], extraHostFns: H): WorkerHost<DefaultWorkerFunctions<ApiConnection, DS> & T> {
   // Register these functions to be exposed to worker host
   return WorkerHost.create<DefaultWorkerFunctions<ApiConnection, DS> & T, IBaseIndexerWorker & H>(
@@ -176,7 +177,7 @@ export async function createIndexerWorker<
   T extends IBaseIndexerWorker,
   ApiConnection extends IApiConnectionSpecific<any, any, any> /*ApiPromiseConnection*/ /*ApiPromiseConnection*/,
   B,
-  DS extends BaseDataSource = BaseDataSource
+  DS extends BaseDataSource = BaseDataSource,
 >(
   workerPath: string,
   workerFns: (keyof Omit<T, keyof IBaseIndexerWorker>)[],

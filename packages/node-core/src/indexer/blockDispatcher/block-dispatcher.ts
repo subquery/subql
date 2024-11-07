@@ -149,23 +149,26 @@ export abstract class BlockDispatcher<B, DS>
           })
           .then(
             (block) => {
-              const {blockHeight} = block.getHeader();
+              const header = block.getHeader();
 
               return this.processQueue.put(async () => {
                 // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
                 // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
                 const peeked = this.queue.peek();
-                if (bufferedHeight > this._latestBufferedHeight || (peeked && getBlockHeight(peeked) < blockHeight)) {
+                if (
+                  bufferedHeight > this._latestBufferedHeight ||
+                  (peeked && getBlockHeight(peeked) < header.blockHeight)
+                ) {
                   logger.info(`Queue was reset for new DS, discarding fetched blocks`);
                   return;
                 }
 
                 try {
-                  await this.preProcessBlock(blockHeight);
+                  await this.preProcessBlock(header);
                   monitorWrite(`Processing from main thread`);
                   // Inject runtimeVersion here to enhance api.at preparation
                   const processBlockResponse = await this.indexBlock(block);
-                  await this.postProcessBlock(blockHeight, processBlockResponse);
+                  await this.postProcessBlock(header, processBlockResponse);
                   //set block to null for garbage collection
                   (block as any) = null;
                 } catch (e: any) {
@@ -175,7 +178,7 @@ export abstract class BlockDispatcher<B, DS>
                   }
                   logger.error(
                     e,
-                    `Failed to index block at height ${blockHeight} ${
+                    `Failed to index block at height ${header.blockHeight} ${
                       e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
                     }`
                   );

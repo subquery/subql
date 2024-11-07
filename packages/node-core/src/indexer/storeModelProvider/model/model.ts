@@ -1,15 +1,15 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {FieldsExpression, GetOptions} from '@subql/types-core';
-import {Op, Model, ModelStatic, Transaction, CreationAttributes, Sequelize} from '@subql/x-sequelize';
-import {Fn} from '@subql/x-sequelize/types/utils';
-import _ from 'lodash';
-import {CsvStoreService} from '../csvStore.service';
-import {Exporter} from '../types';
-import {getFullOptions, operatorsMap} from './utils';
+import { FieldsExpression, GetOptions } from '@subql/types-core';
+import { Op, Model, ModelStatic, Transaction, CreationAttributes, Sequelize } from '@subql/x-sequelize';
+import { Fn } from '@subql/x-sequelize/types/utils';
+import { HistoricalMode } from '../../types';
+import { CsvStoreService } from '../csvStore.service';
+import { Exporter } from '../types';
+import { getFullOptions, operatorsMap } from './utils';
 
-export type BaseEntity = {id: string; __block_range?: (number | null)[] | Fn};
+export type BaseEntity = { id: string; __block_range?: (number | null)[] | Fn };
 
 export interface IModel<T extends BaseEntity> {
   get(id: string, tx?: Transaction): Promise<T | undefined>;
@@ -29,13 +29,13 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
 
   constructor(
     readonly model: ModelStatic<Model<T, T>>,
-    private readonly historical = true
+    private readonly historical: HistoricalMode = 'height'
   ) {}
 
   async get(id: string, tx?: Transaction): Promise<T | undefined> {
     const record = await this.model.findOne({
       // https://github.com/sequelize/sequelize/issues/15179
-      where: {id} as any,
+      where: { id } as any,
       transaction: tx,
     });
 
@@ -47,7 +47,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     // Query DB with all params
     const records = await this.model.findAll({
       where: {
-        [Op.and]: [...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}}))] as any, // Types not working properly
+        [Op.and]: [...filters.map(([field, operator, value]) => ({ [field]: { [operatorsMap[operator]]: value } }))] as any, // Types not working properly
       },
       limit: fullOptions.limit,
       offset: fullOptions.offset,
@@ -110,14 +110,14 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
         });
       });
     } else {
-      Promise.all(this.exporters.map(async (store: Exporter) => store.export(data)));
+      await Promise.all(this.exporters.map(async (store: Exporter) => store.export(data)));
     }
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
     if (!ids.length) return;
     if (!this.historical) {
-      await this.model.destroy({where: {id: ids} as any, transaction: tx});
+      await this.model.destroy({ where: { id: ids } as any, transaction: tx });
     } else {
       await this.markAsDeleted(ids, blockHeight, tx);
     }
@@ -146,7 +146,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
         hooks: false,
         where: {
           id: ids,
-          __block_range: {[Op.contains]: blockHeight},
+          __block_range: { [Op.contains]: blockHeight },
         } as any,
         transaction: tx,
       }

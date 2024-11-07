@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
-import {Interval} from '@nestjs/schedule';
-import {last} from 'lodash';
-import {NodeConfig} from '../../configure';
-import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
-import {IndexerEvent} from '../../events';
-import {IBlock, PoiSyncService} from '../../indexer';
-import {getLogger} from '../../logger';
-import {monitorWrite} from '../../process';
-import {AutoQueue, isTaskFlushedError} from '../../utils';
-import {MonitorServiceInterface} from '../monitor.service';
-import {StoreService} from '../store.service';
-import {IStoreModelProvider} from '../storeModelProvider';
-import {ISubqueryProject, IProjectService} from '../types';
-import {isBlockUnavailableError} from '../worker/utils';
-import {BaseBlockDispatcher} from './base-block-dispatcher';
+import { OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
+import { last } from 'lodash';
+import { NodeConfig } from '../../configure';
+import { IProjectUpgradeService } from '../../configure/ProjectUpgrade.service';
+import { IndexerEvent } from '../../events';
+import { IBlock, PoiSyncService } from '../../indexer';
+import { getLogger } from '../../logger';
+import { monitorWrite } from '../../process';
+import { AutoQueue, isTaskFlushedError } from '../../utils';
+import { MonitorServiceInterface } from '../monitor.service';
+import { StoreService } from '../store.service';
+import { IStoreModelProvider } from '../storeModelProvider';
+import { ISubqueryProject, IProjectService, Header } from '../types';
+import { isBlockUnavailableError } from '../worker/utils';
+import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -43,14 +43,13 @@ function initAutoQueue<T>(
 
 export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
   extends BaseBlockDispatcher<AutoQueue<void>, DS, B>
-  implements OnApplicationShutdown
-{
+  implements OnApplicationShutdown {
   protected workers: W[] = [];
   private numWorkers: number;
   private isShutdown = false;
   private currentWorkerIndex = 0;
 
-  protected abstract fetchBlock(worker: W, height: number): Promise<void>;
+  protected abstract fetchBlock(worker: W, height: number): Promise<Header>;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -151,25 +150,26 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
     const processBlock = async () => {
       try {
-        await pendingBlock;
+        const header = await pendingBlock;
         if (bufferedHeight > this.latestBufferedHeight) {
           logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
           return;
         }
 
-        await this.preProcessBlock(height);
+        await this.preProcessBlock(header);
 
         monitorWrite(`Processing from worker #${workerIdx}`);
-        const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
+        const { dynamicDsCreated, reindexBlockHeader } = await worker.processBlock(height);
 
-        await this.postProcessBlock(height, {
+        await this.postProcessBlock(header, {
           dynamicDsCreated,
-          blockHash,
-          reindexBlockHeight,
+          reindexBlockHeader,
         });
       } catch (e: any) {
         // TODO discard any cache changes from this block height
-
+        if (isTaskFlushedError(e)) {
+          return;
+        }
         if (isBlockUnavailableError(e)) {
           return;
         }

@@ -6,7 +6,7 @@ import {Injectable} from '@nestjs/common';
 import {Header, IBlock, IUnfinalizedBlocksService} from '../../indexer';
 
 export type HostUnfinalizedBlocks = {
-  unfinalizedBlocksProcess: (header: Header | undefined) => Promise<number | undefined>;
+  unfinalizedBlocksProcess: (header: Header | undefined) => Promise<Header | undefined>;
 };
 
 export const hostUnfinalizedBlocksKeys: (keyof HostUnfinalizedBlocks)[] = ['unfinalizedBlocksProcess'];
@@ -19,16 +19,16 @@ export class WorkerUnfinalizedBlocksService<T> implements IUnfinalizedBlocksServ
     }
   }
 
-  async processUnfinalizedBlocks(block: IBlock<T>): Promise<number | undefined> {
+  async processUnfinalizedBlocks(block: IBlock<T>): Promise<Header | undefined> {
     return this.host.unfinalizedBlocksProcess(block.getHeader());
   }
 
-  async processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined> {
+  async processUnfinalizedBlockHeader(header: Header | undefined): Promise<Header | undefined> {
     return this.host.unfinalizedBlocksProcess(header);
   }
 
   // eslint-disable-next-line @typescript-eslint/promise-function-async
-  init(reindex: (targetHeight: number) => Promise<void>): Promise<number> {
+  init(reindex: (targetHeader: Header) => Promise<void>): Promise<Header> {
     throw new Error('This method should not be called from a worker');
   }
   // eslint-disable-next-line @typescript-eslint/require-await

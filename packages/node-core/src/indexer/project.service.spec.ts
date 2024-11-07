@@ -38,6 +38,7 @@ class TestUnfinalizedBlocksService extends BaseUnfinalizedBlocksService<any> {
       blockHash: 'asdf',
       blockHeight: 1000,
       parentHash: 'efgh',
+      timestamp: new Date(),
     };
   }
 
@@ -48,6 +49,7 @@ class TestUnfinalizedBlocksService extends BaseUnfinalizedBlocksService<any> {
       blockHeight: num,
       blockHash: hash,
       parentHash: `b${num - 1}`,
+      timestamp: new Date(),
     };
   }
 
@@ -57,6 +59,7 @@ class TestUnfinalizedBlocksService extends BaseUnfinalizedBlocksService<any> {
       blockHeight: height,
       blockHash: `b${height}`,
       parentHash: `b${height - 1}`,
+      timestamp: new Date(),
     };
   }
 }
@@ -404,8 +407,8 @@ describe('BaseProjectService', () => {
       await setupProject(
         95,
         [
-          {blockHeight: 100, blockHash: 'a100', parentHash: 'a99'},
-          {blockHeight: 99, blockHash: 'a99', parentHash: 'a98'},
+          {blockHeight: 100, blockHash: 'a100', parentHash: 'a99', timestamp: new Date()},
+          {blockHeight: 99, blockHash: 'a99', parentHash: 'a98', timestamp: new Date()},
         ],
         90
       );

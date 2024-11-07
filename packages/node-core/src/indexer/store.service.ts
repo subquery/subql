@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {Inject, Injectable} from '@nestjs/common';
-import {getDbType, SUPPORT_DB} from '@subql/common';
-import {IProjectNetworkConfig} from '@subql/types-core';
+import { Inject, Injectable } from '@nestjs/common';
+import { IProjectNetworkConfig } from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   hashName,
@@ -23,8 +22,8 @@ import {
   Transaction,
   Deferrable,
 } from '@subql/x-sequelize';
-import {camelCase, flatten, last, upperFirst} from 'lodash';
-import {NodeConfig} from '../configure';
+import { camelCase, flatten, last, upperFirst } from 'lodash';
+import { NodeConfig } from '../configure';
 import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   createSchemaTrigger,
@@ -33,14 +32,14 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
-import {getLogger} from '../logger';
-import {exitWithError} from '../process';
-import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
-import {Store} from './store';
-import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
-import {StoreOperations} from './StoreOperations';
-import {ISubqueryProject} from './types';
+import { getLogger } from '../logger';
+import { exitWithError } from '../process';
+import { camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit } from '../utils';
+import { MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo } from './entities';
+import { Store } from './store';
+import { IMetadata, IStoreModelProvider, PlainStoreModelService } from './storeModelProvider';
+import { StoreOperations } from './StoreOperations';
+import { Header, HistoricalMode, ISubqueryProject } from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -65,12 +64,11 @@ export class StoreService {
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
   private _metaDataRepo?: MetadataRepo;
-  private _historical?: boolean;
-  private _dbType?: SUPPORT_DB;
+  private _historical?: HistoricalMode;
   private _metadataModel?: IMetadata;
   private _schema?: string;
   // Should be updated each block
-  private _blockHeight?: number;
+  private _blockHeader?: Header;
   private _operationStack?: StoreOperations;
   private _lastTimeDbSizeChecked?: number;
 
@@ -106,12 +104,12 @@ export class StoreService {
     return this._operationStack;
   }
 
-  get blockHeight(): number {
-    assert(this._blockHeight, new Error('StoreService.setBlockHeight has not been called'));
-    return this._blockHeight;
+  get blockHeader(): Header {
+    assert(this._blockHeader, new Error('StoreService.setBlockHeader has not been called'));
+    return this._blockHeader;
   }
 
-  get historical(): boolean {
+  get historical(): HistoricalMode {
     assert(this._historical !== undefined, new NoInitError());
     return this._historical;
   }
@@ -134,11 +132,6 @@ export class StoreService {
         }
       });
     }
-  }
-
-  private get dbType(): SUPPORT_DB {
-    assert(this._dbType, new NoInitError());
-    return this._dbType;
   }
 
   private get metadataModel(): IMetadata {
@@ -165,19 +158,14 @@ export class StoreService {
       this.subqueryProject.network.chainId
     );
 
-    this._dbType = await getDbType(this.sequelize);
     this._schema = schema;
 
     await this.sequelize.sync();
 
     this._historical = await this.getHistoricalStateEnabled(schema);
-    if (this.historical && this.dbType === SUPPORT_DB.cockRoach) {
-      this._historical = false;
-      logger.warn(`Historical feature is not supported with ${this.dbType}`);
-    }
-    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
+    logger.info(`Historical state is ${this.historical || 'disabled'}`);
 
-    this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
+    this.modelProvider.init(this.historical, this.metaDataRepo, this.poiRepo);
 
     this._metadataModel = this.modelProvider.metadata;
 
@@ -216,16 +204,11 @@ export class StoreService {
         await this.metadataModel.setIncrement('schemaMigrationCount');
       }
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);
+      exitWithError(new Error(`Having a problem when syncing schema`, { cause: e }), logger);
     }
   }
 
   private async initHotSchemaReloadQueries(schema: string): Promise<void> {
-    if (this.dbType === SUPPORT_DB.cockRoach) {
-      logger.warn(`Hot schema reload feature is not supported with ${this.dbType}`);
-      return;
-    }
-
     /* These SQL queries are to allow hot-schema reload on query service */
     const schemaTriggerName = hashName(schema, 'schema_trigger', this.metaDataRepo.tableName);
     const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
@@ -250,7 +233,7 @@ export class StoreService {
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when getting indexed fields`, {cause: e}), logger);
+      exitWithError(new Error(`Having a problem when getting indexed fields`, { cause: e }), logger);
     }
   }
 
@@ -279,17 +262,17 @@ export class StoreService {
 
       sequelizeModel.addHook('beforeFind', (options) => {
         (options.where as any).__block_range = {
-          [Op.contains]: this.blockHeight as any,
+          [Op.contains]: this.getHistoricalUnit(),
         };
       });
       sequelizeModel.addHook('beforeValidate', (attributes, options) => {
-        attributes.__block_range = [this.blockHeight, null];
+        attributes.__block_range = [this.getHistoricalUnit(), null];
       });
 
       if (!this.config.enableCache) {
         sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
           instances.forEach((item) => {
-            item.__block_range = [this.blockHeight, null];
+            item.__block_range = [this.getHistoricalUnit(), null];
           });
         });
       }
@@ -302,77 +285,75 @@ export class StoreService {
 
   private async useDeprecatePoi(schema: string): Promise<boolean> {
     const sql = `SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name = '_poi' AND column_name = 'projectId'`;
-    const [result] = await this.sequelize.query(sql, {replacements: [schema]});
+    const [result] = await this.sequelize.query(sql, { replacements: [schema] });
     return !!result.length;
   }
 
-  async getHistoricalStateEnabled(schema: string): Promise<boolean> {
-    const {disableHistorical, multiChain} = this.config;
+  async getHistoricalStateEnabled(schema: string): Promise<HistoricalMode> {
+    const { historical, multiChain } = this.config;
 
     try {
       const tableRes = await this.sequelize.query<Array<string>>(
         `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`,
-        {type: QueryTypes.SELECT}
+        { type: QueryTypes.SELECT }
       );
 
       const metadataTableNames = flatten(tableRes).filter(
         (value: string) => METADATA_REGEX.test(value) || MULTI_METADATA_REGEX.test(value)
       );
 
-      if (metadataTableNames.length > 1 && !multiChain) {
-        exitWithError(
-          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multi-chain',
-          logger
-        );
+      if (metadataTableNames.length <= 0) {
+        throw new Error('Metadata table does not exist');
       }
 
-      if (metadataTableNames.length === 1) {
-        const res = await this.sequelize.query<{key: string; value: boolean | string}>(
-          `SELECT key, value FROM "${schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled' OR key = 'genesisHash')`,
-          {type: QueryTypes.SELECT}
-        );
+      const res = await this.sequelize.query<{ key: string; value: boolean | string }>(
+        `SELECT key, value FROM "${schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled')`,
+        { type: QueryTypes.SELECT }
+      );
 
-        const store = res.reduce(
-          function (total, current) {
-            total[current.key] = current.value;
-            return total;
-          },
-          {} as {[key: string]: string | boolean}
-        );
+      if (res[0]?.key !== 'historicalStateEnabled') {
+        throw new Error('Metadata table does not have historicalStateEnabled key');
+      }
 
-        const useHistorical =
-          store.historicalStateEnabled === undefined ? !disableHistorical : (store.historicalStateEnabled as boolean);
+      const value = res[0].value;
 
-        if (useHistorical && multiChain) {
-          throw new Error(
-            'Historical feature is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
-          );
+      if (typeof value === 'string') {
+        if (value === 'height' || value === 'timestamp') {
+          return value;
         }
-        return useHistorical;
+        throw new Error(`Invalid value for historicalStateEnabled. Received "${value}"`);
       }
-      throw new Error('Metadata table does not exist');
+
+      if (value && multiChain) {
+        throw new Error(
+          'Historical feature is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
+        );
+      }
+
+      // TODO parse through CLI/Project option and consider multichain
+      return value ? 'height' : false;
     } catch (e) {
-      if (multiChain && !disableHistorical) {
+      if (multiChain && historical) {
         logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
         return false;
       }
-
       // Will trigger on first startup as metadata table doesn't exist
-      return !disableHistorical;
+      // Default fallback to "height" for backwards compatible
+      return historical;
     }
   }
-  async setBlockHeight(blockHeight: number): Promise<void> {
-    this._blockHeight = blockHeight;
+
+  async setBlockHeader(header: Header): Promise<void> {
+    this._blockHeader = header;
 
     if (this.modelProvider instanceof PlainStoreModelService) {
-      assert(!this.#transaction, new Error(`Transaction already exists for height: ${blockHeight}`));
+      assert(!this.#transaction, new Error(`Transaction already exists for height: ${header.blockHeight}`));
 
       this.#transaction = await this.sequelize.transaction({
-        deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),
+        deferrable: this._historical ? undefined : Deferrable.SET_DEFERRED(),
       });
       this.#transaction.afterCommit(() => (this.#transaction = undefined));
     }
-
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
@@ -441,21 +422,25 @@ group by
    * @param targetBlockHeight
    * @param transaction
    */
-  async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
+  async rewind(targetBlockHeader: Header, transaction: Transaction): Promise<void> {
     if (!this.historical) {
       throw new Error('Unable to reindex, historical state not enabled');
     }
     // This should only been called from CLI, blockHeight in storeService never been set and is required for`beforeFind` hook
     // Height no need to change for rewind during indexing
-    if (this._blockHeight === undefined) {
-      await this.setBlockHeight(targetBlockHeight);
+    if (this._blockHeader === undefined) {
+      await this.setBlockHeader(targetBlockHeader);
     }
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
-        await batchDeleteAndThenUpdate(this.sequelize, model, transaction, targetBlockHeight);
+        await batchDeleteAndThenUpdate(this.sequelize, model, transaction, this.getHistoricalUnit());
       }
     }
-    await this.metadataModel.set('lastProcessedHeight', targetBlockHeight, transaction);
+
+    await this.metadataModel.set('lastProcessedHeight', targetBlockHeader.blockHeight, transaction);
+    if (targetBlockHeader.timestamp) {
+      await this.metadataModel.set('lastProcessedBlockTimestamp', targetBlockHeader.timestamp.getTime(), transaction);
+    }
     // metadataModel will be flushed in reindex.ts#reindex()
   }
 
@@ -486,6 +471,15 @@ group by
   getStore(): Store {
     return new Store(this.config, this.modelProvider, this);
   }
+
+  // Get the right unit depending on the historical mode
+  getHistoricalUnit(): number {
+    // Cant throw here because even with historical disabled the current height is used by the store
+    // if (!this.historical) {
+    //   throw new Error("Cannot get historical unit if historical indexing is not enabled")
+    // }
+    return getHistoricalUnit(this.historical, this.blockHeader);
+  }
 }
 
 // REMOVE 10,000 record per batch
@@ -493,7 +487,7 @@ async function batchDeleteAndThenUpdate(
   sequelize: Sequelize,
   model: ModelStatic<any>,
   transaction: Transaction,
-  targetBlockHeight: number,
+  targetBlockUnit: number, // Height or timestamp
   batchSize = 10000
 ): Promise<void> {
   let destroyCompleted = false;
@@ -504,33 +498,33 @@ async function batchDeleteAndThenUpdate(
         destroyCompleted
           ? 0
           : model.destroy({
-              transaction,
-              hooks: false,
-              limit: batchSize,
-              where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockHeight),
-            }),
+            transaction,
+            hooks: false,
+            limit: batchSize,
+            where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockUnit),
+          }),
         updateCompleted
           ? [0]
           : model.update(
-              {
-                __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
-              },
-              {
-                transaction,
-                limit: batchSize,
-                hooks: false,
-                where: {
-                  [Op.and]: [
-                    {
-                      __block_range: {
-                        [Op.contains]: targetBlockHeight,
-                      },
+            {
+              __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
+            },
+            {
+              transaction,
+              limit: batchSize,
+              hooks: false,
+              where: {
+                [Op.and]: [
+                  {
+                    __block_range: {
+                      [Op.contains]: targetBlockUnit,
                     },
-                    sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
-                  ],
-                },
-              }
-            ),
+                  },
+                  sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
+                ],
+              },
+            }
+          ),
       ]);
       logger.debug(`${model.name} deleted ${numDestroyRows} records, updated ${numUpdatedRows} records`);
       if (numDestroyRows === 0) {

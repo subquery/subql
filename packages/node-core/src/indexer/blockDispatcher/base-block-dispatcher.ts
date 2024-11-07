@@ -3,28 +3,27 @@
 
 import assert from 'assert';
 
-import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
-import {hexToU8a, u8aEq} from '@subql/utils';
-import {Transaction} from '@subql/x-sequelize';
-import {NodeConfig, IProjectUpgradeService} from '../../configure';
-import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
-import {getLogger} from '../../logger';
-import {monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
-import {IQueue, mainThreadOnly} from '../../utils';
-import {MonitorServiceInterface} from '../monitor.service';
-import {PoiBlock, PoiSyncService} from '../poi';
-import {SmartBatchService} from '../smartBatch.service';
-import {StoreService} from '../store.service';
-import {IStoreModelProvider} from '../storeModelProvider';
-import {IPoi} from '../storeModelProvider/poi';
-import {IBlock, IProjectService, ISubqueryProject} from '../types';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { hexToU8a, u8aEq } from '@subql/utils';
+import { Transaction } from '@subql/x-sequelize';
+import { NodeConfig, IProjectUpgradeService } from '../../configure';
+import { AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload } from '../../events';
+import { getLogger } from '../../logger';
+import { monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite } from '../../process';
+import { IQueue, mainThreadOnly } from '../../utils';
+import { MonitorServiceInterface } from '../monitor.service';
+import { PoiBlock, PoiSyncService } from '../poi';
+import { SmartBatchService } from '../smartBatch.service';
+import { StoreService } from '../store.service';
+import { IStoreModelProvider } from '../storeModelProvider';
+import { IPoi } from '../storeModelProvider/poi';
+import { Header, IBlock, IProjectService, ISubqueryProject } from '../types';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
-  blockHash: string;
-  reindexBlockHeight: number | null;
+  reindexBlockHeader: Header | null;
 };
 
 export interface IBlockDispatcher<B> {
@@ -52,7 +51,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   protected _latestProcessedHeight = 0;
   protected currentProcessingHeight = 0;
   private _onDynamicDsCreated?: (height: number) => void;
-  private _pendingRewindHeight?: number;
+  private _pendingRewindHeader?: Header;
 
   protected smartBatchService: SmartBatchService;
 
@@ -138,14 +137,14 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
    * @param lastCorrectHeight
    */
   @mainThreadOnly()
-  protected async rewind(lastCorrectHeight: number): Promise<void> {
-    if (lastCorrectHeight <= this.currentProcessingHeight) {
-      logger.info(`Found last verified block at height ${lastCorrectHeight}, rewinding...`);
-      await this.projectService.reindex(lastCorrectHeight);
-      this.setLatestProcessedHeight(lastCorrectHeight);
-      logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
+  protected async rewind(lastCorrectHeader: Header): Promise<void> {
+    if (lastCorrectHeader.blockHeight <= this.currentProcessingHeight) {
+      logger.info(`Found last verified block at height ${lastCorrectHeader.blockHeight}, rewinding...`);
+      await this.projectService.reindex(lastCorrectHeader);
+      this.setLatestProcessedHeight(lastCorrectHeader.blockHeight);
+      logger.info(`Successful rewind to block ${lastCorrectHeader.blockHeight}!`);
     }
-    this.flushQueue(lastCorrectHeight);
+    this.flushQueue(lastCorrectHeader.blockHeight);
     logger.info(`Queued blocks flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
   }
 
@@ -156,50 +155,51 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
   // Is called directly before a block is processed
   @mainThreadOnly()
-  protected async preProcessBlock(height: number): Promise<void> {
-    monitorCreateBlockStart(height);
-    await this.storeService.setBlockHeight(height);
+  protected async preProcessBlock(header: Header): Promise<void> {
+    const { blockHeight } = header;
+    monitorCreateBlockStart(blockHeight);
+    await this.storeService.setBlockHeader(header);
 
-    await this.projectUpgradeService.setCurrentHeight(height);
+    await this.projectUpgradeService.setCurrentHeight(blockHeight);
 
-    this.currentProcessingHeight = height;
+    this.currentProcessingHeight = blockHeight;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height,
+      height: blockHeight,
       timestamp: Date.now(),
     });
   }
 
   // Is called directly after a block is processed
   @mainThreadOnly()
-  protected async postProcessBlock(height: number, processBlockResponse: ProcessBlockResponse): Promise<void> {
-    const {blockHash, dynamicDsCreated, reindexBlockHeight: processReindexBlockHeight} = processBlockResponse;
+  protected async postProcessBlock(header: Header, processBlockResponse: ProcessBlockResponse): Promise<void> {
+    const { blockHash, blockHeight: height } = header;
+    const { dynamicDsCreated, reindexBlockHeader: processReindexBlockHeader } = processBlockResponse;
     // Rewind height received from admin api have higher priority than processed reindexBlockHeight
-    const reindexBlockHeight = this._pendingRewindHeight ?? processReindexBlockHeight;
+    const reindexBlockHeader = this._pendingRewindHeader ?? processReindexBlockHeader;
     monitorWrite(`Finished block ${height}`);
-    if (reindexBlockHeight !== null && reindexBlockHeight !== undefined) {
+    if (reindexBlockHeader !== null && reindexBlockHeader !== undefined) {
       try {
         if (this.nodeConfig.proofOfIndex) {
           await this.poiSyncService.stopSync();
           this.poiSyncService.clear();
           monitorWrite(`poiSyncService stopped, cache cleared`);
         }
-        monitorCreateBlockFork(reindexBlockHeight);
-        this.resetPendingRewindHeight();
-        await this.rewind(reindexBlockHeight);
-        this.setLatestProcessedHeight(reindexBlockHeight);
+        monitorCreateBlockFork(reindexBlockHeader.blockHeight);
+        this.resetPendingRewindHeader();
+        await this.rewind(reindexBlockHeader);
         // Bring poi sync service back to sync again.
         if (this.nodeConfig.proofOfIndex) {
           void this.poiSyncService.syncPoi();
         }
-        this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeight});
+        this.eventEmitter.emit(IndexerEvent.RewindSuccess, { success: true, height: reindexBlockHeader.blockHeight });
         return;
       } catch (e: any) {
-        this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
+        this.eventEmitter.emit(IndexerEvent.RewindFailure, { success: false, message: e.message });
         monitorWrite(`***** Rewind failed: ${e.message}`);
         throw e;
       }
     } else {
-      await this.updateStoreMetadata(height, undefined, this.storeService.transaction);
+      this.updateStoreMetadata(height, header.timestamp, undefined, this.storeService.transaction);
 
       const operationHash = this.storeService.getOperationMerkleRoot();
       await this.createPOI(height, blockHash, operationHash, this.storeService.transaction);
@@ -231,14 +231,18 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         `Current processing block ${this.currentProcessingHeight}, can not rewind to future block ${blockPayload.height}`
       );
     }
-    this._pendingRewindHeight = Number(blockPayload.height);
+
+    // TODO can this work without
+    this._pendingRewindHeader = {
+      blockHeight: Number(blockPayload.height),
+    } as Header;
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
     monitorWrite(`***** [ADMIN] ${message}`);
     logger.warn(message);
   }
 
-  private resetPendingRewindHeight(): void {
-    this._pendingRewindHeight = undefined;
+  private resetPendingRewindHeader(): void {
+    this._pendingRewindHeader = undefined;
   }
 
   /**
@@ -265,7 +269,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     const poiBlock = PoiBlock.create(height, blockHash, operationHash, this.project.id);
     // This is the first creation of POI
     await this.poi.bulkUpsert([poiBlock], tx);
-    await this.storeModelProvider.metadata.setBulk([{key: 'lastCreatedPoiHeight', value: height}], tx);
+    await this.storeModelProvider.metadata.setBulk([{ key: 'lastCreatedPoiHeight', value: height }], tx);
     this.eventEmitter.emit(PoiEvent.PoiTarget, {
       height,
       timestamp: Date.now(),
@@ -273,19 +277,22 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   @mainThreadOnly()
-  private async updateStoreMetadata(height: number, updateProcessed = true, tx?: Transaction): Promise<void> {
+  private async updateStoreMetadata(height: number, blockTimestamp?: Date, updateProcessed = true, tx?: Transaction): Promise<void> {
     const meta = this.storeModelProvider.metadata;
     // Update store metadata
     await meta.setBulk(
       [
-        {key: 'lastProcessedHeight', value: height},
-        {key: 'lastProcessedTimestamp', value: Date.now()},
+        { key: 'lastProcessedHeight', value: height },
+        { key: 'lastProcessedTimestamp', value: Date.now() },
       ],
       tx
     );
     // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
     if (updateProcessed) {
       await meta.setIncrement('processedBlockCount', undefined, tx);
+    }
+    if (blockTimestamp) {
+      meta.set('lastProcessedBlockTimestamp', blockTimestamp.getTime());
     }
   }
 

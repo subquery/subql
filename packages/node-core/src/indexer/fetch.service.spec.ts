@@ -72,7 +72,12 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   }
 
   async getFinalizedHeader(): Promise<Header> {
-    return Promise.resolve({blockHeight: this.finalizedHeight, blockHash: '0xxx', parentHash: '0xxx'});
+    return Promise.resolve({
+      blockHeight: this.finalizedHeight,
+      blockHash: '0xxx',
+      parentHash: '0xxx',
+      timestamp: new Date(),
+    });
   }
 }
 

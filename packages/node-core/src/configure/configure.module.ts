@@ -67,10 +67,13 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
         value = [value];
       }
       if (Array.isArray(value)) {
-        value = value.reduce((acc, endpoint, index) => {
-          acc[endpoint] = endpointConfig[index] ?? {};
-          return acc;
-        }, {} as Record<string, IEndpointConfig>);
+        value = value.reduce(
+          (acc, endpoint, index) => {
+            acc[endpoint] = endpointConfig[index] ?? {};
+            return acc;
+          },
+          {} as Record<string, IEndpointConfig>
+        );
       }
     }
     if (key === 'primary-network-endpoint') {
@@ -78,6 +81,21 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
       value = [value, endpointConfig[0] ?? {}];
     }
     if (['network-endpoint-config', 'primary-network-endpoint-config'].includes(key)) return acc;
+
+    if (key === 'disable-historical' && value) {
+      acc.historical = false;
+    }
+    if (key === 'historical' && value === 'false') {
+      value = false;
+      // acc.historical = false;
+    }
+
+    if (key === 'historical') {
+      console.log('HISTORICAL KEY', typeof value, value);
+    }
+    if (key === 'disable-historical') {
+      console.log('HISTORICAL KEY DIS', typeof value, value);
+    }
 
     acc[nameMapping[key] ?? camelCase(key)] = value;
     return acc;

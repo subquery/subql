@@ -13,7 +13,7 @@ import {ProcessBlockResponse} from './blockDispatcher';
 import {asSecondLayerHandlerProcessor_1_0_0, BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {IndexerSandbox} from './sandbox';
-import {IBlock, IIndexerManager} from './types';
+import {Header, IBlock, IIndexerManager} from './types';
 import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
@@ -95,10 +95,10 @@ export abstract class BaseIndexerManager<
     this.assertDataSources(filteredDataSources, blockHeight);
 
     let apiAt: SA;
-    const reindexBlockHeight = (await this.processUnfinalizedBlocks(block)) ?? null;
+    const reindexBlockHeader = (await this.processUnfinalizedBlocks(block)) ?? null;
 
     // Only index block if we're not going to reindex
-    if (!reindexBlockHeight) {
+    if (!reindexBlockHeader) {
       await this.indexBlockData(block.block, filteredDataSources, async (ds: DS) => {
         // Injected runtimeVersion from fetch service might be outdated
         apiAt ??= await getApi();
@@ -123,12 +123,11 @@ export abstract class BaseIndexerManager<
 
     return {
       dynamicDsCreated,
-      blockHash: block.getHeader().blockHash,
-      reindexBlockHeight,
+      reindexBlockHeader,
     };
   }
 
-  protected async processUnfinalizedBlocks(block: IBlock<B>): Promise<number | undefined> {
+  protected async processUnfinalizedBlocks(block: IBlock<B>): Promise<Header | undefined> {
     if (this.nodeConfig.unfinalizedBlocks) {
       return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }

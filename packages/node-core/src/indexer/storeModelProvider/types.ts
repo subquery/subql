@@ -1,21 +1,22 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ENUM, ModelStatic, Transaction} from '@subql/x-sequelize';
-import {LRUCache} from 'lru-cache';
-import {MetadataRepo, PoiRepo} from '../entities';
-import {IMetadata} from './metadata';
-import {BaseEntity, IModel} from './model';
-import {IPoi} from './poi';
-import {SetValueModel} from './setValueModel';
+import { ModelStatic, Transaction } from '@subql/x-sequelize';
+import { LRUCache } from 'lru-cache';
+import { MetadataRepo, PoiRepo } from '../entities';
+import { HistoricalMode } from '../types';
+import { IMetadata } from './metadata';
+import { BaseEntity, IModel } from './model';
+import { IPoi } from './poi';
+import { SetValueModel } from './setValueModel';
 
-export type HistoricalModel = {__block_range: any};
+export type HistoricalModel = { __block_range: any };
 
 export interface IStoreModelProvider {
   poi: IPoi | null;
   metadata: IMetadata;
 
-  init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void;
+  init(historical: HistoricalMode, meta: MetadataRepo, poi?: PoiRepo): void;
 
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 
@@ -23,7 +24,7 @@ export interface IStoreModelProvider {
 
   applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx?: Transaction): Promise<void>;
 
-  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
+  updateModels({ modifiedModels, removedModels }: { modifiedModels: ModelStatic<any>[]; removedModels: string[] }): void;
 }
 
 export interface ICachedModelControl {

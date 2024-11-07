@@ -2,26 +2,26 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {isMainThread} from 'worker_threads';
-import {EventEmitter2} from '@nestjs/event-emitter';
-import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
-import {Sequelize} from '@subql/x-sequelize';
-import {IApi} from '../api.service';
-import {IProjectUpgradeService, NodeConfig} from '../configure';
-import {IndexerEvent} from '../events';
-import {getLogger} from '../logger';
-import {exitWithError, monitorWrite} from '../process';
-import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex} from '../utils';
-import {BlockHeightMap} from '../utils/blockHeightMap';
-import {BaseDsProcessorService} from './ds-processor.service';
-import {DynamicDsService} from './dynamic-ds.service';
-import {MetadataKeys} from './entities';
-import {PoiSyncService} from './poi';
-import {PoiService} from './poi/poi.service';
-import {StoreService} from './store.service';
-import {cacheProviderFlushData} from './storeModelProvider';
-import {ISubqueryProject, IProjectService, BypassBlocks} from './types';
-import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
+import { isMainThread } from 'worker_threads';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { BaseDataSource, IProjectNetworkConfig } from '@subql/types-core';
+import { Sequelize } from '@subql/x-sequelize';
+import { IApi } from '../api.service';
+import { IProjectUpgradeService, NodeConfig } from '../configure';
+import { IndexerEvent } from '../events';
+import { getLogger } from '../logger';
+import { exitWithError, monitorWrite } from '../process';
+import { getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex } from '../utils';
+import { BlockHeightMap } from '../utils/blockHeightMap';
+import { BaseDsProcessorService } from './ds-processor.service';
+import { DynamicDsService } from './dynamic-ds.service';
+import { MetadataKeys } from './entities';
+import { PoiSyncService } from './poi';
+import { PoiService } from './poi/poi.service';
+import { StoreService } from './store.service';
+import { cacheProviderFlushData } from './storeModelProvider';
+import { ISubqueryProject, IProjectService, BypassBlocks, HistoricalMode, Header } from './types';
+import { IUnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('Project');
 
@@ -35,8 +35,7 @@ export abstract class BaseProjectService<
   API extends IApi,
   DS extends BaseDataSource,
   UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>,
-> implements IProjectService<DS>
-{
+> implements IProjectService<DS> {
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -88,7 +87,7 @@ export abstract class BaseProjectService<
     return this.project.network.bypassBlocks ?? [];
   }
 
-  protected get isHistorical(): boolean {
+  protected get isHistorical(): HistoricalMode {
     return this.storeService.historical;
   }
 
@@ -142,7 +141,7 @@ export abstract class BaseProjectService<
       const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
       if (reindexedUnfinalized !== undefined) {
-        this._startHeight = reindexedUnfinalized;
+        this._startHeight = reindexedUnfinalized.blockHeight;
       }
 
       if (reindexedUpgrade !== undefined) {
@@ -219,20 +218,20 @@ export abstract class BaseProjectService<
 
     const existing = await metadata.findMany(keys);
 
-    const {chain, genesisHash, specName} = this.apiService.networkMeta;
+    const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
     if (this.project.runner) {
-      const {node, query} = this.project.runner;
+      const { node, query } = this.project.runner;
 
-      metadata.setBulk([
-        {key: 'runnerNode', value: node.name},
-        {key: 'runnerNodeVersion', value: node.version},
-        {key: 'runnerQuery', value: query.name},
-        {key: 'runnerQueryVersion', value: query.version},
+      await metadata.setBulk([
+        { key: 'runnerNode', value: node.name },
+        { key: 'runnerNodeVersion', value: node.version },
+        { key: 'runnerQuery', value: query.name },
+        { key: 'runnerQueryVersion', value: query.version },
       ]);
     }
     if (!existing.genesisHash) {
-      metadata.set('genesisHash', genesisHash);
+      await metadata.set('genesisHash', genesisHash);
     } else {
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
@@ -241,34 +240,34 @@ export abstract class BaseProjectService<
       );
     }
     if (existing.chain !== chain) {
-      metadata.set('chain', chain);
+      await metadata.set('chain', chain);
     }
 
     if (existing.specName !== specName) {
-      metadata.set('specName', specName);
+      await metadata.set('specName', specName);
     }
 
     // If project was created before this feature, don't add the key. If it is project created after, add this key.
     if (!existing.processedBlockCount && !existing.lastProcessedHeight) {
-      metadata.set('processedBlockCount', 0);
+      await metadata.set('processedBlockCount', 0);
     }
 
     if (existing.indexerNodeVersion !== this.packageVersion) {
-      metadata.set('indexerNodeVersion', this.packageVersion);
+      await metadata.set('indexerNodeVersion', this.packageVersion);
     }
     if (!existing.schemaMigrationCount) {
-      metadata.set('schemaMigrationCount', 0);
+      await metadata.set('schemaMigrationCount', 0);
     }
     if (!existing.startHeight) {
-      metadata.set('startHeight', this.getStartBlockFromDataSources());
+      await metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
 
     if (!existing.dynamicDatasources) {
-      metadata.set('dynamicDatasources', []);
+      await metadata.set('dynamicDatasources', []);
     } else if (typeof existing.dynamicDatasources === 'string') {
       // Migration Step: In versions  < 4.7.2 dynamic datasources was stored as a string in a json field.
       logger.info('Migrating dynamic datasources from string to object');
-      metadata.set('dynamicDatasources', JSON.parse(existing.dynamicDatasources));
+      await metadata.set('dynamicDatasources', JSON.parse(existing.dynamicDatasources));
     }
   }
 
@@ -285,7 +284,6 @@ export abstract class BaseProjectService<
     return undefined;
   }
 
-  // @ts-ignore
   getStartBlockFromDataSources(): number {
     try {
       return getStartHeight(this.project.dataSources);
@@ -342,7 +340,7 @@ export abstract class BaseProjectService<
         const nextProject = projects[i + 1][1];
         nextMinStartHeight = Math.max(
           nextProject.dataSources
-            .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
+            .filter((ds): ds is DS & { startBlock: number } => !!ds.startBlock)
             .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock,
           projects[i + 1][0]
         );
@@ -357,12 +355,12 @@ export abstract class BaseProjectService<
       }[] = [];
 
       [...project.dataSources, ...dynamicDs]
-        .filter((ds): ds is DS & {startBlock: number} => {
+        .filter((ds): ds is DS & { startBlock: number } => {
           return !!ds.startBlock && (!nextMinStartHeight || nextMinStartHeight > ds.startBlock);
         })
         .forEach((ds) => {
-          events.push({block: Math.max(height, ds.startBlock), start: true, ds});
-          if (ds.endBlock) events.push({block: ds.endBlock + 1, start: false, ds});
+          events.push({ block: Math.max(height, ds.startBlock), start: true, ds });
+          if (ds.endBlock) events.push({ block: ds.endBlock + 1, start: false, ds });
         });
 
       // sort events by block in ascending order, start events come before end events
@@ -377,7 +375,7 @@ export abstract class BaseProjectService<
     return new BlockHeightMap(dsMap);
   }
 
-  private async initUnfinalizedInternal(): Promise<number | undefined> {
+  private async initUnfinalizedInternal(): Promise<Header | undefined> {
     if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
       exitWithError(
         'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
@@ -388,7 +386,7 @@ export abstract class BaseProjectService<
     return this.initUnfinalized();
   }
 
-  protected async initUnfinalized(): Promise<number | undefined> {
+  protected async initUnfinalized(): Promise<Header | undefined> {
     return this.unfinalizedBlockService.init(this.reindex.bind(this));
   }
 
@@ -431,7 +429,13 @@ export abstract class BaseProjectService<
           const msg = `Rewinding project to preform project upgrade. Block height="${upgradePoint}"`;
           logger.info(msg);
           monitorWrite(msg);
-          await this.reindex(upgradePoint);
+
+          const timestamp = await this.getBlockTimestamp(upgradePoint);
+          // Only timestamp and blockHeight are used with reindexing so its safe to convert to a header
+          await this.reindex({
+            blockHeight: upgradePoint,
+            timestamp,
+          } as Header);
           return upgradePoint + 1;
         }
       }
@@ -450,17 +454,20 @@ export abstract class BaseProjectService<
     await this.onProjectChange(this.project);
   }
 
-  async reindex(targetBlockHeight: number): Promise<void> {
-    const lastProcessedHeight = await this.getLastProcessedHeight();
+  async reindex(targetBlockHeader: Header): Promise<void> {
+    const [height, timestamp] = await Promise.all([
+      this.getLastProcessedHeight(),
+      this.storeService.modelProvider.metadata.find('lastProcessedBlockTimestamp'),
+    ]);
 
-    if (lastProcessedHeight === undefined) {
+    if (height === undefined) {
       throw new Error('Cannot reindex with missing lastProcessedHeight');
     }
 
     return reindex(
       this.getStartBlockFromDataSources(),
-      targetBlockHeight,
-      lastProcessedHeight,
+      targetBlockHeader,
+      { height, timestamp },
       this.storeService,
       this.unfinalizedBlockService,
       this.dynamicDsService,

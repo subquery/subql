@@ -103,9 +103,18 @@ export function yargsBuilder<
               },
               'disable-historical': {
                 demandOption: false,
-                describe: 'Disable storing historical state entities',
+                describe: 'Disable storing historical state entities, please use `historical` flag instead',
                 type: 'boolean',
+                deprecated: true,
+                conflicts: 'historical',
                 // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
+              },
+              historical: {
+                describe: 'Enable historical state entities, ',
+                type: 'string',
+                choices: ['false', 'height', 'timestamp'],
+                default: 'height',
+                conflicts: 'disable-historical',
               },
               'log-level': {
                 demandOption: false,
