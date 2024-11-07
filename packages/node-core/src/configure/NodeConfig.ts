@@ -259,7 +259,14 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
   }
 
   get historical(): HistoricalMode {
-    return this._isTest ? false : this._config.historical;
+    if (this._isTest) return false;
+
+    const val = this._config.historical;
+    // Runtime check, option can come from cli, project or config file
+    if (val !== false && val !== 'height' && val !== 'timestamp') {
+      throw new Error(`Historical mode is invalid. Received: ${val}`);
+    }
+    return val;
   }
 
   get multiChain(): boolean {

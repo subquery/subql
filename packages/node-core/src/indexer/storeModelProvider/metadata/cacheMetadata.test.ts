@@ -34,7 +34,7 @@ describe('cacheMetadata integration', () => {
 
     await metaDataRepo.sync();
 
-    cacheMetadataModel = new CacheMetadataModel(metaDataRepo);
+    cacheMetadataModel = new CacheMetadataModel(metaDataRepo, false);
   });
 
   const queryMeta = async <K extends keyof MetadataKeys>(key: K): Promise<MetadataKeys[K] | undefined> => {

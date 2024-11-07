@@ -475,9 +475,6 @@ group by
   // Get the right unit depending on the historical mode
   getHistoricalUnit(): number {
     // Cant throw here because even with historical disabled the current height is used by the store
-    // if (!this.historical) {
-    //   throw new Error("Cannot get historical unit if historical indexing is not enabled")
-    // }
     return getHistoricalUnit(this.historical, this.blockHeader);
   }
 }

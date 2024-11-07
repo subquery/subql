@@ -113,7 +113,7 @@ export function yargsBuilder<
                 describe: 'Enable historical state entities, ',
                 type: 'string',
                 choices: ['false', 'height', 'timestamp'],
-                default: 'height',
+                // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
                 conflicts: 'disable-historical',
               },
               'log-level': {

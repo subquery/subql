@@ -11,6 +11,7 @@ import {ISubqueryProject} from '../indexer';
 import {getLogger, setDebugFilter} from '../logger';
 import {exitWithError} from '../process';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
+import {yargsBuilder} from '../yargs';
 import {IConfig, NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
 
@@ -38,8 +39,8 @@ export function validDbSchemaName(name: string): boolean {
   }
 }
 
-// TODO once yargs is in node core we can update
-type Args = Record<string, any>; // typeof yargsOptions.argv['argv']
+// Cant seem to use the inferred types, strings arent converted to unions
+type Args = Record<string, any>; //ReturnType<typeof yargsBuilder>['argv']
 
 function processEndpointConfig(raw?: string | string[]): IEndpointConfig[] {
   if (!raw) return [];
@@ -87,14 +88,6 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
     }
     if (key === 'historical' && value === 'false') {
       value = false;
-      // acc.historical = false;
-    }
-
-    if (key === 'historical') {
-      console.log('HISTORICAL KEY', typeof value, value);
-    }
-    if (key === 'disable-historical') {
-      console.log('HISTORICAL KEY DIS', typeof value, value);
     }
 
     acc[nameMapping[key] ?? camelCase(key)] = value;

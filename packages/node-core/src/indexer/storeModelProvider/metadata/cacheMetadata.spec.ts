@@ -9,7 +9,7 @@ describe('CacheMetadata', () => {
   let cacheMetadata: CacheMetadataModel;
 
   beforeEach(() => {
-    cacheMetadata = new CacheMetadataModel(null as any);
+    cacheMetadata = new CacheMetadataModel(null as any, false);
   });
 
   // Clearing the cache used to set the setCache and getCache to the same empty object
@@ -38,12 +38,15 @@ describe('CacheMetadata', () => {
   it('builds the correct dynamicDatasources query', () => {
     const queryFn = jest.fn();
 
-    const cacheMetadata = new CacheMetadataModel({
-      getTableName: () => '"Schema"."_metadata"',
-      sequelize: {
-        query: queryFn,
-      },
-    } as any);
+    const cacheMetadata = new CacheMetadataModel(
+      {
+        getTableName: () => '"Schema"."_metadata"',
+        sequelize: {
+          query: queryFn,
+        },
+      } as any,
+      false
+    );
 
     (cacheMetadata as any).appendDynamicDatasources([{ foo: 'bar' }]);
     expect(queryFn).toHaveBeenCalledWith(

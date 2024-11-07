@@ -58,7 +58,7 @@ function getMockMetadata(): any {
 
 function mockStoreCache(): StoreCacheService {
   return {
-    metadata: new CacheMetadataModel(getMockMetadata()),
+    metadata: new CacheMetadataModel(getMockMetadata(), 'height'),
   } as StoreCacheService;
 }
 
