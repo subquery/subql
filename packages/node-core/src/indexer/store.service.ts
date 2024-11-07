@@ -38,7 +38,7 @@ import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
-import {IMetadata, IStoreModelProvider, StoreCacheService} from './storeModelProvider';
+import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
 import {ISubqueryProject} from './types';
 
@@ -177,9 +177,7 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    if (this.modelProvider instanceof StoreCacheService) {
-      this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
-    }
+    this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
 
     this._metadataModel = this.modelProvider.metadata;
 
@@ -358,7 +356,7 @@ export class StoreService {
   async setBlockHeight(blockHeight: number): Promise<void> {
     this._blockHeight = blockHeight;
 
-    if (!this.#transaction) {
+    if (this.modelProvider instanceof PlainStoreModelService && !this.#transaction) {
       // TODO do we need to set hooks for block height?
       this.#transaction = await this.sequelize.transaction({
         deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),

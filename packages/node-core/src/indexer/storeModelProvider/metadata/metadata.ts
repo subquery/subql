@@ -53,7 +53,7 @@ export class MetadataModel implements IMetadata {
   }
 
   async setBulk(metadata: Metadata[], tx?: Transaction): Promise<void> {
-    await this.model.bulkCreate(metadata, {transaction: tx});
+    await this.model.bulkCreate(metadata, {transaction: tx, updateOnDuplicate: ['key', 'value']});
   }
 
   async setIncrement(key: IncrementalMetadataKey, amount = 1, tx?: Transaction): Promise<void> {

@@ -3,19 +3,19 @@
 
 import {ENUM, ModelStatic, Transaction} from '@subql/x-sequelize';
 import {LRUCache} from 'lru-cache';
+import {MetadataRepo, PoiRepo} from '../entities';
 import {IMetadata} from './metadata';
 import {BaseEntity, IModel} from './model';
 import {IPoi} from './poi';
 import {SetValueModel} from './setValueModel';
 
 export type HistoricalModel = {__block_range: any};
-export enum FlushPolicy {
-  RealTime = 'realTime',
-  Cache = 'cached',
-}
+
 export interface IStoreModelProvider {
   poi: IPoi | null;
   metadata: IMetadata;
+
+  init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void;
 
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 

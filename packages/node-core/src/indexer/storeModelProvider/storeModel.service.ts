@@ -14,7 +14,7 @@ import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {IModel} from './model';
 import {PlainModel} from './model/model';
 import {PlainPoiModel, POI_ENTITY_NAME} from './poi';
-import {IStoreModelProvider, FlushPolicy} from './types';
+import {IStoreModelProvider} from './types';
 
 const logger = getLogger('PlainStoreModelService');
 

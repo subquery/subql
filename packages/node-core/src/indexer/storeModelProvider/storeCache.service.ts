@@ -19,7 +19,7 @@ import {CacheMetadataModel} from './metadata';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {CachedModel} from './model';
 import {CachePoiModel, POI_ENTITY_NAME} from './poi';
-import {Exporter, ICachedModelControl, IStoreModelProvider, FlushPolicy} from './types';
+import {Exporter, ICachedModelControl, IStoreModelProvider} from './types';
 
 const logger = getLogger('StoreCacheService');
 
@@ -197,6 +197,7 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   }
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
+    console.log('cache service applyPendingChanges', height);
     if (this.config.storeCacheAsync) {
       // Flush all completed block data and don't wait
       await this.flushAndWaitForCapacity(false)?.catch((e) => {
