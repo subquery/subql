@@ -150,14 +150,14 @@ export function mockProjectUpgradeService(
   };
 }
 
-function createIndexerManager(
+async function createIndexerManager(
   project: SubqueryProject,
   connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
   nodeConfig: NodeConfig,
-): IndexerManager {
+): Promise<IndexerManager> {
   const sequelize = new Sequelize();
   const eventEmitter = new EventEmitter2();
-  const apiService = new ApiService(
+  const apiService = await ApiService.init(
     project,
     connectionPoolService,
     eventEmitter,
@@ -231,7 +231,7 @@ describe('IndexerManager', () => {
   });
 
   it.skip('should be able to start the manager (v0.0.1)', async () => {
-    // indexerManager = createIndexerManager(
+    // indexerManager = await createIndexerManager(
     //   testSubqueryProject_1(),
     //   new ConnectionPoolService<ApiPromiseConnection>(
     //     nodeConfig,
@@ -244,7 +244,7 @@ describe('IndexerManager', () => {
   });
 
   it.skip('should be able to start the manager (v0.2.0)', async () => {
-    // indexerManager = createIndexerManager(
+    // indexerManager = await createIndexerManager(
     //   testSubqueryProject_2(),
     //   new ConnectionPoolService<ApiPromiseConnection>(
     //     nodeConfig,

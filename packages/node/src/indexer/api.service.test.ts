@@ -72,7 +72,16 @@ describe('ApiService', () => {
           useFactory: () => ({}),
         },
         EventEmitter2,
-        ApiService,
+        {
+          provide: ApiService,
+          useFactory: ApiService.init,
+          inject: [
+            'ISubqueryProject',
+            ConnectionPoolService,
+            EventEmitter2,
+            NodeConfig,
+          ],
+        },
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();
@@ -80,7 +89,6 @@ describe('ApiService', () => {
     app = module.createNestApplication();
     await app.init();
     const apiService = app.get(ApiService);
-    await apiService.init();
     return apiService;
   };
 
@@ -481,7 +489,16 @@ describe('Load chain type hasher', () => {
           useFactory: () => ({}),
         },
         EventEmitter2,
-        ApiService,
+        {
+          provide: ApiService,
+          useFactory: ApiService.init,
+          inject: [
+            'ISubqueryProject',
+            ConnectionPoolService,
+            EventEmitter2,
+            NodeConfig,
+          ],
+        },
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();
@@ -489,7 +506,6 @@ describe('Load chain type hasher', () => {
     app = module.createNestApplication();
     await app.init();
     const apiService = app.get(ApiService);
-    await apiService.init();
     return apiService;
   };
 

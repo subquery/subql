@@ -11,7 +11,6 @@ import {ISubqueryProject} from '../indexer';
 import {getLogger, setDebugFilter} from '../logger';
 import {exitWithError} from '../process';
 import {defaultSubqueryName, rebaseArgsWithManifest} from '../utils';
-import {yargsBuilder} from '../yargs';
 import {IConfig, NodeConfig} from './NodeConfig';
 import {IProjectUpgradeService, ProjectUpgradeService, upgradableSubqueryProject} from './ProjectUpgrade.service';
 

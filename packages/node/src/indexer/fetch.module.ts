@@ -6,7 +6,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   StoreService,
   NodeConfig,
-  StoreCacheService,
   ConnectionPoolStateManager,
   IProjectUpgradeService,
   PoiSyncService,
@@ -14,6 +13,7 @@ import {
   MonitorService,
   CoreModule,
   IStoreModelProvider,
+  ConnectionPoolService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -34,7 +34,16 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 @Module({
   imports: [CoreModule],
   providers: [
-    ApiService,
+    {
+      provide: ApiService,
+      useFactory: ApiService.init,
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
+    },
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
@@ -57,32 +66,32 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ) =>
         nodeConfig.workers
           ? new WorkerBlockDispatcherService(
-              nodeConfig,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              cacheService,
-              storeService,
-              storeModelProvider,
-              poiSyncService,
-              project,
-              dynamicDsService,
-              unfinalizedBlocks,
-              connectionPoolState,
-              monitorService,
-            )
+            nodeConfig,
+            eventEmitter,
+            projectService,
+            projectUpgradeService,
+            cacheService,
+            storeService,
+            storeModelProvider,
+            poiSyncService,
+            project,
+            dynamicDsService,
+            unfinalizedBlocks,
+            connectionPoolState,
+            monitorService,
+          )
           : new BlockDispatcherService(
-              apiService,
-              nodeConfig,
-              indexerManager,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              storeService,
-              storeModelProvider,
-              poiSyncService,
-              project,
-            ),
+            apiService,
+            nodeConfig,
+            indexerManager,
+            eventEmitter,
+            projectService,
+            projectUpgradeService,
+            storeService,
+            storeModelProvider,
+            poiSyncService,
+            project,
+          ),
       inject: [
         NodeConfig,
         EventEmitter2,

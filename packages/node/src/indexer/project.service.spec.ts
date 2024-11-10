@@ -170,7 +170,16 @@ describe('ProjectService', () => {
           inject: [ApiService, 'ISubqueryProject'],
         },
         EventEmitter2,
-        ApiService,
+        {
+          provide: ApiService,
+          useFactory: ApiService.init,
+          inject: [
+            'ISubqueryProject',
+            ConnectionPoolService,
+            EventEmitter2,
+            NodeConfig,
+          ],
+        },
         {
           provide: ProjectUpgradeService,
           useValue: projectUpgrade,
@@ -182,7 +191,6 @@ describe('ProjectService', () => {
     const app = module.createNestApplication();
     await app.init();
     apiService = app.get(ApiService);
-    await apiService.init();
     projectUpgradeService = app.get(
       ProjectUpgradeService,
     ) as ProjectUpgradeService<SubqueryProject>;
