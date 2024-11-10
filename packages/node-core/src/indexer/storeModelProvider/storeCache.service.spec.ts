@@ -59,24 +59,24 @@ jest.mock('@subql/x-sequelize', () => {
 jest.setTimeout(200000);
 
 describe('Store Cache Service historical', () => {
-  let storeService: StoreCacheService;
+  let storeCacheService: StoreCacheService;
 
   const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
   });
 
   it('could init store cache service and init cache for models', () => {
-    storeService.getModel('entity1');
-    expect((storeService as any).cachedModels.entity1).toBeDefined();
-    expect((storeService as any).cachedModels.entity2).toBeUndefined();
+    storeCacheService.getModel('entity1');
+    expect((storeCacheService as any).cachedModels.entity1).toBeDefined();
+    expect((storeCacheService as any).cachedModels.entity2).toBeUndefined();
   });
 
   it('could set cache for multiple entities, also get from it', async () => {
-    const entity1Model = storeService.getModel<TestEntity>('entity1');
-    const entity2Model = storeService.getModel<TestEntity>('entity2');
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
+    const entity2Model = storeCacheService.getModel<TestEntity>('entity2');
 
     await entity1Model.set(
       'entity1_id_0x01',
@@ -96,7 +96,7 @@ describe('Store Cache Service historical', () => {
     );
 
     // check from cache
-    expect((storeService as any).cachedModels.entity1.setCache.entity1_id_0x01).toBeDefined();
+    expect((storeCacheService as any).cachedModels.entity1.setCache.entity1_id_0x01).toBeDefined();
     const entity1Block1 = (await entity1Model.get('entity1_id_0x01')) as any;
     const entity2Block2 = (await entity2Model.get('entity2_id_0x02')) as any;
     expect(entity1Block1.field1).toBe('set at block 1');
@@ -105,7 +105,7 @@ describe('Store Cache Service historical', () => {
 
   // TODO move this test to cacheModel
   it('set at different block height, will create historical records', async () => {
-    const appleModel = storeService.getModel<TestEntity>('apple');
+    const appleModel = storeCacheService.getModel<TestEntity>('apple');
 
     await appleModel.set(
       'apple-01',
@@ -131,10 +131,10 @@ describe('Store Cache Service historical', () => {
     expect(appleEntity_b5.field1).toBe('updated apple at block 5');
 
     // Been pushed two records, the latest index should point to 1
-    expect((storeService as any).cachedModels.apple.setCache['apple-01']._latestIndex).toBe(1);
+    expect((storeCacheService as any).cachedModels.apple.setCache['apple-01']._latestIndex).toBe(1);
 
     // Historical values
-    const historicalValue = (storeService as any).cachedModels.apple.setCache['apple-01'].historicalValues;
+    const historicalValue = (storeCacheService as any).cachedModels.apple.setCache['apple-01'].historicalValues;
     // should close the range index 0 historical record
     expect(historicalValue[0].startHeight).toBe(1);
     expect(historicalValue[0].endHeight).toBe(5);
@@ -145,19 +145,19 @@ describe('Store Cache Service historical', () => {
 });
 
 describe('Store Cache flush with order', () => {
-  let storeService: StoreCacheService;
+  let storeCacheService: StoreCacheService;
 
   const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, true, {} as any, undefined);
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService.init(false, true, {} as any, undefined);
   });
 
   it('when set/remove multiple model entities, operation index should added to record in sequential order', async () => {
-    const entity1Model = storeService.getModel<TestEntity>('entity1');
-    const entity2Model = storeService.getModel<TestEntity>('entity2');
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
+    const entity2Model = storeCacheService.getModel<TestEntity>('entity2');
 
     await entity1Model.set(
       'entity1_id_0x01',
@@ -176,24 +176,24 @@ describe('Store Cache flush with order', () => {
       2
     );
     await entity1Model.bulkRemove(['entity1_id_0x01'], 3);
-    const entity1 = (storeService as any).cachedModels.entity1;
+    const entity1 = (storeCacheService as any).cachedModels.entity1;
     expect(entity1.removeCache.entity1_id_0x01.operationIndex).toBe(3);
   });
 });
 
 describe('Store Cache flush with non-historical', () => {
-  let storeService: StoreCacheService;
+  let storeCacheService: StoreCacheService;
 
   const sequelize = new Sequelize();
   const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, false, {} as any, undefined);
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService.init(false, false, {} as any, undefined);
   });
 
   it('Same Id with multiple operations, when flush it should always pick up the latest operation', async () => {
-    const entity1Model = storeService.getModel<TestEntity>('entity1');
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
 
     //create Id 1
     await entity1Model.set(
@@ -237,7 +237,7 @@ describe('Store Cache flush with non-historical', () => {
 });
 
 describe('Store cache upper threshold', () => {
-  let storeService: StoreCacheService;
+  let storeCacheService: StoreCacheService;
 
   const sequelize = new Sequelize();
   const nodeConfig = {
@@ -246,12 +246,12 @@ describe('Store cache upper threshold', () => {
   } as NodeConfig;
 
   beforeEach(() => {
-    storeService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeService.init(false, false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService.init(false, false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {
-    const entity1Model = storeService.getModel<TestEntity>('entity1');
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
 
     for (let i = 0; i < 5; i++) {
       await entity1Model.set(
@@ -265,7 +265,7 @@ describe('Store cache upper threshold', () => {
     }
 
     const start = new Date().getTime();
-    await storeService.flushAndWaitForCapacity(true);
+    await storeCacheService.flushAndWaitForCapacity(true);
     const end = new Date().getTime();
 
     // Should be less than 1s, we're not waiting
@@ -273,7 +273,7 @@ describe('Store cache upper threshold', () => {
   });
 
   it('waits for flushing when threshold is met', async () => {
-    const entity1Model = storeService.getModel<TestEntity>('entity1');
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
 
     for (let i = 0; i < 15; i++) {
       await entity1Model.set(
@@ -287,7 +287,7 @@ describe('Store cache upper threshold', () => {
     }
 
     const start = new Date().getTime();
-    await storeService.flushAndWaitForCapacity(true);
+    await storeCacheService.flushAndWaitForCapacity(true);
     const end = new Date().getTime();
 
     // Should be more than 1s, we set the db tx.commit to take 1s

@@ -65,7 +65,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     await this.model.bulkCreate(
       data.map((v) => ({
         ...v,
-        __block_range: this.historical ? this.sequelize.fn('int8range', blockHeight, null) : null,
+        __block_range: this.historical ? this.sequelize.fn('int8range', blockHeight, blockHeight + 1) : null,
       })) as CreationAttributes<Model<T, T>>[],
       {
         transaction: tx,

@@ -197,7 +197,6 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   }
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
-    console.log('cache service applyPendingChanges', height);
     if (this.config.storeCacheAsync) {
       // Flush all completed block data and don't wait
       await this.flushAndWaitForCapacity(false)?.catch((e) => {

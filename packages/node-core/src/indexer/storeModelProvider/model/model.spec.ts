@@ -1,10 +1,9 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {delay} from '@subql/common';
 import {DbOption} from '@subql/node-core/db';
 import {DataTypes, Sequelize} from '@subql/x-sequelize';
-import {before} from 'lodash';
+import _ from 'lodash';
 import {NodeConfig} from '../../../configure';
 import {CachedModel} from './cacheModel';
 import {PlainModel} from './model';
@@ -57,14 +56,15 @@ describe('plainModeldata test', () => {
       {
         id: {
           type: DataTypes.STRING,
-          primaryKey: true,
         },
         field1: DataTypes.INTEGER,
-        _id: {
+        __id: {
           type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
           allowNull: false,
+          primaryKey: true,
         },
-        _block_range: {
+        __block_range: {
           type: DataTypes.RANGE(DataTypes.BIGINT),
           allowNull: false,
         },
@@ -172,9 +172,12 @@ describe('plainModeldata test', () => {
       await plainModel.set(id, data, 1);
       const result = await plainModel.get(id);
 
-      expect((result as any)._block_range).toEqual([1, null]);
-      expect(result).toEqual(data);
-      expect(cacheResult).toEqual(result);
+      expect((result as any).__block_range).toEqual([
+        {inclusive: true, value: '1'},
+        {inclusive: false, value: '2'},
+      ]);
+      expect(result).toMatchObject(data);
+      expect(cacheResult).toEqual(_.omit(result, ['__block_range', '__id']));
     });
   });
 });
