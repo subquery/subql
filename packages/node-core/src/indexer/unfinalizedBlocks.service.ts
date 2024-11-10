@@ -31,6 +31,9 @@ export interface IUnfinalizedBlocksService<B> extends IUnfinalizedBlocksServiceU
   resetUnfinalizedBlocks(tx?: Transaction): void;
   resetLastFinalizedVerifiedHeight(tx?: Transaction): void;
   getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks>;
+
+  // Used by reindex service
+  getHeaderForHeight(height: number): Promise<Header>;
 }
 
 export interface IUnfinalizedBlocksServiceUtil {
@@ -45,7 +48,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   // protected abstract blockToHeader(block: B): Header;
   protected abstract getFinalizedHead(): Promise<Header>;
   protected abstract getHeaderForHash(hash: string): Promise<Header>;
-  protected abstract getHeaderForHeight(height: number): Promise<Header>;
+  abstract getHeaderForHeight(height: number): Promise<Header>;
 
   @mainThreadOnly()
   protected blockToHeader(block: IBlock<B>): Header {

@@ -87,24 +87,14 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
   }
 
   async getTargetHeightWithUnfinalizedBlocks(inputHeight: number): Promise<Header> {
-    if (this.storeService.historical === 'timestamp') {
-      // TODO here we could fetch the header
-      throw new Error(`Reindex currently isn't supported with timestamp historical`);
-    }
+    const inputHeader = await this.unfinalizedBlocksService.getHeaderForHeight(inputHeight);
 
     const unfinalizedBlocks = await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
     const bestBlocks = unfinalizedBlocks.filter(({ blockHeight }) => blockHeight <= inputHeight);
-    if (bestBlocks.length === 0) {
-      return { blockHeight: inputHeight } as Header;
-    }
-    const { blockHeight: firstBestBlock } = bestBlocks[0];
-
-    if (inputHeight >= firstBestBlock) {
+    if (bestBlocks.length && inputHeight >= bestBlocks[0].blockHeight) {
       return bestBlocks[0];
     }
-    return {
-      blockHeight: inputHeight,
-    } as Header;
+    return inputHeader;
   }
 
   private async getExistingProjectSchema(): Promise<string | undefined> {

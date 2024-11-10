@@ -9,7 +9,11 @@ import {
   mainThreadOnly,
   NodeConfig,
 } from '@subql/node-core';
-import { substrateHeaderToHeader } from '../utils/substrate';
+import {
+  getBlockByHeight,
+  substrateBlockToHeader,
+  substrateHeaderToHeader,
+} from '../utils/substrate';
 import { ApiService } from './api.service';
 import { BlockContent, LightBlockContent } from './types';
 
@@ -37,14 +41,15 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
   // TODO: add cache here
   @mainThreadOnly()
   protected async getHeaderForHash(hash: string): Promise<Header> {
-    return substrateHeaderToHeader(
-      await this.apiService.api.rpc.chain.getHeader(hash),
+    return substrateBlockToHeader(
+      await this.apiService.api.rpc.chain.getBlock(hash),
     );
   }
 
   @mainThreadOnly()
-  protected async getHeaderForHeight(height: number): Promise<Header> {
-    const hash = await this.apiService.api.rpc.chain.getBlockHash(height);
-    return this.getHeaderForHash(hash.toHex());
+  async getHeaderForHeight(height: number): Promise<Header> {
+    return substrateBlockToHeader(
+      await getBlockByHeight(this.apiService.api, height),
+    );
   }
 }

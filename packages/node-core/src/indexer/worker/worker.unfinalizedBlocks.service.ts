@@ -48,4 +48,9 @@ export class WorkerUnfinalizedBlocksService<T> implements IUnfinalizedBlocksServ
   registerFinalizedBlock(header: Header): void {
     throw new Error('This method should not be called from a worker');
   }
+
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getHeaderForHeight(height: number): Promise<Header> {
+    throw new Error('This method should not be called from a worker');
+  }
 }

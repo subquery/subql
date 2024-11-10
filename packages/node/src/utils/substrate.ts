@@ -47,7 +47,7 @@ export function substrateHeaderToHeader(header: SubstrateHeader): Header {
   };
 }
 
-export function substrateBlockToHeader(block: SubstrateBlock): Header {
+export function substrateBlockToHeader(block: SignedBlock): Header {
   return {
     ...substrateHeaderToHeader(block.block.header),
     timestamp: getTimestamp(block),
