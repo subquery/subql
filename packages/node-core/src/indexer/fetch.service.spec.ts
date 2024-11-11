@@ -349,7 +349,7 @@ describe('Fetch Service', () => {
     expect(finalizedSpy).toHaveBeenCalledTimes(2);
     expect(bestSpy).toHaveBeenCalledTimes(2);
 
-    await expect(fetchService.getFinalizedHeader()).resolves.toEqual({
+    await expect(fetchService.getFinalizedHeader()).resolves.toMatchObject({
       blockHeight: fetchService.finalizedHeight,
       blockHash: '0xxx',
       parentHash: '0xxx',

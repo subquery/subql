@@ -110,7 +110,7 @@ describe('UnfinalizedBlocksService', () => {
     await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(111, '0xabc111'));
     await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(112, '0xabc112'));
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toMatchObject([
       mockBlock(111, '0xabc111').block.header,
       mockBlock(112, '0xabc112').block.header,
     ]);
@@ -135,7 +135,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([mockBlock(113, '0xabc113').block.header]);
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toMatchObject([
+      mockBlock(113, '0xabc113').block.header,
+    ]);
   });
 
   it('can handle a fork and rewind to the last finalized height', async () => {
@@ -150,7 +152,7 @@ describe('UnfinalizedBlocksService', () => {
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
     // Last valid block
-    expect(res).toBe(111);
+    expect(res).toMatchObject({blockHash: '0xabc111', blockHeight: 111, parentHash: ''});
 
     // After this the call stack is something like:
     // indexerManager -> blockDispatcher -> project -> project -> reindex -> blockDispatcher.resetUnfinalizedBlocks
@@ -175,7 +177,7 @@ describe('UnfinalizedBlocksService', () => {
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(117, '0xabc117'));
 
     // Last valid block
-    expect(res).toBe(112);
+    expect(res).toMatchObject({blockHash: '0xabc112', blockHeight: 112, parentHash: ''});
   });
 
   it('can handle a fork when all unfinalized blocks are invalid', async () => {
@@ -190,7 +192,7 @@ describe('UnfinalizedBlocksService', () => {
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
     // Last valid block
-    expect(res).toBe(110);
+    expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
   });
 
   it('can handle a fork and when unfinalized blocks < finalized head', async () => {
@@ -205,7 +207,7 @@ describe('UnfinalizedBlocksService', () => {
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
     // Last valid block
-    expect(res).toBe(110);
+    expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
   });
 
   it('can handle a fork and when unfinalized blocks < finalized head 2', async () => {
@@ -226,7 +228,7 @@ describe('UnfinalizedBlocksService', () => {
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
     // Last valid block
-    expect(res).toBe(110);
+    expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
   });
 
   it('can handle a fork and when unfinalized blocks < finalized head with a large difference', async () => {
@@ -241,7 +243,7 @@ describe('UnfinalizedBlocksService', () => {
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113'));
 
     // Last valid block
-    expect(res).toBe(110);
+    expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
   });
 
   it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
@@ -269,7 +271,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService2.init(reindex);
 
-    expect(reindex).toHaveBeenCalledWith(90);
+    expect(reindex).toHaveBeenCalledWith(
+      expect.objectContaining({blockHash: '0xabc90f', blockHeight: 90, parentHash: '0xabc89f'})
+    );
     expect((unfinalizedBlocksService2 as any).lastCheckedBlockHeight).toBe(90);
   });
 });

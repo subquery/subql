@@ -227,7 +227,7 @@ describe('SchemaMigration integration tests', () => {
       schemaName,
       initialSchema,
       sequelize,
-      new NodeConfig({disableHistorical: true} as any)
+      new NodeConfig({historical: false} as any)
     );
 
     await migrationService.run(initialSchema, loadGqlSchema('test_10_1000.graphql'));
@@ -323,7 +323,7 @@ WHERE
       schemaName,
       initialSchema,
       sequelize,
-      new NodeConfig({disableHistorical: true} as any)
+      new NodeConfig({historical: false} as any)
     );
 
     await migrationService.run(initialSchema, loadGqlSchema('test_13_2000.graphql'));
@@ -363,7 +363,7 @@ WHERE
       schemaName,
       initialSchema,
       sequelize,
-      new NodeConfig({disableHistorical: true} as any)
+      new NodeConfig({historical: false} as any)
     );
 
     await migrationService.run(initialSchema, loadGqlSchema('test_14_1000.graphql'));

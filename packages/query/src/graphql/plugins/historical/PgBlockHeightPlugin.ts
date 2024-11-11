@@ -24,7 +24,7 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
   );
 
   // Note this varies from node where true is allowed because of legacy support
-  const historicalMode = rows[0].value as boolean | 'block' | 'timestamp';
+  const historicalMode = rows[0]?.value || ('block' as boolean | 'block' | 'timestamp');
   // Adds blockHeight condition to join clause when joining a table that has _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field',
