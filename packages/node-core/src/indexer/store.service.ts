@@ -326,16 +326,16 @@ export class StoreService {
 
       if (value && multiChain) {
         throw new Error(
-          'Historical feature is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
+          'Historical indexing by height is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
         );
       }
 
       // TODO parse through CLI/Project option and consider multichain
       return value ? 'height' : false;
     } catch (e) {
-      if (multiChain && historical) {
-        logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
-        return false;
+      if (multiChain && historical === 'height') {
+        logger.warn('Historical state by height is not compatible with multi chain indexing, using timestamp instead.');
+        return 'timestamp';
       }
       // Will trigger on first startup as metadata table doesn't exist
       // Default fallback to "height" for backwards compatible

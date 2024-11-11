@@ -4,6 +4,7 @@
 import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Plugin, Context} from 'graphile-build';
 import {GraphQLString} from 'graphql';
+import {fetchFromTable} from '../GetMetadataPlugin';
 import {makeRangeQuery, hasBlockRange} from './utils';
 
 function addRangeQuery(queryBuilder: QueryBuilder, sql: any) {
@@ -18,13 +19,17 @@ function addQueryContext(queryBuilder: QueryBuilder, sql: any, blockHeight: any)
 }
 
 export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
-  const [schemaName] = options.pgSchemas;
-  const {rows} = await options.pgConfig.query(
-    `SELECT * FROM "${schemaName}"._metadata WHERE key = 'historicalStateEnabled'`
-  );
-
   // Note this varies from node where true is allowed because of legacy support
-  const historicalMode = rows[0]?.value || ('block' as boolean | 'block' | 'timestamp');
+  let historicalMode: boolean | 'height' | 'timestamp' = 'height';
+  const [schemaName] = options.pgSchemas;
+
+  try {
+    const {historicalStateEnabled} = await fetchFromTable(options.pgConfig, schemaName, undefined, false);
+    historicalMode = historicalStateEnabled;
+  } catch (e) {
+    /* Do nothing, default value is already set */
+  }
+
   // Adds blockHeight condition to join clause when joining a table that has _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field',

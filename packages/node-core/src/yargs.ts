@@ -123,6 +123,7 @@ export function yargsBuilder<
                 choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
               },
               'multi-chain': {
+                alias: 'multichain',
                 demandOption: false,
                 default: false,
                 describe: 'Enables indexing multiple subquery projects into the same database schema',
