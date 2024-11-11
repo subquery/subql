@@ -36,7 +36,7 @@ class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<IBlock<any>>
     });
   }
 
-  protected async getHeaderForHeight(height: number): Promise<Header> {
+  async getHeaderForHeight(height: number): Promise<Header> {
     return Promise.resolve({
       blockHeight: height,
       blockHash: `0xabc${height}f`,

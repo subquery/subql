@@ -53,7 +53,7 @@ class TestUnfinalizedBlocksService extends BaseUnfinalizedBlocksService<any> {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  protected async getHeaderForHeight(height: number): Promise<Header> {
+  async getHeaderForHeight(height: number): Promise<Header> {
     return {
       blockHeight: height,
       blockHash: `b${height}`,
