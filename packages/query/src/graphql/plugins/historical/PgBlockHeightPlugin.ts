@@ -17,7 +17,14 @@ function addQueryContext(queryBuilder: QueryBuilder, sql: any, blockHeight: any)
   }
 }
 
-export const PgBlockHeightPlugin: Plugin = (builder) => {
+export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
+  const [schemaName] = options.pgSchemas;
+  const {rows} = await options.pgConfig.query(
+    `SELECT * FROM "${schemaName}"._metadata WHERE key = 'historicalStateEnabled'`
+  );
+
+  // Note this varies from node where true is allowed because of legacy support
+  const historicalMode = rows[0].value as boolean | 'block' | 'timestamp';
   // Adds blockHeight condition to join clause when joining a table that has _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field',
@@ -41,9 +48,10 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
         return field;
       }
 
-      addArgDataGenerator(({blockHeight}) => ({
+      addArgDataGenerator(({blockHeight, timestamp}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          addQueryContext(queryBuilder, sql, blockHeight);
+          // If timestamp provided use that as the value
+          addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
           addRangeQuery(queryBuilder, sql);
         },
       }));
@@ -56,7 +64,10 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
     (
       args,
       {extend, pgSql: sql},
-      {addArgDataGenerator, scope: {isPgFieldConnection, isPgRowByUniqueConstraintField, pgFieldIntrospection}}
+      {
+        addArgDataGenerator,
+        scope: {isPgFieldConnection, isPgRowByUniqueConstraintField, pgFieldIntrospection},
+      }: Context<any>
     ) => {
       if (!isPgRowByUniqueConstraintField && !isPgFieldConnection) {
         return args;
@@ -65,16 +76,27 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
         return args;
       }
 
-      addArgDataGenerator(({blockHeight}) => ({
+      addArgDataGenerator(({blockHeight, timestamp}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          addQueryContext(queryBuilder, sql, blockHeight);
+          // If timestamp provided use that as the value
+          addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
           addRangeQuery(queryBuilder, sql);
         },
       }));
 
+      if (historicalMode === 'timestamp') {
+        return extend(args, {
+          timestamp: {
+            description: 'When specified, the query will return results as of this timestamp. Unix timestamp in MS',
+            defaultValue: '9223372036854775807',
+            type: GraphQLString, // String because of int overflow
+          },
+        });
+      }
+
       return extend(args, {
         blockHeight: {
-          description: 'Block height',
+          description: 'When specified, the query will return results as of this block height',
           defaultValue: '9223372036854775807',
           type: GraphQLString, // String because of int overflow
         },
