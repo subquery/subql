@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update the playground to the latest GraphiQL (#2588)
+### Added
+- Support for historical indexing by timestamp as well as block height (#2584)
 
 ## [2.15.2] - 2024-09-25
 ### Changed
