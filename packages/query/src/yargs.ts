@@ -98,11 +98,6 @@ export function getYargsOption() {
         describe: 'Enable graphql playground',
         type: 'boolean',
       },
-      'playground-settings': {
-        demandOption: false,
-        describe: 'Pass the settings to the graphql playground (JSON format)',
-        type: 'string',
-      },
       'query-limit': {
         demandOption: false,
         describe: 'Set limit on number of query results per entity',
