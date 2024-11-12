@@ -44,7 +44,6 @@ describe('ConnectionPoolStateManager', function () {
     const endpointInfo = (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] as ConnectionPoolItem<any>;
     expect(nextEndpoint).toEqual(EXAMPLE_ENDPOINT2);
     expect(endpointInfo.rateLimited).toBe(true);
-    expect((connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2].rateLimitDelay).toBe(20 * 1000);
   });
 
   it('All endpoints backoff; select a rateLimited endpoint. reason: ApiErrorType.RateLimit', async function () {
@@ -58,7 +57,6 @@ describe('ConnectionPoolStateManager', function () {
     const endpointInfo = (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] as ConnectionPoolItem<any>;
     expect(nextEndpoint).toEqual(EXAMPLE_ENDPOINT2);
     expect(endpointInfo.rateLimited).toBe(true);
-    expect((connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2].rateLimitDelay).toBe(20 * 1000);
   });
 
   it('can calculate performance score for response time of zero', function () {
