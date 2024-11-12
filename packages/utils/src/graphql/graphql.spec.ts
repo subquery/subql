@@ -91,6 +91,32 @@ describe('utils that handle schema.graphql', () => {
     }).toThrow(/Not support/);
   });
 
+  it('can create an enum with an index', () => {
+    const graphqlSchema = gql`
+      type Test @entity {
+        id: ID!
+        enumKind: enumResult! @index
+      }
+      enum enumResult {
+        NEWHOPE
+        EMPIRE
+        JEDI
+      }
+    `;
+
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const rels = getAllEntitiesRelations(schema);
+
+    expect(rels.models[0].indexes[0]).toMatchObject({
+      fields: ['enumKind'],
+    });
+
+    // expect(() => {
+    //   const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    //   getAllEntitiesRelations(schema);
+    // }).toThrow(/Not support/);
+  });
+
   it('can extract nested models and relations from the schema', () => {
     const graphqlSchema = gql`
       type Account @entity {

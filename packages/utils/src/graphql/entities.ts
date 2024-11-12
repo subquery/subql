@@ -209,6 +209,10 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
               fkIndex.unique = true;
             }
           }
+        } else if (typeString !== 'ID' && enums.has(typeString)) {
+          newModel.indexes.push({
+            fields: [field.name],
+          });
         } else {
           throw new Error(`index can not be added on field ${field.name}`);
         }
