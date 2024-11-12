@@ -1,14 +1,14 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Sequelize} from '@subql/x-sequelize';
-import {TestRunner} from './test.runner';
+import { Sequelize } from '@subql/x-sequelize';
+import { TestRunner } from './test.runner';
 
 jest.mock('@subql/x-sequelize');
 
 const mockStoreCache = {
   flushCache: jest.fn().mockResolvedValue(undefined),
-  metadata: {set: jest.fn()},
+  metadata: { set: jest.fn() },
 };
 
 describe('TestRunner', () => {
@@ -21,11 +21,11 @@ describe('TestRunner', () => {
   beforeEach(() => {
     sequelizeMock = new Sequelize() as any;
     apiServiceMock = {
-      fetchBlocks: jest.fn().mockResolvedValue([{}]),
+      fetchBlocks: jest.fn().mockResolvedValue([{ getHeader: jest.fn() }]),
     };
 
     storeServiceMock = {
-      setBlockHeight: jest.fn(),
+      setBlockHeader: jest.fn(),
       getStore: jest.fn().mockReturnValue({}),
       modelProvider: mockStoreCache,
     };
@@ -82,18 +82,12 @@ describe('TestRunner', () => {
     };
 
     const indexBlock = jest.fn().mockResolvedValue(undefined);
-    const storeMock = {
+    storeServiceMock.getStore = () => ({
       get: jest.fn().mockResolvedValue(expectedEntity),
-    };
-    (testRunner as any).storeService = {
-      getStore: () => storeMock,
-      setBlockHeight: jest.fn(),
-      modelProvider: mockStoreCache,
-    } as any;
+    });
 
-    await testRunner.runTest(testMock, sandboxMock, indexBlock);
-
-    expect((testRunner as any).passedTests).toBe(1);
+    const res = await testRunner.runTest(testMock, sandboxMock, indexBlock);
+    expect(res.passedTests).toBe(1);
   });
 
   it('increments failedTests when expected and actual entity attributes do not match', async () => {
@@ -117,18 +111,12 @@ describe('TestRunner', () => {
     };
 
     const indexBlock = jest.fn().mockResolvedValue(undefined);
-    const storeMock = {
+    storeServiceMock.getStore = () => ({
       get: jest.fn().mockResolvedValue(actualEntity),
-    };
-    (testRunner as any).storeService = {
-      getStore: () => storeMock,
-      setBlockHeight: jest.fn(),
-      modelProvider: mockStoreCache,
-    } as any;
+    });
 
-    await testRunner.runTest(testMock, sandboxMock, indexBlock);
-
-    expect((testRunner as any).failedTests).toBe(1);
+    const res = await testRunner.runTest(testMock, sandboxMock, indexBlock);
+    expect(res.failedTests).toBe(1);
   });
 
   it('increments failedTests when indexBlock throws an error', async () => {
@@ -142,11 +130,11 @@ describe('TestRunner', () => {
 
     const indexBlock = jest.fn().mockRejectedValue(new Error('Test error'));
 
-    await testRunner.runTest(testMock, sandboxMock, indexBlock);
+    const res = await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect((testRunner as any).failedTests).toBe(1);
+    expect(res.failedTests).toBe(1);
 
-    const summary = (testRunner as any).failedTestSummary;
+    const summary = res.failedTestSummary;
     expect(summary?.testName).toEqual(testMock.name);
     expect(summary?.entityId).toBeUndefined();
     expect(summary?.entityName).toBeUndefined();
@@ -174,20 +162,16 @@ describe('TestRunner', () => {
     };
 
     const indexBlock = jest.fn().mockResolvedValue(undefined);
-    const storeMock = {
+
+    storeServiceMock.getStore = () => ({
       get: jest.fn().mockResolvedValue(actualEntity),
-    };
-    (testRunner as any).storeService = {
-      getStore: () => storeMock,
-      setBlockHeight: jest.fn(),
-      modelProvider: mockStoreCache,
-    } as any;
+    });
 
-    await testRunner.runTest(testMock, sandboxMock, indexBlock);
+    const res = await testRunner.runTest(testMock, sandboxMock, indexBlock);
 
-    expect((testRunner as any).failedTests).toBe(1);
+    expect(res.failedTests).toBe(1);
 
-    const summary = (testRunner as any).failedTestSummary;
+    const summary = res.failedTestSummary;
     expect(summary?.testName).toEqual(testMock.name);
     expect(summary?.entityId).toEqual(expectedEntity.id);
     expect(summary?.entityName).toEqual(expectedEntity._name);
