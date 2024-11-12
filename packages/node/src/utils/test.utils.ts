@@ -10,6 +10,7 @@ import { Test } from '@nestjs/testing';
 import {
   CoreModule,
   DbModule,
+  HistoricalMode,
   NodeConfig,
   registerApp,
 } from '@subql/node-core';
@@ -23,13 +24,13 @@ import { FetchModule } from '../indexer/fetch.module';
 const mockInstance = async (
   cid: string,
   schemaName: string,
-  disableHistorical: boolean,
+  historical: HistoricalMode,
   useSubscription: boolean,
   timestampField: boolean,
 ) => {
   const argv: Record<string, any> = {
     _: [],
-    disableHistorical,
+    historical,
     subquery: `ipfs://${cid}`,
     dbSchema: schemaName,
     allowSchemaMigration: true,
@@ -49,14 +50,14 @@ const mockInstance = async (
 async function mockRegister(
   cid: string,
   schemaName: string,
-  disableHistorical: boolean,
+  historical: HistoricalMode,
   useSubscription: boolean,
   timestampField: boolean,
 ): Promise<DynamicModule> {
   const { nodeConfig, project } = await mockInstance(
     cid,
     schemaName,
-    disableHistorical,
+    historical,
     useSubscription,
     timestampField,
   );
@@ -99,7 +100,7 @@ export async function prepareApp(
       mockRegister(
         cid,
         schemaName,
-        disableHistorical,
+        disableHistorical ? false : 'height',
         useSubscription,
         timestampField,
       ),

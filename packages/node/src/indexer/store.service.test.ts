@@ -144,6 +144,7 @@ AND table_name = 'positions';
       is_nullable: 'NO',
     });
   });
+
   it('Correct db sync on non-historical', async () => {
     const cid = 'QmNUNBiVC1BDDNbXCbTxzPexodbSmTqZUaohbeBae6b6r8';
     schemaName = 'sync-schema-2';
@@ -209,7 +210,6 @@ ORDER BY
       foreign_column: 'id',
     });
   });
-  //
 
   it('Cyclic relations on non-historical', async () => {
     const cid = 'QmTLwdpfE7xsmAtPj3Bep9KKgAPbt2tvXisUHcHys6anSG';
@@ -252,6 +252,7 @@ WHERE
       foreign_column_name: 'id',
     });
   });
+
   it('Init with enums', async () => {
     const cid = 'QmVDDxVgmkKzXKcK5YBkEu3Wvzao7uQxear2SVLTUg2bQ1';
     schemaName = 'sync-schema-4';
@@ -282,6 +283,7 @@ ORDER BY t.typname, e.enumsortorder;`,
       '65c7fd4e5d',
     ]);
   });
+
   it('Able to drop notification triggers and functions', async () => {
     // if subscription is no longer enabled should be able to drop all prior triggers and functions related to subscription
     const cid = 'Qma3HraGKnH5Gte2WVs4sAAY6z5nBSqVuVq7Ef3eVQQPvz';

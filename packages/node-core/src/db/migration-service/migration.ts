@@ -67,6 +67,8 @@ export class Migration {
 
     if (this.useSubscription) {
       this.extraQueries.push(syncHelper.createSendNotificationTriggerFunction(schemaName));
+    } else {
+      this.extraQueries.push(syncHelper.dropNotifyFunction(this.schemaName));
     }
   }
 
@@ -197,7 +199,8 @@ export class Migration {
         syncHelper.validateNotifyTriggers(triggerName, notifyTriggers as syncHelper.NotifyTriggerPayload[]);
       }
     } else {
-      this.extraQueries.push(syncHelper.dropNotifyFunction(this.schemaName));
+      // should prioritise dropping the triggers before dropNotifyFunction
+      this.extraQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
     }
 
     this.addModelToSequelizeCache(sequelizeModel);
@@ -206,7 +209,7 @@ export class Migration {
   dropTable(model: GraphQLModelsType): void {
     const tableName = modelToTableName(model.name);
 
-    // should prioritise dropping the triggers
+    // should prioritise dropping the triggers before dropNotifyFunction
     this.mainQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, tableName));
     this.mainQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${tableName}";`);
     this.removedModels.push(model.name);
