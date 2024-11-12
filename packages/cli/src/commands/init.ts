@@ -128,8 +128,8 @@ export default class Init extends Command {
 
     assert(selectedProject, 'No project selected');
     const projectPath: string = await cloneProjectTemplate(location, project.name, selectedProject);
-
-    await this.setupProject(project, projectPath, flags);
+    const {isMultiChainProject} = await this.setupProject(project, projectPath, flags);
+    if (isMultiChainProject) return;
 
     if (await validateEthereumProjectManifest(projectPath)) {
       const loadAbi = await confirm({
@@ -147,17 +147,24 @@ export default class Init extends Command {
     project: ProjectSpecBase,
     projectPath: string,
     flags: {npm: boolean; 'install-dependencies': boolean}
-  ): Promise<void> {
-    const [defaultEndpoint, defaultAuthor, defaultDescription] = await readDefaults(projectPath);
+  ): Promise<{isMultiChainProject: boolean}> {
+    const {
+      author: defaultAuthor,
+      description: defaultDescription,
+      endpoint: defaultEndpoint,
+      isMultiChainProject,
+    } = await readDefaults(projectPath);
 
-    project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
-    const userInput = await input({
-      message: 'RPC endpoint:',
-      default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
-      required: false,
-    });
-    if (!project.endpoint.includes(userInput)) {
-      (project.endpoint as string[]).push(userInput);
+    if (!isMultiChainProject) {
+      project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
+      const userInput = await input({
+        message: 'RPC endpoint:',
+        default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
+        required: false,
+      });
+      if (!project.endpoint.includes(userInput)) {
+        (project.endpoint as string[]).push(userInput);
+      }
     }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     project.author = await input({message: 'Author', required: true, default: defaultAuthor});
@@ -170,14 +177,16 @@ export default class Init extends Command {
     });
 
     const spinner = ora('Preparing project').start();
-    await prepare(projectPath, project);
+    await prepare(projectPath, project, isMultiChainProject);
     spinner.stop();
     if (flags['install-dependencies']) {
       const spinner = ora('Installing dependencies').start();
       installDependencies(projectPath, flags.npm);
       spinner.stop();
     }
-    this.log(`${project.name} is ready`);
+    this.log(`${project.name} is ready${isMultiChainProject ? ' as a multi-chain project' : ''}`);
+
+    return {isMultiChainProject};
   }
 
   async createProjectScaffold(projectPath: string): Promise<void> {

@@ -20,6 +20,7 @@ import {
   defaultEnvLocalPath,
   defaultEnvPath,
   defaultGitIgnorePath,
+  defaultMultiChainYamlManifestPath,
   defaultTSManifestPath,
   defaultYamlManifestPath,
   errorHandle,
@@ -138,12 +139,21 @@ export async function cloneProjectTemplate(
   return projectPath;
 }
 
-export async function readDefaults(projectPath: string): Promise<string[]> {
+export async function readDefaults(projectPath: string): Promise<{
+  endpoint: string | string[];
+  author: string;
+  description: string;
+  isMultiChainProject: boolean;
+}> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
-  let endpoint: ProjectNetworkConfig['endpoint'];
+  const author: string = currentPackage.author;
+  const description: string = currentPackage.description;
+  let endpoint: string[] | string;
+  let isMultiChainProject = false;
   const defaultTsPath = defaultTSManifestPath(projectPath);
   const defaultYamlPath = defaultYamlManifestPath(projectPath);
+  const defaultMultiChainPath = defaultMultiChainYamlManifestPath(projectPath);
 
   if (fs.existsSync(defaultTsPath)) {
     const tsManifest = await fs.promises.readFile(defaultTsPath, 'utf8');
@@ -152,23 +162,32 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
     });
 
     endpoint = extractedTsValues.endpoint ?? [];
-  } else {
+  } else if (fs.existsSync(defaultYamlPath)) {
     const yamlManifest = await fs.promises.readFile(defaultYamlPath, 'utf8');
     const extractedYamlValues = parseDocument(yamlManifest).toJS() as ProjectManifestV1_0_0;
-    endpoint = extractedYamlValues.network.endpoint;
+    endpoint = extractedYamlValues.network.endpoint as string[] | string;
+  } else if (fs.existsSync(defaultMultiChainPath)) {
+    endpoint = [];
+    isMultiChainProject = true;
+  } else {
+    throw new Error('Failed to read manifest file while preparing the project');
   }
 
-  return [endpoint, currentPackage.author, currentPackage.description];
+  return {endpoint, author, description, isMultiChainProject};
 }
 
-export async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
+export async function prepare(
+  projectPath: string,
+  project: ProjectSpecBase,
+  isMultiChainProject = false
+): Promise<void> {
   try {
-    await prepareEnv(projectPath, project);
+    if (!isMultiChainProject) await prepareEnv(projectPath, project);
   } catch (e) {
     throw new Error('Failed to prepare read or write .env file while preparing the project');
   }
   try {
-    await prepareManifest(projectPath, project);
+    if (!isMultiChainProject) await prepareManifest(projectPath, project);
   } catch (e) {
     throw new Error('Failed to prepare read or write manifest while preparing the project');
   }

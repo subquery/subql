@@ -13,6 +13,7 @@ import {
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import * as tsNode from 'ts-node';
+import {isMultichain} from './utils';
 
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `import {toJsonObject} from '@subql/common';` +
@@ -129,12 +130,6 @@ function getTsManifestsFromMultichain(location: string): string[] {
   return multichainContent.projects
     .filter((project) => project.endsWith('.ts'))
     .map((project) => path.resolve(path.dirname(location), project));
-}
-
-function isMultichain(location: string): boolean {
-  const multichainContent = yaml.load(readFileSync(location, 'utf8')) as MultichainProjectManifest;
-
-  return !!multichainContent && !!multichainContent.projects;
 }
 
 function replaceTsReferencesInMultichain(location: string): void {
