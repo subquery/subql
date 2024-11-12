@@ -10,7 +10,8 @@ import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {errorTypeToScoreAdjustment} from './connectionPool.service';
 
-const RETRY_DELAY = 60 * 1000;
+const RETRY_DELAY = 10 * 1000;
+const MAX_RETRY_DELAY = 32 * RETRY_DELAY;
 const MAX_FAILURES = 5;
 const RESPONSE_TIME_WEIGHT = 0.7;
 const FAILURE_WEIGHT = 0.3;
@@ -191,13 +192,13 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
   }
 
   //eslint-disable-next-line @typescript-eslint/require-await
-  async setTimeout(endpoint: string, delay: number): Promise<void> {
+  async setRecoverTimeout(endpoint: string, delay: number): Promise<void> {
     // Make sure there is no existing timeout
     await this.clearTimeout(endpoint);
 
     this.pool[endpoint].timeoutId = setTimeout(() => {
       this.pool[endpoint].backoffDelay = 0; // Reset backoff delay only if there are no consecutive errors
-      this.pool[endpoint].rateLimited = false;
+      // this.pool[endpoint].rateLimited = false;   // Do not reset rateLimited status
       this.pool[endpoint].failed = false;
       this.pool[endpoint].timeoutId = undefined; // Clear the timeout ID
 
@@ -247,35 +248,41 @@ export class ConnectionPoolStateManager<T extends IApiConnectionSpecific<any, an
     switch (errorType) {
       case ApiErrorType.Connection: {
         if (this.pool[endpoint].connected) {
-          //handleApiDisconnects was already called if this is false
-          //this.handleApiDisconnects(endpoint);
+          // The connected status does not provide service. handleApiDisconnects() will be called to handle this.
           this.pool[endpoint].connected = false;
         }
         return;
       }
+      case ApiErrorType.Timeout:
+      case ApiErrorType.RateLimit: {
+        // The “rateLimited” status will be selected when no endpoints are available, so we should avoid setting a large delay.
+        this.pool[endpoint].rateLimited = true;
+        break;
+      }
       case ApiErrorType.Default: {
-        const nextDelay = RETRY_DELAY * Math.pow(2, this.pool[endpoint].failureCount - 1); // Exponential backoff using failure count // Start with RETRY_DELAY and double on each failure
-        this.pool[endpoint].backoffDelay = nextDelay;
-
-        if (ApiErrorType.Timeout || ApiErrorType.RateLimit) {
-          this.pool[endpoint].rateLimited = true;
-        } else {
-          this.pool[endpoint].failed = true;
-        }
-
-        await this.setTimeout(endpoint, nextDelay);
-
-        logger.warn(
-          `Endpoint ${this.pool[endpoint].endpoint} experienced an error (${errorType}). Suspending for ${
-            nextDelay / 1000
-          }s.`
-        );
-        return;
+        // The “failed” status does not provide service.
+        this.pool[endpoint].failed = true;
+        break;
       }
       default: {
         throw new Error(`Unknown error type ${errorType}`);
       }
     }
+
+    const nextDelay = this.calculateNextDelay(this.pool[endpoint]);
+    this.pool[endpoint].backoffDelay = nextDelay;
+    await this.setRecoverTimeout(endpoint, nextDelay);
+
+    logger.warn(
+      `Endpoint ${this.pool[endpoint].endpoint} experienced an error (${errorType}). Suspending for ${
+        nextDelay / 1000
+      }s.`
+    );
+  }
+
+  private calculateNextDelay(poolItem: ConnectionPoolItem<T>): number {
+    // Exponential backoff using failure count, Start with RETRY_DELAY and double on each failure, MAX_RETRY_DELAY is the maximum delay
+    return Math.min(RETRY_DELAY * Math.pow(2, poolItem.failureCount - 1), MAX_RETRY_DELAY);
   }
 
   private calculatePerformanceScore(responseTime: number, failureCount: number): number {

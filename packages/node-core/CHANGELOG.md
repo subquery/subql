@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - lazy loading for monitor service (#2583)
 
+### Fixed
+- When configuring multiple endpoints, poor network conditions may lead to block crawling delays. (#2572)
+
 ## [14.1.7] - 2024-10-30
 ### Changed
 - Bump `@subql/common` dependency

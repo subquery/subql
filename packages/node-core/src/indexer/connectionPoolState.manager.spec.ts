@@ -1,7 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ConnectionPoolStateManager} from './connectionPoolState.manager';
+import {ApiErrorType} from '../api.connection.error';
+import {ConnectionPoolItem, ConnectionPoolStateManager} from './connectionPoolState.manager';
 
 describe('ConnectionPoolStateManager', function () {
   let connectionPoolStateManager: ConnectionPoolStateManager<any>;
@@ -12,60 +13,50 @@ describe('ConnectionPoolStateManager', function () {
     connectionPoolStateManager = new ConnectionPoolStateManager();
   });
 
-  it('chooses primary endpoint first', async function () {
-    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT1] = {
-      primary: true,
-      performanceScore: 100,
-      failureCount: 0,
-      endpoint: '',
-      backoffDelay: 0,
-      rateLimited: false,
-      failed: false,
-      connected: true,
-      lastRequestTime: 0,
-    };
+  afterEach(async function () {
+    await connectionPoolStateManager.onApplicationShutdown();
+  });
 
-    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] = {
-      primary: false,
-      performanceScore: 100,
-      failureCount: 0,
-      endpoint: '',
-      backoffDelay: 0,
-      rateLimited: false,
-      failed: false,
-      connected: true,
-      lastRequestTime: 0,
-    };
+  it('chooses primary endpoint first', async function () {
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT1, true);
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT2, false);
 
     expect(await connectionPoolStateManager.getNextConnectedEndpoint()).toEqual(EXAMPLE_ENDPOINT1);
   });
 
   it('does not choose primary endpoint if failed', async function () {
-    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT1] = {
-      primary: true,
-      performanceScore: 100,
-      failureCount: 0,
-      endpoint: '',
-      backoffDelay: 0,
-      rateLimited: false,
-      failed: false,
-      connected: false,
-      lastRequestTime: 0,
-    };
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT1, true);
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT2, false);
 
-    (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] = {
-      primary: false,
-      performanceScore: 100,
-      failureCount: 0,
-      endpoint: '',
-      backoffDelay: 0,
-      rateLimited: false,
-      failed: false,
-      connected: true,
-      lastRequestTime: 0,
-    };
+    await connectionPoolStateManager.handleApiError(EXAMPLE_ENDPOINT1, ApiErrorType.Default);
 
     expect(await connectionPoolStateManager.getNextConnectedEndpoint()).toEqual(EXAMPLE_ENDPOINT2);
+  });
+
+  it('All endpoints backoff; select a rateLimited endpoint. reason: ApiErrorType.Timeout', async function () {
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT1, false);
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT2, false);
+
+    await connectionPoolStateManager.handleApiError(EXAMPLE_ENDPOINT1, ApiErrorType.Default);
+    await connectionPoolStateManager.handleApiError(EXAMPLE_ENDPOINT2, ApiErrorType.Timeout);
+
+    const nextEndpoint = await connectionPoolStateManager.getNextConnectedEndpoint();
+    const endpointInfo = (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] as ConnectionPoolItem<any>;
+    expect(nextEndpoint).toEqual(EXAMPLE_ENDPOINT2);
+    expect(endpointInfo.rateLimited).toBe(true);
+  });
+
+  it('All endpoints backoff; select a rateLimited endpoint. reason: ApiErrorType.RateLimit', async function () {
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT1, false);
+    await connectionPoolStateManager.addToConnections(EXAMPLE_ENDPOINT2, false);
+
+    await connectionPoolStateManager.handleApiError(EXAMPLE_ENDPOINT1, ApiErrorType.Default);
+    await connectionPoolStateManager.handleApiError(EXAMPLE_ENDPOINT2, ApiErrorType.RateLimit);
+
+    const nextEndpoint = await connectionPoolStateManager.getNextConnectedEndpoint();
+    const endpointInfo = (connectionPoolStateManager as any).pool[EXAMPLE_ENDPOINT2] as ConnectionPoolItem<any>;
+    expect(nextEndpoint).toEqual(EXAMPLE_ENDPOINT2);
+    expect(endpointInfo.rateLimited).toBe(true);
   });
 
   it('can calculate performance score for response time of zero', function () {

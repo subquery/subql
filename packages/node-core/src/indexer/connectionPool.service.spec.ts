@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {delay} from '@subql/common';
-import {ApiErrorType, ConnectionPoolStateManager, IApiConnectionSpecific, NodeConfig} from '..';
+import {ApiErrorType, ConnectionPoolStateManager, getLogger, IApiConnectionSpecific, NodeConfig} from '..';
 import {ConnectionPoolService} from './connectionPool.service';
 
 async function waitFor(conditionFn: () => boolean, timeout = 50000, interval = 100): Promise<void> {
@@ -126,5 +126,31 @@ describe('ConnectionPoolService', () => {
 
       expect(handleApiDisconnectsSpy).toHaveBeenCalledTimes(1);
     }, 15000);
+  });
+
+  describe('Rate limit endpoint delay', () => {
+    it('call delay', async () => {
+      const logger = getLogger('connection-pool');
+      const consoleSpy = jest.spyOn(logger, 'info');
+
+      await connectionPoolService.addToConnections(mockApiConnection, TEST_URL);
+      await connectionPoolService.addToConnections(mockApiConnection, `${TEST_URL}/2`);
+      await connectionPoolService.handleApiError(TEST_URL, {
+        name: 'timeout',
+        errorType: ApiErrorType.Timeout,
+        message: 'timeout error',
+      });
+      await connectionPoolService.handleApiError(`${TEST_URL}/2`, {
+        name: 'DefaultError',
+        errorType: ApiErrorType.Default,
+        message: 'Default error',
+      });
+      await (connectionPoolService as any).flushResultCache();
+
+      await connectionPoolService.api.fetchBlocks([34365]);
+
+      expect(consoleSpy).toHaveBeenCalledWith('throtling on ratelimited endpoint 10s');
+      consoleSpy.mockRestore();
+    }, 30000);
   });
 });
