@@ -14,6 +14,7 @@ class TestDynamicDsService extends DynamicDsService<BaseDataSource, ISubqueryPro
     } as unknown as IBlockchainService);
   }
 
+  // Make it public
   getTemplate<T extends Omit<NonNullable<ISubqueryProject['templates']>[number], 'name'> & {startBlock?: number}>(
     templateName: string,
     startBlock?: number | undefined
@@ -42,7 +43,7 @@ const mockMetadata = (initData: DatasourceParams[] = []) => {
 describe('DynamicDsService', () => {
   let service: TestDynamicDsService;
   const project = {
-    templates: [{name: 'TestTemplate'}],
+    templates: [{name: 'Test'}],
   } as any as ISubqueryProject;
 
   beforeEach(() => {
@@ -52,7 +53,9 @@ describe('DynamicDsService', () => {
   it('loads all datasources and params when init', async () => {
     await service.init(mockMetadata([testParam1]));
 
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {/*name: 'Test',*/ startBlock: testParam1.startBlock},
+    ]);
 
     expect((service as any)._datasourceParams).toEqual([testParam1]);
   });
@@ -66,7 +69,10 @@ describe('DynamicDsService', () => {
     expect((service as any)._datasourceParams).toEqual([testParam1, testParam2]);
 
     await expect(meta.find('dynamicDatasources')).resolves.toEqual([testParam1, testParam2]);
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+    ]);
   });
 
   it('resets dynamic datasources', async () => {
@@ -76,7 +82,10 @@ describe('DynamicDsService', () => {
     await service.resetDynamicDatasource(2, null as any);
 
     await expect(meta.find('dynamicDatasources')).resolves.toEqual([testParam1, testParam2]);
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+    ]);
   });
 
   it('getDynamicDatasources with force reloads from metadata', async () => {
@@ -85,19 +94,27 @@ describe('DynamicDsService', () => {
 
     await meta.set('dynamicDatasources', [testParam1, testParam2, testParam3, testParam4]);
 
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
-    await expect(service.getDynamicDatasources(true)).resolves.toEqual([
-      testParam1,
-      testParam2,
-      testParam3,
-      testParam4,
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
     ]);
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2, testParam3, testParam4]);
+    await expect(service.getDynamicDatasources(true)).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+      {startBlock: testParam3.startBlock},
+      {startBlock: testParam4.startBlock},
+    ]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+      {startBlock: testParam3.startBlock},
+      {startBlock: testParam4.startBlock},
+    ]);
   });
 
   it('can find a template and cannot mutate the template', () => {
-    const template1 = service.getTemplate('TestTemplate', 1);
-    const template2 = service.getTemplate('TestTemplate', 2);
+    const template1 = service.getTemplate('Test', 1);
+    const template2 = service.getTemplate('Test', 2);
 
     expect(template1.startBlock).toEqual(1);
     expect((template1 as any).name).toBeUndefined();
@@ -106,6 +123,6 @@ describe('DynamicDsService', () => {
     expect((template2 as any).name).toBeUndefined();
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(project.templates![0]).toEqual({name: 'TestTemplate'});
+    expect(project.templates![0]).toEqual({name: 'Test'});
   });
 });
