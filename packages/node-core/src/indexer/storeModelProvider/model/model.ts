@@ -55,17 +55,15 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       throw new Error(`Id doesnt match with data`);
     }
 
-    await this.bulkCreate([data], blockHeight, tx);
+    return this.bulkCreate([data], blockHeight, tx);
   }
 
-  async bulkCreate(data: T[], blockHeight: number, tx?: Transaction): Promise<void> {
-    if (!data.length) {
-      return;
-    }
+  // Only perform bulk create data, without paying attention to any exception situations.
+  private async _bulkCreate(data: T[], blockHeight: number, tx?: Transaction): Promise<void> {
     await this.model.bulkCreate(
       data.map((v) => ({
         ...v,
-        __block_range: this.historical ? this.sequelize.fn('int8range', blockHeight, blockHeight + 1) : null,
+        __block_range: this.historical ? this.sequelize.fn('int8range', blockHeight, null) : null,
       })) as CreationAttributes<Model<T, T>>[],
       {
         transaction: tx,
@@ -74,16 +72,59 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     );
   }
 
+  async bulkCreate(data: T[], blockHeight: number, tx?: Transaction): Promise<void> {
+    if (!data.length) return;
+
+    if (!this.historical) {
+      await this._bulkCreate(data, blockHeight, tx);
+      return;
+    }
+
+    const existingData = await this.model.findAll({
+      where: {id: data.map((v) => v.id)} as any,
+      attributes: ['id'],
+    });
+    const existingIds = existingData.map((v) => (v as any).id);
+
+    const updateDatas: T[] = [];
+    const createDatas: T[] = [];
+    data.map((v) => {
+      if (existingIds.includes(v.id)) {
+        updateDatas.push(v);
+      } else {
+        createDatas.push(v);
+      }
+    });
+
+    await this.bulkUpdate(updateDatas, blockHeight, undefined, tx);
+    await this._bulkCreate(createDatas, blockHeight, tx);
+  }
+
   async bulkUpdate(data: T[], blockHeight: number, fields?: string[], tx?: Transaction): Promise<void> {
+    if (!data.length) return;
+
     //TODO, understand why this happens, its also on the store cache
     if (fields) {
       throw new Error(`Currently not supported: update by fields`);
     }
-    await this.bulkCreate(data, blockHeight, tx);
+
+    if (this.historical) {
+      await this.setEndBlockRange(
+        data.map((v) => v.id),
+        blockHeight,
+        tx
+      );
+    }
+    await this._bulkCreate(data, blockHeight, tx);
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
-    await this.model.destroy({where: {id: ids} as any, transaction: tx});
+    if (!ids.length) return;
+    if (this.historical) {
+      await this.setEndBlockRange(ids, blockHeight, tx);
+    } else {
+      await this.model.destroy({where: {id: ids} as any, transaction: tx});
+    }
   }
 
   private get sequelize(): Sequelize {
@@ -94,5 +135,17 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     }
 
     return sequelize;
+  }
+
+  private async setEndBlockRange(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
+    await this.model.update(
+      {
+        __block_range: this.sequelize.fn('int8range', 'lower("_block_range")', blockHeight + 1),
+      },
+      {
+        where: {id: ids} as any,
+        transaction: tx,
+      }
+    );
   }
 }
