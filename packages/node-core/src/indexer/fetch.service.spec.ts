@@ -3,13 +3,7 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import {
-  BaseCustomDataSource,
-  BaseDataSource,
-  BaseHandler,
-  BaseMapping,
-  DictionaryQueryEntry,
-} from '@subql/types-core';
+import { BaseCustomDataSource, BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry } from '@subql/types-core';
 import {
   UnfinalizedBlocksService,
   BlockDispatcher,
@@ -35,6 +29,7 @@ class TestFetchService extends FetchService<BaseDataSource, IBlockDispatcher<any
   setBypassBlocks(blocks: BypassBlocks) {
     this.projectService.bypassBlocks = blocks;
   }
+
   protected buildDictionaryQueryEntries(
     dataSources: BaseDataSource<BaseHandler<any>, BaseMapping<BaseHandler<any>>>[]
   ): DictionaryQueryEntry[] {
