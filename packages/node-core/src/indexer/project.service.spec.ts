@@ -9,7 +9,11 @@ import { DsProcessorService } from './ds-processor.service';
 import { DatasourceParams, DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { Header, IBlock, ISubqueryProject } from './types';
-import { METADATA_LAST_FINALIZED_PROCESSED_KEY, METADATA_UNFINALIZED_BLOCKS_KEY, UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {
+  METADATA_LAST_FINALIZED_PROCESSED_KEY,
+  METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 import { IBaseIndexerWorker } from './worker';
 
 class TestProjectService extends ProjectService<any, any> {
@@ -65,7 +69,7 @@ class TestBlockchainService implements IBlockchainService {
     throw new Error('Method not implemented.');
   }
   isCustomDs(x: any): x is any {
-    return false
+    return false;
   }
   isRuntimeDs(x: any): x is any {
     return false;
@@ -123,7 +127,7 @@ describe('BaseProjectService', () => {
       { getDynamicDatasources: jest.fn() } as unknown as DynamicDsService<any>,
       null as unknown as any,
       null as unknown as any,
-      new TestBlockchainService(),
+      new TestBlockchainService()
     );
   });
 
@@ -416,7 +420,7 @@ describe('BaseProjectService', () => {
         } as unknown as DynamicDsService<any>, // dynamicDsService
         new EventEmitter2(), // eventEmitter
         new UnfinalizedBlocksService(nodeConfig, storeService.storeCache, blockchainService), // unfinalizedBlocksService
-        blockchainService,
+        blockchainService
       );
     };
 
