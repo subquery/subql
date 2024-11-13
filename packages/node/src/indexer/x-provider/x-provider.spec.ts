@@ -12,21 +12,28 @@ const TEST_BLOCKHASH =
 describe('ApiPromiseConnection', () => {
   let wsProvider: WsProvider;
   let httpProvider: HttpProvider;
+  let wsSpy: jest.SpyInstance;
+  let httpSpy: jest.SpyInstance;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const ws = await new WsProvider('wss://kusama.api.onfinality.io/public-ws')
       .isReady;
     const http = new HttpProvider('https://kusama.api.onfinality.io/public');
 
+    // Spys created before the send function is modified
+    wsSpy = jest.spyOn(ws, 'send');
+    httpSpy = jest.spyOn(http, 'send');
+
     wsProvider = createCachedProvider(ws);
     httpProvider = createCachedProvider(http);
-
-    // TODO these don't work any more because the send method gets replaced
-    jest.spyOn(ws, 'send');
-    jest.spyOn(http, 'send');
   });
 
-  afterEach(async () => {
+  afterEach(() => {
+    wsSpy.mockClear();
+    httpSpy.mockClear();
+  });
+
+  afterAll(async () => {
     await Promise.all([wsProvider?.disconnect(), httpProvider?.disconnect()]);
   });
 
@@ -35,8 +42,7 @@ describe('ApiPromiseConnection', () => {
       wsProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
       wsProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
     ]);
-
-    expect(wsProvider.send).toHaveBeenCalledTimes(1);
+    expect(wsSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should not make duplicate requests for chain_getHeader on wsProvider', async () => {
@@ -44,7 +50,7 @@ describe('ApiPromiseConnection', () => {
       wsProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
       wsProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
     ]);
-    expect(wsProvider.send).toHaveBeenCalledTimes(1);
+    expect(wsSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should not make duplicate requests for state_getRuntimeVersion on httpProvider', async () => {
@@ -52,7 +58,7 @@ describe('ApiPromiseConnection', () => {
       httpProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
       httpProvider.send('state_getRuntimeVersion', [TEST_BLOCKHASH]),
     ]);
-    expect(httpProvider.send).toHaveBeenCalledTimes(1);
+    expect(httpSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should not make duplicate requests for chain_getHeader on httpProvider', async () => {
@@ -60,7 +66,7 @@ describe('ApiPromiseConnection', () => {
       httpProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
       httpProvider.send('chain_getHeader', [TEST_BLOCKHASH]),
     ]);
-    expect(httpProvider.send).toHaveBeenCalledTimes(1);
+    expect(httpSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should not cache requests if there are no args', async () => {
@@ -69,7 +75,7 @@ describe('ApiPromiseConnection', () => {
     await delay(7);
     const result2 = await httpProvider.send('chain_getHeader', []);
 
-    expect(httpProvider.send).toHaveBeenCalledTimes(2);
+    expect(httpSpy).toHaveBeenCalledTimes(2);
     expect(result1).not.toEqual(result2);
   }, 10000);
 });
