@@ -31,15 +31,6 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     private readonly historical = true
   ) {}
 
-  private isCurrentTxCreated(id: string, tx?: Transaction): boolean {
-    if (!tx) return false;
-    return !!this.currentTxCreatedRecord[id];
-  }
-
-  private filterCurrentTxCreatedRecord(ids: string[]): string[] {
-    return ids.filter((id) => this.currentTxCreatedRecord[id]);
-  }
-
   private _setTxCreatedCache(data: T) {
     this.currentTxCreatedRecord[data.id] = cloneDeep(data);
   }
@@ -115,28 +106,20 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       return this._bulkCreate([data], blockHeight, tx);
     }
 
-    if (!this.isCurrentTxCreated(id, tx)) {
-      await this._setEndBlockRange([id], blockHeight, tx);
-      await this._bulkCreate([data], blockHeight, tx);
-      return;
-    }
-
-    // TODO Why is there an additional “store” field?
-    if (_.isEqual(data, this.currentTxCreatedRecord[id])) return;
-
-    await this.model.update(data, {
-      hooks: false,
-      where: {
-        id: id,
-        __block_range: {[Op.contains]: blockHeight},
-      } as any,
-      transaction: tx,
-    });
-    this._setTxCreatedCache(data);
+    await this.bulkUpdate([data], blockHeight, undefined, tx);
   }
 
   async bulkCreate(data: T[], blockHeight: number, tx?: Transaction): Promise<void> {
+    await this.bulkUpdate(data, blockHeight, undefined, tx);
+  }
+
+  async bulkUpdate(data: T[], blockHeight: number, fields?: string[], tx?: Transaction): Promise<void> {
     if (!data.length) return;
+
+    // TODO, understand why this happens, its also on the store cache
+    if (fields) {
+      throw new Error(`Currently not supported: update by fields`);
+    }
 
     const uniqueMap = data.reduce(
       (acc, curr) => {
@@ -145,37 +128,33 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       },
       {} as Record<string, T>
     );
-    const waitCreateDatas = Object.values(uniqueMap);
+    const uniqueDatas = Object.values(uniqueMap);
 
     if (!this.historical) {
-      await this._bulkCreate(waitCreateDatas, blockHeight, tx);
+      await this._bulkCreate(uniqueDatas, blockHeight, tx);
       return;
     }
 
-    await this.bulkUpdate(waitCreateDatas, blockHeight, undefined, tx);
-  }
-
-  async bulkUpdate(data: T[], blockHeight: number, fields?: string[], tx?: Transaction): Promise<void> {
-    if (!data.length) return;
-
-    //TODO, understand why this happens, its also on the store cache
-    if (fields) {
-      throw new Error(`Currently not supported: update by fields`);
-    }
-
-    if (!this.historical) {
-      await this._bulkCreate(data, blockHeight, tx);
-      return;
-    }
-
-    const currentBlockCreatedIds = this.filterCurrentTxCreatedRecord(data.map((v) => v.id));
     const deleteIds: string[] = [];
-    data.map((v) => {
-      if (currentBlockCreatedIds.includes(v.id)) {
-        deleteIds.push(v.id);
+    const createDatas: T[] = [];
+    for (const item of uniqueDatas) {
+      const currentTxCreatedRecord = this.currentTxCreatedRecord[item.id];
+      // If the data is not created in the current transaction, it is created.
+      if (!currentTxCreatedRecord) {
+        createDatas.push(item);
+        continue;
       }
-    });
+      // If the data is created in the current transaction and the data is the same, it is ignored.
+      // TODO Why is there an additional “store” field?
+      if (_.isEqual(item, currentTxCreatedRecord)) continue;
+
+      // If the data is created in the current transaction, but the data is different, it is deleted and re-created.
+      deleteIds.push(item.id);
+      createDatas.push(item);
+    }
+
     if (deleteIds.length) {
+      // Delete the data that was created in the current transaction
       await this.model.destroy({
         where: {
           id: deleteIds,
@@ -186,11 +165,11 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     }
 
     await this._setEndBlockRange(
-      data.map((v) => v.id),
+      createDatas.map((v) => v.id),
       blockHeight,
       tx
     );
-    await this._bulkCreate(data, blockHeight, tx);
+    await this._bulkCreate(createDatas, blockHeight, tx);
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
