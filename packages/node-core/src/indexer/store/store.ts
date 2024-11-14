@@ -42,7 +42,7 @@ export class Store implements IStore {
 
   async get<T extends Entity>(entity: string, id: string): Promise<T | undefined> {
     try {
-      const raw = await this.#modelProvider.getModel<T>(entity).get(id);
+      const raw = await this.#modelProvider.getModel<T>(entity).get(id, this.#context.transaction);
       monitorWrite(() => `-- [Store][get] Entity ${entity} ID ${id}, data: ${handledStringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
@@ -88,7 +88,7 @@ export class Store implements IStore {
 
       this.#queryLimitCheck('getByFields', entity, options);
 
-      const raw = await this.#modelProvider.getModel<T>(entity).getByFields(filter, options);
+      const raw = await this.#modelProvider.getModel<T>(entity).getByFields(filter, options, this.#context.transaction);
       monitorWrite(() => `-- [Store][getByFields] Entity ${entity}, data: ${handledStringify(raw)}`);
       return raw.map((v) => EntityClass.create<T>(entity, v, this)) as T[];
     } catch (e) {

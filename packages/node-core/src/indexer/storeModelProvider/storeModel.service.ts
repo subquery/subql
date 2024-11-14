@@ -6,7 +6,6 @@ import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
-import {StoreService} from '../store.service';
 import {BaseStoreModelService} from './baseStoreModel.service';
 import {CsvStoreService} from './csvStore.service';
 import {MetadataModel} from './metadata/metadata';
@@ -72,6 +71,13 @@ export class PlainStoreModelService extends BaseStoreModelService implements ISt
       exitWithError(new Error('Transaction not found'), logger, 1);
     }
     await tx.commit();
+
+    // Clear the cache records of incremental data.
+    for (const model of Object.values(this.cachedModels)) {
+      if (model instanceof PlainModel) {
+        model.clearCurrentTxCreatedRecord();
+      }
+    }
 
     if (dataSourcesCompleted) {
       const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
