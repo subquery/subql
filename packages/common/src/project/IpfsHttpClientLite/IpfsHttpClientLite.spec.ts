@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {u8aConcat} from '@polkadot/util';
 import {IPFS_NODE_ENDPOINT, IPFS_WRITE_ENDPOINT} from '../../constants';
 import {IPFSHTTPClientLite} from './IPFSHTTPClientLite';
 
@@ -43,7 +42,7 @@ describe('IPFSClient Lite', () => {
     for await (const res of req) {
       scriptBufferArray.push(res);
     }
-    const output = Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
+    const output = Buffer.concat(scriptBufferArray.map((u8a) => Buffer.from(u8a))).toString('utf8');
 
     expect(output).toBe(`test string to upload`);
   });
@@ -72,7 +71,7 @@ describe('IPFSClient Lite', () => {
     for await (const res of req) {
       scriptBufferArray.push(res);
     }
-    const output = Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
+    const output = Buffer.concat(scriptBufferArray.map((u8a) => Buffer.from(u8a))).toString('utf8');
     expect(output).toBeDefined();
     expect(output.length).toBeGreaterThan(1);
   }, 500000);

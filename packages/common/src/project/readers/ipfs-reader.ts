@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {u8aConcat} from '@polkadot/util';
 import {Reader} from '@subql/types-core';
 import yaml from 'js-yaml';
 import type {IPackageJson} from 'package-json-type';
@@ -17,7 +16,10 @@ export class IPFSReader implements Reader {
   private ipfs: IPFSHTTPClientLite;
   private cache: Record<string, Promise<string>> = {};
 
-  constructor(readonly cid: string, gateway?: string) {
+  constructor(
+    readonly cid: string,
+    gateway?: string
+  ) {
     if (!CIDv0.test(cid) && !CIDv1.test(cid)) {
       throw new Error('IPFS project path CID is not valid');
     }
@@ -56,6 +58,6 @@ export class IPFSReader implements Reader {
     for await (const res of req) {
       scriptBufferArray.push(res);
     }
-    return Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
+    return Buffer.concat(scriptBufferArray.map((u8a) => Buffer.from(u8a))).toString('utf8');
   }
 }

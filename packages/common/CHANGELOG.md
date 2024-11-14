@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Removed imports of `@polkadot/util` without it being a dependency (#2592)
 
 ## [5.1.4] - 2024-10-23
 ### Fixed
