@@ -285,6 +285,20 @@ export class StoreService {
       sequelizeModel.addHook('beforeValidate', (attributes, options) => {
         attributes.__block_range = [this.blockHeight, null];
       });
+
+      if (!this.config.enableCache) {
+        sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
+          instances.forEach((item) => {
+            item.__block_range = [this.blockHeight, null];
+          });
+        });
+
+        sequelizeModel.addHook('beforeDestroy', (instance, options) => {
+          instance.where.__block_range = {
+            [Op.contains]: this.blockHeight,
+          };
+        });
+      }
       // TODO, remove id and block_range constraint, check id manually
       // see https://github.com/subquery/subql/issues/1542
     }

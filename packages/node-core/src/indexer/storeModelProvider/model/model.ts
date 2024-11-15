@@ -40,7 +40,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
   }
 
   // Only perform bulk create data, without paying attention to any exception situations.
-  private async _bulkCreate(data: T[], blockHeight: number, tx?: Transaction): Promise<void> {
+  private async _bulkCreate(data: T[], tx?: Transaction): Promise<void> {
     if (!data.length) return;
 
     const uniqueMap = data.reduce(
@@ -52,16 +52,10 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     );
     const waitCreateDatas = Object.values(uniqueMap);
 
-    await this.model.bulkCreate(
-      waitCreateDatas.map((v) => ({
-        ...v,
-        __block_range: this.historical ? [blockHeight, null] : null,
-      })) as CreationAttributes<Model<T, T>>[],
-      {
-        transaction: tx,
-        updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
-      }
-    );
+    await this.model.bulkCreate(waitCreateDatas as CreationAttributes<Model<T, T>>[], {
+      transaction: tx,
+      updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
+    });
 
     for (const item of waitCreateDatas) {
       this._setTxCreatedCache(item);
@@ -102,10 +96,6 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       throw new Error(`Id doesnt match with data`);
     }
 
-    if (!this.historical) {
-      return this._bulkCreate([data], blockHeight, tx);
-    }
-
     await this.bulkUpdate([data], blockHeight, undefined, tx);
   }
 
@@ -131,7 +121,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     const uniqueDatas = Object.values(uniqueMap);
 
     if (!this.historical) {
-      await this._bulkCreate(uniqueDatas, blockHeight, tx);
+      await this._bulkCreate(uniqueDatas, tx);
       return;
     }
 
@@ -145,7 +135,6 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
         continue;
       }
       // If the data is created in the current transaction and the data is the same, it is ignored.
-      // TODO Why is there an additional “store” field?
       if (_.isEqual(item, currentTxCreatedRecord)) continue;
 
       // If the data is created in the current transaction, but the data is different, it is deleted and re-created.
@@ -156,20 +145,17 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     if (deleteIds.length) {
       // Delete the data that was created in the current transaction
       await this.model.destroy({
-        where: {
-          id: deleteIds,
-          __block_range: {[Op.contains]: blockHeight},
-        } as any,
+        where: {id: deleteIds} as any,
         transaction: tx,
       });
     }
 
-    await this._setEndBlockRange(
+    await this.markAsDeleted(
       createDatas.map((v) => v.id),
       blockHeight,
       tx
     );
-    await this._bulkCreate(createDatas, blockHeight, tx);
+    await this._bulkCreate(createDatas, tx);
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
@@ -178,7 +164,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       await this.model.destroy({where: {id: ids} as any, transaction: tx});
       return;
     }
-    await this._setEndBlockRange(ids, blockHeight, tx);
+    await this.markAsDeleted(ids, blockHeight, tx);
   }
 
   private get sequelize(): Sequelize {
@@ -191,7 +177,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     return sequelize;
   }
 
-  private async _setEndBlockRange(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
+  private async markAsDeleted(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
     await this.model.update(
       {
         __block_range: this.sequelize.fn(
