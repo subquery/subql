@@ -1,15 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {gql} from '@apollo/client';
-import {buildSchemaFromString, Json} from '@subql/utils';
+import {buildSchemaFromString} from '@subql/utils';
 import {Sequelize, DataTypes, Model, ModelAttributes, QueryTypes} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
 import {addIdAndBlockRangeAttributes, DbOption} from '../db';
-import {BaseProjectService} from './project.service';
 import {StoreService} from './store.service';
 import {PlainStoreModelService} from './storeModelProvider';
-import {PlainModel} from './storeModelProvider/model/model';
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
