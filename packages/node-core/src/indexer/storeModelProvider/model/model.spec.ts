@@ -19,12 +19,10 @@ const option: DbOption = {
 
 jest.setTimeout(50_000);
 
-describe('plainModeldata test', () => {
+describe('Model provider consistency test', () => {
   let sequelize: Sequelize;
   let schema: string;
   let model: any;
-  let historicalModel: any;
-  // let plainModel: PlainModel<{id: string; field1: number}>;
 
   beforeAll(async () => {
     sequelize = new Sequelize(
@@ -47,36 +45,7 @@ describe('plainModeldata test', () => {
       },
       {timestamps: false, schema: schema}
     );
-    model = await modelFactory.sync().catch((e) => {
-      console.log('error', e);
-      throw e;
-    });
-    const historicalModelFactory = sequelize.define(
-      'historicalTestModel',
-      {
-        id: {
-          type: DataTypes.STRING,
-        },
-        field1: DataTypes.INTEGER,
-        __id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          allowNull: false,
-          primaryKey: true,
-        },
-        __block_range: {
-          type: DataTypes.RANGE(DataTypes.BIGINT),
-          allowNull: false,
-        },
-      },
-      {timestamps: false, schema: schema}
-    );
-    historicalModel = await historicalModelFactory.sync().catch((e) => {
-      console.log('error', e);
-      throw e;
-    });
-
-    const i = 0;
+    model = await modelFactory.sync();
   });
 
   afterAll(async () => {
@@ -93,37 +62,37 @@ describe('plainModeldata test', () => {
       cacheModel = new CachedModel(model, false, new NodeConfig({} as any), () => i++);
     });
 
-    it('insert data, no _block_range', async () => {
+    it('insert data', async () => {
       const id = '1';
       const data = {id, field1: 1};
 
       await plainModel.set(id, data, 1);
       await cacheModel.set(id, data, 1);
 
-      const result = await plainModel.get(id);
+      const result = await plainModel.get(id, undefined as any);
       const cacheResult = await cacheModel.get(id);
 
       expect(result).toEqual(data);
       expect(cacheResult).toEqual(result);
     });
 
-    it('select data, no _block_range', async () => {
+    it('select data', async () => {
       const id2 = '2';
       const data2 = {id: id2, field1: 2};
       await plainModel.set(id2, data2, 1);
       await cacheModel.set(id2, data2, 1);
-      const result2 = await plainModel.getByFields([['id', '=', id2]], {limit: 1});
+      const result2 = await plainModel.getByFields([['id', '=', id2]], {limit: 1}, undefined as any);
       const cacheResult2 = await cacheModel.getByFields([['id', '=', id2]], {limit: 1});
       expect(result2.length).toEqual(1);
       expect(cacheResult2).toEqual(result2);
 
-      const result3 = await plainModel.getByFields([], {limit: 2});
+      const result3 = await plainModel.getByFields([], {limit: 2}, undefined as any);
       const cacheResult3 = await cacheModel.getByFields([], {limit: 2});
       expect(result3.length).toEqual(2);
       expect(cacheResult3).toEqual(result3);
     });
 
-    it('update data, no _block_range', async () => {
+    it('update data', async () => {
       const datas = [
         {id: '1', field1: 1},
         {id: '2', field1: 2},
@@ -132,52 +101,20 @@ describe('plainModeldata test', () => {
       await plainModel.bulkUpdate(datas, 1);
       await cacheModel.bulkUpdate(datas, 1);
 
-      // const result = await plainModel.get('1');
-
-      const result3 = await plainModel.getByFields([], {limit: 10});
+      const result3 = await plainModel.getByFields([], {limit: 10}, undefined as any);
       const cacheResult3 = await cacheModel.getByFields([], {limit: 10});
       expect(result3.length).toEqual(3);
       expect(cacheResult3).toEqual(result3);
     });
 
-    it('delete data, no _block_range', async () => {
-      const id = '1';
-
+    it('delete data', async () => {
       await plainModel.bulkRemove(['1'], 1);
       await cacheModel.bulkRemove(['1'], 1);
 
-      const result3 = await plainModel.getByFields([], {limit: 10});
+      const result3 = await plainModel.getByFields([], {limit: 10}, undefined as any);
       const cacheResult3 = await cacheModel.getByFields([], {limit: 10});
       expect(result3.length).toEqual(2);
       expect(cacheResult3).toEqual(result3);
-    });
-  });
-
-  describe('enable historical', () => {
-    let plainModel: PlainModel<{id: string; field1: number}>;
-    let cacheModel: CachedModel<{id: string; field1: number}>;
-    beforeAll(() => {
-      let i = 0;
-      plainModel = new PlainModel(historicalModel, true);
-      cacheModel = new CachedModel(historicalModel, true, new NodeConfig({} as any), () => i++);
-    });
-
-    it('insert data, exist _block_range', async () => {
-      const id = '1';
-      const data = {id, field1: 1};
-
-      await cacheModel.set(id, data, 1);
-      const cacheResult = await cacheModel.get(id);
-
-      await plainModel.set(id, data, 1);
-      const result = await plainModel.get(id);
-
-      expect((result as any).__block_range).toEqual([
-        {inclusive: true, value: '1'},
-        {inclusive: false, value: '2'},
-      ]);
-      expect(result).toMatchObject(data);
-      expect(cacheResult).toEqual(_.omit(result, ['__block_range', '__id']));
     });
   });
 });
