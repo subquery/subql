@@ -119,7 +119,7 @@ describe('Cli can create project', () => {
     const project = projects.find((p) => p.name === 'Polkadot-starter')!;
     const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, project);
     await prepare(projectPath, projectSpec);
-    const [, author, description] = await readDefaults(projectPath);
+    const {author, description} = await readDefaults(projectPath);
 
     //spec version is  not returned from readDefaults
     //expect(projectSpec.specVersion).toEqual(specVersion);

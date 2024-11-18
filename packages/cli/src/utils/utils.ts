@@ -13,10 +13,13 @@ import {
   DEFAULT_ENV_LOCAL,
   DEFAULT_GIT_IGNORE,
   DEFAULT_MANIFEST,
+  DEFAULT_MULTICHAIN_MANIFEST,
   DEFAULT_TS_MANIFEST,
 } from '@subql/common';
+import {MultichainProjectManifest} from '@subql/types-core';
 import axios from 'axios';
 import ejs from 'ejs';
+import * as yaml from 'js-yaml';
 import JSON5 from 'json5';
 import {rimraf} from 'rimraf';
 import {ACCESS_TOKEN_PATH} from '../constants';
@@ -262,4 +265,13 @@ export function copyFolderSync(source: string, target: string): void {
       fs.copyFileSync(sourcePath, targetPath);
     }
   });
+}
+
+export function defaultMultiChainYamlManifestPath(projectPath: string): string {
+  return path.join(projectPath, DEFAULT_MULTICHAIN_MANIFEST);
+}
+
+export function isMultichain(location: string): boolean {
+  const multichainContent = yaml.load(readFileSync(location, 'utf8')) as MultichainProjectManifest;
+  return !!multichainContent && !!multichainContent.projects;
 }
