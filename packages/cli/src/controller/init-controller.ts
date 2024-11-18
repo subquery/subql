@@ -140,7 +140,7 @@ export async function cloneProjectTemplate(
 }
 
 export async function readDefaults(projectPath: string): Promise<{
-  endpoint: string | string[];
+  endpoint: ProjectNetworkConfig['endpoint'];
   author: string;
   description: string;
   isMultiChainProject: boolean;
@@ -149,7 +149,7 @@ export async function readDefaults(projectPath: string): Promise<{
   const currentPackage = JSON.parse(packageData.toString());
   const author: string = currentPackage.author;
   const description: string = currentPackage.description;
-  let endpoint: string[] | string;
+  let endpoint: ProjectNetworkConfig['endpoint'];
   let isMultiChainProject = false;
   const defaultTsPath = defaultTSManifestPath(projectPath);
   const defaultYamlPath = defaultYamlManifestPath(projectPath);
@@ -165,7 +165,7 @@ export async function readDefaults(projectPath: string): Promise<{
   } else if (fs.existsSync(defaultYamlPath)) {
     const yamlManifest = await fs.promises.readFile(defaultYamlPath, 'utf8');
     const extractedYamlValues = parseDocument(yamlManifest).toJS() as ProjectManifestV1_0_0;
-    endpoint = extractedYamlValues.network.endpoint as string[] | string;
+    endpoint = extractedYamlValues.network.endpoint;
   } else if (fs.existsSync(defaultMultiChainPath)) {
     endpoint = [];
     isMultiChainProject = true;

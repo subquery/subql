@@ -7,6 +7,7 @@ import path from 'path';
 import {search, confirm, input} from '@inquirer/prompts';
 import {Args, Command, Flags} from '@oclif/core';
 import {NETWORK_FAMILY} from '@subql/common';
+import {ProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
 import fuzzy from 'fuzzy';
 import ora from 'ora';
@@ -156,15 +157,17 @@ export default class Init extends Command {
     } = await readDefaults(projectPath);
 
     if (!isMultiChainProject) {
-      project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
+      const projectEndpoints: string[] = this.extractEndpoints(defaultEndpoint);
       const userInput = await input({
         message: 'RPC endpoint:',
-        default: defaultEndpoint[0],
+        default: projectEndpoints[0],
         required: false,
       });
-      if (!project.endpoint.includes(userInput)) {
-        (project.endpoint as string[]).push(userInput);
+      if (!projectEndpoints.includes(userInput)) {
+        projectEndpoints.push(userInput);
       }
+
+      project.endpoint = projectEndpoints;
     }
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     project.author = await input({message: 'Author', required: true, default: defaultAuthor});
@@ -218,5 +221,15 @@ export default class Init extends Command {
       '--startBlock',
       `${startBlock}`,
     ]);
+  }
+
+  extractEndpoints(endpointConfig: ProjectNetworkConfig['endpoint']): string[] {
+    if (typeof endpointConfig === 'string') {
+      return [endpointConfig];
+    }
+    if (endpointConfig instanceof Array) {
+      return endpointConfig;
+    }
+    return Object.keys(endpointConfig);
   }
 }

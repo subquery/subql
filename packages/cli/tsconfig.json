@@ -8,8 +8,7 @@
     "rootDir": "src",
     "tsBuildInfoFile": "lib/.tsbuildinfo",
     "outDir": "lib",
-    "noImplicitAny": true,
-    "strict": true
+    "noImplicitAny": true
   },
   "references": [{"path": "../common"}, {"path": "../common-substrate"}, {"path": "../utils"}],
   "include": ["src/**/*"],
