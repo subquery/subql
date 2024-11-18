@@ -64,7 +64,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not available'));
       return this._latestFinalizedHeight;
     }
-    return this.latestBestHeight;
+    return this._latestFinalizedHeight ?? this.latestBestHeight;
   }
 
   onApplicationShutdown(): void {
