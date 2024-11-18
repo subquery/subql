@@ -293,9 +293,14 @@ export class StoreService {
           });
         });
 
-        sequelizeModel.addHook('beforeDestroy', (instance, options) => {
-          instance.where.__block_range = {
-            [Op.contains]: this.blockHeight,
+        sequelizeModel.addHook('beforeBulkDestroy', (instance) => {
+          instance.where = {
+            ...instance.where,
+            [Op.and]: this.sequelize.where(
+              this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+              Op.eq,
+              this.blockHeight
+            ),
           };
         });
       }

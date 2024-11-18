@@ -23,21 +23,10 @@ export interface IModel<T extends BaseEntity> {
 
 // All operations must be carried out within a transaction.
 export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> {
-  // Record the data that was first created in the current transaction.
-  private currentTxCreatedRecord: Record<string, T> = {};
-
   constructor(
     readonly model: ModelStatic<Model<T, T>>,
     private readonly historical = true
   ) {}
-
-  private _setTxCreatedCache(data: T) {
-    this.currentTxCreatedRecord[data.id] = cloneDeep(data);
-  }
-
-  clearCurrentTxCreatedRecord() {
-    this.currentTxCreatedRecord = {};
-  }
 
   // Only perform bulk create data, without paying attention to any exception situations.
   private async _bulkCreate(data: T[], tx?: Transaction): Promise<void> {
@@ -56,16 +45,9 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       transaction: tx,
       updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
     });
-
-    for (const item of waitCreateDatas) {
-      this._setTxCreatedCache(item);
-    }
   }
 
   async get(id: string, tx?: Transaction): Promise<T | undefined> {
-    // Check if the record is in the current transaction
-    if (this.currentTxCreatedRecord[id]) return this.currentTxCreatedRecord[id];
-
     const record = await this.model.findOne({
       // https://github.com/sequelize/sequelize/issues/15179
       where: {id} as any,
@@ -120,42 +102,30 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     );
     const uniqueDatas = Object.values(uniqueMap);
 
-    if (!this.historical) {
-      await this._bulkCreate(uniqueDatas, tx);
-      return;
-    }
+    // Batch insert every 10000 data
+    const batchSize = 10000;
+    for (let i = 0; i < uniqueDatas.length; i += batchSize) {
+      const batchDatas = uniqueDatas.slice(i, i + batchSize);
 
-    const deleteIds: string[] = [];
-    const createDatas: T[] = [];
-    for (const item of uniqueDatas) {
-      const currentTxCreatedRecord = this.currentTxCreatedRecord[item.id];
-      // If the data is not created in the current transaction, it is created.
-      if (!currentTxCreatedRecord) {
-        createDatas.push(item);
+      if (!this.historical) {
+        await this._bulkCreate(batchDatas, tx);
         continue;
       }
-      // If the data is created in the current transaction and the data is the same, it is ignored.
-      if (_.isEqual(item, currentTxCreatedRecord)) continue;
 
-      // If the data is created in the current transaction, but the data is different, it is deleted and re-created.
-      deleteIds.push(item.id);
-      createDatas.push(item);
-    }
-
-    if (deleteIds.length) {
-      // Delete the data that was created in the current transaction
       await this.model.destroy({
-        where: {id: deleteIds} as any,
+        where: {
+          id: batchDatas.map((v) => v.id),
+        } as any,
+        limit: batchSize,
         transaction: tx,
       });
+      await this.markAsDeleted(
+        batchDatas.map((v) => v.id),
+        blockHeight,
+        tx
+      );
+      await this._bulkCreate(batchDatas, tx);
     }
-
-    await this.markAsDeleted(
-      createDatas.map((v) => v.id),
-      blockHeight,
-      tx
-    );
-    await this._bulkCreate(createDatas, tx);
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {

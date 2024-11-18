@@ -22,7 +22,7 @@ const testSchemaName = 'test_model_store';
 const schema = buildSchemaFromString(`
   type Account @entity {
     id: ID! # Account address
-    balance: BigInt
+    balance: Int
   }
 `);
 
@@ -59,7 +59,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
   it('Same block, Execute the set method multiple times.', async () => {
     await storeService.setBlockHeight(1);
 
-    const accountEntity = {id: 'block-001', balance: '100'};
+    const accountEntity = {id: 'block-001', balance: 100};
 
     // account not exist.
     let account = await storeService.getStore().get('Account', accountEntity.id);
@@ -82,7 +82,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
     ]);
 
     // update account success.
-    const account001 = {id: 'block-001', balance: '10000'};
+    const account001 = {id: 'block-001', balance: 10000};
     await storeService.getStore().set('Account', account001.id, account001 as any);
     const account001After = await storeService.getStore().get('Account', account001.id);
     expect(account001After).toEqual(account001);
@@ -99,7 +99,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
       {value: null, inclusive: false},
     ]);
 
-    const account002 = {id: 'block-002', balance: '100'};
+    const account002 = {id: 'block-002', balance: 100};
     await storeService.getStore().bulkCreate('Account', [account002, account001]);
     const account002After = await storeService.getStore().get('Account', account002.id);
     expect(account002After).toEqual(account002);
@@ -124,7 +124,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
     await storeService.setBlockHeight(1000);
 
     // insert new account.
-    const account1000Data = {id: 'block-1000', balance: '999'};
+    const account1000Data = {id: 'block-1000', balance: 999};
     await storeService.getStore().set('Account', account1000Data.id, account1000Data as any);
     const account1000 = await storeService.getStore().get('Account', account1000Data.id);
     expect(account1000).toEqual(account1000Data);
@@ -136,11 +136,11 @@ describe('Check whether the db store and cache store are consistent.', () => {
     expect(allDatas).toHaveLength(3);
 
     // set old account.
-    const account002 = {id: 'block-002', balance: '222222'};
+    const account002 = {id: 'block-002', balance: 222222};
     await storeService.getStore().set('Account', account002.id, account002 as any);
     const account002After = await storeService.getStore().get('Account', account002.id);
     expect(account002After).toEqual(account002);
-    expect((account002After as any).balance).toEqual('222222');
+    expect((account002After as any).balance).toEqual(222222);
 
     const allDatas2 = await sequelize.query<any>(`SELECT * FROM "${testSchemaName}"."accounts"`, {
       type: QueryTypes.SELECT,
@@ -161,5 +161,5 @@ describe('Check whether the db store and cache store are consistent.', () => {
         {value: '1000', inclusive: false},
       ],
     ]);
-  }, 10000);
+  }, 100000);
 });

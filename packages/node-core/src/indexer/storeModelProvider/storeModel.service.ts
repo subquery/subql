@@ -72,13 +72,6 @@ export class PlainStoreModelService extends BaseStoreModelService implements ISt
     }
     await tx.commit();
 
-    // Clear the cache records of incremental data.
-    for (const model of Object.values(this.cachedModels)) {
-      if (model instanceof PlainModel) {
-        model.clearCurrentTxCreatedRecord();
-      }
-    }
-
     if (dataSourcesCompleted) {
       const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
       exitWithError(msg, logger, 0);
