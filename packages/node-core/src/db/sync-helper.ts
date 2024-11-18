@@ -176,10 +176,14 @@ CREATE OR REPLACE FUNCTION "${schema}".send_notification()
     RETURNS trigger AS $$
 DECLARE
     channel TEXT;
+    table_name TEXT;
     row RECORD;
     payload JSONB;
+    prev_entity BOOLEAN;
+    next_entity BOOLEAN;
 BEGIN
     channel:= TG_ARGV[0];
+    table_name:= TG_TABLE_NAME;
     IF (TG_OP = 'DELETE') THEN
         row = OLD;
     ELSE
@@ -189,13 +193,36 @@ BEGIN
             'id', row.id,
             'mutation_type', TG_OP,
             '_entity', row);
-    IF payload -> '_entity' ? '_block_range' THEN
-        IF NOT upper_inf(row._block_range) THEN
+    IF payload -> '_entity' ? '_block_range' then
+      payload = payload #- '{"_entity","_id"}';
+      payload = payload #- '{"_entity","_block_range"}';
+        IF NOT upper_inf(row._block_range) then
+          EXECUTE FORMAT(
+            'SELECT EXISTS (SELECT 1 FROM "${schema}".%I WHERE id = $1 AND lower(_block_range) = upper($2))',
+            TG_TABLE_NAME
+          )
+          INTO next_entity
+          USING row.id, row._block_range;
+
+          IF NOT next_entity THEN
+            payload = payload || '{"mutation_type": "DELETE"}';
+          ELSE
             RETURN NULL;
+          END IF;
+        ELSE
+          EXECUTE FORMAT(
+            'SELECT EXISTS (SELECT 1 FROM "${schema}".%I WHERE id = $1 AND upper(_block_range) = lower($2))',
+            TG_TABLE_NAME
+          )
+          INTO prev_entity
+          USING row.id, row._block_range;
+
+          IF NOT prev_entity THEN
+            payload = payload || '{"mutation_type": "INSERT"}';
+          ELSE
+            payload = payload || '{"mutation_type": "UPDATE"}';
+          END IF;
         END IF;
-        payload = payload || '{"mutation_type": "UPDATE"}';
-        payload = payload #- '{"_entity","_id"}';
-        payload = payload #- '{"_entity","_block_range"}';
     END IF;
     IF (octet_length(payload::text) >= 8000) THEN
         payload = payload || '{"_entity": null}';
