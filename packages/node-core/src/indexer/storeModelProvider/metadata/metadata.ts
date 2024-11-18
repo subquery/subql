@@ -13,6 +13,7 @@ export const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigra
 export type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
 
 export interface IMetadata {
+  readonly model: MetadataRepo;
   find<K extends MetadataKey>(key: K, fallback?: MetadataKeys[K]): Promise<MetadataKeys[K] | undefined>;
   findMany<K extends MetadataKey>(keys: readonly K[]): Promise<Partial<MetadataKeys>>;
 

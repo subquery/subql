@@ -371,7 +371,6 @@ export class StoreService {
     this._blockHeight = blockHeight;
 
     if (this.modelProvider instanceof PlainStoreModelService && !this.#transaction) {
-      // TODO do we need to set hooks for block height?
       this.#transaction = await this.sequelize.transaction({
         deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),
       });

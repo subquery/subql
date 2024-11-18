@@ -62,7 +62,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     }
   }
 
-  async get(id: string, tx: Transaction): Promise<T | undefined> {
+  async get(id: string, tx?: Transaction): Promise<T | undefined> {
     // Check if the record is in the current transaction
     if (this.currentTxCreatedRecord[id]) return this.currentTxCreatedRecord[id];
 
@@ -75,7 +75,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     return record?.toJSON();
   }
 
-  async getByFields(filters: FieldsExpression<T>[], options: GetOptions<T>, tx: Transaction): Promise<T[]> {
+  async getByFields(filters: FieldsExpression<T>[], options: GetOptions<T>, tx?: Transaction): Promise<T[]> {
     const fullOptions = getFullOptions(options);
     // Query DB with all params
     const records = await this.model.findAll({
