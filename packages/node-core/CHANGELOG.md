@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - When configuring multiple endpoints, poor network conditions may lead to block crawling delays. (#2572)
+- Prevent the use of latestFinalizedHeight when unFinalizedBlock is enabled and the chain has no finalized blocks. (#2594)
 
 ## [14.1.7] - 2024-10-30
 ### Changed
