@@ -9,11 +9,7 @@ import {HttpAdapterHost} from '@nestjs/core';
 import {delay, getDbType, SUPPORT_DB} from '@subql/common';
 import {hashName} from '@subql/utils';
 import {getPostGraphileBuilder, Plugin, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
-import {
-  ApolloServerPluginCacheControl,
-  ApolloServerPluginLandingPageDisabled,
-  ApolloServerPluginLandingPageGraphQLPlayground,
-} from 'apollo-server-core';
+import {ApolloServerPluginCacheControl, ApolloServerPluginLandingPageDisabled} from 'apollo-server-core';
 import {ApolloServer, UserInputError} from 'apollo-server-express';
 import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
@@ -29,6 +25,7 @@ import {getLogger, PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
+import {playgroundPlugin} from './plugins/PlaygroundPlugin';
 import {queryAliasLimit} from './plugins/QueryAliasLimitPlugin';
 import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {queryDepthLimitPlugin} from './plugins/QueryDepthLimitPlugin';
@@ -202,11 +199,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         defaultMaxAge: 5,
         calculateHttpHeaders: true,
       }),
-      this.config.get('playground')
-        ? ApolloServerPluginLandingPageGraphQLPlayground({
-            settings: argv['playground-settings'] ? JSON.parse(argv['playground-settings']) : undefined,
-          })
-        : ApolloServerPluginLandingPageDisabled(),
+      this.config.get('playground') ? playgroundPlugin({url: '/'}) : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
       queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
       queryAliasLimit({schema, limit: argv['query-alias-limit']}),
