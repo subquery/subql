@@ -159,7 +159,7 @@ export default class Init extends Command {
       project.endpoint = !Array.isArray(defaultEndpoint) ? [defaultEndpoint] : defaultEndpoint;
       const userInput = await input({
         message: 'RPC endpoint:',
-        default: defaultEndpoint[0] ?? 'wss://polkadot.api.onfinality.io/public-ws',
+        default: defaultEndpoint[0],
         required: false,
       });
       if (!project.endpoint.includes(userInput)) {
