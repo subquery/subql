@@ -11,7 +11,7 @@ import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {TestSandbox} from './sandbox';
 import {StoreService} from './store.service';
-import {StoreCacheService} from './storeModelProvider';
+import {cacheProviderFlushData} from './storeModelProvider';
 import {IBlock, IIndexerManager} from './types';
 
 const logger = getLogger('test-runner');
@@ -71,9 +71,7 @@ export class TestRunner<A, SA, B, DS> {
 
       try {
         await indexBlock(block, test.handler, this.indexerManager, this.apiService);
-        if (this.storeService.modelProvider instanceof StoreCacheService) {
-          await this.storeService.modelProvider.flushData(true);
-        }
+        await cacheProviderFlushData(this.storeService.modelProvider, true);
       } catch (e: any) {
         logger.warn(`Test: ${test.name} field due to runtime error`, e);
         this.failedTestSummary = {
@@ -139,9 +137,7 @@ export class TestRunner<A, SA, B, DS> {
         }
       }
 
-      if (this.storeService.modelProvider instanceof StoreCacheService) {
-        await this.storeService.modelProvider.flushData(true);
-      }
+      await cacheProviderFlushData(this.storeService.modelProvider, true);
       logger.info(
         `Test: ${test.name} completed with ${chalk.green(`${this.passedTests} passed`)} and ${chalk.red(
           `${this.failedTests} failed`

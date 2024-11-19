@@ -6,7 +6,7 @@ import {getAllEntitiesRelations, GraphQLModelsType, GraphQLRelationsType} from '
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {NodeConfig} from '../../configure';
-import {StoreCacheService, StoreService} from '../../indexer';
+import {cacheProviderFlushData, StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {sortModels} from '../sync-helper';
 import {Migration} from './migration';
@@ -114,9 +114,8 @@ export class SchemaMigrationService {
     const sortedAddedModels = alignModelOrder<GraphQLModelsType[]>(sortedSchemaModels, addedModels);
     const sortedModifiedModels = alignModelOrder<ModifiedModels>(sortedSchemaModels, modifiedModels);
 
-    if (this.storeService.modelProvider instanceof StoreCacheService) {
-      await this.storeService.modelProvider.flushData(true);
-    }
+    await cacheProviderFlushData(this.storeService.modelProvider, true);
+
     const migrationAction = await Migration.create(
       this.sequelize,
       this.storeService,
@@ -188,9 +187,7 @@ export class SchemaMigrationService {
       this.storeService.modelProvider.updateModels(modelChanges);
       await this.storeService.updateModels(this.dbSchema, getAllEntitiesRelations(nextSchema));
 
-      if (this.storeService.modelProvider instanceof StoreCacheService) {
-        await this.storeService.modelProvider.flushData(true);
-      }
+      await cacheProviderFlushData(this.storeService.modelProvider, true);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
       throw e;

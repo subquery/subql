@@ -10,6 +10,8 @@ import {
   PoiService,
   ISubqueryProject,
   StoreCacheService,
+  cacheProviderFlushData,
+  cacheProviderResetData,
 } from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
@@ -64,12 +66,12 @@ export async function reindex(
       exitWithError(`ForceCleanService not provided, cannot force clean`, logger);
     }
     // if DB need rollback? no, because forceCleanService will take care of it
-    if (storeService.modelProvider instanceof StoreCacheService) {
-      await storeService.modelProvider.resetData();
-    }
+    await cacheProviderResetData(storeService.modelProvider);
     await forceCleanService?.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    await cacheProviderFlushData(storeService.modelProvider, true);
+    await cacheProviderResetData(storeService.modelProvider);
     if (storeService.modelProvider instanceof StoreCacheService) {
       await storeService.modelProvider.flushData(true);
       await storeService.modelProvider.resetData();
