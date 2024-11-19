@@ -63,9 +63,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
     await this.dynamicDsService.init(this.metadataRepo);
 
-    const [height, timestamp] = await Promise.all([
-      this.metadataRepo.find('lastProcessedHeight'),
-      this.metadataRepo.find('lastProcessedBlockTimestamp'),
+    const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataRepo.findMany([
+      'lastProcessedHeight',
+      'lastProcessedBlockTimestamp',
     ]);
 
     if (height === undefined) {

@@ -324,7 +324,7 @@ export class StoreService {
         throw new Error(`Invalid value for historicalStateEnabled. Received "${value}"`);
       }
 
-      if (value && multiChain) {
+      if ((value === true || value.toString() === 'height') && multiChain) {
         throw new Error(
           'Historical indexing by height is enabled and not compatible with multi-chain, to multi-chain index clear postgres schema and re-index project using --multichain'
         );

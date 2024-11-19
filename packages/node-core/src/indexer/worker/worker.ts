@@ -80,9 +80,9 @@ async function getStatus(): Promise<WorkerStatusResponse> {
   };
 }
 
-async function fetchBlock<R extends Header /*FetchBlockResponse*/>(height: number, specVersion: number): Promise<R> {
+async function fetchBlock(height: number, specVersion: number): ReturnType<(typeof workerService)['fetchBlock']> {
   assert(workerService, 'Worker Not initialised');
-  return (workerService as unknown as BaseWorkerService<any, R>).fetchBlock(height, {specVersion});
+  return workerService.fetchBlock(height, {specVersion});
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

@@ -132,7 +132,7 @@ export class WorkerBlockDispatcherService
     }
 
     // const start = new Date();
-    return worker.fetchBlock<FetchBlockResponse>(height, blockSpecVersion);
+    return worker.fetchBlock(height, blockSpecVersion);
     // const end = new Date();
 
     // const waitTime = end.getTime() - start.getTime();
