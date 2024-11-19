@@ -25,11 +25,11 @@ jest.mock('@polkadot/api', () => {
     consts: jest.fn(),
     disconnect: jest.fn(),
   }));
-  return { ApiPromise, WsProvider: jest.fn() };
+  return { ApiPromise, WsProvider: jest.fn(() => ({ send: jest.fn() })) };
 });
 
 const testNetwork = {
-  endpoint: { 'ws://kusama.api.onfinality.io/public-ws': {} },
+  endpoint: ['ws://kusama.api.onfinality.io/public-ws'],
   types: {
     TestType: 'u32',
   },
@@ -98,7 +98,7 @@ describe('ApiService', () => {
 
   it('read custom types from project manifest', async () => {
     const createSpy = jest.spyOn(ApiPromise, 'create');
-    apiService = new ApiService(
+    apiService = await ApiService.create(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
@@ -107,15 +107,10 @@ describe('ApiService', () => {
       new EventEmitter2(),
       nodeConfig,
     );
-    await apiService.init();
     const { version } = require('../../package.json');
-    expect(WsProvider).toHaveBeenCalledWith(
-      Object.keys(testNetwork.endpoint)[0],
-      2500,
-      {
-        'User-Agent': `SubQuery-Node ${version}`,
-      },
-    );
+    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint[0], 2500, {
+      'User-Agent': `SubQuery-Node ${version}`,
+    });
     expect(createSpy).toHaveBeenCalledWith({
       provider: expect.anything(),
       throwOnConnect: expect.anything(),
@@ -133,16 +128,16 @@ describe('ApiService', () => {
       subquery: 'example',
     });
 
-    apiService = new ApiService(
-      project,
-      new ConnectionPoolService<ApiPromiseConnection>(
+    await expect(
+      ApiService.create(
+        project,
+        new ConnectionPoolService<ApiPromiseConnection>(
+          nodeConfig,
+          new ConnectionPoolStateManager(),
+        ),
+        new EventEmitter2(),
         nodeConfig,
-        new ConnectionPoolStateManager(),
       ),
-      new EventEmitter2(),
-      nodeConfig,
-    );
-
-    await expect(apiService.init()).rejects.toThrow();
+    ).rejects.toThrow();
   });
 });

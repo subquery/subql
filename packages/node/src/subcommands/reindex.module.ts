@@ -11,12 +11,11 @@ import {
   ReindexService,
   StoreService,
   PoiService,
+  DsProcessorService,
+  UnfinalizedBlocksService,
+  DynamicDsService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
-import { ApiService } from '../indexer/api.service';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({
   providers: [
@@ -36,7 +35,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     DsProcessorService,
     {
       // Used to work with DI for unfinalizedBlocksService but not used with reindex
-      provide: ApiService,
+      provide: 'APIService',
       useFactory: () => undefined,
     },
     SchedulerRegistry,

@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { INestApplication } from '@nestjs/common';
-import { DbOption, StoreCacheService } from '@subql/node-core';
+import { DbOption, StoreCacheService, ProjectService } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import { rimraf } from 'rimraf';
-import { ApiService } from '../indexer/api.service';
-import { ProjectService } from '../indexer/project.service';
 import { prepareApp } from '../utils/test.utils';
 
 const option: DbOption = {
@@ -53,11 +51,7 @@ describe('SchemaMigration integration tests', () => {
     schemaName = 'test-migrations-6';
 
     app = await prepareApp(schemaName, cid);
-
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     const dbResults = await sequelize.query<string[]>(
@@ -80,9 +74,6 @@ describe('SchemaMigration integration tests', () => {
     app = await prepareApp(schemaName, cid);
 
     projectService = app.get('IProjectService');
-
-    const apiService = app.get(ApiService);
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -101,9 +92,6 @@ describe('SchemaMigration integration tests', () => {
     const projectUpgradeService = app.get('IProjectUpgradeService');
     const storeCache = app.get(StoreCacheService);
     const cacheSpy = jest.spyOn(storeCache, 'updateModels');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 
@@ -139,9 +127,6 @@ describe('SchemaMigration integration tests', () => {
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
     const storeCache = app.get(StoreCacheService);
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 

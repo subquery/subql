@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { getLogger, profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
 import { SubstrateDictionaryService } from '../dictionary';
@@ -15,10 +15,22 @@ const logger = getLogger('RuntimeService');
 @Injectable()
 export class RuntimeService extends BaseRuntimeService {
   constructor(
-    protected apiService: ApiService,
+    @Inject('APIService') protected apiService: ApiService,
     protected dictionaryService?: SubstrateDictionaryService,
   ) {
     super(apiService);
+  }
+
+  async init(
+    startHeight: number,
+    latestFinalizedHeight: number,
+  ): Promise<void> {
+    this.latestFinalizedHeight = latestFinalizedHeight;
+
+    await this.syncDictionarySpecVersions(startHeight);
+
+    await this.specChanged(startHeight);
+    await this.prefetchMeta(startHeight);
   }
 
   // get latest specVersions from dictionary

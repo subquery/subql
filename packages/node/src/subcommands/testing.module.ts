@@ -3,52 +3,41 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   ConnectionPoolService,
-  ConnectionPoolStateManager,
   DbModule,
-  InMemoryCacheService,
-  PoiService,
-  PoiSyncService,
-  StoreCacheService,
-  StoreService,
   TestRunner,
-  SandboxService,
+  NodeConfig,
+  ProjectService,
+  TestingCoreModule,
 } from '@subql/node-core';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({
   providers: [
-    InMemoryCacheService,
-    StoreService,
-    StoreCacheService,
-    EventEmitter2,
-    PoiService,
-    PoiSyncService,
-    SandboxService,
-    DsProcessorService,
-    DynamicDsService,
-    UnfinalizedBlocksService,
-    ConnectionPoolStateManager,
-    ConnectionPoolService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
-    ApiService,
-    SchedulerRegistry,
-    TestRunner,
     {
-      provide: 'IApi',
-      useExisting: ApiService,
+      provide: 'APIService',
+      useFactory: ApiService.create,
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
     },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
+    },
+    TestRunner,
     {
       provide: 'IIndexerManager',
       useClass: IndexerManager,
@@ -65,6 +54,7 @@ export class TestingFeatureModule {}
     ConfigureModule.register(),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+    TestingCoreModule,
     TestingFeatureModule,
   ],
   controllers: [],

@@ -4,44 +4,43 @@
 // import { Header } from '@polkadot/types/interfaces';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
+import {IBlockchainService} from '../blockchain.service';
 import {Header, IBlock} from '../indexer';
 import {StoreCacheService, CacheMetadataModel} from './storeCache';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,
-  BaseUnfinalizedBlocksService,
+  UnfinalizedBlocksService,
 } from './unfinalizedBlocks.service';
 
 /* Notes:
  * Block hashes all have the format '0xabc' + block number
  * If they are forked they will have an `f` at the end
  */
-class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<IBlock<any>> {
-  protected async getFinalizedHead(): Promise<Header> {
+const BlockchainService = {
+  async getFinalizedHeader(): Promise<Header> {
     return Promise.resolve({
       blockHeight: 91,
       blockHash: `0xabc91f`,
       parentHash: `0xabc90f`,
     });
-  }
-
-  protected async getHeaderForHash(hash: string): Promise<Header> {
+  },
+  async getHeaderForHash(hash: string): Promise<Header> {
     const num = Number(hash.toString().replace('0xabc', '').replace('f', ''));
     return Promise.resolve({
       blockHeight: num,
       blockHash: hash,
       parentHash: `0xabc${num - 1}f`,
     });
-  }
-
-  protected async getHeaderForHeight(height: number): Promise<Header> {
+  },
+  async getHeaderForHeight(height: number): Promise<Header> {
     return Promise.resolve({
       blockHeight: height,
       blockHash: `0xabc${height}f`,
       parentHash: `0xabc${height - 1}f`,
     });
-  }
-}
+  },
+} as IBlockchainService;
 
 function getMockMetadata(): any {
   const data: Record<string, any> = {};
@@ -78,13 +77,17 @@ describe('UnfinalizedBlocksService', () => {
   let unfinalizedBlocksService: UnfinalizedBlocksService;
 
   beforeEach(async () => {
-    unfinalizedBlocksService = new UnfinalizedBlocksService({unfinalizedBlocks: true} as any, mockStoreCache());
+    unfinalizedBlocksService = new UnfinalizedBlocksService(
+      {unfinalizedBlocks: true} as any,
+      mockStoreCache(),
+      BlockchainService
+    );
 
     await unfinalizedBlocksService.init(() => Promise.resolve());
   });
 
   afterEach(() => {
-    (unfinalizedBlocksService as unknown as any).unfinalizedBlocks = {};
+    (unfinalizedBlocksService as unknown as any)._unfinalizedBlocks = {};
   });
 
   it('can set finalized block', () => {
@@ -260,7 +263,11 @@ describe('UnfinalizedBlocksService', () => {
       ])
     );
     storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 90);
-    const unfinalizedBlocksService2 = new UnfinalizedBlocksService({unfinalizedBlocks: false} as any, storeCache);
+    const unfinalizedBlocksService2 = new UnfinalizedBlocksService(
+      {unfinalizedBlocks: false} as any,
+      storeCache,
+      BlockchainService
+    );
 
     const reindex = jest.fn().mockReturnValue(Promise.resolve());
 

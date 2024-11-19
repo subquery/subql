@@ -27,6 +27,7 @@ export type ProcessBlockResponse = {
 };
 
 export interface IBlockDispatcher<B> {
+  init(onDynamicDsCreated: (height: number) => void): Promise<void>;
   // now within enqueueBlock should handle getLatestBufferHeight
   enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight: number): void | Promise<void>;
   queueSize: number;
