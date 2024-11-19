@@ -65,3 +65,15 @@ order by __local_1__."_id" ASC
   where (__local_1__._block_range @> $1::bigint) and ((exists(select 1 from "subquery_2"."listings" as __local_5__ where (__local_5__."item_id" = __local_1__."id") and (__local_5__._block_range @> $1::bigint))))
 ) as "aggregates" "
 `;
+
+exports[`should filter items by blockRange 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'createdAtBlockHeight'::text, ((__local_1__."created_at_block_height"))::text))) as "@nodes" from (select
+__local_1__.*
+from "subquery_2"."items" as __local_1__
+
+where (__local_1__._block_range @> int8range($1, $2, '[]')) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+

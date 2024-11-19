@@ -23,6 +23,7 @@ export function buildWhereConditionBackward(
     )}`;
   });
 
+  // todo: investigate if queryBuilder.context.args?.blockRange check is needed here
   if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
     fkMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
   }
@@ -51,6 +52,7 @@ export function connectionFilterResolveBlockHeight(
     return null;
   }
 
+  // todo: investigate the role of blockRange here
   if (queryBuilder.context.args?.blockHeight === undefined || !hasBlockRange(foreignTable)) {
     return sqlFragment;
   }
