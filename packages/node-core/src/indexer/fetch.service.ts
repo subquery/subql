@@ -60,8 +60,11 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   }
 
   private get latestFinalizedHeight(): number {
-    assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not available'));
-    return this._latestFinalizedHeight;
+    if (!this.nodeConfig.unfinalizedBlocks) {
+      assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not available'));
+      return this._latestFinalizedHeight;
+    }
+    return this._latestFinalizedHeight ?? this.latestBestHeight;
   }
 
   onApplicationShutdown(): void {
