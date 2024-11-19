@@ -180,10 +180,6 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
     // Experimental, this means getCache keeps duplicate data from setCache,
     // we can remove this once memory is too full.
     this.getCache.set(id, copiedData);
-    // Handle remove cache, when removed data been created again
-    if (this.removeCache[id] && this.removeCache[id].removedAtBlock === blockHeight) {
-      delete this.removeCache[id];
-    }
     this.flushableRecordCounter += 1;
   }
 
