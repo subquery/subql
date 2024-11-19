@@ -5,7 +5,6 @@ import {DataTypes, Model, ModelAttributes} from '@subql/x-sequelize';
 import {addIdAndBlockRangeAttributes} from '../db';
 import {StoreService} from './store.service';
 
-jest.setTimeout(60000);
 describe('Store Service', () => {
   let storeService: StoreService;
 

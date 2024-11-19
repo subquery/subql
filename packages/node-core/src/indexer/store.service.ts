@@ -375,7 +375,9 @@ export class StoreService {
   async setBlockHeight(blockHeight: number): Promise<void> {
     this._blockHeight = blockHeight;
 
-    if (this.modelProvider instanceof PlainStoreModelService && !this.#transaction) {
+    if (this.modelProvider instanceof PlainStoreModelService) {
+      assert(!this.#transaction, new Error(`Transaction is reopening in setBlockHeight ${blockHeight}`));
+
       this.#transaction = await this.sequelize.transaction({
         deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),
       });

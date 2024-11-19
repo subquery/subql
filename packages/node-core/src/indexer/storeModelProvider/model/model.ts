@@ -56,6 +56,8 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
           await store.export(data);
         });
       });
+    } else {
+      Promise.all(this.exporters.map(async (store: Exporter) => store.export(data)));
     }
   }
 
@@ -105,19 +107,10 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       throw new Error(`Currently not supported: update by fields`);
     }
 
-    const uniqueMap = data.reduce(
-      (acc, curr) => {
-        acc[curr.id] = curr;
-        return acc;
-      },
-      {} as Record<string, T>
-    );
-    const uniqueDatas = Object.values(uniqueMap);
-
     // Batch insert every 10000 data
     const batchSize = 10000;
-    for (let i = 0; i < uniqueDatas.length; i += batchSize) {
-      const batchDatas = uniqueDatas.slice(i, i + batchSize);
+    for (let i = 0; i < data.length; i += batchSize) {
+      const batchDatas = data.slice(i, i + batchSize);
 
       if (!this.historical) {
         await this._bulkCreate(batchDatas, tx);

@@ -169,23 +169,6 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
     return combined;
   }
 
-  // async getByField(
-  //   field: keyof T,
-  //   value: T[keyof T] | T[keyof T][],
-  //   options: GetOptions<T> = defaultOptions
-  // ): Promise<T[]> {
-  //   return this.getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
-  // }
-
-  // async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
-  //   const [res] = await this.getByField(field, value, {
-  //     ...defaultOptions,
-  //     limit: 1,
-  //   });
-
-  //   return res;
-  // }
-
   // eslint-disable-next-line @typescript-eslint/require-await
   async set(id: string, data: T, blockHeight: number): Promise<void> {
     if (data === undefined || data === null) {
