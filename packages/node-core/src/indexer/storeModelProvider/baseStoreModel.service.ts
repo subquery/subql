@@ -1,20 +1,23 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {BeforeApplicationShutdown} from '@nestjs/common';
 import {getLogger} from '@subql/node-core/logger';
 import {ModelStatic} from '@subql/x-sequelize';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {BaseEntity, IModel} from './model';
 import {POI_ENTITY_NAME} from './poi';
+import {Exporter} from './types';
 
 const logger = getLogger('BaseStoreModelService');
-export abstract class BaseStoreModelService<M = IModel<any>> {
+export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeApplicationShutdown {
   protected historical = true;
   protected poiRepo?: PoiRepo;
   protected metadataRepo?: MetadataRepo;
   protected cachedModels: Record<string, M> = {};
   protected useCockroachDb?: boolean;
+  protected exports: Exporter[] = [];
 
   protected abstract createModel(entity: string): M;
 
@@ -43,5 +46,10 @@ export abstract class BaseStoreModelService<M = IModel<any>> {
       this.cachedModels[m.name] = this.createModel(m.name);
     });
     removedModels.forEach((r) => delete this.cachedModels[r]);
+  }
+
+  async beforeApplicationShutdown(): Promise<void> {
+    await Promise.all(this.exports.map((f) => f.shutdown()));
+    logger.info(`Force flush exports successful!`);
   }
 }

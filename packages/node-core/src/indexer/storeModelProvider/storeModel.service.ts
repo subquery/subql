@@ -63,7 +63,8 @@ export class PlainStoreModelService extends BaseStoreModelService implements ISt
   }
 
   private addExporter(model: PlainModel, exporterStore: CsvStoreService): void {
-    throw new Error('Not implemented');
+    model.addExporterStore(exporterStore);
+    this.exports.push(exporterStore);
   }
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx: Transaction): Promise<void> {

@@ -29,7 +29,6 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   private readonly cacheUpperLimit: number;
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
-  private exports: Exporter[] = [];
 
   constructor(
     private sequelize: Sequelize,
@@ -93,10 +92,6 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   private addExporter(cachedModel: CachedModel, exporterStore: CsvStoreService): void {
     cachedModel.addExporterStore(exporterStore);
     this.exports.push(exporterStore);
-  }
-
-  async flushExportStores(): Promise<void> {
-    await Promise.all(this.exports.map((f) => f.shutdown()));
   }
 
   get metadata(): CacheMetadataModel {

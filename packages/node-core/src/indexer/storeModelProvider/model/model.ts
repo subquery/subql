@@ -4,7 +4,9 @@
 import {FieldsExpression, GetOptions} from '@subql/types-core';
 import {Op, Model, ModelStatic, Transaction, CreationAttributes, Sequelize} from '@subql/x-sequelize';
 import {Fn} from '@subql/x-sequelize/types/utils';
-import _, {cloneDeep} from 'lodash';
+import _ from 'lodash';
+import {CsvStoreService} from '../csvStore.service';
+import {Exporter} from '../types';
 import {getFullOptions, operatorsMap} from './utils';
 
 export type BaseEntity = {id: string; __block_range?: (number | null)[] | Fn};
@@ -23,6 +25,8 @@ export interface IModel<T extends BaseEntity> {
 
 // All operations must be carried out within a transaction.
 export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> {
+  private exporters: Exporter[] = [];
+
   constructor(
     readonly model: ModelStatic<Model<T, T>>,
     private readonly historical = true
@@ -45,6 +49,14 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       transaction: tx,
       updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
     });
+
+    if (tx) {
+      this.exporters.forEach((store: Exporter) => {
+        tx.afterCommit(async () => {
+          await store.export(data);
+        });
+      });
+    }
   }
 
   async get(id: string, tx?: Transaction): Promise<T | undefined> {
@@ -165,5 +177,9 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
         transaction: tx,
       }
     );
+  }
+
+  addExporterStore(exporter: CsvStoreService): void {
+    this.exporters.push(exporter);
   }
 }
