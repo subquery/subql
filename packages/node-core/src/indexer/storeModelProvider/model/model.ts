@@ -32,35 +32,6 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
     private readonly historical = true
   ) {}
 
-  // Only perform bulk create data, without paying attention to any exception situations.
-  private async _bulkCreate(data: T[], tx?: Transaction): Promise<void> {
-    if (!data.length) return;
-
-    const uniqueMap = data.reduce(
-      (acc, curr) => {
-        acc[curr.id] = curr;
-        return acc;
-      },
-      {} as Record<string, T>
-    );
-    const waitCreateDatas = Object.values(uniqueMap);
-
-    await this.model.bulkCreate(waitCreateDatas as CreationAttributes<Model<T, T>>[], {
-      transaction: tx,
-      updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
-    });
-
-    if (tx) {
-      this.exporters.forEach((store: Exporter) => {
-        tx.afterCommit(async () => {
-          await store.export(data);
-        });
-      });
-    } else {
-      Promise.all(this.exporters.map(async (store: Exporter) => store.export(data)));
-    }
-  }
-
   async get(id: string, tx?: Transaction): Promise<T | undefined> {
     const record = await this.model.findOne({
       // https://github.com/sequelize/sequelize/issues/15179
@@ -107,37 +78,49 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       throw new Error(`Currently not supported: update by fields`);
     }
 
-    if (!this.historical) {
-      await this._bulkCreate(data, tx);
-      return;
+    if (this.historical) {
+      // To prevent the scenario of repeated created-deleted-created, which may result in multiple entries.
+      await this.model.destroy({
+        where: {
+          id: data.map((v) => v.id),
+          [Op.and]: this.sequelize.where(
+            this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+            Op.eq,
+            blockHeight
+          ),
+        } as any,
+        transaction: tx,
+      });
+      await this.markAsDeleted(
+        data.map((v) => v.id),
+        blockHeight,
+        tx
+      );
     }
 
-    await this.model.destroy({
-      where: {
-        id: data.map((v) => v.id),
-        [Op.and]: this.sequelize.where(
-          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-          Op.eq,
-          blockHeight
-        ),
-      } as any,
+    await this.model.bulkCreate(data as CreationAttributes<Model<T, T>>[], {
       transaction: tx,
+      updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
     });
-    await this.markAsDeleted(
-      data.map((v) => v.id),
-      blockHeight,
-      tx
-    );
-    await this._bulkCreate(data, tx);
+
+    if (tx) {
+      this.exporters.forEach((store: Exporter) => {
+        tx.afterCommit(async () => {
+          await store.export(data);
+        });
+      });
+    } else {
+      Promise.all(this.exporters.map(async (store: Exporter) => store.export(data)));
+    }
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {
     if (!ids.length) return;
     if (!this.historical) {
       await this.model.destroy({where: {id: ids} as any, transaction: tx});
-      return;
+    } else {
+      await this.markAsDeleted(ids, blockHeight, tx);
     }
-    await this.markAsDeleted(ids, blockHeight, tx);
   }
 
   private get sequelize(): Sequelize {

@@ -365,7 +365,7 @@ export class StoreService {
     this._blockHeight = blockHeight;
 
     if (this.modelProvider instanceof PlainStoreModelService) {
-      assert(!this.#transaction, new Error(`Transaction is reopening in setBlockHeight ${blockHeight}`));
+      assert(!this.#transaction, new Error(`Transaction already exists for height: ${blockHeight}`));
 
       this.#transaction = await this.sequelize.transaction({
         deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),

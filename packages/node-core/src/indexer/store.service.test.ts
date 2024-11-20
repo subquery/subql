@@ -1,13 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {buildSchemaFromString} from '@subql/utils';
 import {Sequelize, QueryTypes} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
 import {DbOption} from '../db';
 import {StoreService} from './store.service';
-import {PlainStoreModelService} from './storeModelProvider';
-
+import {CachedModel, PlainStoreModelService, StoreCacheService} from './storeModelProvider';
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
@@ -162,4 +162,101 @@ describe('Check whether the db store and cache store are consistent.', () => {
       ],
     ]);
   }, 100000);
+});
+
+describe('Cache Provider', () => {
+  let sequelize: Sequelize;
+  let storeService: StoreService;
+  let cacheModel: StoreCacheService;
+  let Account: CachedModel<any>;
+
+  beforeAll(async () => {
+    sequelize = new Sequelize(
+      `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
+      option
+    );
+    await sequelize.authenticate();
+
+    await sequelize.query(`CREATE SCHEMA ${testSchemaName};`);
+    const nodeConfig = new NodeConfig({
+      subquery: 'test',
+      proofOfIndex: true,
+      enableCache: false,
+      storeCacheAsync: true,
+      storeCacheThreshold: 1,
+      storeCacheUpperLimit: 1,
+      storeFlushInterval: 0,
+    });
+    const project = {network: {chainId: '1'}, schema} as any;
+    cacheModel = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2(), null as any);
+    storeService = new StoreService(sequelize, nodeConfig, cacheModel, project);
+    await storeService.initCoreTables(testSchemaName);
+    await storeService.init(testSchemaName);
+    Account = cacheModel.getModel('Account') as CachedModel<any>;
+  });
+  afterAll(async () => {
+    await sequelize.query(`DROP SCHEMA ${testSchemaName} CASCADE;`);
+    await sequelize.close();
+  });
+
+  async function cacheFlush(blockHeight: number, handle: (blockHeight: number) => Promise<void>) {
+    const tx = await sequelize.transaction();
+    tx.afterCommit(() => {
+      Account.clear(blockHeight);
+    });
+    await storeService.setBlockHeight(blockHeight);
+    await handle(blockHeight);
+    await Account.runFlush(tx, blockHeight);
+    await tx.commit();
+  }
+
+  it('For data that already exists, if there is a delete-create-delete operation, the database should have two entries for the data.', async () => {
+    const getAllAccounts = () =>
+      sequelize.query<any>(`SELECT * FROM "${testSchemaName}"."accounts"`, {
+        type: QueryTypes.SELECT,
+      });
+
+    const accountEntity1 = {id: 'accountEntity-001', balance: 100};
+    await cacheFlush(1, async (blockHeight) => {
+      await Account.set(accountEntity1.id, accountEntity1, blockHeight);
+    });
+
+    // database check
+    let allDatas = await getAllAccounts();
+    expect(allDatas).toHaveLength(1);
+
+    // next block 999
+    const accountEntity2 = {id: 'accountEntity-002', balance: 9999};
+    await cacheFlush(999, async (blockHeight) => {
+      await Account.remove(accountEntity1.id, blockHeight);
+      const oldAccunt = await Account.get(accountEntity1.id);
+      expect(oldAccunt).toBeUndefined();
+
+      await Account.set(accountEntity2.id, accountEntity2, blockHeight);
+    });
+
+    allDatas = await getAllAccounts();
+    expect(allDatas).toHaveLength(2);
+
+    // next block 99999
+    await cacheFlush(99999, async (blockHeight) => {
+      // last block, accountEntity1 should be deleted.
+      const oldAccunt1 = await Account.get(accountEntity1.id);
+      expect(oldAccunt1).toBeUndefined();
+
+      let oldAccunt2 = await Account.get(accountEntity2.id);
+      expect(oldAccunt2.balance).toEqual(accountEntity2.balance);
+
+      await Account.remove(accountEntity2.id, blockHeight);
+      oldAccunt2 = await Account.get(accountEntity2.id);
+      expect(oldAccunt2).toBeUndefined();
+
+      await Account.set(accountEntity2.id, {id: 'accountEntity-002', balance: 999999} as any, blockHeight);
+      oldAccunt2 = await Account.get(accountEntity2.id);
+      expect(oldAccunt2.balance).toEqual(999999);
+    });
+
+    allDatas = await getAllAccounts();
+    expect(allDatas).toHaveLength(3);
+  });
 });
