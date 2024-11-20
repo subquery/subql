@@ -107,30 +107,28 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       throw new Error(`Currently not supported: update by fields`);
     }
 
-    // Batch insert every 10000 data
-    const batchSize = 10000;
-    for (let i = 0; i < data.length; i += batchSize) {
-      const batchDatas = data.slice(i, i + batchSize);
-
-      if (!this.historical) {
-        await this._bulkCreate(batchDatas, tx);
-        continue;
-      }
-
-      await this.model.destroy({
-        where: {
-          id: batchDatas.map((v) => v.id),
-        } as any,
-        limit: batchSize,
-        transaction: tx,
-      });
-      await this.markAsDeleted(
-        batchDatas.map((v) => v.id),
-        blockHeight,
-        tx
-      );
-      await this._bulkCreate(batchDatas, tx);
+    if (!this.historical) {
+      await this._bulkCreate(data, tx);
+      return;
     }
+
+    await this.model.destroy({
+      where: {
+        id: data.map((v) => v.id),
+        [Op.and]: this.sequelize.where(
+          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+          Op.eq,
+          blockHeight
+        ),
+      } as any,
+      transaction: tx,
+    });
+    await this.markAsDeleted(
+      data.map((v) => v.id),
+      blockHeight,
+      tx
+    );
+    await this._bulkCreate(data, tx);
   }
 
   async bulkRemove(ids: string[], blockHeight: number, tx?: Transaction): Promise<void> {

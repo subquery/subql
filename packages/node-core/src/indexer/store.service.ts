@@ -292,17 +292,6 @@ export class StoreService {
             item.__block_range = [this.blockHeight, null];
           });
         });
-
-        sequelizeModel.addHook('beforeBulkDestroy', (instance) => {
-          instance.where = {
-            ...instance.where,
-            [Op.and]: this.sequelize.where(
-              this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-              Op.eq,
-              this.blockHeight
-            ),
-          };
-        });
       }
       // TODO, remove id and block_range constraint, check id manually
       // see https://github.com/subquery/subql/issues/1542
