@@ -229,9 +229,9 @@ describe('cacheModel', () => {
       testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++);
     });
 
-    it('throws when trying to set undefined', () => {
-      expect(() => testModel.set('0x01', undefined as any, 1)).toThrow();
-      expect(() => testModel.set('0x01', null as any, 1)).toThrow();
+    it('throws when trying to set undefined', async () => {
+      await expect(() => testModel.set('0x01', undefined as any, 1)).rejects.toThrow();
+      await expect(() => testModel.set('0x01', null as any, 1)).rejects.toThrow();
     });
 
     // it should keep same behavior as hook we used
@@ -287,7 +287,7 @@ describe('cacheModel', () => {
           },
           1
         );
-        const result = testModel.get('entity1_id_0x01');
+        const result = await testModel.get('entity1_id_0x01');
         // data should be erased from removeCache
         expect((testModel as any).removeCache.entity1_id_0x01).toBeUndefined();
 

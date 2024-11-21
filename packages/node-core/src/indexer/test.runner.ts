@@ -57,9 +57,9 @@ export class TestRunner<A, SA, B, DS> {
       logger.debug('Fetching block');
       const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
 
-      this.storeService.setBlockHeight(test.blockHeight);
+      await this.storeService.setBlockHeight(test.blockHeight);
       // Ensure a block height is set so that data is flushed correctly
-      this.storeService.modelProvider.metadata.set('lastProcessedHeight', test.blockHeight - 1);
+      await this.storeService.modelProvider.metadata.set('lastProcessedHeight', test.blockHeight - 1);
       const store = this.storeService.getStore();
       sandbox.freeze(store, 'store');
 
@@ -99,7 +99,7 @@ export class TestRunner<A, SA, B, DS> {
         } else {
           Object.keys(actualEntity).forEach((attr) => {
             // EntityClass has private store on it, don't need to check it.
-            if (attr === 'store') return;
+            if (attr === '#store') return;
 
             const expectedAttr = (expectedEntity as Record<string, any>)[attr] ?? null;
             const actualAttr = (actualEntity as Record<string, any>)[attr] ?? null;

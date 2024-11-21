@@ -19,7 +19,7 @@ import {CacheMetadataModel} from './metadata';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {CachedModel} from './model';
 import {CachePoiModel, POI_ENTITY_NAME} from './poi';
-import {Exporter, ICachedModelControl, IStoreModelProvider} from './types';
+import {ICachedModelControl, IStoreModelProvider} from './types';
 
 const logger = getLogger('StoreCacheService');
 
