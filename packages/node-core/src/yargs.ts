@@ -60,7 +60,7 @@ export function yargsBuilder<
       .command({
         command: 'reindex',
         describe:
-          'Reindex to specified block height. Historical must be enabled for the targeted project (--historica). The application will exit upon completion.',
+          'Reindex to specified block height. Historical must be enabled for the targeted project (--historical). The application will exit upon completion.',
         builder: (yargs) =>
           yargs.options('targetHeight', {
             type: 'number',
