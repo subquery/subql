@@ -138,7 +138,7 @@ describe('SchemaMigration integration tests', () => {
 
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
-    const storeCache = app.get(StoreCacheService);
+    const storeCache = app.get('IStoreModelProvider');
     const apiService = app.get(ApiService);
 
     await apiService.init();
