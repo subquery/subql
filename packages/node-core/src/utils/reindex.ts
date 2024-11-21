@@ -3,7 +3,16 @@
 
 import {Sequelize} from '@subql/x-sequelize';
 import {IProjectUpgradeService} from '../configure';
-import {DynamicDsService, IUnfinalizedBlocksService, StoreService, PoiService, ISubqueryProject} from '../indexer';
+import {
+  DynamicDsService,
+  IUnfinalizedBlocksService,
+  StoreService,
+  PoiService,
+  ISubqueryProject,
+  StoreCacheService,
+  cacheProviderFlushData,
+  cacheProviderResetData,
+} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {ForceCleanService} from '../subcommands/forceClean.service';
@@ -56,12 +65,17 @@ export async function reindex(
     if (!forceCleanService) {
       exitWithError(`ForceCleanService not provided, cannot force clean`, logger);
     }
-    await storeService.storeCache.resetCache();
+    // if DB need rollback? no, because forceCleanService will take care of it
+    await cacheProviderResetData(storeService.modelProvider);
     await forceCleanService?.forceClean();
   } else {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
-    await storeService.storeCache.flushCache(true);
-    await storeService.storeCache.resetCache();
+    await cacheProviderFlushData(storeService.modelProvider, true);
+    await cacheProviderResetData(storeService.modelProvider);
+    if (storeService.modelProvider instanceof StoreCacheService) {
+      await storeService.modelProvider.flushData(true);
+      await storeService.modelProvider.resetData();
+    }
     const transaction = await sequelize.transaction();
     try {
       /*
@@ -74,13 +88,13 @@ export async function reindex(
 
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight),
+        unfinalizedBlockService.resetUnfinalizedBlocks(transaction), // TODO: may not needed for nonfinalized chains
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(transaction), // TODO: may not needed for nonfinalized chains
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
         poiService?.rewind(targetBlockHeight, transaction),
       ]);
       // Flush metadata changes from above Promise.all
-      await storeService.storeCache.metadata.flush(transaction, targetBlockHeight);
+      await storeService.modelProvider.metadata.flush?.(transaction, targetBlockHeight);
 
       await transaction.commit();
       logger.info('Reindex Success');

@@ -1,13 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   BaseUnfinalizedBlocksService,
   Header,
+  IStoreModelProvider,
   mainThreadOnly,
   NodeConfig,
-  StoreCacheService,
 } from '@subql/node-core';
 import { substrateHeaderToHeader } from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -20,9 +20,9 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<
   constructor(
     private readonly apiService: ApiService,
     nodeConfig: NodeConfig,
-    storeCache: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
-    super(nodeConfig, storeCache);
+    super(nodeConfig, storeModelProvider);
   }
 
   @mainThreadOnly()

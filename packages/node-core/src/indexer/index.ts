@@ -9,7 +9,7 @@ export * from './types';
 export * from './StoreOperations';
 export * from './store.service';
 export * from './inMemoryCache.service';
-export * from './storeCache';
+export * from './storeModelProvider';
 export * from './worker';
 export * from './dictionary';
 export * from './sandbox';

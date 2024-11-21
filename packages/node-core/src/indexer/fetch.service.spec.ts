@@ -135,7 +135,7 @@ const getDictionaryService = () =>
     initDictionaries: () => {
       /* TODO */
     },
-  } as any as DictionaryService<any, any>);
+  }) as any as DictionaryService<any, any>;
 
 const getBlockDispatcher = () => {
   const inst = {

@@ -7,6 +7,7 @@ import {NodeConfig, ProjectUpgradeService} from '../configure';
 import {BaseDsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
 import {BaseProjectService} from './project.service';
+import {StoreService} from './store.service';
 import {Header, ISubqueryProject} from './types';
 import {
   BaseUnfinalizedBlocksService,
@@ -309,26 +310,33 @@ describe('BaseProjectService', () => {
         init: jest.fn(),
         initCoreTables: jest.fn(),
         historical: true,
-        storeCache: {
+        modelProvider: {
           metadata: {
-            findMany: jest.fn(() => ({})),
-            find: jest.fn((key: string) => {
+            findMany: jest.fn(async () => Promise.resolve({})),
+            find: jest.fn(async (key: string): Promise<any> => {
+              let result: any;
               switch (key) {
                 case METADATA_LAST_FINALIZED_PROCESSED_KEY:
-                  return lastFinalizedHeight;
+                  result = lastFinalizedHeight;
+                  break;
                 case METADATA_UNFINALIZED_BLOCKS_KEY:
-                  return JSON.stringify(unfinalizedBlocks);
+                  result = JSON.stringify(unfinalizedBlocks);
+                  break;
                 case 'lastProcessedHeight':
-                  return startBlock - 1;
+                  result = startBlock - 1;
+                  break;
                 case 'deployments':
-                  return JSON.stringify({1: '1'});
+                  result = JSON.stringify({1: '1'});
+                  break;
                 default:
-                  return undefined;
+                  result = undefined;
+                  break;
               }
+              return Promise.resolve(result);
             }),
             set: jest.fn(),
             flush: jest.fn(),
-          },
+          } as any,
           resetCache: jest.fn(),
           flushCache: jest.fn(),
           _flushCache: jest.fn(),
@@ -359,7 +367,7 @@ describe('BaseProjectService', () => {
           resetDynamicDatasource: jest.fn(),
         } as unknown as DynamicDsService<any>, // dynamicDsService
         new EventEmitter2(), // eventEmitter
-        new TestUnfinalizedBlocksService(nodeConfig, storeService.storeCache) // unfinalizedBlocksService
+        new TestUnfinalizedBlocksService(nodeConfig, storeService.modelProvider) // unfinalizedBlocksService
       );
     };
 

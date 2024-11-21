@@ -14,26 +14,21 @@ import {exitWithError} from '../../process';
 import {profiler} from '../../profiler';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {BaseCacheService} from './baseCache.service';
-import {CacheMetadataModel} from './cacheMetadata';
-import {CachedModel} from './cacheModel';
-import {CachePoiModel} from './cachePoi';
 import {CsvStoreService} from './csvStore.service';
-import {Exporter, ICachedModel, ICachedModelControl} from './types';
+import {CacheMetadataModel} from './metadata';
+import {METADATA_ENTITY_NAME} from './metadata/utils';
+import {CachedModel} from './model';
+import {CachePoiModel, POI_ENTITY_NAME} from './poi';
+import {ICachedModelControl, IStoreModelProvider} from './types';
 
 const logger = getLogger('StoreCacheService');
 
 @Injectable()
-export class StoreCacheService extends BaseCacheService {
-  private cachedModels: Record<string, ICachedModelControl> = {};
-  private metadataRepo?: MetadataRepo;
-  private poiRepo?: PoiRepo;
+export class StoreCacheService extends BaseCacheService implements IStoreModelProvider {
   private readonly storeCacheThreshold: number;
   private readonly cacheUpperLimit: number;
-  private _historical = true;
-  private _useCockroachDb?: boolean;
   private _storeOperationIndex = 0;
   private _lastFlushedOperationIndex = 0;
-  private exports: Exporter[] = [];
 
   constructor(
     private sequelize: Sequelize,
@@ -51,16 +46,13 @@ export class StoreCacheService extends BaseCacheService {
   }
 
   init(historical: boolean, useCockroachDb: boolean, meta: MetadataRepo, poi?: PoiRepo): void {
-    this._useCockroachDb = useCockroachDb;
-    this._historical = historical;
-    this.metadataRepo = meta;
-    this.poiRepo = poi;
+    super.init(historical, useCockroachDb, meta, poi);
 
     if (this.config.storeFlushInterval > 0) {
       this.schedulerRegistry.addInterval(
         'storeFlushInterval',
         setInterval(() => {
-          this.flushCache(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
+          this.flushData(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
         }, this.config.storeFlushInterval * 1000)
       );
     }
@@ -80,25 +72,12 @@ export class StoreCacheService extends BaseCacheService {
     return this._storeOperationIndex;
   }
 
-  getModel<T>(entity: string): ICachedModel<T> {
-    if (entity === '_metadata') {
-      throw new Error('Please use getMetadataModel instead');
-    }
-    if (entity === '_poi') {
-      throw new Error('Please use getPoiModel instead');
-    }
-    if (!this.cachedModels[entity]) {
-      this.cachedModels[entity] = this.createModel(entity);
-    }
-    return this.cachedModels[entity] as unknown as ICachedModel<T>;
-  }
-
-  private createModel(entityName: string): CachedModel<any> {
+  protected createModel(entityName: string): CachedModel<any> {
     const model = this.sequelize.model(entityName);
     assert(model, `model ${entityName} not exists`);
     const cachedModel = new CachedModel(
       model,
-      this._historical,
+      this.historical,
       this.config,
       this.getNextStoreOperationIndex.bind(this)
     );
@@ -110,44 +89,31 @@ export class StoreCacheService extends BaseCacheService {
     return cachedModel;
   }
 
-  addExporter(cachedModel: CachedModel, exporterStore: CsvStoreService): void {
+  private addExporter(cachedModel: CachedModel, exporterStore: CsvStoreService): void {
     cachedModel.addExporterStore(exporterStore);
     this.exports.push(exporterStore);
   }
 
-  async flushExportStores(): Promise<void> {
-    await Promise.all(this.exports.map((f) => f.shutdown()));
-  }
-
-  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void {
-    modifiedModels.forEach((m) => {
-      this.cachedModels[m.name] = this.createModel(m.name);
-    });
-    removedModels.forEach((r) => delete this.cachedModels[r]);
-  }
-
   get metadata(): CacheMetadataModel {
-    const entity = '_metadata';
-    if (!this.cachedModels[entity]) {
+    if (!this.cachedModels[METADATA_ENTITY_NAME]) {
       if (!this.metadataRepo) {
         throw new Error('Metadata entity has not been set on store cache');
       }
-      this.cachedModels[entity] = new CacheMetadataModel(this.metadataRepo);
+      this.cachedModels[METADATA_ENTITY_NAME] = new CacheMetadataModel(this.metadataRepo);
     }
-    return this.cachedModels[entity] as unknown as CacheMetadataModel;
+    return this.cachedModels[METADATA_ENTITY_NAME] as unknown as CacheMetadataModel;
   }
 
   get poi(): CachePoiModel | null {
-    const entity = '_poi';
-    if (!this.cachedModels[entity]) {
+    if (!this.cachedModels[POI_ENTITY_NAME]) {
       if (!this.poiRepo) {
         return null;
         // throw new Error('Poi entity has not been set on store cache');
       }
-      this.cachedModels[entity] = new CachePoiModel(this.poiRepo);
+      this.cachedModels[POI_ENTITY_NAME] = new CachePoiModel(this.poiRepo);
     }
 
-    return this.cachedModels[entity] as unknown as CachePoiModel;
+    return this.cachedModels[POI_ENTITY_NAME] as unknown as CachePoiModel;
   }
 
   private async flushRelationalModelsInOrder(updatableModels: ICachedModelControl[], tx: Transaction): Promise<void> {
@@ -168,14 +134,14 @@ export class StoreCacheService extends BaseCacheService {
     this.logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
-      deferrable: this._historical || this._useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
+      deferrable: this.historical || this.useCockroachDb ? undefined : Deferrable.SET_DEFERRED(),
     });
     try {
       // Get the block height of all data we want to flush up to
       const blockHeight = await this.metadata.find('lastProcessedHeight');
       // Get models that have data to flush
       const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
-      if (this._useCockroachDb) {
+      if (this.useCockroachDb) {
         // 1. Independent(no associations) models can flush simultaneously
         await Promise.all(
           updatableModels.filter((m) => !m.hasAssociations).map((model) => model.flush(tx, blockHeight))
@@ -205,7 +171,7 @@ export class StoreCacheService extends BaseCacheService {
   async flushAndWaitForCapacity(forceFlush?: boolean): Promise<void> {
     const flushableRecords = this.flushableRecords;
 
-    const pendingFlush = this.flushCache(forceFlush);
+    const pendingFlush = this.flushData(forceFlush);
 
     if (flushableRecords >= this.cacheUpperLimit) {
       await pendingFlush;
@@ -223,5 +189,23 @@ export class StoreCacheService extends BaseCacheService {
       value: numOfRecords,
     });
     return numOfRecords >= this.storeCacheThreshold;
+  }
+
+  async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
+    if (this.config.storeCacheAsync) {
+      // Flush all completed block data and don't wait
+      await this.flushAndWaitForCapacity(false)?.catch((e) => {
+        exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);
+      });
+    } else {
+      // Flush all data from cache and wait
+      await this.flushData(false);
+    }
+
+    if (dataSourcesCompleted) {
+      const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
+      await this.flushData(false);
+      exitWithError(msg, logger, 0);
+    }
   }
 }

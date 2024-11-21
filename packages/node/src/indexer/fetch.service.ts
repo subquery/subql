@@ -12,7 +12,7 @@ import {
   BaseFetchService,
   getModulos,
   Header,
-  StoreCacheService,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { SubstrateDatasource, SubstrateBlock } from '@subql/types';
 import { calcInterval, substrateHeaderToHeader } from '../utils/substrate';
@@ -43,7 +43,7 @@ export class FetchService extends BaseFetchService<
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
     private runtimeService: RuntimeService,
-    storeCacheService: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
     super(
       nodeConfig,
@@ -53,7 +53,7 @@ export class FetchService extends BaseFetchService<
       eventEmitter,
       schedulerRegistry,
       unfinalizedBlocksService,
-      storeCacheService,
+      storeModelProvider,
     );
   }
 

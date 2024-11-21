@@ -3,7 +3,7 @@
 
 import {delay} from '@subql/common';
 import {Sequelize} from '@subql/x-sequelize';
-import {NodeConfig} from '../../configure';
+import {NodeConfig} from '../../../configure';
 import {CachedModel} from './cacheModel';
 
 jest.mock('@subql/x-sequelize', () => {
@@ -106,7 +106,7 @@ describe('cacheModel', () => {
 
       // Set an initial model and flush it
       blockHeight = 1;
-      testModel.set(
+      await testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
@@ -126,7 +126,7 @@ describe('cacheModel', () => {
 
       // updated height to 2
       blockHeight = 2;
-      testModel.set(
+      await testModel.set(
         'entity1_id_0x01',
         {
           ...entity1,
@@ -144,7 +144,7 @@ describe('cacheModel', () => {
       await delay(0.2);
       const entity2 = await testModel.get('entity1_id_0x01');
 
-      testModel.set(
+      await testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
@@ -161,7 +161,7 @@ describe('cacheModel', () => {
 
     it('can call getByFields, with entities updated in the same block', async () => {
       blockHeight = 2;
-      testModel.set(
+      await testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
@@ -187,7 +187,7 @@ describe('cacheModel', () => {
     });
 
     it('cannot mutate data in the cache without calling methods', async () => {
-      testModel.set(
+      await testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
@@ -210,13 +210,13 @@ describe('cacheModel', () => {
 
       /* getBy methods use set cache */
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const entity3 = (await testModel.getOneByField('field1', 2))!;
+      const [entity3] = (await testModel.getByFields([['field1', '=', 2]], {limit: 1}))!;
       expect(entity3?.field1).toEqual(2);
 
       // Mutate field directly
       entity3.field1 = -2;
 
-      const entity4 = await testModel.getOneByField('field1', 2);
+      const [entity4] = await testModel.getByFields([['field1', '=', 2]], {limit: 1});
       expect(entity4?.field1).toEqual(2);
     });
   });
@@ -229,16 +229,16 @@ describe('cacheModel', () => {
       testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++);
     });
 
-    it('throws when trying to set undefined', () => {
-      expect(() => testModel.set('0x01', undefined as any, 1)).toThrow();
-      expect(() => testModel.set('0x01', null as any, 1)).toThrow();
+    it('throws when trying to set undefined', async () => {
+      await expect(() => testModel.set('0x01', undefined as any, 1)).rejects.toThrow();
+      await expect(() => testModel.set('0x01', null as any, 1)).rejects.toThrow();
     });
 
     // it should keep same behavior as hook we used
     it('when get data after flushed, it should exclude block range', async () => {
       const spyDbGet = jest.spyOn(testModel.model, 'findOne');
       const sypOnApplyBlockRange = jest.spyOn(testModel as any, 'applyBlockRange');
-      testModel.set(
+      await testModel.set(
         'entity1_id_0x01',
         {
           id: 'entity1_id_0x01',
@@ -264,8 +264,8 @@ describe('cacheModel', () => {
     // Some edge cases for set get and remove
     describe('set, remove and get', () => {
       it('In different block, remove and set, should able to get', async () => {
-        testModel.remove('entity1_id_0x01', 4);
-        testModel.set(
+        await testModel.remove('entity1_id_0x01', 4);
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -277,9 +277,9 @@ describe('cacheModel', () => {
         expect(result?.field1).toBe(5);
       });
 
-      it('In same block, remove then set, should able to get', () => {
-        testModel.remove('entity1_id_0x01', 1);
-        testModel.set(
+      it('In same block, remove then set, should able to get', async () => {
+        await testModel.remove('entity1_id_0x01', 1);
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -287,7 +287,7 @@ describe('cacheModel', () => {
           },
           1
         );
-        const result = testModel.get('entity1_id_0x01');
+        const result = await testModel.get('entity1_id_0x01');
         // data should be erased from removeCache
         expect((testModel as any).removeCache.entity1_id_0x01).toBeUndefined();
 
@@ -295,8 +295,8 @@ describe('cacheModel', () => {
       });
 
       it('In different block, remove and set, then remove again, should get nothing', async () => {
-        testModel.remove('entity1_id_0x01', 4);
-        testModel.set(
+        await testModel.remove('entity1_id_0x01', 4);
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -304,7 +304,7 @@ describe('cacheModel', () => {
           },
           6
         );
-        testModel.remove('entity1_id_0x01', 8);
+        await testModel.remove('entity1_id_0x01', 8);
         const result = await testModel.get('entity1_id_0x01');
         expect((testModel as any).removeCache.entity1_id_0x01).toBeDefined();
         // should match with last removed
@@ -318,8 +318,8 @@ describe('cacheModel', () => {
       });
 
       it('In same block, remove and set, then remove again, should get nothing', async () => {
-        testModel.remove('entity1_id_0x01', 1);
-        testModel.set(
+        await testModel.remove('entity1_id_0x01', 1);
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -327,7 +327,7 @@ describe('cacheModel', () => {
           },
           1
         );
-        testModel.remove('entity1_id_0x01', 1);
+        await testModel.remove('entity1_id_0x01', 1);
         const result = await testModel.get('entity1_id_0x01');
         expect((testModel as any).removeCache.entity1_id_0x01).toBeDefined();
 
@@ -338,8 +338,8 @@ describe('cacheModel', () => {
         expect(result).toBeUndefined();
       });
 
-      it('clean flushable records when applyBlockRange, if found set and removed happened in the same height', () => {
-        testModel.set(
+      it('clean flushable records when applyBlockRange, if found set and removed happened in the same height', async () => {
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -347,9 +347,9 @@ describe('cacheModel', () => {
           },
           1
         );
-        testModel.remove('entity1_id_0x01', 1);
+        await testModel.remove('entity1_id_0x01', 1);
 
-        testModel.set(
+        await testModel.set(
           'entity1_id_0x02',
           {
             id: 'entity1_id_0x02',
@@ -370,8 +370,8 @@ describe('cacheModel', () => {
         expect(records[0].id).toBe('entity1_id_0x02');
       });
 
-      it('clean flushable records when applyBlockRange, pass if set and remove in the different height', () => {
-        testModel.set(
+      it('clean flushable records when applyBlockRange, pass if set and remove in the different height', async () => {
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -379,9 +379,9 @@ describe('cacheModel', () => {
           },
           1
         );
-        testModel.remove('entity1_id_0x01', 2);
+        await testModel.remove('entity1_id_0x01', 2);
 
-        testModel.set(
+        await testModel.set(
           'entity1_id_0x02',
           {
             id: 'entity1_id_0x02',
@@ -399,7 +399,7 @@ describe('cacheModel', () => {
       });
 
       it('getFromCache could filter out removed data', async () => {
-        testModel.set(
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -407,9 +407,9 @@ describe('cacheModel', () => {
           },
           1
         );
-        testModel.remove('entity1_id_0x01', 1);
+        await testModel.remove('entity1_id_0x01', 1);
 
-        testModel.set(
+        await testModel.set(
           'entity1_id_0x02',
           {
             id: 'entity1_id_0x02',
@@ -418,7 +418,7 @@ describe('cacheModel', () => {
           2
         );
         const spyFindAll = jest.spyOn(testModel.model, 'findAll');
-        const result = await testModel.getByField('field1', 1, {offset: 0, limit: 50});
+        const result = await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 50});
         expect(spyFindAll).toHaveBeenCalledTimes(1);
 
         expect(result).toStrictEqual([
@@ -427,7 +427,7 @@ describe('cacheModel', () => {
       });
 
       it('getFromCache with removed and set again data', async () => {
-        testModel.set(
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -435,8 +435,8 @@ describe('cacheModel', () => {
           },
           1
         );
-        testModel.remove('entity1_id_0x01', 1);
-        testModel.set(
+        await testModel.remove('entity1_id_0x01', 1);
+        await testModel.set(
           'entity1_id_0x01',
           {
             id: 'entity1_id_0x01',
@@ -445,12 +445,12 @@ describe('cacheModel', () => {
           1
         );
         const spyFindAll = jest.spyOn(testModel.model, 'findAll');
-        const result = await testModel.getByField('field1', 1, {offset: 0, limit: 50});
+        const result = await testModel.getByFields([['field1', '=', 1]], {offset: 0, limit: 50});
         expect(spyFindAll).toHaveBeenCalledTimes(1);
         expect(result).toStrictEqual([{id: 'entity1_id_0x01', field1: 1}]);
 
         // Should not include any previous recorded value
-        const result3 = await testModel.getByField('field1', 3, {offset: 0, limit: 50});
+        const result3 = await testModel.getByFields([['field1', '=', 3]], {offset: 0, limit: 50});
         // Expect only mocked
         expect(result3).toStrictEqual([]);
       });

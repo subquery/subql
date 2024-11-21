@@ -4,14 +4,14 @@
 import {DEFAULT_FETCH_RANGE} from '@subql/common';
 import {u8aToBuffer} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
-import {getLogger} from '../../logger';
-import {PoiRepo, ProofOfIndex} from '../entities';
-import {PlainPoiModel, PoiInterface} from '../poi/poiModel';
-import {Cacheable} from './cacheable';
-import {ICachedModelControl} from './types';
+import {getLogger} from '../../../logger';
+import {PoiRepo, ProofOfIndex} from '../../entities';
+import {Cacheable} from '../cacheable';
+import {ICachedModelControl} from '../types';
+import {IPoi, PlainPoiModel} from './poi';
 const logger = getLogger('PoiCache');
 
-export class CachePoiModel extends Cacheable implements ICachedModelControl, PoiInterface {
+export class CachePoiModel extends Cacheable implements IPoi, ICachedModelControl {
   private setCache: Record<number, ProofOfIndex> = {};
   flushableRecordCounter = 0;
   plainPoiModel: PlainPoiModel;
@@ -21,7 +21,8 @@ export class CachePoiModel extends Cacheable implements ICachedModelControl, Poi
     this.plainPoiModel = new PlainPoiModel(model);
   }
 
-  bulkUpsert(proofs: ProofOfIndex[]): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async bulkUpsert(proofs: ProofOfIndex[]): Promise<void> {
     for (const proof of proofs) {
       if (proof.chainBlockHash !== null) {
         proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);

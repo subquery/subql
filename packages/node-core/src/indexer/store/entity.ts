@@ -7,9 +7,11 @@ export class EntityClass implements Entity {
   id: string;
   // Name needs to be private so that it can be converted to a generated entity
   #name: string;
+  #store: Store;
 
-  constructor(name: string, properties: {id: string} & any, private store: Store) {
+  constructor(name: string, properties: {id: string} & any, store: Store) {
     this.#name = name;
+    this.#store = store;
     this.id = properties.id;
     Object.assign(this, properties);
   }
@@ -21,6 +23,6 @@ export class EntityClass implements Entity {
   }
 
   async save(): Promise<void> {
-    return this.store.set(this.#name, this.id, this);
+    return this.#store.set(this.#name, this.id, this);
   }
 }

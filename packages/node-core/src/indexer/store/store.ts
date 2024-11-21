@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import {Inject} from '@nestjs/common';
 import {Store as IStore, Entity, FieldsExpression, GetOptions} from '@subql/types-core';
+import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {monitorWrite} from '../../process';
 import {handledStringify} from '../../utils';
-import {StoreCacheService} from '../storeCache';
+import {IStoreModelProvider} from '../storeModelProvider';
 import {StoreOperations} from '../StoreOperations';
 import {OperationType} from '../types';
 import {EntityClass} from './entity';
@@ -14,6 +16,7 @@ import {EntityClass} from './entity';
 /* A context is provided to allow it to be updated by the owner of the class instance */
 type Context = {
   blockHeight: number;
+  transaction?: Transaction;
   operationStack?: StoreOperations;
   isIndexed: (entity: string, field: string) => boolean;
   isIndexedHistorical: (entity: string, field: string) => boolean;
@@ -22,12 +25,12 @@ type Context = {
 export class Store implements IStore {
   /* These need to explicily be private using JS style private properties in order to not leak these in the sandbox */
   #config: NodeConfig;
-  #storeCache: StoreCacheService;
+  #modelProvider: IStoreModelProvider;
   #context: Context;
 
-  constructor(config: NodeConfig, storeCache: StoreCacheService, context: Context) {
+  constructor(config: NodeConfig, modelProvider: IStoreModelProvider, context: Context) {
     this.#config = config;
-    this.#storeCache = storeCache;
+    this.#modelProvider = modelProvider;
     this.#context = context;
   }
 
@@ -39,7 +42,7 @@ export class Store implements IStore {
 
   async get<T extends Entity>(entity: string, id: string): Promise<T | undefined> {
     try {
-      const raw = await this.#storeCache.getModel<T>(entity).get(id);
+      const raw = await this.#modelProvider.getModel<T>(entity).get(id, this.#context.transaction);
       monitorWrite(() => `-- [Store][get] Entity ${entity} ID ${id}, data: ${handledStringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
@@ -59,7 +62,9 @@ export class Store implements IStore {
 
       this.#queryLimitCheck('getByField', entity, options);
 
-      const raw = await this.#storeCache.getModel<T>(entity).getByField(field, value, options);
+      const raw = await this.#modelProvider
+        .getModel<T>(entity)
+        .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], options);
       monitorWrite(() => `-- [Store][getByField] Entity ${entity}, data: ${handledStringify(raw)}`);
       return raw.map((v) => EntityClass.create<T>(entity, v, this)) as T[];
     } catch (e) {
@@ -83,7 +88,7 @@ export class Store implements IStore {
 
       this.#queryLimitCheck('getByFields', entity, options);
 
-      const raw = await this.#storeCache.getModel<T>(entity).getByFields(filter, options);
+      const raw = await this.#modelProvider.getModel<T>(entity).getByFields(filter, options, this.#context.transaction);
       monitorWrite(() => `-- [Store][getByFields] Entity ${entity}, data: ${handledStringify(raw)}`);
       return raw.map((v) => EntityClass.create<T>(entity, v, this)) as T[];
     } catch (e) {
@@ -95,7 +100,9 @@ export class Store implements IStore {
     try {
       const indexed = this.#context.isIndexedHistorical(entity, field as string);
       assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
-      const raw = await this.#storeCache.getModel<T>(entity).getOneByField(field, value);
+      const [raw] = await this.#modelProvider
+        .getModel<T>(entity)
+        .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], {limit: 1});
       monitorWrite(() => `-- [Store][getOneByField] Entity ${entity}, data: ${handledStringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
@@ -103,10 +110,9 @@ export class Store implements IStore {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async set(entity: string, _id: string, data: Entity): Promise<void> {
     try {
-      this.#storeCache.getModel(entity).set(_id, data, this.#context.blockHeight);
+      await this.#modelProvider.getModel(entity).set(_id, data, this.#context.blockHeight, this.#context.transaction);
       monitorWrite(
         () => `-- [Store][set] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${handledStringify(data)}`
       );
@@ -115,10 +121,10 @@ export class Store implements IStore {
       throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
+
   async bulkCreate(entity: string, data: Entity[]): Promise<void> {
     try {
-      this.#storeCache.getModel(entity).bulkCreate(data, this.#context.blockHeight);
+      await this.#modelProvider.getModel(entity).bulkCreate(data, this.#context.blockHeight, this.#context.transaction);
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
@@ -131,10 +137,11 @@ export class Store implements IStore {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async bulkUpdate(entity: string, data: Entity[], fields?: string[]): Promise<void> {
     try {
-      this.#storeCache.getModel(entity).bulkUpdate(data, this.#context.blockHeight, fields);
+      await this.#modelProvider
+        .getModel(entity)
+        .bulkUpdate(data, this.#context.blockHeight, fields, this.#context.transaction);
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
@@ -146,20 +153,20 @@ export class Store implements IStore {
       throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
+
   async remove(entity: string, id: string): Promise<void> {
     try {
-      this.#storeCache.getModel(entity).remove(id, this.#context.blockHeight);
+      await this.#modelProvider.getModel(entity).bulkRemove([id], this.#context.blockHeight, this.#context.transaction);
       this.#context.operationStack?.put(OperationType.Remove, entity, id);
       monitorWrite(() => `-- [Store][remove] Entity ${entity}, height: ${this.#context.blockHeight}, id: ${id}`);
     } catch (e) {
       throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
+
   async bulkRemove(entity: string, ids: string[]): Promise<void> {
     try {
-      this.#storeCache.getModel(entity).bulkRemove(ids, this.#context.blockHeight);
+      await this.#modelProvider.getModel(entity).bulkRemove(ids, this.#context.blockHeight, this.#context.transaction);
 
       for (const id of ids) {
         this.#context.operationStack?.put(OperationType.Remove, entity, id);

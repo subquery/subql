@@ -13,6 +13,7 @@ import {
   InMemoryCacheService,
   MonitorService,
   CoreModule,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -46,7 +47,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         indexerManager: IndexerManager,
         cacheService: InMemoryCacheService,
         storeService: StoreService,
-        storeCacheService: StoreCacheService,
+        storeModelProvider: IStoreModelProvider,
         poiSyncService: PoiSyncService,
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
@@ -62,7 +63,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               projectUpgradeService,
               cacheService,
               storeService,
-              storeCacheService,
+              storeModelProvider,
               poiSyncService,
               project,
               dynamicDsService,
@@ -78,7 +79,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               projectService,
               projectUpgradeService,
               storeService,
-              storeCacheService,
+              storeModelProvider,
               poiSyncService,
               project,
             ),
@@ -91,7 +92,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         IndexerManager,
         InMemoryCacheService,
         StoreService,
-        StoreCacheService,
+        'IStoreModelProvider',
         PoiSyncService,
         'ISubqueryProject',
         DynamicDsService,

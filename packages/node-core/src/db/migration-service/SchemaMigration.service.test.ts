@@ -46,13 +46,7 @@ async function setup(
   await storeService.initCoreTables(schemaName);
   await initDbSchema(schemaName, storeService);
 
-  return new SchemaMigrationService(
-    sequelize,
-    storeService,
-    storeCache._flushCache.bind(storeCache),
-    schemaName,
-    config
-  );
+  return new SchemaMigrationService(sequelize, storeService, schemaName, config);
 }
 
 function loadGqlSchema(fileName: string): GraphQLSchema {

@@ -6,7 +6,14 @@ import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource} from '@subql/types-core';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig, ProjectUpgradeService} from '../configure';
-import {CacheMetadataModel, IUnfinalizedBlocksService, StoreService, ISubqueryProject, PoiService} from '../indexer';
+import {
+  IUnfinalizedBlocksService,
+  StoreService,
+  ISubqueryProject,
+  PoiService,
+  IMetadata,
+  cacheProviderFlushData,
+} from '../indexer';
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
@@ -17,7 +24,7 @@ const logger = getLogger('Reindex');
 
 @Injectable()
 export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSource, B> {
-  private _metadataRepo?: CacheMetadataModel;
+  private _metadataRepo?: IMetadata;
   private _lastProcessedHeight?: number;
 
   constructor(
@@ -32,7 +39,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>
   ) {}
 
-  private get metadataRepo(): CacheMetadataModel {
+  private get metadataRepo(): IMetadata {
     assert(this._metadataRepo, 'BaseReindexService has not been init');
     return this._metadataRepo;
   }
@@ -51,7 +58,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     }
     await initDbSchema(schema, this.storeService);
 
-    this._metadataRepo = this.storeService.storeCache.metadata;
+    this._metadataRepo = this.storeService.modelProvider.metadata;
 
     await this.dynamicDsService.init(this.metadataRepo);
 
@@ -119,7 +126,8 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.nodeConfig.proofOfIndex ? this.poiService : undefined,
       this.forceCleanService
     );
-    await this.storeService.storeCache.flushCache(true);
+
+    await cacheProviderFlushData(this.storeService.modelProvider, true);
     monitorWrite(`- Reindex completed`);
   }
 }

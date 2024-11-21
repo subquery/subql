@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+export * from './decorators';
 export * from './object';
 export * from './promise';
 export * from './graphql';
@@ -11,7 +12,6 @@ export * from './fetchHelpers';
 export * from './blockSizeBuffer';
 export * from './configure';
 export * from './reindex';
-export * from './decorators';
 export * from './blocks';
 export * from './blockHeightMap';
 export * from './string';

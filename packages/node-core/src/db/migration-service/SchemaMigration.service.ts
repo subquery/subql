@@ -3,10 +3,10 @@
 
 import {SUPPORT_DB} from '@subql/common';
 import {getAllEntitiesRelations, GraphQLModelsType, GraphQLRelationsType} from '@subql/utils';
-import {ModelStatic, Sequelize, Transaction} from '@subql/x-sequelize';
+import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
 import {NodeConfig} from '../../configure';
-import {StoreService} from '../../indexer';
+import {cacheProviderFlushData, StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {sortModels} from '../sync-helper';
 import {Migration} from './migration';
@@ -29,7 +29,6 @@ export class SchemaMigrationService {
   constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
-    private flushCache: (flushAll?: boolean) => Promise<void>,
     private dbSchema: string,
     private config: NodeConfig,
     private dbType: SUPPORT_DB = SUPPORT_DB.postgres
@@ -115,8 +114,7 @@ export class SchemaMigrationService {
     const sortedAddedModels = alignModelOrder<GraphQLModelsType[]>(sortedSchemaModels, addedModels);
     const sortedModifiedModels = alignModelOrder<ModifiedModels>(sortedSchemaModels, modifiedModels);
 
-    // Flush any pending data before running the migration
-    await this.flushCache(true);
+    await cacheProviderFlushData(this.storeService.modelProvider, true);
 
     const migrationAction = await Migration.create(
       this.sequelize,
@@ -186,10 +184,10 @@ export class SchemaMigrationService {
       const modelChanges = await migrationAction.run(transaction);
 
       // Update any relevant application state so the right models are used
-      this.storeService.storeCache.updateModels(modelChanges);
+      this.storeService.modelProvider.updateModels(modelChanges);
       await this.storeService.updateModels(this.dbSchema, getAllEntitiesRelations(nextSchema));
 
-      await this.flushCache();
+      await cacheProviderFlushData(this.storeService.modelProvider, true);
     } catch (e: any) {
       logger.error(e, 'Failed to execute Schema Migration');
       throw e;

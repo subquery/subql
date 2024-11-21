@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations. 
+
+
 ## [5.2.9] - 2024-10-30
 ### Changed
 - Bump `@subql/node-core` dependency

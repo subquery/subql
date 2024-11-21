@@ -3,19 +3,21 @@
 
 import assert from 'assert';
 import {Transaction} from '@subql/x-sequelize';
-import {hasValue} from '../../utils';
-import {DatasourceParams} from '../dynamic-ds.service';
-import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
-import {Cacheable} from './cacheable';
-import {ICachedModelControl} from './types';
+import {hasValue} from '../../../utils';
+import {DatasourceParams} from '../../dynamic-ds.service';
+import {Metadata, MetadataKeys, MetadataRepo} from '../../entities';
+import {Cacheable} from '../cacheable';
+import {ICachedModelControl} from '../types';
+import {IMetadata} from './metadata';
+import {MetadataKey, incrementKeys, IncrementalMetadataKey, INCREMENT_QUERY, APPEND_DS_QUERY} from './utils';
 
-type MetadataKey = keyof MetadataKeys;
-const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
-type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
+// type MetadataKey = keyof MetadataKeys;
+// const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
+// type IncrementalMetadataKey = 'processedBlockCount' | 'schemaMigrationCount';
 
 const specialKeys: MetadataKey[] = [...incrementKeys, 'dynamicDatasources'];
 
-export class CacheMetadataModel extends Cacheable implements ICachedModelControl {
+export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
@@ -83,7 +85,8 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     return result;
   }
 
-  set<K extends MetadataKey>(key: K, value: MetadataKeys[K]): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async set<K extends MetadataKey>(key: K, value: MetadataKeys[K], tx?: Transaction): Promise<void> {
     if (this.setCache[key] === undefined) {
       this.flushableRecordCounter += 1;
     }
@@ -94,15 +97,18 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
     }
   }
 
-  setBulk(metadata: Metadata[]): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async setBulk(metadata: Metadata[]): Promise<void> {
     metadata.map((m) => this.set(m.key, m.value));
   }
 
-  setIncrement(key: IncrementalMetadataKey, amount = 1): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async setIncrement(key: IncrementalMetadataKey, amount = 1): Promise<void> {
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
-  setNewDynamicDatasource(item: DatasourceParams): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async setNewDynamicDatasource(item: DatasourceParams): Promise<void> {
     this.datasourceUpdates.push(item);
   }
 
@@ -111,16 +117,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    await this.model.sequelize.query(
-      `
-          INSERT INTO ${schemaTable} (key, value, "createdAt", "updatedAt")
-          VALUES ('${key}', '0'::jsonb, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON CONFLICT (key) DO
-          UPDATE SET value = (COALESCE(${schemaTable}.value->>0)::int + '${amount}')::text::jsonb,
-            "updatedAt" = CURRENT_TIMESTAMP
-          WHERE ${schemaTable}.key = '${key}';`,
-      tx && {transaction: tx}
-    );
+    await this.model.sequelize.query(INCREMENT_QUERY(schemaTable, key, amount), tx && {transaction: tx});
   }
 
   private async appendDynamicDatasources(items: DatasourceParams[], tx?: Transaction): Promise<void> {
@@ -128,22 +125,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    const VALUE = '"value"';
-
-    const makeSet = (item: DatasourceParams, value: string, index = 1): string =>
-      `jsonb_set(${value}, array[(jsonb_array_length(${VALUE}) + ${index})::text], '${JSON.stringify(
-        item
-      )}'::jsonb, true)`;
-
-    await this.model.sequelize.query(
-      `
-      UPDATE ${schemaTable}
-      SET ${VALUE} = ${items.reduce((acc, item, index) => makeSet(item, acc, index + 1), VALUE)},
-        "updatedAt" = CURRENT_TIMESTAMP
-      WHERE ${schemaTable}.key = 'dynamicDatasources';
-    `,
-      tx && {transaction: tx}
-    );
+    await this.model.sequelize.query(APPEND_DS_QUERY(schemaTable, items), tx && {transaction: tx});
   }
 
   private async handleSpecialKeys(tx?: Transaction): Promise<void> {
@@ -185,7 +167,7 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
   async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
       .filter(([key]) => !specialKeys.includes(key as MetadataKey))
-      .map(([key, value]) => ({key, value} as Metadata));
+      .map(([key, value]) => ({key, value}) as Metadata);
 
     const lastProcessedHeightIdx = ops.findIndex((k) => k.key === 'lastProcessedHeight');
     if (blockHeight !== undefined && lastProcessedHeightIdx >= 0) {
@@ -209,7 +191,8 @@ export class CacheMetadataModel extends Cacheable implements ICachedModelControl
 
   // This is current only use for migrate Poi
   // If concurrent change to cache, please add mutex if needed
-  bulkRemove<K extends MetadataKey>(keys: K[]): void {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async bulkRemove<K extends MetadataKey>(keys: K[], tx?: Transaction): Promise<void> {
     this.removeCache.push(...keys);
     for (const key of keys) {
       delete this.setCache[key];

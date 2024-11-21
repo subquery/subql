@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {MetadataFactory, MetadataKeys, MetadataRepo} from '../';
-import {DbOption} from '../../';
+import {MetadataFactory, MetadataKeys, MetadataRepo} from '../..';
+import {DbOption} from '../../..';
 import {CacheMetadataModel} from './cacheMetadata';
 
 const option: DbOption = {

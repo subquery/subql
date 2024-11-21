@@ -27,7 +27,7 @@ describe('TestRunner', () => {
     storeServiceMock = {
       setBlockHeight: jest.fn(),
       getStore: jest.fn().mockReturnValue({}),
-      storeCache: mockStoreCache,
+      modelProvider: mockStoreCache,
     };
 
     sandboxMock = {
@@ -88,7 +88,7 @@ describe('TestRunner', () => {
     (testRunner as any).storeService = {
       getStore: () => storeMock,
       setBlockHeight: jest.fn(),
-      storeCache: mockStoreCache,
+      modelProvider: mockStoreCache,
     } as any;
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
@@ -123,7 +123,7 @@ describe('TestRunner', () => {
     (testRunner as any).storeService = {
       getStore: () => storeMock,
       setBlockHeight: jest.fn(),
-      storeCache: mockStoreCache,
+      modelProvider: mockStoreCache,
     } as any;
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);
@@ -180,7 +180,7 @@ describe('TestRunner', () => {
     (testRunner as any).storeService = {
       getStore: () => storeMock,
       setBlockHeight: jest.fn(),
-      storeCache: mockStoreCache,
+      modelProvider: mockStoreCache,
     } as any;
 
     await testRunner.runTest(testMock, sandboxMock, indexBlock);

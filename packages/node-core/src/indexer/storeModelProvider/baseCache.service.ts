@@ -6,9 +6,14 @@ import Pino from 'pino';
 import {getLogger} from '../../logger';
 import {profiler} from '../../profiler';
 import {timeout} from '../../utils/promise';
+import {BaseStoreModelService} from './baseStoreModel.service';
+import {ICachedModelControl} from './types';
 
 @Injectable()
-export abstract class BaseCacheService implements BeforeApplicationShutdown {
+export abstract class BaseCacheService
+  extends BaseStoreModelService<ICachedModelControl>
+  implements BeforeApplicationShutdown
+{
   private pendingFlush?: Promise<void>;
   private queuedFlush?: Promise<void>;
   protected logger: Pino.Logger;
@@ -17,14 +22,14 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
   abstract _resetCache(): Promise<void> | void;
   abstract isFlushable(): boolean;
   abstract get flushableRecords(): number;
-  abstract flushExportStores(): Promise<void>;
 
   protected constructor(loggerName: string) {
+    super();
     this.logger = getLogger(loggerName);
   }
 
   @profiler()
-  async flushCache(forceFlush?: boolean): Promise<void> {
+  async flushData(forceFlush?: boolean): Promise<void> {
     const flushCacheGuarded = async (forceFlush?: boolean): Promise<void> => {
       // When we force flush, this will ensure not interrupt current block flushing,
       // Force flush will continue after last block flush tx committed.
@@ -49,14 +54,13 @@ export abstract class BaseCacheService implements BeforeApplicationShutdown {
     return this.queuedFlush;
   }
 
-  async resetCache(): Promise<void> {
+  async resetData(): Promise<void> {
     await this._resetCache();
   }
 
   async beforeApplicationShutdown(): Promise<void> {
-    await timeout(this.flushCache(true), 60, 'Before shutdown flush cache timeout');
+    await timeout(this.flushData(true), 60, 'Before shutdown flush cache timeout');
     this.logger.info(`Force flush cache successful!`);
-    await this.flushExportStores();
-    this.logger.info(`Force flush exports successful!`);
+    await super.beforeApplicationShutdown();
   }
 }

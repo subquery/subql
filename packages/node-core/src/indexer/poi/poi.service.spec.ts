@@ -8,7 +8,8 @@ import {delay} from '@subql/common';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {ProofOfIndex} from '../entities/Poi.entity';
-import {StoreCacheService} from '../storeCache';
+import {StoreCacheService} from '../storeModelProvider';
+import {METADATA_ENTITY_NAME} from '../storeModelProvider/metadata/utils';
 import {PoiService} from './poi.service';
 
 jest.mock('@subql/x-sequelize', () => {
@@ -72,11 +73,7 @@ describe('PoiService', () => {
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PoiService,
-        {provide: NodeConfig, useValue: nodeConfig},
-        {provide: StoreCacheService, useValue: storeCache},
-      ],
+      providers: [PoiService, {provide: 'IStoreModelProvider', useValue: storeCache}],
     }).compile();
 
     service = module.get<PoiService>(PoiService);
@@ -158,7 +155,7 @@ describe('PoiService', () => {
       } as any;
 
       await service.rewind(targetBlockHeight, transaction);
-      expect(storeCache.metadata.bulkRemove).toHaveBeenCalledWith(['lastCreatedPoiHeight']);
+      expect(storeCache.metadata.bulkRemove).toHaveBeenCalledWith(['lastCreatedPoiHeight'], transaction);
     });
   });
 

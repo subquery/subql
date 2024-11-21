@@ -4,7 +4,7 @@
 import {GraphQLModelsType} from '@subql/utils';
 import {Sequelize, DataTypes, QueryTypes} from '@subql/x-sequelize';
 import {cloneDeep, padStart} from 'lodash';
-import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../';
+import {DbOption, modelsTypeToModelAttributes, NodeConfig} from '../../..';
 import {CachedModel} from './cacheModel';
 
 const option: DbOption = {
@@ -74,7 +74,7 @@ describe('cacheMetadata integration', () => {
       // Pre-populate some data and flush it do the db
       let n = 0;
       while (n < 100) {
-        cacheModel.set(
+        await cacheModel.set(
           `entity1_id_0x${formatIdNumber(n)}`,
           {
             id: `entity1_id_0x${formatIdNumber(n)}`,
@@ -90,7 +90,7 @@ describe('cacheMetadata integration', () => {
       // Updates to existing data
       let m = 20;
       while (m < 30) {
-        cacheModel.set(
+        await cacheModel.set(
           `entity1_id_0x${formatIdNumber(m)}`,
           {
             id: `entity1_id_0x${formatIdNumber(m)}`,
@@ -104,7 +104,7 @@ describe('cacheMetadata integration', () => {
       // New data
       let o = 100;
       while (o < 130) {
-        cacheModel.set(
+        await cacheModel.set(
           `entity1_id_0x${formatIdNumber(o)}`,
           {
             id: `entity1_id_0x${formatIdNumber(o)}`,
@@ -117,16 +117,17 @@ describe('cacheMetadata integration', () => {
     });
 
     it('gets one item correctly', async () => {
+      const getOneBy = (field: 'id', value: string) => cacheModel.getByFields([[field, '=', value]], {limit: 1});
       // Db value
-      const res0 = await cacheModel.getOneByField('id', 'entity1_id_0x001');
+      const [res0] = await getOneBy('id', 'entity1_id_0x001');
       expect(res0).toEqual({id: 'entity1_id_0x001', field1: 1});
 
       // Cache value
-      const res1 = await cacheModel.getOneByField('id', 'entity1_id_0x020');
+      const [res1] = await getOneBy('id', 'entity1_id_0x020');
       expect(res1).toEqual({id: 'entity1_id_0x020', field1: 0});
 
       // Cache value
-      const res2 = await cacheModel.getOneByField('id', 'entity1_id_0x021');
+      const [res2] = await getOneBy('id', 'entity1_id_0x021');
       expect(res2).toEqual({id: 'entity1_id_0x021', field1: 1});
     });
 
@@ -454,7 +455,7 @@ describe('cacheModel integration', () => {
       // Update the value
       res1?.delegators.push({delegator: '0x03', amount: BigInt(9000000000000000000000n)});
 
-      cacheModel.set(`0x01`, res1!, 2);
+      await cacheModel.set(`0x01`, res1!, 2);
       await flush(3);
       const res2 = await cacheModel.get('0x01');
       console.log(JSON.stringify(res2));
@@ -504,7 +505,7 @@ describe('cacheModel integration', () => {
         amount: BigInt(6000000000000000000000n),
         nested: {testItem: 'test', amount: BigInt(6000000000000000000000n)},
       });
-      cacheModel.set(`0x01`, res1!, 4);
+      await cacheModel.set(`0x01`, res1!, 4);
       await flush(5);
       const [rows2] = await sequelize.query(`SELECT delegators FROM ${schema}."testModels" LIMIT 1;`, {
         type: QueryTypes.SELECT,
@@ -544,7 +545,7 @@ describe('cacheModel integration', () => {
         ],
         randomNArray: undefined,
       };
-      cacheModel.set(`0x02`, data0x02, 6);
+      await cacheModel.set(`0x02`, data0x02, 6);
       await flush(7);
       const res5 = (
         await cacheModel.model.findOne({

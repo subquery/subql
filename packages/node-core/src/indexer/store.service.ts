@@ -13,7 +13,16 @@ import {
   hexToU8a,
   GraphQLModelsType,
 } from '@subql/utils';
-import {IndexesOptions, ModelAttributes, ModelStatic, Op, QueryTypes, Sequelize, Transaction} from '@subql/x-sequelize';
+import {
+  IndexesOptions,
+  ModelAttributes,
+  ModelStatic,
+  Op,
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  Deferrable,
+} from '@subql/x-sequelize';
 import {camelCase, flatten, last, upperFirst} from 'lodash';
 import {NodeConfig} from '../configure';
 import {
@@ -29,8 +38,7 @@ import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
 import {Store} from './store';
-import {CacheMetadataModel} from './storeCache';
-import {StoreCacheService} from './storeCache/storeCache.service';
+import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
 import {ISubqueryProject} from './types';
 
@@ -59,17 +67,19 @@ export class StoreService {
   private _metaDataRepo?: MetadataRepo;
   private _historical?: boolean;
   private _dbType?: SUPPORT_DB;
-  private _metadataModel?: CacheMetadataModel;
+  private _metadataModel?: IMetadata;
   private _schema?: string;
   // Should be updated each block
   private _blockHeight?: number;
   private _operationStack?: StoreOperations;
   private _lastTimeDbSizeChecked?: number;
 
+  #transaction?: Transaction;
+
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    readonly storeCache: StoreCacheService,
+    @Inject('IStoreModelProvider') readonly modelProvider: IStoreModelProvider,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
 
@@ -106,12 +116,16 @@ export class StoreService {
     return this._historical;
   }
 
+  get transaction(): Transaction | undefined {
+    return this.#transaction;
+  }
+
   async syncDbSize(): Promise<bigint> {
     if (!this._lastTimeDbSizeChecked || Date.now() - this._lastTimeDbSizeChecked > DB_SIZE_CACHE_TIMEOUT) {
       this._lastTimeDbSizeChecked = Date.now();
       return getDbSizeAndUpdateMetadata(this.sequelize, this.schema);
     } else {
-      return this.storeCache.metadata.find('dbSize').then((cachedDbSize) => {
+      return this.modelProvider.metadata.find('dbSize').then((cachedDbSize) => {
         if (cachedDbSize !== undefined) {
           return cachedDbSize;
         } else {
@@ -127,7 +141,7 @@ export class StoreService {
     return this._dbType;
   }
 
-  private get metadataModel(): CacheMetadataModel {
+  private get metadataModel(): IMetadata {
     assert(this._metadataModel, new NoInitError());
     return this._metadataModel;
   }
@@ -163,13 +177,13 @@ export class StoreService {
     }
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
-    this.storeCache.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
+    this.modelProvider.init(this.historical, this.dbType === SUPPORT_DB.cockRoach, this.metaDataRepo, this.poiRepo);
 
-    this._metadataModel = this.storeCache.metadata;
+    this._metadataModel = this.modelProvider.metadata;
 
     await this.initHotSchemaReloadQueries(schema);
 
-    this.metadataModel.set('historicalStateEnabled', this.historical);
+    await this.metadataModel.set('historicalStateEnabled', this.historical);
   }
 
   async init(schema: string): Promise<void> {
@@ -185,13 +199,7 @@ export class StoreService {
       On SyncSchema, if no schema migration is introduced, it would consider current schema to be null, and go all db operations again
       every start up is a migration
        */
-      const schemaMigrationService = new SchemaMigrationService(
-        this.sequelize,
-        this,
-        this.storeCache._flushCache.bind(this.storeCache),
-        schema,
-        this.config
-      );
+      const schemaMigrationService = new SchemaMigrationService(this.sequelize, this, schema, this.config);
 
       await schemaMigrationService.run(null, this.subqueryProject.schema, tx);
 
@@ -205,7 +213,7 @@ export class StoreService {
         last(Object.values(deployments)) !== this.subqueryProject.id
       ) {
         // TODO this should run with the same db transaction as the migration
-        this.metadataModel.setIncrement('schemaMigrationCount');
+        await this.metadataModel.setIncrement('schemaMigrationCount');
       }
     } catch (e: any) {
       exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);
@@ -277,6 +285,14 @@ export class StoreService {
       sequelizeModel.addHook('beforeValidate', (attributes, options) => {
         attributes.__block_range = [this.blockHeight, null];
       });
+
+      if (!this.config.enableCache) {
+        sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
+          instances.forEach((item) => {
+            item.__block_range = [this.blockHeight, null];
+          });
+        });
+      }
       // TODO, remove id and block_range constraint, check id manually
       // see https://github.com/subquery/subql/issues/1542
     }
@@ -345,8 +361,18 @@ export class StoreService {
       return !disableHistorical;
     }
   }
-  setBlockHeight(blockHeight: number): void {
+  async setBlockHeight(blockHeight: number): Promise<void> {
     this._blockHeight = blockHeight;
+
+    if (this.modelProvider instanceof PlainStoreModelService) {
+      assert(!this.#transaction, new Error(`Transaction already exists for height: ${blockHeight}`));
+
+      this.#transaction = await this.sequelize.transaction({
+        deferrable: this._historical || this.dbType === SUPPORT_DB.cockRoach ? undefined : Deferrable.SET_DEFERRED(),
+      });
+      this.#transaction.afterCommit(() => (this.#transaction = undefined));
+    }
+
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
@@ -422,14 +448,14 @@ group by
     // This should only been called from CLI, blockHeight in storeService never been set and is required for`beforeFind` hook
     // Height no need to change for rewind during indexing
     if (this._blockHeight === undefined) {
-      this.setBlockHeight(targetBlockHeight);
+      await this.setBlockHeight(targetBlockHeight);
     }
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
         await batchDeleteAndThenUpdate(this.sequelize, model, transaction, targetBlockHeight);
       }
     }
-    this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
+    await this.metadataModel.set('lastProcessedHeight', targetBlockHeight, transaction);
     // metadataModel will be flushed in reindex.ts#reindex()
   }
 
@@ -458,7 +484,7 @@ group by
   }
 
   getStore(): Store {
-    return new Store(this.config, this.storeCache, this);
+    return new Store(this.config, this.modelProvider, this);
   }
 }
 

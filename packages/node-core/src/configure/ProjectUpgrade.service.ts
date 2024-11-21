@@ -7,7 +7,7 @@ import {ParentProject} from '@subql/types-core';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {findLast, last, parseInt} from 'lodash';
 import {SchemaMigrationService} from '../db';
-import {CacheMetadataModel, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
+import {IMetadata, IStoreModelProvider, ISubqueryProject, StoreService} from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
 import {getStartHeight, mainThreadOnly} from '../utils';
@@ -107,7 +107,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   #currentHeight: number;
   #currentProject: P;
 
-  #storeCache?: StoreCacheService;
+  #modelProvider?: IStoreModelProvider;
   #initialized = false;
 
   private config?: NodeConfig;
@@ -150,16 +150,10 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       return;
     }
     this.#initialized = true;
-    this.#storeCache = storeService.storeCache;
+    this.#modelProvider = storeService.modelProvider;
     this.config = config;
 
-    this.migrationService = new SchemaMigrationService(
-      sequelize,
-      storeService,
-      storeService.storeCache._flushCache.bind(storeService.storeCache),
-      schema,
-      config
-    );
+    this.migrationService = new SchemaMigrationService(sequelize, storeService, schema, config);
 
     const indexedDeployments = await this.getDeploymentsMetadata();
 
@@ -172,7 +166,9 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     } catch (e: any) {
       if (e instanceof EntryNotFoundError) {
         throw new Error(
-          `Unable to find project for height ${this.#currentHeight}. If the project start height is increased it will not jump to that block. Please either reindex or specify blocks to bypass.`,
+          `Unable to find project for height ${
+            this.#currentHeight
+          }. If the project start height is increased it will not jump to that block. Please either reindex or specify blocks to bypass.`,
           {cause: e}
         );
       }
@@ -207,9 +203,12 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     return this.#currentHeight;
   }
 
-  private get metadata(): CacheMetadataModel {
-    assert(this.#storeCache?.metadata, 'Project Upgrades service has not been initialized, unable to update metadata');
-    return this.#storeCache.metadata;
+  private get metadata(): IMetadata {
+    assert(
+      this.#modelProvider?.metadata,
+      'Project Upgrades service has not been initialized, unable to update metadata'
+    );
+    return this.#modelProvider.metadata;
   }
 
   async rewind(
@@ -243,7 +242,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       nextId = iterator.next();
     }
     // this remove any deployments in metadata beyond target height
-    await this.removeIndexedDeployments(targetBlockHeight);
+    await this.removeIndexedDeployments(targetBlockHeight, transaction);
   }
 
   private async migrate(
@@ -256,7 +255,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       assert(this.migrationService, 'MigrationService is undefined');
       if (this.config.allowSchemaMigration) {
         await this.migrationService.run(project.schema, newProject.schema, transaction);
-        this.metadata.setIncrement('schemaMigrationCount');
+        await this.metadata.setIncrement('schemaMigrationCount', undefined, transaction);
       }
     }
   }
@@ -450,11 +449,11 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
     deployments[blockHeight] = id;
 
-    this.metadata.set('deployments', JSON.stringify(deployments));
+    await this.metadata.set('deployments', JSON.stringify(deployments));
   }
 
   // Remove metadata deployments beyond this blockHeight
-  async removeIndexedDeployments(blockHeight: number): Promise<void> {
+  async removeIndexedDeployments(blockHeight: number, tx?: Transaction): Promise<void> {
     const deployments = await this.getDeploymentsMetadata();
 
     // remove all future block heights
@@ -466,6 +465,6 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       }
     });
 
-    this.metadata.set('deployments', JSON.stringify(deployments));
+    await this.metadata.set('deployments', JSON.stringify(deployments), tx);
   }
 }

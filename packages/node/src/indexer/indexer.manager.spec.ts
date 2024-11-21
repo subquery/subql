@@ -179,7 +179,7 @@ function createIndexerManager(
     project,
   );
   const cacheService = new InMemoryCacheService();
-  const poiService = new PoiService(nodeConfig, storeCache);
+  const poiService = new PoiService(storeCache);
 
   const poiSyncService = new PoiSyncService(nodeConfig, eventEmitter, project);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(

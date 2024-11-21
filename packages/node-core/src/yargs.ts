@@ -256,6 +256,11 @@ export function yargsBuilder<
                 describe: 'monitor file size limit in MB ',
                 type: 'number',
               },
+              'enable-cache': {
+                describe: 'cache enable or disable',
+                type: 'boolean',
+                default: true,
+              },
             })
             .hide('root'), // root is hidden because its for internal use
         handler: () => {
