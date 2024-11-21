@@ -208,7 +208,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       }
 
       // Update the target height, this happens here to stay in sync with the rest of indexing
-      await this.storeModelProvider.metadata.set('targetHeight', latestHeight);
+      this.storeModelProvider.metadata.set('targetHeight', latestHeight);
 
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced
