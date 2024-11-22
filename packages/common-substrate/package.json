@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-substrate",
-  "version": "4.3.2",
+  "version": "4.3.3-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -20,5 +20,6 @@
   "peerDependencies": {
     "class-transformer": "*",
     "class-validator": "*"
-  }
+  },
+  "stableVersion": "4.3.2"
 }
