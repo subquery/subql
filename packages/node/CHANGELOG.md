@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Improve event iteration, this improves performance with large blocks (#2601)
+- Update polkadot/api library to 14 version
 
 ## [5.3.0] - 2024-11-22
 ### Added
