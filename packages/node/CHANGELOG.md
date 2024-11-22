@@ -5,12 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.3.0] - 2024-11-22
 ### Added
 - Support for historical indexing by timestamp as well as block height (#2584)
 
 ### Added
-- Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations. 
-
+- Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
 
 ## [5.2.9] - 2024-10-30
 ### Changed
@@ -1329,7 +1330,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.2.9...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.3.0...HEAD
+[5.3.0]: https://github.com/subquery/subql/compare/node/5.2.9...node/5.3.0
 [5.2.9]: https://github.com/subquery/subql/compare/node/5.2.8...node/5.2.9
 [5.2.8]: https://github.com/subquery/subql/compare/node/5.2.7...node/5.2.8
 [5.2.7]: https://github.com/subquery/subql/compare/node/5.2.6...node/5.2.7
