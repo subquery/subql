@@ -6,10 +6,12 @@ import {getProjectRootAndManifest, IPFS_REGEX, RunnerNodeOptionsModel} from '@su
 import {plainToClass} from 'class-transformer';
 import {last} from 'lodash';
 import {IConfig, MinConfig} from '../configure/NodeConfig';
+import {HistoricalMode} from '../indexer';
 
 // These are overridable types from node argv
 export interface ArgvOverrideOptions {
   unsafe?: boolean;
+  historical?: HistoricalMode;
   disableHistorical?: boolean;
   unfinalizedBlocks?: boolean;
   skipTransactions?: boolean;
@@ -43,7 +45,7 @@ export function rebaseArgsWithManifest(argvs: ArgvOverrideOptions, rawManifest: 
       if (key === 'historical') {
         if (value !== undefined) {
           // THIS IS OPPOSITE
-          argvs.disableHistorical = !value;
+          argvs.historical = value === true ? 'height' : value;
         }
         return;
       }

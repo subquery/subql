@@ -7,7 +7,7 @@ import {getLogger} from '../../logger';
 import {monitorWrite} from '../../process';
 import {AutoQueue, isTaskFlushedError, memoryLock} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
-import {IBlock, IProjectService} from '../types';
+import {Header, IBlock, IProjectService} from '../types';
 import {isBlockUnavailableError} from './utils';
 
 export type FetchBlockResponse = {specVersion: number; parentHash: string} | undefined;
@@ -23,9 +23,9 @@ const logger = getLogger(`WorkerService`);
 
 export abstract class BaseWorkerService<
   B /* BlockContent */,
-  R /* FetchBlockResponse */,
+  R extends Header /* FetchBlockResponse */,
   DS extends BaseDataSource = BaseDataSource,
-  E = {} /* Extra params for fetching blocks. Substrate uses specVersion in here*/
+  E = {} /* Extra params for fetching blocks. Substrate uses specVersion in here*/,
 > {
   private fetchedBlocks: Record<string, IBlock<B>> = {};
   private _isIndexing = false;
@@ -44,7 +44,7 @@ export abstract class BaseWorkerService<
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize, nodeConfig.timeout, 'Worker Service');
   }
 
-  async fetchBlock(height: number, extra: E): Promise<R | undefined> {
+  async fetchBlock(height: number, extra: E): Promise<R> {
     try {
       return await this.queue.put(async () => {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
@@ -65,10 +65,9 @@ export abstract class BaseWorkerService<
         return this.toBlockResponse(block.block);
       });
     } catch (e: any) {
-      if (isTaskFlushedError(e)) {
-        return;
+      if (!isTaskFlushedError(e)) {
+        logger.error(e, `Failed to fetch block ${height}`);
       }
-      logger.error(e, `Failed to fetch block ${height}`);
       throw e;
     }
   }

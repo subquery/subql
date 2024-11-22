@@ -54,7 +54,7 @@ jest.mock('@subql/x-sequelize', () => {
       count: 5,
       findAll: jest.fn(() => Object.values(data).map(({__block_range, ...d}) => ({toJSON: () => d}))),
       findOne: jest.fn(({transaction, where: {id}}) => ({
-        toJSON: () => (transaction ? pendingData[id] ?? data[id] : data[id]),
+        toJSON: () => (transaction ? (pendingData[id] ?? data[id]) : data[id]),
       })),
       bulkCreate: jest.fn((records: {id: string}[]) => {
         records.map((r) => (pendingData[r.id] = r));
@@ -226,7 +226,7 @@ describe('cacheModel', () => {
       jest.clearAllMocks();
       let i = 0;
       sequelize = new Sequelize();
-      testModel = new CachedModel(sequelize.model('entity1'), true, {} as NodeConfig, () => i++);
+      testModel = new CachedModel(sequelize.model('entity1'), 'height', {} as NodeConfig, () => i++);
     });
 
     it('throws when trying to set undefined', async () => {

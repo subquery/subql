@@ -72,7 +72,12 @@ class TestFetchService extends BaseFetchService<BaseDataSource, IBlockDispatcher
   }
 
   async getFinalizedHeader(): Promise<Header> {
-    return Promise.resolve({blockHeight: this.finalizedHeight, blockHash: '0xxx', parentHash: '0xxx'});
+    return Promise.resolve({
+      blockHeight: this.finalizedHeight,
+      blockHash: '0xxx',
+      parentHash: '0xxx',
+      timestamp: new Date(),
+    });
   }
 }
 
@@ -344,7 +349,7 @@ describe('Fetch Service', () => {
     expect(finalizedSpy).toHaveBeenCalledTimes(2);
     expect(bestSpy).toHaveBeenCalledTimes(2);
 
-    await expect(fetchService.getFinalizedHeader()).resolves.toEqual({
+    await expect(fetchService.getFinalizedHeader()).resolves.toMatchObject({
       blockHeight: fetchService.finalizedHeight,
       blockHash: '0xxx',
       parentHash: '0xxx',

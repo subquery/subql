@@ -17,6 +17,7 @@ const {version: packageVersion} = require('../../../package.json');
 const META_JSON_FIELDS = ['deployments'];
 const METADATA_TYPES = {
   lastProcessedHeight: 'number',
+  lastProcessedBlockTimestamp: 'number',
   lastProcessedTimestamp: 'number',
   targetHeight: 'number',
   lastFinalizedVerifiedHeight: 'number',
@@ -34,6 +35,7 @@ const METADATA_TYPES = {
   lastCreatedPoiHeight: 'number',
   latestSyncedPoiHeight: 'number',
   dbSize: 'string',
+  historicalStateEnabled: 'string',
 };
 
 const METADATA_KEYS = Object.keys(METADATA_TYPES);
@@ -132,7 +134,7 @@ async function fetchMetadataFromTable(
 // Store default metadata name in table avoid query system table
 let defaultMetadataName: string;
 
-async function fetchFromTable(
+export async function fetchFromTable(
   pgClient: Client,
   schemaName: string,
   chainId: string | undefined,
@@ -239,8 +241,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         _metadatas(
           after: Cursor
           before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int # offset: Int
+          # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         ): # last: Int
-        # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas
       }
     `,

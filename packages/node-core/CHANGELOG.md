@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - lazy loading for monitor service (#2583)
-- Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations. 
+- Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
 
 ### Fixed
 - When using a GET query to retrieve an entity, it will include a “store” field.
+- Support for historical indexing by timestamp as well as block height (#2584)
+
+### Removed
+- Support for cockroach DB (#2584)
 
 ### Fixed
 - When configuring multiple endpoints, poor network conditions may lead to block crawling delays. (#2572)

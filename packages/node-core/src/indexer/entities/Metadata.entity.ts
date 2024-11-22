@@ -4,14 +4,16 @@
 import {getMetadataTableName} from '@subql/utils';
 import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {DatasourceParams} from '../dynamic-ds.service';
+import {HistoricalMode} from '../types';
 
 export interface MetadataKeys {
   chain: string;
   genesisHash: string;
   startHeight: number;
-  historicalStateEnabled: boolean;
+  historicalStateEnabled: HistoricalMode;
   indexerNodeVersion: string;
   lastProcessedHeight: number;
+  lastProcessedBlockTimestamp: number; // The unix timestamp of the block in MS
   lastProcessedTimestamp: string;
   processedBlockCount: number;
   blockOffset: number;

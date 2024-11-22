@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import yargs, {example} from 'yargs';
+import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import {initLogger} from './logger';
 
@@ -60,7 +60,7 @@ export function yargsBuilder<
       .command({
         command: 'reindex',
         describe:
-          'Reindex to specified block height. Historical must be enabled for the targeted project (--disable-historical=false). Once the command is executed, the application would exit upon completion.',
+          'Reindex to specified block height. Historical must be enabled for the targeted project (--historical). The application will exit upon completion.',
         builder: (yargs) =>
           yargs.options('targetHeight', {
             type: 'number',
@@ -103,9 +103,18 @@ export function yargsBuilder<
               },
               'disable-historical': {
                 demandOption: false,
-                describe: 'Disable storing historical state entities',
+                describe: 'Disable storing historical state entities, please use `historical` flag instead',
                 type: 'boolean',
+                deprecated: true,
+                conflicts: 'historical',
                 // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
+              },
+              historical: {
+                describe: 'Enable historical state entities, ',
+                type: 'string',
+                choices: ['false', 'height', 'timestamp'],
+                // NOTE: don't set a default for this. It will break apply args from manifest. The default should be set in NodeConfig
+                conflicts: 'disable-historical',
               },
               'log-level': {
                 demandOption: false,
@@ -114,6 +123,7 @@ export function yargsBuilder<
                 choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
               },
               'multi-chain': {
+                alias: 'multichain',
                 demandOption: false,
                 default: false,
                 describe: 'Enables indexing multiple subquery projects into the same database schema',

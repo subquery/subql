@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Removed imports of `@polkadot/util` without it being a dependency (#2592)
+### Removed
+- Support for cockroach DB (#2584)
 
 ## [5.1.4] - 2024-10-23
 ### Fixed

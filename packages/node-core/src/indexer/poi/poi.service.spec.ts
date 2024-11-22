@@ -64,7 +64,7 @@ describe('PoiService', () => {
     const sequelize = new Sequelize();
     storeCache = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2(), new SchedulerRegistry());
 
-    storeCache.init(true, true, {} as any, {} as any);
+    storeCache.init('height', {} as any, {} as any);
     (storeCache as any).cachedModels._metadata = {
       find: jest.fn().mockResolvedValue(10),
       bulkRemove: jest.fn(),

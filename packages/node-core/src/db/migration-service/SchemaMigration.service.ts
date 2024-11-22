@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SUPPORT_DB} from '@subql/common';
 import {getAllEntitiesRelations, GraphQLModelsType, GraphQLRelationsType} from '@subql/utils';
 import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
@@ -30,8 +29,7 @@ export class SchemaMigrationService {
     private sequelize: Sequelize,
     private storeService: StoreService,
     private dbSchema: string,
-    private config: NodeConfig,
-    private dbType: SUPPORT_DB = SUPPORT_DB.postgres
+    private config: NodeConfig
   ) {}
 
   static validateSchemaChanges(currentSchema: GraphQLSchema, nextSchema: GraphQLSchema): boolean {
@@ -116,13 +114,7 @@ export class SchemaMigrationService {
 
     await cacheProviderFlushData(this.storeService.modelProvider, true);
 
-    const migrationAction = await Migration.create(
-      this.sequelize,
-      this.storeService,
-      this.dbSchema,
-      this.config,
-      this.dbType
-    );
+    const migrationAction = await Migration.create(this.sequelize, this.storeService, this.dbSchema, this.config);
 
     if (this.config.debug) {
       logger.debug(`${schemaChangesLoggerMessage(schemaDifference)}`);

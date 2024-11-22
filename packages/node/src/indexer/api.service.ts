@@ -122,7 +122,7 @@ export class ApiService
 
   private nodeConfig: SubstrateNodeConfig;
 
-  constructor(
+  private constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     eventEmitter: EventEmitter2,
@@ -161,16 +161,28 @@ export class ApiService
     await this.connectionPoolService.onApplicationShutdown();
   }
 
-  async init(): Promise<ApiService> {
+  static async init(
+    project: SubqueryProject,
+    connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
+    eventEmitter: EventEmitter2,
+    nodeConfig: NodeConfig,
+  ): Promise<ApiService> {
+    const apiService = new ApiService(
+      project,
+      connectionPoolService,
+      eventEmitter,
+      nodeConfig,
+    );
+
     overrideConsoleWarn();
     let chainTypes: RegisteredTypes | undefined;
     let network: SubstrateNetworkConfig;
     try {
-      chainTypes = await updateChainTypesHasher(this.project.chainTypes);
-      network = this.project.network;
+      chainTypes = await updateChainTypesHasher(project.chainTypes);
+      network = project.network;
 
-      if (this.nodeConfig.primaryNetworkEndpoint) {
-        const [endpoint, config] = this.nodeConfig.primaryNetworkEndpoint;
+      if (apiService.nodeConfig.primaryNetworkEndpoint) {
+        const [endpoint, config] = apiService.nodeConfig.primaryNetworkEndpoint;
         (network.endpoint as Record<string, IEndpointConfig>)[endpoint] =
           config;
       }
@@ -182,13 +194,13 @@ export class ApiService
       logger.info('Using provided chain types');
     }
 
-    await this.createConnections(
+    await apiService.createConnections(
       network,
       //createConnection
       (endpoint, config) =>
         ApiPromiseConnection.create(
           endpoint,
-          this.fetchBlocksBatches,
+          apiService.fetchBlocksBatches,
           {
             chainTypes,
           },
@@ -198,14 +210,14 @@ export class ApiService
       (connection: ApiPromiseConnection, endpoint: string, index: number) => {
         const api = connection.unsafeApi;
         api.on('connected', () => {
-          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          eventEmitter.emit(IndexerEvent.ApiConnected, {
             value: 1,
             apiIndex: index,
             endpoint: endpoint,
           });
         });
         api.on('disconnected', () => {
-          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+          eventEmitter.emit(IndexerEvent.ApiConnected, {
             value: 0,
             apiIndex: index,
             endpoint: endpoint,
@@ -213,7 +225,7 @@ export class ApiService
         });
       },
     );
-    return this;
+    return apiService;
   }
 
   async updateChainTypes(): Promise<void> {

@@ -26,6 +26,7 @@ import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
 import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { IIndexerWorker } from '../worker/worker';
+import { FetchBlockResponse } from '../worker/worker.service';
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
@@ -121,7 +122,7 @@ export class WorkerBlockDispatcherService
   protected async fetchBlock(
     worker: IndexerWorker,
     height: number,
-  ): Promise<void> {
+  ): Promise<FetchBlockResponse> {
     // get SpecVersion from main runtime service
     const { blockSpecVersion, syncedDictionary } =
       await this.runtimeService.getSpecVersion(height);
@@ -131,7 +132,7 @@ export class WorkerBlockDispatcherService
     }
 
     // const start = new Date();
-    await worker.fetchBlock(height, blockSpecVersion);
+    return worker.fetchBlock(height, blockSpecVersion);
     // const end = new Date();
 
     // const waitTime = end.getTime() - start.getTime();

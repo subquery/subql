@@ -1,17 +1,19 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {EventEmitter2} from '@nestjs/event-emitter';
-import {IProjectUpgradeService, NodeConfig} from '../../configure';
-import {PoiSyncService} from '../poi';
-import {StoreService} from '../store.service';
-import {StoreCacheService} from '../storeModelProvider';
-import {IProjectService, ISubqueryProject} from '../types';
-import {WorkerBlockDispatcher} from './worker-block-dispatcher';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { IProjectUpgradeService, NodeConfig } from '../../configure';
+import { PoiSyncService } from '../poi';
+import { StoreService } from '../store.service';
+import { StoreCacheService } from '../storeModelProvider';
+import { Header, IProjectService, ISubqueryProject } from '../types';
+import { WorkerBlockDispatcher } from './worker-block-dispatcher';
 
 class TestWorkerBlockDispatcher extends WorkerBlockDispatcher<any, any, any> {
-  async fetchBlock(worker: any, height: number): Promise<void> {
-    return Promise.resolve();
+  async fetchBlock(worker: any, height: number): Promise<Header> {
+    return Promise.resolve({
+      blockHeight: height,
+    } as Header);
   }
 
   get minimumHeapLimit(): number {
@@ -23,14 +25,14 @@ describe('WorkerBlockDispatcher', () => {
 
   // Mock workers
   const mockWorkers = [
-    {getMemoryLeft: jest.fn().mockResolvedValue(100), waitForWorkerBatchSize: jest.fn().mockResolvedValue(undefined)},
-    {getMemoryLeft: jest.fn().mockResolvedValue(200), waitForWorkerBatchSize: jest.fn().mockResolvedValue(undefined)},
-    {getMemoryLeft: jest.fn().mockResolvedValue(300), waitForWorkerBatchSize: jest.fn().mockResolvedValue(undefined)},
+    { getMemoryLeft: jest.fn().mockResolvedValue(100), waitForWorkerBatchSize: jest.fn().mockResolvedValue(undefined) },
+    { getMemoryLeft: jest.fn().mockResolvedValue(200), waitForWorkerBatchSize: jest.fn().mockResolvedValue(undefined) },
+    { getMemoryLeft: jest.fn().mockResolvedValue(300), waitForWorkerBatchSize: jest.fn().mockResolvedValue(undefined) },
   ];
 
   beforeEach(() => {
     dispatcher = new TestWorkerBlockDispatcher(
-      {workers: 3} as unknown as NodeConfig,
+      { workers: 3 } as unknown as NodeConfig,
       null as unknown as EventEmitter2,
       null as unknown as IProjectService<any>,
       null as unknown as IProjectUpgradeService,

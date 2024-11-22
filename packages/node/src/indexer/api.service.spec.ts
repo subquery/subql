@@ -98,7 +98,7 @@ describe('ApiService', () => {
 
   it('read custom types from project manifest', async () => {
     const createSpy = jest.spyOn(ApiPromise, 'create');
-    apiService = new ApiService(
+    apiService = await ApiService.init(
       project,
       new ConnectionPoolService<ApiPromiseConnection>(
         nodeConfig,
@@ -107,7 +107,6 @@ describe('ApiService', () => {
       new EventEmitter2(),
       nodeConfig,
     );
-    await apiService.init();
     const { version } = require('../../package.json');
     expect(WsProvider).toHaveBeenCalledWith(
       Object.keys(testNetwork.endpoint)[0],
@@ -133,16 +132,16 @@ describe('ApiService', () => {
       subquery: 'example',
     });
 
-    apiService = new ApiService(
-      project,
-      new ConnectionPoolService<ApiPromiseConnection>(
+    await expect(
+      ApiService.init(
+        project,
+        new ConnectionPoolService<ApiPromiseConnection>(
+          nodeConfig,
+          new ConnectionPoolStateManager(),
+        ),
+        new EventEmitter2(),
         nodeConfig,
-        new ConnectionPoolStateManager(),
       ),
-      new EventEmitter2(),
-      nodeConfig,
-    );
-
-    await expect(apiService.init()).rejects.toThrow();
+    ).rejects.toThrow();
   });
 });

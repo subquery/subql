@@ -2,20 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {Inject} from '@nestjs/common';
-import {Store as IStore, Entity, FieldsExpression, GetOptions} from '@subql/types-core';
-import {Transaction} from '@subql/x-sequelize';
-import {NodeConfig} from '../../configure';
-import {monitorWrite} from '../../process';
-import {handledStringify} from '../../utils';
-import {IStoreModelProvider} from '../storeModelProvider';
-import {StoreOperations} from '../StoreOperations';
-import {OperationType} from '../types';
-import {EntityClass} from './entity';
+import { Store as IStore, Entity, FieldsExpression, GetOptions } from '@subql/types-core';
+import { Transaction } from '@subql/x-sequelize';
+import { NodeConfig } from '../../configure';
+import { monitorWrite } from '../../process';
+import { handledStringify } from '../../utils';
+import { IStoreModelProvider } from '../storeModelProvider';
+import { StoreOperations } from '../StoreOperations';
+import { OperationType } from '../types';
+import { EntityClass } from './entity';
 
 /* A context is provided to allow it to be updated by the owner of the class instance */
 type Context = {
-  blockHeight: number;
+  getHistoricalUnit: () => number;
   transaction?: Transaction;
   operationStack?: StoreOperations;
   isIndexed: (entity: string, field: string) => boolean;
@@ -102,7 +101,7 @@ export class Store implements IStore {
       assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
       const [raw] = await this.#modelProvider
         .getModel<T>(entity)
-        .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], {limit: 1});
+        .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], { limit: 1 });
       monitorWrite(() => `-- [Store][getOneByField] Entity ${entity}, data: ${handledStringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
@@ -112,10 +111,9 @@ export class Store implements IStore {
 
   async set(entity: string, _id: string, data: Entity): Promise<void> {
     try {
-      await this.#modelProvider.getModel(entity).set(_id, data, this.#context.blockHeight, this.#context.transaction);
-      monitorWrite(
-        () => `-- [Store][set] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${handledStringify(data)}`
-      );
+      const historicalUnit = this.#context.getHistoricalUnit();
+      await this.#modelProvider.getModel(entity).set(_id, data, historicalUnit, this.#context.transaction);
+      monitorWrite(() => `-- [Store][set] Entity ${entity}, height: ${historicalUnit}, data: ${handledStringify(data)}`);
       this.#context.operationStack?.put(OperationType.Set, entity, data);
     } catch (e) {
       throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
@@ -124,13 +122,13 @@ export class Store implements IStore {
 
   async bulkCreate(entity: string, data: Entity[]): Promise<void> {
     try {
-      await this.#modelProvider.getModel(entity).bulkCreate(data, this.#context.blockHeight, this.#context.transaction);
+      const historicalUnit = this.#context.getHistoricalUnit();
+      await this.#modelProvider.getModel(entity).bulkCreate(data, historicalUnit, this.#context.transaction);
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
       monitorWrite(
-        () =>
-          `-- [Store][bulkCreate] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${handledStringify(data)}`
+        () => `-- [Store][bulkCreate] Entity ${entity}, height: ${historicalUnit}, data: ${handledStringify(data)}`
       );
     } catch (e) {
       throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
@@ -139,15 +137,13 @@ export class Store implements IStore {
 
   async bulkUpdate(entity: string, data: Entity[], fields?: string[]): Promise<void> {
     try {
-      await this.#modelProvider
-        .getModel(entity)
-        .bulkUpdate(data, this.#context.blockHeight, fields, this.#context.transaction);
+      const historicalUnit = this.#context.getHistoricalUnit();
+      await this.#modelProvider.getModel(entity).bulkUpdate(data, historicalUnit, fields, this.#context.transaction);
       for (const item of data) {
         this.#context.operationStack?.put(OperationType.Set, entity, item);
       }
       monitorWrite(
-        () =>
-          `-- [Store][bulkUpdate] Entity ${entity}, height: ${this.#context.blockHeight}, data: ${handledStringify(data)}`
+        () => `-- [Store][bulkUpdate] Entity ${entity}, height: ${historicalUnit}, data: ${handledStringify(data)}`
       );
     } catch (e) {
       throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
@@ -155,25 +151,18 @@ export class Store implements IStore {
   }
 
   async remove(entity: string, id: string): Promise<void> {
-    try {
-      await this.#modelProvider.getModel(entity).bulkRemove([id], this.#context.blockHeight, this.#context.transaction);
-      this.#context.operationStack?.put(OperationType.Remove, entity, id);
-      monitorWrite(() => `-- [Store][remove] Entity ${entity}, height: ${this.#context.blockHeight}, id: ${id}`);
-    } catch (e) {
-      throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
-    }
+    return this.bulkRemove(entity, [id]);
   }
 
   async bulkRemove(entity: string, ids: string[]): Promise<void> {
     try {
-      await this.#modelProvider.getModel(entity).bulkRemove(ids, this.#context.blockHeight, this.#context.transaction);
+      const historicalUnit = this.#context.getHistoricalUnit();
+      await this.#modelProvider.getModel(entity).bulkRemove(ids, historicalUnit, this.#context.transaction);
 
       for (const id of ids) {
         this.#context.operationStack?.put(OperationType.Remove, entity, id);
       }
-      monitorWrite(
-        () => `-- [Store][remove] Entity ${entity}, height: ${this.#context.blockHeight}, ids: ${handledStringify(ids)}`
-      );
+      monitorWrite(() => `-- [Store][remove] Entity ${entity}, height: ${historicalUnit}, ids: ${handledStringify(ids)}`);
     } catch (e) {
       throw new Error(`Failed to bulkRemove Entity ${entity}: ${e}`);
     }

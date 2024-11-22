@@ -13,13 +13,15 @@ export interface IQueue {
 }
 
 export class TaskFlushedError extends Error {
+  readonly name = 'TaskFlushedError';
+
   constructor(queueName = 'Auto') {
     super(`This task was flushed from the ${queueName} queue before completing`);
   }
 }
 
 export function isTaskFlushedError(e: any): e is TaskFlushedError {
-  return e instanceof TaskFlushedError;
+  return (e as TaskFlushedError)?.name === 'TaskFlushedError';
 }
 
 export class Queue<T> implements IQueue {
@@ -121,7 +123,12 @@ export class AutoQueue<T> implements IQueue {
    * @param {number} [taskTimeoutSec=900] - A timeout for tasks to complete in. Units are seconds. Align with nodeConfig process timeout.
    * @param {string} [name] - A name for the queue to help with debugging
    * */
-  constructor(capacity?: number, public concurrency = 1, private taskTimeoutSec = 900, private name = 'Auto') {
+  constructor(
+    capacity?: number,
+    public concurrency = 1,
+    private taskTimeoutSec = 900,
+    private name = 'Auto'
+  ) {
     this.queue = new Queue<Action<T>>(capacity);
   }
 

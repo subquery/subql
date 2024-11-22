@@ -47,6 +47,13 @@ export function substrateHeaderToHeader(header: SubstrateHeader): Header {
   };
 }
 
+export function substrateBlockToHeader(block: SignedBlock): Header {
+  return {
+    ...substrateHeaderToHeader(block.block.header),
+    timestamp: getTimestamp(block),
+  };
+}
+
 export function wrapBlock(
   signedBlock: SignedBlock,
   events: EventRecord[],
@@ -76,6 +83,7 @@ export function getTimestamp({
   }
   // For network that doesn't use timestamp-set, return undefined
   // See test `return undefined if no timestamp set extrinsic`
+  // E.g Shiden
   return undefined;
 }
 
@@ -395,7 +403,7 @@ export async function fetchBlocksBatches(
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
 
     return {
-      getHeader: () => substrateHeaderToHeader(wrappedBlock.block.header),
+      getHeader: () => substrateBlockToHeader(wrappedBlock),
       block: {
         block: wrappedBlock,
         extrinsics: wrappedExtrinsics,

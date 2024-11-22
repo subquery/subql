@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for indexes on enums (#2586)
+### Changed
+- Update metadata types (#2584)
 
 ## [2.14.0] - 2024-08-05
 ### Added

@@ -12,6 +12,14 @@ import {GraphQLSchema} from 'graphql';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {ProcessBlockResponse} from './blockDispatcher';
 
+/**
+ * Indicates the mode of historical indexing
+ * false: No historical indexing
+ * height: Indexing is based on block height
+ * timestamp: Indexing is based on the unix timestamp in MS of the block
+ */
+export type HistoricalMode = false | 'height' | 'timestamp';
+
 export interface ISubqueryProject<
   N extends IProjectNetworkConfig = IProjectNetworkConfig,
   DS extends BaseDataSource = BaseDataSource,
@@ -44,7 +52,7 @@ export interface IProjectService<DS> {
   blockOffset: number | undefined;
   startHeight: number;
   bypassBlocks: BypassBlocks;
-  reindex(lastCorrectHeight: number): Promise<void>;
+  reindex(lastCorrectHeader: Header): Promise<void>;
   /**
    * This is used everywhere but within indexing blocks, see comment on getDataSources for more info
    * */
@@ -68,6 +76,7 @@ export type Header = {
   blockHeight: number;
   blockHash: string;
   parentHash: string | undefined;
+  timestamp?: Date;
 };
 
 export type BypassBlocks = (number | `${number}-${number}`)[];

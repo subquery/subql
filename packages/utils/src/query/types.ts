@@ -8,6 +8,7 @@ export type TableEstimate = {
 
 export type MetaData = {
   lastProcessedHeight: number;
+  lastProcessedBlockTimestamp: number;
   lastProcessedTimestamp: number;
   targetHeight: number;
   chain: string;
@@ -19,4 +20,5 @@ export type MetaData = {
   startHeight?: number;
   rowCountEstimate: TableEstimate[];
   deployments: Record<number, string>;
+  historicalStateEnabled: boolean | 'height' | 'timestamp';
 };

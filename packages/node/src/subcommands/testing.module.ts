@@ -15,6 +15,7 @@ import {
   StoreService,
   TestRunner,
   SandboxService,
+  NodeConfig,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
@@ -42,7 +43,16 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
       provide: 'IProjectService',
       useClass: ProjectService,
     },
-    ApiService,
+    {
+      provide: ApiService,
+      useFactory: ApiService.init,
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
+    },
     SchedulerRegistry,
     TestRunner,
     {

@@ -7,19 +7,19 @@ import {Mutex} from 'async-mutex';
 export abstract class Cacheable {
   protected mutex = new Mutex();
 
-  abstract clear(blockHeight?: number): void;
-  protected abstract runFlush(tx: Transaction, blockHeight: number): Promise<void>;
+  abstract clear(historicalUnit?: number): void;
+  protected abstract runFlush(tx: Transaction, historicalUnit: number): Promise<void>;
 
-  async flush(tx: Transaction, blockHeight: number): Promise<void> {
+  async flush(tx: Transaction, historicalUnit: number): Promise<void> {
     const release = await this.mutex.acquire();
 
     try {
       tx.afterCommit(() => {
-        this.clear(blockHeight);
+        this.clear(historicalUnit);
         release();
       });
 
-      const pendingFlush = this.runFlush(tx, blockHeight);
+      const pendingFlush = this.runFlush(tx, historicalUnit);
       await pendingFlush;
     } catch (e) {
       release();

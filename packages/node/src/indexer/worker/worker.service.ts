@@ -9,15 +9,17 @@ import {
   BaseWorkerService,
   IProjectUpgradeService,
   IBlock,
+  Header,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
+import { substrateBlockToHeader } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent, isFullBlock, LightBlockContent } from '../types';
 
-export type FetchBlockResponse = { specVersion?: number; parentHash: string };
+export type FetchBlockResponse = Header & { specVersion?: number };
 
 @Injectable()
 export class WorkerService extends BaseWorkerService<
@@ -56,10 +58,13 @@ export class WorkerService extends BaseWorkerService<
     return block;
   }
 
-  protected toBlockResponse(block: BlockContent): FetchBlockResponse {
+  // TODO test this with LightBlockContent
+  protected toBlockResponse(
+    block: BlockContent /* | LightBlockContent*/,
+  ): FetchBlockResponse {
     return {
+      ...substrateBlockToHeader(block.block),
       specVersion: block.block.specVersion,
-      parentHash: block.block.block.header.parentHash.toHex(),
     };
   }
 

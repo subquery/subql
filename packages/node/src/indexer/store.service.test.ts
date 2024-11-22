@@ -12,7 +12,6 @@ import {
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import { rimraf } from 'rimraf';
 import { prepareApp } from '../utils/test.utils';
-import { ApiService } from './api.service';
 import { ProjectService } from './project.service';
 
 const option: DbOption = {
@@ -56,9 +55,6 @@ describe('Store service integration test', () => {
     app = await prepareApp(schemaName, cid, false);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -148,6 +144,7 @@ AND table_name = 'positions';
       is_nullable: 'NO',
     });
   });
+
   it('Correct db sync on non-historical', async () => {
     const cid = 'QmNUNBiVC1BDDNbXCbTxzPexodbSmTqZUaohbeBae6b6r8';
     schemaName = 'sync-schema-2';
@@ -155,9 +152,6 @@ AND table_name = 'positions';
     app = await prepareApp(schemaName, cid, true);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -216,7 +210,6 @@ ORDER BY
       foreign_column: 'id',
     });
   });
-  //
 
   it('Cyclic relations on non-historical', async () => {
     const cid = 'QmTLwdpfE7xsmAtPj3Bep9KKgAPbt2tvXisUHcHys6anSG';
@@ -225,9 +218,6 @@ ORDER BY
     app = await prepareApp(schemaName, cid, true);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -262,6 +252,7 @@ WHERE
       foreign_column_name: 'id',
     });
   });
+
   it('Init with enums', async () => {
     const cid = 'QmVDDxVgmkKzXKcK5YBkEu3Wvzao7uQxear2SVLTUg2bQ1';
     schemaName = 'sync-schema-4';
@@ -269,9 +260,6 @@ WHERE
     app = await prepareApp(schemaName, cid, true);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;
@@ -295,6 +283,7 @@ ORDER BY t.typname, e.enumsortorder;`,
       '65c7fd4e5d',
     ]);
   });
+
   it('Able to drop notification triggers and functions', async () => {
     // if subscription is no longer enabled should be able to drop all prior triggers and functions related to subscription
     const cid = 'Qma3HraGKnH5Gte2WVs4sAAY6z5nBSqVuVq7Ef3eVQQPvz';
@@ -328,9 +317,6 @@ ORDER BY t.typname, e.enumsortorder;`,
     app = await prepareApp(schemaName, cid, false, false);
 
     projectService = app.get('IProjectService');
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
     await projectService.init(1);
 
     tempDir = (projectService as any).project.root;

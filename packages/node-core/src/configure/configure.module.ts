@@ -38,8 +38,8 @@ export function validDbSchemaName(name: string): boolean {
   }
 }
 
-// TODO once yargs is in node core we can update
-type Args = Record<string, any>; // typeof yargsOptions.argv['argv']
+// Cant seem to use the inferred types, strings arent converted to unions
+type Args = Record<string, any>; //ReturnType<typeof yargsBuilder>['argv']
 
 function processEndpointConfig(raw?: string | string[]): IEndpointConfig[] {
   if (!raw) return [];
@@ -67,10 +67,13 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
         value = [value];
       }
       if (Array.isArray(value)) {
-        value = value.reduce((acc, endpoint, index) => {
-          acc[endpoint] = endpointConfig[index] ?? {};
-          return acc;
-        }, {} as Record<string, IEndpointConfig>);
+        value = value.reduce(
+          (acc, endpoint, index) => {
+            acc[endpoint] = endpointConfig[index] ?? {};
+            return acc;
+          },
+          {} as Record<string, IEndpointConfig>
+        );
       }
     }
     if (key === 'primary-network-endpoint') {
@@ -78,6 +81,13 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
       value = [value, endpointConfig[0] ?? {}];
     }
     if (['network-endpoint-config', 'primary-network-endpoint-config'].includes(key)) return acc;
+
+    if (key === 'disable-historical' && value) {
+      acc.historical = false;
+    }
+    if (key === 'historical' && value === 'false') {
+      value = false;
+    }
 
     acc[nameMapping[key] ?? camelCase(key)] = value;
     return acc;

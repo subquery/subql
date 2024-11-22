@@ -170,7 +170,7 @@ export async function getFunctions(sequelize: Sequelize, schema: string, functio
   );
 }
 
-export function createSendNotificationTriggerFunction(schema: string) {
+export function createSendNotificationTriggerFunction(schema: string): string {
   return `
 CREATE OR REPLACE FUNCTION "${schema}".send_notification()
     RETURNS trigger AS $$

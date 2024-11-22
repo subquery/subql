@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'node:assert';
-import {SUPPORT_DB} from '@subql/common';
 import {
   GraphQLEntityField,
   GraphQLEntityIndex,
@@ -10,7 +9,6 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
   hashName,
-  IndexType,
 } from '@subql/utils';
 import {
   IndexesOptions,
@@ -23,7 +21,7 @@ import {
 } from '@subql/x-sequelize';
 import {isEqual, uniq} from 'lodash';
 import {NodeConfig} from '../../configure/NodeConfig';
-import {StoreService} from '../../indexer';
+import {HistoricalMode, StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {EnumType, getColumnOption, modelsTypeToModelAttributes} from '../../utils';
 import {formatAttributes, formatColumnName, modelToTableName} from '../sequelizeUtil';
@@ -43,21 +41,19 @@ export class Migration {
    */
   private mainQueries: syncHelper.QueryString[] = [];
   private extraQueries: syncHelper.QueryString[] = [];
-  private readonly historical: boolean;
+  private readonly historical: HistoricalMode;
   private readonly useSubscription: boolean;
   private foreignKeyMap: Map<string, Map<string, syncHelper.SmartTags>> = new Map<
     string,
     Map<string, syncHelper.SmartTags>
   >();
   private enumTypeMap: Map<string, EnumType>;
-  private removedIndexes: RemovedIndexes = {};
 
   private constructor(
     private sequelize: Sequelize,
     private storeService: StoreService,
     private readonly schemaName: string,
     private readonly config: NodeConfig,
-    private readonly dbType: SUPPORT_DB,
     private readonly existingForeignKeys: string[], // this the source of truth from the db
     private initEnumTypeMap: Map<string, EnumType>,
     private existingIndexes: {indexname: string}[]
@@ -67,15 +63,12 @@ export class Migration {
     this.historical = storeService.historical;
     this.useSubscription = config.subscription;
 
-    if (this.useSubscription && dbType === SUPPORT_DB.cockRoach) {
-      this.useSubscription = false;
-      logger.warn(`Subscription is not support with ${this.dbType}`);
-    }
-
     this.enumTypeMap = this.initEnumTypeMap;
 
     if (this.useSubscription) {
       this.extraQueries.push(syncHelper.createSendNotificationTriggerFunction(schemaName));
+    } else {
+      this.extraQueries.push(syncHelper.dropNotifyFunction(this.schemaName));
     }
   }
 
@@ -83,8 +76,7 @@ export class Migration {
     sequelize: Sequelize,
     storeService: StoreService,
     schemaName: string,
-    config: NodeConfig,
-    dbType: SUPPORT_DB
+    config: NodeConfig
   ): Promise<Migration> {
     const existingForeignKeys = await syncHelper.getExistingForeignKeys(schemaName, sequelize);
     const enumTypeMap = await syncHelper.getExistingEnums(schemaName, sequelize);
@@ -93,16 +85,7 @@ export class Migration {
     })) as {
       indexname: string;
     }[];
-    return new Migration(
-      sequelize,
-      storeService,
-      schemaName,
-      config,
-      dbType,
-      existingForeignKeys,
-      enumTypeMap,
-      indexesResult
-    );
+    return new Migration(sequelize, storeService, schemaName, config, existingForeignKeys, enumTypeMap, indexesResult);
   }
 
   async run(transaction?: Transaction): Promise<{modifiedModels: ModelStatic<any>[]; removedModels: string[]}> {
@@ -136,8 +119,6 @@ export class Migration {
 
       throw e;
     }
-
-    this.afterHandleCockroachIndex();
 
     return {
       modifiedModels: this.modifiedModels,
@@ -189,8 +170,6 @@ export class Migration {
     }
 
     syncHelper.updateIndexesName(model.name, indexes, existedIndexes as string[]);
-    // Update index query for cockroach db
-    this.beforeHandleCockroachIndex(model.name, indexes, existedIndexes as string[]);
 
     const sequelizeModel = this.storeService.defineModel(model, attributes, indexes, this.schemaName);
 
@@ -220,15 +199,8 @@ export class Migration {
         syncHelper.validateNotifyTriggers(triggerName, notifyTriggers as syncHelper.NotifyTriggerPayload[]);
       }
     } else {
-      //TODO: DROP TRIGGER IF EXIST is not valid syntax for cockroach, better check trigger exist at first.
-      if (this.dbType !== SUPPORT_DB.cockRoach) {
-        // trigger drop should be prioritized
-        this.extraQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
-      }
-    }
-
-    if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
-      this.extraQueries.push(syncHelper.dropNotifyFunction(this.schemaName));
+      // should prioritise dropping the triggers before dropNotifyFunction
+      this.extraQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, sequelizeModel.tableName));
     }
 
     this.addModelToSequelizeCache(sequelizeModel);
@@ -237,7 +209,7 @@ export class Migration {
   dropTable(model: GraphQLModelsType): void {
     const tableName = modelToTableName(model.name);
 
-    // should prioritise dropping the triggers
+    // should prioritise dropping the triggers before dropNotifyFunction
     this.mainQueries.unshift(syncHelper.dropNotifyTrigger(this.schemaName, tableName));
     this.mainQueries.push(`DROP TABLE IF EXISTS "${this.schemaName}"."${tableName}";`);
     this.removedModels.push(model.name);
@@ -311,9 +283,7 @@ export class Migration {
           const rel = model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
           const fkConstraint = syncHelper.getFkConstraint(rel.source.tableName, rel.foreignKey);
           if (this.existingForeignKeys.includes(fkConstraint)) break;
-          if (this.dbType !== SUPPORT_DB.cockRoach) {
-            this.extraQueries.push(syncHelper.constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
-          }
+          this.extraQueries.push(syncHelper.constraintDeferrableQuery(model.getTableName().toString(), fkConstraint));
           break;
         }
         case 'hasOne': {
@@ -415,17 +385,9 @@ export class Migration {
       queries.unshift(syncHelper.createEnumQuery(type, escapedEnumValues));
     }
 
-    if (this.dbType === SUPPORT_DB.cockRoach) {
-      logger.warn(
-        `Comment on enum ${e.description} is not supported with ${this.dbType}, enum name may display incorrectly in query service`
-      );
-    } else {
-      const comment = this.sequelize.escape(
-        `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
-      );
+    const comment = this.sequelize.escape(`@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`);
 
-      queries.push(syncHelper.commentOnEnumQuery(type, comment));
-    }
+    queries.push(syncHelper.commentOnEnumQuery(type, comment));
     this.mainQueries.unshift(...queries);
     this.enumTypeMap.set(enumTypeName, {
       enumValues: e.values,
@@ -472,45 +434,5 @@ export class Migration {
     ];
 
     this.mainQueries.push(...queries);
-  }
-
-  // Sequelize model will generate follow query to create hash indexes
-  // Example SQL:  CREATE INDEX "accounts_person_id" ON "polkadot-starter"."accounts" USING hash ("person_id")
-  // This will be rejected from cockroach db due to syntax error
-  // To avoid this we need to create index manually and add to extraQueries in order to create index in db
-  private beforeHandleCockroachIndex(modelName: string, indexes: IndexesOptions[], existedIndexes: string[]): void {
-    if (this.dbType !== SUPPORT_DB.cockRoach) {
-      return;
-    }
-    indexes.forEach((index, i) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      if (index.using === IndexType.HASH && !existedIndexes.includes(index.name!)) {
-        // TODO double check with idempotent on cockroach
-        const cockroachDbIndexQuery = `CREATE INDEX "${index.name}" ON "${this.schemaName}"."${modelToTableName(
-          modelName
-        )}"(${index.fields}) USING HASH;`;
-        this.extraQueries.push(cockroachDbIndexQuery);
-        if (this.removedIndexes[modelName] === undefined) {
-          this.removedIndexes[modelName] = [];
-        }
-        this.removedIndexes[modelName].push(indexes[i]);
-        delete indexes[i];
-      }
-    });
-  }
-
-  // Due to we have removed hash index, it will be missing from the model, we need temp store it under `this.removedIndexes`
-  // And force add back to the model use `afterHandleCockroachIndex()` after db is synced
-  private afterHandleCockroachIndex(): void {
-    if (this.dbType !== SUPPORT_DB.cockRoach) {
-      return;
-    }
-    const removedIndexes = Object.entries(this.removedIndexes);
-    if (removedIndexes.length > 0) {
-      for (const [model, indexes] of removedIndexes) {
-        const sqModel = this.sequelize.model(model);
-        (sqModel as any)._indexes = (sqModel as any)._indexes.concat(indexes);
-      }
-    }
   }
 }

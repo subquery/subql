@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {Transaction} from '@subql/x-sequelize';
-import {isEqual, last} from 'lodash';
-import {NodeConfig} from '../configure';
-import {Header, IBlock} from '../indexer/types';
-import {getLogger} from '../logger';
-import {exitWithError} from '../process';
-import {mainThreadOnly} from '../utils';
-import {ProofOfIndex} from './entities';
-import {PoiBlock} from './poi';
-import {IStoreModelProvider} from './storeModelProvider';
+import { Transaction } from '@subql/x-sequelize';
+import { isEqual, last } from 'lodash';
+import { NodeConfig } from '../configure';
+import { Header, IBlock } from '../indexer/types';
+import { getLogger } from '../logger';
+import { exitWithError } from '../process';
+import { mainThreadOnly } from '../utils';
+import { ProofOfIndex } from './entities';
+import { PoiBlock } from './poi';
+import { IStoreModelProvider } from './storeModelProvider';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -25,12 +25,15 @@ const UNFINALIZED_THRESHOLD = 200;
 type UnfinalizedBlocks = Header[];
 
 export interface IUnfinalizedBlocksService<B> extends IUnfinalizedBlocksServiceUtil {
-  init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined>;
-  processUnfinalizedBlocks(block: IBlock<B> | undefined): Promise<number | undefined>;
-  processUnfinalizedBlockHeader(header: Header | undefined): Promise<number | undefined>;
-  resetUnfinalizedBlocks(tx?: Transaction): Promise<void>;
-  resetLastFinalizedVerifiedHeight(tx?: Transaction): Promise<void>;
+  init(reindex: (targetHeader: Header) => Promise<void>): Promise<Header | undefined>;
+  processUnfinalizedBlocks(block: IBlock<B> | undefined): Promise<Header | undefined>;
+  processUnfinalizedBlockHeader(header: Header | undefined): Promise<Header | undefined>;
+  resetUnfinalizedBlocks(tx?: Transaction): void;
+  resetLastFinalizedVerifiedHeight(tx?: Transaction): void;
   getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks>;
+
+  // Used by reindex service
+  getHeaderForHeight(height: number): Promise<Header>;
 }
 
 export interface IUnfinalizedBlocksServiceUtil {
@@ -45,7 +48,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
   // protected abstract blockToHeader(block: B): Header;
   protected abstract getFinalizedHead(): Promise<Header>;
   protected abstract getHeaderForHash(hash: string): Promise<Header>;
-  protected abstract getHeaderForHeight(height: number): Promise<Header>;
+  abstract getHeaderForHeight(height: number): Promise<Header>;
 
   @mainThreadOnly()
   protected blockToHeader(block: IBlock<B>): Header {
@@ -75,7 +78,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     protected readonly storeModelProvider: IStoreModelProvider
   ) {}
 
-  async init(reindex: (targetHeight: number) => Promise<void>): Promise<number | undefined> {
+  async init(reindex: (tagetHeader: Header) => Promise<void>): Promise<Header | undefined> {
     logger.info(`Unfinalized blocks is ${this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'}`);
 
     this.unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
@@ -105,7 +108,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return this.finalizedHeader.blockHeight;
   }
 
-  async processUnfinalizedBlockHeader(header?: Header): Promise<number | undefined> {
+  async processUnfinalizedBlockHeader(header?: Header): Promise<Header | undefined> {
     if (header) {
       await this.registerUnfinalizedBlock(header);
     }
@@ -123,7 +126,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return;
   }
 
-  async processUnfinalizedBlocks(block?: IBlock<B>): Promise<number | undefined> {
+  async processUnfinalizedBlocks(block?: IBlock<B>): Promise<Header | undefined> {
     return this.processUnfinalizedBlockHeader(block ? this.blockToHeader(block) : undefined);
   }
 
@@ -161,7 +164,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
 
   // remove any records less and equal than input finalized blockHeight
   private removeFinalized(blockHeight: number): void {
-    this.unfinalizedBlocks = this.unfinalizedBlocks.filter(({blockHeight: height}) => height > blockHeight);
+    this.unfinalizedBlocks = this.unfinalizedBlocks.filter(({ blockHeight: height }) => height > blockHeight);
   }
 
   // find closest record from block heights
@@ -169,7 +172,7 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     // Have the block in the best block, can be verified
     return [...this.unfinalizedBlocks] // Copy so we can reverse
       .reverse() // Reverse the list to find the largest block
-      .find(({blockHeight: height}) => height <= blockHeight);
+      .find(({ blockHeight: height }) => height <= blockHeight);
   }
 
   // check unfinalized blocks for a fork, returns the header where a fork happened
@@ -220,17 +223,17 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
     return;
   }
 
-  protected async getLastCorrectFinalizedBlock(forkedHeader: Header): Promise<number | undefined> {
+  protected async getLastCorrectFinalizedBlock(forkedHeader: Header): Promise<Header | undefined> {
     const bestVerifiableBlocks = this.unfinalizedBlocks.filter(
-      ({blockHeight}) => blockHeight <= this.finalizedBlockNumber
+      ({ blockHeight }) => blockHeight <= this.finalizedBlockNumber
     );
 
     let checkingHeader = forkedHeader;
 
     // Work backwards through the blocks until we find a matching hash
-    for (const {blockHash, blockHeight} of bestVerifiableBlocks.reverse()) {
-      if (blockHash === checkingHeader.blockHash || blockHash === checkingHeader.parentHash) {
-        return blockHeight;
+    for (const bestHeader of bestVerifiableBlocks.reverse()) {
+      if (bestHeader.blockHash === checkingHeader.blockHash || bestHeader.blockHash === checkingHeader.parentHash) {
+        return bestHeader;
       }
 
       // Get the new parent
@@ -238,7 +241,11 @@ export abstract class BaseUnfinalizedBlocksService<B> implements IUnfinalizedBlo
       checkingHeader = await this.getHeaderForHash(checkingHeader.parentHash);
     }
 
-    return this.lastCheckedBlockHeight;
+    if (!this.lastCheckedBlockHeight) {
+      return undefined;
+    }
+
+    return this.getHeaderForHeight(this.lastCheckedBlockHeight);
   }
 
   // Finds the last POI that had a correct block hash, this is used with the Eth sdk
