@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [15.0.0] - 2024-11-22
 ### Added
 - lazy loading for monitor service (#2583)
 - Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
@@ -854,7 +856,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/14.1.7...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/15.0.0...HEAD
+[15.0.0]: https://github.com/subquery/subql/compare/node-core/14.1.7...node-core/15.0.0
 [14.1.7]: https://github.com/subquery/subql/compare/node-core/14.1.6...node-core/14.1.7
 [14.1.6]: https://github.com/subquery/subql/compare/node-core/14.1.5...node-core/14.1.6
 [14.1.5]: https://github.com/subquery/subql/compare/node-core/14.1.4...node-core/14.1.5
