@@ -168,9 +168,11 @@ describe('sync helper test', () => {
       await tx2.commit();
 
       await delay(1);
+      // There is a limitation with our historical implementation where with the order or queries means we cant easily determine the difference between insert and update.
+      // For that reason the behaviour is kept the same as before delete was fixed.
       expect(listener).toHaveBeenNthCalledWith(
         1,
-        `{"id": "1", "_entity": {"id": "1", "block_number": 1}, "mutation_type": "INSERT"}`
+        `{"id": "1", "_entity": {"id": "1", "block_number": 1}, "mutation_type": "UPDATE"}`
       );
       expect(listener).toHaveBeenNthCalledWith(
         2,

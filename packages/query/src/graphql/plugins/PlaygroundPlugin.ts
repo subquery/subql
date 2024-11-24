@@ -3,7 +3,7 @@
 
 import type {ApolloServerPlugin, GraphQLServerListener} from 'apollo-server-plugin-base';
 
-export function playgroundPlugin(options: {url: string}): ApolloServerPlugin {
+export function playgroundPlugin(options: {url: string; subscriptionUrl?: string}): ApolloServerPlugin {
   return {
     // eslint-disable-next-line @typescript-eslint/require-await
     async serverWillStart(): Promise<GraphQLServerListener> {

@@ -197,6 +197,7 @@ BEGIN
       payload = payload #- '{"_entity","_id"}';
       payload = payload #- '{"_entity","_block_range"}';
         IF NOT upper_inf(row._block_range) then
+         -- Check if a newer version of the entity exists to determine operation
           EXECUTE FORMAT(
             'SELECT EXISTS (SELECT 1 FROM "${schema}".%I WHERE id = $1 AND lower(_block_range) = upper($2))',
             TG_TABLE_NAME
@@ -210,18 +211,19 @@ BEGIN
             RETURN NULL;
           END IF;
         ELSE
-          EXECUTE FORMAT(
-            'SELECT EXISTS (SELECT 1 FROM "${schema}".%I WHERE id = $1 AND upper(_block_range) = lower($2))',
-            TG_TABLE_NAME
-          )
-          INTO prev_entity
-          USING row.id, row._block_range;
-
-          IF NOT prev_entity THEN
-            payload = payload || '{"mutation_type": "INSERT"}';
-          ELSE
-            payload = payload || '{"mutation_type": "UPDATE"}';
-          END IF;
+          -- Because of the oerder of operations with historical, we cannot determine if this is an update or insert
+          payload = payload || '{"mutation_type": "UPDATE"}';
+          -- EXECUTE FORMAT(
+          --   'SELECT EXISTS (SELECT 1 FROM "${schema}".%I WHERE id = $1 AND upper(_block_range) = lower($2))',
+          --   TG_TABLE_NAME
+          -- )
+          -- INTO prev_entity
+          -- USING row.id, row._block_range;
+          -- IF NOT prev_entity THEN
+          --   payload = payload || '{"mutation_type": "INSERT"}';
+          -- ELSE
+          --   payload = payload || '{"mutation_type": "UPDATE"}';
+          -- END IF;
         END IF;
     END IF;
     IF (octet_length(payload::text) >= 8000) THEN

@@ -14,11 +14,12 @@ import {ApolloServer, UserInputError} from 'apollo-server-express';
 import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
 import PinoLogger from 'express-pino-logger';
-import {execute, GraphQLSchema, subscribe} from 'graphql';
+import {GraphQLSchema} from 'graphql';
+import {useServer} from 'graphql-ws/lib/use/ws';
 import {set} from 'lodash';
 import {Pool, PoolClient} from 'pg';
 import {makePluginHook} from 'postgraphile';
-import {SubscriptionServer} from 'subscriptions-transport-ws';
+import {WebSocketServer} from 'ws';
 import {Config} from '../configure';
 import {queryExplainPlugin} from '../configure/x-postgraphile/debugClient';
 import {getLogger, PinoConfig} from '../utils/logger';
@@ -36,6 +37,7 @@ const logger = getLogger('graphql-module');
 
 const SCHEMA_RETRY_INTERVAL = 10; //seconds
 const SCHEMA_RETRY_NUMBER = 5;
+const WS_ROUTE = '/';
 
 class NoInitError extends Error {
   constructor() {
@@ -47,6 +49,7 @@ class NoInitError extends Error {
 })
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   private _apolloServer?: ApolloServer;
+  private wsCleanup?: ReturnType<typeof useServer>;
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: Config,
@@ -88,8 +91,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleDestroy(): Promise<void> {
-    return this.apolloServer?.stop();
+    await Promise.all([this.apolloServer?.stop(), this.wsCleanup?.dispose()]);
   }
+
   private async buildSchema(
     dbSchema: string,
     options: PostGraphileCoreOptions,
@@ -187,7 +191,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         defaultMaxAge: 5,
         calculateHttpHeaders: true,
       }),
-      this.config.get('playground') ? playgroundPlugin({url: '/'}) : ApolloServerPluginLandingPageDisabled(),
+      this.config.get('playground')
+        ? playgroundPlugin({url: '/', subscriptionUrl: argv.subscription ? WS_ROUTE : undefined})
+        : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
       queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
       queryAliasLimit({schema, limit: argv['query-alias-limit']}),
@@ -207,8 +213,12 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     });
 
     if (argv.subscription) {
-      // TODO: Replace subscriptions-transport-ws with graphql-ws when support is added to graphql-playground
-      SubscriptionServer.create({schema, execute, subscribe}, {server: httpServer, path: '/'});
+      const wsServer = new WebSocketServer({
+        server: httpServer,
+        path: WS_ROUTE,
+      });
+
+      this.wsCleanup = useServer({schema}, wsServer);
     }
 
     app.use(PinoLogger(PinoConfig));
