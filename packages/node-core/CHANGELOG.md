@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - When using a GET query to retrieve an entity, it will include a “store” field.
 - Support for historical indexing by timestamp as well as block height (#2584)
+- Subscriptions not emitting deleted mutation type with historical (#2600)
 
 ### Removed
 - Support for cockroach DB (#2584)
