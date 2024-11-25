@@ -91,8 +91,9 @@ export function wrapExtrinsics(
   wrappedBlock: SubstrateBlock,
   allEvents: EventRecord[],
 ): SubstrateExtrinsic[] {
+  const groupedEvents = groupEventsByExtrinsic(allEvents);
   return wrappedBlock.block.extrinsics.map((extrinsic, idx) => {
-    const events = filterExtrinsicEvents(idx, allEvents);
+    const events = groupedEvents[idx];
     return {
       idx,
       extrinsic,
@@ -109,13 +110,24 @@ function getExtrinsicSuccess(events: EventRecord[]): boolean {
   );
 }
 
-function filterExtrinsicEvents(
-  extrinsicIdx: number,
+function groupEventsByExtrinsic(
   events: EventRecord[],
-): EventRecord[] {
-  return events.filter(
-    ({ phase }) =>
-      phase.isApplyExtrinsic && phase.asApplyExtrinsic.eqn(extrinsicIdx),
+): Record<number, EventRecord[]> {
+  return events.reduce(
+    (acc, event) => {
+      const extrinsicIdx = event.phase.isApplyExtrinsic
+        ? event.phase.asApplyExtrinsic.toNumber()
+        : undefined;
+      if (extrinsicIdx === undefined) {
+        return acc;
+      }
+      if (!acc[extrinsicIdx]) {
+        acc[extrinsicIdx] = [];
+      }
+      acc[extrinsicIdx].push(event);
+      return acc;
+    },
+    {} as Record<number, EventRecord[]>,
   );
 }
 
@@ -309,18 +321,6 @@ export async function getHeaderByHeight(
     );
   }
   return header;
-}
-
-export async function fetchBlocksRange(
-  api: ApiPromise,
-  startHeight: number,
-  endHeight: number,
-): Promise<SignedBlock[]> {
-  return Promise.all(
-    range(startHeight, endHeight + 1).map(async (height) =>
-      getBlockByHeight(api, height),
-    ),
-  );
 }
 
 export async function fetchBlocksArray(

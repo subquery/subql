@@ -22,6 +22,7 @@ import {
   ProcessBlockResponse,
   BaseIndexerManager,
   IBlock,
+  getLogger,
 } from '@subql/node-core';
 import {
   LightSubstrateEvent,
@@ -38,6 +39,8 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+
+const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager extends BaseIndexerManager<
@@ -105,9 +108,31 @@ export class IndexerManager extends BaseIndexerManager<
       const { block, events, extrinsics } = blockContent;
       await this.indexBlockContent(block, dataSources, getVM);
 
+      // Group the events so they only need to be iterated over a single time
+      const groupedEvents = events.reduce(
+        (acc, evt, idx) => {
+          if (evt.phase.isInitialization) {
+            acc.init ??= [];
+            acc.init.push(evt);
+          } else if (evt.phase.isFinalization) {
+            acc.finalize ??= [];
+            acc.finalize.push(evt);
+          } else if (evt.extrinsic?.idx) {
+            const idx = evt.extrinsic.idx;
+            acc[idx] = acc[idx] || [];
+            acc[idx].push(evt);
+          } else {
+            logger.warn(
+              `Unrecognized event type, skipping. block="${block.block.header.number.toNumber()}" eventIdx="${idx}"`,
+            );
+          }
+          return acc;
+        },
+        {} as Record<number | 'init' | 'finalize', SubstrateEvent[]>,
+      );
+
       // Run initialization events
-      const initEvents = events.filter((evt) => evt.phase.isInitialization);
-      for (const event of initEvents) {
+      for (const event of groupedEvents.init ?? []) {
         await this.indexEvent(event, dataSources, getVM);
       }
 
@@ -125,8 +150,7 @@ export class IndexerManager extends BaseIndexerManager<
       }
 
       // Run finalization events
-      const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
-      for (const event of finalizeEvents) {
+      for (const event of groupedEvents.finalize ?? []) {
         await this.indexEvent(event, dataSources, getVM);
       }
     } else {
