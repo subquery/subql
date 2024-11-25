@@ -14,7 +14,7 @@ export const hostMonitorKeys: (keyof HostMonitorService)[] = ['hostMonitorServic
 
 export function monitorHostFunctions(host: MonitorServiceInterface): HostMonitorService {
   return {
-    hostMonitorServiceWrite: host.write.bind(host),
+    hostMonitorServiceWrite: host?.write.bind(host),
   };
 }
 
@@ -27,8 +27,10 @@ export class WorkerMonitorService implements MonitorServiceInterface {
     setMonitorService(this);
   }
 
-  write(blockData: string): void {
-    return this.host?.hostMonitorServiceWrite ? this.host.hostMonitorServiceWrite(blockData) : undefined;
+  write(blockData: string | (() => string)): void {
+    return this.host?.hostMonitorServiceWrite
+      ? this.host.hostMonitorServiceWrite(typeof blockData === 'string' ? blockData : blockData())
+      : undefined;
   }
 
   createBlockFork(blockHeight: number): void {
