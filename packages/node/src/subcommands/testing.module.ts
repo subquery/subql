@@ -11,13 +11,11 @@ import {
   InMemoryCacheService,
   PoiService,
   PoiSyncService,
-  StoreCacheService,
   StoreService,
   TestRunner,
   SandboxService,
   NodeConfig,
-  IStoreModelProvider,
-  PlainStoreModelService,
+  storeModelFactory,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
@@ -34,21 +32,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     StoreService,
     {
       provide: 'IStoreModelProvider',
-      useFactory: (
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        schedulerRegistry: SchedulerRegistry,
-        sequelize: Sequelize,
-      ): IStoreModelProvider => {
-        return nodeConfig.enableCache
-          ? new StoreCacheService(
-              sequelize,
-              nodeConfig,
-              eventEmitter,
-              schedulerRegistry,
-            )
-          : new PlainStoreModelService(sequelize, nodeConfig);
-      },
+      useFactory: storeModelFactory,
       inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
     },
     EventEmitter2,

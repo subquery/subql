@@ -7,15 +7,13 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   DbModule,
   ForceCleanService,
-  StoreCacheService,
   ReindexService,
   StoreService,
   PoiService,
   ConnectionPoolService,
   NodeConfig,
   ConnectionPoolStateManager,
-  IStoreModelProvider,
-  PlainStoreModelService,
+  storeModelFactory,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
@@ -28,21 +26,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
   providers: [
     {
       provide: 'IStoreModelProvider',
-      useFactory: (
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        schedulerRegistry: SchedulerRegistry,
-        sequelize: Sequelize,
-      ): IStoreModelProvider => {
-        return nodeConfig.enableCache
-          ? new StoreCacheService(
-              sequelize,
-              nodeConfig,
-              eventEmitter,
-              schedulerRegistry,
-            )
-          : new PlainStoreModelService(sequelize, nodeConfig);
-      },
+      useFactory: storeModelFactory,
       inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
     },
     StoreService,
