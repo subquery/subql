@@ -15,7 +15,7 @@ import {MonitorService} from './monitor.service';
 import {PoiService, PoiSyncService} from './poi';
 import {SandboxService} from './sandbox.service';
 import {StoreService} from './store.service';
-import {IStoreModelProvider, PlainStoreModelService, StoreCacheService} from './storeModelProvider';
+import {storeModelFactory} from './storeModelProvider';
 
 @Module({
   providers: [
@@ -31,16 +31,7 @@ import {IStoreModelProvider, PlainStoreModelService, StoreCacheService} from './
     StoreService,
     {
       provide: 'IStoreModelProvider',
-      useFactory: (
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        schedulerRegistry: SchedulerRegistry,
-        sequelize: Sequelize
-      ): IStoreModelProvider => {
-        return nodeConfig.enableCache
-          ? new StoreCacheService(sequelize, nodeConfig, eventEmitter, schedulerRegistry)
-          : new PlainStoreModelService(sequelize, nodeConfig);
-      },
+      useFactory: storeModelFactory,
       inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
     },
     AdminListener,

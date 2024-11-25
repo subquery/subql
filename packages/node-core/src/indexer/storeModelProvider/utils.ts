@@ -1,7 +1,12 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
+import {NodeConfig} from '@subql/node-core/configure';
+import {Sequelize} from '@subql/x-sequelize';
 import {StoreCacheService} from './storeCache.service';
+import {PlainStoreModelService} from './storeModel.service';
 import {IStoreModelProvider} from './types';
 
 export async function cacheProviderFlushData(modelProvider: IStoreModelProvider, forceFlush?: boolean) {
@@ -13,4 +18,15 @@ export async function cacheProviderResetData(modelProvider: IStoreModelProvider)
   if (modelProvider instanceof StoreCacheService) {
     await modelProvider.resetData();
   }
+}
+
+export function storeModelFactory(
+  nodeConfig: NodeConfig,
+  eventEmitter: EventEmitter2,
+  schedulerRegistry: SchedulerRegistry,
+  sequelize: Sequelize
+): IStoreModelProvider {
+  return nodeConfig.enableCache
+    ? new StoreCacheService(sequelize, nodeConfig, eventEmitter, schedulerRegistry)
+    : new PlainStoreModelService(sequelize, nodeConfig);
 }

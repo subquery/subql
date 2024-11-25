@@ -7,14 +7,15 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   DbModule,
   ForceCleanService,
-  StoreCacheService,
   ReindexService,
   StoreService,
   PoiService,
   ConnectionPoolService,
   NodeConfig,
   ConnectionPoolStateManager,
+  storeModelFactory,
 } from '@subql/node-core';
+import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
 import { DsProcessorService } from '../indexer/ds-processor.service';
@@ -23,7 +24,11 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({
   providers: [
-    StoreCacheService,
+    {
+      provide: 'IStoreModelProvider',
+      useFactory: storeModelFactory,
+      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+    },
     StoreService,
     ReindexService,
     PoiService,
