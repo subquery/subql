@@ -1,15 +1,15 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { BeforeApplicationShutdown } from '@nestjs/common';
-import { getLogger } from '@subql/node-core/logger';
-import { ModelStatic } from '@subql/x-sequelize';
-import { MetadataRepo, PoiRepo } from '../entities';
-import { HistoricalMode } from '../types';
-import { METADATA_ENTITY_NAME } from './metadata/utils';
-import { BaseEntity, IModel } from './model';
-import { POI_ENTITY_NAME } from './poi';
-import { Exporter } from './types';
+import {BeforeApplicationShutdown} from '@nestjs/common';
+import {ModelStatic} from '@subql/x-sequelize';
+import {getLogger} from '../../logger';
+import {MetadataRepo, PoiRepo} from '../entities';
+import {HistoricalMode} from '../types';
+import {METADATA_ENTITY_NAME} from './metadata/utils';
+import {BaseEntity, IModel} from './model';
+import {POI_ENTITY_NAME} from './poi';
+import {Exporter} from './types';
 
 const logger = getLogger('BaseStoreModelService');
 export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeApplicationShutdown {
@@ -40,7 +40,7 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeAp
     return this.cachedModels[entity] as IModel<T>;
   }
 
-  updateModels({ modifiedModels, removedModels }: { modifiedModels: ModelStatic<any>[]; removedModels: string[] }): void {
+  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void {
     modifiedModels.forEach((m) => {
       this.cachedModels[m.name] = this.createModel(m.name);
     });

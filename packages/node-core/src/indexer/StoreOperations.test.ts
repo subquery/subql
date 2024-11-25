@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {CachedModel, DbOption, handledStringify, modelsTypeToModelAttributes, NodeConfig} from '@subql/node-core';
 import {Entity, FunctionPropertyNames, Store} from '@subql/types-core';
-import {Boolean, GraphQLModelsType, Int, u8aToHex} from '@subql/utils';
+import {GraphQLModelsType, u8aToHex} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
+import {CachedModel, DbOption, handledStringify, modelsTypeToModelAttributes, NodeConfig} from '../';
 import {EntityClass} from './store/entity';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
