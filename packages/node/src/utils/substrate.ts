@@ -121,9 +121,7 @@ function groupEventsByExtrinsic(
       if (extrinsicIdx === undefined) {
         return acc;
       }
-      if (!acc[extrinsicIdx]) {
-        acc[extrinsicIdx] = [];
-      }
+      acc[extrinsicIdx] ??= [];
       acc[extrinsicIdx].push(event);
       return acc;
     },

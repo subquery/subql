@@ -112,14 +112,12 @@ export class IndexerManager extends BaseIndexerManager<
       const groupedEvents = events.reduce(
         (acc, evt, idx) => {
           if (evt.phase.isInitialization) {
-            acc.init ??= [];
             acc.init.push(evt);
           } else if (evt.phase.isFinalization) {
-            acc.finalize ??= [];
             acc.finalize.push(evt);
           } else if (evt.extrinsic?.idx) {
             const idx = evt.extrinsic.idx;
-            acc[idx] = acc[idx] || [];
+            acc[idx] ??= [];
             acc[idx].push(evt);
           } else {
             logger.warn(
@@ -128,11 +126,14 @@ export class IndexerManager extends BaseIndexerManager<
           }
           return acc;
         },
-        {} as Record<number | 'init' | 'finalize', SubstrateEvent[]>,
+        { init: [], finalize: [] } as Record<
+          number | 'init' | 'finalize',
+          SubstrateEvent[]
+        >,
       );
 
       // Run initialization events
-      for (const event of groupedEvents.init ?? []) {
+      for (const event of groupedEvents.init) {
         await this.indexEvent(event, dataSources, getVM);
       }
 
@@ -150,7 +151,7 @@ export class IndexerManager extends BaseIndexerManager<
       }
 
       // Run finalization events
-      for (const event of groupedEvents.finalize ?? []) {
+      for (const event of groupedEvents.finalize) {
         await this.indexEvent(event, dataSources, getVM);
       }
     } else {
