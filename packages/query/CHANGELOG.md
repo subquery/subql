@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- Update the playground to the latest GraphiQL (#2588)
 - WS libarary with support for graphiql (#2600)
+
+## [2.16.0] - 2024-11-22
+### Changed
+- Update the playground to the latest GraphiQL (#2588)
 
 ### Added
 - Support for historical indexing by timestamp as well as block height (#2584)
@@ -370,7 +373,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.15.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.16.0...HEAD
+[2.16.0]: https://github.com/subquery/subql/compare/query/2.15.2...query/2.16.0
 [2.15.2]: https://github.com/subquery/subql/compare/query/2.15.1...query/2.15.2
 [2.15.1]: https://github.com/subquery/subql/compare/query/2.15.0...query/2.15.1
 [2.15.0]: https://github.com/subquery/subql/compare/query/2.14.1...query/2.15.0

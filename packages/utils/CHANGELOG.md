@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.15.0] - 2024-11-22
 ### Added
 - Support for indexes on enums (#2586)
+
 ### Changed
 - Update metadata types (#2584)
 
@@ -174,7 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.14.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.15.0...HEAD
+[2.15.0]: https://github.com/subquery/subql/compare/utils/2.14.0...utils/2.15.0
 [2.14.0]: https://github.com/subquery/subql/compare/utils/2.13.1...utils/2.14.0
 [2.13.1]: https://github.com/subquery/subql/compare/utils/2.13.0...utils/2.13.1
 [2.13.0]: https://github.com/subquery/subql/compare/utils/2.12.1...utils/2.13.0
