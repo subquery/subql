@@ -16,7 +16,10 @@ import {
   TestRunner,
   SandboxService,
   NodeConfig,
+  IStoreModelProvider,
+  PlainStoreModelService,
 } from '@subql/node-core';
+import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
 import { DsProcessorService } from '../indexer/ds-processor.service';
@@ -29,7 +32,25 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
   providers: [
     InMemoryCacheService,
     StoreService,
-    StoreCacheService,
+    {
+      provide: 'IStoreModelProvider',
+      useFactory: (
+        nodeConfig: NodeConfig,
+        eventEmitter: EventEmitter2,
+        schedulerRegistry: SchedulerRegistry,
+        sequelize: Sequelize,
+      ): IStoreModelProvider => {
+        return nodeConfig.enableCache
+          ? new StoreCacheService(
+              sequelize,
+              nodeConfig,
+              eventEmitter,
+              schedulerRegistry,
+            )
+          : new PlainStoreModelService(sequelize, nodeConfig);
+      },
+      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+    },
     EventEmitter2,
     PoiService,
     PoiSyncService,

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix part of the module.ts file that is missing the logic for injecting `IStoreModelProvider`.
+
 ## [5.3.0] - 2024-11-22
 ### Added
 - Support for historical indexing by timestamp as well as block height (#2584)
