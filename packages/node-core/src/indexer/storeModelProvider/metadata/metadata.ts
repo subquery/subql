@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {hasValue} from '@subql/node-core/utils';
 import {Op, Transaction} from '@subql/x-sequelize';
+import {hasValue} from '../../../utils';
 import {DatasourceParams} from '../../dynamic-ds.service';
 import {Metadata, MetadataKeys, MetadataRepo} from '../../entities';
 import {APPEND_DS_QUERY, INCREMENT_QUERY} from './utils';

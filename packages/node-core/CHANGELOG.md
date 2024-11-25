@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix import path (#2605)
+
 ## [15.0.1] - 2024-11-25
 ### Changed
 - Update polkadot/api library to 14 version

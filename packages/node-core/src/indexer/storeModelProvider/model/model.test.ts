@@ -1,10 +1,10 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {DbOption} from '@subql/node-core/db';
 import {DataTypes, Sequelize} from '@subql/x-sequelize';
 import _ from 'lodash';
 import {NodeConfig} from '../../../configure';
+import {DbOption} from '../../../db';
 import {CachedModel} from './cacheModel';
 import {PlainModel} from './model';
 

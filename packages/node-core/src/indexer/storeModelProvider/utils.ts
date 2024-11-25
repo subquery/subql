@@ -3,8 +3,8 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {NodeConfig} from '@subql/node-core/configure';
 import {Sequelize} from '@subql/x-sequelize';
+import {NodeConfig} from '../../configure';
 import {StoreCacheService} from './storeCache.service';
 import {PlainStoreModelService} from './storeModel.service';
 import {IStoreModelProvider} from './types';
