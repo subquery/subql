@@ -4,6 +4,7 @@
 import {hashName} from '@subql/utils';
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
 import {makeExtendSchemaPlugin, gql, embed} from 'graphile-utils';
+import {DocumentNode} from 'graphql';
 
 const filter = (event, args) => {
   if (args.mutation && !args.mutation.includes(event.mutation_type)) {
@@ -15,6 +16,19 @@ const filter = (event, args) => {
   return true;
 };
 
+function makePayload(entityType: string): {type: DocumentNode; name: string} {
+  const name = `${entityType}Payload`;
+  const type = gql`
+    type ${name} {
+      id: ID!
+      mutation_type: MutationType!
+      _entity: ${entityType}
+    }
+  `;
+
+  return {name, type};
+}
+
 export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
   const {inflection, pgIntrospectionResultsByKind} = build;
 
@@ -25,26 +39,26 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
         UPDATE
         DELETE
       }
-
-      type SubscriptionPayload {
-        id: ID!
-        mutation_type: MutationType!
-        _entity: JSON
-      }
     `,
   ];
+
+  const resolvers: Record<string, any> = {};
 
   // Generate subscription fields for all database tables
   (pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).class.forEach((table) => {
     if (!table.namespace || table.name === '_metadata') return;
 
     const field = inflection.allRows(table);
+    const type = inflection.tableType(table);
+
+    const {name: payloadName, type: payloadType} = makePayload(type);
 
     const topic = hashName(table.namespace.name, 'notify_channel', table.name);
     typeDefs.push(
       gql`
+        ${payloadType}
         extend type Subscription {
-          ${field}(id: [ID!], mutation: [MutationType!]): SubscriptionPayload
+          ${field}(id: [ID!], mutation: [MutationType!]): ${payloadName}
           @pgSubscription(
             topic: ${embed(topic)}
             filter: ${embed(filter)}
@@ -53,5 +67,8 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
     );
   });
 
-  return {typeDefs};
+  return {
+    typeDefs,
+    resolvers,
+  };
 });

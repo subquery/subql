@@ -48,13 +48,14 @@
     "graphile-utils": "^4.12.2",
     "graphql": "^15.8.0",
     "graphql-query-complexity": "^0.11.0",
+    "graphql-ws": "^5.16.0",
     "lodash": "^4.17.21",
     "pg": "^8.12.0",
     "pg-tsquery": "^8.4.2",
     "postgraphile": "^4.13.0",
     "postgraphile-plugin-connection-filter": "^2.2.2",
     "rxjs": "^7.1.0",
-    "subscriptions-transport-ws": "^0.11.0",
+    "ws": "^8.18.0",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
@@ -65,6 +66,7 @@
     "@types/express-pino-logger": "^4.0.5",
     "@types/jest": "^27.5.2",
     "@types/lodash": "^4.17.7",
+    "@types/ws": "^8",
     "@types/yargs": "^16.0.9",
     "nodemon": "^3.1.4"
   }

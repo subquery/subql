@@ -32,6 +32,9 @@ module.exports = {
     'plugin:jest/recommended',
   ],
   rules: {
+    // Note: you must disable the base rule as it can report incorrect errors
+    "require-await": "off",
+    "@typescript-eslint/require-await": "error",
     // rules turned off in upstream project (also required when recommended-requiring-type-checking is extended)
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
@@ -62,11 +65,11 @@ module.exports = {
         accessibility: 'no-public',
       },
     ],
-    '@typescript-eslint/no-namespace': ['error', {allowDeclarations: true}],
+    '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
     // "@typescript-eslint/member-ordering": "error",
     // "@typescript-eslint/naming-convention": "error",
     // "@typescript-eslint/no-param-reassign": "error",
-    '@typescript-eslint/promise-function-async': ['error', {checkArrowFunctions: false}],
+    '@typescript-eslint/promise-function-async': ['error', { checkArrowFunctions: false }],
     // "arrow-body-style": "error",
     complexity: ['error', 20],
     curly: ['error', 'multi-line'],
@@ -87,7 +90,7 @@ module.exports = {
       'line',
       [
         //Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
-        {pattern: ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors'},
+        { pattern: ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors' },
         ' SPDX-License-Identifier: GPL-3.0',
       ],
       2,
@@ -112,7 +115,7 @@ module.exports = {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
-  overrides:[
+  overrides: [
     {
       files: ['*.test.ts', '*.spec.ts'],
       rules: {
