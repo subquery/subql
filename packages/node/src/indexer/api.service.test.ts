@@ -120,7 +120,9 @@ describe('ApiService', () => {
       patchedApi.query.session.validators(),
       api.query.session.validators(),
     ]);
-    expect(validators).toMatchObject(patchedValidators);
+    expect(validators.toJSON()).toMatchObject(
+      patchedValidators.toJSON() as any,
+    );
     expect(patchedValidators).not.toMatchObject(currentValidators);
   });
 
