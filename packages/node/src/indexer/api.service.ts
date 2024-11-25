@@ -52,6 +52,10 @@ const logger = getLogger('api');
 
 // This is a temp fix for https://github.com/polkadot-js/api/issues/5871
 function overrideConsoleWarn(): void {
+  // Ensure its only run once
+  if ((console as any).oldWarn) {
+    return;
+  }
   (console as any).oldWarn = console.warn;
   console.warn = function () {
     // eslint-disable-next-line prefer-rest-params

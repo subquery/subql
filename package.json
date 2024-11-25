@@ -36,7 +36,7 @@
   },
   "resolutions": {
     "@polkadot/api": "14.3.1",
-    "@polkadot/util": "13.0.2",
+    "@polkadot/util": "^13.2.3",
     "node-fetch": "2.6.7"
   },
   "scripts": {
