@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.0.1] - 2024-11-25
+### Changed
+- Update polkadot/api library to 14 version
+
 ## [15.0.0] - 2024-11-22
 ### Added
 - lazy loading for monitor service (#2583)
@@ -857,7 +861,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/15.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/15.0.1...HEAD
+[15.0.1]: https://github.com/subquery/subql/compare/node-core/15.0.0...node-core/15.0.1
 [15.0.0]: https://github.com/subquery/subql/compare/node-core/14.1.7...node-core/15.0.0
 [14.1.7]: https://github.com/subquery/subql/compare/node-core/14.1.6...node-core/14.1.7
 [14.1.6]: https://github.com/subquery/subql/compare/node-core/14.1.5...node-core/14.1.6
