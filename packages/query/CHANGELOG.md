@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.17.0] - 2024-11-25
 ### Changed
 - WS libarary with support for graphiql (#2600)
 - Subscription type from JSON to the correct entity type (#2600)
@@ -374,7 +376,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.16.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.17.0...HEAD
+[2.17.0]: https://github.com/subquery/subql/compare/query/2.16.0...query/2.17.0
 [2.16.0]: https://github.com/subquery/subql/compare/query/2.15.2...query/2.16.0
 [2.15.2]: https://github.com/subquery/subql/compare/query/2.15.1...query/2.15.2
 [2.15.1]: https://github.com/subquery/subql/compare/query/2.15.0...query/2.15.1

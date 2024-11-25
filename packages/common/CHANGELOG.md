@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.1] - 2024-11-25
+### Changed
+- Update polkadot/api library to 14 version
+
 ## [5.2.0] - 2024-11-22
 ### Fixed
 - Removed imports of `@polkadot/util` without it being a dependency (#2592)
@@ -426,7 +430,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.2.1...HEAD
+[5.2.1]: https://github.com/subquery/subql/compare/common/5.2.0...common/5.2.1
 [5.2.0]: https://github.com/subquery/subql/compare/common/5.1.4...common/5.2.0
 [5.1.4]: https://github.com/subquery/subql/compare/common/5.1.3...common/5.1.4
 [5.1.3]: https://github.com/subquery/subql/compare/common/5.1.2...common/5.1.3

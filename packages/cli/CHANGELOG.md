@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.2] - 2024-11-25
+### Changed
+- Update polkadot/api library to 14 version
+
 ## [5.3.1] - 2024-11-22
 ### Fixed
 - Multi-chain project initialization error
@@ -691,7 +695,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.3.2...HEAD
+[5.3.2]: https://github.com/subquery/subql/compare/cli/5.3.1...cli/5.3.2
 [5.3.1]: https://github.com/subquery/subql/compare/cli/5.3.0...cli/5.3.1
 [5.3.0]: https://github.com/subquery/subql/compare/cli/5.2.8...cli/5.3.0
 [5.2.8]: https://github.com/subquery/subql/compare/cli/5.2.7...cli/5.2.8
