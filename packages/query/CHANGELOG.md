@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - WS libarary with support for graphiql (#2600)
+- Subscription type from JSON to the correct entity type (#2600)
 
 ## [2.16.0] - 2024-11-22
 ### Changed
