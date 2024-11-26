@@ -7,12 +7,12 @@ import {setMonitorService} from '../../process';
 import {MonitorServiceInterface} from '../monitor.service';
 
 type HostMonitorService = {
-  hostMonitorServiceWrite: (blockData: string) => void;
+  hostMonitorServiceWrite?: (blockData: string) => void;
 };
 
 export const hostMonitorKeys: (keyof HostMonitorService)[] = ['hostMonitorServiceWrite'];
 
-export function monitorHostFunctions(host: MonitorServiceInterface): HostMonitorService {
+export function monitorHostFunctions(host?: MonitorServiceInterface): HostMonitorService {
   return {
     hostMonitorServiceWrite: host?.write.bind(host),
   };
@@ -20,7 +20,7 @@ export function monitorHostFunctions(host: MonitorServiceInterface): HostMonitor
 
 @Injectable()
 export class WorkerMonitorService implements MonitorServiceInterface {
-  constructor(private host: HostMonitorService) {
+  constructor(private host?: HostMonitorService) {
     if (isMainThread) {
       throw new Error('Expected to be worker thread');
     }
