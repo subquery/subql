@@ -13,11 +13,13 @@ import {
   BaseWorkerService,
   IProjectUpgradeService,
   IBlock,
+  Header,
 } from '@subql/node-core';
 import { BlockWrapper, SubqlDatasource } from '@subql/types-stellar';
+import { stellarBlockToHeader } from '../../stellar/utils.stellar';
 import { IndexerManager } from '../indexer.manager';
 
-export type FetchBlockResponse = { parentHash: string } | undefined;
+export type FetchBlockResponse = Header;
 
 export type WorkerStatusResponse = {
   threadId: number;
@@ -54,10 +56,8 @@ export class WorkerService extends BaseWorkerService<
     return block;
   }
 
-  protected toBlockResponse(block: BlockWrapper): { parentHash: string } {
-    return {
-      parentHash: block.block.prev_hash,
-    };
+  protected toBlockResponse(block: BlockWrapper): Header {
+    return stellarBlockToHeader(block.block);
   }
 
   protected async processFetchedBlock(

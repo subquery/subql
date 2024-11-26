@@ -12,7 +12,7 @@ import {
   ApiService,
   getModulos,
   Header,
-  StoreCacheService,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { StellarBlock, SubqlDatasource } from '@subql/types-stellar';
 import { StellarApi } from '../stellar';
@@ -42,7 +42,7 @@ export class FetchService extends BaseFetchService<
     unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
-    storeCacheService: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
     super(
       nodeConfig,
@@ -52,7 +52,7 @@ export class FetchService extends BaseFetchService<
       eventEmitter,
       schedulerRegistry,
       unfinalizedBlocksService,
-      storeCacheService,
+      storeModelProvider,
     );
   }
 

@@ -17,7 +17,9 @@ import {
   TestRunner,
   SandboxService,
   NodeConfig,
+  storeModelFactory,
 } from '@subql/node-core';
+import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from '../indexer/ds-processor.service';
@@ -33,6 +35,11 @@ import { TestingService } from './testing.service';
   providers: [
     InMemoryCacheService,
     StoreService,
+    {
+      provide: 'IStoreModelProvider',
+      useFactory: storeModelFactory,
+      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+    },
     TestingService,
     EventEmitter2,
     PoiService,

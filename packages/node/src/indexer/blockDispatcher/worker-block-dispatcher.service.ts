@@ -9,7 +9,7 @@ import {
   NodeConfig,
   StoreService,
   PoiSyncService,
-  StoreCacheService,
+  IStoreModelProvider,
   IProjectService,
   WorkerBlockDispatcher,
   IProjectUpgradeService,
@@ -17,6 +17,7 @@ import {
   createIndexerWorker,
   InMemoryCacheService,
   MonitorServiceInterface,
+  Header,
 } from '@subql/node-core';
 import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { SubqueryProject } from '../../configure/SubqueryProject';
@@ -50,7 +51,7 @@ export class WorkerBlockDispatcherService
     projectUpgradeService: IProjectUpgradeService,
     cacheService: InMemoryCacheService,
     storeService: StoreService,
-    storeCacheService: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
@@ -64,7 +65,7 @@ export class WorkerBlockDispatcherService
       projectService,
       projectUpgradeService,
       storeService,
-      storeCacheService,
+      storeModelProvider,
       poiSyncService,
       project,
       () =>
@@ -89,10 +90,7 @@ export class WorkerBlockDispatcherService
     );
   }
 
-  protected async fetchBlock(
-    worker: IndexerWorker,
-    height: number,
-  ): Promise<void> {
-    await worker.fetchBlock(height, 0 /* Unused with stellar*/);
+  async fetchBlock(worker: IndexerWorker, height: number): Promise<Header> {
+    return worker.fetchBlock(height, 0 /* Unused with stellar*/);
   }
 }

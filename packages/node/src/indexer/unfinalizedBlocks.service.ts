@@ -1,13 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   ApiService,
   BaseUnfinalizedBlocksService,
   Header,
   NodeConfig,
-  StoreCacheService,
+  IStoreModelProvider,
   getLogger,
   mainThreadOnly,
 } from '@subql/node-core';
@@ -21,9 +21,9 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   constructor(
     private readonly apiService: ApiService,
     nodeConfig: NodeConfig,
-    storeCache: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
-    super(nodeConfig, storeCache);
+    super(nodeConfig, storeModelProvider);
   }
 
   @mainThreadOnly()
@@ -38,7 +38,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   }
 
   @mainThreadOnly()
-  protected async getHeaderForHeight(height: number): Promise<Header> {
+  async getHeaderForHeight(height: number): Promise<Header> {
     const block = (await this.apiService.api.fetchBlocks([height]))[0];
     return stellarBlockToHeader(block);
   }
