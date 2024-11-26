@@ -119,7 +119,7 @@ export class IndexerManager extends BaseIndexerManager<
             const idx = evt.extrinsic.idx;
             acc[idx] ??= [];
             acc[idx].push(evt);
-          } else {
+          } else if (!evt.phase.isApplyExtrinsic) {
             logger.warn(
               `Unrecognized event type, skipping. block="${block.block.header.number.toNumber()}" eventIdx="${idx}"`,
             );
@@ -141,9 +141,9 @@ export class IndexerManager extends BaseIndexerManager<
         await this.indexExtrinsic(extrinsic, dataSources, getVM);
 
         // Process extrinsic events
-        const extrinsicEvents = events
-          .filter((e) => e.extrinsic?.idx === extrinsic.idx)
-          .sort((a, b) => a.idx - b.idx);
+        const extrinsicEvents = (groupedEvents[extrinsic.idx] ?? []).sort(
+          (a, b) => a.idx - b.idx,
+        );
 
         for (const event of extrinsicEvents) {
           await this.indexEvent(event, dataSources, getVM);
