@@ -46,7 +46,7 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
 
   // Generate subscription fields for all database tables
   (pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).class.forEach((table) => {
-    if (!table.namespace || table.name === '_metadata') return;
+    if (!table.namespace || table.name.includes('_metadata')) return;
 
     const field = inflection.allRows(table);
     const type = inflection.tableType(table);
