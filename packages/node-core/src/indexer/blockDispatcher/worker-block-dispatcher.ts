@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { OnApplicationShutdown } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
-import { last } from 'lodash';
-import { NodeConfig } from '../../configure';
-import { IProjectUpgradeService } from '../../configure/ProjectUpgrade.service';
-import { IndexerEvent } from '../../events';
-import { IBlock, PoiSyncService } from '../../indexer';
-import { getLogger } from '../../logger';
-import { monitorWrite } from '../../process';
-import { AutoQueue, isTaskFlushedError } from '../../utils';
-import { MonitorServiceInterface } from '../monitor.service';
-import { StoreService } from '../store.service';
-import { IStoreModelProvider } from '../storeModelProvider';
-import { ISubqueryProject, IProjectService, Header } from '../types';
-import { isBlockUnavailableError } from '../worker/utils';
-import { BaseBlockDispatcher } from './base-block-dispatcher';
+import {OnApplicationShutdown} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {Interval} from '@nestjs/schedule';
+import {last} from 'lodash';
+import {NodeConfig} from '../../configure';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
+import {IndexerEvent} from '../../events';
+import {IBlock, PoiSyncService} from '../../indexer';
+import {getLogger} from '../../logger';
+import {monitorWrite} from '../../process';
+import {AutoQueue, isTaskFlushedError} from '../../utils';
+import {MonitorServiceInterface} from '../monitor.service';
+import {StoreService} from '../store.service';
+import {IStoreModelProvider} from '../storeModelProvider';
+import {ISubqueryProject, IProjectService, Header} from '../types';
+import {isBlockUnavailableError} from '../worker/utils';
+import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -26,8 +26,6 @@ type Worker = {
   processBlock: (height: number) => Promise<any>;
   getStatus: () => Promise<any>;
   getMemoryLeft: () => Promise<number>;
-  getBlocksLoaded: () => Promise<number>;
-  waitForWorkerBatchSize: (heapSizeInBytes: number) => Promise<void>;
   terminate: () => Promise<number>;
 };
 
@@ -43,11 +41,11 @@ function initAutoQueue<T>(
 
 export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
   extends BaseBlockDispatcher<AutoQueue<void>, DS, B>
-  implements OnApplicationShutdown {
+  implements OnApplicationShutdown
+{
   protected workers: W[] = [];
   private numWorkers: number;
   private isShutdown = false;
-  private currentWorkerIndex = 0;
 
   protected abstract fetchBlock(worker: W, height: number): Promise<Header>;
 
@@ -115,7 +113,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
       let startIndex = 0;
       while (startIndex < heights.length) {
         const workerIdx = await this.getNextWorkerIndex();
-        const batchSize = Math.min(heights.length - startIndex, await this.maxBatchSize(workerIdx));
+        const batchSize = heights.length - startIndex;
         await Promise.all(
           heights
             .slice(startIndex, startIndex + batchSize)
@@ -135,6 +133,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
     this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async enqueueBlock(height: number, workerIdx: number): Promise<void> {
     if (this.isShutdown) return;
     const worker = this.workers[workerIdx];
@@ -143,9 +142,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
 
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
-
-    await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
-
     const pendingBlock = this.fetchBlock(worker, height);
 
     const processBlock = async () => {
@@ -159,7 +155,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
         await this.preProcessBlock(header);
 
         monitorWrite(`Processing from worker #${workerIdx}`);
-        const { dynamicDsCreated, reindexBlockHeader } = await worker.processBlock(height);
+        const {dynamicDsCreated, reindexBlockHeader} = await worker.processBlock(height);
 
         await this.postProcessBlock(header, {
           dynamicDsCreated,
@@ -211,25 +207,8 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker, B>
   }
 
   private async getNextWorkerIndex(): Promise<number> {
-    const startIndex = this.currentWorkerIndex;
-    do {
-      this.currentWorkerIndex = (this.currentWorkerIndex + 1) % this.workers.length;
-      const memLeft = await this.workers[this.currentWorkerIndex].getMemoryLeft();
-      if (memLeft >= this.minimumHeapLimit) {
-        return this.currentWorkerIndex;
-      }
-    } while (this.currentWorkerIndex !== startIndex);
-
-    // All workers have been tried and none have enough memory left.
-    // wait for any worker to free the memory before calling getNextWorkerIndex again
-    await Promise.race(this.workers.map((worker) => worker.waitForWorkerBatchSize(this.minimumHeapLimit)));
-
-    return this.getNextWorkerIndex();
-  }
-
-  private async maxBatchSize(workerIdx: number): Promise<number> {
-    const memLeft = await this.workers[workerIdx].getMemoryLeft();
-    if (memLeft < this.minimumHeapLimit) return 0;
-    return this.smartBatchService.safeBatchSizeForRemainingMemory(memLeft);
+    return Promise.all(this.workers.map((worker) => worker.getMemoryLeft())).then((memoryLeftValues) => {
+      return memoryLeftValues.indexOf(Math.max(...memoryLeftValues));
+    });
   }
 }

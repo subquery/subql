@@ -15,7 +15,7 @@ import {
   IBlock,
   IStoreModelProvider,
 } from '@subql/node-core';
-import { SubstrateDatasource } from '@subql/types';
+import { SubstrateBlock, SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
@@ -99,6 +99,15 @@ export class BlockDispatcherService
       block,
       await this.projectService.getDataSources(block.getHeader().blockHeight),
       runtimeVersion,
+    );
+  }
+
+  protected getBlockSize(
+    block: IBlock<BlockContent | LightBlockContent>,
+  ): number {
+    return block.block.events.reduce(
+      (acc, evt) => acc + evt.encodedLength,
+      (block.block.block as SubstrateBlock)?.encodedLength ?? 0,
     );
   }
 }

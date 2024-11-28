@@ -10,7 +10,7 @@ import {range} from 'lodash';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
-import {delay, filterBypassBlocks, waitForBatchSize} from '../utils';
+import {delay, filterBypassBlocks} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
@@ -27,6 +27,9 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
+
+  #pendingFinalizedBlockHead?: Promise<void>;
+  #pendingBestBlockHead?: Promise<void>;
 
   // If the chain doesn't have a distinction between the 2 it should return the same value for finalized and best
   protected abstract getFinalizedHeader(): Promise<Header>;
@@ -77,10 +80,24 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     this.isShutdown = true;
   }
 
+  // Memoizes the request by not making new ones if one is already in progress
+  private async memoGetFinalizedBlockHead(): Promise<void> {
+    return (this.#pendingFinalizedBlockHead ??= this.getFinalizedBlockHead().finally(
+      () => (this.#pendingFinalizedBlockHead = undefined)
+    ));
+  }
+
+  // Memoizes the request by not making new ones if one is already in progress
+  private async memoGetBestBlockHead(): Promise<void> {
+    return (this.#pendingBestBlockHead ??= this.getBestBlockHead().finally(
+      () => (this.#pendingBestBlockHead = undefined)
+    ));
+  }
+
   async init(startHeight: number): Promise<void> {
     const interval = await this.getChainInterval();
 
-    await Promise.all([this.getFinalizedBlockHead(), this.getBestBlockHead()]);
+    await Promise.all([this.memoGetFinalizedBlockHead(), this.memoGetBestBlockHead()]);
 
     const chainLatestHeight = this.latestHeight();
     if (startHeight > chainLatestHeight) {
@@ -100,11 +117,11 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
     this.schedulerRegistry.addInterval(
       'getFinalizedBlockHead',
-      setInterval(() => void this.getFinalizedBlockHead(), interval)
+      setInterval(() => void this.memoGetFinalizedBlockHead(), interval)
     );
     this.schedulerRegistry.addInterval(
       'getBestBlockHead',
-      setInterval(() => void this.getBestBlockHead(), interval)
+      setInterval(() => void this.memoGetBestBlockHead(), interval)
     );
 
     await this.dictionaryService.initDictionaries();
@@ -186,12 +203,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
 
-      scaledBatchSize = this.blockDispatcher.smartBatchSize;
-
-      if (scaledBatchSize === 0) {
-        await waitForBatchSize(this.blockDispatcher.minimumHeapLimit);
-        continue;
-      }
+      scaledBatchSize = this.blockDispatcher.batchSize;
 
       const latestHeight = this.latestHeight();
 
@@ -211,7 +223,7 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       }
 
       // Update the target height, this happens here to stay in sync with the rest of indexing
-      this.storeModelProvider.metadata.set('targetHeight', latestHeight);
+      await this.storeModelProvider.metadata.set('targetHeight', latestHeight);
 
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced

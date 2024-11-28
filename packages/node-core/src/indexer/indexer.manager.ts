@@ -186,7 +186,7 @@ export abstract class BaseIndexerManager<
 
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        vm = vm! ?? (await getVM(ds));
+        vm ??= await getVM(ds);
 
         const parsedData = await this.prepareFilteredData(kind, data, ds);
 
@@ -208,7 +208,7 @@ export abstract class BaseIndexerManager<
 
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        vm = vm! ?? (await getVM(ds));
+        vm ??= await getVM(ds);
         monitorWrite(() => `- Handler: ${handler.handler}, args:${handledStringify(data)}`);
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }

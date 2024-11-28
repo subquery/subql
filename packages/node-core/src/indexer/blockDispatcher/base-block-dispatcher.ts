@@ -13,7 +13,6 @@ import {monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../
 import {IQueue, mainThreadOnly} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
-import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
 import {IPoi} from '../storeModelProvider/poi';
@@ -32,8 +31,7 @@ export interface IBlockDispatcher<B> {
   queueSize: number;
   freeSize: number;
   latestBufferedHeight: number;
-  smartBatchSize: number;
-  minimumHeapLimit: number;
+  batchSize: number;
 
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
@@ -53,8 +51,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   private _onDynamicDsCreated?: (height: number) => void;
   private _pendingRewindHeader?: Header;
 
-  protected smartBatchService: SmartBatchService;
-
   constructor(
     protected nodeConfig: NodeConfig,
     protected eventEmitter: EventEmitter2,
@@ -66,9 +62,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private storeModelProvider: IStoreModelProvider,
     private poiSyncService: PoiSyncService,
     protected monitorService?: MonitorServiceInterface
-  ) {
-    this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
-  }
+  ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
 
@@ -87,12 +81,9 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     return this.queue.freeSpace;
   }
 
-  get smartBatchSize(): number {
-    return this.smartBatchService.getSafeBatchSize();
-  }
-
-  get minimumHeapLimit(): number {
-    return this.smartBatchService.minimumHeapRequired;
+  get batchSize(): number {
+    // TODO make this smarter
+    return this.nodeConfig.batchSize;
   }
 
   get latestProcessedHeight(): number {

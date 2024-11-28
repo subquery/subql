@@ -8,7 +8,6 @@ import {INestApplication} from '@nestjs/common';
 import {BaseDataSource, Store, Cache} from '@subql/types-core';
 import {IApiConnectionSpecific} from '../../api.service';
 import {getLogger} from '../../logger';
-import {waitForBatchSize} from '../../utils';
 import {ProcessBlockResponse} from '../blockDispatcher';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {IDynamicDsService} from '../dynamic-ds.service';
@@ -56,10 +55,6 @@ export function getWorkerService<S extends typeof workerService>(): S {
   assert(workerService, 'Worker Not initialised');
   return workerService as S;
 }
-// eslint-disable-next-line @typescript-eslint/require-await
-async function getBlocksLoaded(): Promise<number> {
-  return workerService.numFetchedBlocks + workerService.numFetchingBlocks;
-}
 
 // eslint-disable-next-line @typescript-eslint/require-await
 async function getMemoryLeft(): Promise<number> {
@@ -103,10 +98,6 @@ async function numFetchingBlocks(): Promise<number> {
   return workerService.numFetchingBlocks;
 }
 
-async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
-  await waitForBatchSize(heapSizeInBytes);
-}
-
 // Export types to be used on the parent
 type FetchBlock = typeof fetchBlock;
 type ProcessBlock = typeof processBlock;
@@ -114,8 +105,6 @@ type NumFetchedBlocks = typeof numFetchedBlocks;
 type NumFetchingBlocks = typeof numFetchingBlocks;
 type GetWorkerStatus = typeof getStatus;
 type GetMemoryLeft = typeof getMemoryLeft;
-type GetBlocksLoaded = typeof getBlocksLoaded;
-type WaitForWorkerBatchSize = typeof waitForWorkerBatchSize;
 
 export type IBaseIndexerWorker = {
   processBlock: ProcessBlock;
@@ -124,8 +113,6 @@ export type IBaseIndexerWorker = {
   numFetchingBlocks: NumFetchingBlocks;
   getStatus: GetWorkerStatus;
   getMemoryLeft: GetMemoryLeft;
-  getBlocksLoaded: GetBlocksLoaded;
-  waitForWorkerBatchSize: WaitForWorkerBatchSize;
 };
 
 export const baseWorkerFunctions: (keyof IBaseIndexerWorker)[] = [
@@ -135,8 +122,6 @@ export const baseWorkerFunctions: (keyof IBaseIndexerWorker)[] = [
   'numFetchingBlocks',
   'getStatus',
   'getMemoryLeft',
-  'getBlocksLoaded',
-  'waitForWorkerBatchSize',
 ];
 
 export function createWorkerHost<
@@ -166,8 +151,6 @@ export function createWorkerHost<
       numFetchingBlocks,
       getStatus,
       getMemoryLeft,
-      getBlocksLoaded,
-      waitForWorkerBatchSize,
     },
     logger
   );
