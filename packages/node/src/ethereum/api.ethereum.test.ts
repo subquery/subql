@@ -21,6 +21,7 @@ import {
 // Add api key to work
 const HTTP_ENDPOINT = 'https://ethereum.rpc.subquery.network/public';
 const BLOCK_CONFIRMATIONS = 20;
+const MOONBEAM_ENDPOINT = 'https://rpc.api.moonbeam.network';
 
 const ds: SubqlRuntimeDatasource = {
   mapping: {
@@ -130,8 +131,11 @@ describe('Api.ethereum', () => {
   });
 
   it('Null filter support', async () => {
-    const beamEndpoint = 'https://rpc.api.moonbeam.network';
-    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    ethApi = new EthereumApi(
+      MOONBEAM_ENDPOINT,
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
     await ethApi.init();
     blockData = await fetchBlock(2847447);
     const result = blockData.transactions.filter((tx) => {
@@ -152,8 +156,11 @@ describe('Api.ethereum', () => {
   });
 
   it('!null filter support for logs, expect to filter out', async () => {
-    const beamEndpoint = 'https://rpc.api.moonbeam.network';
-    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    ethApi = new EthereumApi(
+      MOONBEAM_ENDPOINT,
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
     await ethApi.init();
     const filter_1: EthereumLogFilter = {
       topics: [
@@ -216,8 +223,11 @@ describe('Api.ethereum', () => {
   });
 
   it('Null filter support, for undefined transaction.to', async () => {
-    const beamEndpoint = 'https://rpc.api.moonbeam.network';
-    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    ethApi = new EthereumApi(
+      MOONBEAM_ENDPOINT,
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
     await ethApi.init();
     blockData = await fetchBlock(2847447);
     blockData.transactions[1].to = undefined;
@@ -239,8 +249,11 @@ describe('Api.ethereum', () => {
   });
 
   it('Should return all tx if filter.to is not defined', async () => {
-    const beamEndpoint = 'https://rpc.api.moonbeam.network';
-    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    ethApi = new EthereumApi(
+      MOONBEAM_ENDPOINT,
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
     await ethApi.init();
     blockData = await fetchBlock(2847447);
     const result = blockData.transactions.filter((tx) => {
@@ -258,8 +271,11 @@ describe('Api.ethereum', () => {
   });
 
   it('filter.to Should support only null not undefined', async () => {
-    const beamEndpoint = 'https://rpc.api.moonbeam.network';
-    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    ethApi = new EthereumApi(
+      MOONBEAM_ENDPOINT,
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
     await ethApi.init();
     blockData = await fetchBlock(2847447);
     const result = blockData.transactions.filter((tx) => {
@@ -277,8 +293,11 @@ describe('Api.ethereum', () => {
   });
 
   it('If transaction is undefined, with null filter, should be supported', async () => {
-    const beamEndpoint = 'https://rpc.api.moonbeam.network';
-    ethApi = new EthereumApi(beamEndpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+    ethApi = new EthereumApi(
+      MOONBEAM_ENDPOINT,
+      BLOCK_CONFIRMATIONS,
+      eventEmitter,
+    );
     await ethApi.init();
     blockData = await fetchBlock(2847447);
     const result = blockData.transactions.filter((tx) => {
@@ -302,7 +321,7 @@ describe('Api.ethereum', () => {
 
     // Moonbeam
     ethApi = new EthereumApi(
-      'https://rpc.api.moonbeam.network',
+      MOONBEAM_ENDPOINT,
       BLOCK_CONFIRMATIONS,
       eventEmitter,
     );
@@ -312,7 +331,7 @@ describe('Api.ethereum', () => {
 
     // BSC
     ethApi = new EthereumApi(
-      'https://bsc-dataseed.binance.org',
+      'https://binance.llamarpc.com',
       BLOCK_CONFIRMATIONS,
       eventEmitter,
     );

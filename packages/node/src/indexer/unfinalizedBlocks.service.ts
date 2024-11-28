@@ -1,17 +1,17 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   ApiService,
   BaseUnfinalizedBlocksService,
   Header,
   mainThreadOnly,
   NodeConfig,
-  StoreCacheService,
   getLogger,
   profiler,
   POI_NOT_ENABLED_ERROR_MESSAGE,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { last } from 'lodash';
 import { EthereumNodeConfig } from '../configure/NodeConfig';
@@ -28,9 +28,9 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   constructor(
     private readonly apiService: ApiService,
     nodeConfig: NodeConfig,
-    storeCache: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
-    super(new EthereumNodeConfig(nodeConfig), storeCache);
+    super(new EthereumNodeConfig(nodeConfig), storeModelProvider);
   }
 
   /**
@@ -38,9 +38,9 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
    * @param supportsFinalization - If the chain supports the 'finalized' block tag this should be true.
    * */
   async init(
-    reindex: (targetHeight: number) => Promise<void>,
+    reindex: (targetHeight: Header) => Promise<void>,
     supportsFinalisation?: boolean,
-  ): Promise<number | undefined> {
+  ): Promise<Header | undefined> {
     this.supportsFinalization = supportsFinalisation;
     return super.init(reindex);
   }
@@ -95,7 +95,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
    **/
   protected async getLastCorrectFinalizedBlock(
     forkedHeader: Header,
-  ): Promise<number | undefined> {
+  ): Promise<Header | undefined> {
     if (this.supportsFinalization) {
       return super.getLastCorrectFinalizedBlock(forkedHeader);
     }
@@ -107,12 +107,12 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
     let checkingHeader = forkedHeader;
 
     // Work backwards through the blocks until we find a matching hash
-    for (const { blockHash, blockHeight } of bestVerifiableBlocks.reverse()) {
+    for (const header of bestVerifiableBlocks.reverse()) {
       if (
-        blockHash === checkingHeader.blockHash ||
-        blockHash === checkingHeader.parentHash
+        header.blockHash === checkingHeader.blockHash ||
+        header.blockHash === checkingHeader.parentHash
       ) {
-        return blockHeight;
+        return header;
       }
 
       // Get the new parent
@@ -124,14 +124,16 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
 
     try {
       const poiHeader = await this.findFinalizedUsingPOI(checkingHeader);
-      return poiHeader.blockHeight;
+      return poiHeader;
     } catch (e: any) {
       if (e.message === POI_NOT_ENABLED_ERROR_MESSAGE) {
-        return Math.max(
-          0,
-          forkedHeader.blockHeight -
-            (this.nodeConfig as EthereumNodeConfig).blockForkReindex,
-        );
+        return {
+          blockHeight: Math.max(
+            0,
+            forkedHeader.blockHeight -
+              (this.nodeConfig as EthereumNodeConfig).blockForkReindex,
+          ),
+        } as Header;
       }
       // TODO rewind back 1000+ blocks
       logger.info('Failed to use POI to rewind block');
@@ -152,7 +154,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   }
 
   @mainThreadOnly()
-  protected async getHeaderForHeight(height: number): Promise<Header> {
+  async getHeaderForHeight(height: number): Promise<Header> {
     const block = await this.apiService.api.getBlockByHeightOrHash(height);
     return ethereumBlockToHeader(block);
   }

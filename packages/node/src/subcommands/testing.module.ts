@@ -13,11 +13,12 @@ import {
   NodeConfig,
   PoiService,
   PoiSyncService,
-  StoreCacheService,
   StoreService,
   TestRunner,
   SandboxService,
+  storeModelFactory,
 } from '@subql/node-core';
+import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
@@ -32,7 +33,11 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
   providers: [
     InMemoryCacheService,
     StoreService,
-    StoreCacheService,
+    {
+      provide: 'IStoreModelProvider',
+      useFactory: storeModelFactory,
+      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+    },
     EventEmitter2,
     PoiService,
     PoiSyncService,

@@ -13,6 +13,7 @@ import {
   IProjectUpgradeService,
   ApiService,
   profiler,
+  Header,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import {
@@ -83,7 +84,7 @@ export class ProjectService extends BaseProjectService<
     this.apiService.updateBlockFetching();
   }
 
-  protected async initUnfinalized(): Promise<number | undefined> {
+  protected async initUnfinalized(): Promise<Header | undefined> {
     return this.unfinalizedBlockService.init(
       this.reindex.bind(this),
       this.apiService.api.supportsFinalization,

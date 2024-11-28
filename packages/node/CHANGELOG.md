@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support for historical indexing by timestamp as well as block height
+- Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
+
 ## [5.1.7] - 2024-10-24
 ### Fixed
 - When there is no log data for fullBlock, it is determined as lightBlock. (#350)

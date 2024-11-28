@@ -11,14 +11,16 @@ import {
   BaseWorkerService,
   IProjectUpgradeService,
   IBlock,
+  Header,
 } from '@subql/node-core';
 import { EthereumProjectDs } from '../../configure/SubqueryProject';
 import { EthereumApi } from '../../ethereum';
 import SafeEthProvider from '../../ethereum/safe-api';
+import { ethereumBlockToHeader } from '../../ethereum/utils.ethereum';
 import { IndexerManager } from '../indexer.manager';
 import { BlockContent } from '../types';
 
-export type FetchBlockResponse = { parentHash: string } | undefined;
+export type FetchBlockResponse = Header;
 
 export type WorkerStatusResponse = {
   threadId: number;
@@ -58,8 +60,9 @@ export class WorkerService extends BaseWorkerService<
     return block;
   }
 
-  protected toBlockResponse(block: BlockContent): { parentHash: string } {
+  protected toBlockResponse(block: BlockContent): Header {
     return {
+      ...ethereumBlockToHeader(block),
       parentHash: block.parentHash,
     };
   }

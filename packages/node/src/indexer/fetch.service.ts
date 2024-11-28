@@ -11,9 +11,8 @@ import {
   BaseFetchService,
   ApiService,
   getModulos,
-  getLogger,
   Header,
-  StoreCacheService,
+  IStoreModelProvider,
 } from '@subql/node-core';
 import { EthereumBlock, SubqlDatasource } from '@subql/types-ethereum';
 import { EthereumApi } from '../ethereum';
@@ -46,7 +45,7 @@ export class FetchService extends BaseFetchService<
     unfinalizedBlocksService: UnfinalizedBlocksService,
     eventEmitter: EventEmitter2,
     schedulerRegistry: SchedulerRegistry,
-    storeCacheService: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
   ) {
     super(
       nodeConfig,
@@ -56,7 +55,7 @@ export class FetchService extends BaseFetchService<
       eventEmitter,
       schedulerRegistry,
       unfinalizedBlocksService,
-      storeCacheService,
+      storeModelProvider,
     );
   }
 

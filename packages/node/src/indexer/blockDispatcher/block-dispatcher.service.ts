@@ -5,7 +5,7 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NodeConfig,
-  StoreCacheService,
+  IStoreModelProvider,
   StoreService,
   IProjectService,
   BlockDispatcher,
@@ -40,7 +40,7 @@ export class BlockDispatcherService
     @Inject('IProjectUpgradeService')
     projectUpgradeService: IProjectUpgradeService,
     storeService: StoreService,
-    storeCacheService: StoreCacheService,
+    @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
     poiSyncService: PoiSyncService,
     @Inject('ISubqueryProject') project: SubqueryProject,
   ) {
@@ -50,7 +50,7 @@ export class BlockDispatcherService
       projectService,
       projectUpgradeService,
       storeService,
-      storeCacheService,
+      storeModelProvider,
       poiSyncService,
       project,
       apiService.fetchBlocks.bind(apiService),

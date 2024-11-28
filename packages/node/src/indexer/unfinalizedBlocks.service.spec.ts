@@ -112,7 +112,7 @@ describe('UnfinalizedBlockService', () => {
       makeHeader(111, true),
     );
 
-    expect(rewind).toEqual(103);
+    expect(rewind?.blockHeight).toEqual(103);
   });
 
   it('uses POI blocks if there are not enough cached unfinalized blocks', async () => {
@@ -138,7 +138,7 @@ describe('UnfinalizedBlockService', () => {
       makeHeader(111, true),
     );
 
-    expect(rewind).toEqual(99);
+    expect(rewind?.blockHeight).toEqual(99);
     expect(spy).toHaveBeenCalled();
   });
 
@@ -160,7 +160,11 @@ describe('UnfinalizedBlockService', () => {
     await unfinalizedBlocks.init(rewind);
 
     // It should fall back to poi in this case
-    expect(rewind).toHaveBeenCalledWith(99);
+    expect(rewind).toHaveBeenCalledWith({
+      blockHash: '0x00ABC99f',
+      blockHeight: 99,
+      parentHash: '0x00ABC98f',
+    });
   });
 
   it('startup, correctly checks for forks within cached unfinalized blocks', async () => {
@@ -180,7 +184,11 @@ describe('UnfinalizedBlockService', () => {
     await unfinalizedBlocks.init(rewind);
 
     // It should fall back to poi in this case
-    expect(rewind).toHaveBeenCalledWith(99);
+    expect(rewind).toHaveBeenCalledWith({
+      blockHash: '0x00ABC99f',
+      blockHeight: 99,
+      parentHash: '0x00ABC98f',
+    });
   });
 
   it('doesnt throw if there are no unfinalized blocks on startup', async () => {
@@ -209,6 +217,6 @@ describe('UnfinalizedBlockService', () => {
     await unfinalizedBlocks.init(rewind);
 
     // It should fall back to poi in this case
-    expect(rewind).toHaveBeenCalledWith(0);
+    expect(rewind).toHaveBeenCalledWith({ blockHeight: 0 });
   });
 });
