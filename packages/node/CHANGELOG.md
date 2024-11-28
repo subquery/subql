@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2024-11-28
 ### Added
 - Support for historical indexing by timestamp as well as block height
 - Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
@@ -572,7 +573,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.7...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.0...HEAD
+[5.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.7...node-ethereum/5.2.0
 [5.1.7]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.6...node-ethereum/5.1.7
 [5.1.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.5...node-ethereum/5.1.6
 [5.1.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.4...node-ethereum/5.1.5
