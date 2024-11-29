@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- When the `primary-network-endpoint` flag exists, it will report an "Invalid endpoint" error.
+- When the `primary-network-endpoint` flag exists, it will report an "Invalid endpoint" error.(#2612)
 
 ## [5.4.2] - 2024-11-26
 ### Fixed
