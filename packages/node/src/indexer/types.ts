@@ -4,6 +4,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
 import type { HexString } from '@polkadot/util/types';
+import { IBlock } from '@subql/node-core';
 import {
   BlockHeader,
   LightSubstrateEvent,
@@ -31,4 +32,13 @@ export function isFullBlock(
   block: BlockContent | LightBlockContent,
 ): block is BlockContent {
   return (block as BlockContent).extrinsics !== undefined;
+}
+
+export function getBlockSize(
+  block: IBlock<BlockContent | LightBlockContent>,
+): number {
+  return block.block.events.reduce(
+    (acc, evt) => acc + evt.encodedLength,
+    (block.block.block as SubstrateBlock)?.encodedLength ?? 0,
+  );
 }
