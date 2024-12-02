@@ -153,7 +153,7 @@ describe('CLI deploy, delete, promote', () => {
 
   it('reDeploy to Hosted Service', async () => {
     const {ipfs, org, projectName, type} = projectSpec;
-    const newIPFS = 'QmbKvrzwSmzTZi5jrhEpa6yDDHQXRURi5S4ztLgJLpBxAi';
+    const newIPFS = 'Qmdr4yg98Fv8Yif3anjKVHhjuAKR665j6ekhWsfYUdkaCu';
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_PROD);
 
     const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_PROD);
