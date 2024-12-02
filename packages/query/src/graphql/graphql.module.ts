@@ -118,7 +118,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   }
 
   private setupKeepAlive(pgClient: PoolClient) {
-    const interval = argv['sl-keep-alive-interval'] ?? 180000;
+    const interval = argv['sl-keep-alive-interval'] || 180000;
     logger.info(`Setup PG Pool keep alive. interval ${interval} ms`);
     setInterval(() => {
       void (async () => {
