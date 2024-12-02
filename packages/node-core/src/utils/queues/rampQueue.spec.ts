@@ -1,8 +1,8 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Task} from './autoQueue';
-import {RampQueue} from './rampQueue';
+import { Task } from './autoQueue';
+import { RampQueue } from './rampQueue';
 
 const testSizes = [
   4.448733415947499, 8.956082893010741, 1.0740251087438613, 7.874408027526685, 2.095588330681719, 9.877603058371257,
