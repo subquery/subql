@@ -52,7 +52,9 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
 
-    if (key === 'network-registry') {
+    const outputKey = nameMapping[key] ?? camelCase(key);
+
+    if (outputKey === 'networkRegistry') {
       try {
         value = JSON.parse(value as string);
       } catch (e) {
@@ -61,7 +63,7 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
     }
 
     // Merge network endpoints and possible endpoint configs
-    if (key === 'network-endpoint') {
+    if (outputKey === 'networkEndpoint') {
       const endpointConfig = processEndpointConfig(yargs['network-endpoint-config']);
       if (typeof value === 'string') {
         value = [value];
@@ -76,20 +78,20 @@ export function yargsToIConfig(yargs: Args, nameMapping: Record<string, string> 
         );
       }
     }
-    if (key === 'primary-network-endpoint') {
+    if (outputKey === 'primaryNetworkEndpoint') {
       const endpointConfig = processEndpointConfig(yargs['primary-network-endpoint-config']);
       value = [value, endpointConfig[0] ?? {}];
     }
-    if (['network-endpoint-config', 'primary-network-endpoint-config'].includes(key)) return acc;
+    if (['networkEndpointConfig', 'primaryNetworkEndpointConfig'].includes(outputKey)) return acc;
 
-    if (key === 'disable-historical' && value) {
+    if (outputKey === 'disableHistorical' && value) {
       acc.historical = false;
     }
-    if (key === 'historical' && value === 'false') {
+    if (outputKey === 'historical' && value === 'false') {
       value = false;
     }
 
-    acc[nameMapping[key] ?? camelCase(key)] = value;
+    acc[outputKey] = value;
     return acc;
   }, {} as any);
 }

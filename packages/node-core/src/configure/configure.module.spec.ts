@@ -93,7 +93,9 @@ describe('Configure', () => {
       const option = {headers: {'api-key': '<your-api-key>'}};
       const {primaryNetworkEndpoint} = yargsToIConfig({
         'primary-network-endpoint': 'https://example.com',
+        primaryNetworkEndpoint: 'https://example.com',
         'primary-network-endpoint-config': JSON.stringify(option),
+        primaryNetworkEndpointConfig: JSON.stringify(option),
       });
 
       expect(primaryNetworkEndpoint).toEqual(['https://example.com', option]);
