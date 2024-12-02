@@ -82,7 +82,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   get batchSize(): number {
-    // TODO make this smarter
     return this.nodeConfig.batchSize;
   }
 

@@ -207,14 +207,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
 
       const latestHeight = this.latestHeight();
 
-      console.log(
-        'XXXX',
-        this.blockDispatcher.freeSize,
-        scaledBatchSize,
-        startBlockHeight,
-        latestHeight,
-        this.blockDispatcher.freeSize < scaledBatchSize || startBlockHeight > latestHeight
-      );
       if (this.blockDispatcher.freeSize < scaledBatchSize || startBlockHeight > latestHeight) {
         if (this.blockDispatcher.freeSize < scaledBatchSize) {
           logger.debug(
@@ -268,7 +260,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
             await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
           }
         } catch (e: any) {
-          console.log('RERRR', e);
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
           await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
@@ -325,7 +316,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
     scaledBatchSize: number,
     latestHeight: number
   ): Promise<void> {
-    console.log('FFFF');
     // End height from current dataSource
     const {endHeight, value: relevantDs} = this.getRelevantDsDetails(startBlockHeight);
     // Estimated range end height
@@ -338,7 +328,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       ? this.getEnqueuedModuloBlocks(startBlockHeight, latestHeight)
       : range(startBlockHeight, estRangeEndHeight + 1);
 
-    console.log('GGGGGG', enqueuingBlocks, estRangeEndHeight);
     await this.enqueueBlocks(enqueuingBlocks, estRangeEndHeight);
   }
 
@@ -347,7 +336,6 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       ...this.projectService.bypassBlocks,
       ...this.getDatasourceBypassBlocks(),
     ]);
-    console.log('EEEEEE', cleanedBatchBlocks);
     await this.blockDispatcher.enqueueBlocks(
       cleanedBatchBlocks,
       this.getLatestBufferHeight(enqueuingBlocks, latestHeight)
