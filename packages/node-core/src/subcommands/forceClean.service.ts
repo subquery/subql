@@ -5,11 +5,10 @@ import {Inject, Injectable} from '@nestjs/common';
 import {getAllEntitiesRelations} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
-import {enumNameToHash} from '../db';
 import {MonitorService} from '../indexer';
 import {ISubqueryProject} from '../indexer/types';
 import {getLogger} from '../logger';
-import {getEnumDeprecated, getExistingProjectSchema} from '../utils';
+import {getEnumDeprecated, getExistingProjectSchema, enumNameToHash} from '../utils';
 
 const logger = getLogger('Force-clean');
 

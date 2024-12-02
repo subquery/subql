@@ -297,9 +297,9 @@ export function createSchemaTriggerFunction(schema: string): string {
   $$ LANGUAGE plpgsql;`;
 }
 
-export function enumNameToHash(enumName: string): string {
-  return blake2AsHex(enumName).substr(2, 10);
-}
+// export function enumNameToHash(enumName: string): string {
+//   return blake2AsHex(enumName).substr(2, 10);
+// }
 
 export function getExistedIndexesQuery(schema: string): string {
   return `SELECT indexname FROM pg_indexes WHERE schemaname = '${schema}'`;

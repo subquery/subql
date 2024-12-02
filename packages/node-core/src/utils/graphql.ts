@@ -13,10 +13,14 @@ import {
   isNull,
   GraphQLEntityField,
   GraphQLJsonFieldType,
+  blake2AsHex,
 } from '@subql/utils';
 import {ModelAttributes, ModelAttributeColumnOptions} from '@subql/x-sequelize';
 import {isArray, isObject} from 'lodash';
-import {enumNameToHash} from '../db';
+
+export function enumNameToHash(enumName: string): string {
+  return blake2AsHex(enumName).substr(2, 10);
+}
 
 export interface EnumType {
   enumValues: string[];
