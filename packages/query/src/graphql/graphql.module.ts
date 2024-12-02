@@ -118,6 +118,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   }
 
   private setupKeepAlive(pgClient: PoolClient) {
+    const interval = argv['sl-keep-alive-interval'] || 180000;
+    logger.info(`Setup PG Pool keep alive. interval ${interval} ms`);
     setInterval(() => {
       void (async () => {
         try {
@@ -126,7 +128,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
           getLogger('db').error('Schema listener client keep-alive query failed: ', err);
         }
       })();
-    }, this.config.get('sl-keep-alive-interval'));
+    }, interval);
   }
 
   private async createServer() {
