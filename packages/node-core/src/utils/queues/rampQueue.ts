@@ -23,6 +23,7 @@ const logger = getLogger('RampQueue');
 export class RampQueue<T> extends AutoQueue<T> {
   #maxConcurrency: number;
   #sizes: number[] = [];
+  #totalItems = 0;
 
   constructor(
     private getSize: (data: T) => number,
@@ -72,9 +73,9 @@ export class RampQueue<T> extends AutoQueue<T> {
 
       if (size > m * 2) {
         // Inverse of the size compared to the median. E.g if a block is 5x as big as the median then the batch size should be 1/5 of the max
-        const multiplier = 1 / (size / m);
+        const multiplier = m / size;
         this.setConcurrency(this.#maxConcurrency * multiplier);
-      } else if (this.#sizes.length % MIN_SIZES === 0) {
+      } else if (this.#totalItems % MIN_SIZES === 0) {
         // Increase by 10% of max
         this.setConcurrency(this.concurrency + Math.floor(this.#maxConcurrency / 10));
       }
@@ -87,6 +88,7 @@ export class RampQueue<T> extends AutoQueue<T> {
     if (this.#sizes.length >= MAX_SIZES) {
       this.#sizes.shift();
     }
+    this.#totalItems++;
     this.#sizes.push(size);
   }
 }

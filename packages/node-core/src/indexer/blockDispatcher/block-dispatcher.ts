@@ -16,7 +16,6 @@ import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
 import {IProjectService, ISubqueryProject} from '../types';
 import {BaseBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
-// import { RampQueue } from '@subql/node-core/utils/rampQueue';
 
 const logger = getLogger('BlockDispatcherService');
 
