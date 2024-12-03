@@ -4050,6 +4050,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphile-contrib/pg-order-by-related@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@graphile-contrib/pg-order-by-related@npm:1.0.0"
+  checksum: e5fa3655075b6c499926cf954e809ff827d23710919662a4a1de5a342b2d9874f7b5d47e4d7924aa8da65a3e33e716c57326358ef4cb8812ea125e21abefdd31
+  languageName: node
+  linkType: hard
+
 "@graphile-contrib/pg-simplify-inflector@npm:^6.1.0":
   version: 6.1.0
   resolution: "@graphile-contrib/pg-simplify-inflector@npm:6.1.0"
@@ -6860,6 +6867,7 @@ __metadata:
   resolution: "@subql/query@workspace:packages/query"
   dependencies:
     "@graphile-contrib/pg-many-to-many": ^1.0.2
+    "@graphile-contrib/pg-order-by-related": ^1.0.0
     "@graphile-contrib/pg-simplify-inflector": ^6.1.0
     "@graphile/pg-aggregates": ^0.1.1
     "@graphile/pg-pubsub": ^4.13.0
