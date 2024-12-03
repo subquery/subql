@@ -41,6 +41,7 @@ import PgConnectionTotalCount from '@subql/x-graphile-build-pg/node8plus/plugins
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
+import PgOrderByRelatedPlugin from '@graphile-contrib/pg-order-by-related';
 
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
@@ -113,6 +114,7 @@ const plugins = [
   PgRowByVirtualIdPlugin,
   PgDistinctPlugin,
   PgSearchPlugin,
+  PgOrderByRelatedPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
