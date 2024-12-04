@@ -15,5 +15,5 @@ DB_DATABASE=postgres
 then run the following command
 
 ```
-$ NODE_OPTIONS="-r dotenv/config" yarn start -- --name <subuqery_name> --playground
+$ NODE_OPTIONS="-r dotenv/config" yarn start -- --name <subquery_name> --playground
 ```
