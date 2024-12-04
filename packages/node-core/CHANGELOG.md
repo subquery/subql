@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed the issue where flags that require special handling were being overwritten.(#2612)
 
+### Changed
+- Various internal improvements to exporters (CSV exporter) (#2617)
+
 ## [15.0.3] - 2024-11-26
 ### Fixed
 - Workers crashing because of lazy monitor write (#2607)
