@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.18.0] - 2024-12-04
 ### Fixed
 - High CPU usage caused by interval with 0ms (#2614)
+
 ### Added
 - Add PgOrderByRelatedPlugin to GraphQL query package
 
@@ -384,7 +387,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.17.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.18.0...HEAD
+[2.18.0]: https://github.com/subquery/subql/compare/query/2.17.1...query/2.18.0
+[2.17.1]: https://github.com/subquery/subql/compare/query/2.17.0...query/2.17.1
 [2.17.0]: https://github.com/subquery/subql/compare/query/2.16.0...query/2.17.0
 [2.16.0]: https://github.com/subquery/subql/compare/query/2.15.2...query/2.16.0
 [2.15.2]: https://github.com/subquery/subql/compare/query/2.15.1...query/2.15.2
