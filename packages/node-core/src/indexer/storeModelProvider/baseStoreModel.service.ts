@@ -53,7 +53,7 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeAp
 
   getAllExporters(): Exporter[] {
     return Object.values(this.cachedModels)
-      .map((m) => (m as any).exporters)
+      .map((m) => (m as any).exporters ?? [])
       .flat();
   }
 }
