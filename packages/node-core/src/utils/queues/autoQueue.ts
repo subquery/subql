@@ -2,15 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {timeout} from './promise';
-
-export interface IQueue {
-  size: number;
-  capacity: number | undefined;
-  freeSpace: number | undefined;
-
-  flush(): void;
-}
+import {timeout} from '../promise';
+import {IQueue, Queue} from './queue';
 
 export class TaskFlushedError extends Error {
   readonly name = 'TaskFlushedError';
@@ -24,69 +17,7 @@ export function isTaskFlushedError(e: any): e is TaskFlushedError {
   return (e as TaskFlushedError)?.name === 'TaskFlushedError';
 }
 
-export class Queue<T> implements IQueue {
-  protected items: T[] = [];
-  private _capacity?: number;
-
-  constructor(capacity?: number) {
-    this._capacity = capacity;
-  }
-
-  get size(): number {
-    return this.items.length;
-  }
-
-  get capacity(): number | undefined {
-    return this._capacity;
-  }
-
-  get freeSpace(): number | undefined {
-    if (!this._capacity) return undefined;
-
-    return this._capacity - this.size;
-  }
-
-  put(item: T): void {
-    this.putMany([item]);
-  }
-
-  putMany(items: T[]): void {
-    if (this.freeSpace && items.length > this.freeSpace) {
-      throw new Error('Queue exceeds max size');
-    }
-    this.items.push(...items);
-  }
-
-  peek(): T | undefined {
-    return this.items[0];
-  }
-
-  take(): T | undefined {
-    return this.items.shift();
-  }
-
-  takeMany(size: number): T[] {
-    const sizeCapped = Math.min(this.size, size);
-
-    const result = this.items.slice(0, sizeCapped);
-    this.items = this.items.slice(sizeCapped);
-
-    return result;
-  }
-
-  takeAll(): T[] {
-    const result = this.items;
-
-    this.items = [];
-    return result;
-  }
-
-  flush(): void {
-    this.takeAll();
-  }
-}
-
-type Task<T> = () => Promise<T> | T;
+export type Task<T> = () => Promise<T> | T;
 
 type Action<T> = {
   index: number;
@@ -127,7 +58,7 @@ export class AutoQueue<T> implements IQueue {
     capacity?: number,
     public concurrency = 1,
     private taskTimeoutSec = 900,
-    private name = 'Auto'
+    protected name = 'Auto'
   ) {
     this.queue = new Queue<Action<T>>(capacity);
   }

@@ -29,7 +29,7 @@ import {
   SubstrateExtrinsic,
   BlockHeader,
 } from '@subql/types';
-import { merge, range } from 'lodash';
+import { merge } from 'lodash';
 import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { ApiPromiseConnection } from '../indexer/apiPromise.connection';
 import { BlockContent, LightBlockContent } from '../indexer/types';
@@ -288,6 +288,7 @@ export async function getBlockByHeight(
     );
     throw ApiPromiseConnection.handleError(e);
   });
+
   // validate block is valid
   if (block.block.header.hash.toHex() !== blockHash.toHex()) {
     throw new Error(

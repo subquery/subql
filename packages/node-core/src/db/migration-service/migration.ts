@@ -23,11 +23,9 @@ import {isEqual, uniq} from 'lodash';
 import {NodeConfig} from '../../configure/NodeConfig';
 import {HistoricalMode, StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
-import {EnumType, getColumnOption, modelsTypeToModelAttributes} from '../../utils';
+import {EnumType, getColumnOption, modelsTypeToModelAttributes, enumNameToHash} from '../../utils';
 import {formatAttributes, formatColumnName, modelToTableName} from '../sequelizeUtil';
 import * as syncHelper from '../sync-helper';
-
-type RemovedIndexes = Record<string, IndexesOptions[]>;
 
 const logger = getLogger('db-manager');
 
@@ -358,8 +356,8 @@ export class Migration {
     // It is difficult for sequelize use replacement, instead we use escape to avoid injection
     // UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
     // See https://github.com/cockroachdb/cockroach/issues/44135
-    const enumTypeName = syncHelper.enumNameToHash(e.name);
-    const enumTypeNameDeprecated = `${this.schemaName}_enum_${syncHelper.enumNameToHash(e.name)}`;
+    const enumTypeName = enumNameToHash(e.name);
+    const enumTypeNameDeprecated = `${this.schemaName}_enum_${enumNameToHash(e.name)}`;
 
     let type: string | null = null;
 
@@ -397,8 +395,8 @@ export class Migration {
   }
 
   dropEnum(e: GraphQLEnumsType): void {
-    const enumTypeName = syncHelper.enumNameToHash(e.name);
-    const enumTypeNameDeprecated = `${this.schemaName}_enum_${syncHelper.enumNameToHash(e.name)}`;
+    const enumTypeName = enumNameToHash(e.name);
+    const enumTypeNameDeprecated = `${this.schemaName}_enum_${enumNameToHash(e.name)}`;
 
     [enumTypeName, enumTypeNameDeprecated].forEach((typeName) => {
       if (this.enumTypeMap.has(typeName)) {

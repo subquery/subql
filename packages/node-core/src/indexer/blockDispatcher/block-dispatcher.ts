@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {getHeapStatistics} from 'v8';
 import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
@@ -12,7 +11,7 @@ import {getBlockHeight, IBlock, PoiSyncService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
-import {Queue, AutoQueue, delay, memoryLock, waitForBatchSize, isTaskFlushedError} from '../../utils';
+import {Queue, AutoQueue, RampQueue, delay, isTaskFlushedError} from '../../utils';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
 import {IProjectService, ISubqueryProject} from '../types';
@@ -37,6 +36,7 @@ export abstract class BlockDispatcher<B, DS>
   private fetching = false;
   private isShutdown = false;
 
+  protected abstract getBlockSize(block: IBlock<B>): number;
   protected abstract indexBlock(block: IBlock<B>): Promise<ProcessBlockResponse>;
 
   constructor(
@@ -62,7 +62,13 @@ export abstract class BlockDispatcher<B, DS>
       poiSyncService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
-    this.fetchQueue = new AutoQueue(nodeConfig.batchSize * 3, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch');
+    this.fetchQueue = new RampQueue(
+      this.getBlockSize.bind(this),
+      nodeConfig.batchSize,
+      nodeConfig.batchSize * 3,
+      nodeConfig.timeout,
+      'Fetch'
+    );
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(fetchBlocksBatches, 'BlockDispatcher', 'fetchBlocksBatches');
     } else {
@@ -96,10 +102,6 @@ export abstract class BlockDispatcher<B, DS>
     this.processQueue.flush();
   }
 
-  private memoryleft(): number {
-    return this.smartBatchService.heapMemoryLimit() - getHeapStatistics().used_heap_size;
-  }
-
   @Interval(10000)
   queueStats(stat: 'size' | 'freeSpace' = 'freeSpace'): void {
     // NOTE: If the free space of the process queue is low it means that processing is the limiting factor. If it is large then fetching blocks is the limitng factor.
@@ -107,6 +109,7 @@ export abstract class BlockDispatcher<B, DS>
       `QUEUE INFO ${stat}: Block numbers: ${this.queue[stat]}, fetch: ${this.fetchQueue[stat]}, process: ${this.processQueue[stat]}`
     );
   }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
 
@@ -128,23 +131,14 @@ export abstract class BlockDispatcher<B, DS>
 
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
-
-        if (this.memoryleft() < 0) {
-          //stop fetching until memory is freed
-          await waitForBatchSize(this.minimumHeapLimit);
-        }
-
         void this.fetchQueue
           .put(async () => {
-            if (memoryLock.isLocked()) {
-              await memoryLock.waitForUnlock();
-            }
             if (typeof blockOrNum !== 'number') {
               // Type is of block
               return blockOrNum;
             }
             const [block] = await this.fetchBlocksBatches([blockOrNum]);
-            this.smartBatchService.addToSizeBuffer([block]);
+
             return block;
           })
           .then(

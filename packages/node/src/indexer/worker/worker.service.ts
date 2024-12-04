@@ -17,7 +17,12 @@ import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
-import { BlockContent, isFullBlock, LightBlockContent } from '../types';
+import {
+  BlockContent,
+  getBlockSize,
+  isFullBlock,
+  LightBlockContent,
+} from '../types';
 
 export type FetchBlockResponse = Header & { specVersion?: number };
 
@@ -66,6 +71,12 @@ export class WorkerService extends BaseWorkerService<
       ...substrateBlockToHeader(block.block),
       specVersion: block.block.specVersion,
     };
+  }
+
+  protected getBlockSize(
+    block: IBlock<BlockContent | LightBlockContent>,
+  ): number {
+    return getBlockSize(block);
   }
 
   protected async processFetchedBlock(

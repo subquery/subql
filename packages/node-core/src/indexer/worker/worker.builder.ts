@@ -177,7 +177,12 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
    * @param hostFns - functions the host exposes to the worker
    * @param exitMain - if true, when a worker exits the host will also exit
    * */
-  private constructor(private worker: workers.Worker, workerFns: (keyof T)[], hostFns: AsyncMethods, exitMain = true) {
+  private constructor(
+    private worker: workers.Worker,
+    workerFns: (keyof T)[],
+    hostFns: AsyncMethods,
+    exitMain = true
+  ) {
     super(worker, workerFns as string[], hostFns, getLogger(`worker: ${worker.threadId}`));
 
     this.worker.on('error', (error) => {

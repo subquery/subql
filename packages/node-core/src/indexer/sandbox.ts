@@ -11,7 +11,7 @@ import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
 import {NodeVM, NodeVMOptions, VMError, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
-import {timeout} from '../utils';
+import {timeout} from '../utils/promise';
 
 export const SANDBOX_DEFAULT_BUILTINS = ['assert', 'buffer', 'crypto', 'util', 'path', 'url', 'stream'];
 

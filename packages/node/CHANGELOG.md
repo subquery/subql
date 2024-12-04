@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Add block size function to match breaking node-core change (#2611)
 
 ### Fixed
 - When the `primary-network-endpoint` flag exists, it will report an "Invalid endpoint" error.(#2612)

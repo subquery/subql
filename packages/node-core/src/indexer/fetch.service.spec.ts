@@ -4,7 +4,6 @@
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry} from '@subql/types-core';
-import {range} from 'lodash';
 import {
   BaseUnfinalizedBlocksService,
   BlockDispatcher,
@@ -145,8 +144,7 @@ const getDictionaryService = () =>
 const getBlockDispatcher = () => {
   const inst = {
     latestBufferedHeight: 0,
-    smartBatchSize: 10,
-    minimumHeapLimit: 1000,
+    batchSize: 10,
     freeSize: 10,
     enqueueBlocks: (heights: number[], latestBufferHeight: number) => {
       (inst as any).freeSize = inst.freeSize - heights.length;
