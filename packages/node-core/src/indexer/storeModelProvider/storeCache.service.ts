@@ -2,25 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { DatabaseError, Deferrable, Sequelize } from '@subql/x-sequelize';
-import { sum } from 'lodash';
-import { NodeConfig } from '../../configure';
-import { IndexerEvent } from '../../events';
-import { getLogger } from '../../logger';
-import { exitWithError } from '../../process';
-import { profiler } from '../../profiler';
-import { MetadataRepo, PoiRepo } from '../entities';
-import { HistoricalMode } from '../types';
-import { BaseCacheService } from './baseCache.service';
-import { CsvStoreService } from './csvStore.service';
-import { CacheMetadataModel } from './metadata';
-import { METADATA_ENTITY_NAME } from './metadata/utils';
-import { CachedModel } from './model';
-import { CachePoiModel, POI_ENTITY_NAME } from './poi';
-import { IStoreModelProvider } from './types';
+import {Injectable} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
+import {DatabaseError, Deferrable, Sequelize} from '@subql/x-sequelize';
+import {sum} from 'lodash';
+import {NodeConfig} from '../../configure';
+import {IndexerEvent} from '../../events';
+import {getLogger} from '../../logger';
+import {exitWithError} from '../../process';
+import {profiler} from '../../profiler';
+import {MetadataRepo, PoiRepo} from '../entities';
+import {HistoricalMode} from '../types';
+import {BaseCacheService} from './baseCache.service';
+import {CsvExporter, Exporter} from './exporters';
+import {CacheMetadataModel} from './metadata';
+import {METADATA_ENTITY_NAME} from './metadata/utils';
+import {CachedModel} from './model';
+import {CachePoiModel, POI_ENTITY_NAME} from './poi';
+import {IStoreModelProvider} from './types';
 
 const logger = getLogger('StoreCacheService');
 
@@ -82,16 +82,15 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
       this.getNextStoreOperationIndex.bind(this)
     );
     if (this.config.csvOutDir) {
-      const exporterStore = new CsvStoreService(entityName, this.config.csvOutDir);
+      const exporterStore = new CsvExporter(entityName, this.config.csvOutDir);
       this.addExporter(cachedModel, exporterStore);
     }
 
     return cachedModel;
   }
 
-  private addExporter(cachedModel: CachedModel, exporterStore: CsvStoreService): void {
-    cachedModel.addExporterStore(exporterStore);
-    this.exports.push(exporterStore);
+  private addExporter(cachedModel: CachedModel, exporter: Exporter): void {
+    cachedModel.addExporter(exporter);
   }
 
   get metadata(): CacheMetadataModel {
@@ -175,7 +174,7 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
     if (this.config.storeCacheAsync) {
       // Flush all completed block data and don't wait
       await this.flushAndWaitForCapacity(false)?.catch((e) => {
-        exitWithError(new Error(`Flushing cache failed`, { cause: e }), logger);
+        exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);
       });
     } else {
       // Flush all data from cache and wait

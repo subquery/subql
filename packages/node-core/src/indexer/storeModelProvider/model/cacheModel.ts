@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { FieldsExpression, GetOptions } from '@subql/types-core';
-import { CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction } from '@subql/x-sequelize';
-import { flatten, uniq, cloneDeep, orderBy, unionBy } from 'lodash';
-import { NodeConfig } from '../../../configure';
-import { HistoricalMode } from '../../types';
-import { Cacheable } from '../cacheable';
-import { CsvStoreService } from '../csvStore.service';
-import { SetValueModel } from '../setValueModel';
-import { ICachedModelControl, RemoveValue, SetData, GetData, FilteredHeightRecords, SetValue, Exporter } from '../types';
-import { BaseEntity, IModel } from './model';
-import { getFullOptions, operatorsMap } from './utils';
+import {FieldsExpression, GetOptions} from '@subql/types-core';
+import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from '@subql/x-sequelize';
+import {flatten, uniq, cloneDeep, orderBy, unionBy} from 'lodash';
+import {NodeConfig} from '../../../configure';
+import {HistoricalMode} from '../../types';
+import {Cacheable} from '../cacheable';
+import {Exporter} from '../exporters';
+import {SetValueModel} from '../setValueModel';
+import {ICachedModelControl, RemoveValue, SetData, GetData, FilteredHeightRecords, SetValue} from '../types';
+import {BaseEntity, IModel} from './model';
+import {getFullOptions, operatorsMap} from './utils';
 
 const getCacheOptions = {
   max: 500, // default value
@@ -22,13 +22,14 @@ const getCacheOptions = {
 
 export class CachedModel<T extends BaseEntity = BaseEntity>
   extends Cacheable
-  implements IModel<T>, ICachedModelControl {
+  implements IModel<T>, ICachedModelControl
+{
   // Null value indicates its not defined in the db
   private getCache: GetData<T>;
   private setCache: SetData<T> = {};
   private removeCache: Record<string, RemoveValue> = {};
   readonly hasAssociations: boolean = false;
-  private exporters: Exporter[] = [];
+  exporters: Exporter[] = [];
 
   flushableRecordCounter = 0;
 
@@ -82,7 +83,7 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
         record = (
           await this.model.findOne({
             // https://github.com/sequelize/sequelize/issues/15179
-            where: { id } as any,
+            where: {id} as any,
           })
         )?.toJSON();
         if (record) {
@@ -96,7 +97,7 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
     return cloneDeep(this.getCache.get(id));
   }
 
-  addExporterStore(cacheState: CsvStoreService): void {
+  addExporter(cacheState: Exporter): void {
     this.exporters.push(cacheState);
   }
 
@@ -152,8 +153,8 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
     const records = await this.model.findAll({
       where: {
         [Op.and]: [
-          ...filters.map(([field, operator, value]) => ({ [field]: { [operatorsMap[operator]]: value } })),
-          { id: { [Op.notIn]: this.allCachedIds() } },
+          ...filters.map(([field, operator, value]) => ({[field]: {[operatorsMap[operator]]: value}})),
+          {id: {[Op.notIn]: this.allCachedIds()}},
         ] as any, // Types not working properly
       },
       limit: fullOptions.limit - offsetCacheData.length, // Only get enough to fill the limit
@@ -234,7 +235,7 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
 
   async runFlush(tx: Transaction, blockHeight: number): Promise<void> {
     // Get records relevant to the block height
-    const { removeRecords, setRecords } = this.filterRecordsWithHeight(blockHeight);
+    const {removeRecords, setRecords} = this.filterRecordsWithHeight(blockHeight);
     // Filter non-historical could return undefined due to it been removed
     let records = this.applyBlockRange(setRecords).filter((r) => !!r);
     let dbOperation: Promise<unknown>;
@@ -272,20 +273,20 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
 
       dbOperation = Promise.all([
         records.length &&
-        this.model.bulkCreate(records, {
-          transaction: tx,
-          updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
-        }),
+          this.model.bulkCreate(records, {
+            transaction: tx,
+            updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+          }),
         Object.keys(removeRecords).length &&
-        this.model.destroy({ where: { id: Object.keys(removeRecords) } as any, transaction: tx }),
+          this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),
       ]);
     }
-    this.exporters.forEach((store: Exporter) => {
-      tx.afterCommit(async () => {
-        await store.export(records);
-      });
-    });
+
     await dbOperation;
+    // If this throws the transaction should be aborted
+    for (const exporter of this.exporters) {
+      await exporter.export(records);
+    }
   }
 
   // Flush relation model in operationIndex order with non-historical db
@@ -294,7 +295,7 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
       (key) => this.removeCache[key].operationIndex === operationIndex
     );
     if (removeRecordKey !== undefined) {
-      await this.model.destroy({ where: { id: removeRecordKey } as any, transaction: tx });
+      await this.model.destroy({where: {id: removeRecordKey} as any, transaction: tx});
       delete this.removeCache[removeRecordKey];
     } else {
       let setRecord: SetValue<T> | undefined;
@@ -303,7 +304,7 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
         if (setRecord) break;
       }
       if (setRecord) {
-        await this.model.upsert(setRecord.data as unknown as CreationAttributes<Model<T, T>>, { transaction: tx });
+        await this.model.upsert(setRecord.data as unknown as CreationAttributes<Model<T, T>>, {transaction: tx});
       }
       return;
     }
@@ -401,15 +402,15 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
     setRecords: SetData<T>,
     removeRecords: Record<string, RemoveValue>
   ): Promise<void> {
-    const closeSetRecords: { id: string; blockHeight: number }[] = [];
+    const closeSetRecords: {id: string; blockHeight: number}[] = [];
     for (const [id, value] of Object.entries(setRecords)) {
       const firstValue = value.getFirst();
       if (firstValue !== undefined) {
-        closeSetRecords.push({ id, blockHeight: firstValue.startHeight });
+        closeSetRecords.push({id, blockHeight: firstValue.startHeight});
       }
     }
     const closeRemoveRecords = Object.entries(removeRecords).map(([id, value]) => {
-      return { id, blockHeight: value.removedAtBlock };
+      return {id, blockHeight: value.removedAtBlock};
     });
     const mergedRecords = closeSetRecords.concat(closeRemoveRecords);
 
@@ -420,10 +421,10 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
     await this.sequelize.query(
       `UPDATE ${this.model.getTableName()} table1 SET _block_range = int8range(lower("_block_range"), table2._block_end)
             from (SELECT UNNEST(array[${mergedRecords.map((r) =>
-        this.sequelize.escape(r.id)
-      )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2
+              this.sequelize.escape(r.id)
+            )}]) AS id, UNNEST(array[${mergedRecords.map((r) => r.blockHeight)}]) AS _block_end) AS table2
             WHERE table1.id = table2.id and "_block_range" @> _block_end-1::int8;`,
-      { transaction: tx }
+      {transaction: tx}
     );
   }
 
