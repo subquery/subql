@@ -1,17 +1,18 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { Sequelize } from '@subql/x-sequelize';
-import { NodeConfig } from '../../configure';
-import { delay } from '../../utils';
-import { BaseEntity } from './model';
-import { StoreCacheService } from './storeCache.service';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
+import {Sequelize} from '@subql/x-sequelize';
+import {NodeConfig} from '../../configure';
+import {delay} from '../../utils';
+import {Exporter} from './exporters';
+import {BaseEntity, CachedModel} from './model';
+import {StoreCacheService} from './storeCache.service';
 
 const eventEmitter = new EventEmitter2();
 
-type TestEntity = BaseEntity & { field1: string };
+type TestEntity = BaseEntity & {field1: string};
 
 jest.mock('@subql/x-sequelize', () => {
   const mSequelize = {
@@ -24,7 +25,7 @@ jest.mock('@subql/x-sequelize', () => {
       findOne: jest.fn(),
       create: (input: any) => input,
     }),
-    query: () => [{ nextval: 1 }],
+    query: () => [{nextval: 1}],
     showAllSchemas: () => ['subquery_1'],
     model: (entity: string) => ({
       upsert: jest.fn(),
@@ -185,7 +186,7 @@ describe('Store Cache flush with non-historical', () => {
   let storeCacheService: StoreCacheService;
 
   const sequelize = new Sequelize();
-  const nodeConfig: NodeConfig = { disableHistorical: true } as any;
+  const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
     storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
@@ -227,12 +228,12 @@ describe('Store Cache flush with non-historical', () => {
     const spyModel1Destroy = jest.spyOn(sequelizeModel1, 'destroy');
 
     // Only last set record with block 5 is created
-    expect(spyModel1Create).toHaveBeenCalledWith([{ field1: 'set at block 5', id: 'entity1_id_0x01' }], {
+    expect(spyModel1Create).toHaveBeenCalledWith([{field1: 'set at block 5', id: 'entity1_id_0x01'}], {
       transaction: tx,
       updateOnDuplicate: ['id', 'field1'],
     });
     // remove id 2 only
-    expect(spyModel1Destroy).toHaveBeenCalledWith({ transaction: tx, where: { id: ['entity1_id_0x02'] } });
+    expect(spyModel1Destroy).toHaveBeenCalledWith({transaction: tx, where: {id: ['entity1_id_0x02']}});
   });
 });
 
@@ -247,7 +248,7 @@ describe('Store cache upper threshold', () => {
 
   beforeEach(() => {
     storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
-    storeCacheService.init(false, { findByPk: () => Promise.resolve({ toJSON: () => 1 }) } as any, undefined);
+    storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
   });
 
   it('doesnt wait for flushing cache when threshold not met', async () => {
@@ -292,5 +293,44 @@ describe('Store cache upper threshold', () => {
 
     // Should be more than 1s, we set the db tx.commit to take 1s
     expect(end - start).toBeGreaterThanOrEqual(1000);
+  });
+});
+
+describe('Store cache with exporters', () => {
+  let storeCacheService: StoreCacheService;
+
+  const sequelize = new Sequelize();
+  const nodeConfig = {} as NodeConfig;
+
+  beforeEach(() => {
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
+  });
+
+  // This makes sure exporting + flushing is atomic
+  it('aborts the transaction if an exporter throws', async () => {
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
+
+    const errorExporter = {
+      export: () => {
+        return Promise.reject(new Error('Cant export'));
+      },
+      shutdown: () => Promise.resolve(),
+    } satisfies Exporter;
+
+    for (let i = 0; i < 5; i++) {
+      await entity1Model.set(
+        `entity1_id_0x0${i}`,
+        {
+          id: `entity1_id_0x0${i}`,
+          field1: 'set at block 1',
+        },
+        1
+      );
+    }
+
+    (entity1Model as unknown as CachedModel).addExporter(errorExporter);
+
+    await expect(() => storeCacheService.flushData(true)).rejects.toThrow('Cant export');
   });
 });

@@ -9,12 +9,12 @@ import {StoreCacheService} from './storeCache.service';
 import {PlainStoreModelService} from './storeModel.service';
 import {IStoreModelProvider} from './types';
 
-export async function cacheProviderFlushData(modelProvider: IStoreModelProvider, forceFlush?: boolean) {
+export async function cacheProviderFlushData(modelProvider: IStoreModelProvider, forceFlush?: boolean): Promise<void> {
   if (modelProvider instanceof StoreCacheService) {
     await modelProvider.flushData(forceFlush);
   }
 }
-export async function cacheProviderResetData(modelProvider: IStoreModelProvider) {
+export async function cacheProviderResetData(modelProvider: IStoreModelProvider): Promise<void> {
   if (modelProvider instanceof StoreCacheService) {
     await modelProvider.resetData();
   }

@@ -6,10 +6,10 @@ import {ModelStatic} from '@subql/x-sequelize';
 import {getLogger} from '../../logger';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {HistoricalMode} from '../types';
+import {Exporter} from './exporters';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {BaseEntity, IModel} from './model';
 import {POI_ENTITY_NAME} from './poi';
-import {Exporter} from './types';
 
 const logger = getLogger('BaseStoreModelService');
 export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeApplicationShutdown {
@@ -17,7 +17,6 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeAp
   protected poiRepo?: PoiRepo;
   protected metadataRepo?: MetadataRepo;
   protected cachedModels: Record<string, M> = {};
-  protected exports: Exporter[] = [];
 
   protected abstract createModel(entity: string): M;
 
@@ -48,7 +47,13 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeAp
   }
 
   async beforeApplicationShutdown(): Promise<void> {
-    await Promise.all(this.exports.map((f) => f.shutdown()));
+    await Promise.all(this.getAllExporters().map((e) => e.shutdown()));
     logger.info(`Force flush exports successful!`);
+  }
+
+  getAllExporters(): Exporter[] {
+    return Object.values(this.cachedModels)
+      .map((m) => (m as any).exporters ?? [])
+      .flat();
   }
 }

@@ -19,8 +19,7 @@ export abstract class Cacheable {
         release();
       });
 
-      const pendingFlush = this.runFlush(tx, historicalUnit);
-      await pendingFlush;
+      await this.runFlush(tx, historicalUnit);
     } catch (e) {
       release();
       throw e;

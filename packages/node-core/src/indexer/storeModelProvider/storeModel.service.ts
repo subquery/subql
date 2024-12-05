@@ -7,7 +7,7 @@ import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
 import {BaseStoreModelService} from './baseStoreModel.service';
-import {CsvStoreService} from './csvStore.service';
+import {CsvExporter, Exporter, isTxExporter} from './exporters';
 import {MetadataModel} from './metadata/metadata';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {IModel} from './model';
@@ -18,7 +18,7 @@ import {IStoreModelProvider} from './types';
 const logger = getLogger('PlainStoreModelService');
 
 @Injectable()
-export class PlainStoreModelService extends BaseStoreModelService implements IStoreModelProvider {
+export class PlainStoreModelService extends BaseStoreModelService<IModel<any>> implements IStoreModelProvider {
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig
@@ -55,27 +55,37 @@ export class PlainStoreModelService extends BaseStoreModelService implements ISt
     const plainModel = new PlainModel(model, this.historical);
 
     if (this.config.csvOutDir) {
-      const exporterStore = new CsvStoreService(entityName, this.config.csvOutDir);
+      const exporterStore = new CsvExporter(entityName, this.config.csvOutDir);
       this.addExporter(plainModel, exporterStore);
     }
 
     return plainModel;
   }
 
-  private addExporter(model: PlainModel, exporterStore: CsvStoreService): void {
-    model.addExporterStore(exporterStore);
-    this.exports.push(exporterStore);
+  private addExporter(model: PlainModel, exporter: Exporter): void {
+    model.addExporter(exporter);
   }
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx: Transaction): Promise<void> {
-    if (!tx) {
-      exitWithError(new Error('Transaction not found'), logger, 1);
-    }
-    await tx.commit();
+    try {
+      if (!tx) {
+        exitWithError(new Error('Transaction not found'), logger, 1);
+      }
 
-    if (dataSourcesCompleted) {
-      const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-      exitWithError(msg, logger, 0);
+      // Commit all data from exporters here to make exporting and commiting atomic
+      await Promise.all(
+        this.getAllExporters().map((exporter) => (isTxExporter(exporter) ? exporter.commit() : undefined))
+      );
+
+      await tx.commit();
+
+      if (dataSourcesCompleted) {
+        const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
+        exitWithError(msg, logger, 0);
+      }
+    } catch (e) {
+      await tx.rollback();
+      throw e;
     }
   }
 }

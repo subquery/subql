@@ -1,16 +1,16 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { ModelStatic, Transaction } from '@subql/x-sequelize';
-import { LRUCache } from 'lru-cache';
-import { MetadataRepo, PoiRepo } from '../entities';
-import { HistoricalMode } from '../types';
-import { IMetadata } from './metadata';
-import { BaseEntity, IModel } from './model';
-import { IPoi } from './poi';
-import { SetValueModel } from './setValueModel';
+import {ModelStatic, Transaction} from '@subql/x-sequelize';
+import {LRUCache} from 'lru-cache';
+import {MetadataRepo, PoiRepo} from '../entities';
+import {HistoricalMode} from '../types';
+import {IMetadata} from './metadata';
+import {BaseEntity, IModel} from './model';
+import {IPoi} from './poi';
+import {SetValueModel} from './setValueModel';
 
-export type HistoricalModel = { __block_range: any };
+export type HistoricalModel = {__block_range: any};
 
 export interface IStoreModelProvider {
   poi: IPoi | null;
@@ -20,11 +20,9 @@ export interface IStoreModelProvider {
 
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 
-  // addExporter(entity: string, exporterStore: CsvStoreService): void;
-
   applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx?: Transaction): Promise<void>;
 
-  updateModels({ modifiedModels, removedModels }: { modifiedModels: ModelStatic<any>[]; removedModels: string[] }): void;
+  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
 }
 
 export interface ICachedModelControl {
@@ -69,22 +67,3 @@ export type SetValue<T> = {
 export type SetData<T> = Record<string, SetValueModel<T>>;
 
 export class GetData<T extends {}> extends LRUCache<string, T, unknown> {}
-
-export interface Exporter {
-  /**
-   * Exports an array of records.
-   * This method should handle the processing of the provided records.
-   *
-   * @param records An array of records to be exported.
-   *                These records are of the same type as the database entries
-   */
-  export: (record: any[]) => Promise<void>;
-  /**
-   * Shuts down the export operation.
-   * This method should ensure that all ongoing export operations are
-   * completed and any resources used are properly released or closed.
-   *
-   * @returns A promise that resolves when the shutdown process is complete.
-   */
-  shutdown: () => Promise<void>;
-}

@@ -39,7 +39,11 @@ export abstract class BaseCacheService
       if ((this.isFlushable() || forceFlush) && this.flushableRecords > 0) {
         this.pendingFlush = this._flushCache();
         // Remove reference to pending flush once it completes
-        this.pendingFlush.finally(() => (this.pendingFlush = undefined));
+        this.pendingFlush
+          .catch((e) => {
+            /* Do nothing, avoids uncaught exception */
+          })
+          .finally(() => (this.pendingFlush = undefined));
         await this.pendingFlush;
       }
     };
@@ -48,7 +52,11 @@ export abstract class BaseCacheService
     if (this.queuedFlush === undefined) {
       this.queuedFlush = flushCacheGuarded(forceFlush);
 
-      this.queuedFlush.finally(() => (this.queuedFlush = undefined));
+      this.queuedFlush
+        .catch((e) => {
+          /* Do nothing, avoids uncaught exception */
+        })
+        .finally(() => (this.queuedFlush = undefined));
     }
 
     return this.queuedFlush;
