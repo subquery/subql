@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Missing API dependency when using reindex
+
 ## [5.2.0] - 2024-11-28
 ### Added
 - Support for historical indexing by timestamp as well as block height

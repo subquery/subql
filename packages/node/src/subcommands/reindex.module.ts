@@ -13,9 +13,14 @@ import {
   PoiService,
   NodeConfig,
   storeModelFactory,
+  ConnectionPoolService,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
+import { SubqueryProject } from '../configure/SubqueryProject';
+import { EthereumApiService } from '../ethereum';
+import { EthereumApiConnection } from '../ethereum/api.connection';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
@@ -40,10 +45,31 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
       useClass: DynamicDsService,
     },
     DsProcessorService,
+    ConnectionPoolStateManager,
+    ConnectionPoolService,
     {
-      // Used to work with DI for unfinalizedBlocksService but not used with reindex
       provide: ApiService,
-      useFactory: () => undefined,
+      useFactory: async (
+        project: SubqueryProject,
+        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
+        eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
+      ) => {
+        const apiService = new EthereumApiService(
+          project,
+          connectionPoolService,
+          eventEmitter,
+          nodeConfig,
+        );
+        await apiService.init();
+        return apiService;
+      },
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
     },
     SchedulerRegistry,
   ],
