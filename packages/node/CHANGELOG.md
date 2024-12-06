@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.1] - 2024-12-06
 ### Fixed
 - Missing API dependency when using reindex
 
@@ -576,7 +577,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.1...HEAD
+[5.2.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.0...node-ethereum/5.2.1
 [5.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.7...node-ethereum/5.2.0
 [5.1.7]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.6...node-ethereum/5.1.7
 [5.1.6]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.5...node-ethereum/5.1.6
