@@ -12,12 +12,17 @@ import {
   ReindexService,
   storeModelFactory,
   NodeConfig,
+  ConnectionPoolService,
+  ConnectionPoolStateManager,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { ConfigureModule } from '../configure/configure.module';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
+import { StellarApiService } from '../stellar';
+import { StellarApiConnection } from '../stellar/api.connection';
 
 @Module({
   providers: [
@@ -38,10 +43,31 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
       useClass: DynamicDsService,
     },
     DsProcessorService,
+    ConnectionPoolService,
+    ConnectionPoolStateManager,
     {
-      // Used to work with DI for unfinalizedBlocksService but not used with reindex
       provide: ApiService,
-      useFactory: () => undefined,
+      useFactory: async (
+        project: SubqueryProject,
+        connectionPoolService: ConnectionPoolService<StellarApiConnection>,
+        eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
+      ) => {
+        const apiService = new StellarApiService(
+          project,
+          connectionPoolService,
+          eventEmitter,
+          nodeConfig,
+        );
+        await apiService.init();
+        return apiService;
+      },
+      inject: [
+        'ISubqueryProject',
+        ConnectionPoolService,
+        EventEmitter2,
+        NodeConfig,
+      ],
     },
     SchedulerRegistry,
   ],

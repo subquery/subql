@@ -39,7 +39,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
-        projectUpgradeService: ProjectUpgradeService,
         connectionPoolService: ConnectionPoolService<StellarApiConnection>,
         eventEmitter: EventEmitter2,
         nodeConfig: NodeConfig,
@@ -55,7 +54,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       },
       inject: [
         'ISubqueryProject',
-        'IProjectUpgradeService',
         ConnectionPoolService,
         EventEmitter2,
         NodeConfig,

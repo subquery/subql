@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Incorrect parameter injection in ApiService
+
 ## [4.1.0] - 2024-11-27
 ### Added
 - Support for historical indexing by timestamp as well as block height

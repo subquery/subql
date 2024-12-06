@@ -45,9 +45,9 @@ import { WorkerService } from './worker.service';
       },
       inject: [
         'ISubqueryProject',
-        'IProjectUpgradeService',
         ConnectionPoolService,
         EventEmitter2,
+        NodeConfig,
       ],
     },
     DsProcessorService,

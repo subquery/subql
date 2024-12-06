@@ -73,7 +73,6 @@ import { TestingService } from './testing.service';
       },
       inject: [
         'ISubqueryProject',
-        'IProjectUpgradeService',
         ConnectionPoolService,
         EventEmitter2,
         NodeConfig,
