@@ -18,6 +18,7 @@
     "axios": "^0.28.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "form-data": "^4.0.1",
     "js-yaml": "^4.1.0",
     "reflect-metadata": "^0.1.14",
     "semver": "^7.6.3",

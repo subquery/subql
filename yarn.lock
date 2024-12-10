@@ -6610,6 +6610,7 @@ __metadata:
     "@types/update-notifier": ^6
     "@types/websocket": ^1
     boxen: 5.1.2
+    chalk: ^5.3.0
     ejs: ^3.1.10
     eslint: ^8.8.0
     eslint-config-oclif: ^4.0.0
@@ -6773,6 +6774,7 @@ __metadata:
     axios: ^0.28.0
     class-transformer: ^0.5.1
     class-validator: ^0.14.1
+    form-data: ^4.0.1
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.14
     semver: ^7.6.3
@@ -10243,7 +10245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^5.2.0, chalk@npm:~5.3.0":
+"chalk@npm:^5.2.0, chalk@npm:^5.3.0, chalk@npm:~5.3.0":
   version: 5.3.0
   resolution: "chalk@npm:5.3.0"
   checksum: 623922e077b7d1e9dedaea6f8b9e9352921f8ae3afe739132e0e00c275971bdd331268183b2628cf4ab1727c45ea1f28d7e24ac23ce1db1eb653c414ca8a5a80
@@ -12835,6 +12837,17 @@ __metadata:
     combined-stream: ^1.0.8
     mime-types: ^2.1.12
   checksum: 01135bf8675f9d5c61ff18e2e2932f719ca4de964e3be90ef4c36aacfc7b9cb2fceb5eca0b7e0190e3383fe51c5b37f4cb80b62ca06a99aaabfcfd6ac7c9328c
+  languageName: node
+  linkType: hard
+
+"form-data@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "form-data@npm:4.0.1"
+  dependencies:
+    asynckit: ^0.4.0
+    combined-stream: ^1.0.8
+    mime-types: ^2.1.12
+  checksum: ccee458cd5baf234d6b57f349fe9cc5f9a2ea8fd1af5ecda501a18fd1572a6dd3bf08a49f00568afd995b6a65af34cb8dec083cf9d582c4e621836499498dd84
   languageName: node
   linkType: hard
 
