@@ -60,8 +60,10 @@ async function getExampleProject(networkFamily: string, network: string): Promis
     code: string;
     networks: {code: string; examples: ExampleProjectInterface[]}[];
   }[];
-  const template = templates.find((t) => t.code === networkFamily)?.networks.find((n) => n.code === network)
-    ?.examples[0];
+  const template = templates
+    .find((t) => t.code === networkFamily)
+    ?.networks.find((n) => n.code === network)
+    ?.examples.find((e) => e.remote === 'https://github.com/subquery/subql-starter');
   assert(template, 'Failed to get template');
   return template;
 }
