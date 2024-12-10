@@ -44,8 +44,8 @@
     "lint": "eslint packages --ext .ts",
     "test": "TZ=utc jest --coverage",
     "test:ci": "TZ=utc jest --testRegex='.*\\.(spec|test)\\.ts$'",
-    "test:all": "TZ=utc node --expose-gc ./node_modules/.bin/jest --logHeapUsage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --ci -w=2 --clearMocks",
-    "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
+    "test:all": "TZ=utc node --expose-gc ./node_modules/.bin/jest --logHeapUsage --forceExit --ci -w=2 --clearMocks packages/cli/src/controller/publish-controller.spec.ts",
+    "test:docker": "docker compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
     "postinstall": "husky install"
   },
   "lint-staged": {

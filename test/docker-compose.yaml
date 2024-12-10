@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   postgres:
@@ -31,4 +31,3 @@ services:
     command:
       - yarn
       - test:all
-
