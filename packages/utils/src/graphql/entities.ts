@@ -22,6 +22,7 @@ import {
   BooleanValueNode,
   ListTypeNode,
   TypeNode,
+  GraphQLDirective,
 } from 'graphql';
 import {findDuplicateStringArray} from '../array';
 import {Logger} from '../logger';
@@ -53,6 +54,16 @@ export function getAllEnums(_schema: GraphQLSchema | string): GraphQLEnumType[] 
   return getEnumsFromSchema(getSchema(_schema));
 }
 
+function getDirectives(schema: GraphQLSchema, names: string[]): GraphQLDirective[] {
+  const res: GraphQLDirective[] = [];
+  for (const name of names) {
+    const directive = schema.getDirective(name);
+    assert(directive, `${name} directive is required`);
+    res.push(directive);
+  }
+  return res;
+}
+
 // eslint-disable-next-line complexity
 export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null): GraphQLModelsRelationsEnums {
   if (_schema === null) {
@@ -80,9 +91,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
   );
 
   const modelRelations = {models: [], relations: [], enums: [...enums.values()]} as GraphQLModelsRelationsEnums;
-  const derivedFrom = schema.getDirective('derivedFrom');
-  const indexDirective = schema.getDirective('index');
-  assert(derivedFrom && indexDirective, 'derivedFrom and index directives are required');
+  const [derivedFrom, indexDirective, idDbType] = getDirectives(schema, ['derivedFrom', 'index', 'dbType']);
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
@@ -104,6 +113,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       const typeString = extractType(field.type);
       const derivedFromDirectValues = field.astNode ? getDirectiveValues(derivedFrom, field.astNode) : undefined;
       const indexDirectiveVal = field.astNode ? getDirectiveValues(indexDirective, field.astNode) : undefined;
+      const dbTypeDirectiveVal = field.astNode ? getDirectiveValues(idDbType, field.astNode) : undefined;
 
       //If is a basic scalar type
       const typeClass = getTypeByScalarName(typeString);
@@ -216,6 +226,28 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
         } else {
           throw new Error(`index can not be added on field ${field.name}`);
         }
+      }
+
+      // Update id type if directive specified
+      if (dbTypeDirectiveVal) {
+        if (typeString !== 'ID') {
+          throw new Error(`dbType directive can only be added on 'id' field, received: ${field.name}`);
+        }
+
+        // TODO limit only some types
+        const dbType = dbTypeDirectiveVal.type;
+        const t = getTypeByScalarName(dbType);
+
+        // Allowlist of types that can be used.
+        if (!t || !['BigInt', 'Float', 'ID', 'Int', 'String'].includes(t.name)) {
+          throw new Error(`${dbType} is not a defined scalar type, please use another type in the dbType directive`);
+        }
+
+        const f = newModel.fields.find((f) => f.name === 'id');
+        if (!f) {
+          throw new Error('Expected id field to exist on model');
+        }
+        f.type = t.name;
       }
     }
 
