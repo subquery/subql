@@ -32,7 +32,10 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
   private totalPassedTests = 0;
   private totalFailedTests = 0;
 
-  constructor(protected nodeConfig: NodeConfig, protected project: ISubqueryProject<IProjectNetworkConfig, DS>) {
+  constructor(
+    protected nodeConfig: NodeConfig,
+    protected project: ISubqueryProject<IProjectNetworkConfig, DS>
+  ) {
     const projectPath = this.project.root;
     // find all paths to test files
     const testFiles = this.findAllTestFiles(path.join(projectPath, 'dist'));
@@ -64,7 +67,7 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
     await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }
 
-  async run() {
+  async run(): Promise<void> {
     if (Object.keys(this.tests).length !== 0) {
       for (const sandboxIndex in this.tests) {
         const tests = this.tests[sandboxIndex];
@@ -171,5 +174,9 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
     logger.info(chalk.bold.white(`Total tests: ${this.totalTests}`));
     logger.info(chalk.bold.green(`Passing tests: ${this.totalPassedTests}`));
     logger.info(chalk.bold.red(`Failing tests: ${this.totalFailedTests}`));
+
+    if (this.totalFailedTests > 0) {
+      process.exit(1);
+    }
   }
 }
