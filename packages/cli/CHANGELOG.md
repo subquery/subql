@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated codegen to support id types other than string (#2622)
 
+### Fixed
+- Missing chalk dependency (#2622)
+
 ## [5.3.3] - 2024-12-04
 ### Changed
 - No actual changes, just a re-release
