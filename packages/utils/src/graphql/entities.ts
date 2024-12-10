@@ -234,7 +234,6 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           throw new Error(`dbType directive can only be added on 'id' field, received: ${field.name}`);
         }
 
-        // TODO limit only some types
         const dbType = dbTypeDirectiveVal.type;
         const t = getTypeByScalarName(dbType);
 

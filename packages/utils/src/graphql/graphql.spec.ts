@@ -494,9 +494,7 @@ describe('utils that handle schema.graphql', () => {
       `;
 
       const schema = buildSchemaFromDocumentNode(graphqlSchema);
-
       const entityRelations = getAllEntitiesRelations(schema);
-
       const model = entityRelations.models.find((m) => m.name === 'StarterEntity');
 
       expect(model).toBeDefined();
