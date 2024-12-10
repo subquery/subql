@@ -62,7 +62,7 @@ export class <%= props.className %> implements CompatEntity {
     static async getBy<%=helper.upperFirst(field.name) %>(<%=field.name %>: <%=field.type %>): Promise<<%=props.className %> | undefined> {
         const record = await store.getOneByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
         if (record) {
-            return this.create(record as unknown <%= props.className %>Props);
+            return this.create(record as unknown as <%= props.className %>Props);
         } else {
             return;
         }
