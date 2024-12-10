@@ -297,6 +297,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
     const entityName = validateEntityName(entity.name);
 
     const fields = processFields('entity', className, entity.fields, entity.indexes);
+    const idType = fields.find((f) => f.name === 'id')?.type ?? 'string';
     const importJsonInterfaces = uniq(fields.filter((field) => field.isJsonInterface).map((f) => f.type));
     const importEnums = uniq(fields.filter((field) => field.isEnum).map((f) => f.type));
     const indexedFields = fields.filter((field) => field.indexed && !field.isJsonInterface);
@@ -309,6 +310,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
         importJsonInterfaces,
         importEnums,
         indexedFields,
+        idType,
       },
       helper: {
         upperFirst,

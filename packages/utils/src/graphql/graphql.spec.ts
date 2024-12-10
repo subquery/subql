@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {buildSchema} from 'graphql';
 import gql from 'graphql-tag';
 import {getAllEntitiesRelations} from './entities';
 import {buildSchemaFromDocumentNode} from './schema';
@@ -482,5 +483,59 @@ describe('utils that handle schema.graphql', () => {
     expect(() => getAllEntitiesRelations(schema)).toThrow(
       `Field "bananas" on entity "Fruit" is missing "derivedFrom" directive. Please also make sure "Banana" has a field of type "Fruit".`
     );
+  });
+
+  describe('dbType directive', () => {
+    it('allows overriding the default ID type', () => {
+      const graphqlSchema = gql`
+        type StarterEntity @entity {
+          id: ID! @dbType(type: "Int")
+        }
+      `;
+
+      const schema = buildSchemaFromDocumentNode(graphqlSchema);
+
+      const entityRelations = getAllEntitiesRelations(schema);
+
+      const model = entityRelations.models.find((m) => m.name === 'StarterEntity');
+
+      expect(model).toBeDefined();
+      expect(model?.fields[0].type).toEqual('Int');
+    });
+
+    it('doesnt allow the directive on fields other than id', () => {
+      const graphqlSchema = gql`
+        type StarterEntity @entity {
+          id: ID!
+          field1: Date @dbType(type: "Int")
+        }
+      `;
+
+      const schema = buildSchemaFromDocumentNode(graphqlSchema);
+      expect(() => getAllEntitiesRelations(schema)).toThrow(
+        `dbType directive can only be added on 'id' field, received: field1`
+      );
+    });
+
+    it('only allows predefined ID db types', () => {
+      const makeSchema = (type: string) =>
+        buildSchemaFromDocumentNode(gql`
+        type StarterEntity @entity {
+          id: ID! @dbType(type: "${type}")
+        }
+      `);
+
+      for (const type of ['BigInt', 'Int', 'Float', 'ID', 'String']) {
+        const schema = makeSchema(type);
+        expect(() => getAllEntitiesRelations(schema)).not.toThrow();
+      }
+
+      for (const type of ['JSON', 'Date', 'Bytes', 'Boolean', 'StarterEntity']) {
+        const schema = makeSchema(type);
+        expect(() => getAllEntitiesRelations(schema)).toThrow(
+          `${type} is not a defined scalar type, please use another type in the dbType directive`
+        );
+      }
+    });
   });
 });
