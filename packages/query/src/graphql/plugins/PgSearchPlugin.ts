@@ -15,6 +15,7 @@ export const PgSearchPlugin: Plugin = (builder) => {
   // Sanitises the search argument for fulltext search using pg-tsquery
   builder.hook('GraphQLObjectType:fields:field', (field, build, {scope: {pgFieldIntrospection}}: Context<any>) => {
     if (isProcedure(pgFieldIntrospection) && pgFieldIntrospection.argNames.includes('search')) {
+      pgFieldIntrospection.tags.sortable = true;
       return {
         ...field,
         resolve(source, args, ctx, info) {
