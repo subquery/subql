@@ -39,7 +39,7 @@ export class <%= props.className %> implements CompatEntity {
     async save(): Promise<void> {
         const id = this.id;
         assert(id !== null, "Cannot save <%=props.className %> entity without an ID");
-        await store.set('<%=props.entityName %>', id.toString(), this as Compat<%=props.className %>Props);
+        await store.set('<%=props.entityName %>', id.toString(), this as unknown as Compat<%=props.className %>Props);
     }
 
     static async remove(id: <%=props.idType %>): Promise<void> {
