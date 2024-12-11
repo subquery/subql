@@ -10,4 +10,5 @@ export const directives = gql`
   directive @index(unique: Boolean) on FIELD_DEFINITION
   directive @compositeIndexes(fields: [[String]]!) on OBJECT
   directive @fullText(fields: [String!], language: String) on OBJECT
+  directive @dbType(type: String!) on FIELD_DEFINITION
 `;
