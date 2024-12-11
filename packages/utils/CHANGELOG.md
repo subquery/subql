@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.17.0] - 2024-12-11
 ### Added
 - @dbType graphql directive (#2622)
 
@@ -183,7 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.16.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.17.0...HEAD
+[2.17.0]: https://github.com/subquery/subql/compare/utils/2.16.0...utils/2.17.0
 [2.16.0]: https://github.com/subquery/subql/compare/utils/2.15.0...utils/2.16.0
 [2.15.0]: https://github.com/subquery/subql/compare/utils/2.14.0...utils/2.15.0
 [2.14.0]: https://github.com/subquery/subql/compare/utils/2.13.1...utils/2.14.0

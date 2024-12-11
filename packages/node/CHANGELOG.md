@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.0] - 2024-12-11
+### Changed
+- Update `@subql/node-core` with bug fixes and support for alternative ID types
+
 ## [5.5.0] - 2024-12-04
 ### Changed
 - Add block size function to match breaking node-core change (#2611)
@@ -1353,7 +1357,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.6.0...HEAD
+[5.6.0]: https://github.com/subquery/subql/compare/node/5.5.0...node/5.6.0
 [5.5.0]: https://github.com/subquery/subql/compare/node/5.4.2...node/5.5.0
 [5.4.2]: https://github.com/subquery/subql/compare/node/5.4.1...node/5.4.2
 [5.4.1]: https://github.com/subquery/subql/compare/node/5.4.0...node/5.4.1
