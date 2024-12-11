@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.4.0] - 2024-12-11
 ### Changed
 - Updated codegen to support id types other than string (#2622)
 
@@ -704,7 +706,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.3.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.4.0...HEAD
+[5.4.0]: https://github.com/subquery/subql/compare/cli/5.3.3...cli/5.4.0
 [5.3.3]: https://github.com/subquery/subql/compare/cli/5.3.2...cli/5.3.3
 [5.3.2]: https://github.com/subquery/subql/compare/cli/5.3.1...cli/5.3.2
 [5.3.1]: https://github.com/subquery/subql/compare/cli/5.3.0...cli/5.3.1

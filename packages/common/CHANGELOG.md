@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.2.2] - 2024-12-11
 ### Fixed
 - Missing form-data dependency (#2622)
 
@@ -432,7 +434,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.2.2...HEAD
+[5.2.2]: https://github.com/subquery/subql/compare/common/5.2.1...common/5.2.2
 [5.2.1]: https://github.com/subquery/subql/compare/common/5.2.0...common/5.2.1
 [5.2.0]: https://github.com/subquery/subql/compare/common/5.1.4...common/5.2.0
 [5.1.4]: https://github.com/subquery/subql/compare/common/5.1.3...common/5.1.4
