@@ -3,7 +3,7 @@
 
 import {hashName} from '@subql/utils';
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
-import {makeExtendSchemaPlugin, gql, embed} from 'graphile-utils';
+import {makeExtendSchemaPlugin, gql, embed, Resolvers} from 'graphile-utils';
 import {DocumentNode} from 'graphql';
 
 const filter = (event, args) => {
@@ -42,7 +42,7 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
     `,
   ];
 
-  const resolvers: Record<string, any> = {};
+  const resolvers: Resolvers = {};
 
   // Generate subscription fields for all database tables
   (pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).class.forEach((table) => {
@@ -65,6 +65,17 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
           )
         }`
     );
+
+    resolvers[payloadName] = {
+      _entity: {
+        resolve: ({_entity}) => {
+          return Object.entries(_entity).reduce((acc, [key, value]) => {
+            const attr = table.attributes.find((attr) => attr.name === key);
+            return Object.assign(acc, {[inflection.column(attr)]: value});
+          }, _entity);
+        },
+      },
+    };
   });
 
   return {
