@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { profiler } from '@subql/node-core';
@@ -10,7 +10,6 @@ import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 export const SPEC_VERSION_BLOCK_GAP = 100;
-type GetLatestFinalizedHeight = () => number;
 
 @Injectable()
 export abstract class BaseRuntimeService {
@@ -19,7 +18,7 @@ export abstract class BaseRuntimeService {
   private currentRuntimeVersion?: RuntimeVersion;
   latestFinalizedHeight?: number;
 
-  constructor(protected apiService: ApiService) {}
+  constructor(@Inject('APIService') protected apiService: ApiService) {}
 
   async specChanged(height: number, specVersion: number): Promise<boolean> {
     if (this.parentSpecVersion !== specVersion) {
@@ -36,10 +35,6 @@ export abstract class BaseRuntimeService {
   abstract getSpecVersion(
     blockHeight: number,
   ): Promise<{ blockSpecVersion: number; syncedDictionary: boolean }>;
-
-  init(getLatestFinalizedHeight: GetLatestFinalizedHeight): void {
-    this.latestFinalizedHeight = getLatestFinalizedHeight();
-  }
 
   get api(): ApiPromise {
     return this.apiService.api;
