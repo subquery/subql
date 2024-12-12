@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Subscriptions `_entity` field now includes camel cased properties (#2626)
+- Subscriptions `_entity` field now returns all properties (#2626)
 
 ## [2.19.0] - 2024-12-11
 ### Added
