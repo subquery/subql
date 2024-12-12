@@ -130,7 +130,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   protected async rewind(lastCorrectHeader: Header): Promise<void> {
     if (lastCorrectHeader.blockHeight <= this.currentProcessingHeight) {
       logger.info(`Found last verified block at height ${lastCorrectHeader.blockHeight}, rewinding...`);
-      await this.projectService.reindex(lastCorrectHeader);
+      await this.projectService.reindex(lastCorrectHeader, true);
       this.setLatestProcessedHeight(lastCorrectHeader.blockHeight);
       logger.info(`Successful rewind to block ${lastCorrectHeader.blockHeight}!`);
     }

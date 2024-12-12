@@ -225,6 +225,21 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
       // Update the target height, this happens here to stay in sync with the rest of indexing
       void this.storeModelProvider.metadata.set('targetHeight', latestHeight);
 
+      // If we're rewinding, we should wait until it's done
+      const {needRewind, needWaitRewind} = await this.projectService.getRewindStatus();
+      if (needRewind || needWaitRewind) {
+        logger.info(`Fetch service is waiting for rewind to finish`);
+        if (needRewind) {
+          // TODO Retrieve the block headers that require rollback.
+          const rewindBlockHeader: Header = {} as any;
+
+          this.blockDispatcher.flushQueue(rewindBlockHeader.blockHeight);
+          await this.projectService.reindex(rewindBlockHeader, false);
+        }
+        await delay(3);
+        continue;
+      }
+
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced
       if (startBlockHeight < this.latestBestHeight - scaledBatchSize) {

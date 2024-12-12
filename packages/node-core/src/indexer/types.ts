@@ -52,7 +52,7 @@ export interface IProjectService<DS> {
   blockOffset: number | undefined;
   startHeight: number;
   bypassBlocks: BypassBlocks;
-  reindex(lastCorrectHeader: Header): Promise<void>;
+  reindex(lastCorrectHeader: Header, flushGlobalLock: boolean): Promise<void>;
   /**
    * This is used everywhere but within indexing blocks, see comment on getDataSources for more info
    * */
@@ -65,6 +65,8 @@ export interface IProjectService<DS> {
   getStartBlockFromDataSources(): number;
   getDataSourcesMap(): BlockHeightMap<DS[]>;
   hasDataSourcesAfterHeight(height: number): boolean;
+
+  getRewindStatus(): Promise<{needRewind: boolean; needWaitRewind: boolean}>;
 }
 
 export interface IBlock<B = any> {

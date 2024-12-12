@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable } from '@nestjs/common';
-import { BaseDataSource } from '@subql/types-core';
-import { Sequelize } from '@subql/x-sequelize';
-import { NodeConfig, ProjectUpgradeService } from '../configure';
+import {Inject, Injectable} from '@nestjs/common';
+import {BaseDataSource} from '@subql/types-core';
+import {Sequelize} from '@subql/x-sequelize';
+import {NodeConfig, ProjectUpgradeService} from '../configure';
 import {
   IUnfinalizedBlocksService,
   StoreService,
@@ -15,18 +15,18 @@ import {
   cacheProviderFlushData,
   Header,
 } from '../indexer';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { getLogger } from '../logger';
-import { exitWithError, monitorWrite } from '../process';
-import { getExistingProjectSchema, initDbSchema, reindex } from '../utils';
-import { ForceCleanService } from './forceClean.service';
+import {DynamicDsService} from '../indexer/dynamic-ds.service';
+import {getLogger} from '../logger';
+import {exitWithError, monitorWrite} from '../process';
+import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
+import {ForceCleanService} from './forceClean.service';
 
 const logger = getLogger('Reindex');
 
 @Injectable()
 export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSource, B> {
   private _metadataRepo?: IMetadata;
-  private _lastProcessedHeader?: { height: number; timestamp?: number };
+  private _lastProcessedHeader?: {height: number; timestamp?: number};
 
   constructor(
     private readonly sequelize: Sequelize,
@@ -90,7 +90,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     const inputHeader = await this.unfinalizedBlocksService.getHeaderForHeight(inputHeight);
 
     const unfinalizedBlocks = await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
-    const bestBlocks = unfinalizedBlocks.filter(({ blockHeight }) => blockHeight <= inputHeight);
+    const bestBlocks = unfinalizedBlocks.filter(({blockHeight}) => blockHeight <= inputHeight);
     if (bestBlocks.length && inputHeight >= bestBlocks[0].blockHeight) {
       return bestBlocks[0];
     }
@@ -101,7 +101,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
-  get lastProcessedHeader(): { height: number; timestamp?: number } {
+  get lastProcessedHeader(): {height: number; timestamp?: number} {
     assert(this._lastProcessedHeader !== undefined, 'Cannot reindex without lastProcessedHeight been initialized');
     return this._lastProcessedHeader;
   }
@@ -125,6 +125,10 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     monitorWrite(
       `- Reindex when last processed is ${this.lastProcessedHeader.height}, to block ${targetBlockHeader.blockHeight}`
     );
+
+    // Need set global lock to notifications other chain reindex
+    assert(targetBlockHeader.timestamp, 'Block header timestamp is not defined');
+    await this.storeService.setGlobalRewindLock(targetBlockHeader.timestamp.getTime());
 
     await reindex(
       startHeight,
