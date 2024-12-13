@@ -1,4 +1,4 @@
-# Welcome to SubQuery!
+# Welcome to SubQuery 2.0!
 
 **Flexible, reliable, and decentralised APIs for your web3 project**
 
