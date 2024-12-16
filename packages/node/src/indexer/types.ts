@@ -4,3 +4,7 @@
 import { EthereumBlock, LightEthereumBlock } from '@subql/types-ethereum';
 
 export type BlockContent = EthereumBlock | LightEthereumBlock;
+
+export function getBlockSize(block: BlockContent): number {
+  return Number(block.size);
+}

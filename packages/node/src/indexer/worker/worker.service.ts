@@ -18,7 +18,7 @@ import { EthereumApi } from '../../ethereum';
 import SafeEthProvider from '../../ethereum/safe-api';
 import { ethereumBlockToHeader } from '../../ethereum/utils.ethereum';
 import { IndexerManager } from '../indexer.manager';
-import { BlockContent } from '../types';
+import { BlockContent, getBlockSize } from '../types';
 
 export type FetchBlockResponse = Header;
 
@@ -72,5 +72,9 @@ export class WorkerService extends BaseWorkerService<
     dataSources: SubqlEthereumDataSource[],
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(block, dataSources);
+  }
+
+  getBlockSize(block: IBlock<BlockContent>): number {
+    return getBlockSize(block.block);
   }
 }
