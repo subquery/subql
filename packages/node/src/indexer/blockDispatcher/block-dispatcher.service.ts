@@ -18,6 +18,7 @@ import {
 import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { IndexerManager } from '../indexer.manager';
+import { getBlockSize } from '../types';
 
 /**
  * @description Intended to behave the same as WorkerBlockDispatcherService but doesn't use worker threads or any parallel processing
@@ -61,5 +62,9 @@ export class BlockDispatcherService
       block,
       await this.projectService.getDataSources(block.getHeader().blockHeight),
     );
+  }
+
+  protected getBlockSize(block: IBlock<StellarBlockWrapper>): number {
+    return getBlockSize(block.block);
   }
 }

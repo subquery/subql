@@ -15,7 +15,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@stellar/stellar-sdk": "^12.2.0",
-    "@subql/common": "^5.2.1",
+    "@subql/common": "^5.2.2",
     "@subql/types-stellar": "workspace:*",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",

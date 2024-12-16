@@ -15,9 +15,10 @@ import {
   IBlock,
   Header,
 } from '@subql/node-core';
-import { BlockWrapper, SubqlDatasource } from '@subql/types-stellar';
+import { StellarBlockWrapper, SubqlDatasource } from '@subql/types-stellar';
 import { stellarBlockToHeader } from '../../stellar/utils.stellar';
 import { IndexerManager } from '../indexer.manager';
+import { getBlockSize } from '../types';
 
 export type FetchBlockResponse = Header;
 
@@ -32,7 +33,7 @@ const logger = getLogger(`Worker Service #${threadId}`);
 
 @Injectable()
 export class WorkerService extends BaseWorkerService<
-  BlockWrapper,
+  StellarBlockWrapper,
   FetchBlockResponse,
   SubqlStellarDataSource,
   {}
@@ -51,19 +52,23 @@ export class WorkerService extends BaseWorkerService<
   protected async fetchChainBlock(
     heights: number,
     extra: {},
-  ): Promise<IBlock<BlockWrapper>> {
+  ): Promise<IBlock<StellarBlockWrapper>> {
     const [block] = await this.apiService.fetchBlocks([heights]);
     return block;
   }
 
-  protected toBlockResponse(block: BlockWrapper): Header {
+  protected toBlockResponse(block: StellarBlockWrapper): Header {
     return stellarBlockToHeader(block.block);
   }
 
   protected async processFetchedBlock(
-    block: IBlock<BlockWrapper>,
+    block: IBlock<StellarBlockWrapper>,
     dataSources: SubqlStellarDataSource[],
   ): Promise<ProcessBlockResponse> {
     return this.indexerManager.indexBlock(block, dataSources);
+  }
+
+  protected getBlockSize(block: IBlock<StellarBlockWrapper>): number {
+    return getBlockSize(block.block);
   }
 }
