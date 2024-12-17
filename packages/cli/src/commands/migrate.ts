@@ -45,11 +45,11 @@ export default class Migrate extends Command {
     const subqlPath = output ?? (await input({message: 'SubQuery project path, local or git', required: true}));
 
     const gitMatch = extractGitInfo(subgraphPath);
-    // will return false if directory not exist
+    // will return false if the directory does not exist
     const direMatch: boolean = lstatSync(subgraphPath, {throwIfNoEntry: false})?.isDirectory() ?? false;
 
     const parsedSubqlPath = path.parse(subqlPath);
-    // We don't need to check output directory is existing or not
+    // We don't need to check whether the output directory exists or not
     const subqlDir = parsedSubqlPath.ext === '' ? subqlPath : parsedSubqlPath.dir;
     let subgraphDir: string;
     let tempSubgraphDir: string | undefined;
@@ -74,7 +74,7 @@ export default class Migrate extends Command {
       );
     } else if (direMatch) {
       if (gitSubDirectory) {
-        this.error(`Git sub directory only works with git path, not local directories.`);
+        this.error(`Git subdirectory only works with git path, not local directories.`);
       }
       subgraphDir = subgraphPath;
     } else {
@@ -105,7 +105,7 @@ export default class Migrate extends Command {
       await migrateMapping(subgraphDir, subqlDir);
       this.log(`* Output migrated SubQuery project to ${subqlDir}`);
     } catch (e) {
-      // Clean project folder, only remove temp dir project, if user provide local project DO NOT REMOVE
+      // Clean project folder, only remove temp dir project, if the user provides a local project DO NOT REMOVE
       if (tempSubgraphDir !== undefined) {
         fs.rmSync(tempSubgraphDir, {recursive: true, force: true});
       }
