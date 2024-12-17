@@ -183,7 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Publish command output flag not working (#2270)
 
 ### Changed
-- Update deployemnt flags to match managed service (#2274)
+- Update deployment flags to match managed service (#2274)
 
 ## [4.2.7] - 2024-02-23
 ### Changed
