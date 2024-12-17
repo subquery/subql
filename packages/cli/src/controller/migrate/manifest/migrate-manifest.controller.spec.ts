@@ -54,7 +54,7 @@ describe('migrate manifest controller', () => {
     mockPloygonDs.network = 'polygon';
     subgraph.dataSources.push(mockPloygonDs);
     expect(() => extractNetworkFromManifest(subgraph)).toThrow(
-      `All network values in subgraph Networks should be the same. Got mainnet,polygon`
+      `All network values in subgraph Networks should be the same. Got mainnet, polygon`
     );
   });
 
