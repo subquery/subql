@@ -29,7 +29,7 @@ export default class MultiChainDeploy extends Command {
 
   static flags = {
     ...DefaultDeployFlags,
-    location: Flags.string({char: 'f', description: 'from project folder or specify manifest file', required: true}),
+    location: Flags.string({char: 'f', description: 'from the project folder or specify manifest file', required: true}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
   };
 
@@ -49,7 +49,7 @@ export default class MultiChainDeploy extends Command {
     if (!multichainManifestPath) {
       throw new Error(
         chalk.bgRedBright(
-          'Selected project is not multi-chain. Please set correct file.\n\n https://academy.subquery.network/build/multi-chain.html'
+          'Selected project is not multi-chain. Please set the correct file.\n\n https://academy.subquery.network/build/multi-chain.html'
         )
       );
     }
@@ -126,7 +126,7 @@ export default class MultiChainDeploy extends Command {
         if (flags.useDefaults) {
           throw new Error(
             chalk.red(
-              'Please ensure a endpoint valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'
+              'Please ensure an endpoint valid is passed using --endpoint flag with syntax chainId:rpc_endpoint,chainId2:rpc_endpoint2...'
             )
           );
         }
