@@ -3,7 +3,7 @@
 
 import {hashName} from '@subql/utils';
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
-import {makeExtendSchemaPlugin, gql, embed} from 'graphile-utils';
+import {makeExtendSchemaPlugin, gql, embed, Resolvers} from 'graphile-utils';
 import {DocumentNode} from 'graphql';
 
 const filter = (event, args) => {
@@ -30,7 +30,7 @@ function makePayload(entityType: string): {type: DocumentNode; name: string} {
 }
 
 export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
-  const {inflection, pgIntrospectionResultsByKind} = build;
+  const {inflection, pgIntrospectionResultsByKind, pgSql: sql} = build;
 
   const typeDefs = [
     gql`
@@ -42,7 +42,7 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
     `,
   ];
 
-  const resolvers: Record<string, any> = {};
+  const resolvers: Resolvers = {};
 
   // Generate subscription fields for all database tables
   (pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).class.forEach((table) => {
@@ -65,6 +65,24 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
           )
         }`
     );
+
+    resolvers[payloadName] = {
+      _entity: {
+        resolve: async ({_block_height, _entity}, args, context, resolveInfo) => {
+          const [row] = await resolveInfo.graphile.selectGraphQLResultFromTable(
+            sql.identifier(table.namespace.name, table.name),
+            (tableAlias, queryBuilder) => {
+              queryBuilder.context.args ??= {};
+              queryBuilder.context.args.blockHeight = sql.fragment`${sql.value(_block_height.toString())}::bigint`;
+              queryBuilder.where(sql.fragment`${tableAlias}._id = ${sql.value(_entity._id)}`);
+              queryBuilder.limit(1);
+            }
+          );
+
+          return row;
+        },
+      },
+    };
   });
 
   return {
