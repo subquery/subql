@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.3.0] - 2024-12-17
 ### Changed
 - Update `@subql/node-core` and `@subql/common` dependencies
 
@@ -579,7 +581,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.3.0...HEAD
+[5.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.1...node-ethereum/5.3.0
 [5.2.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.0...node-ethereum/5.2.1
 [5.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.7...node-ethereum/5.2.0
 [5.1.7]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.6...node-ethereum/5.1.7
