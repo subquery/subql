@@ -16,7 +16,7 @@ describe('migrate eth manifest', () => {
     expect(subqlDs[0].mapping.handlers[0].migrateHandlerType).toStrictEqual('EthereumHandlerKind.Event');
     expect(subqlDs[0].mapping.handlers[0].handler).toStrictEqual('handleEventToken');
     expect(subqlDs[0].mapping.handlers[0].filter).toStrictEqual({topics: ['EventToken(uint256,uint256)']});
-    // converted handler should in same order
+    // converted handler should be in the same order
     expect(subqlDs[0].mapping.handlers[1].handler).toStrictEqual('handleTransfer');
   });
 
