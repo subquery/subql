@@ -28,7 +28,7 @@ const l = getLogger('http-provider');
  *
  * @name HttpProvider
  *
- * @description The HTTP Provider allows sending requests using HTTP to a HTTP RPC server TCP port. It does not support subscriptions so you won't be able to listen to events such as new blocks or balance changes. It is usually preferable using the [[WsProvider]].
+ * @description The HTTP Provider allows sending requests using HTTP to an HTTP RPC server TCP port. It does not support subscriptions so you won't be able to listen to events such as new blocks or balance changes. It is usually preferable using the [[WsProvider]].
  *
  * @example
  * <BR>
