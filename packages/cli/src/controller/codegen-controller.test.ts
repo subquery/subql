@@ -20,7 +20,7 @@ describe('Codegen can generate schema', () => {
 
   it('codegen with incorrect schema field should fail', async () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest');
-    await expect(codegen(projectPath, ['project-bad-schema.yaml'])).rejects.toThrow(/is not an valid type/);
+    await expect(codegen(projectPath, ['project-bad-schema.yaml'])).rejects.toThrow(/is not a valid type/);
   });
 
   it('codegen with entities that uses reserved names should throw', async () => {
