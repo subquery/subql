@@ -8,7 +8,7 @@ import {createTestProject} from '../createProject.fixtures';
 import Publish from './publish';
 
 jest.setTimeout(300_000); // 300s
-describe('Intergration test - Publish', () => {
+describe('Integration test - Publish', () => {
   let projectDir: string;
 
   beforeAll(async () => {
