@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add some constants for Starknet 
+
 ## [5.4.0] - 2024-12-11
 ### Changed
 - Updated codegen to support id types other than string (#2622)
