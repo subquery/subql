@@ -194,10 +194,10 @@ BEGIN
             'mutation_type', TG_OP,
             '_entity', row);
     IF payload -> '_entity' ? '_block_range' then
-      payload = payload #- '{"_entity","_id"}';
-      payload = payload #- '{"_entity","_block_range"}';
+        payload = payload #- '{"_entity","_block_range"}';
+        payload = payload || jsonb_build_object('_block_height', lower(row._block_range));
         IF NOT upper_inf(row._block_range) then
-         -- Check if a newer version of the entity exists to determine operation
+          -- Check if a newer version of the entity exists to determine operation
           EXECUTE FORMAT(
             'SELECT EXISTS (SELECT 1 FROM "${schema}".%I WHERE id = $1 AND lower(_block_range) = upper($2))',
             TG_TABLE_NAME
