@@ -215,7 +215,7 @@ describe('CLI codegen:generate, Can write to file', () => {
         "  specVersion: '1.0.0',\n" +
         "  version: '0.0.1',\n" +
         "  name: 'ethereum-subql-starter',\n" +
-        "  description: 'This project can be use as a starting point for developing your new Ethereum SubQuery project',\n" +
+        "  description: 'This project can be used as a starting point for developing your new Ethereum SubQuery project',\n" +
         '  runner: {\n' +
         '    node: {\n' +
         "      name: '@subql/node-ethereum',\n" +
