@@ -249,7 +249,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.0] - 2022-07-05
 ### Changed
-- Try to catch error if create server failed, also give retry build schema (#1153)
+- Try to catch error if server creation failed, also give retry build schema (#1153)
 
 ### Fixed
 - Fix tests (#1160)
@@ -264,7 +264,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2022-06-02
 ### Changed
-- Now query-complexity is indicated in header (#1088)
+- Now query-complexity is indicated in the header (#1088)
 
 ## [1.1.0] - 2022-05-31
 ### Added
