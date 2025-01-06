@@ -11,4 +11,5 @@ export const networkPackages: {[key in NETWORK_FAMILY]: string} = {
   [NETWORK_FAMILY.near]: '@subql/common-near',
   [NETWORK_FAMILY.stellar]: '@subql/common-stellar',
   [NETWORK_FAMILY.substrate]: '@subql/common-substrate',
+  [NETWORK_FAMILY.starknet]: '@subql/common-starknet',
 };
