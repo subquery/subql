@@ -27,7 +27,7 @@ const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
   return {
     console: 'redirect',
     wasm: unsafe,
-    sandbox: {atob},
+    sandbox: {atob, TextEncoder},
     require: {
       builtin: unsafe ? ['*'] : SANDBOX_DEFAULT_BUILTINS,
       external: true,

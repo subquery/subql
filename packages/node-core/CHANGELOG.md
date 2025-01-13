@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add `TextEncoder` in sandbox, some network package util method is depended on it
+
 ## [16.1.0] - 2024-12-11
 ### Changed
 - If any tests fail with the `test` subcommand the exit code will now be 1 instead of 0 (#2624)
