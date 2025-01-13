@@ -32,7 +32,7 @@ export default class Deployment extends Command {
 
     if (!option) {
       userOptions = await select({
-        message: 'Select an deployment option',
+        message: 'Select a deployment option',
         choices: [{value: 'deploy'}, {value: 'promote'}, {value: 'delete'}],
       });
     } else {
