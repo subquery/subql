@@ -28,7 +28,7 @@ export default class Project extends Command {
 
     if (!option) {
       userOptions = await select({
-        message: 'Select an project option',
+        message: 'Select a project option',
         choices: [{value: 'create'}, {value: 'delete'}],
       });
     } else {
