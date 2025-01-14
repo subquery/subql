@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable } from '@nestjs/common';
-import { IProjectNetworkConfig } from '@subql/types-core';
+import {Inject, Injectable} from '@nestjs/common';
+import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   hashName,
@@ -11,6 +11,7 @@ import {
   MULTI_METADATA_REGEX,
   hexToU8a,
   GraphQLModelsType,
+  blake2AsHex,
 } from '@subql/utils';
 import {
   IndexesOptions,
@@ -22,8 +23,8 @@ import {
   Transaction,
   Deferrable,
 } from '@subql/x-sequelize';
-import { camelCase, flatten, last, upperFirst } from 'lodash';
-import { NodeConfig } from '../configure';
+import {camelCase, flatten, last, upperFirst} from 'lodash';
+import {NodeConfig} from '../configure';
 import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   createSchemaTrigger,
@@ -32,14 +33,23 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit } from '../utils';
-import { MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo } from './entities';
-import { Store } from './store';
-import { IMetadata, IStoreModelProvider, PlainStoreModelService } from './storeModelProvider';
-import { StoreOperations } from './StoreOperations';
-import { Header, HistoricalMode, ISubqueryProject } from './types';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit, hasValue} from '../utils';
+import {
+  generateRewindTimestampKey,
+  GlobalDataFactory,
+  GlobalDataRepo,
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiFactoryDeprecate,
+  PoiRepo,
+} from './entities';
+import {Store} from './store';
+import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
+import {StoreOperations} from './StoreOperations';
+import {Header, HistoricalMode, ISubqueryProject} from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -63,6 +73,7 @@ export class StoreService {
   poiRepo?: PoiRepo;
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
+  private _globalDataRepo?: GlobalDataRepo;
   private _metaDataRepo?: MetadataRepo;
   private _historical?: HistoricalMode;
   private _metadataModel?: IMetadata;
@@ -89,6 +100,11 @@ export class StoreService {
   private get modelsRelations(): GraphQLModelsRelationsEnums {
     assert(this._modelsRelations, new NoInitError());
     return this._modelsRelations;
+  }
+
+  private get globalDataRepo(): GlobalDataRepo {
+    assert(this._globalDataRepo, new NoInitError());
+    return this._globalDataRepo;
   }
 
   private get metaDataRepo(): MetadataRepo {
@@ -158,6 +174,8 @@ export class StoreService {
       this.subqueryProject.network.chainId
     );
 
+    this._globalDataRepo = GlobalDataFactory(this.sequelize, schema);
+
     this._schema = schema;
 
     await this.sequelize.sync();
@@ -172,6 +190,8 @@ export class StoreService {
     await this.initHotSchemaReloadQueries(schema);
 
     await this.metadataModel.set('historicalStateEnabled', this.historical);
+
+    await this.initChainRewindTimestamp();
   }
 
   async init(schema: string): Promise<void> {
@@ -204,7 +224,7 @@ export class StoreService {
         await this.metadataModel.setIncrement('schemaMigrationCount');
       }
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when syncing schema`, { cause: e }), logger);
+      exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);
     }
   }
 
@@ -233,7 +253,7 @@ export class StoreService {
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when getting indexed fields`, { cause: e }), logger);
+      exitWithError(new Error(`Having a problem when getting indexed fields`, {cause: e}), logger);
     }
   }
 
@@ -285,17 +305,17 @@ export class StoreService {
 
   private async useDeprecatePoi(schema: string): Promise<boolean> {
     const sql = `SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name = '_poi' AND column_name = 'projectId'`;
-    const [result] = await this.sequelize.query(sql, { replacements: [schema] });
+    const [result] = await this.sequelize.query(sql, {replacements: [schema]});
     return !!result.length;
   }
 
   async getHistoricalStateEnabled(schema: string): Promise<HistoricalMode> {
-    const { historical, multiChain } = this.config;
+    const {historical, multiChain} = this.config;
 
     try {
       const tableRes = await this.sequelize.query<Array<string>>(
         `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`,
-        { type: QueryTypes.SELECT }
+        {type: QueryTypes.SELECT}
       );
 
       const metadataTableNames = flatten(tableRes).filter(
@@ -306,9 +326,9 @@ export class StoreService {
         throw new Error('Metadata table does not exist');
       }
 
-      const res = await this.sequelize.query<{ key: string; value: boolean | string }>(
+      const res = await this.sequelize.query<{key: string; value: boolean | string}>(
         `SELECT key, value FROM "${schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled')`,
-        { type: QueryTypes.SELECT }
+        {type: QueryTypes.SELECT}
       );
 
       if (res[0]?.key !== 'historicalStateEnabled') {
@@ -477,6 +497,68 @@ group by
     // Cant throw here because even with historical disabled the current height is used by the store
     return getHistoricalUnit(this.historical, this.blockHeader);
   }
+
+  private async getRewindTimestamp(): Promise<number | undefined> {
+    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
+    const record = await this.globalDataRepo.findByPk(rewindTimestampKey);
+    if (hasValue(record)) {
+      return record.toJSON().value as number;
+    }
+  }
+
+  private async initChainRewindTimestamp() {
+    if (await this.getRewindTimestamp()) return;
+
+    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
+    await this.globalDataRepo.create({key: rewindTimestampKey, value: 0});
+  }
+
+  async getGlobalRewindStatus(): Promise<{rewindTimestamp: number; rewindLock?: number}> {
+    const chainId = this.subqueryProject.network.chainId;
+    const rewindTimestampKey = generateRewindTimestampKey(chainId);
+
+    const records = await this.globalDataRepo.findAll({where: {key: {[Op.in]: [rewindTimestampKey, 'rewindLock']}}});
+    const rewindLock = records.find((r) => r.key === 'rewindLock')?.value;
+    const rewindTimestamp = records.find((r) => r.key === rewindTimestampKey)?.value;
+    if (rewindTimestamp === undefined) {
+      throw new Error(`Not registered rewind timestamp key in global data, chainId: ${chainId}`);
+    }
+
+    return {rewindTimestamp, rewindLock};
+  }
+
+  // If the set rewindTimestamp is greater than or equal to the current blockHeight, we do nothing because we will roll back to an earlier time.
+  // If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
+  async setGlobalRewindLock(rewindTimestamp: number): Promise<void> {
+    const updateRecord = await this.globalDataRepo.bulkCreate([{key: 'rewindLock', value: rewindTimestamp}], {
+      updateOnDuplicate: ['key', 'value'],
+      conflictWhere: {key: {[Op.gt]: rewindTimestamp}},
+    });
+
+    // If there is a rewind lock that is greater than the current rewind timestamp, we should not update the rewind timestamp
+    if (updateRecord.length) {
+      await this.globalDataRepo.update({value: rewindTimestamp}, {where: {key: {[Op.like]: 'rewindTimestamp_%'}}});
+    }
+  }
+
+  async releaseRewindLock(tx: Transaction): Promise<void> {
+    const chainId = this.subqueryProject.network.chainId;
+    const rewindTimestampKey = generateRewindTimestampKey(chainId);
+    await this.globalDataRepo.update({value: 0}, {where: {key: rewindTimestampKey}, transaction: tx});
+    const record = await this.globalDataRepo.findAll({
+      where: {
+        key: {[Op.like]: 'rewindLock_%'},
+        value: {[Op.gt]: 0},
+      },
+      transaction: tx,
+    });
+    if (record.length) {
+      logger.info(`Rewind success chainId: ${chainId}, but there are still rewind locks for other chains`);
+      return;
+    }
+    await this.globalDataRepo.destroy({where: {key: 'rewindLock'}, transaction: tx});
+    logger.info(`Rewind success chainId: ${chainId}, all rewind locks are released`);
+  }
 }
 
 // REMOVE 10,000 record per batch
@@ -495,33 +577,33 @@ async function batchDeleteAndThenUpdate(
         destroyCompleted
           ? 0
           : model.destroy({
-            transaction,
-            hooks: false,
-            limit: batchSize,
-            where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockUnit),
-          }),
+              transaction,
+              hooks: false,
+              limit: batchSize,
+              where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockUnit),
+            }),
         updateCompleted
           ? [0]
           : model.update(
-            {
-              __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
-            },
-            {
-              transaction,
-              limit: batchSize,
-              hooks: false,
-              where: {
-                [Op.and]: [
-                  {
-                    __block_range: {
-                      [Op.contains]: targetBlockUnit,
-                    },
-                  },
-                  sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
-                ],
+              {
+                __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
               },
-            }
-          ),
+              {
+                transaction,
+                limit: batchSize,
+                hooks: false,
+                where: {
+                  [Op.and]: [
+                    {
+                      __block_range: {
+                        [Op.contains]: targetBlockUnit,
+                      },
+                    },
+                    sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
+                  ],
+                },
+              }
+            ),
       ]);
       logger.debug(`${model.name} deleted ${numDestroyRows} records, updated ${numUpdatedRows} records`);
       if (numDestroyRows === 0) {
