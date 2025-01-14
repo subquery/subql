@@ -33,7 +33,7 @@ function isSecondLayerHandlerProcessor_0_0_0<
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
     | SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
 ): processor is SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API> {
-  // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
+  // Existing datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
   return processor.specVersion === undefined;
 }
 

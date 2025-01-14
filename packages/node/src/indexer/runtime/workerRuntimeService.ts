@@ -22,7 +22,7 @@ export class WorkerRuntimeService extends BaseRuntimeService {
     }
   }
 
-  // Worker runtime does not syncDictionary by its self
+  // Worker runtime does not syncDictionary by itself
   // syncDictionary is done by main runtime
   async getSpecVersion(
     blockHeight: number,
