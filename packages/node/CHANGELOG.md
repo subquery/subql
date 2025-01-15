@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.2] - 2025-01-15
 ### Fixed
 - Fix module `stellar-sdk` not found
 
@@ -178,7 +179,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.2.1...HEAD
+[4.2.2]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.2.0...node-stellar/4.2.2
 [4.2.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.1.1...node-stellar/4.2.0
 [4.1.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.1.0...node-stellar/4.1.1
 [4.1.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.0.4...node-stellar/4.1.0
