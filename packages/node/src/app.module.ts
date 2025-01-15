@@ -12,7 +12,7 @@ import { FetchModule } from './indexer/fetch.module';
 
 // TODO, Alternative approach, ERROR Uncaught Exception Error: Package subpath './package.json' is not defined by "exports" in xxxxx/node_modules/stellar-sdk/package.json
 const packageJsonPath = path.resolve(
-  require.resolve('stellar-sdk'),
+  require.resolve('@stellar/stellar-sdk'),
   '../../package.json',
 );
 const { version: stellarSdkVersion } = JSON.parse(
@@ -31,7 +31,7 @@ const { version: packageVersion } = require('../package.json');
     FetchModule,
     MetaModule.forRoot({
       version: packageVersion,
-      sdkVersion: { name: 'stellar-sdk', version: stellarSdkVersion },
+      sdkVersion: { name: '@stellar/stellar-sdk', version: stellarSdkVersion },
     }),
   ],
   controllers: [],
