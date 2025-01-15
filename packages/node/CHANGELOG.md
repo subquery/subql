@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix module `stellar-sdk` not found
+
 ## [4.2.0] - 2024-12-17
 ### Changed
 - Update `@subql/node-core` and `@subql/common` dependencies
