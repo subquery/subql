@@ -58,3 +58,25 @@ describe('handledStringify', () => {
     expect(result).toBe('Error without stack');
   });
 });
+
+describe('handledStringify depth', () => {
+  it('Different truncation situations at various depths', () => {
+    const obj = {
+      key: 'value',
+      child: {
+        key: 'value',
+        child: {
+          key: 'value',
+        },
+        arr: [1, 2, 3],
+      },
+    };
+    expect(handledStringify(obj, 0)).toEqual(
+      '{"key":"value","child":{"key":"value","child":{"key":"value"},"arr":[1,2,3]}}'
+    );
+    expect(handledStringify(obj, 2)).toEqual(
+      '{"key":"value","child":{"key":"value","child":"[Object(1)]","arr":"[Array(3)]"}}'
+    );
+    expect(handledStringify(obj, 1)).toEqual('{"key":"value","child":"[Object(3)]"}');
+  });
+});
