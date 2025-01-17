@@ -5,6 +5,7 @@ import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
 import { BaseDataSource } from '@subql/types-core';
 import { Sequelize } from '@subql/x-sequelize';
+import { IBlockchainService } from '../blockchain.service';
 import { NodeConfig, ProjectUpgradeService } from '../configure';
 import {
   IUnfinalizedBlocksService,
@@ -37,7 +38,8 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     @Inject('ISubqueryProject') private readonly project: P,
     private readonly forceCleanService: ForceCleanService,
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
-    @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>
+    @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>,
+    @Inject('IBlockchainService') private readonly blockchainService: IBlockchainService<DS>,
   ) {}
 
   private get metadataRepo(): IMetadata {
@@ -63,7 +65,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
     await this.dynamicDsService.init(this.metadataRepo);
 
-    const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataRepo.findMany([
+    const { lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height } = await this.metadataRepo.findMany([
       'lastProcessedHeight',
       'lastProcessedBlockTimestamp',
     ]);
@@ -87,7 +89,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
   }
 
   async getTargetHeightWithUnfinalizedBlocks(inputHeight: number): Promise<Header> {
-    const inputHeader = await this.unfinalizedBlocksService.getHeaderForHeight(inputHeight);
+    const inputHeader = await this.blockchainService.getHeaderForHeight(inputHeight);
 
     const unfinalizedBlocks = await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
     const bestBlocks = unfinalizedBlocks.filter(({ blockHeight }) => blockHeight <= inputHeight);

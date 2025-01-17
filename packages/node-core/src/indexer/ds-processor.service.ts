@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {Inject} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {
   BaseCustomDataSource,
   SecondLayerHandlerProcessor_0_0_0,
@@ -13,6 +13,7 @@ import {
   IProjectNetworkConfig,
 } from '@subql/types-core';
 import {VMScript} from 'vm2';
+import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {Sandbox, SandboxOption} from './sandbox';
@@ -27,7 +28,7 @@ function isSecondLayerHandlerProcessor_0_0_0<
   F extends Record<string, unknown>,
   E,
   API,
-  DS extends BaseCustomDataSource = BaseCustomDataSource
+  DS extends BaseCustomDataSource = BaseCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
@@ -44,7 +45,7 @@ function isSecondLayerHandlerProcessor_1_0_0<
   F extends Record<string, unknown>,
   E,
   API,
-  DS extends BaseCustomDataSource = BaseCustomDataSource
+  DS extends BaseCustomDataSource = BaseCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
@@ -60,7 +61,7 @@ export function asSecondLayerHandlerProcessor_1_0_0<
   F extends Record<string, unknown>,
   E,
   API,
-  DS extends BaseCustomDataSource = BaseCustomDataSource
+  DS extends BaseCustomDataSource = BaseCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
@@ -101,7 +102,7 @@ class DsPluginSandbox<P> extends Sandbox {
 export function getDsProcessor<
   P,
   DS extends BaseDataSource = BaseDataSource,
-  CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource
+  CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource,
 >(
   ds: CDS,
   isCustomDs: (ds: any) => boolean,
@@ -132,17 +133,17 @@ export function getDsProcessor<
   return processorCache[ds.processor.file] as unknown as P;
 }
 
-export abstract class BaseDsProcessorService<
+@Injectable()
+export class DsProcessorService<
   DS extends BaseDataSource = BaseDataSource,
   CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource,
-  P extends DsProcessor<CDS> = DsProcessor<CDS>
+  P extends DsProcessor<CDS> = DsProcessor<CDS>,
 > {
   private processorCache: Record<string, P> = {};
 
-  protected abstract isCustomDs(ds: DS): ds is CDS;
-
   constructor(
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    @Inject('IBlockchainService') private blockchainService: IBlockchainService<DS, CDS>,
     private readonly nodeConfig: NodeConfig
   ) {}
 
@@ -168,11 +169,11 @@ export abstract class BaseDsProcessorService<
   }
 
   async validateProjectCustomDatasources(dataSources: DS[]): Promise<void> {
-    await this.validateCustomDs(dataSources.filter((ds) => this.isCustomDs(ds)) as unknown as CDS[]);
+    await this.validateCustomDs(dataSources.filter((ds) => this.blockchainService.isCustomDs(ds)) as unknown as CDS[]);
   }
 
   getDsProcessor(ds: CDS): P {
-    if (!this.isCustomDs(ds)) {
+    if (!this.blockchainService.isCustomDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
     if (!this.processorCache[ds.processor.file]) {
@@ -196,7 +197,7 @@ export abstract class BaseDsProcessorService<
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getAssets(ds: CDS): Promise<Record<string, string>> {
-    if (!this.isCustomDs(ds)) {
+    if (!this.blockchainService.isCustomDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
 

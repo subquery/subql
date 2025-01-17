@@ -88,8 +88,7 @@ describe('ApiService', () => {
 
     app = module.createNestApplication();
     await app.init();
-    const apiService = app.get(ApiService);
-    return apiService;
+    return app.get(ApiService);
   };
 
   it('can instantiate api', async () => {
@@ -507,8 +506,7 @@ describe('Load chain type hasher', () => {
 
     app = module.createNestApplication();
     await app.init();
-    const apiService = app.get(ApiService);
-    return apiService;
+    return app.get(ApiService);
   };
 
   it('should use new hasher function, types hasher string should be replaced with function', async () => {

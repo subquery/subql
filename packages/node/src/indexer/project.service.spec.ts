@@ -4,20 +4,21 @@
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import {
-  BaseProjectService,
+  ProjectService,
   ConnectionPoolService,
   ConnectionPoolStateManager,
   NodeConfig,
   ProjectUpgradeService,
   upgradableSubqueryProject,
+  DsProcessorService,
+  DynamicDsService,
 } from '@subql/node-core';
 import { SubstrateDatasourceKind, SubstrateHandlerKind } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
+import { BlockchainService } from '../blockchain.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { ProjectService } from './project.service';
+import { RuntimeService } from './runtime/runtimeService';
 
 function testSubqueryProject(): SubqueryProject {
   return {
@@ -52,7 +53,7 @@ function testSubqueryProject(): SubqueryProject {
 }
 
 // @ts-ignore
-class TestProjectService extends BaseProjectService<any, any> {
+class TestProjectService extends ProjectService<any, any> {
   packageVersion = '1.0.0';
 
   async init(startHeight?: number): Promise<void> {
@@ -140,7 +141,11 @@ describe('ProjectService', () => {
         },
         {
           provide: ProjectService,
-          useFactory: (apiService: ApiService, project: SubqueryProject) =>
+          useFactory: (
+            apiService: ApiService,
+            project: SubqueryProject,
+            blockchainService: BlockchainService,
+          ) =>
             new TestProjectService(
               {
                 validateProjectCustomDatasources: jest.fn(),
@@ -166,23 +171,28 @@ describe('ProjectService', () => {
               } as unknown as DynamicDsService,
               null as unknown as any,
               null as unknown as any,
+              blockchainService,
             ),
-          inject: [ApiService, 'ISubqueryProject'],
+          inject: ['APIService', 'ISubqueryProject', 'IBlockchainService'],
         },
         EventEmitter2,
         {
-          provide: ApiService,
+          provide: 'APIService',
           useFactory: ApiService.init,
-          inject: [
-            'ISubqueryProject',
-            ConnectionPoolService,
-            EventEmitter2,
-            NodeConfig,
-          ],
+          inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2, NodeConfig]
         },
         {
           provide: ProjectUpgradeService,
           useValue: projectUpgrade,
+        },
+        {
+          provide: 'RuntimeService',
+          useFactory: (apiService) => new RuntimeService(apiService),
+          inject: ['APIService'],
+        },
+        {
+          provide: 'IBlockchainService',
+          useClass: BlockchainService,
         },
       ],
       imports: [EventEmitterModule.forRoot()],
@@ -190,7 +200,7 @@ describe('ProjectService', () => {
 
     const app = module.createNestApplication();
     await app.init();
-    apiService = app.get(ApiService);
+    apiService = app.get('APIService');
     projectUpgradeService = app.get(
       ProjectUpgradeService,
     ) as ProjectUpgradeService<SubqueryProject>;

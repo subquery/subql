@@ -20,7 +20,6 @@ import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import {
   BlockContent,
   getBlockSize,
-  isFullBlock,
   LightBlockContent,
 } from '../types';
 
@@ -34,8 +33,9 @@ export class WorkerService extends BaseWorkerService<
   { specVersion: number }
 > {
   constructor(
-    private apiService: ApiService,
+    @Inject('APIService') private apiService: ApiService,
     private indexerManager: IndexerManager,
+    @Inject('RuntimeService')
     private workerRuntimeService: WorkerRuntimeService,
     @Inject('IProjectService')
     projectService: IProjectService<SubstrateDatasource>,
@@ -83,11 +83,7 @@ export class WorkerService extends BaseWorkerService<
     block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
   ): Promise<ProcessBlockResponse> {
-    const runtimeVersion = !isFullBlock(block.block)
-      ? undefined
-      : await this.workerRuntimeService.getRuntimeVersion(block.block.block);
-
-    return this.indexerManager.indexBlock(block, dataSources, runtimeVersion);
+    return this.indexerManager.indexBlock(block, dataSources);
   }
 
   getSpecFromMap(height: number): number | undefined {
