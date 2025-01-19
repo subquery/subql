@@ -66,7 +66,7 @@ export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
   query!: QuerySpec;
 }
 
-// ChainTypes is different with other network
+// ChainTypes is different from other network
 export class ProjectNetworkDeploymentV1_0_0 {
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
