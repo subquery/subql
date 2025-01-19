@@ -179,7 +179,7 @@ spec:
       terminationGracePeriodSeconds: 300
 ```
 
-To gain further security, an archieve node should be used in the same k8s cluster, and a NetworkPolicy be added to limit all network communication within the internal network.
+To gain further security, an archive node should be used in the same k8s cluster, and a NetworkPolicy be added to limit all network communication within the internal network.
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
