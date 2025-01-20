@@ -266,6 +266,10 @@ export function yargsBuilder<
                 describe: 'monitor file size limit in MB ',
                 type: 'number',
               },
+              'monitor-object-max-depth': {
+                describe: 'The maximum depth of an object recorded by a monitor. Default is 5, 0 is no limit',
+                type: 'number',
+              },
               'enable-cache': {
                 describe: 'cache enable or disable',
                 type: 'boolean',

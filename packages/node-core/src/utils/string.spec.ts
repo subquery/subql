@@ -58,3 +58,43 @@ describe('handledStringify', () => {
     expect(result).toBe('Error without stack');
   });
 });
+
+describe('handledStringify depth', () => {
+  it('Different truncation situations at various depths', () => {
+    const obj = {
+      key: 'value',
+      child: {
+        key: 'value',
+        child: {
+          key: 'value',
+        },
+        arr: [1, 2, 3],
+      },
+    };
+    expect(handledStringify(obj, 0)).toEqual(
+      '{"key":"value","child":{"key":"value","child":{"key":"value"},"arr":[1,2,3]}}'
+    );
+    expect(handledStringify(obj, 2)).toEqual(
+      '{"key":"value","child":{"key":"value","child":"[Object(1)]","arr":"[Array(3)]"}}'
+    );
+    expect(handledStringify(obj, 1)).toEqual('{"key":"value","child":"[Object(3)]"}');
+  });
+
+  it('Undefined values', () => {
+    expect(handledStringify(undefined, 3)).toBeUndefined();
+  });
+
+  it('Null values', () => {
+    expect(handledStringify(null, 3)).toEqual('null');
+    expect(handledStringify({a: null}, 3)).toEqual('{"a":null}');
+  });
+
+  it('A circular reference', () => {
+    const obj: any = {};
+    const obj2: any = {};
+    obj.reference = obj2;
+    obj2.reference = obj;
+    expect(handledStringify(obj, 0)).toMatch(/Converting circular structure to JSON/);
+    expect(handledStringify(obj, 3)).toMatch(/Converting circular structure to JSON/);
+  });
+});

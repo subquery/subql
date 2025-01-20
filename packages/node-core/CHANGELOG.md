@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add `TextEncoder` in sandbox, some network package util method is depended on it
+- Added the `--monitor-object-max-depth` flag to mitigate OOM issues when encountering large chunks.(#2644)
+
+### Fixed
+- Fixed the inconsistency between the `monitor-file-size` flag and the expected behavior.(#2644)
+
 ## [16.1.0] - 2024-12-11
 ### Changed
 - If any tests fail with the `test` subcommand the exit code will now be 1 instead of 0 (#2624)
