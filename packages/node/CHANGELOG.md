@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Bump `@subql/node-core` dependency (#2644)
+
 ## [5.6.0] - 2024-12-11
 ### Changed
 - Update `@subql/node-core` with bug fixes and support for alternative ID types

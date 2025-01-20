@@ -57,6 +57,7 @@ export interface IConfig {
   readonly csvOutDir?: string;
   readonly monitorOutDir: string;
   readonly monitorFileSize?: number;
+  readonly monitorObjectMaxDepth: number;
   readonly enableCache?: boolean;
 }
 
@@ -86,6 +87,7 @@ const DEFAULT_CONFIG = {
   storeFlushInterval: 5,
   allowSchemaMigration: false,
   monitorOutDir: './.monitor',
+  monitorObjectMaxDepth: 5,
 };
 
 export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
@@ -334,7 +336,11 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     const defaultMonitorFileSize = 200;
     // If user passed though yarg, we will record monitor file by this size, no matter poi or not
     // if user didn't pass through yarg, we will record monitor file by this default size only when poi is enabled
-    return (this._config.monitorFileSize ?? this._config.proofOfIndex) ? defaultMonitorFileSize : 0;
+    return this._config.monitorFileSize ?? (this._config.proofOfIndex ? defaultMonitorFileSize : 0);
+  }
+
+  get monitorObjectMaxDepth(): number {
+    return this._config.monitorObjectMaxDepth;
   }
 
   get enableCache(): boolean {

@@ -44,4 +44,20 @@ describe('NodeConfig', () => {
     expect(() => NodeConfig.fromFile(path.join(__dirname, '../../test/config.toml'))).toThrow();
     expect(() => NodeConfig.fromFile(path.join(__dirname, '../../test/con.toml'))).toThrow(/Load config from file/);
   });
+
+  it('Monitor configs default value', () => {
+    const fileConfig = NodeConfig.fromFile(path.join(__dirname, '../../test/config.yml'));
+    expect(fileConfig.monitorFileSize).toEqual(0);
+    expect(fileConfig.monitorObjectMaxDepth).toEqual(0);
+
+    const config2 = NodeConfig.rebaseWithArgs(fileConfig, {
+      monitorObjectMaxDepth: 10,
+    });
+    expect(config2.monitorObjectMaxDepth).toEqual(10);
+
+    const config3 = NodeConfig.rebaseWithArgs(fileConfig, {
+      proofOfIndex: true,
+    });
+    expect(config3.monitorFileSize).toEqual(200);
+  });
 });
