@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add starknet to network family constants 
+
 ## [5.2.2] - 2024-12-11
 ### Fixed
 - Missing form-data dependency (#2622)

@@ -26,6 +26,7 @@ export enum NETWORK_FAMILY {
   near = 'Near',
   stellar = 'Stellar',
   concordium = 'Concordium',
+  starknet = 'Starknet',
 }
 
 export const runnerMapping = {
@@ -37,6 +38,7 @@ export const runnerMapping = {
   '@subql/node-near': NETWORK_FAMILY.near,
   '@subql/node-stellar': NETWORK_FAMILY.stellar,
   '@subql/node-concordium': NETWORK_FAMILY.concordium,
+  '@subql/node-starknet': NETWORK_FAMILY.starknet,
 };
 
 // DATABASE ERROR REGEX
