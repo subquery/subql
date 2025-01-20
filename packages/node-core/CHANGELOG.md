@@ -5,13 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
 - Add `TextEncoder` in sandbox, some network package util method is depended on it
 - Added the `--monitor-object-max-depth` flag to mitigate OOM issues when encountering large chunks.(#2644)
+- Configuration options for PG pool connections (#2646)
 
 ### Fixed
 - Fixed the inconsistency between the `monitor-file-size` flag and the expected behavior.(#2644)
+
 
 ## [16.1.0] - 2024-12-11
 ### Changed
