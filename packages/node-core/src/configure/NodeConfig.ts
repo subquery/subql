@@ -46,6 +46,11 @@ export interface IConfig {
   readonly pgCa?: string;
   readonly pgKey?: string;
   readonly pgCert?: string;
+  readonly pgPoolMin?: number;
+  readonly pgPoolMax?: number;
+  readonly pgPoolIdle?: number;
+  readonly pgPoolAqcuire?: number;
+  readonly pgPoolEvict?: number;
   readonly storeCacheThreshold: number;
   readonly storeCacheUpperLimit: number;
   readonly storeGetCacheSize: number;
@@ -318,6 +323,26 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
       logger.error(e, 'Unable to get postgres client cert');
       throw e;
     }
+  }
+
+  get pgPoolMax(): number | undefined {
+    return this._config.pgPoolMax;
+  }
+
+  get pgPoolMin(): number | undefined {
+    return this._config.pgPoolMin;
+  }
+
+  get pgPoolAqcuire(): number | undefined {
+    return this._config.pgPoolAqcuire;
+  }
+
+  get pgPoolIdle(): number | undefined {
+    return this._config.pgPoolIdle;
+  }
+
+  get pgPoolEvict(): number | undefined {
+    return this._config.pgPoolEvict;
   }
 
   get root(): string | undefined {

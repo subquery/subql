@@ -73,6 +73,13 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
         cert: nodeConfig.postgresClientCert,
       },
     },
+    pool: {
+      max: nodeConfig.pgPoolMax,
+      min: nodeConfig.pgPoolMin,
+      acquire: nodeConfig.pgPoolAqcuire,
+      idle: nodeConfig.pgPoolIdle,
+      evict: nodeConfig.pgPoolEvict,
+    },
     logging: (sql: string, timing?: number) => {
       logger.debug(sql);
     },
