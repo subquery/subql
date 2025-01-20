@@ -269,7 +269,6 @@ export function yargsBuilder<
               'monitor-object-max-depth': {
                 describe: 'The maximum depth of an object recorded by a monitor. Default is 0, no limit',
                 type: 'number',
-                default: 0,
               },
               'enable-cache': {
                 describe: 'cache enable or disable',

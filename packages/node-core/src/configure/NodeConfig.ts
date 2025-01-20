@@ -87,7 +87,7 @@ const DEFAULT_CONFIG = {
   storeFlushInterval: 5,
   allowSchemaMigration: false,
   monitorOutDir: './.monitor',
-  monitorObjectMaxDepth: 0,
+  monitorObjectMaxDepth: 5,
 };
 
 export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
