@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add `TextEncoder` in sandbox, some network package util method is depended on it
 
+### Fixed
+- Improved block range validation in POI endpoint with custom class-validator decorator
+
 ## [16.1.0] - 2024-12-11
 ### Changed
 - If any tests fail with the `test` subcommand the exit code will now be 1 instead of 0 (#2624)
@@ -45,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
 
 ### Fixed
-- When using a GET query to retrieve an entity, it will include a “store” field.
+- When using a GET query to retrieve an entity, it will include a "store" field.
 - Support for historical indexing by timestamp as well as block height (#2584)
 - Subscriptions not emitting deleted mutation type with historical (#2600)
 
@@ -144,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [10.10.2] - 2024-07-10
 ### Fixed
-- Fix issue admin api can not get `dbSize` due to it not been set in \_metadata table
+- Fix issue admin api can not get `dbSize` due to it not been set in _metadata table
 
 ## [10.10.1] - 2024-07-09
 ### Added
@@ -609,7 +612,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Base58 encoding check for POI (#1788)
-- Fix project \_startHeight been blocked by poiSync (#1792)
+- Fix project _startHeight been blocked by poiSync (#1792)
 
 ## [2.4.4] - 2023-06-07
 ### Fixed
