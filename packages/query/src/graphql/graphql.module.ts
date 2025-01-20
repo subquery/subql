@@ -220,7 +220,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         path: WS_ROUTE,
       });
 
-      this.wsCleanup = useServer({schema}, wsServer);
+      this.wsCleanup = useServer({schema, context: {pgClient: this.pgPool}}, wsServer);
     }
 
     app.use(PinoLogger(PinoConfig));
