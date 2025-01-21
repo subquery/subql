@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed the inconsistency between the `monitor-file-size` flag and the expected behavior.(#2644)
 - Improved block range validation in POI endpoint with custom class-validator decorator
+- When setting a smaller batch size and the current processing height reaches latestFinalizedHeight, it causes the program to exit unexpectedly.
 
 ## [16.1.0] - 2024-12-11
 ### Changed
