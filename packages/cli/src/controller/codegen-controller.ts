@@ -161,6 +161,10 @@ export function processFields(
       switch (field.type) {
         default: {
           const typeClass = getTypeByScalarName(field.type);
+          if (field.name === 'metaId') {
+            console.log(field, injectField, typeClass);
+          }
+
           assert(
             typeClass && typeClass.tsType,
             `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className} @${type}"`
