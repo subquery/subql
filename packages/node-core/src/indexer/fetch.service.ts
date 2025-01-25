@@ -241,15 +241,20 @@ export abstract class BaseFetchService<DS extends BaseDataSource, B extends IBlo
             continue;
           }
           if (dictionary) {
-            const {batchBlocks} = dictionary;
+            const {batchBlocks, lastBufferedHeight} = dictionary;
             // the last block returned from batch should have max height in this batch
             const mergedBlocks = mergeNumAndBlocks(
-              this.getModuloBlocks(startBlockHeight, dictionary.lastBufferedHeight),
+              this.getModuloBlocks(startBlockHeight, lastBufferedHeight),
               batchBlocks
             );
             if (mergedBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              await this.enqueueBlocks([], dictionary.lastBufferedHeight);
+              if (startBlockHeight <= lastBufferedHeight) {
+                await this.enqueueBlocks([], lastBufferedHeight);
+              } else {
+                // Exceeds the dictionary search height
+                await this.enqueueSequential(startBlockHeight, scaledBatchSize, latestHeight);
+              }
             } else {
               const maxBlockSize = Math.min(mergedBlocks.length, this.blockDispatcher.freeSize);
               const enqueueBlocks = mergedBlocks.slice(0, maxBlockSize);

@@ -48,7 +48,7 @@ describe('NodeConfig', () => {
   it('Monitor configs default value', () => {
     const fileConfig = NodeConfig.fromFile(path.join(__dirname, '../../test/config.yml'));
     expect(fileConfig.monitorFileSize).toEqual(0);
-    expect(fileConfig.monitorObjectMaxDepth).toEqual(0);
+    expect(fileConfig.monitorObjectMaxDepth).toEqual(5);
 
     const config2 = NodeConfig.rebaseWithArgs(fileConfig, {
       monitorObjectMaxDepth: 10,

@@ -719,4 +719,34 @@ describe('Fetch Service', () => {
     // when last processed height is 1000, finalized height is 1000
     await expect(fetchService.init(1001)).resolves.not.toThrow();
   });
+
+  it('When the index height reaches the dictionary’s lastBufferedHeight, it can enqueue normally.', async () => {
+    enableDictionary();
+    dictionaryService.scopedDictionaryEntries = (start, end, batch) => {
+      return Promise.resolve({
+        batchBlocks: [],
+        queryEndBlock: 900,
+        _metadata: {
+          lastProcessedHeight: 900,
+        } as any,
+        lastBufferedHeight: 900,
+      });
+    };
+
+    fetchService.bestHeight = 1000;
+    const dictionarySpy = jest.spyOn((fetchService as any).dictionaryService, 'scopedDictionaryEntries');
+
+    // first enqueue
+    await fetchService.init(10);
+
+    expect(dictionarySpy).toHaveBeenCalledTimes(1);
+    expect((fetchService as any).blockDispatcher.latestBufferedHeight).toEqual(900);
+
+    // Second enqueue
+    blockDispatcher.freeSize = 10;
+    await delay(1);
+    expect(dictionarySpy).toHaveBeenCalledTimes(2);
+    expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
+    expect((fetchService as any).blockDispatcher.latestBufferedHeight).toEqual(910);
+  }, 10000);
 });
