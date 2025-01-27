@@ -1,13 +1,13 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { buildSchemaFromString } from '@subql/utils';
-import { Sequelize, QueryTypes } from '@subql/x-sequelize';
-import { NodeConfig } from '../configure';
-import { DbOption } from '../db';
-import { StoreService } from './store.service';
-import { CachedModel, PlainStoreModelService, StoreCacheService } from './storeModelProvider';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {buildSchemaFromString} from '@subql/utils';
+import {Sequelize, QueryTypes} from '@subql/x-sequelize';
+import {NodeConfig} from '../configure';
+import {DbOption} from '../db';
+import {StoreService} from './store.service';
+import {CachedModel, PlainStoreModelService, StoreCacheService} from './storeModelProvider';
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
@@ -38,8 +38,8 @@ describe('Check whether the db store and cache store are consistent.', () => {
     await sequelize.authenticate();
 
     await sequelize.query(`CREATE SCHEMA ${testSchemaName};`);
-    const nodeConfig = new NodeConfig({ subquery: 'test', proofOfIndex: true, enableCache: false });
-    const project = { network: { chainId: '1' }, schema } as any;
+    const nodeConfig = new NodeConfig({subquery: 'test', proofOfIndex: true, enableCache: false});
+    const project = {network: {chainId: '1'}, schema} as any;
     const dbModel = new PlainStoreModelService(sequelize, nodeConfig);
     storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
     await storeService.initCoreTables(testSchemaName);
@@ -57,9 +57,9 @@ describe('Check whether the db store and cache store are consistent.', () => {
   });
 
   it('Same block, Execute the set method multiple times.', async () => {
-    await storeService.setBlockHeader({ blockHeight: 1, blockHash: '0x01', parentHash: '0x00' });
+    await storeService.setBlockHeader({blockHeight: 1, blockHash: '0x01', parentHash: '0x00'});
 
-    const accountEntity = { id: 'block-001', balance: 100 };
+    const accountEntity = {id: 'block-001', balance: 100};
 
     // account not exist.
     let account = await storeService.getStore().get('Account', accountEntity.id);
@@ -72,21 +72,21 @@ describe('Check whether the db store and cache store are consistent.', () => {
 
     // block range check.
     const [dbData] = await sequelize.query<any>(`SELECT * FROM "${testSchemaName}"."accounts" WHERE id = :id`, {
-      replacements: { id: accountEntity.id },
+      replacements: {id: accountEntity.id},
       type: QueryTypes.SELECT,
       transaction: storeService.transaction,
     });
     expect(dbData._block_range).toEqual([
-      { value: '1', inclusive: true },
-      { value: null, inclusive: false },
+      {value: '1', inclusive: true},
+      {value: null, inclusive: false},
     ]);
 
     // update account success.
-    const account001 = { id: 'block-001', balance: 10000 };
+    const account001 = {id: 'block-001', balance: 10000};
     await storeService.getStore().set('Account', account001.id, account001 as any);
     const account001After = await storeService.getStore().get('Account', account001.id);
     expect(account001After).toEqual(account001);
-    console.log({ accountAfter: account001After, accountEntityAfter: account001 });
+    console.log({accountAfter: account001After, accountEntityAfter: account001});
 
     // only one record in db and block range check.
     const allDatas = await sequelize.query<any>(`SELECT * FROM "${testSchemaName}"."accounts"`, {
@@ -95,11 +95,11 @@ describe('Check whether the db store and cache store are consistent.', () => {
     });
     expect(allDatas).toHaveLength(1);
     expect(allDatas[0]._block_range).toEqual([
-      { value: '1', inclusive: true },
-      { value: null, inclusive: false },
+      {value: '1', inclusive: true},
+      {value: null, inclusive: false},
     ]);
 
-    const account002 = { id: 'block-002', balance: 100 };
+    const account002 = {id: 'block-002', balance: 100};
     await storeService.getStore().bulkCreate('Account', [account002, account001]);
     const account002After = await storeService.getStore().get('Account', account002.id);
     expect(account002After).toEqual(account002);
@@ -111,20 +111,20 @@ describe('Check whether the db store and cache store are consistent.', () => {
     });
     expect(allDatas2).toHaveLength(2);
     expect(allDatas2[0]._block_range).toEqual([
-      { value: '1', inclusive: true },
-      { value: null, inclusive: false },
+      {value: '1', inclusive: true},
+      {value: null, inclusive: false},
     ]);
     expect(allDatas2[1]._block_range).toEqual([
-      { value: '1', inclusive: true },
-      { value: null, inclusive: false },
+      {value: '1', inclusive: true},
+      {value: null, inclusive: false},
     ]);
   }, 30000);
 
   it('_block_range update check', async () => {
-    await storeService.setBlockHeader({ blockHeight: 1000, blockHash: '0x1000', parentHash: '0x0999' });
+    await storeService.setBlockHeader({blockHeight: 1000, blockHash: '0x1000', parentHash: '0x0999'});
 
     // insert new account.
-    const account1000Data = { id: 'block-1000', balance: 999 };
+    const account1000Data = {id: 'block-1000', balance: 999};
     await storeService.getStore().set('Account', account1000Data.id, account1000Data as any);
     const account1000 = await storeService.getStore().get('Account', account1000Data.id);
     expect(account1000).toEqual(account1000Data);
@@ -136,7 +136,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
     expect(allDatas).toHaveLength(3);
 
     // set old account.
-    const account002 = { id: 'block-002', balance: 222222 };
+    const account002 = {id: 'block-002', balance: 222222};
     await storeService.getStore().set('Account', account002.id, account002 as any);
     const account002After = await storeService.getStore().get('Account', account002.id);
     expect(account002After).toEqual(account002);
@@ -153,12 +153,12 @@ describe('Check whether the db store and cache store are consistent.', () => {
     expect(account002Datas).toHaveLength(2);
     expect(account002Datas.map((v) => v._block_range).sort((a, b) => b[0].value - a[0].value)).toEqual([
       [
-        { value: '1000', inclusive: true },
-        { value: null, inclusive: false },
+        {value: '1000', inclusive: true},
+        {value: null, inclusive: false},
       ],
       [
-        { value: '1', inclusive: true },
-        { value: '1000', inclusive: false },
+        {value: '1', inclusive: true},
+        {value: '1000', inclusive: false},
       ],
     ]);
   }, 100000);
@@ -187,8 +187,8 @@ describe('Cache Provider', () => {
       storeCacheUpperLimit: 1,
       storeFlushInterval: 0,
     });
-    const project = { network: { chainId: '1' }, schema } as any;
-    cacheModel = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2(), null as any);
+    const project = {network: {chainId: '1'}, schema} as any;
+    cacheModel = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2());
     storeService = new StoreService(sequelize, nodeConfig, cacheModel, project);
     await storeService.initCoreTables(testSchemaName);
     await storeService.init(testSchemaName);
@@ -204,7 +204,7 @@ describe('Cache Provider', () => {
     tx.afterCommit(() => {
       Account.clear(blockHeight);
     });
-    await storeService.setBlockHeader({ blockHeight, blockHash: `0x${blockHeight}`, parentHash: `0x${blockHeight - 1}` });
+    await storeService.setBlockHeader({blockHeight, blockHash: `0x${blockHeight}`, parentHash: `0x${blockHeight - 1}`});
     await handle(blockHeight);
     await Account.runFlush(tx, blockHeight);
     await tx.commit();
@@ -216,7 +216,7 @@ describe('Cache Provider', () => {
         type: QueryTypes.SELECT,
       });
 
-    const accountEntity1 = { id: 'accountEntity-001', balance: 100 };
+    const accountEntity1 = {id: 'accountEntity-001', balance: 100};
     await cacheFlush(1, async (blockHeight) => {
       await Account.set(accountEntity1.id, accountEntity1, blockHeight);
     });
@@ -226,7 +226,7 @@ describe('Cache Provider', () => {
     expect(allDatas).toHaveLength(1);
 
     // next block 999
-    const accountEntity2 = { id: 'accountEntity-002', balance: 9999 };
+    const accountEntity2 = {id: 'accountEntity-002', balance: 9999};
     await cacheFlush(999, async (blockHeight) => {
       await Account.remove(accountEntity1.id, blockHeight);
       const oldAccunt = await Account.get(accountEntity1.id);
@@ -251,7 +251,7 @@ describe('Cache Provider', () => {
       oldAccunt2 = await Account.get(accountEntity2.id);
       expect(oldAccunt2).toBeUndefined();
 
-      await Account.set(accountEntity2.id, { id: 'accountEntity-002', balance: 999999 } as any, blockHeight);
+      await Account.set(accountEntity2.id, {id: 'accountEntity-002', balance: 999999} as any, blockHeight);
       oldAccunt2 = await Account.get(accountEntity2.id);
       expect(oldAccunt2.balance).toEqual(999999);
     });
