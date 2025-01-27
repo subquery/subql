@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the inconsistency between the `monitor-file-size` flag and the expected behavior.(#2644)
 - Improved block range validation in POI endpoint with custom class-validator decorator
 - When setting a smaller batch size and the current processing height reaches latestFinalizedHeight, it causes the program to exit unexpectedly.
+- Store flush interval having a chance of trying to flush with invalid metadata (#2650)
 
 ## [16.1.0] - 2024-12-11
 ### Changed
@@ -153,7 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [10.10.2] - 2024-07-10
 ### Fixed
-- Fix issue admin api can not get `dbSize` due to it not been set in _metadata table
+- Fix issue admin api can not get `dbSize` due to it not been set in \_metadata table
 
 ## [10.10.1] - 2024-07-09
 ### Added
@@ -618,7 +619,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Base58 encoding check for POI (#1788)
-- Fix project _startHeight been blocked by poiSync (#1792)
+- Fix project \_startHeight been blocked by poiSync (#1792)
 
 ## [2.4.4] - 2023-06-07
 ### Fixed
