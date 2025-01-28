@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.20.0] - 2025-01-28
 ### Fixed
 - Subscriptions `_entity` field now returns all properties (#2626)
 
@@ -394,7 +395,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.19.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.20.0...HEAD
+[2.20.0]: https://github.com/subquery/subql/compare/query/2.19.0...query/2.20.0
 [2.19.0]: https://github.com/subquery/subql/compare/query/2.18.0...query/2.19.0
 [2.18.0]: https://github.com/subquery/subql/compare/query/2.17.1...query/2.18.0
 [2.17.1]: https://github.com/subquery/subql/compare/query/2.17.0...query/2.17.1

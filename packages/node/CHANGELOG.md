@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.7.0] - 2025-01-28
 ### Changed
 - Update node core to expose PG Pool options (#2646)
 - Remove unused SchedulerRegistry dependency with node-core changes
@@ -1363,7 +1365,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.7.0...HEAD
+[5.7.0]: https://github.com/subquery/subql/compare/node/5.6.0...node/5.7.0
 [5.6.0]: https://github.com/subquery/subql/compare/node/5.5.0...node/5.6.0
 [5.5.0]: https://github.com/subquery/subql/compare/node/5.4.2...node/5.5.0
 [5.4.2]: https://github.com/subquery/subql/compare/node/5.4.1...node/5.4.2

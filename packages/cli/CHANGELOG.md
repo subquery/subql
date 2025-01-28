@@ -5,10 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.5.0] - 2025-01-28
 ### Added
 - Add some constants for Starknet
+
 ### Changed
 - Added internal note relating to some tests
+
 ### Fixed
 - Codegen: getByFields being invalid code (#2649)
 
@@ -712,7 +716,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.5.0...HEAD
+[5.5.0]: https://github.com/subquery/subql/compare/cli/5.4.0...cli/5.5.0
 [5.4.0]: https://github.com/subquery/subql/compare/cli/5.3.3...cli/5.4.0
 [5.3.3]: https://github.com/subquery/subql/compare/cli/5.3.2...cli/5.3.3
 [5.3.2]: https://github.com/subquery/subql/compare/cli/5.3.1...cli/5.3.2
