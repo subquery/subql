@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.4.0] - 2025-01-28
+### Changed
+- Update `@subql/node-core` with minor bug fixes and improvements
+
 ## [5.3.0] - 2024-12-17
 ### Changed
 - Update `@subql/node-core` and `@subql/common` dependencies
@@ -581,7 +585,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.4.0...HEAD
+[5.4.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.3.0...node-ethereum/5.4.0
 [5.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.1...node-ethereum/5.3.0
 [5.2.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.2.0...node-ethereum/5.2.1
 [5.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.1.7...node-ethereum/5.2.0
