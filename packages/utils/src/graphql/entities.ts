@@ -133,7 +133,16 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       }
       // If is a foreign key
       else if (entityNameSet.includes(typeString) && !derivedFromDirectValues) {
-        newModel.fields.push(packEntityField(typeString, field, true));
+        let relatedTypeString = FieldScalar.String;
+
+        // Check to see if the relation ID type is modified with the @dbType directive
+        const relatedIdField = entities.find((e) => e.name === typeString)?.getFields().id;
+        const dbIdType = relatedIdField?.astNode ? getDirectiveValues(idDbType, relatedIdField.astNode) : undefined;
+        if (dbIdType) {
+          relatedTypeString = dbIdType.type;
+        }
+
+        newModel.fields.push(packEntityField(relatedTypeString, field, true));
         modelRelations.relations.push({
           from: entity.name,
           type: 'belongsTo',
@@ -350,7 +359,7 @@ function packEntityField(
 ): GraphQLEntityField {
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,
-    type: isForeignKey ? FieldScalar.String : typeString,
+    type: typeString,
     description: field.description ?? undefined,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),

@@ -1,0 +1,24 @@
+specVersion: '1.0.0'
+name: 'example'
+
+schema:
+  file: './dbTypeSchema.graphql'
+runner:
+  node:
+    name: '@subql/node'
+    version: '>=3.0.1'
+  query:
+    name: '@subql/query'
+    version: '*'
+customDs:
+  kind: substrate/FrontierEvm
+  assets:
+    erc721:
+      file: ./abis/erc721.json
+dataSources:
+  - kind: ethereum/Runtime
+    startBlock: 1
+    mapping:
+      handlers:
+        - handler: handleTransaction
+          kind: ethereum/BlockHandler

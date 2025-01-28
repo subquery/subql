@@ -1,0 +1,11 @@
+type BlockMeta @entity {
+  id: ID! @dbType(type: "BigInt")
+
+  height: Int!
+}
+
+type Block @entity {
+  id: ID!
+
+  meta: BlockMeta!
+}

@@ -101,4 +101,17 @@ describe('Codegen can generate schema', () => {
 
     expect(codegenFile).toContain(`export {ExampleField} from "./ExampleField"`);
   });
+
+  it('correctly generates relations with different dbTypes', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest');
+    await codegen(projectPath, ['project-id-type.yaml']);
+
+    const blockEntity = await fs.promises.readFile(`${projectPath}/src/types/models/Block.ts`, 'utf8');
+
+    expect(blockEntity).toContain('        metaId: bigint,');
+    expect(blockEntity).toContain('public metaId: bigint;');
+    expect(blockEntity).toContain(
+      'static async getByMetaId(metaId: bigint, options: GetOptions<CompatBlockProps>): Promise<Block[]> {'
+    );
+  });
 });
