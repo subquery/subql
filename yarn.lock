@@ -2626,7 +2626,7 @@ __metadata:
   resolution: "@subql/common-stellar@workspace:packages/common-stellar"
   dependencies:
     "@stellar/stellar-sdk": ^12.2.0
-    "@subql/common": ^5.2.2
+    "@subql/common": ^5.3.0
     "@subql/types-stellar": "workspace:*"
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
@@ -2639,9 +2639,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:5.2.2, @subql/common@npm:^5.2.2":
-  version: 5.2.2
-  resolution: "@subql/common@npm:5.2.2"
+"@subql/common@npm:5.3.0, @subql/common@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@subql/common@npm:5.3.0"
   dependencies:
     "@subql/types-core": 2.0.0
     axios: ^0.28.0
@@ -2652,22 +2652,22 @@ __metadata:
     reflect-metadata: ^0.1.14
     semver: ^7.6.3
     update-notifier: ^5.1.0
-  checksum: 91db322edee27860ef82a6a3a16413662543ed5f951720ddf9eb1617d9a172878cf0d5c89933edad03c6d3c22eee25c31799cd054fae934a4afbf606ac5ba3bd
+  checksum: 2f21993d5d0c841c5bb93c1493dcc04d1978383e18f705ed3642fdf8e3370f28f3acbabf8e81fc3d27b0878dc22845487a5cb3b3cd342502ec315a575f26dd8c
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^16.1.0":
-  version: 16.1.0
-  resolution: "@subql/node-core@npm:16.1.0"
+"@subql/node-core@npm:^16.2.0":
+  version: 16.2.0
+  resolution: "@subql/node-core@npm:16.2.0"
   dependencies:
     "@apollo/client": ^3.11.2
     "@nestjs/common": ^9.4.0
     "@nestjs/event-emitter": ^2.0.0
     "@nestjs/schedule": ^3.0.1
-    "@subql/common": 5.2.2
+    "@subql/common": 5.3.0
     "@subql/testing": 2.2.2
     "@subql/types": 3.11.4
-    "@subql/utils": 2.17.0
+    "@subql/utils": 2.17.1
     "@willsoto/nestjs-prometheus": ^5.4.0
     async-mutex: ^0.5.0
     cron-converter: ^2.0.1
@@ -2684,7 +2684,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: 470bd98966674d7102815a4c8595f35b3e8c1351a3f52cce0e49469b3f1f49ea6d98dcc0898e491b239bf14864e50b54a79c97ba843af65f052340dc8e098a60
+  checksum: ca9a810103b7dc319d8daaa9d13778658c4b2c0774b701a008845f5c60d688e7cf11768c8e5c4e509e43a91f409a8d986fcf20364334d5a3fa478fb23708c2f4
   languageName: node
   linkType: hard
 
@@ -2700,9 +2700,9 @@ __metadata:
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
     "@stellar/stellar-sdk": ^12.2.0
-    "@subql/common": ^5.2.2
+    "@subql/common": ^5.3.0
     "@subql/common-stellar": "workspace:*"
-    "@subql/node-core": ^16.1.0
+    "@subql/node-core": ^16.2.0
     "@subql/testing": ^2.2.0
     "@subql/types-stellar": "workspace:*"
     "@types/express": ^4.17.13
@@ -2779,9 +2779,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.17.0":
-  version: 2.17.0
-  resolution: "@subql/utils@npm:2.17.0"
+"@subql/utils@npm:2.17.1":
+  version: 2.17.1
+  resolution: "@subql/utils@npm:2.17.1"
   dependencies:
     "@polkadot/util": ^13.2.3
     "@polkadot/util-crypto": ^13.2.3
@@ -2794,7 +2794,7 @@ __metadata:
     lodash: ^4.17.21
     pino: ^6.13.3
     rotating-file-stream: ^3.2.3
-  checksum: 3993ff46b8789201a64904089ddf512bf3f22a7eb126e5a36b750fef756c33a34a8dca2c751be3137024157dff2b012d49bbb79df85ef5d7eca5dec6c5118bcc
+  checksum: 450640c82eb6e2db4ec6a3f13b23707f4df045dfe2ee5ea6af05ffe04ff6683c80329926e88ace29eaecd1f525c9328d390ec362460755a217d9f5b4e98b3e68
   languageName: node
   linkType: hard
 
