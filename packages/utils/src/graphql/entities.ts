@@ -359,7 +359,7 @@ function packEntityField(
 ): GraphQLEntityField {
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,
-    type: /*isForeignKey ? FieldScalar.String : */ typeString,
+    type: typeString,
     description: field.description ?? undefined,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),

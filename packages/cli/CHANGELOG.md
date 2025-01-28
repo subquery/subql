@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Added internal note relating to some tests
 ### Fixed
-- Codegen: getByFields being invalid code
+- Codegen: getByFields being invalid code (#2649)
 
 ## [5.4.0] - 2024-12-11
 ### Changed
