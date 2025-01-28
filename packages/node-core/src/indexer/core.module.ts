@@ -3,7 +3,6 @@
 
 import {Module} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {AdminController, AdminListener} from '../admin/admin.controller';
 import {NodeConfig} from '../configure';
@@ -32,7 +31,7 @@ import {storeModelFactory} from './storeModelProvider';
     {
       provide: 'IStoreModelProvider',
       useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+      inject: [NodeConfig, EventEmitter2, Sequelize],
     },
     AdminListener,
   ],

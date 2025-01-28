@@ -246,7 +246,9 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
       datasources as CosmosRuntimeDatasource[]
     );
   }
+  // TODO what about custom datasource processors, e.g. FrontierEvmProcessor, EthermintProcessor
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
+
   // Todo, starknet codegen not supported yet
   const starknetManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.starknet);
 

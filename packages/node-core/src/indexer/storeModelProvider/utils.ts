@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {StoreCacheService} from './storeCache.service';
@@ -23,10 +22,9 @@ export async function cacheProviderResetData(modelProvider: IStoreModelProvider)
 export function storeModelFactory(
   nodeConfig: NodeConfig,
   eventEmitter: EventEmitter2,
-  schedulerRegistry: SchedulerRegistry,
   sequelize: Sequelize
 ): IStoreModelProvider {
   return nodeConfig.enableCache
-    ? new StoreCacheService(sequelize, nodeConfig, eventEmitter, schedulerRegistry)
+    ? new StoreCacheService(sequelize, nodeConfig, eventEmitter)
     : new PlainStoreModelService(sequelize, nodeConfig);
 }

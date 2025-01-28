@@ -33,7 +33,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     {
       provide: 'IStoreModelProvider',
       useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+      inject: [NodeConfig, EventEmitter2, Sequelize],
     },
     EventEmitter2,
     PoiService,

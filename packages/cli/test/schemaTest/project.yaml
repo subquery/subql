@@ -5,7 +5,7 @@ schema:
   file: './schema.graphql'
 runner:
   node:
-    name: '@subql/node'
+    name: '@subql/node-ethereum'
     version: '>=3.0.1'
   query:
     name: '@subql/query'
