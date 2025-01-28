@@ -649,7 +649,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for block hashes with base64 format for POI (#1761)
 
 ### Changed
-- Update vm2 past problimatic version (#1770)
+- Update vm2 past problematic version (#1770)
 - Add optional root option to config (#1771)
 
 ## [2.3.1] - 2023-05-26
