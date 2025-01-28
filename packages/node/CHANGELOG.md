@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update node core to expose PG Pool options (#2646)
+- Remove unused SchedulerRegistry dependency with node-core changes
 
 ### Added
 - Bump `@subql/node-core` dependency (#2644)
