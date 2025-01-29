@@ -1,23 +1,22 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Sequelize } from '@subql/x-sequelize';
-import { IProjectUpgradeService } from '../configure';
+import {Sequelize} from '@subql/x-sequelize';
+import {IProjectUpgradeService} from '../configure';
 import {
   DynamicDsService,
   IUnfinalizedBlocksService,
   StoreService,
   PoiService,
   ISubqueryProject,
-  StoreCacheService,
   cacheProviderFlushData,
   cacheProviderResetData,
   Header,
 } from '../indexer';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { ForceCleanService } from '../subcommands/forceClean.service';
-import { getHistoricalUnit } from './blocks';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {ForceCleanService} from '../subcommands/forceClean.service';
+import {getHistoricalUnit} from './blocks';
 
 const logger = getLogger('Reindex');
 
@@ -43,7 +42,7 @@ const logger = getLogger('Reindex');
 export async function reindex(
   startHeight: number,
   targetBlockHeader: Header,
-  lastProcessed: { height: number; timestamp?: number },
+  lastProcessed: {height: number; timestamp?: number},
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
@@ -64,6 +63,8 @@ export async function reindex(
 
   // if startHeight is greater than the targetHeight, just force clean
   if (targetBlockHeader.blockHeight < startHeight) {
+    // TODO: multi-chain forceClean should not be allowed, 应该只回滚到 startHeight 而不是 forceClean
+
     logger.info(
       `targetHeight: ${targetBlockHeader.blockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
@@ -75,20 +76,22 @@ export async function reindex(
     await forceCleanService?.forceClean();
   } else {
     logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
+    // need to flush cache before rewind
     await cacheProviderFlushData(storeService.modelProvider, true);
     await cacheProviderResetData(storeService.modelProvider);
-    if (storeService.modelProvider instanceof StoreCacheService) {
-      await storeService.modelProvider.flushData(true);
-      await storeService.modelProvider.resetData();
+    // if Plain model, applyPendingChanges will be called in rewind
+    if (storeService.transaction) {
+      await storeService.modelProvider.applyPendingChanges(lastProcessed.height, false, storeService.transaction);
     }
+
     const transaction = await sequelize.transaction();
     try {
       /*
-      Must initialize storeService, to ensure all models are loaded, as storeService.init has not been called at this point
-       1. During runtime, model should be already been init
-       2.1 On start, projectUpgrade rewind will sync the sequelize models
-       2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
-    */
+        Must initialize storeService, to ensure all models are loaded, as storeService.init has not been called at this point
+        1. During runtime, model should be already been init
+        2.1 On start, projectUpgrade rewind will sync the sequelize models
+        2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
+      */
       await projectUpgradeService.rewind(
         targetBlockHeader.blockHeight,
         lastProcessed.height,
@@ -106,6 +109,7 @@ export async function reindex(
       // Flush metadata changes from above Promise.all
       await storeService.modelProvider.metadata.flush?.(transaction, targetUnit);
 
+      await storeService.releaseRewindLock(transaction);
       await transaction.commit();
       logger.info('Reindex Success');
     } catch (err: any) {
