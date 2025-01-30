@@ -69,16 +69,19 @@ export function wrapBlock(
 export function getTimestamp({
   block: { extrinsics },
 }: SignedBlock): Date | undefined {
-  for (const e of extrinsics) {
-    const {
-      method: { method, section },
-    } = e;
-    if (section === 'timestamp' && method === 'set') {
-      const date = new Date(e.args[0].toJSON() as number);
-      if (isNaN(date.getTime())) {
-        throw new Error('timestamp args type wrong');
+  // extrinsics can be undefined when fetching light blocks
+  if (extrinsics) {
+    for (const e of extrinsics) {
+      const {
+        method: { method, section },
+      } = e;
+      if (section === 'timestamp' && method === 'set') {
+        const date = new Date(e.args[0].toJSON() as number);
+        if (isNaN(date.getTime())) {
+          throw new Error('timestamp args type wrong');
+        }
+        return date;
       }
-      return date;
     }
   }
   // For network that doesn't use timestamp-set, return undefined
