@@ -60,7 +60,11 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
   }
 
   async set(id: string, data: T, blockHeight: number, tx?: Transaction): Promise<void> {
-    if (id !== data.id) {
+    // NOTE: this is to fix the error when use @dbType('BigInt') or maybe Int, Float as parameters on the graphql schema
+    const dataId = data.id as unknown as string | bigint | number;
+    if (typeof dataId !== 'string' && typeof dataId.toString === 'function' && dataId.toString() !== id) {
+      throw new Error(`Id doesnt match with data ${typeof id} !== ${typeof data.id}`);
+    } else if (typeof dataId === 'string' && dataId !== id) {
       throw new Error(`Id doesnt match with data`);
     }
 
