@@ -81,6 +81,7 @@ export class <%= props.className %> implements CompatEntity {
      * ⚠️ This function will first search cache data followed by DB data. Please consider this when using order and offset options.⚠️
      * */
     static async getByFields(filter: FieldsExpression<<%= props.className %>Props>[], options: GetOptions<<%= props.className %>Props>): Promise<<%=props.className %>[]> {
+        // @ts-ignore
         const records = await store.getByFields<<%=props.className %>Props>('<%=props.entityName %>', filter, options);
         return records.map(record => this.create(record as unknown as <%= props.className %>Props));
     }
