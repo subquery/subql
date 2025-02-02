@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -10,7 +10,10 @@ import {HostStore, storeHostFunctions} from './worker.store.service';
 type EntityProps = Omit<EntityCls, NonNullable<FunctionPropertyNames<EntityCls>> | '_name'>;
 
 class EntityCls implements Entity {
-  constructor(public id: string, public field: string) {}
+  constructor(
+    public id: string,
+    public field: string
+  ) {}
 
   get _name(): string {
     return 'EntityCls';

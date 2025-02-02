@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 export interface GqlVar {
@@ -67,13 +67,16 @@ const toVarDefs = (vars: GqlVar[]): string => {
 };
 
 const toVariables = (vars: GqlVar[]) =>
-  vars.reduce((acc, v) => {
-    if (acc[v.name]) {
-      throw new Error(`Graphql variables conflicts $${v.name}`);
-    }
-    acc[v.name] = v.value;
-    return acc;
-  }, {} as Record<string, unknown>);
+  vars.reduce(
+    (acc, v) => {
+      if (acc[v.name]) {
+        throw new Error(`Graphql variables conflicts $${v.name}`);
+      }
+      acc[v.name] = v.value;
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
 
 export function buildQuery(vars: GqlVar[], nodes: GqlNode[]): GqlQuery {
   return {

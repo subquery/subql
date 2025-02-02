@@ -1,27 +1,27 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { isMainThread } from 'worker_threads';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { BaseDataSource, IProjectNetworkConfig } from '@subql/types-core';
-import { Sequelize } from '@subql/x-sequelize';
-import { IApi } from '../api.service';
-import { IProjectUpgradeService, NodeConfig } from '../configure';
-import { IndexerEvent } from '../events';
-import { getLogger } from '../logger';
-import { exitWithError, monitorWrite } from '../process';
-import { getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex } from '../utils';
-import { BlockHeightMap } from '../utils/blockHeightMap';
-import { BaseDsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataKeys } from './entities';
-import { PoiSyncService } from './poi';
-import { PoiService } from './poi/poi.service';
-import { StoreService } from './store.service';
-import { cacheProviderFlushData } from './storeModelProvider';
-import { ISubqueryProject, IProjectService, BypassBlocks, HistoricalMode, Header } from './types';
-import { IUnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {isMainThread} from 'worker_threads';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {Sequelize} from '@subql/x-sequelize';
+import {IApi} from '../api.service';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
+import {IndexerEvent} from '../events';
+import {getLogger} from '../logger';
+import {exitWithError, monitorWrite} from '../process';
+import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex} from '../utils';
+import {BlockHeightMap} from '../utils/blockHeightMap';
+import {BaseDsProcessorService} from './ds-processor.service';
+import {DynamicDsService} from './dynamic-ds.service';
+import {MetadataKeys} from './entities';
+import {PoiSyncService} from './poi';
+import {PoiService} from './poi/poi.service';
+import {StoreService} from './store.service';
+import {cacheProviderFlushData} from './storeModelProvider';
+import {ISubqueryProject, IProjectService, BypassBlocks, HistoricalMode, Header} from './types';
+import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('Project');
 
@@ -35,7 +35,8 @@ export abstract class BaseProjectService<
   API extends IApi,
   DS extends BaseDataSource,
   UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>,
-> implements IProjectService<DS> {
+> implements IProjectService<DS>
+{
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
@@ -218,16 +219,16 @@ export abstract class BaseProjectService<
 
     const existing = await metadata.findMany(keys);
 
-    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+    const {chain, genesisHash, specName} = this.apiService.networkMeta;
 
     if (this.project.runner) {
-      const { node, query } = this.project.runner;
+      const {node, query} = this.project.runner;
 
       await metadata.setBulk([
-        { key: 'runnerNode', value: node.name },
-        { key: 'runnerNodeVersion', value: node.version },
-        { key: 'runnerQuery', value: query.name },
-        { key: 'runnerQueryVersion', value: query.version },
+        {key: 'runnerNode', value: node.name},
+        {key: 'runnerNodeVersion', value: node.version},
+        {key: 'runnerQuery', value: query.name},
+        {key: 'runnerQueryVersion', value: query.version},
       ]);
     }
     if (!existing.genesisHash) {
@@ -340,7 +341,7 @@ export abstract class BaseProjectService<
         const nextProject = projects[i + 1][1];
         nextMinStartHeight = Math.max(
           nextProject.dataSources
-            .filter((ds): ds is DS & { startBlock: number } => !!ds.startBlock)
+            .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
             .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock,
           projects[i + 1][0]
         );
@@ -355,12 +356,12 @@ export abstract class BaseProjectService<
       }[] = [];
 
       [...project.dataSources, ...dynamicDs]
-        .filter((ds): ds is DS & { startBlock: number } => {
+        .filter((ds): ds is DS & {startBlock: number} => {
           return !!ds.startBlock && (!nextMinStartHeight || nextMinStartHeight > ds.startBlock);
         })
         .forEach((ds) => {
-          events.push({ block: Math.max(height, ds.startBlock), start: true, ds });
-          if (ds.endBlock) events.push({ block: ds.endBlock + 1, start: false, ds });
+          events.push({block: Math.max(height, ds.startBlock), start: true, ds});
+          if (ds.endBlock) events.push({block: ds.endBlock + 1, start: false, ds});
         });
 
       // sort events by block in ascending order, start events come before end events
@@ -467,7 +468,7 @@ export abstract class BaseProjectService<
     return reindex(
       this.getStartBlockFromDataSources(),
       targetBlockHeader,
-      { height, timestamp },
+      {height, timestamp},
       this.storeService,
       this.unfinalizedBlockService,
       this.dynamicDsService,

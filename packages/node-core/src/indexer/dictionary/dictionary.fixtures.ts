@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
@@ -12,7 +12,12 @@ import {DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from '.
 
 // export use in dictionary service test
 export class TestDictionaryV1 extends DictionaryV1<any> {
-  constructor(endpoint: string, chainId: string, nodeConfig: NodeConfig, private queryEntry: DictionaryQueryEntry[]) {
+  constructor(
+    endpoint: string,
+    chainId: string,
+    nodeConfig: NodeConfig,
+    private queryEntry: DictionaryQueryEntry[]
+  ) {
     super(endpoint, chainId, nodeConfig);
   }
 

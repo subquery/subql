@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {DictionaryQueryEntry} from './types';
@@ -17,7 +17,7 @@ export interface HandlerInputTransformer_0_0_0<
   Input,
   DS extends BaseCustomDataSource,
   API,
-  E // Output type
+  E, // Output type
 > {
   (input: Input, ds: DS, api: API, assets?: Record<string, string>): Promise<E>;
 }
@@ -27,7 +27,7 @@ export interface HandlerInputTransformer_1_0_0<
   DS extends BaseCustomDataSource,
   API,
   F extends Record<string, unknown>,
-  E // Output type
+  E, // Output type
 > {
   (params: {input: Input; ds: DS; api: API; filter?: F; assets?: Record<string, string>}): Promise<E[]>;
 }
@@ -36,7 +36,7 @@ interface SecondLayerHandlerProcessorBase<
   BaseFilterMap extends HandlerInputMap,
   K extends keyof BaseFilterMap,
   F extends Record<string, unknown>,
-  DS extends BaseCustomDataSource
+  DS extends BaseCustomDataSource,
 > {
   baseHandlerKind: K;
   baseFilter: BaseFilterMap[K] | BaseFilterMap[K][];
@@ -52,7 +52,7 @@ export interface SecondLayerHandlerProcessor_0_0_0<
   F extends Record<string, unknown>,
   E,
   DS extends BaseCustomDataSource,
-  API
+  API,
 > extends SecondLayerHandlerProcessorBase<BaseHandlerFilters, InputKinds, F, DS> {
   specVersion: undefined;
   transformer: HandlerInputTransformer_0_0_0<HandlerInput[InputKinds], DS, API, E>;
@@ -66,7 +66,7 @@ export interface SecondLayerHandlerProcessor_1_0_0<
   F extends Record<string, unknown>,
   E,
   DS extends BaseCustomDataSource,
-  API
+  API,
 > extends SecondLayerHandlerProcessorBase<BaseHandlerFilters, InputKinds, F, DS> {
   specVersion: '1.0.0';
   transformer: HandlerInputTransformer_1_0_0<HandlerInput[InputKinds], DS, API, F, E>;
@@ -80,7 +80,7 @@ export type SecondLayerHandlerProcessor<
   F extends Record<string, unknown>,
   E,
   DS extends BaseCustomDataSource,
-  API
+  API,
 > =
   | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
   | SecondLayerHandlerProcessor_1_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>;

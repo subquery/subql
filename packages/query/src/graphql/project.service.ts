@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {Injectable} from '@nestjs/common';
@@ -7,7 +7,10 @@ import {Config} from '../configure';
 
 @Injectable()
 export class ProjectService {
-  constructor(private readonly pool: Pool, private readonly config: Config) {}
+  constructor(
+    private readonly pool: Pool,
+    private readonly config: Config
+  ) {}
 
   async getProjectSchema(name: string): Promise<string> {
     // After subqueries table has been deprecated, project may not be present in subqueries table

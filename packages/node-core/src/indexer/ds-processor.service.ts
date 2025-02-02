@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
@@ -27,7 +27,7 @@ function isSecondLayerHandlerProcessor_0_0_0<
   F extends Record<string, unknown>,
   E,
   API,
-  DS extends BaseCustomDataSource = BaseCustomDataSource
+  DS extends BaseCustomDataSource = BaseCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
@@ -44,7 +44,7 @@ function isSecondLayerHandlerProcessor_1_0_0<
   F extends Record<string, unknown>,
   E,
   API,
-  DS extends BaseCustomDataSource = BaseCustomDataSource
+  DS extends BaseCustomDataSource = BaseCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
@@ -60,7 +60,7 @@ export function asSecondLayerHandlerProcessor_1_0_0<
   F extends Record<string, unknown>,
   E,
   API,
-  DS extends BaseCustomDataSource = BaseCustomDataSource
+  DS extends BaseCustomDataSource = BaseCustomDataSource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<InputKinds, HandlerInput, BaseHandlerFilters, F, E, DS, API>
@@ -101,7 +101,7 @@ class DsPluginSandbox<P> extends Sandbox {
 export function getDsProcessor<
   P,
   DS extends BaseDataSource = BaseDataSource,
-  CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource
+  CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource,
 >(
   ds: CDS,
   isCustomDs: (ds: any) => boolean,
@@ -135,7 +135,7 @@ export function getDsProcessor<
 export abstract class BaseDsProcessorService<
   DS extends BaseDataSource = BaseDataSource,
   CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource,
-  P extends DsProcessor<CDS> = DsProcessor<CDS>
+  P extends DsProcessor<CDS> = DsProcessor<CDS>,
 > {
   private processorCache: Record<string, P> = {};
 

@@ -1,8 +1,17 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {Type} from 'class-transformer';
-import {IsInt, IsPositive, Min, IsOptional, ValidateIf, registerDecorator, ValidationOptions, ValidationArguments} from 'class-validator';
+import {
+  IsInt,
+  IsPositive,
+  Min,
+  IsOptional,
+  ValidateIf,
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
+} from 'class-validator';
 
 export function IsGreaterThan(property: string, validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
