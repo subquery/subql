@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable } from '@nestjs/common';
-import { Transaction } from '@subql/x-sequelize';
-import { isEqual, last } from 'lodash';
-import { IBlockchainService } from '../blockchain.service';
-import { NodeConfig } from '../configure';
-import { Header, IBlock } from '../indexer/types';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { mainThreadOnly } from '../utils';
-import { ProofOfIndex } from './entities';
-import { PoiBlock } from './poi';
-import { IStoreModelProvider } from './storeModelProvider';
+import {Inject, Injectable} from '@nestjs/common';
+import {Transaction} from '@subql/x-sequelize';
+import {isEqual, last} from 'lodash';
+import {IBlockchainService} from '../blockchain.service';
+import {NodeConfig} from '../configure';
+import {Header, IBlock} from '../indexer/types';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {mainThreadOnly} from '../utils';
+import {ProofOfIndex} from './entities';
+import {PoiBlock} from './poi';
+import {IStoreModelProvider} from './storeModelProvider';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -62,7 +62,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
   constructor(
     protected readonly nodeConfig: NodeConfig,
-    protected readonly storeModelProvider: IStoreModelProvider,
+    @Inject('IStoreModelProvider') protected readonly storeModelProvider: IStoreModelProvider,
     @Inject('IBlockchainService') private blockchainService: IBlockchainService
   ) {}
 
@@ -152,7 +152,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
   // remove any records less and equal than input finalized blockHeight
   private removeFinalized(blockHeight: number): void {
-    this._unfinalizedBlocks = this.unfinalizedBlocks.filter(({ blockHeight: height }) => height > blockHeight);
+    this._unfinalizedBlocks = this.unfinalizedBlocks.filter(({blockHeight: height}) => height > blockHeight);
   }
 
   // find closest record from block heights
@@ -160,7 +160,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     // Have the block in the best block, can be verified
     return [...this.unfinalizedBlocks] // Copy so we can reverse
       .reverse() // Reverse the list to find the largest block
-      .find(({ blockHeight: height }) => height <= blockHeight);
+      .find(({blockHeight: height}) => height <= blockHeight);
   }
 
   // check unfinalized blocks for a fork, returns the header where a fork happened
@@ -213,7 +213,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
   protected async getLastCorrectFinalizedBlock(forkedHeader: Header): Promise<Header | undefined> {
     const bestVerifiableBlocks = this.unfinalizedBlocks.filter(
-      ({ blockHeight }) => blockHeight <= this.finalizedBlockNumber
+      ({blockHeight}) => blockHeight <= this.finalizedBlockNumber
     );
 
     let checkingHeader = forkedHeader;

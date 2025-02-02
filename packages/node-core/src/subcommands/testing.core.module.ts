@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Module} from '@nestjs/common';
-
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {
@@ -11,20 +10,26 @@ import {
   InMemoryCacheService,
   PoiService,
   PoiSyncService,
-  StoreCacheService,
   StoreService,
   SandboxService,
   DsProcessorService,
   UnfinalizedBlocksService,
   DynamicDsService,
+  storeModelFactory,
+  NodeConfig,
 } from '@subql/node-core';
+import {Sequelize} from '@subql/x-sequelize';
 
 @Module({
   providers: [
     SchedulerRegistry,
     InMemoryCacheService,
     StoreService,
-    StoreCacheService,
+    {
+      provide: 'IStoreModelProvider',
+      useFactory: storeModelFactory,
+      inject: [NodeConfig, EventEmitter2, Sequelize],
+    },
     EventEmitter2,
     PoiService,
     PoiSyncService,

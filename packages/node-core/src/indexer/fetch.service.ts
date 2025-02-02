@@ -2,29 +2,30 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { BaseDataSource } from '@subql/types-core';
-import { range } from 'lodash';
-import { IBlockchainService } from '../blockchain.service';
-import { NodeConfig } from '../configure';
-import { IndexerEvent } from '../events';
-import { getLogger } from '../logger';
-import { delay, filterBypassBlocks, getModulos } from '../utils';
-import { IBlockDispatcher } from './blockDispatcher';
-import { mergeNumAndBlocksToNums } from './dictionary';
-import { DictionaryService } from './dictionary/dictionary.service';
-import { mergeNumAndBlocks } from './dictionary/utils';
-import { IStoreModelProvider } from './storeModelProvider';
-import { BypassBlocks, IBlock, IProjectService } from './types';
-import { IUnfinalizedBlocksServiceUtil } from './unfinalizedBlocks.service';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
+import {BaseDataSource} from '@subql/types-core';
+import {range} from 'lodash';
+import {IBlockchainService} from '../blockchain.service';
+import {NodeConfig} from '../configure';
+import {IndexerEvent} from '../events';
+import {getLogger} from '../logger';
+import {delay, filterBypassBlocks, getModulos} from '../utils';
+import {IBlockDispatcher} from './blockDispatcher';
+import {mergeNumAndBlocksToNums} from './dictionary';
+import {DictionaryService} from './dictionary/dictionary.service';
+import {mergeNumAndBlocks} from './dictionary/utils';
+import {IStoreModelProvider} from './storeModelProvider';
+import {BypassBlocks, IBlock, IProjectService} from './types';
+import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 
 const logger = getLogger('FetchService');
 
 @Injectable()
 export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
-  implements OnApplicationShutdown {
+  implements OnApplicationShutdown
+{
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
   private isShutdown = false;
@@ -37,7 +38,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
     @Inject('IUnfinalizedBlocksService') private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
-    private storeModelProvider: IStoreModelProvider,
+    @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider,
     @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>
   ) {}
 
@@ -210,7 +211,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
             continue;
           }
           if (dictionary) {
-            const { batchBlocks, lastBufferedHeight } = dictionary;
+            const {batchBlocks, lastBufferedHeight} = dictionary;
             // the last block returned from batch should have max height in this batch
             const mergedBlocks = mergeNumAndBlocks(
               this.getModuloBlocks(startBlockHeight, lastBufferedHeight),
@@ -247,7 +248,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
   // get all modulo numbers with a specific block ranges
   private getModuloBlocks(startHeight: number, endHeight: number): number[] {
     // Find relevant ds
-    const { endHeight: rangeEndHeight, value: relevantDS } = this.getRelevantDsDetails(startHeight);
+    const {endHeight: rangeEndHeight, value: relevantDS} = this.getRelevantDsDetails(startHeight);
     const moduloNumbers = this.getModulos(relevantDS);
     // no modulos in the filters been found in current ds
     if (!moduloNumbers.length) return [];
@@ -278,10 +279,10 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     return !!handlers.length && moduloNumbers.length === handlers.length;
   }
 
-  private getRelevantDsDetails(startBlockHeight: number): { endHeight: number | undefined; value: DS[] } {
+  private getRelevantDsDetails(startBlockHeight: number): {endHeight: number | undefined; value: DS[]} {
     const details = this.projectService.getDataSourcesMap().getDetails(startBlockHeight);
     assert(details, `Datasources not found for height ${startBlockHeight}`);
-    return { endHeight: details.endHeight, value: details.value };
+    return {endHeight: details.endHeight, value: details.value};
   }
 
   // Enqueue block sequentially
@@ -291,7 +292,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     latestHeight: number
   ): Promise<void> {
     // End height from current dataSource
-    const { endHeight, value: relevantDs } = this.getRelevantDsDetails(startBlockHeight);
+    const {endHeight, value: relevantDs} = this.getRelevantDsDetails(startBlockHeight);
     // Estimated range end height
     const estRangeEndHeight = Math.min(
       endHeight ?? Number.MAX_SAFE_INTEGER,
