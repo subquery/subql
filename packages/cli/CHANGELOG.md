@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update copyright header to 2025
 
+### Fixed
+- Various typos
+
 ## [5.5.0] - 2025-01-28
 ### Added
 - Add some constants for Starknet
@@ -195,7 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Publish command output flag not working (#2270)
 
 ### Changed
-- Update deployemnt flags to match managed service (#2274)
+- Update deployment flags to match managed service (#2274)
 
 ## [4.2.7] - 2024-02-23
 ### Changed

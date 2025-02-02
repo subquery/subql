@@ -210,7 +210,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           });
         }
       } else {
-        throw new Error(`${typeString} is not an valid type`);
+        throw new Error(`${typeString} is not a valid type`);
       }
       // handle indexes
       if (indexDirectiveVal) {

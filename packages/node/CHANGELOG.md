@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update copyright header to 2025
 
+### Fixed
+- Various typos
+
 ## [5.7.1] - 2025-01-30
 ### Fixed
 - Crash with iterating extrinsics when skipTransactions is enabled (#2656)

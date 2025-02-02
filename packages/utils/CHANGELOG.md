@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update copyright header to 2025
 
+### Fixed
+- Various typos
+
 ## [2.17.1] - 2025-01-28
 ### Fixed
 - Graphql entitiy relations not resolving the id type from the `@dbType` directive (#2649)
@@ -49,8 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.12.0] - 2024-06-21
 ### Added
 - Better error messages for invalid graphql schemas (#2458)
-
-### Added
 - enable ts strict mode
 - TS check reports errors when debugging Query
 

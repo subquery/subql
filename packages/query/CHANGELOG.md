@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.17.0] - 2024-11-25
 ### Changed
-- WS libarary with support for graphiql (#2600)
+- WS library with support for graphiql (#2600)
 - Subscription type from JSON to the correct entity type (#2600)
 
 ## [2.16.0] - 2024-11-22
@@ -255,7 +255,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.0] - 2022-07-05
 ### Changed
-- Try to catch error if create server failed, also give retry build schema (#1153)
+- Try to catch error if server creation failed, also give retry build schema (#1153)
 
 ### Fixed
 - Fix tests (#1160)
@@ -270,7 +270,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2022-06-02
 ### Changed
-- Now query-complexity is indicated in header (#1088)
+- Now query-complexity is indicated in the header (#1088)
 
 ## [1.1.0] - 2022-05-31
 ### Added
