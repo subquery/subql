@@ -1,8 +1,8 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Sequelize } from '@subql/x-sequelize';
-import { IProjectUpgradeService } from '../configure';
+import {Sequelize} from '@subql/x-sequelize';
+import {IProjectUpgradeService} from '../configure';
 import {
   DynamicDsService,
   IUnfinalizedBlocksService,
@@ -14,10 +14,10 @@ import {
   cacheProviderResetData,
   Header,
 } from '../indexer';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { ForceCleanService } from '../subcommands/forceClean.service';
-import { getHistoricalUnit } from './blocks';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {ForceCleanService} from '../subcommands/forceClean.service';
+import {getHistoricalUnit} from './blocks';
 
 const logger = getLogger('Reindex');
 
@@ -43,7 +43,7 @@ const logger = getLogger('Reindex');
 export async function reindex(
   startHeight: number,
   targetBlockHeader: Header,
-  lastProcessed: { height: number; timestamp?: number },
+  lastProcessed: {height: number; timestamp?: number},
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,

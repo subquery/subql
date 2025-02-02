@@ -1,16 +1,16 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Transaction } from '@subql/x-sequelize';
-import { hasValue } from '../../../utils';
-import { DatasourceParams } from '../../dynamic-ds.service';
-import { Metadata, MetadataKeys, MetadataRepo } from '../../entities';
-import { HistoricalMode } from '../../types';
-import { Cacheable } from '../cacheable';
-import { ICachedModelControl } from '../types';
-import { IMetadata } from './metadata';
-import { MetadataKey, incrementKeys, IncrementalMetadataKey, INCREMENT_QUERY, APPEND_DS_QUERY } from './utils';
+import {Transaction} from '@subql/x-sequelize';
+import {hasValue} from '../../../utils';
+import {DatasourceParams} from '../../dynamic-ds.service';
+import {Metadata, MetadataKeys, MetadataRepo} from '../../entities';
+import {HistoricalMode} from '../../types';
+import {Cacheable} from '../cacheable';
+import {ICachedModelControl} from '../types';
+import {IMetadata} from './metadata';
+import {MetadataKey, incrementKeys, IncrementalMetadataKey, INCREMENT_QUERY, APPEND_DS_QUERY} from './utils';
 
 // type MetadataKey = keyof MetadataKeys;
 // const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
@@ -121,7 +121,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    await this.model.sequelize.query(INCREMENT_QUERY(schemaTable, key, amount), tx && { transaction: tx });
+    await this.model.sequelize.query(INCREMENT_QUERY(schemaTable, key, amount), tx && {transaction: tx});
   }
 
   private async appendDynamicDatasources(items: DatasourceParams[], tx?: Transaction): Promise<void> {
@@ -129,7 +129,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
 
     assert(this.model.sequelize, `Sequelize is not available on ${this.model.name}`);
 
-    await this.model.sequelize.query(APPEND_DS_QUERY(schemaTable, items), tx && { transaction: tx });
+    await this.model.sequelize.query(APPEND_DS_QUERY(schemaTable, items), tx && {transaction: tx});
   }
 
   private async handleSpecialKeys(tx?: Transaction): Promise<void> {
@@ -144,7 +144,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
              **/
             const val = this.setCache[key];
             if (val !== undefined) {
-              await this.model.bulkCreate([{ key, value: val }], { transaction: tx, updateOnDuplicate: ['key', 'value'] });
+              await this.model.bulkCreate([{key, value: val}], {transaction: tx, updateOnDuplicate: ['key', 'value']});
             } else if (this.datasourceUpdates.length) {
               await this.appendDynamicDatasources(this.datasourceUpdates, tx);
             }
@@ -171,7 +171,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
   async runFlush(tx: Transaction, blockHeight?: number): Promise<void> {
     const ops = Object.entries(this.setCache)
       .filter(([key]) => !specialKeys.includes(key as MetadataKey))
-      .map(([key, value]) => ({ key, value }) as Metadata);
+      .map(([key, value]) => ({key, value}) as Metadata);
 
     const key = this.historical === 'timestamp' ? 'lastProcessedBlockTimestamp' : 'lastProcessedHeight';
 
@@ -194,7 +194,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
         updateOnDuplicate: ['key', 'value'],
       }),
       this.handleSpecialKeys(tx),
-      this.model.destroy({ where: { key: this.removeCache } }),
+      this.model.destroy({where: {key: this.removeCache}}),
     ]);
   }
 
@@ -220,8 +220,8 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
       newSetCache.lastProcessedHeight = this.setCache.lastProcessedHeight;
       this.flushableRecordCounter = 1;
     }
-    this.setCache = { ...newSetCache };
-    this.getCache = { ...newSetCache };
+    this.setCache = {...newSetCache};
+    this.getCache = {...newSetCache};
     this.datasourceUpdates = [];
   }
 }

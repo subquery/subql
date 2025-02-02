@@ -1,16 +1,16 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Store as IStore, Entity, FieldsExpression, GetOptions } from '@subql/types-core';
-import { Transaction } from '@subql/x-sequelize';
-import { NodeConfig } from '../../configure';
-import { monitorWrite } from '../../process';
-import { handledStringify } from '../../utils';
-import { IStoreModelProvider } from '../storeModelProvider';
-import { StoreOperations } from '../StoreOperations';
-import { OperationType } from '../types';
-import { EntityClass } from './entity';
+import {Store as IStore, Entity, FieldsExpression, GetOptions} from '@subql/types-core';
+import {Transaction} from '@subql/x-sequelize';
+import {NodeConfig} from '../../configure';
+import {monitorWrite} from '../../process';
+import {handledStringify} from '../../utils';
+import {IStoreModelProvider} from '../storeModelProvider';
+import {StoreOperations} from '../StoreOperations';
+import {OperationType} from '../types';
+import {EntityClass} from './entity';
 
 /* A context is provided to allow it to be updated by the owner of the class instance */
 type Context = {
@@ -101,7 +101,7 @@ export class Store implements IStore {
       assert(indexed, `to query by field ${String(field)}, a unique index must be created on model ${entity}`);
       const [raw] = await this.#modelProvider
         .getModel<T>(entity)
-        .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], { limit: 1 });
+        .getByFields([Array.isArray(value) ? [field, 'in', value] : [field, '=', value]], {limit: 1});
       monitorWrite(() => `-- [Store][getOneByField] Entity ${entity}, data: ${handledStringify(raw)}`);
       return EntityClass.create<T>(entity, raw, this);
     } catch (e) {
@@ -113,7 +113,9 @@ export class Store implements IStore {
     try {
       const historicalUnit = this.#context.getHistoricalUnit();
       await this.#modelProvider.getModel(entity).set(_id, data, historicalUnit, this.#context.transaction);
-      monitorWrite(() => `-- [Store][set] Entity ${entity}, height: ${historicalUnit}, data: ${handledStringify(data)}`);
+      monitorWrite(
+        () => `-- [Store][set] Entity ${entity}, height: ${historicalUnit}, data: ${handledStringify(data)}`
+      );
       this.#context.operationStack?.put(OperationType.Set, entity, data);
     } catch (e) {
       throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
@@ -162,7 +164,9 @@ export class Store implements IStore {
       for (const id of ids) {
         this.#context.operationStack?.put(OperationType.Remove, entity, id);
       }
-      monitorWrite(() => `-- [Store][remove] Entity ${entity}, height: ${historicalUnit}, ids: ${handledStringify(ids)}`);
+      monitorWrite(
+        () => `-- [Store][remove] Entity ${entity}, height: ${historicalUnit}, ids: ${handledStringify(ids)}`
+      );
     } catch (e) {
       throw new Error(`Failed to bulkRemove Entity ${entity}: ${e}`);
     }

@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {IProjectNetworkConfig} from '../../types';
@@ -147,7 +147,7 @@ export interface ParentProject {
 export interface ProjectManifestV1_0_0<
   D extends BaseDataSource = BaseDataSource,
   T extends BaseTemplateDataSource<D> = BaseTemplateDataSource<D>,
-  C extends IProjectNetworkConfig = IProjectNetworkConfig
+  C extends IProjectNetworkConfig = IProjectNetworkConfig,
 > {
   name?: string;
   version: string;

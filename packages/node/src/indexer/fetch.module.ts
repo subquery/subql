@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Module } from '@nestjs/common';
@@ -66,32 +66,32 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       ) =>
         nodeConfig.workers
           ? new WorkerBlockDispatcherService(
-            nodeConfig,
-            eventEmitter,
-            projectService,
-            projectUpgradeService,
-            cacheService,
-            storeService,
-            storeModelProvider,
-            poiSyncService,
-            project,
-            dynamicDsService,
-            unfinalizedBlocks,
-            connectionPoolState,
-            monitorService,
-          )
+              nodeConfig,
+              eventEmitter,
+              projectService,
+              projectUpgradeService,
+              cacheService,
+              storeService,
+              storeModelProvider,
+              poiSyncService,
+              project,
+              dynamicDsService,
+              unfinalizedBlocks,
+              connectionPoolState,
+              monitorService,
+            )
           : new BlockDispatcherService(
-            apiService,
-            nodeConfig,
-            indexerManager,
-            eventEmitter,
-            projectService,
-            projectUpgradeService,
-            storeService,
-            storeModelProvider,
-            poiSyncService,
-            project,
-          ),
+              apiService,
+              nodeConfig,
+              indexerManager,
+              eventEmitter,
+              projectService,
+              projectUpgradeService,
+              storeService,
+              storeModelProvider,
+              poiSyncService,
+              project,
+            ),
       inject: [
         NodeConfig,
         EventEmitter2,

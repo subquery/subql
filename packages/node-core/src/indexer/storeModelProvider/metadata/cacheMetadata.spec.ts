@@ -1,7 +1,7 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { CacheMetadataModel } from './cacheMetadata';
+import {CacheMetadataModel} from './cacheMetadata';
 
 const incrementKey = 'processedBlockCount';
 
@@ -48,7 +48,7 @@ describe('CacheMetadata', () => {
       false
     );
 
-    (cacheMetadata as any).appendDynamicDatasources([{ foo: 'bar' }]);
+    (cacheMetadata as any).appendDynamicDatasources([{foo: 'bar'}]);
     expect(queryFn).toHaveBeenCalledWith(
       `
       UPDATE "Schema"."_metadata"
@@ -59,7 +59,7 @@ describe('CacheMetadata', () => {
       undefined
     );
 
-    (cacheMetadata as any).appendDynamicDatasources([{ foo: 'bar' }, { baz: 'buzz' }]);
+    (cacheMetadata as any).appendDynamicDatasources([{foo: 'bar'}, {baz: 'buzz'}]);
     expect(queryFn).toHaveBeenCalledWith(
       `
       UPDATE "Schema"."_metadata"

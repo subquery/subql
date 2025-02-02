@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
@@ -285,10 +285,13 @@ export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointC
   if (typeof input === 'string') {
     return {[input]: defaultConfig ?? {}};
   } else if (Array.isArray(input)) {
-    return input.reduce((acc, endpoint) => {
-      acc[endpoint] = defaultConfig ?? {};
-      return acc;
-    }, {} as Record<string, T>);
+    return input.reduce(
+      (acc, endpoint) => {
+        acc[endpoint] = defaultConfig ?? {};
+        return acc;
+      },
+      {} as Record<string, T>
+    );
   }
 
   for (const key in input) {

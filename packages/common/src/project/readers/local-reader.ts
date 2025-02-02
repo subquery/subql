@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -10,7 +10,10 @@ import type {IPackageJson} from 'package-json-type';
 import {extensionIsYamlOrJSON} from '../../project';
 
 export class LocalReader implements Reader {
-  constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
+  constructor(
+    private readonly projectPath: string,
+    private readonly manifestPath: string
+  ) {}
 
   get root(): string {
     return path.resolve(this.projectPath);
