@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "5.3.0",
+  "version": "5.3.1-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -28,5 +28,6 @@
     "@types/js-yaml": "^4.0.9",
     "@types/semver": "^7.5.8",
     "@types/update-notifier": "^6"
-  }
+  },
+  "stableVersion": "5.3.0"
 }
