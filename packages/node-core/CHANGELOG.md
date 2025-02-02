@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update copyright header to 2025
 
+### Fixed
+- Various typos
+
 ## [16.2.0] - 2025-01-28
 ### Changed
 - Updated send_notification PG function to include `_block height` and entity `_id` (#2626)
@@ -651,7 +654,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for block hashes with base64 format for POI (#1761)
 
 ### Changed
-- Update vm2 past problimatic version (#1770)
+- Update vm2 past problematic version (#1770)
 - Add optional root option to config (#1771)
 
 ## [2.3.1] - 2023-05-26

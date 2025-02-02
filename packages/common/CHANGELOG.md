@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.6.0] - 2024-05-22
 ### Changed
-- Improve error message when project manfiest is invalid (#2408)
+- Improve error message when project manifest is invalid (#2408)
 
 ## [3.5.1] - 2024-04-24
 ### Added

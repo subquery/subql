@@ -1,5 +1,5 @@
 # K8s Deploy
-This [deploy.yaml](deploy.yaml) demonstrate how to run subquery in k8s.
+This [deploy.yaml](deploy.yaml) demonstrates how to run SubQuery in k8s.
 
 You will need to run 
 ### 1. a subql-node to index data

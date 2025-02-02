@@ -30,7 +30,7 @@ describe('configure utils', () => {
     expect(mockArgv.unsafe).toBeFalsy();
   });
 
-  it('should rebase historical manfiest options', () => {
+  it('should rebase historical manifest options', () => {
     const mock = {
       historical: 'height',
     } as any;
