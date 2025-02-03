@@ -12,9 +12,6 @@ import {
   PoiSyncService,
   StoreService,
   SandboxService,
-  DsProcessorService,
-  UnfinalizedBlocksService,
-  DynamicDsService,
   storeModelFactory,
   NodeConfig,
 } from '@subql/node-core';
@@ -34,20 +31,9 @@ import {Sequelize} from '@subql/x-sequelize';
     PoiService,
     PoiSyncService,
     SandboxService,
-    DsProcessorService,
-    DynamicDsService,
-    UnfinalizedBlocksService,
     ConnectionPoolStateManager,
     ConnectionPoolService,
   ],
-  exports: [
-    DsProcessorService,
-    PoiService,
-    PoiSyncService,
-    StoreService,
-    DynamicDsService,
-    UnfinalizedBlocksService,
-    SandboxService,
-  ],
+  exports: ['IStoreModelProvider', PoiService, PoiSyncService, StoreService, SandboxService, ConnectionPoolService],
 })
 export class TestingCoreModule {}

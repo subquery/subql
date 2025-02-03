@@ -19,8 +19,10 @@ import {
   DynamicDsService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
+import { RuntimeService } from '../indexer/runtime/runtimeService';
 
 @Module({
   providers: [
@@ -54,6 +56,15 @@ import { ApiService } from '../indexer/api.service';
         EventEmitter2,
         NodeConfig,
       ],
+    },
+    {
+      provide: 'RuntimeService', // TODO DOING this because of circular reference with dictionary service
+      useFactory: (apiService: ApiService) => new RuntimeService(apiService),
+      inject: ['APIService'],
+    },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
     },
     SchedulerRegistry,
   ],

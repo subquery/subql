@@ -11,13 +11,18 @@ import {
   NodeConfig,
   ProjectService,
   TestingCoreModule,
+  DsProcessorService,
+  DynamicDsService,
+  UnfinalizedBlocksService,
 } from '@subql/node-core';
 import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
+import { RuntimeService } from '../indexer/runtime/runtimeService';
 
 @Module({
+  imports: [TestingCoreModule],
   providers: [
     {
       provide: 'IProjectService',
@@ -34,6 +39,15 @@ import { IndexerManager } from '../indexer/indexer.manager';
       ],
     },
     {
+      provide: 'IUnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
+    },
+    {
+      provide: 'RuntimeService', // TODO DOING this because of circular reference with dictionary service
+      useFactory: (apiService: ApiService) => new RuntimeService(apiService),
+      inject: ['APIService'],
+    },
+    {
       provide: 'IBlockchainService',
       useClass: BlockchainService,
     },
@@ -42,6 +56,8 @@ import { IndexerManager } from '../indexer/indexer.manager';
       provide: 'IIndexerManager',
       useClass: IndexerManager,
     },
+    DsProcessorService,
+    DynamicDsService,
   ],
   controllers: [],
   exports: [TestRunner],
@@ -54,7 +70,6 @@ export class TestingFeatureModule {}
     ConfigureModule.register(),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    TestingCoreModule,
     TestingFeatureModule,
   ],
   controllers: [],
