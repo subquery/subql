@@ -55,7 +55,7 @@ class TestBlockchainService implements IBlockchainService {
   }
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   getBlockTimestamp(height: number): Promise<Date | undefined> {
-    throw new Error('Method getBlockTimestamp not implemented.');
+    return Promise.resolve(undefined);
   }
   getBlockSize(block: IBlock): number {
     return 0;
