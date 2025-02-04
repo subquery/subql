@@ -250,7 +250,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
         const allowedTypes = ['BigInt', 'Float', 'ID', 'Int', 'String'];
         if (!t || !allowedTypes.includes(t.name)) {
           throw new Error(
-            `${dbType} is not a defined scalar type, please use another type in the dbType directive.\n Available types: ${allowedTypes.join(', ')}`
+            `${dbType} is not a defined scalar type, please use another type in the dbType directive.\nAvailable types: ${allowedTypes.join(', ')}`
           );
         }
 
