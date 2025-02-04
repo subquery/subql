@@ -118,7 +118,7 @@ describe('Runtime service', () => {
     (dictionaryService as any).useDictionary = (height: number) => true;
 
     // This is called in fetchService.preLoopHook
-    await runtimeService.syncDictionarySpecVersions(29233);
+    await runtimeService.syncDictionarySpecVersions();
 
     const metaSpy = jest.spyOn(apiService.api.rpc.state, 'getRuntimeVersion');
 
