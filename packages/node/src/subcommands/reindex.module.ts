@@ -58,9 +58,8 @@ import { RuntimeService } from '../indexer/runtime/runtimeService';
       ],
     },
     {
-      provide: 'RuntimeService', // TODO DOING this because of circular reference with dictionary service
-      useFactory: (apiService: ApiService) => new RuntimeService(apiService),
-      inject: ['APIService'],
+      provide: 'RuntimeService',
+      useClass: RuntimeService,
     },
     {
       provide: 'IBlockchainService',

@@ -83,11 +83,12 @@ describe('Runtime service', () => {
   let dictionaryService: SubstrateDictionaryService;
   let apiService: ApiService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     dictionaryService = getDictionaryService();
     apiService = getApiService();
 
-    runtimeService = new RuntimeService(apiService, dictionaryService);
+    runtimeService = new RuntimeService(apiService);
+    await runtimeService.init(0, 50_000, dictionaryService);
   });
 
   it('doesnt refetch metadata when spec version doesnt change', async () => {

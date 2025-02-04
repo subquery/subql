@@ -49,9 +49,8 @@ import { IIndexerWorker } from './worker/worker';
       ],
     },
     {
-      provide: 'RuntimeService', // TODO DOING this because of circular reference with dictionary service
-      useFactory: (apiService: ApiService) => new RuntimeService(apiService),
-      inject: ['APIService'],
+      provide: 'RuntimeService',
+      useClass: RuntimeService,
     },
     {
       provide: 'IBlockchainService',
@@ -91,40 +90,40 @@ import { IIndexerWorker } from './worker/worker';
       ) => {
         return nodeConfig.workers
           ? new WorkerBlockDispatcher<
-            SubstrateDatasource,
-            IIndexerWorker,
-            BlockContent | LightBlockContent,
-            ApiPromiseConnection
-          >(
-            nodeConfig,
-            eventEmitter,
-            projectService,
-            projectUpgradeService,
-            storeService,
-            storeModelProvider,
-            cacheService,
-            poiSyncService,
-            dynamicDsService,
-            unfinalizedBlocks,
-            connectionPoolState,
-            project,
-            blockchainService,
-            path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
-            ['syncRuntimeService', 'getSpecFromMap'],
-            monitorService,
-          )
+              SubstrateDatasource,
+              IIndexerWorker,
+              BlockContent | LightBlockContent,
+              ApiPromiseConnection
+            >(
+              nodeConfig,
+              eventEmitter,
+              projectService,
+              projectUpgradeService,
+              storeService,
+              storeModelProvider,
+              cacheService,
+              poiSyncService,
+              dynamicDsService,
+              unfinalizedBlocks,
+              connectionPoolState,
+              project,
+              blockchainService,
+              path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
+              ['syncRuntimeService', 'getSpecFromMap'],
+              monitorService,
+            )
           : new BlockDispatcher(
-            nodeConfig,
-            eventEmitter,
-            projectService,
-            projectUpgradeService,
-            storeService,
-            storeModelProvider,
-            poiSyncService,
-            project,
-            blockchainService,
-            indexerManager,
-          );
+              nodeConfig,
+              eventEmitter,
+              projectService,
+              projectUpgradeService,
+              storeService,
+              storeModelProvider,
+              poiSyncService,
+              project,
+              blockchainService,
+              indexerManager,
+            );
       },
       inject: [
         NodeConfig,

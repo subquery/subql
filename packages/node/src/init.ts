@@ -11,8 +11,10 @@ import {
   NestLogger,
   ProjectService,
   FetchService,
+  DictionaryService,
 } from '@subql/node-core';
 import { AppModule } from './app.module';
+import { SubstrateDictionaryService } from './indexer/dictionary';
 import { RuntimeService } from './indexer/runtime/runtimeService';
 import { yargsOptions } from './yargs';
 
@@ -36,6 +38,8 @@ export async function bootstrap(): Promise<void> {
     const projectService: ProjectService = app.get('IProjectService');
     const fetchService = app.get(FetchService);
     const runtimeService: RuntimeService = app.get('RuntimeService');
+    const dictionaryService: SubstrateDictionaryService =
+      app.get(DictionaryService);
     const blockchainService: IBlockchainService = app.get('IBlockchainService');
 
     // Initialise async services, we do this here rather than in factories, so we can capture one off events
@@ -44,7 +48,7 @@ export async function bootstrap(): Promise<void> {
     const startHeight = projectService.startHeight;
     const { blockHeight: finalizedHeight } =
       await blockchainService.getFinalizedHeader();
-    await runtimeService.init(startHeight, finalizedHeight);
+    await runtimeService.init(startHeight, finalizedHeight, dictionaryService);
     await fetchService.init(startHeight);
 
     app.enableShutdownHooks();
