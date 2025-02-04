@@ -60,10 +60,6 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
   }
 
   async set(id: string, data: T, blockHeight: number, tx?: Transaction): Promise<void> {
-    if (id !== data.id) {
-      throw new Error(`Id doesnt match with data`);
-    }
-
     await this.bulkUpdate([data], blockHeight, undefined, tx);
   }
 
