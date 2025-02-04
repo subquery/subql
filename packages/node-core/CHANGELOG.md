@@ -647,7 +647,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix jump buffer height issue (#1781)
-- Error if testing entitiy not found (#1766)
+- Error if testing entity not found (#1766)
 
 ## [2.4.1] - 2023-05-31
 ### Fixed
