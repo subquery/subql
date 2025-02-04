@@ -247,8 +247,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
         const t = getTypeByScalarName(dbType);
 
         // Allowlist of types that can be used.
-        if (!t || !['BigInt', 'Float', 'ID', 'Int', 'String'].includes(t.name)) {
-          throw new Error(`${dbType} is not a defined scalar type, please use another type in the dbType directive`);
+        const allowedTypes = ['BigInt', 'Float', 'ID', 'Int', 'String'];
+        if (!t || !allowedTypes.includes(t.name)) {
+          throw new Error(
+            `${dbType} is not a defined scalar type, please use another type in the dbType directive.\nAvailable types: ${allowedTypes.join(', ')}`
+          );
         }
 
         const f = newModel.fields.find((f) => f.name === 'id');

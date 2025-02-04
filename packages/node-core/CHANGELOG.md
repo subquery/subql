@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Various typos
 
+### Removed
+- Id type check on plain model set method (#2662)
+
 ## [16.2.0] - 2025-01-28
 ### Changed
 - Updated send_notification PG function to include `_block height` and entity `_id` (#2626)

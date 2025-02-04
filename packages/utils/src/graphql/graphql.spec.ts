@@ -530,7 +530,7 @@ describe('utils that handle schema.graphql', () => {
       for (const type of ['JSON', 'Date', 'Bytes', 'Boolean', 'StarterEntity']) {
         const schema = makeSchema(type);
         expect(() => getAllEntitiesRelations(schema)).toThrow(
-          `${type} is not a defined scalar type, please use another type in the dbType directive`
+          `${type} is not a defined scalar type, please use another type in the dbType directive.\nAvailable types: BigInt, Float, ID, Int, String`
         );
       }
     });
