@@ -164,7 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.7.0] - 2024-05-02
 ### Added
 - Migrate a subgraph project to subquery project
-  - enble migrate its `subgraph.yaml` to `project.ts`
+  - enable migrate its `subgraph.yaml` to `project.ts`
 
 ## [4.6.0] - 2024-04-24
 ### Added
