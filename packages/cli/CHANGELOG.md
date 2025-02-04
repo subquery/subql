@@ -422,7 +422,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.7.0] - 2022-10-27
 ### Added
-- `--dedicatedDB` option to project deployement. (#1355)
+- `--dedicatedDB` option to project deployment. (#1355)
 - Flags for advanced settings. (#1352)
 
 ### Fixed
